@@ -46,6 +46,7 @@ const RELEASES_JSON = path.posix.join(REPO_ROOT, "releases.json");
 const LAUNCH_HTML = path.posix.join(REPO_ROOT, "launch.html");
 const INDEX_HTML = path.posix.join(REPO_ROOT, "index.html");
 const SET_CANVAS_URL = path.posix.join(REPO_ROOT, "dev-tools/set_canvas_url.cjs");
+const SYNC_PROMO_RELEASE = path.posix.join(REPO_ROOT, "dev-tools/sync_promo_release.cjs");
 
 const CANVAS_URL_RE = /^https:\/\/(?:gemini\.google\.com\/share\/[a-f0-9]+|share\.gemini\.google\/[A-Za-z0-9]+)$/;
 const FALLBACK_RE = /const\s+FALLBACK_CANVAS_URL\s*=\s*"[^"]*"\s*;/g;
@@ -259,6 +260,17 @@ async function rewriteIndexHtml(newVersion) {
   info(`  index.html: navbar version -> v${newVersion}`);
 }
 
+async function syncPromoRelease() {
+  if (!(await exists(SYNC_PROMO_RELEASE))) return;
+  try {
+    const out = execSync(`node "${SYNC_PROMO_RELEASE}"`, { cwd: REPO_ROOT, stdio: "pipe" }).toString();
+    out.trim().split(String.fromCharCode(10)).filter(Boolean).forEach((line) => info(`  ${line.trim()}`));
+  } catch (e) {
+    const text = String((e.stdout && e.stdout.toString()) || "") + String((e.stderr && e.stderr.toString()) || e.message);
+    die(8, `sync_promo_release failed: ${text.trim()}`);
+  }
+}
+
 // ---------- every other link site (set_canvas_url) --------------------------
 // Stamps the remaining sites and mirrors, then proves one link everywhere and none
 // compiled into the integrity-pinned in-app button. Hard failure on purpose: a
@@ -403,8 +415,9 @@ async function main() {
   // entry first so it preserves older links and mirrors the new version.
   await rewriteMiscModals(newUrl);
 
-  // Step 7: best-effort index.html navbar bump.
+  // Step 7: best-effort index.html navbar bump & promo page release sync.
   await rewriteIndexHtml(newVersion);
+  await syncPromoRelease();
 
   // Step 8: final summary.
   info("");

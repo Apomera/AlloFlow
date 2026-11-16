@@ -1,5 +1,12 @@
 [
   {
+    "id": "rel_20261116T051423Z_v1_18",
+    "version": "1.18",
+    "canvas_url": "https://share.gemini.google/i3xUEhzR1csy",
+    "released": "2026-11-16T05:14:23.945Z",
+    "notes": "Canvas build with the 11-15 deploy: platform-wide WCAG 2.2 AA accessibility improvements across hubs, modals, STEM and SEL tools, and companion pages; Packet Symbol Runner and Present/export updates; offline vocabulary and word-audio shard enhancements; and shared-device privacy and security refinements."
+  },
+  {
     "id": "rel_20261109T133114Z_v1_17",
     "version": "1.17",
     "canvas_url": "https://share.gemini.google/fs05BnzzP64H",
