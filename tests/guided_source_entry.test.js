@@ -160,24 +160,31 @@ function shellProps(extra = {}) {
     fileInputRef: { current: null }, t: () => '', inputText: '', toggleTool: vi.fn(),
     showSourceGen: false, showUrlInput: false, ...extra };
 }
-describe('source actions use progressive disclosure without changing source scope', () => {
-  it.each([{ guidedMode: true }, { isParentMode: true }])('keeps upload and the source editor outside optional actions: %j', mode => {
+describe('source actions stay directly available without changing source scope', () => {
+  it.each([{ guidedMode: true }, { isParentMode: true }, {}])('shows all 5 source controls directly in the action grid without "More sources": %j', mode => {
     const captured = vi.fn(() => React.createElement('textarea', { 'aria-label': 'Source text' }));
     window.AlloModules = { SourceInputPanel: captured };
     const scope = { useOwnSources: true, selectedOwnSourceIds: ['doc-1'], documentsOnly: true, setUseOwnSources: vi.fn(), setSelectedOwnSourceIds: vi.fn(), setDocumentsOnly: vi.fn() };
     render(Shell, shellProps({ ...mode, ...scope }));
-    const more = host.querySelector('details[data-help-key="source_more_options"]');
-    expect(more).toBeTruthy(); expect(more.open).toBe(false);
-    expect(host.querySelector('#tour-upload-source').closest('details')).toBeNull();
-    expect(host.querySelector('textarea').closest('details')).toBeNull();
-    expect(more.textContent).toContain('Reading catalog'); // the Books button, renamed 11-09
-    expect(captured.mock.calls.at(-1)[0]).toMatchObject(scope);
-  });
-  it('keeps the complete source action row in the full workspace', () => {
-    window.AlloModules = {};
-    render(Shell, shellProps());
     expect(host.querySelector('details[data-help-key="source_more_options"]')).toBeNull();
-    expect(button('Reading catalog')).toBeTruthy();
+    expect(host.textContent).not.toContain('More sources');
+    const grid = host.querySelector('.allo-source-action-grid');
+    expect(grid).toBeTruthy();
+    const selectors = [
+      '#tour-upload-source',
+      '[data-source-open-pdf-project="true"]',
+      '[data-help-key="source_link_btn"]',
+      '[data-help-key="source_generate_btn"]',
+      '[data-help-key="source_books_btn"]',
+    ];
+    for (const selector of selectors) {
+      const control = host.querySelector(selector);
+      expect(control, selector).toBeTruthy();
+      expect(control.parentElement).toBe(grid);
+      expect(control.closest('details')).toBeNull();
+    }
+    expect(host.querySelector('textarea').closest('details')).toBeNull();
+    expect(captured.mock.calls.at(-1)[0]).toMatchObject(scope);
   });
   it('opens a Family tool only on an explicit adult action, without generating', () => {
     window.AlloModules = {};

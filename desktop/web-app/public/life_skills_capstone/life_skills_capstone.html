@@ -122,6 +122,9 @@
   .tools, .views { display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
   .tool, .view { flex:1 1 100px; padding:7px 8px; font-size:11px; text-align:center; }
   .tool.primary { background:#0e7490; border-color:#67e8f9; }
+  .stem-lens-button { width:100%; margin-top:8px; background:rgba(14,116,144,.28); border-color:#67e8f9; color:#ecfeff; }
+  .stem-lens-button[aria-pressed="true"] { background:#0e7490; border-color:#facc15; color:#ffffff; }
+  .stem-lens-text { margin:7px 0 0; padding:8px 9px; border-radius:8px; border:1px solid rgba(103,232,249,.45); background:rgba(8,19,33,.78); color:#e0f2fe; font-size:11px; line-height:1.42; }
   .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
   a-scene { display:block; width:100%; height:100%; min-height:610px; }
   .scene-fallback { display:none; padding:20px; color:var(--muted); }
@@ -192,12 +195,16 @@
         <button class="view" type="button" data-view="home">Home</button>
         <button class="view" type="button" data-view="middle">Middle</button>
         <button class="view" type="button" data-view="transit">Transit</button>
+        <button class="view" type="button" data-view="overhead" aria-pressed="false">Overhead map</button>
+        <button class="view" id="zoomTargetButton" type="button">Zoom to station</button>
       </div>
       <div class="tools">
         <button class="tool primary" id="focusButton" type="button">Focus current station</button>
         <button class="tool" id="challengeButton" type="button" disabled>Start transfer challenge</button>
         <button class="tool" id="resetButton" type="button">Start over</button>
       </div>
+      <button class="tool stem-lens-button" id="stemLensButton" type="button" aria-pressed="false">&#128300; 3D STEM Lens: Off</button>
+      <p id="stemLensText" class="stem-lens-text" role="status" aria-live="polite" hidden></p>
       <p id="challengeNote" class="hint-text" role="status" aria-live="polite" hidden></p>
       <section id="transferSummary" class="transfer-summary" aria-labelledby="transferSummaryTitle" hidden>
         <p class="eyebrow">Mission evidence</p>
@@ -329,6 +336,28 @@
         <a-entity id="mouseActionRay" cursor="rayOrigin: mouse; fuse: false" raycaster="objects: .clickable"></a-entity>
         <a-entity id="leftActionRay" laser-controls="hand: left" raycaster="objects: .clickable"></a-entity>
         <a-entity id="rightActionRay" laser-controls="hand: right" raycaster="objects: .clickable"></a-entity>
+        <a-entity id="stem3dOverlay" visible="false">
+          <a-entity position="-5.2 2.4 -2.5">
+            <a-torus radius=".72" radius-tubular=".03" rotation="90 0 0" color="#fb923c" material="emissive: #fb923c; emissiveIntensity: .6"></a-torus>
+            <a-entity position="0 .45 0" text="value: Q = k*A*dT/L\nGrease-flame class B; align: center; color: #ffedd5; width: 3.6"></a-entity>
+          </a-entity>
+          <a-entity position="-1.8 2.4 -2.5">
+            <a-torus radius=".72" radius-tubular=".03" rotation="90 0 0" color="#67e8f9" material="emissive: #67e8f9; emissiveIntensity: .6"></a-torus>
+            <a-entity position="0 .45 0" text="value: Airflow dP\nLint filter lowers exhaust heat; align: center; color: #e0f2fe; width: 3.6"></a-entity>
+          </a-entity>
+          <a-entity position="1.8 2.4 -2.5">
+            <a-torus radius=".72" radius-tubular=".03" rotation="90 0 0" color="#4ade80" material="emissive: #4ade80; emissiveIntensity: .6"></a-torus>
+            <a-entity position="0 .45 0" text="value: Q = A * v = 0\nQuarter-turn hydrostatic shutoff; align: center; color: #dcfce7; width: 3.6"></a-entity>
+          </a-entity>
+          <a-entity position="5.1 2.4 -2.5">
+            <a-torus radius=".78" radius-tubular=".03" rotation="90 0 0" color="#facc15" material="emissive: #facc15; emissiveIntensity: .65"></a-torus>
+            <a-entity position="0 .45 0" text="value: 85 dB / CO Alert\nParticulate & Hb-CO warning; align: center; color: #fef9c3; width: 3.6"></a-entity>
+          </a-entity>
+          <a-entity position="0 2.55 2.5">
+            <a-torus radius=".92" radius-tubular=".035" rotation="90 0 0" color="#38bdf8" material="emissive: #38bdf8; emissiveIntensity: .65"></a-torus>
+            <a-entity position="0 .48 0" text="value: d = v^2 / (2ug)\nStopping sightline & retroreflection; align: center; color: #e0f2fe; width: 3.8"></a-entity>
+          </a-entity>
+        </a-entity>
         <a-camera id="camera" position="0 4.1 10" rotation="-12 0 0"></a-camera>
       </a-scene>
     </section>
@@ -556,13 +585,61 @@
   }
   function announce(message) { var live = document.getElementById('srStatus'); live.textContent = ''; window.setTimeout(function () { live.textContent = message; }, 20); }
   function setFeedback(message, tone) { state.feedback = message; state.tone = tone || ''; }
+  var STEM_LENS_NOTES = {
+    stove: '3D STEM Lens — Kitchen Stove (Q = k\u00B7A\u00B7\u0394T/L): Oil fire-point exceeds boiling water; a metal lid cuts O\u2082 while water flashes into steam at 1,700\u00D7 volume expansion.',
+    lint: '3D STEM Lens — Dryer Lint Trap (Airflow \u0394P): Lint fibers restrict laminar exhaust duct flow, spiking heater-element housing temperatures toward cellulose ignition.',
+    shutoff: '3D STEM Lens — Quarter-Turn Stop (Q = A\u00B7v = 0): Rotating the spherical ball bore 90\u00B0 perpendicular to supply velocity cuts hydrostatic flood discharge instantly.',
+    alarm: '3D STEM Lens — Smoke & CO Alarm (85 dB / Hb-CO): Photoelectric light scattering and electrochemical sensors warn before colorless CO binds hemoglobin 200\u00D7 tighter than O\u2082.',
+    visibility: '3D STEM Lens — Night Transit Sightline (d = v\u00B2 / 2\u03BCg): Cornercube retroreflectors return headlight photons straight back along the beam angle so braking distance stays visible.'
+  };
+  var stemLensOn = false;
+  function updateStemLensReadout() {
+    var lensText = document.getElementById('stemLensText');
+    if (!lensText) return;
+    var activeTask = runTasks()[state.activeIndex] || TASKS[0];
+    var focusId = state.focused || (activeTask && activeTask.id) || 'stove';
+    lensText.hidden = !stemLensOn;
+    lensText.textContent = stemLensOn ? (STEM_LENS_NOTES[focusId] || STEM_LENS_NOTES.stove) : '';
+  }
   function setView(view) {
     var camera = document.getElementById('camera');
-    var views = { home: { position: '0 4.1 10', rotation: '-12 0 0' }, middle: { position: '0 3.7 8', rotation: '-10 0 0' }, transit: { position: '0 3.4 4.8', rotation: '-8 180 0' } };
+    var views = {
+      home: { position: '0 4.1 10', rotation: '-12 0 0' },
+      middle: { position: '0 3.7 8', rotation: '-10 0 0' },
+      transit: { position: '0 3.4 4.8', rotation: '-8 180 0' },
+      overhead: { position: '0 9.4 2.4', rotation: '-64 0 0' }
+    };
     var selected = views[view] || views.middle;
     camera.setAttribute('position', selected.position); camera.setAttribute('rotation', selected.rotation);
     document.querySelectorAll('[data-view]').forEach(function (button) { button.setAttribute('aria-pressed', String(button.getAttribute('data-view') === view)); });
     announce('Scene view: ' + view + '.');
+  }
+  function zoomToStation() {
+    var camera = document.getElementById('camera');
+    var activeTask = runTasks()[state.activeIndex] || TASKS[0];
+    var focusId = state.focused || (activeTask && activeTask.id) || 'stove';
+    var coords = String(itemPosition(focusId)).split(/\s+/).map(Number);
+    var px = isFinite(coords[0]) ? coords[0] : 0;
+    var pz = isFinite(coords[2]) ? coords[2] : -2.5;
+    camera.setAttribute('position', px.toFixed(2) + ' 2.55 ' + (pz + 3.8).toFixed(2));
+    camera.setAttribute('rotation', '-10 0 0');
+    document.querySelectorAll('[data-view]').forEach(function (button) { button.setAttribute('aria-pressed', 'false'); });
+    announce('Zoomed to ' + (BY_ID[focusId] ? BY_ID[focusId].title : focusId) + '.');
+  }
+  function toggleStemLens() {
+    stemLensOn = !stemLensOn;
+    var overlay = document.getElementById('stem3dOverlay');
+    var btn = document.getElementById('stemLensButton');
+    var activeTask = runTasks()[state.activeIndex] || TASKS[0];
+    var focusId = state.focused || (activeTask && activeTask.id) || 'stove';
+    if (overlay) overlay.setAttribute('visible', String(stemLensOn));
+    if (btn) {
+      btn.setAttribute('aria-pressed', String(stemLensOn));
+      btn.textContent = '\uD83D\uDD2C 3D STEM Lens: ' + (stemLensOn ? 'On' : 'Off');
+    }
+    updateStemLensReadout();
+    postToOpener({ type: 'alloflow-life-capstone-3d-stem-lens', enabled: stemLensOn, station: focusId });
+    announce(stemLensOn ? (STEM_LENS_NOTES[focusId] || '3D STEM Lens enabled.') : '3D STEM Lens off.');
   }
   function focus(station, announceIt) {
     if (!BY_ID[station]) return;
@@ -777,6 +854,7 @@
     var nextStepNames = { replay: 'Replay a station', explain: 'Explain it to someone', checklist: 'Use a checklist' };
     var debriefFeedback = document.getElementById('debriefFeedback');
     debriefFeedback.textContent = state.debrief.confidence && state.debrief.nextStep ? 'Reflection saved: ' + confidenceNames[state.debrief.confidence] + ' · ' + nextStepNames[state.debrief.nextStep] + '.' : state.debrief.confidence ? 'Readiness saved. Choose one next step.' : state.debrief.nextStep ? 'Next step saved. Choose a readiness level.' : 'Reflection is optional.';
+    if (stemLensOn) updateStemLensReadout();
   }
   function renderActionConsole(task) {
     var actionConsole = document.getElementById('actionConsole3d'); actionConsole.setAttribute('visible', !!task); if (!task) return;
@@ -847,6 +925,8 @@
   document.getElementById('saveTeachBackButton').addEventListener('click', saveTeachBack);
   document.getElementById('resetButton').addEventListener('click', function () { state.missionFocus = requestedFocus; state.support = requestedSupport; state.mode = 'guided'; state.order = missionFor(state.missionFocus).order.slice(); state.challengeChoices = {}; state.contexts = {}; state.contextTransfers = {}; state.procedures = {}; state.procedureChoices = {}; state.procedureMistakes = {}; state.procedureTarget = ''; state.procedureStep = 0; state.procedureError = false; state.procedureWrongSlot = -1; state.procedureUsed3d = false; state.risk = {}; state.attempts = {}; state.hinted = {}; state.outcomes = {}; state.replayTarget = ''; state.replayFrom = ''; state.replayContextFrom = ''; state.debrief = { confidence: '', nextStep: '', teachBack: '' }; state.debriefDraft = ''; state.teachBackMessage = ''; state.done = {}; state.missteps = 0; state.hints = 0; state.activeIndex = 0; state.focused = state.order[0]; state.hintShown = false; setFeedback('Fresh adaptive mission. Choose the safer response for the highlighted station.'); saveState(); render(); renderScene(); postProgressSnapshot(); postToOpener({ type: 'alloflow-life-capstone-3d-reset', missionFocus: state.missionFocus, support: state.support }); announce('Adaptive capstone mission reset.'); });
   document.querySelectorAll('[data-view]').forEach(function (button) { button.addEventListener('click', function () { setView(button.getAttribute('data-view')); }); });
+  document.getElementById('zoomTargetButton').addEventListener('click', zoomToStation);
+  document.getElementById('stemLensButton').addEventListener('click', toggleStemLens);
   window.lifeSkillsCapstone = { focus: function (station, announceIt) { focus(station, announceIt); }, startChallenge: beginChallenge, startReplay: beginTargetedReplay, startProcedure: beginProcedure, chooseProcedureSlot: chooseProcedureSlot };
   window.addEventListener('message', function (event) {
     var fromOpener = window.opener && event.source === window.opener;

@@ -26,22 +26,66 @@ function StudyTimerModal(props) {
     const dialog = dialogRef.current;
     if (!dialog) return undefined;
     const previousFocus = document.activeElement;
-    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'));
+    const backgroundState = [];
+    const seenNodes = new Set();
+    for (let branch = dialog; branch && branch !== document.body && branch.parentElement; branch = branch.parentElement) {
+      Array.from(branch.parentElement.children).forEach((sibling) => {
+        if (sibling === branch || seenNodes.has(sibling) || /^(?:SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName)) return;
+        seenNodes.add(sibling);
+        backgroundState.push({
+          node: sibling,
+          hadInert: sibling.hasAttribute('inert'),
+          ariaHidden: sibling.getAttribute('aria-hidden'),
+        });
+        sibling.setAttribute('inert', '');
+        sibling.setAttribute('aria-hidden', 'true');
+      });
+    }
+    const prevBodyOverflow = document.body ? document.body.style.overflow : '';
+    if (document.body) document.body.style.overflow = 'hidden';
+    const trap = { root: dialog };
+    const trapStack = typeof window !== 'undefined' ? (window.__alloFocusTrapStack = window.__alloFocusTrapStack || []) : null;
+    if (trapStack) trapStack.push(trap);
+    const isTopTrap = () => !trapStack || trapStack[trapStack.length - 1] === trap;
+    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [href], summary, [tabindex]:not([tabindex="-1"])'))
+      .filter((el) => {
+        if (!el || el.hidden || el.getAttribute('aria-hidden') === 'true' || el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+        const closedDetails = el.closest('details:not([open])');
+        if (closedDetails && !(el.tagName === 'SUMMARY' && el.parentElement === closedDetails)) return false;
+        const style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(el) : null;
+        return !style || (style.display !== 'none' && style.visibility !== 'hidden');
+      });
     (getFocusable()[0] || dialog).focus();
     const onKeyDown = (event) => {
-      if (event.key === 'Escape') { event.preventDefault(); handleSetShowStudyTimerModalToFalse(); return; }
+      if (!dialog.isConnected || event.defaultPrevented || event.isComposing || event.keyCode === 229) return;
+      const topTrap = trapStack && trapStack[trapStack.length - 1];
+      if (topTrap && topTrap !== trap && !(topTrap.root && typeof topTrap.root.contains === 'function' && topTrap.root.contains(dialog))) return;
+      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); handleSetShowStudyTimerModalToFalse(); return; }
       if (event.key !== 'Tab') return;
       const focusable = getFocusable();
       if (!focusable.length) { event.preventDefault(); dialog.focus(); return; }
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      if (!dialog.contains(document.activeElement) || document.activeElement === dialog) { event.preventDefault(); (event.shiftKey ? last : first).focus(); }
+      else if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
       else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
     };
-    dialog.addEventListener('keydown', onKeyDown);
+    document.addEventListener('keydown', onKeyDown);
     return () => {
-      dialog.removeEventListener('keydown', onKeyDown);
-      if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus();
+      document.removeEventListener('keydown', onKeyDown);
+      if (document.body) document.body.style.overflow = prevBodyOverflow;
+      backgroundState.forEach(({ node, hadInert, ariaHidden }) => {
+        if (!node || !node.isConnected) return;
+        if (!hadInert) node.removeAttribute('inert');
+        if (ariaHidden == null) node.removeAttribute('aria-hidden');
+        else node.setAttribute('aria-hidden', ariaHidden);
+      });
+      const wasTop = isTopTrap();
+      if (trapStack) {
+        const idx = trapStack.lastIndexOf(trap);
+        if (idx >= 0) trapStack.splice(idx, 1);
+      }
+      if (wasTop && previousFocus && previousFocus !== document.body && previousFocus.isConnected && typeof previousFocus.focus === 'function') previousFocus.focus();
     };
   }, [handleSetShowStudyTimerModalToFalse]);
 
@@ -99,7 +143,7 @@ function StudyTimerModal(props) {
                     aria-label={t('common.close_study_timer')}
                     data-help-key="timer_close_btn"
                     onClick={handleSetShowStudyTimerModalToFalse}
-                    className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                    className="absolute top-4 right-4 min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-full text-slate-600 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
                 >
                     <X size={20} />
                 </button>
@@ -133,7 +177,7 @@ function StudyTimerModal(props) {
                                 setIsStudyTimerRunning(false);
                                 setTimerStatus(`${t('timer.title')}: ${min}m`);
                             }}
-                            className="px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold transition-colors border border-indigo-200"
+                            className="min-h-11 px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold transition-colors border border-indigo-200"
                         >
                             {min}m
                         </button>
@@ -147,19 +191,20 @@ function StudyTimerModal(props) {
                         value={customTimerMinutes}
                         onChange={(e) => setCustomTimerMinutes(e.target.value)}
                         onKeyDown={(e) => {
+                            if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229 || e.nativeEvent?.keyCode === 229) return;
                             if (e.key !== 'Enter' || isStudyTimerRunning || !customTimerMinutes) return;
                             e.preventDefault();
                             applyCustomMinutes();
                         }}
                         placeholder={t('common.placeholder_custom_min')}
                         disabled={isStudyTimerRunning}
-                        className="w-24 p-2 text-xs border border-indigo-600 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-center font-bold text-slate-700"
+                        className="w-24 min-h-11 p-2 text-xs border border-indigo-600 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-center font-bold text-slate-700"
                     />
                     <button
                         type="button"
                         onClick={applyCustomMinutes}
                         disabled={!customTimerMinutes || isStudyTimerRunning}
-                        className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="min-h-11 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {t('timer.set_btn') || 'Set'}
                     </button>

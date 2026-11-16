@@ -128,6 +128,14 @@ function _imageViewAiDoor(kind, t) {
     return null;
   }
 }
+function _imageViewFnUsable(kind, fn) {
+  if (typeof fn !== 'function' || fn._alloQrBlocked) return false;
+  try {
+    if (typeof window !== 'undefined' && (window.__alloAiSecretsLocked === true || window.__alloStudentAiDisabled === true)) return false;
+    if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind || 'text', fn);
+  } catch (_) {}
+  return true;
+}
 function ImageView(props) {
   var t = props.t;
   var imageEditDoor = _imageViewAiDoor('imageEdit', t);
@@ -231,7 +239,9 @@ function ImageView(props) {
   React.useEffect(() => {
     if (!findOpen && refocusFind.current) {
       refocusFind.current = false;
-      if (findOpenerRef.current && findOpenerRef.current.isConnected) findOpenerRef.current.focus();
+      const opener = findOpenerRef.current;
+      findOpenerRef.current = null;
+      if (opener && typeof document !== 'undefined' && opener !== document.body && opener !== document.documentElement && opener.isConnected && typeof opener.focus === 'function') opener.focus();
     }
   }, [findOpen]);
   const [findBusy, setFindBusy] = React.useState(false);
@@ -361,7 +371,7 @@ function ImageView(props) {
         timestamp: new Date().toISOString()
       }]);
     },
-    callGemini: callGemini,
+    callGemini: _imageViewFnUsable('text', callGemini) ? callGemini : null,
     initialAnnotations: isTeacherMode ? generatedContent?.data.annotations : learnerPanelAnnotations(generatedContent?.data.annotations, props.learnerAnnotations),
     readOnlyDrawings: isTeacherMode ? undefined : generatedContent?.data?.annotations?.drawings,
     onRetryFailed: isTeacherMode && typeof handleRestoreImage === 'function' ? () => handleRestoreImage() : undefined,
@@ -400,28 +410,34 @@ function ImageView(props) {
     "aria-label": t('visuals.upload_image') || 'Upload your own image',
     title: t('visuals.upload_image') || 'Upload your own image',
     onClick: () => singleImageFileRef.current?.click(),
-    className: "flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-slate-400 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-600 transition-all shadow-sm cursor-pointer"
-  }, "📷 ", t('visuals.replace_image') || 'Replace'), /*#__PURE__*/React.createElement("button", {
+    className: "min-h-11 flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-slate-400 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:border-indigo-400 hover:text-indigo-700 transition-all motion-reduce:transition-none shadow-sm cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "📷"), " ", t('visuals.replace_image') || 'Replace'), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('visuals.find_picture') || 'Find a symbol or photo',
     title: t('visuals.find_picture') || 'Find a symbol or photo',
     "aria-expanded": findOpen,
     onClick: toggleFind,
-    className: "flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-slate-400 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-sky-50 hover:border-sky-300 hover:text-sky-800 transition-all shadow-sm cursor-pointer"
-  }, "🔎 ", imageText('visuals.find_short', 'Find')), generatedContent?.data?.originalImage && /*#__PURE__*/React.createElement("button", {
+    className: "min-h-11 flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-slate-400 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-sky-50 hover:border-sky-400 hover:text-sky-800 transition-all motion-reduce:transition-none shadow-sm cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600"
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "🔎"), " ", imageText('visuals.find_short', 'Find')), generatedContent?.data?.originalImage && /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('visuals.restore_ai_image') || 'Restore AI image',
     title: t('visuals.restore_ai_image') || 'Restore AI image',
     onClick: () => updateImageResource(restoreSingleImage),
-    className: "flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-amber-200 rounded-lg px-3 py-1.5 text-xs font-bold text-amber-800 hover:bg-amber-50 transition-all shadow-sm cursor-pointer"
-  }, "↩️ ", t('visuals.restore_original') || 'Restore')), generatedContent?.data?.imageAttribution && window.AlloModules && window.AlloModules.AltText && /*#__PURE__*/React.createElement("p", {
+    className: "min-h-11 flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-amber-400 rounded-lg px-3 py-1.5 text-xs font-bold text-amber-800 hover:bg-amber-50 transition-all motion-reduce:transition-none shadow-sm cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700"
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "↩️"), " ", t('visuals.restore_original') || 'Restore')), generatedContent?.data?.imageAttribution && window.AlloModules && window.AlloModules.AltText && /*#__PURE__*/React.createElement("p", {
     className: "mt-1 text-xs text-slate-700",
     "data-image-credit": ""
   }, window.AlloModules.AltText.openImageCreditLine(generatedContent.data.imageAttribution), /^https:\/\//i.test(generatedContent.data.imageAttribution.url || '') && /*#__PURE__*/React.createElement(React.Fragment, null, " · ", /*#__PURE__*/React.createElement("a", {
     href: generatedContent.data.imageAttribution.url,
     target: "_blank",
     rel: "noopener noreferrer",
-    className: "underline"
+    className: "underline rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
   }, t('visuals.image_source_link') || 'Source'))), descriptionNeedsAttention && /*#__PURE__*/React.createElement("div", {
     id: descriptionId,
     role: "status",
@@ -429,7 +445,7 @@ function ImageView(props) {
   }, /*#__PURE__*/React.createElement("p", null, isTeacherMode ? descriptionStale ? imageText('visuals.description_review_teacher', 'The picture changed. Review its description before sharing.') : imageText('visuals.description_missing_teacher', 'This picture needs a description so everyone can use it. Add one below, or mark it decorative if it carries no information.') : imageText('visuals.description_missing_learner', 'An image description is not available for this picture. Ask your teacher for a description or an accessible version.')), isTeacherMode && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => document.getElementById(altFieldId)?.focus(),
-    className: "mt-2 min-h-11 rounded-lg border border-amber-700 px-3 py-2 font-bold focus-visible:ring-2 focus-visible:ring-amber-700"
+    className: "mt-2 min-h-11 rounded-lg border border-amber-700 px-3 py-2 font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700"
   }, imageText('visuals.description_edit', 'Edit image description'))), isTeacherMode && (() => {
     const A = window.AlloModules && window.AlloModules.AltText;
     const d = generatedContent?.data || {};
@@ -445,7 +461,7 @@ function ImageView(props) {
       } : item);
     };
     const regenerate = async () => {
-      const vision = typeof window.callGeminiVision === 'function' ? window.callGeminiVision : null;
+      const vision = _imageViewFnUsable('vision', typeof window !== 'undefined' ? window.callGeminiVision : null) ? window.callGeminiVision : null;
       if (!A || !vision || !currentUrl || altBusy) return;
       const request = {
         id: generatedContent?.id,
@@ -506,7 +522,7 @@ function ImageView(props) {
       maxLength: 800,
       rows: 3,
       onChange: event => changeDescription(event.target.value),
-      className: "mt-2 w-full rounded-lg border border-slate-400 p-2 focus-visible:ring-2 focus-visible:ring-sky-600"
+      className: "mt-2 w-full rounded-lg border border-slate-400 p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600"
     }), /*#__PURE__*/React.createElement("label", {
       className: "mt-2 flex min-h-11 items-center gap-2 text-sm"
     }, /*#__PURE__*/React.createElement("input", {
@@ -514,7 +530,8 @@ function ImageView(props) {
       checked: d.decorative === true,
       onChange: event => patch({
         decorative: event.target.checked
-      })
+      }),
+      className: "rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600"
     }), imageText('a11y.alt.decorative_label', 'Decorative (screen readers skip it)')));
     return React.createElement(window.AlloModules.ImageAltField, {
       id: altFieldId,
@@ -527,7 +544,7 @@ function ImageView(props) {
       onDecorativeChange: flag => patch({
         decorative: flag
       }),
-      onRegenerate: A && typeof window.callGeminiVision === 'function' ? regenerate : undefined
+      onRegenerate: A && _imageViewFnUsable('vision', typeof window !== 'undefined' ? window.callGeminiVision : null) ? regenerate : undefined
     });
   })()) : /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col items-center justify-center p-8 text-slate-600 gap-4 w-full"
@@ -535,6 +552,7 @@ function ImageView(props) {
     className: "bg-slate-200 p-4 rounded-full"
   }, /*#__PURE__*/React.createElement(ImageIcon, {
     size: 32,
+    "aria-hidden": "true",
     className: "opacity-50"
   })), /*#__PURE__*/React.createElement("div", {
     className: "text-center"
@@ -549,15 +567,23 @@ function ImageView(props) {
     "aria-busy": isProcessing,
     title: imageGenDoor?.title || t('common.regenerate') || 'Regenerate',
     "data-help-key": "visuals_regenerate",
-    className: "flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-full font-bold hover:bg-indigo-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+    className: "min-h-11 flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-full font-bold hover:bg-indigo-700 transition-colors motion-reduce:transition-none shadow-sm disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
   }, isProcessing ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
+    "aria-hidden": "true",
     className: "animate-spin motion-reduce:animate-none"
   }) : /*#__PURE__*/React.createElement(RefreshCw, {
-    size: 14
+    size: 14,
+    "aria-hidden": "true"
   }), t('visuals.regenerate_prompt')))), isTeacherMode && findOpen && !usesVisualPanelGrid && /*#__PURE__*/React.createElement("section", {
     className: "w-full max-w-2xl mb-4",
-    "aria-label": t('visuals.find_picture') || 'Find a symbol or photo'
+    "aria-label": t('visuals.find_picture') || 'Find a symbol or photo',
+    onKeyDown: e => {
+      if (e.key === 'Escape' && !e.isComposing && !e.nativeEvent?.isComposing && e.keyCode !== 229 && e.nativeEvent?.keyCode !== 229) {
+        e.stopPropagation();
+        closeFind();
+      }
+    }
   }, window.AlloModules && window.AlloModules.ClassroomImagePicker ? React.createElement(window.AlloModules.ClassroomImagePicker, {
     idPrefix: 'visual-find-' + (generatedContent?.id || 'single'),
     language: leveledTextLanguage,
@@ -573,7 +599,7 @@ function ImageView(props) {
   }, t('visuals.find_adding') || 'Adding the picture...'), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: closeFind,
-    className: "mt-2 min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600"
+    className: "mt-2 min-h-11 rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600"
   }, t('common.close') || 'Close')), isTeacherMode && /*#__PURE__*/React.createElement("div", {
     className: "w-full max-w-2xl bg-white p-4 rounded-lg border border-slate-400 shadow-sm mb-6",
     "data-help-key": "visuals_prompt"
@@ -582,12 +608,13 @@ function ImageView(props) {
   }, t('visuals.prompt_label')), /*#__PURE__*/React.createElement("p", {
     className: "text-slate-700 italic bg-slate-50 p-3 rounded border border-slate-100 text-sm"
   }, "\"", generatedContent?.data.prompt, "\"")), isTeacherMode && /*#__PURE__*/React.createElement("div", {
-    className: "w-full max-w-2xl bg-yellow-50 rounded-xl border border-yellow-100 p-4 shadow-sm mb-6",
+    className: "w-full max-w-2xl bg-yellow-50 rounded-xl border border-yellow-200 p-4 shadow-sm mb-6",
     "data-help-key": "visuals_refiner"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 mb-3"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "w-8 h-8 bg-yellow-200 rounded-full flex items-center justify-center text-lg"
+    className: "w-8 h-8 bg-yellow-200 rounded-full flex items-center justify-center text-lg",
+    "aria-hidden": "true"
   }, "🍌"), /*#__PURE__*/React.createElement("div", {
     className: "text-sm font-bold text-yellow-800"
   }, t('visuals.refiner_title'))), /*#__PURE__*/React.createElement("div", {
@@ -598,7 +625,7 @@ function ImageView(props) {
     value: imageRefinementInput,
     onChange: e => setImageRefinementInput(e.target.value),
     placeholder: t('visuals.refiner_placeholder'),
-    className: "min-w-0 min-h-11 flex-grow text-sm p-2 border border-yellow-600 rounded-md focus:ring-2 focus:ring-yellow-400 outline-none",
+    className: "min-w-0 min-h-11 flex-grow text-sm p-2 border border-yellow-600 rounded-md focus:ring-2 focus:ring-amber-700 focus:outline-none",
     onCompositionStart: () => {
       imageRefinementComposingRef.current = true;
     },
@@ -618,14 +645,16 @@ function ImageView(props) {
     onClick: handleRefineImage,
     disabled: !imageRefinementInput.trim() || isProcessing || !!imageEditDoor?.disabled,
     "aria-busy": isProcessing,
-    className: "min-h-11 min-w-11 shrink-0 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-bold p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors",
+    className: "min-h-11 min-w-11 shrink-0 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-bold p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700",
     title: imageEditDoor?.title || t('common.apply_nano_edit'),
     "aria-label": t('common.apply_nano_edit')
   }, isProcessing ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 16,
+    "aria-hidden": "true",
     className: "animate-spin motion-reduce:animate-none"
   }) : /*#__PURE__*/React.createElement(Send, {
-    size: 16
+    size: 16,
+    "aria-hidden": "true"
   }))), /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] text-slate-600 italic mt-0.5 block"
   }, t('visuals.nano_active_status')), imageEditDoor?.disabled && typeof window.AlloAiSetupNotice === 'function' && /*#__PURE__*/React.createElement("div", {
@@ -658,16 +687,18 @@ function ImageView(props) {
     style: {
       flexBasis: '16rem'
     },
-    className: "min-w-0 min-h-11 flex-1 flex items-center justify-center gap-2 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+    className: "min-w-0 min-h-11 flex-1 flex items-center justify-center gap-2 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors motion-reduce:transition-none font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
   }, /*#__PURE__*/React.createElement(Download, {
-    size: 18
+    size: 18,
+    "aria-hidden": "true"
   }), " ", t('visuals.download')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('visuals.upload_image') || 'Upload your own image',
     title: t('visuals.upload_image') || 'Upload your own image',
     onClick: () => singleImageFileRef.current?.click(),
-    className: "min-h-11 flex-none flex items-center justify-center gap-2 bg-purple-50 text-purple-800 py-2 px-4 rounded-lg hover:bg-purple-100 transition-colors font-medium border border-purple-200"
+    className: "min-h-11 min-w-11 flex-none flex items-center justify-center gap-2 bg-purple-50 text-purple-800 py-2 px-4 rounded-lg hover:bg-purple-100 transition-colors motion-reduce:transition-none font-medium border border-purple-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-600"
   }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true",
     style: {
       fontSize: '1.125rem'
     }
@@ -677,8 +708,9 @@ function ImageView(props) {
     title: t('visuals.find_picture') || 'Find a symbol or photo',
     "aria-expanded": findOpen,
     onClick: toggleFind,
-    className: "min-h-11 flex-none flex items-center justify-center gap-2 bg-sky-50 text-sky-900 py-2 px-4 rounded-lg hover:bg-sky-100 transition-colors font-medium border border-sky-300"
+    className: "min-h-11 min-w-11 flex-none flex items-center justify-center gap-2 bg-sky-50 text-sky-900 py-2 px-4 rounded-lg hover:bg-sky-100 transition-colors motion-reduce:transition-none font-medium border border-sky-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600"
   }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true",
     style: {
       fontSize: '1.125rem'
     }
@@ -690,9 +722,10 @@ function ImageView(props) {
     "aria-busy": isProcessing,
     title: imageGenDoor?.title || t('common.regenerate') || 'Regenerate',
     "data-help-key": "visuals_regenerate",
-    className: "min-h-11 flex-none flex items-center justify-center gap-2 bg-amber-50 text-amber-800 py-2 px-4 rounded-lg hover:bg-amber-100 transition-colors font-medium border border-amber-600 disabled:opacity-50 disabled:cursor-not-allowed"
+    className: "min-h-11 min-w-11 flex-none flex items-center justify-center gap-2 bg-amber-50 text-amber-800 py-2 px-4 rounded-lg hover:bg-amber-100 transition-colors motion-reduce:transition-none font-medium border border-amber-600 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
-    size: 18
+    size: 18,
+    "aria-hidden": "true"
   })))));
 }
 ImageView.replaceSingleImage = replaceSingleImage;

@@ -23,8 +23,9 @@ function SidebarTabsNav({
   t
 }) {
   const noop = () => null;
-  const Sparkles = window.Sparkles || noop;
-  const History = window.History || noop;
+  const Sparkles = window.AlloIcons && window.AlloIcons.Sparkles || window.Sparkles || noop;
+  const browserHistoryConstructor = window.history && window.history.constructor;
+  const History = window.AlloIcons && window.AlloIcons.History || typeof window.History === "function" && window.History !== browserHistoryConstructor && !(window.History.prototype && typeof window.History.prototype.pushState === "function") && window.History || noop;
   const translatedLabel = (key, fallback) => {
     const value = t(key);
     return value && value !== key ? value : fallback;
@@ -60,7 +61,7 @@ function SidebarTabsNav({
           if (event.key === "ArrowLeft" || event.key === "ArrowRight" || event.key === "End") focusSiblingTab(event, historyTabRef);
           else if (event.key === "Home") focusSiblingTab(event, createTabRef);
         },
-        className: `relative min-h-11 min-w-0 px-3 py-2 text-sm font-bold rounded-lg border transition-[background-color,color,border-color,box-shadow] flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ${activeSidebarTab === "create" ? "bg-white text-indigo-700 border-slate-200 shadow-sm shadow-slate-900/5" : "border-transparent text-slate-600 hover:text-slate-900 hover:bg-white/70"}`,
+        className: `relative min-h-11 min-w-0 px-3 py-2 text-sm font-bold rounded-lg border transition-[background-color,color,border-color,box-shadow] motion-reduce:transition-none flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ${activeSidebarTab === "create" ? "bg-white text-indigo-700 border-slate-200 shadow-sm shadow-slate-900/5" : "border-transparent text-slate-600 hover:text-slate-900 hover:bg-white/70"}`,
         "data-help-key": "sidebar_tab_create"
       },
       /* @__PURE__ */ React.createElement(Sparkles, { size: 16, className: "shrink-0", "aria-hidden": "true" }),
@@ -85,7 +86,7 @@ function SidebarTabsNav({
           if (event.key === "ArrowLeft" || event.key === "ArrowRight" || event.key === "Home") focusSiblingTab(event, createTabRef);
           else if (event.key === "End") focusSiblingTab(event, historyTabRef);
         },
-        className: `relative min-h-11 min-w-0 px-3 py-2 text-sm font-bold rounded-lg border transition-[background-color,color,border-color,box-shadow] flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ${activeSidebarTab === "history" ? "bg-white text-indigo-700 border-slate-200 shadow-sm shadow-slate-900/5" : "border-transparent text-slate-600 hover:text-slate-900 hover:bg-white/70"} ${isHistoryPulsing ? "ring-2 ring-indigo-200 ring-offset-1 ring-offset-slate-100" : ""}`,
+        className: `relative min-h-11 min-w-0 px-3 py-2 text-sm font-bold rounded-lg border transition-[background-color,color,border-color,box-shadow] motion-reduce:transition-none flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ${activeSidebarTab === "history" ? "bg-white text-indigo-700 border-slate-200 shadow-sm shadow-slate-900/5" : "border-transparent text-slate-600 hover:text-slate-900 hover:bg-white/70"} ${isHistoryPulsing ? "ring-2 ring-indigo-200 ring-offset-1 ring-offset-slate-100" : ""}`,
         "data-help-key": "sidebar_tab_history"
       },
       /* @__PURE__ */ React.createElement(History, { size: 16, className: "shrink-0", "aria-hidden": "true" }),

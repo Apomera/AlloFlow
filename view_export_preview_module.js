@@ -1537,6 +1537,57 @@ function _builderFinalizeTrackedChanges(root, decision = "accept") {
   body?.removeAttribute("data-allo-reviewer-name");
   return root;
 }
+function _builderSyncLiveFormState(sourceRoot, cloneRoot) {
+  if (!sourceRoot?.querySelectorAll || !cloneRoot?.querySelectorAll) return cloneRoot;
+  try {
+    const srcCtrls = sourceRoot.querySelectorAll("input, textarea, select");
+    const dstCtrls = cloneRoot.querySelectorAll("input, textarea, select");
+    if (srcCtrls.length === dstCtrls.length) {
+      for (let i = 0; i < srcCtrls.length; i += 1) {
+        const src = srcCtrls[i];
+        const dst = dstCtrls[i];
+        const tag = String(src.tagName || "").toUpperCase();
+        if (tag === "TEXTAREA") {
+          dst.value = src.value;
+          dst.textContent = src.value;
+        } else if (tag === "SELECT") {
+          dst.selectedIndex = src.selectedIndex;
+          const opts = dst.options || dst.querySelectorAll("option");
+          Array.from(opts || []).forEach((opt, oi) => {
+            const isSel = oi === src.selectedIndex || !!src.options?.[oi]?.selected;
+            if (isSel) opt.setAttribute("selected", "");
+            else opt.removeAttribute("selected");
+          });
+        } else if (tag === "INPUT") {
+          const itype = String(src.type || src.getAttribute("type") || "text").toLowerCase();
+          if (itype === "checkbox" || itype === "radio") {
+            dst.checked = !!src.checked;
+            if (src.checked) dst.setAttribute("checked", "");
+            else dst.removeAttribute("checked");
+          } else {
+            dst.value = src.value;
+            if (src.value != null) dst.setAttribute("value", src.value);
+          }
+        }
+      }
+    }
+  } catch (_) {
+  }
+  return cloneRoot;
+}
+function _builderSanitizeAssessmentRoot(root) {
+  if (!root?.querySelectorAll) return root;
+  if (typeof _removeStudentPackageTeacherSections === "function") _removeStudentPackageTeacherSections(root);
+  root.querySelectorAll(".teacher-view,[data-allo-teacher-only],[data-teacher-only],.teacher-only,.answer-key,.alloflow-teacher-copy-banner,.alloflow-cs-answer-key,.alloflow-glossary-worksheet-key,.alloflow-math-solution,.alloflow-fluency-key,.alloflow-teacher-plan,.alloflow-teacher-annotations,.alloflow-teacher-annotations-by-resource,#alloflow-interactive-object-profile,.alloflow-quiz-feedback,.alloflow-quiz-check-btn,.quiz-check-btn,.alloflow-gm-check-btn,.alloflow-gm-feedback,.alloflow-match-check-btn,.alloflow-match-feedback,.alloflow-gm-controls,.alloflow-dir-controls,.alloflow-cs-controls,.alloflow-venn-controls,.alloflow-tl-controls,.alloflow-cloze-controls,.alloflow-cloze-check-btn,.alloflow-match-controls,.alloflow-ac-controls,.alloflow-cloze-translation,[data-allo-cloze-trans]").forEach((el) => {
+    const prior = el.previousElementSibling;
+    if (prior?.classList?.contains("page-break")) prior.remove();
+    el.remove();
+  });
+  ["data-correct", "data-answer", "data-expected", "data-answer-key", "data-correct-index", "data-correct-indices", "data-correct-order", "data-correct-principle", "data-cat", "data-zone", "data-target-zone", "data-original-index", "data-allo-expected", "data-expected-answer", "data-answer-index", "data-correct-answer", "data-fill-answers", "data-fill-policy", "data-numeric-answer", "data-numeric-tolerance", "data-match-right", "data-right-index", "data-correct-multi", "data-sequence-key", "data-relation-key", "data-answer-evidence-key", "data-numeric-key", "data-matching-key", "data-ordering-key", "data-correct-label", "data-cloze-answer", "data-answer-zone"].forEach((attr) => {
+    root.querySelectorAll("[" + attr + "]").forEach((node) => node.removeAttribute(attr));
+  });
+  return root;
+}
 function _builderRefreshFinalDocumentFields(root) {
   if (!root?.querySelectorAll) return root;
   let scope = root;
@@ -3644,17 +3695,50 @@ function _builderH5PCompatibility(item, history) {
     const questions = Array.isArray(item?.data?.questions) ? item.data.questions : [];
     const normKind = (raw) => {
       const k = String(raw || "mcq").trim();
-      if (k === "multiple-choice") return "mcq";
-      if (k === "shortAnswer") return "short-answer";
-      if (k === "order") return "ordering";
+      const kl = k.toLowerCase();
+      if (kl === "multiple-choice" || kl === "multiple_choice" || kl === "true-false" || kl === "true_false" || kl === "truefalse" || kl === "tf") return "mcq";
+      if (kl === "shortanswer" || kl === "short-answer" || kl === "short_answer") return "short-answer";
+      if (kl === "order" || kl === "ordering") return "ordering";
+      if (kl === "multiselect" || kl === "multi-select" || kl === "multi_select") return "multi-select";
+      if (kl === "fillblank" || kl === "fill-blank" || kl === "fill_blank") return "fill-blank";
       return k;
     };
-    const singleChoiceSetCompatible = questions.length > 0 && questions.every((question) => normKind(question?.type) === "mcq" && (!Array.isArray(question?.options) || question.options.length <= 4));
+    const _isTrueFalse = (raw) => /^(?:true[-_]?false|truefalse|tf)$/i.test(String(raw || "").trim());
+    const _cleanChoiceOptions = (q, rawOptions) => {
+      const isTf = _isTrueFalse(q && q.type);
+      const src = Array.isArray(rawOptions) && rawOptions.length ? rawOptions : isTf ? ["True", "False"] : [];
+      const rawStrings = [];
+      const options = [];
+      const origToClean = /* @__PURE__ */ new Map();
+      for (let i = 0; i < src.length; i += 1) {
+        const rawItem = src[i];
+        const txt = rawItem && typeof rawItem === "object" ? plain(rawItem.text ?? rawItem.label ?? rawItem.value ?? "") : plain(rawItem);
+        rawStrings.push(txt);
+        if (txt) {
+          origToClean.set(i, options.length);
+          options.push(txt);
+        }
+      }
+      return { options, origToClean, rawStrings, isTf };
+    };
+    const _qHasImage = (q) => !!(q && (q.image || q.imageUrl || q.mediaUrl || q.stimulusImage || q.media && q.media.url || Array.isArray(q.options) && q.options.some((o) => o && typeof o === "object" && (o.image || o.imageUrl))));
+    const singleChoiceSetCompatible = questions.length > 0 && questions.every((question) => {
+      if (!question) return true;
+      if (question.requireReasoning || question.explanationPrompt || _qHasImage(question)) return false;
+      if (normKind(question.type) !== "mcq") return false;
+      const cleaned = _cleanChoiceOptions(question, question.options);
+      return cleaned.options.length <= 4;
+    });
     let valid = 0;
     let adapted = 0;
     let manualReview = 0;
     const _resolveChoiceIdx = (opts, candidate) => {
-      if (!Array.isArray(opts) || !opts.length || candidate === void 0 || candidate === null || typeof candidate === "boolean") return -1;
+      if (!Array.isArray(opts) || !opts.length || candidate === void 0 || candidate === null) return -1;
+      if (typeof candidate === "boolean") {
+        const target = candidate ? "true" : "false";
+        const bi = opts.findIndex((o) => plain(o).toLowerCase() === target);
+        return bi >= 0 ? bi : -1;
+      }
       if (typeof candidate === "number") {
         return Number.isInteger(candidate) && candidate >= 0 && candidate < opts.length ? candidate : -1;
       }
@@ -3684,6 +3768,18 @@ function _builderH5PCompatibility(item, history) {
       }
       return -1;
     };
+    const _resolveCleanedMcqIdx = (q, cleaned) => {
+      if (!q || !cleaned) return -1;
+      const rawIdx = _resolveMcqIdx(q, cleaned.rawStrings);
+      if (rawIdx >= 0 && cleaned.origToClean.has(rawIdx)) return cleaned.origToClean.get(rawIdx);
+      const directIdx = _resolveMcqIdx(q, cleaned.options);
+      if (directIdx >= 0) return directIdx;
+      if (cleaned.isTf && cleaned.options.length === 2) {
+        const boolCand = [q.correctIndex, q.correct, q.correctAnswer, q.answer].find((v) => typeof v === "boolean");
+        if (typeof boolCand === "boolean") return boolCand ? 0 : 1;
+      }
+      return -1;
+    };
     const _resolveMultiIndices = (q, opts) => {
       const raw = Array.isArray(q && q.correctAnswers) ? q.correctAnswers : Array.isArray(q && q.correctIndices) ? q.correctIndices : [];
       if (!raw.length) return null;
@@ -3699,37 +3795,51 @@ function _builderH5PCompatibility(item, history) {
       }
       return out.length ? out : null;
     };
-    const _resolveAnswerEvidenceIdx = (q, answers, evidence) => {
-      const resolveFirst = (list, cands) => {
+    const _resolveCleanedMultiIndices = (q, cleaned) => {
+      if (!q || !cleaned) return null;
+      const rawIndices = _resolveMultiIndices(q, cleaned.rawStrings);
+      if (rawIndices) {
+        const mapped = Array.from(new Set(rawIndices.map((i) => cleaned.origToClean.get(i)).filter((v) => Number.isInteger(v) && v >= 0)));
+        if (mapped.length === rawIndices.length) return mapped;
+      }
+      return _resolveMultiIndices(q, cleaned.options);
+    };
+    const _resolveCleanedAnswerEvidenceIdx = (q, ansCleaned, evCleaned) => {
+      const resolveCleanedFirst = (cleaned, cands) => {
         for (let i = 0; i < cands.length; i += 1) {
-          const idx = _resolveChoiceIdx(list, cands[i]);
-          if (idx >= 0) return idx;
+          const ri = _resolveChoiceIdx(cleaned.rawStrings, cands[i]);
+          if (ri >= 0 && cleaned.origToClean.has(ri)) return cleaned.origToClean.get(ri);
+          const ci = _resolveChoiceIdx(cleaned.options, cands[i]);
+          if (ci >= 0) return ci;
         }
         return -1;
       };
       return {
-        answerIdx: resolveFirst(answers, [q && q.correctAnswerIndex, q && q.correctAnswer, q && q.expectedAnswer, q && q.answer]),
-        evidenceIdx: resolveFirst(evidence, [q && q.correctEvidenceIndex, q && q.correctEvidence, q && q.expectedEvidence, q && q.evidence])
+        answerIdx: resolveCleanedFirst(ansCleaned, [q && q.correctAnswerIndex, q && q.correctAnswer, q && q.expectedAnswer, q && q.answer]),
+        evidenceIdx: resolveCleanedFirst(evCleaned, [q && q.correctEvidenceIndex, q && q.correctEvidence, q && q.expectedEvidence, q && q.evidence])
       };
     };
     questions.forEach((question = {}) => {
       const kind = normKind(question.type);
       const prompt2 = plain(question.question);
+      const hasReasoning = !!(question.requireReasoning || question.explanationPrompt);
       let ready = false;
       if (kind === "mcq") {
-        const options = Array.isArray(question.options) ? question.options.map(plain) : [];
-        const key = _resolveMcqIdx(question, options);
-        ready = !!prompt2 && options.length >= 2 && options.every(Boolean) && key >= 0;
+        const cleaned = _cleanChoiceOptions(question, question.options);
+        const key = _resolveCleanedMcqIdx(question, cleaned);
+        ready = !!prompt2 && cleaned.options.length >= 2 && key >= 0;
+        if (ready && hasReasoning) manualReview += 1;
       } else if (kind === "multi-select") {
-        const options = Array.isArray(question.options) ? question.options.map(plain) : [];
-        const keys = _resolveMultiIndices(question, options);
-        ready = !!prompt2 && options.length >= 2 && !!keys;
+        const cleaned = _cleanChoiceOptions(question, question.options);
+        const keys = _resolveCleanedMultiIndices(question, cleaned);
+        ready = !!prompt2 && cleaned.options.length >= 2 && !!keys;
+        if (ready && hasReasoning) manualReview += 1;
       } else if (kind === "fill-blank") {
-        ready = !!prompt2 && !!plain(question.expectedFill || question.correctAnswer);
+        ready = !!prompt2 && !!plain(question.expectedFill || question.correctAnswer || question.answer);
         if (ready && ["normalized", "review-variants"].includes(question.fillBlankPolicy)) {
           adapted += 1;
           manualReview += 1;
-        }
+        } else if (ready && hasReasoning) manualReview += 1;
       } else if (kind === "short-answer" || kind === "self-explanation" || kind === "reasoning") {
         ready = !!prompt2;
         if (ready) manualReview += 1;
@@ -3749,24 +3859,28 @@ function _builderH5PCompatibility(item, history) {
         }
       } else if (kind === "relation-mismatch") {
         const wrong = Number(question.wrongPairIndex);
-        const reasoning = !!(question.requireReasoning || question.explanationPrompt);
-        ready = !!prompt2 && Array.isArray(question.pairs) && question.pairs.length >= 2 && Number.isInteger(wrong) && wrong >= 0 && wrong < question.pairs.length && (reasoning ? !!plain(question.correctPartnerForWrong) : Array.isArray(question.candidatePartners) && question.candidatePartners.length >= 2 && question.candidatePartners.includes(question.correctPartnerForWrong));
+        const reasoning = hasReasoning;
+        const candCleaned = _cleanChoiceOptions(question, question.candidatePartners);
+        const partnerCand = question.correctPartnerForWrong !== void 0 && question.correctPartnerForWrong !== null ? question.correctPartnerForWrong : question.correctPartnerIndex;
+        const partnerResolved = _resolveChoiceIdx(candCleaned.rawStrings, partnerCand) >= 0 || _resolveChoiceIdx(candCleaned.options, partnerCand) >= 0;
+        ready = !!prompt2 && Array.isArray(question.pairs) && question.pairs.length >= 2 && Number.isInteger(wrong) && wrong >= 0 && wrong < question.pairs.length && (reasoning ? !!plain(question.correctPartnerForWrong) : candCleaned.options.length >= 2 && partnerResolved);
         if (ready) adapted += 1;
         if (ready && reasoning) manualReview += 1;
       } else if (kind === "answer-evidence") {
-        const ansOpts = Array.isArray(question.answerOptions) ? question.answerOptions.map(plain) : [];
-        const evOpts = Array.isArray(question.evidenceOptions) ? question.evidenceOptions.map(plain) : [];
-        const ae = _resolveAnswerEvidenceIdx(question, ansOpts, evOpts);
-        ready = !!prompt2 && ansOpts.length >= 2 && ae.answerIdx >= 0 && evOpts.length >= 2 && ae.evidenceIdx >= 0;
+        const ansCleaned = _cleanChoiceOptions(question, question.answerOptions);
+        const evCleaned = _cleanChoiceOptions(question, question.evidenceOptions);
+        const ae = _resolveCleanedAnswerEvidenceIdx(question, ansCleaned, evCleaned);
+        ready = !!prompt2 && ansCleaned.options.length >= 2 && ae.answerIdx >= 0 && evCleaned.options.length >= 2 && ae.evidenceIdx >= 0;
         if (ready) adapted += 1;
-        if (ready && (question.requireReasoning || question.explanationPrompt)) manualReview += 1;
+        if (ready && hasReasoning) manualReview += 1;
       } else if (kind === "numeric-response") {
         ready = !!prompt2 && (typeof question.correctValue === "number" || typeof question.correctValue === "string") && String(question.correctValue).trim() !== "" && Number.isFinite(Number(question.correctValue));
         if (ready) {
           adapted += 1;
           const settings = question.numericSettings || {};
           const customWeight = typeof settings.valueWeight === "number" && Number.isFinite(settings.valueWeight) && settings.valueWeight !== 0.5;
-          if (Number(question.tolerance) > 0 || settings.allowEquivalentUnits === true || customWeight) manualReview += 1;
+          const effTol = Number(question.tolerance != null ? question.tolerance : settings.tolerance);
+          if (Number.isFinite(effTol) && effTol > 0 || settings.allowEquivalentUnits === true || customWeight || hasReasoning) manualReview += 1;
         }
       }
       if (ready) valid += 1;
@@ -3787,7 +3901,8 @@ function _builderH5PCompatibility(item, history) {
   }
   if (type === "glossary" || type === "flashcards") {
     const rawData = item?.data;
-    const cards = Array.isArray(rawData) ? rawData : Array.isArray(rawData?.cards) ? rawData.cards : Array.isArray(rawData?.items) ? rawData.items : [];
+    const rawCards = Array.isArray(rawData) ? rawData : Array.isArray(rawData?.terms) ? rawData.terms : Array.isArray(rawData?.entries) ? rawData.entries : Array.isArray(rawData?.words) ? rawData.words : Array.isArray(rawData?.cards) ? rawData.cards : Array.isArray(rawData?.items) ? rawData.items : [];
+    const cards = rawCards.filter((card) => card && card.isSelected !== false && card.selected !== false);
     let valid = 0;
     let embeddedMedia = 0;
     let omittedMedia = 0;
@@ -3823,10 +3938,10 @@ function _builderH5PCompatibility(item, history) {
     };
   }
   if (type === "simplified") {
-    let rawText = typeof item?.data === "string" ? item.data : plain(item?.data?.text || item?.text || "");
+    let rawText = typeof item?.data === "string" ? item.data : plain(item?.data?.text || item?.data?.clozeText || item?.data?.passage || item?.text || "");
     const cutIdx = rawText.search(/\r?\n---\s*ENGLISH TRANSLATION\s*---\r?\n/i);
     if (cutIdx !== -1) rawText = rawText.slice(0, cutIdx);
-    const cleanedText = rawText.replace(/\[\[CHART:\s*\{[\s\S]*?\}\s*\]\]/gi, "").replace(/<[^>]+>/g, " ").replace(/\*\*([^*]+)\*\*/g, "$1").replace(/\[([^\]]+)\]\([^)]+\)/g, "$1").replace(/\s+/g, " ").trim();
+    const cleanedText = rawText.replace(/\[\[CHART:\s*\{[\s\S]*?\}\s*\]\]/gi, "").replace(/<[^>]+>/g, " ").replace(/\[([^\]]+)\]\([^)]+\)/g, "$1").replace(/^#{1,6}\s+/gm, "").replace(/^\s*(?:>\s*|[-*•]\s+|\d+\.\s+)/gm, "").replace(/\*\*([^*]+)\*\*/g, "$1").replace(/__([^_]+)__/g, "$1").replace(/\*([^*\n]+)\*/g, "$1").replace(/_([^_\n]+)_/g, "$1").replace(/`([^`\n]+)`/g, "$1").replace(/\s+/g, " ").trim();
     const collectTerms = (src) => {
       if (!src) return [];
       if (typeof src === "string") {
@@ -3841,6 +3956,7 @@ function _builderH5PCompatibility(item, history) {
       }
       if (Array.isArray(src)) return src.flatMap(collectTerms);
       if (typeof src === "object") {
+        if (src.isSelected === false || src.selected === false) return [];
         if (src.term || src.word) return [plain(src.term || src.word)];
         if (src.data || src.terms || src.items || src.entries || src.glossary) {
           return collectTerms(src.data || src.terms || src.items || src.entries || src.glossary);
@@ -3884,7 +4000,7 @@ function _builderH5PCompatibility(item, history) {
           re = new RegExp("()(" + escapedTerm + ")", "iu");
         } else {
           try {
-            re = new RegExp("(^|[^\\p{L}\\p{N}_])(" + escapedTerm + ")(?=$|[^\\p{L}\\p{N}_])", "iu");
+            re = new RegExp("(^|[^\\p{L}\\p{M}\\p{N}_])(" + escapedTerm + ")(?=$|[^\\p{L}\\p{M}\\p{N}_])", "iu");
           } catch (_) {
             re = new RegExp("(^|[^A-Za-z0-9_])(" + escapedTerm + ")(?=$|[^A-Za-z0-9_])", "i");
           }
@@ -3937,8 +4053,8 @@ function _builderH5PCompatibility(item, history) {
       };
     }
     if (templateType === "q-and-a") {
-      const pairs = Array.isArray(nt.pairs) ? nt.pairs : [];
-      const valid = pairs.filter((p) => !!plain(p?.question || p?.prompt)).length;
+      const pairs = Array.isArray(nt.pairs) ? nt.pairs : Array.isArray(nt.questions) ? nt.questions : [];
+      const valid = pairs.filter((p) => !!plain(typeof p === "string" ? p : p?.question || p?.prompt || p?.text)).length;
       return {
         type,
         unit: "prompt",
@@ -3954,8 +4070,8 @@ function _builderH5PCompatibility(item, history) {
       };
     }
     if (templateType === "double-entry") {
-      const entries = Array.isArray(nt.entries) ? nt.entries : [];
-      const valid = entries.filter((en) => !!(en && (plain(en.quote) || plain(en.response)))).length;
+      const entries = Array.isArray(nt.entries) ? nt.entries : Array.isArray(nt.rows) ? nt.rows : [];
+      const valid = entries.filter((en) => !!(en && plain(typeof en === "string" ? en : en.quote))).length;
       return {
         type,
         unit: "prompt",
@@ -3972,7 +4088,12 @@ function _builderH5PCompatibility(item, history) {
     }
     if (templateType === "outline") {
       const sections = Array.isArray(nt.sections) ? nt.sections : Array.isArray(nt.branches) ? nt.branches : [];
-      const valid = sections.filter((sec) => !!(sec && (plain(sec.heading || sec.title) || Array.isArray(sec.points || sec.items) && (sec.points || sec.items).length))).length;
+      const valid = sections.filter((sec) => {
+        if (!sec) return false;
+        if (typeof sec === "string") return !!plain(sec);
+        const pts = sec.prompts || sec.points || sec.items || sec.bullets;
+        return !!(plain(sec.heading || sec.title || sec.label) || Array.isArray(pts) && pts.length);
+      }).length;
       return {
         type,
         unit: "prompt",
@@ -3988,41 +4109,20 @@ function _builderH5PCompatibility(item, history) {
       };
     }
     if (templateType === "lab") {
-      const hasContent = !!(plain(nt.question) || plain(nt.hypothesis) || Array.isArray(nt.materials) && nt.materials.length || Array.isArray(nt.procedure) && nt.procedure.length || plain(nt.conclusion));
-      return {
-        type,
-        unit: "prompt",
-        library: "Question Set 1.21",
-        total: hasContent ? 1 : 0,
-        valid: hasContent ? 1 : 0,
-        omitted: 0,
-        adapted: hasContent ? 1 : 0,
-        manualReview: hasContent ? 1 : 0,
-        embeddedMedia: 0,
-        omittedMedia: 0,
-        ready: hasContent
+      const partText = (v) => {
+        if (Array.isArray(v)) return v.map((x) => plain(x && typeof x === "object" ? x.text || x.label || x.step || x.item || x.prompt || x.name : x)).filter(Boolean).join("; ");
+        if (v && typeof v === "object") return plain(v.text || v.summary || v.observations || v.notes || v.prompt);
+        return plain(v);
       };
-    }
-    if (templateType === "reading-response") {
-      const hasContent = !!(plain(nt.favoriteLine) || plain(nt.thinkings) || plain(nt.question) || nt.connection && plain(typeof nt.connection === "object" ? nt.connection.text : nt.connection));
-      return {
-        type,
-        unit: "prompt",
-        library: "Question Set 1.21",
-        total: hasContent ? 1 : 0,
-        valid: hasContent ? 1 : 0,
-        omitted: 0,
-        adapted: hasContent ? 1 : 0,
-        manualReview: hasContent ? 1 : 0,
-        embeddedMedia: 0,
-        omittedMedia: 0,
-        ready: hasContent
-      };
-    }
-    if (templateType === "cornell" || templateType === "") {
-      const cues = Array.isArray(nt.cues) ? nt.cues : [];
-      const notes = Array.isArray(nt.notes) ? nt.notes : [];
-      const valid = Math.max(cues.length, notes.length) + (plain(nt.summary) ? 1 : 0);
+      const qTxt = plain(nt.question);
+      const hypTxt = plain(nt.hypothesis);
+      const matTxt = partText(nt.materials);
+      const procTxt = Array.isArray(nt.procedure) ? nt.procedure.map((p) => plain(p && p.text || p)).filter(Boolean).join("; ") : plain(nt.procedure);
+      const dataTxt = partText(nt.data);
+      const analysisTxt = partText(nt.analysis);
+      const concTxt = plain(nt.conclusion);
+      const hasContent = !!(qTxt || hypTxt || matTxt || procTxt || dataTxt || analysisTxt || concTxt);
+      const valid = hasContent ? (qTxt ? 1 : 0) + 1 + (dataTxt || procTxt ? 1 : 0) + (analysisTxt ? 1 : 0) + 1 : 0;
       return {
         type,
         unit: "prompt",
@@ -4030,6 +4130,51 @@ function _builderH5PCompatibility(item, history) {
         total: valid,
         valid,
         omitted: 0,
+        adapted: valid,
+        manualReview: valid,
+        embeddedMedia: 0,
+        omittedMedia: 0,
+        ready: valid > 0
+      };
+    }
+    if (templateType === "reading-response") {
+      const promptItems = Array.isArray(nt.prompts) && nt.prompts.length > 0 ? nt.prompts : null;
+      const validPrompts = promptItems ? promptItems.filter((p) => !!plain(p && typeof p === "object" ? p.prompt || p.question || p.text || p.label : p)) : [];
+      const hasFallbackContent = !!(plain(nt.favoriteLine) || plain(nt.thinkings) || plain(nt.question) || nt.connection && plain(typeof nt.connection === "object" ? nt.connection.text : nt.connection));
+      const valid = promptItems ? validPrompts.length > 0 ? promptItems.length : 0 : hasFallbackContent ? 4 : 0;
+      return {
+        type,
+        unit: "prompt",
+        library: "Question Set 1.21",
+        total: valid,
+        valid,
+        omitted: 0,
+        adapted: valid,
+        manualReview: valid,
+        embeddedMedia: 0,
+        omittedMedia: 0,
+        ready: valid > 0
+      };
+    }
+    if (templateType === "cornell" || templateType === "") {
+      const cues = Array.isArray(nt.cues) ? nt.cues : [];
+      const notes = Array.isArray(nt.notes) ? nt.notes : [];
+      const rowCount = Math.max(cues.length, notes.length);
+      let validRows = 0;
+      for (let i = 0; i < rowCount; i += 1) {
+        const cueTxt = plain(cues[i] && typeof cues[i] === "object" ? cues[i].text || cues[i].cue || cues[i].label || cues[i].prompt : cues[i]);
+        const noteTxt = plain(notes[i] && typeof notes[i] === "object" ? notes[i].text || notes[i].note || notes[i].answer || notes[i].content : notes[i]);
+        if (cueTxt || noteTxt) validRows += 1;
+      }
+      const valid = validRows + (plain(nt.summary) ? 1 : 0);
+      const omitted = rowCount - validRows;
+      return {
+        type,
+        unit: "prompt",
+        library: "Question Set 1.21",
+        total: rowCount + (plain(nt.summary) ? 1 : 0),
+        valid,
+        omitted,
         adapted: valid,
         manualReview: valid,
         embeddedMedia: 0,
@@ -4490,8 +4635,11 @@ const _BUILDER_RESPONSIVE_LAYOUT_CSS = `
 `;
 function _builderCleanMarkdownRoot(doc, options = {}) {
   if (!doc?.body) throw new Error("The editable preview is not ready.");
-  const root = _builderFinalizeDocumentForExport(doc.body.cloneNode(true));
+  const rawClone = doc.body.cloneNode(true);
+  _builderSyncLiveFormState(doc.body, rawClone);
+  const root = _builderFinalizeDocumentForExport(rawClone);
   if (options?.includeTeacherKey === false) _removeStudentPackageTeacherSections(root);
+  if (options?.assessmentMode === true) _builderSanitizeAssessmentRoot(root);
   root.querySelectorAll("button.alloflow-inline-term").forEach((btn) => {
     btn.replaceWith((btn.ownerDocument || doc).createTextNode(btn.textContent || ""));
   });
@@ -4503,7 +4651,7 @@ function _builderCleanMarkdownRoot(doc, options = {}) {
   root.querySelectorAll("select.alloflow-cs-response[hidden], select.alloflow-venn-response[hidden]").forEach((sel) => {
     sel.removeAttribute("hidden");
   });
-  root.querySelectorAll('.allo-block-controls,.allo-block-remove,.a11y-inspect-badge,[data-allo-crop-ui],.alloflow-reading-tools-shell,.alloflow-hud-bar,#alloflow-step-pager,#alloflow-term-popover,.alloflow-term-popover,.alloflow-export-prompt-overlay,.alloflow-save-bar,.alloflow-turnin-bar,.alloflow-keycap,.alloflow-cloze-controls,.alloflow-cs-controls,.alloflow-cs-actions,.alloflow-venn-controls,.alloflow-venn-status,.alloflow-venn-place-button,.alloflow-venn-screen-instructions,.alloflow-tl-controls,.alloflow-tl-arrows,.alloflow-glossary-controls,.alloflow-glossary-card-controls,.alloflow-glossary-card-actions,.alloflow-glossary-card-status,.alloflow-gm-controls,.alloflow-gm-status,.alloflow-faq-controls,.alloflow-dir-controls,.alloflow-cornell-controls,.alloflow-ws-controls,.alloflow-quiz-feedback,.alloflow-quiz-check-btn,.alloflow-save-status,.alloflow-math-symbolbar,.alloflow-math-symbar,.alloflow-math-controls,.alloflow-dbq-evidence-tracker,.alloflow-export-save-tools,.alloflow-inline-chart svg,#allo-builder-edit-css,#allo-builder-view-filter,#allo-builder-paper-css,[data-allo-footnote-backlink],annotation,annotation-xml,[hidden],[aria-hidden="true"],script,style').forEach((node) => node.remove());
+  root.querySelectorAll('.allo-block-controls,.allo-block-remove,.a11y-inspect-badge,[data-allo-crop-ui],.alloflow-reading-tools-shell,.alloflow-hud-bar,#alloflow-step-pager,#alloflow-term-popover,.alloflow-term-popover,.alloflow-export-prompt-overlay,.alloflow-save-bar,.alloflow-turnin-bar,.alloflow-keycap,.alloflow-cloze-controls,.alloflow-cs-controls,.alloflow-cs-actions,.alloflow-venn-controls,.alloflow-venn-status,.alloflow-venn-place-button,.alloflow-venn-screen-instructions,.alloflow-tl-controls,.alloflow-tl-arrows,.alloflow-match-controls,.alloflow-ac-controls,.alloflow-quiz-controls,.alloflow-glossary-controls,.alloflow-glossary-card-controls,.alloflow-glossary-card-actions,.alloflow-glossary-card-status,.alloflow-gm-controls,.alloflow-gm-status,.alloflow-gm-check-btn,.alloflow-gm-feedback,.alloflow-match-check-btn,.alloflow-match-feedback,.alloflow-faq-controls,.alloflow-dir-controls,.alloflow-cornell-controls,.alloflow-ws-controls,.alloflow-quiz-feedback,.alloflow-quiz-check-btn,.alloflow-save-status,.alloflow-math-symbolbar,.alloflow-math-symbar,.alloflow-math-controls,.alloflow-dbq-evidence-tracker,.alloflow-export-save-tools,.alloflow-inline-chart svg,#allo-builder-edit-css,#allo-builder-view-filter,#allo-builder-paper-css,[data-allo-footnote-backlink],annotation,annotation-xml,[hidden],[aria-hidden="true"],script,style').forEach((node) => node.remove());
   _builderStripEditorBreakMetadata(root);
   root.removeAttribute("contenteditable");
   root.querySelectorAll("[contenteditable]").forEach((node) => node.removeAttribute("contenteditable"));
@@ -4550,6 +4698,13 @@ function _builderMarkdownFromRoot(root, options = {}) {
         return "[Image: " + alt + "]";
       }
       return "![" + alt + "](<" + src + ">)";
+    }
+    if (tag === "svg") {
+      if (node.getAttribute("aria-hidden") === "true" || node.hasAttribute("hidden") || typeof node.closest === "function" && node.closest(".alloflow-inline-chart")) return "";
+      const aria = String(node.getAttribute("aria-label") || "").replace(/\s+/g, " ").trim();
+      const parts = aria ? [aria] : Array.from(node.querySelectorAll("title, desc, text")).map((el) => String(el.textContent || "").replace(/\s+/g, " ").trim()).filter(Boolean);
+      const desc = parts.join(" \u2014 ").trim();
+      return desc ? "[Diagram: " + escaped(desc) + "]" : "";
     }
     if (tag === "pre") {
       const value = node.textContent || "", mark = fence(value);
@@ -4619,10 +4774,30 @@ function _builderMarkdownFromRoot(root, options = {}) {
       const start = Number(node.getAttribute("start")) || 1;
       return "\n\n" + Array.from(node.children).filter((item) => item.tagName === "LI").map((item, index) => (tag === "ol" ? start + index + ". " : "- ") + children(item, depth + 1).trim().replace(/\n/g, "\n  ")).join("\n") + "\n\n";
     }
+    if (tag === "dl") {
+      const dlLines = [];
+      Array.from(node.children).forEach((child) => {
+        const cTag = String(child.tagName || "").toLowerCase();
+        const cText = children(child, depth + 1).trim();
+        if (!cText) return;
+        if (cTag === "dt") dlLines.push((dlLines.length ? "\n" : "") + "**" + cText + "**");
+        else if (cTag === "dd") dlLines.push(": " + cText.replace(/\n+/g, " "));
+        else dlLines.push(cText);
+      });
+      return dlLines.length ? "\n\n" + dlLines.join("\n").trim() + "\n\n" : "";
+    }
     const inner = children(node, depth + 1, preserveWs);
     if (/^h[1-6]$/.test(tag)) return "\n\n" + "#".repeat(Number(tag[1])) + " " + inner.trim() + "\n\n";
     if (tag === "strong" || tag === "b") return "**" + inner + "**";
     if (tag === "em" || tag === "i") return "*" + inner + "*";
+    if (tag === "sup") {
+      const t = inner.trim();
+      return !t ? "" : /^-?[A-Za-z0-9]+$/.test(t) ? "^" + t : "^(" + t + ")";
+    }
+    if (tag === "sub") {
+      const t = inner.trim();
+      return !t ? "" : /^-?[A-Za-z0-9]+$/.test(t) ? "_" + t : "_(" + t + ")";
+    }
     if (tag === "br") return "\n";
     if (tag === "hr") return "\n\n---\n\n";
     if (tag === "blockquote") return "\n\n" + inner.trim().replace(/^/gm, "> ") + "\n\n";
@@ -4754,7 +4929,34 @@ function _alloBlobToBase64(blob) {
     }
   });
 }
-function _alloQuizToFormItems(quizData) {
+function _formSeededOrder(arr, seedStr) {
+  const list = Array.isArray(arr) ? arr.slice() : [];
+  if (list.length <= 1) return list;
+  const itemKey = (v) => v && typeof v === "object" ? String(v.text || v.label || "") : String(v == null ? "" : v);
+  const fnv = (v) => {
+    let h = 2166136261;
+    const s = String(v == null ? "" : v);
+    for (let i = 0; i < s.length; i += 1) {
+      h ^= s.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return h >>> 0;
+  };
+  const tagged = list.map((value, idx) => ({ value, idx, hash: fnv(String(seedStr || "form") + ":" + idx + ":" + itemKey(value)) }));
+  tagged.sort((a, b) => a.hash !== b.hash ? a.hash - b.hash : a.idx - b.idx);
+  if (tagged.every((entry, pos) => entry.idx === pos) && new Set(list.map(itemKey)).size > 1) {
+    tagged.push(tagged.shift());
+  }
+  return tagged.map((entry) => entry.value);
+}
+function _alloQuizToFormItems(quizData, opts) {
+  const hasExplicitOpts = Boolean(opts && typeof opts === "object");
+  const showKeyInForm = hasExplicitOpts ? Boolean(opts.includeTeacherKey === true && opts.assessmentMode !== true) : true;
+  const shuffleFormChoices = hasExplicitOpts ? opts.shuffleChoices !== false && !showKeyInForm : false;
+  const formSeedBase = textSeed(quizData);
+  function textSeed(d) {
+    return String(d && (d.id || d.title) || "form");
+  }
   const questions = Array.isArray(quizData && quizData.questions) ? quizData.questions : [];
   const md = typeof window !== "undefined" && window.AlloModules && window.AlloModules.QuizView && window.AlloModules.QuizView.markdown;
   const text = (v) => String(md ? md.plain(v) : v == null ? "" : v).replace(/\s+/g, " ").trim();
@@ -4766,59 +4968,125 @@ function _alloQuizToFormItems(quizData) {
     }
     return "";
   };
+  const _FORM_Q_TYPE_MAP = {
+    multiplechoice: "multiple-choice",
+    "multiple-choice": "multiple-choice",
+    multiple_choice: "multiple-choice",
+    "single-choice": "multiple-choice",
+    singlechoice: "multiple-choice",
+    mcq: "mcq",
+    "true-false": "true-false",
+    "true_false": "true-false",
+    truefalse: "true-false",
+    tf: "true-false",
+    multiselect: "multi-select",
+    "multi-select": "multi-select",
+    "multi_select": "multi-select",
+    checkbox: "multi-select",
+    checkboxes: "multi-select",
+    fillblank: "fill-blank",
+    "fill-blank": "fill-blank",
+    fill_blank: "fill-blank",
+    fill: "fill-blank",
+    "fill-in-the-blank": "fill-blank",
+    numeric: "numeric-response",
+    number: "numeric-response",
+    "numeric-response": "numeric-response",
+    shortanswer: "short-answer",
+    "short-answer": "short-answer",
+    short_answer: "short-answer",
+    order: "ordering",
+    ordering: "ordering"
+  };
   const items = [];
-  questions.forEach((q) => {
+  questions.forEach((q, qi) => {
     if (!q || typeof q !== "object") return;
-    const prompt2 = text(q.question || q.prompt || q.text);
+    const basePrompt = firstNonEmpty(q.question, q.prompt, q.statement, q.sentence, q.text);
+    const passageText = text(q.passage);
+    const prompt2 = basePrompt ? passageText && !basePrompt.includes(passageText) ? passageText + " \u2014 " + basePrompt : basePrompt : passageText;
     if (!prompt2) return;
     const rawType = String(q.type || "mcq").trim();
-    const type = rawType === "shortAnswer" ? "short-answer" : rawType === "order" ? "ordering" : rawType;
-    const options = (Array.isArray(q.options) ? q.options : []).map((o) => text(o && typeof o === "object" ? o.text || o.label || o.value : o)).filter(Boolean);
-    const explanation = text(q.explanation);
-    const rubric = text(q.rubric);
-    const helpCombined = [explanation, rubric].filter(Boolean).join(" ").trim() || void 0;
-    const _resolveFormChoiceIdx = (opts, candidate) => {
-      if (!Array.isArray(opts) || !opts.length || candidate === void 0 || candidate === null || typeof candidate === "boolean") return -1;
-      if (typeof candidate === "number") return Number.isInteger(candidate) && candidate >= 0 && candidate < opts.length ? candidate : -1;
+    const type = _FORM_Q_TYPE_MAP[rawType.toLowerCase()] || rawType.toLowerCase();
+    const rawOptionsSource = Array.isArray(q.options) && q.options.length > 0 ? q.options : type === "true-false" ? ["True", "False"] : [];
+    const optionEntries = rawOptionsSource.map((o, rawIdx) => ({ text: text(o && typeof o === "object" ? o.text || o.label || o.value : o), rawIdx })).filter((entry) => Boolean(entry.text));
+    const options = optionEntries.map((entry) => entry.text);
+    const explanation = showKeyInForm ? text(q.explanation) : "";
+    const rubric = showKeyInForm ? text(q.rubric) : "";
+    const studentDirs = text(q.studentDirections);
+    const helpCombined = [studentDirs, explanation, rubric].filter(Boolean).join(" ").trim() || void 0;
+    const maybeAddJustification = () => {
+      const wantsJustification = !!(q.requiresJustification || q.requireJustification || q.justificationRequired || q.requireReasoning);
+      const justPrompt = firstNonEmpty(q.justificationPrompt, q.reasoningPrompt, q.explanationPrompt);
+      if (!wantsJustification && !justPrompt) return;
+      items.push({
+        type: "paragraph",
+        prompt: prompt2 + " \u2014 " + (justPrompt || "Explain why your answer fits."),
+        points: 0
+      });
+    };
+    const _resolveFormChoiceIdx = (entries, candidate, allowBoolean = false) => {
+      if (!Array.isArray(entries) || !entries.length || candidate === void 0 || candidate === null) return -1;
+      if (typeof candidate === "boolean") {
+        if (!allowBoolean) return -1;
+        const target = candidate ? "true" : "false";
+        const byLabel = entries.findIndex((e) => e.text.toLowerCase() === target);
+        if (byLabel >= 0) return byLabel;
+        if (entries.length === 2) return candidate ? 0 : 1;
+        return -1;
+      }
+      if (typeof candidate === "number") {
+        if (!Number.isInteger(candidate)) return -1;
+        return entries.findIndex((e) => e.rawIdx === candidate);
+      }
       const rawCand = text(candidate);
       if (!rawCand) return -1;
-      const exact = opts.indexOf(rawCand);
+      const exact = entries.findIndex((e) => e.text === rawCand);
       if (exact >= 0) return exact;
       const lower = rawCand.toLowerCase();
-      const ci = opts.findIndex((o) => text(o).toLowerCase() === lower);
+      const ci = entries.findIndex((e) => e.text.toLowerCase() === lower);
       if (ci >= 0) return ci;
       if (/^[A-Za-z]$/.test(rawCand)) {
         const li = rawCand.toUpperCase().charCodeAt(0) - 65;
-        if (li >= 0 && li < opts.length) return li;
+        const byLetter = entries.findIndex((e) => e.rawIdx === li);
+        if (byLetter >= 0) return byLetter;
       }
       if (/^\d+$/.test(rawCand)) {
         const ni = Number(rawCand);
-        if (Number.isInteger(ni) && ni >= 0 && ni < opts.length) return ni;
+        const byNum = entries.findIndex((e) => e.rawIdx === ni);
+        if (byNum >= 0) return byNum;
       }
       return -1;
     };
-    if ((type === "mcq" || type === "multiple-choice" || type === "multi-select") && options.length >= 2) {
-      const raw = q.correctAnswers !== void 0 ? q.correctAnswers : q.correctIndices !== void 0 ? q.correctIndices : q.correctIndex !== void 0 ? q.correctIndex : q.correct !== void 0 ? q.correct : q.correctAnswer;
+    if ((type === "mcq" || type === "multiple-choice" || type === "multi-select" || type === "true-false") && options.length >= 2) {
+      const raw = q.correctAnswers !== void 0 ? q.correctAnswers : q.correctIndices !== void 0 ? q.correctIndices : q.correctIndex !== void 0 ? q.correctIndex : q.correct !== void 0 ? q.correct : q.correctAnswer !== void 0 ? q.correctAnswer : q.answer;
       const list = Array.isArray(raw) ? raw : raw !== void 0 && raw !== null ? [raw] : [];
-      const answer = list.map((a) => _resolveFormChoiceIdx(options, a)).filter((i) => i >= 0 && i < options.length);
+      const shownEntries = shuffleFormChoices && type !== "true-false" && optionEntries.length >= 2 ? _formSeededOrder(optionEntries, formSeedBase + ":opt:" + qi) : optionEntries;
+      const shownOptions = shownEntries.map((entry) => entry.text);
+      const rawIndices = list.map((a) => _resolveFormChoiceIdx(shownEntries, a, type === "true-false")).filter((i) => i >= 0 && i < shownOptions.length);
+      const answer = type === "multi-select" ? Array.from(new Set(rawIndices)).sort((a, b) => a - b) : rawIndices;
       items.push({
         type: type === "multi-select" ? "checkbox" : "mc",
         prompt: prompt2,
-        options,
+        options: shownOptions,
         answer: answer.length ? answer : void 0,
         help: helpCombined,
         points: 1
       });
+      maybeAddJustification();
       return;
     }
     if (type === "answer-evidence") {
-      const answerOpts = (Array.isArray(q.answerOptions) ? q.answerOptions : []).map(text).filter(Boolean);
-      const evidenceOpts = (Array.isArray(q.evidenceOptions) ? q.evidenceOptions : []).map(text).filter(Boolean);
-      if (answerOpts.length >= 2 && evidenceOpts.length >= 2) {
-        const aCand = q.correctAnswerIndex !== void 0 && q.correctAnswerIndex !== null ? q.correctAnswerIndex : q.correctAnswer;
-        const eCand = q.correctEvidenceIndex !== void 0 && q.correctEvidenceIndex !== null ? q.correctEvidenceIndex : q.correctEvidence;
-        const aIdx = _resolveFormChoiceIdx(answerOpts, aCand);
-        const eIdx = _resolveFormChoiceIdx(evidenceOpts, eCand);
+      const answerEntries = (Array.isArray(q.answerOptions) ? q.answerOptions : []).map((o, rawIdx) => ({ text: text(o && typeof o === "object" ? o.text || o.label || o.value : o), rawIdx })).filter((entry) => Boolean(entry.text));
+      const evidenceEntries = (Array.isArray(q.evidenceOptions) ? q.evidenceOptions : []).map((o, rawIdx) => ({ text: text(o && typeof o === "object" ? o.text || o.label || o.value : o), rawIdx })).filter((entry) => Boolean(entry.text));
+      if (answerEntries.length >= 2 && evidenceEntries.length >= 2) {
+        const shownAnswerEntries = shuffleFormChoices ? _formSeededOrder(answerEntries, formSeedBase + ":ae-ans:" + qi) : answerEntries;
+        const shownEvidenceEntries = shuffleFormChoices ? _formSeededOrder(evidenceEntries, formSeedBase + ":ae-ev:" + qi) : evidenceEntries;
+        const answerOpts = shownAnswerEntries.map((entry) => entry.text);
+        const evidenceOpts = shownEvidenceEntries.map((entry) => entry.text);
+        const aCand = q.correctAnswerIndex !== void 0 && q.correctAnswerIndex !== null ? q.correctAnswerIndex : q.correctAnswer !== void 0 && q.correctAnswer !== null ? q.correctAnswer : q.expectedAnswer !== void 0 && q.expectedAnswer !== null ? q.expectedAnswer : q.answer;
+        const eCand = q.correctEvidenceIndex !== void 0 && q.correctEvidenceIndex !== null ? q.correctEvidenceIndex : q.correctEvidence !== void 0 && q.correctEvidence !== null ? q.correctEvidence : q.expectedEvidence !== void 0 && q.expectedEvidence !== null ? q.expectedEvidence : q.evidence;
+        const aIdx = _resolveFormChoiceIdx(shownAnswerEntries, aCand);
+        const eIdx = _resolveFormChoiceIdx(shownEvidenceEntries, eCand);
         items.push({
           type: "mc",
           prompt: prompt2,
@@ -4835,12 +5103,14 @@ function _alloQuizToFormItems(quizData) {
           help: helpCombined,
           points: 1
         });
+        maybeAddJustification();
         return;
       }
     }
     if (type === "matching" && Array.isArray(q.pairs) && q.pairs.length >= 2) {
-      const pairs = q.pairs.map((p) => ({ left: text(p && (p.left || p.prompt)), right: text(p && (p.right || p.match || p.answer)) })).filter((p) => p.left && p.right);
-      const rightOptions = Array.from(new Set(pairs.map((p) => p.right)));
+      const pairs = q.pairs.map((p, rawIdx) => ({ left: text(p && (p.left || p.prompt)), right: text(p && (p.right || p.match || p.answer)), rawIdx })).filter((p) => p.left && p.right);
+      const rawRightOptions = Array.from(new Set(pairs.map((p) => p.right)));
+      const rightOptions = shuffleFormChoices ? _formSeededOrder(rawRightOptions, formSeedBase + ":match:" + qi) : rawRightOptions;
       if (pairs.length >= 2 && rightOptions.length >= 2) {
         pairs.forEach((pair, idx) => {
           items.push({
@@ -4852,13 +5122,15 @@ function _alloQuizToFormItems(quizData) {
             points: 1
           });
         });
+        maybeAddJustification();
         return;
       }
     }
     if (type === "relation-mismatch" && Array.isArray(q.pairs) && q.pairs.length >= 2) {
-      const pairs = q.pairs.map((pair) => ({ left: text(pair && (pair.left || pair.prompt)), right: text(pair && (pair.right || pair.match || pair.answer)) })).filter((pair) => pair.left && pair.right);
-      const wrong = Number(q.wrongPairIndex);
-      if (pairs.length >= 2 && Number.isInteger(wrong) && wrong >= 0 && wrong < pairs.length) {
+      const pairs = q.pairs.map((pair, rawIdx) => ({ left: text(pair && (pair.left || pair.prompt)), right: text(pair && (pair.right || pair.match || pair.answer)), rawIdx })).filter((pair) => pair.left && pair.right);
+      const rawWrong = Number(q.wrongPairIndex);
+      const wrong = Number.isInteger(rawWrong) ? pairs.findIndex((pair) => pair.rawIdx === rawWrong) : -1;
+      if (pairs.length >= 2 && wrong >= 0 && wrong < pairs.length) {
         items.push({
           type: "mc",
           prompt: prompt2 + " \u2014 Which displayed pair is the mismatch?",
@@ -4867,16 +5139,19 @@ function _alloQuizToFormItems(quizData) {
           help: helpCombined,
           points: 1
         });
-        const candidates = (Array.isArray(q.candidatePartners) ? q.candidatePartners : []).map(text).filter(Boolean);
+        const candidateEntries = (Array.isArray(q.candidatePartners) ? q.candidatePartners : []).map((c, rawIdx) => ({ text: text(c && typeof c === "object" ? c.text || c.label || c.value : c), rawIdx })).filter((entry) => Boolean(entry.text));
+        const candidates = candidateEntries.map((entry) => entry.text);
         const partnerCand = q.correctPartnerForWrong !== void 0 && q.correctPartnerForWrong !== null ? q.correctPartnerForWrong : q.correctPartnerIndex;
-        const repairIdx = _resolveFormChoiceIdx(candidates, partnerCand);
+        const repairIdx = _resolveFormChoiceIdx(candidateEntries, partnerCand);
         const correctPartner = repairIdx >= 0 ? candidates[repairIdx] : text(q.correctPartnerForWrong);
         if (candidates.length >= 2 && repairIdx >= 0) {
+          const shownCandidates = shuffleFormChoices ? _formSeededOrder(candidates, formSeedBase + ":rm:" + qi) : candidates;
+          const shownRepairIdx = shownCandidates.indexOf(candidates[repairIdx]);
           items.push({
             type: "mc",
             prompt: "What should " + pairs[wrong].left + " pair with?",
-            options: candidates,
-            answer: [repairIdx],
+            options: shownCandidates,
+            answer: [shownRepairIdx >= 0 ? shownRepairIdx : repairIdx],
             points: 1
           });
         } else if (correctPartner) {
@@ -4893,45 +5168,126 @@ function _alloQuizToFormItems(quizData) {
             points: 0
           });
         }
+        maybeAddJustification();
         return;
       }
     }
     if (type === "ordering" || type === "sequence-sense") {
       const seqSource = Array.isArray(q.correctOrder) && q.correctOrder.length >= 2 ? q.correctOrder : Array.isArray(q.items) ? q.items : [];
       const seq = seqSource.map(text).filter(Boolean);
-      const seqOptions = Array.from(new Set(seq));
+      const rawSeqOptions = Array.from(new Set(seq));
+      let seqOptions = rawSeqOptions;
+      if (shuffleFormChoices && rawSeqOptions.length >= 2) {
+        const rawPresented = Array.isArray(q.presentedOrder) && q.presentedOrder.length ? q.presentedOrder.map((entry) => {
+          if (typeof entry === "number" && Number.isInteger(entry) && Array.isArray(q.items) && q.items[entry] !== void 0) {
+            return text(q.items[entry]);
+          }
+          return text(entry);
+        }).filter(Boolean) : [];
+        const uniquePresented = Array.from(new Set(rawPresented));
+        const sameSet = uniquePresented.length === rawSeqOptions.length && rawSeqOptions.every((s) => uniquePresented.includes(s));
+        const isIdentity = sameSet && uniquePresented.every((s, idx) => s === rawSeqOptions[idx]);
+        seqOptions = sameSet && !isIdentity ? uniquePresented : _formSeededOrder(rawSeqOptions, formSeedBase + ":order:" + qi);
+      }
       if (seq.length >= 2 && seqOptions.length >= 2) {
+        const displayedCue = type === "sequence-sense" ? "Displayed sequence: " + seqOptions.map((s, idx) => idx + 1 + ". " + s).join(" | ") : "";
+        const firstStepHelp = [displayedCue, helpCombined].filter(Boolean).join(" ").trim() || void 0;
         seq.forEach((stepLabel, pos) => {
           items.push({
             type: "mc",
             prompt: prompt2 + " (Step " + (pos + 1) + " of " + seq.length + ")",
             options: seqOptions,
             answer: [seqOptions.indexOf(stepLabel)],
-            help: pos === 0 ? helpCombined : void 0,
+            help: pos === 0 ? firstStepHelp : void 0,
             points: 1
           });
         });
+        if (type === "sequence-sense") {
+          const pEntries = (Array.isArray(q.principleOptions) ? q.principleOptions : []).map((o, rawIdx) => ({ text: text(o && typeof o === "object" ? o.text || o.label || o.value : o), rawIdx })).filter((entry) => Boolean(entry.text));
+          if (pEntries.length >= 2) {
+            const shownPEntries = shuffleFormChoices ? _formSeededOrder(pEntries, formSeedBase + ":seq-prin:" + qi) : pEntries;
+            const pCand = q.correctPrincipleIndex !== void 0 && q.correctPrincipleIndex !== null ? q.correctPrincipleIndex : q.correctPrinciple !== void 0 ? q.correctPrinciple : q.orderingPrinciple;
+            const pIdx = _resolveFormChoiceIdx(shownPEntries, pCand, false);
+            items.push({
+              type: "mc",
+              prompt: prompt2 + " \u2014 " + (text(q.principlePrompt) || "Which principle explains this order?"),
+              options: shownPEntries.map((e) => e.text),
+              answer: pIdx >= 0 ? [pIdx] : void 0,
+              points: 1
+            });
+          } else if (q.orderingPrinciple || q.principlePrompt) {
+            items.push({
+              type: "paragraph",
+              prompt: prompt2 + " \u2014 " + (text(q.principlePrompt) || "Explain the principle behind this order."),
+              help: showKeyInForm && q.orderingPrinciple ? text(q.orderingPrinciple) : void 0,
+              points: 0
+            });
+          }
+        }
+        maybeAddJustification();
         return;
       }
       if (seq.length >= 2) {
         items.push({ type: "short", prompt: prompt2, answer: seq.join(" -> "), help: helpCombined, points: 1 });
+        maybeAddJustification();
         return;
       }
     }
-    if (type === "short-answer" || type === "fill-blank" || type === "numeric-response") {
-      let expected = firstNonEmpty(q.correctAnswer, q.expectedAnswer, q.expectedFill, q.correctValue, q.correctAnswers, q.sampleAnswer, q.modelAnswer);
+    if (type === "fill-blank" || type === "numeric-response") {
+      let expected = firstNonEmpty(q.correctAnswer, q.expectedAnswer, q.expectedFill, q.correctValue, q.answer, q.correctAnswers, q.sampleAnswer, q.modelAnswer);
       const unit = type === "numeric-response" ? text(q.unit) : "";
       if (expected && unit && !expected.toLowerCase().includes(unit.toLowerCase())) expected = expected + " " + unit;
-      items.push({ type: "short", prompt: prompt2, answer: expected || void 0, help: helpCombined, points: 1 });
+      const wb = type === "fill-blank" && Array.isArray(q.wordBank) ? q.wordBank.map(text).filter(Boolean) : [];
+      const wbCue = wb.length ? "Word bank: " + wb.join(", ") : "";
+      const fillHelp = [wbCue, helpCombined].filter(Boolean).join(" ").trim() || void 0;
+      items.push({ type: "short", prompt: prompt2, answer: expected || void 0, help: fillHelp, points: 1 });
+      maybeAddJustification();
+      return;
+    }
+    if (type === "short-answer") {
+      const exactShort = firstNonEmpty(q.correctAnswer, q.expectedAnswer, q.expectedFill, q.correctValue, q.answer, q.correctAnswers);
+      if (exactShort) {
+        items.push({ type: "short", prompt: prompt2, answer: exactShort, help: helpCombined, points: 1 });
+        maybeAddJustification();
+        return;
+      }
+      const rubricHelp = [helpCombined, showKeyInForm ? firstNonEmpty(q.sampleAnswer, q.modelAnswer) : ""].filter(Boolean).join(" ").trim() || void 0;
+      items.push({ type: "paragraph", prompt: prompt2, help: rubricHelp, points: 0 });
+      maybeAddJustification();
       return;
     }
     items.push({ type: "paragraph", prompt: prompt2, help: helpCombined, points: 0 });
   });
+  const reflections = Array.isArray(quizData && quizData.reflections) ? quizData.reflections : [];
+  reflections.forEach((ref) => {
+    const refPrompt = text(ref && typeof ref === "object" ? ref.prompt || ref.question || ref.text : ref);
+    if (refPrompt) items.push({ type: "paragraph", prompt: refPrompt, points: 0 });
+  });
   return items;
 }
 function _alloFormQuizzesFromHistory(history, exportConfig = null) {
+  if (exportConfig && exportConfig.includeQuiz === false) return [];
   const scopeIds = Array.isArray(exportConfig?.builderResourceIds) ? new Set(exportConfig.builderResourceIds.map((id) => String(id))) : null;
-  return (Array.isArray(history) ? history : []).filter((item) => item && item.type === "quiz" && item.data && Array.isArray(item.data.questions) && item.data.questions.length > 0 && (!scopeIds || item.id != null && scopeIds.has(String(item.id)))).map((item) => ({ key: String(item.id), title: String(item.title || item.meta || "Quiz").slice(0, 120), item }));
+  let filtered = (Array.isArray(history) ? history : []).map((item, rawIdx) => ({ item, rawIdx })).filter(({ item }) => item && item.type === "quiz" && item.data && (Array.isArray(item.data.questions) && item.data.questions.length > 0 || Array.isArray(item.data.reflections) && item.data.reflections.length > 0) && (!scopeIds || item.id != null && scopeIds.has(String(item.id))));
+  if (Array.isArray(exportConfig?.resourceItemOrder) && exportConfig.resourceItemOrder.length > 0) {
+    const rank = /* @__PURE__ */ new Map();
+    exportConfig.resourceItemOrder.forEach((id, idx) => {
+      const s = String(id);
+      if (!rank.has(s)) rank.set(s, idx);
+    });
+    filtered = filtered.slice().sort((a, b) => {
+      const ra = a.item.id != null && rank.has(String(a.item.id)) ? rank.get(String(a.item.id)) : Number.MAX_SAFE_INTEGER;
+      const rb = b.item.id != null && rank.has(String(b.item.id)) ? rank.get(String(b.item.id)) : Number.MAX_SAFE_INTEGER;
+      return ra !== rb ? ra - rb : a.rawIdx - b.rawIdx;
+    });
+  }
+  const seenKeys = /* @__PURE__ */ new Set();
+  return filtered.map(({ item, rawIdx }) => {
+    const baseKey = item.id != null ? String(item.id) : `quiz-${rawIdx}`;
+    const key = seenKeys.has(baseKey) ? `${baseKey}:${rawIdx}` : baseKey;
+    seenKeys.add(key);
+    return { key, title: String(item.title || item.meta || "Quiz").slice(0, 120), item };
+  });
 }
 try {
   if (typeof window !== "undefined") {
@@ -4952,7 +5308,93 @@ function _shouldExportStudentOnlyHtml(exportConfig, builderViewFilter) {
 function _builderPolishPlainTextClone(root, doc) {
   if (!root || typeof root.querySelectorAll !== "function") return;
   const owner = root.ownerDocument || doc;
+  const _cleanSp = (s) => String(s || "").replace(/\s+/g, " ").trim();
+  const _mathAtom = (s) => /^[A-Za-z0-9.]+$/.test(s) ? s : "(" + s + ")";
+  const _mathScript = (s) => /^-?[A-Za-z0-9]+$/.test(s) ? s : "(" + s + ")";
+  const mathToText = (node) => {
+    if (!node) return "";
+    if (node.nodeType === 3) return String(node.nodeValue || "");
+    if (node.nodeType !== 1) return "";
+    const tag = String(node.tagName || "").toLowerCase();
+    if (tag === "annotation" || tag === "annotation-xml") return "";
+    if (tag === "mfrac") {
+      const parts = Array.from(node.children || []).map(mathToText);
+      if (parts.length >= 2) return "(" + _cleanSp(parts[0]) + ")/(" + _cleanSp(parts[1]) + ")";
+    }
+    if (tag === "msup") {
+      const parts = Array.from(node.children || []).map(mathToText);
+      if (parts.length >= 2) {
+        const base = _cleanSp(parts[0]);
+        const exp = _cleanSp(parts[1]);
+        return base ? _mathAtom(base) + "^" + _mathScript(exp) : exp;
+      }
+    }
+    if (tag === "msub") {
+      const parts = Array.from(node.children || []).map(mathToText);
+      if (parts.length >= 2) {
+        const base = _cleanSp(parts[0]);
+        const sub = _cleanSp(parts[1]);
+        return base ? _mathAtom(base) + "_" + _mathScript(sub) : sub;
+      }
+    }
+    if (tag === "msubsup") {
+      const parts = Array.from(node.children || []).map(mathToText);
+      if (parts.length >= 3) {
+        const base = _cleanSp(parts[0]);
+        const sub = _cleanSp(parts[1]);
+        const exp = _cleanSp(parts[2]);
+        return base ? _mathAtom(base) + "_" + _mathScript(sub) + "^" + _mathScript(exp) : "";
+      }
+    }
+    if (tag === "msqrt") {
+      const inner = _cleanSp(Array.from(node.childNodes || []).map(mathToText).join(""));
+      return inner ? "sqrt(" + inner + ")" : "";
+    }
+    if (tag === "mroot") {
+      const parts = Array.from(node.children || []).map(mathToText);
+      if (parts.length >= 2) {
+        const base = _cleanSp(parts[0]);
+        const idx = _cleanSp(parts[1]);
+        return base && idx ? "root(" + idx + ", " + base + ")" : base;
+      }
+    }
+    return Array.from(node.childNodes || []).map(mathToText).join("");
+  };
+  Array.from(root.querySelectorAll("math")).forEach((mathEl) => {
+    const label = _cleanSp(mathEl.getAttribute("aria-label") || mathEl.getAttribute("alttext") || "");
+    const latex = _cleanSp(mathEl.getAttribute("data-allo-latex") || "");
+    const mathText = label || _cleanSp(mathToText(mathEl)) || latex;
+    if (owner) {
+      if (mathText) mathEl.replaceWith(owner.createTextNode(mathText));
+      else mathEl.remove();
+    }
+  });
   root.querySelectorAll("annotation, annotation-xml, [data-allo-footnote-backlink]").forEach((el) => el.remove());
+  Array.from(root.querySelectorAll("svg")).forEach((svgEl) => {
+    if (!root.contains(svgEl)) return;
+    if (typeof svgEl.closest === "function" && svgEl.closest(".alloflow-inline-chart") || svgEl.classList && svgEl.classList.contains("alloflow-venn-svg")) return;
+    if (svgEl.hasAttribute("hidden") || svgEl.getAttribute("aria-hidden") === "true") {
+      svgEl.remove();
+      return;
+    }
+    const aria = String(svgEl.getAttribute("aria-label") || "").replace(/\s+/g, " ").trim();
+    const parts = aria ? [aria] : Array.from(svgEl.querySelectorAll("title, desc, text")).map((n) => String(n.textContent || "").replace(/\s+/g, " ").trim()).filter(Boolean);
+    const desc = parts.join(" \u2014 ").trim();
+    if (desc && owner) svgEl.replaceWith(owner.createTextNode(" [Diagram: " + desc + "] "));
+    else svgEl.remove();
+  });
+  Array.from(root.querySelectorAll("sup, sub")).forEach((el) => {
+    if (!root.contains(el)) return;
+    const t = _cleanSp(el.textContent || "");
+    const tag = String(el.tagName || "").toLowerCase();
+    if (!t) {
+      el.remove();
+      return;
+    }
+    const sigil = tag === "sup" ? "^" : "_";
+    const formatted = sigil + _mathScript(t);
+    if (owner) el.replaceWith(owner.createTextNode(formatted));
+  });
   root.querySelectorAll("img").forEach((img) => {
     const alt = String(img.getAttribute("alt") || "").replace(/\s+/g, " ").trim();
     if (alt && owner) img.replaceWith(owner.createTextNode(" [Image: " + alt + "] "));
@@ -4969,7 +5411,7 @@ function _builderPolishPlainTextClone(root, doc) {
   });
 }
 function _removeStudentPackageTeacherSections(root) {
-  const teacherOnly = Array.from(root.querySelectorAll(".teacher-view,[data-allo-teacher-only],.answer-key,.alloflow-teacher-copy-banner,.alloflow-cs-answer-key,.alloflow-glossary-worksheet-key,.alloflow-math-solution,.alloflow-fluency-key,.alloflow-teacher-plan,.alloflow-teacher-annotations,.alloflow-teacher-annotations-by-resource"));
+  const teacherOnly = Array.from(root.querySelectorAll(".teacher-view,[data-allo-teacher-only],[data-teacher-only],.teacher-only,.answer-key,.alloflow-teacher-copy-banner,.alloflow-cs-answer-key,.alloflow-glossary-worksheet-key,.alloflow-math-solution,.alloflow-fluency-key,.alloflow-teacher-plan,.alloflow-teacher-annotations,.alloflow-teacher-annotations-by-resource,.alloflow-gm-check-btn,.alloflow-gm-feedback,.alloflow-match-check-btn,.alloflow-match-feedback,.alloflow-teacher-notes,.alloflow-rubric-key,.alloflow-model-answer,.alloflow-sample-response,.alloflow-scoring-guide,#alloflow-interactive-object-profile,[data-teacher-note],[data-answer-key]"));
   teacherOnly.forEach((node) => {
     const prior = node.previousElementSibling;
     if (prior?.classList.contains("page-break")) prior.remove();
@@ -8457,7 +8899,7 @@ ${pageCss}
     if (!needle) return [];
     const searchableText = findOptions.matchCase ? text : text.toLocaleLowerCase();
     const searchableNeedle = findOptions.matchCase ? needle : needle.toLocaleLowerCase();
-    const isWordCharacter = (value) => value ? /[\p{L}\p{N}_]/u.test(value) : false;
+    const isWordCharacter = (value) => value ? /[\p{L}\p{M}\p{N}_]/u.test(value) : false;
     const matches = [];
     let at = 0;
     while ((at = searchableText.indexOf(searchableNeedle, at)) >= 0) {
@@ -8667,12 +9109,14 @@ ${pageCss}
     const doc = exportPreviewRef.current?.contentDocument;
     if (!doc?.documentElement) return null;
     let clone = doc.documentElement.cloneNode(true);
+    _builderSyncLiveFormState(doc.documentElement, clone);
     if (options?.forExport) clone = _builderFinalizeDocumentForExport(clone);
     else {
       _builderClearReviewCommentTransientState(clone);
       _builderClearTrackedChangeTransientState(clone);
     }
     if (options?.forExport && options?.includeTeacherKey === false) _removeStudentPackageTeacherSections(clone);
+    if (options?.forExport && options?.assessmentMode === true) _builderSanitizeAssessmentRoot(clone);
     _builderClearOpenPagePrompt(clone);
     clone.querySelectorAll(".allo-block-controls,.allo-block-remove,.a11y-inspect-badge,[data-allo-crop-ui],#a11y-inspect-styles,#allo-builder-edit-css,#allo-builder-view-filter,#allo-builder-paper-css" + (options?.keepScripts ? "" : ",script:not([data-allo-citation-store])")).forEach((node) => node.remove());
     if (options?.forExport) clone.querySelectorAll(_BUILDER_CITATION_STORE_SELECTOR).forEach((node) => node.remove());
@@ -8687,8 +9131,9 @@ ${pageCss}
     });
     const title = String(exportConfig && (exportConfig.title || exportConfig.docTitle || exportConfig.lessonTitle) || doc.title || "AlloFlow Document").trim();
     let htmlOut = "<!DOCTYPE html>\n" + clone.outerHTML;
-    if (options?.forExport && options?.assessmentMode === true && typeof window !== "undefined" && typeof window.AlloModules?.ExportHandlers?._alloSanitizeAssessmentStudentHtml === "function") {
-      htmlOut = window.AlloModules.ExportHandlers._alloSanitizeAssessmentStudentHtml(htmlOut);
+    const _sanFn = typeof window !== "undefined" && (window.AlloModules?.ExportHandlers?.sanitizeAssessmentStudentHtml || window.AlloModules?.ExportHandlers?._alloSanitizeAssessmentStudentHtml);
+    if (options?.forExport && options?.assessmentMode === true && typeof _sanFn === "function") {
+      htmlOut = _sanFn(htmlOut);
     }
     return { doc, clone, title, html: htmlOut };
   }, [exportPreviewRef, exportConfig]);
@@ -9272,7 +9717,7 @@ ${pageCss}
   const downloadBuilderBlob = React.useCallback((blob, options = {}) => {
     if (!blob) throw new Error("The export did not produce a file.");
     const clean = getCleanBuilderDocument();
-    const safeTitle = String(clean?.title || "document").normalize("NFC").replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-+|-+$/g, "").substring(0, 60) || "document";
+    const safeTitle = String(clean?.title || "document").normalize("NFC").replace(/[^\p{L}\p{M}\p{N}]+/gu, "-").replace(/^-+|-+$/g, "").substring(0, 60) || "document";
     const extension = String(options.extension || "bin").replace(/^\./, "");
     const fileName = options.fileName || `${safeTitle}${options.suffix || ""}.${extension}`;
     const url = URL.createObjectURL(blob);
@@ -9460,7 +9905,7 @@ ${pageCss}
         const selectedKey = kind === "qti" ? selectedQtiKey : selectedH5PKey;
         const selected = activities.find((entry) => entry.key === selectedKey) || activities[activities.length - 1];
         if (!selected) throw new Error(`Choose an activity before exporting ${kind.toUpperCase()}.`);
-        const succeeded = await handler({ generatedContent: selected.item });
+        const succeeded = await handler({ generatedContent: selected.item, exportConfig, builderResourceIds });
         if (succeeded !== true) return;
       } else {
         const built = getCleanBuilderDocument({ forExport: true, keepScripts: true });
@@ -9492,7 +9937,7 @@ ${pageCss}
     } finally {
       finishAlternativeExport();
     }
-  }, [beginAlternativeExport, finishAlternativeExport, altExportBusy, handleExportQTI, handleExportH5P, handleExportIMS, addToast, qtiAssessments, selectedQtiKey, h5pActivities, selectedH5PKey, getCleanBuilderDocument, onExportSuccess, t, exportConfig]);
+  }, [beginAlternativeExport, finishAlternativeExport, altExportBusy, handleExportQTI, handleExportH5P, handleExportIMS, addToast, qtiAssessments, selectedQtiKey, h5pActivities, selectedH5PKey, getCleanBuilderDocument, onExportSuccess, t, exportConfig, builderResourceIds]);
   const runOfficeExport = React.useCallback(async (format, sink) => {
     if (altExportBusy) return;
     const doc = exportPreviewRef.current?.contentDocument;
@@ -9536,6 +9981,15 @@ ${pageCss}
   const [selectedFormQuizKey, setSelectedFormQuizKey] = React.useState("");
   const mailboxConfig = React.useMemo(() => _alloReadMailboxConfig(), [driveDeliveryBusy, driveDeliveryLink, altExportBusy]);
   const formQuizzes = React.useMemo(() => _alloFormQuizzesFromHistory(history, exportConfig), [history, exportConfig]);
+  React.useEffect(() => {
+    if (!formQuizzes.length) {
+      if (selectedFormQuizKey) setSelectedFormQuizKey("");
+      return;
+    }
+    if (!formQuizzes.some((entry) => entry.key === selectedFormQuizKey)) {
+      setSelectedFormQuizKey(formQuizzes[formQuizzes.length - 1].key);
+    }
+  }, [formQuizzes, selectedFormQuizKey]);
   const openMailboxSetup = React.useCallback(() => {
     if (typeof window !== "undefined" && typeof window.__alloOpenMailboxSetup === "function") {
       try {
@@ -9576,12 +10030,16 @@ ${pageCss}
       openMailboxSetup();
       return;
     }
-    const chosen = formQuizzes.find((q) => q.key === selectedFormQuizKey) || formQuizzes[0];
+    const chosen = formQuizzes.find((q) => q.key === selectedFormQuizKey) || formQuizzes[formQuizzes.length - 1];
     if (!chosen) {
       addToast && addToast("Generate a quiz first.", "info");
       return;
     }
-    const items = _alloQuizToFormItems(chosen.item.data);
+    const items = _alloQuizToFormItems(chosen.item.data, {
+      assessmentMode: exportConfig?.assessmentMode === true,
+      includeTeacherKey: exportConfig?.includeTeacherKey === true && exportConfig?.assessmentMode !== true,
+      shuffleChoices: true
+    });
     if (!items.length) {
       addToast && addToast("This quiz has no questions a Google Form can hold.", "info");
       return;
@@ -9597,7 +10055,7 @@ ${pageCss}
     } finally {
       setDriveDeliveryBusy("");
     }
-  }, [formQuizzes, selectedFormQuizKey, addToast, openMailboxSetup]);
+  }, [formQuizzes, selectedFormQuizKey, addToast, openMailboxSetup, exportConfig]);
   const runExportFromPreview = React.useCallback(async () => {
     const preflight = runBuilderPreflight(exportPreviewMode, false);
     if (preflight.errors) {
@@ -9816,21 +10274,24 @@ ${pageCss}
         event.currentTarget.open = false;
         event.currentTarget.querySelector("summary")?.focus();
       }
-    } }, /* @__PURE__ */ React.createElement("summary", { className: "bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold px-2.5 py-2 rounded-lg cursor-pointer flex items-center gap-1 transition-colors list-none" }, "\u267F More export formats ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600" }, "\u25BE")), /* @__PURE__ */ React.createElement("fieldset", { disabled: exportActionBusy || !!altExportBusy, "aria-label": t("export_preview.accessibility.additional_export_formats") || "Additional export formats", "aria-busy": !!altExportBusy, className: "allo-builder-export-formats mt-1 bg-white border border-slate-400 rounded-xl shadow-xl p-2 z-50 space-y-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Editable documents"), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !!altExportBusy, onClick: () => runOfficeExport("docx"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-sky-700 hover:bg-sky-50 rounded-lg disabled:opacity-50" }, altExportBusy === "docx" ? "Building Word..." : "Accessible Word (.docx)"), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !!altExportBusy, onClick: () => runOfficeExport("odt"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-teal-700 hover:bg-teal-50 rounded-lg disabled:opacity-50" }, altExportBusy === "odt" ? "Building ODT..." : "OpenDocument (.odt)"), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Google Drive"), mailboxConfig ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "doc_builder_send_to_drive", disabled: !!altExportBusy || !!driveDeliveryBusy, onClick: sendDocToDrive, className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-emerald-700 hover:bg-emerald-50 rounded-lg disabled:opacity-50" }, driveDeliveryBusy === "doc" ? "Sending to Drive\u2026" : "Google Doc (send to my Drive)"), formQuizzes.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, formQuizzes.length > 1 && /* @__PURE__ */ React.createElement("select", { "aria-label": t("export_preview.accessibility.quiz_to_send_as_a_google_form") || "Quiz to send as a Google Form", value: selectedFormQuizKey || formQuizzes[0].key, onChange: (event) => setSelectedFormQuizKey(event.target.value), disabled: !!altExportBusy || !!driveDeliveryBusy, className: "w-full border border-slate-300 rounded-lg px-2 py-1 text-[11px] text-slate-700 bg-white" }, formQuizzes.map((quiz) => /* @__PURE__ */ React.createElement("option", { key: quiz.key, value: quiz.key }, quiz.title))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "doc_builder_send_quiz_to_form", disabled: !!altExportBusy || !!driveDeliveryBusy, onClick: sendQuizToForm, className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-emerald-700 hover:bg-emerald-50 rounded-lg disabled:opacity-50" }, driveDeliveryBusy === "form" ? "Creating the Form\u2026" : "Google Form (quiz, send to my Drive)")), driveDeliveryLink && /* @__PURE__ */ React.createElement("a", { href: driveDeliveryLink.url, target: "_blank", rel: "noopener noreferrer", className: "block px-2 py-1 text-[11px] font-semibold text-emerald-800 underline" }, "Open ", driveDeliveryLink.label, " in Drive \u2197"), /* @__PURE__ */ React.createElement("p", { className: "px-2 pb-1 text-[10px] text-slate-500" }, "Files land in your Drive under AlloFlow Class Mailbox / Delivered documents.")) : /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "doc_builder_connect_mailbox", onClick: openMailboxSetup, className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-100 rounded-lg" }, "Connect your Class Mailbox to send documents to your Drive \u2192"), qtiAssessments.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Assessment packages"), qtiAssessments.length > 1 && /* @__PURE__ */ React.createElement("select", { "aria-label": t("export_preview.accessibility.quiz_to_export_as_qti") || "Quiz to export as QTI", value: selectedQtiKey, onChange: (event) => setSelectedQtiKey(event.target.value), disabled: !!altExportBusy, className: "w-full border border-slate-300 rounded-md px-2 py-1 text-[11px] bg-white" }, qtiAssessments.map(({ item, key }, index) => /* @__PURE__ */ React.createElement("option", { key, value: key }, item.title || `Quiz ${index + 1}`))), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !!altExportBusy, onClick: () => runPackageExport("qti"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-violet-700 hover:bg-violet-50 rounded-lg disabled:opacity-50" }, altExportBusy === "qti" ? "Building QTI..." : "QTI quiz package"), /* @__PURE__ */ React.createElement("div", { className: "px-2 text-[10px] leading-tight text-slate-500" }, "QTI uses the selected quiz's structured questions and answers.")), h5pActivities.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Interactive H5P"), h5pActivities.length > 1 && /* @__PURE__ */ React.createElement("select", { "aria-label": t("export_preview.accessibility.activity_to_export_as_h5p") || "Activity to export as H5P", value: selectedH5PKey, onChange: (event) => setSelectedH5PKey(event.target.value), disabled: !!altExportBusy, className: "w-full border border-slate-300 rounded-md px-2 py-1 text-[11px] bg-white" }, h5pActivities.map(({ item, key }, index) => /* @__PURE__ */ React.createElement("option", { key, value: key }, item.title || `${item.type === "quiz" ? "Quiz" : item.type === "simplified" ? "Cloze reading" : item.type === "note-taking" ? "Study notes" : "Study cards"} ${index + 1}`))), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-describedby": "h5p-compatibility-summary", disabled: !!altExportBusy || !h5pCompatibility.ready, onClick: () => runPackageExport("h5p"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-fuchsia-700 hover:bg-fuchsia-50 rounded-lg disabled:opacity-50" }, altExportBusy === "h5p" ? "Building H5P..." : "H5P interactive activity (.h5p)"), /* @__PURE__ */ React.createElement("div", { id: "h5p-compatibility-summary", role: "status", className: `px-2 text-[10px] leading-tight ${h5pCompatibility.ready ? h5pCompatibility.omitted || h5pCompatibility.omittedMedia ? "text-amber-700" : "text-emerald-700" : "text-red-700"}` }, h5pCompatibility.valid, " of ", h5pCompatibility.total, " ", h5pCompatibility.unit, h5pCompatibility.total === 1 ? "" : "s", " ready for ", h5pCompatibility.library || "H5P", ".", h5pCompatibility.omitted > 0 ? ` ${h5pCompatibility.omitted} incomplete or incompatible.` : "", h5pCompatibility.adapted > 0 ? ` ${h5pCompatibility.adapted} adapted to equivalent H5P interactions.` : "", h5pCompatibility.manualReview > 0 ? ` ${h5pCompatibility.manualReview} ungraded/manual-review.` : "", h5pCompatibility.embeddedMedia > 0 ? ` ${h5pCompatibility.embeddedMedia} embedded media asset(s) will be packaged.` : "", h5pCompatibility.omittedMedia > 0 ? ` ${h5pCompatibility.omittedMedia} external or unsupported media asset(s) will be omitted.` : ""), /* @__PURE__ */ React.createElement("div", { className: "px-2 text-[10px] leading-tight text-slate-500" }, "MCQ-only quizzes export as Single Choice Set. Mixed assessments export as Question Set with Multiple Choice, Fill in the Blanks, and ungraded Essay adaptations. The destination needs the referenced H5P libraries installed.")), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Content package"), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !!altExportBusy, onClick: () => runPackageExport("ims"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-violet-700 hover:bg-violet-50 rounded-lg disabled:opacity-50" }, altExportBusy === "ims" ? "Building IMS..." : "IMS content package"), /* @__PURE__ */ React.createElement("div", { className: "px-2 text-[10px] leading-tight text-slate-500" }, "IMS includes the current editable Builder document."), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Reading & text"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+    } }, /* @__PURE__ */ React.createElement("summary", { className: "bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold px-2.5 py-2 rounded-lg cursor-pointer flex items-center gap-1 transition-colors list-none" }, "\u267F More export formats ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600" }, "\u25BE")), /* @__PURE__ */ React.createElement("fieldset", { disabled: exportActionBusy || !!altExportBusy, "aria-label": t("export_preview.accessibility.additional_export_formats") || "Additional export formats", "aria-busy": !!altExportBusy, className: "allo-builder-export-formats mt-1 bg-white border border-slate-400 rounded-xl shadow-xl p-2 z-50 space-y-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Editable documents"), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !!altExportBusy, onClick: () => runOfficeExport("docx"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-sky-700 hover:bg-sky-50 rounded-lg disabled:opacity-50" }, altExportBusy === "docx" ? "Building Word..." : "Accessible Word (.docx)"), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !!altExportBusy, onClick: () => runOfficeExport("odt"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-teal-700 hover:bg-teal-50 rounded-lg disabled:opacity-50" }, altExportBusy === "odt" ? "Building ODT..." : "OpenDocument (.odt)"), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Google Drive"), mailboxConfig ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "doc_builder_send_to_drive", disabled: !!altExportBusy || !!driveDeliveryBusy, onClick: sendDocToDrive, className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-emerald-700 hover:bg-emerald-50 rounded-lg disabled:opacity-50" }, driveDeliveryBusy === "doc" ? "Sending to Drive\u2026" : "Google Doc (send to my Drive)"), formQuizzes.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, formQuizzes.length > 1 && /* @__PURE__ */ React.createElement("select", { "aria-label": t("export_preview.accessibility.quiz_to_send_as_a_google_form") || "Quiz to send as a Google Form", value: selectedFormQuizKey || formQuizzes[formQuizzes.length - 1].key, onChange: (event) => setSelectedFormQuizKey(event.target.value), disabled: !!altExportBusy || !!driveDeliveryBusy, className: "w-full border border-slate-300 rounded-lg px-2 py-1 text-[11px] text-slate-700 bg-white" }, formQuizzes.map((quiz) => /* @__PURE__ */ React.createElement("option", { key: quiz.key, value: quiz.key }, quiz.title))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "doc_builder_send_quiz_to_form", disabled: !!altExportBusy || !!driveDeliveryBusy, onClick: sendQuizToForm, className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-emerald-700 hover:bg-emerald-50 rounded-lg disabled:opacity-50" }, driveDeliveryBusy === "form" ? "Creating the Form\u2026" : "Google Form (quiz, send to my Drive)")), driveDeliveryLink && /* @__PURE__ */ React.createElement("a", { href: driveDeliveryLink.url, target: "_blank", rel: "noopener noreferrer", className: "block px-2 py-1 text-[11px] font-semibold text-emerald-800 underline" }, "Open ", driveDeliveryLink.label, " in Drive \u2197"), /* @__PURE__ */ React.createElement("p", { className: "px-2 pb-1 text-[10px] text-slate-500" }, "Files land in your Drive under AlloFlow Class Mailbox / Delivered documents.")) : /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "doc_builder_connect_mailbox", onClick: openMailboxSetup, className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-100 rounded-lg" }, "Connect your Class Mailbox to send documents to your Drive \u2192"), qtiAssessments.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Assessment packages"), qtiAssessments.length > 1 && /* @__PURE__ */ React.createElement("select", { "aria-label": t("export_preview.accessibility.quiz_to_export_as_qti") || "Quiz to export as QTI", value: selectedQtiKey, onChange: (event) => setSelectedQtiKey(event.target.value), disabled: !!altExportBusy, className: "w-full border border-slate-300 rounded-md px-2 py-1 text-[11px] bg-white" }, qtiAssessments.map(({ item, key }, index) => /* @__PURE__ */ React.createElement("option", { key, value: key }, item.title || `Quiz ${index + 1}`))), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !!altExportBusy, onClick: () => runPackageExport("qti"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-violet-700 hover:bg-violet-50 rounded-lg disabled:opacity-50" }, altExportBusy === "qti" ? "Building QTI..." : "QTI quiz package"), /* @__PURE__ */ React.createElement("div", { className: "px-2 text-[10px] leading-tight text-slate-500" }, "QTI uses the selected quiz's structured questions and answers.")), h5pActivities.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Interactive H5P"), h5pActivities.length > 1 && /* @__PURE__ */ React.createElement("select", { "aria-label": t("export_preview.accessibility.activity_to_export_as_h5p") || "Activity to export as H5P", value: selectedH5PKey, onChange: (event) => setSelectedH5PKey(event.target.value), disabled: !!altExportBusy, className: "w-full border border-slate-300 rounded-md px-2 py-1 text-[11px] bg-white" }, h5pActivities.map(({ item, key }, index) => /* @__PURE__ */ React.createElement("option", { key, value: key }, item.title || `${item.type === "quiz" ? "Quiz" : item.type === "simplified" ? "Cloze reading" : item.type === "note-taking" ? "Study notes" : "Study cards"} ${index + 1}`))), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-describedby": "h5p-compatibility-summary", disabled: !!altExportBusy || !h5pCompatibility.ready, onClick: () => runPackageExport("h5p"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-fuchsia-700 hover:bg-fuchsia-50 rounded-lg disabled:opacity-50" }, altExportBusy === "h5p" ? "Building H5P..." : "H5P interactive activity (.h5p)"), /* @__PURE__ */ React.createElement("div", { id: "h5p-compatibility-summary", role: "status", className: `px-2 text-[10px] leading-tight ${h5pCompatibility.ready ? h5pCompatibility.omitted || h5pCompatibility.omittedMedia ? "text-amber-700" : "text-emerald-700" : "text-red-700"}` }, h5pCompatibility.valid, " of ", h5pCompatibility.total, " ", h5pCompatibility.unit, h5pCompatibility.total === 1 ? "" : "s", " ready for ", h5pCompatibility.library || "H5P", ".", h5pCompatibility.omitted > 0 ? ` ${h5pCompatibility.omitted} incomplete or incompatible.` : "", h5pCompatibility.adapted > 0 ? ` ${h5pCompatibility.adapted} adapted to equivalent H5P interactions.` : "", h5pCompatibility.manualReview > 0 ? ` ${h5pCompatibility.manualReview} ungraded/manual-review.` : "", h5pCompatibility.embeddedMedia > 0 ? ` ${h5pCompatibility.embeddedMedia} embedded media asset(s) will be packaged.` : "", h5pCompatibility.omittedMedia > 0 ? ` ${h5pCompatibility.omittedMedia} external or unsupported media asset(s) will be omitted.` : ""), /* @__PURE__ */ React.createElement("div", { className: "px-2 text-[10px] leading-tight text-slate-500" }, "MCQ-only quizzes export as Single Choice Set. Mixed assessments export as Question Set with Multiple Choice, Fill in the Blanks, and ungraded Essay adaptations. The destination needs the referenced H5P libraries installed.")), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Content package"), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !!altExportBusy, onClick: () => runPackageExport("ims"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-violet-700 hover:bg-violet-50 rounded-lg disabled:opacity-50" }, altExportBusy === "ims" ? "Building IMS..." : "IMS content package"), /* @__PURE__ */ React.createElement("div", { className: "px-2 text-[10px] leading-tight text-slate-500" }, "IMS includes the current editable Builder document."), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Reading & text"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       const doc = exportPreviewRef.current?.contentDocument;
       if (!doc) return;
       let text = "";
       try {
-        let _tClone = _builderFinalizeDocumentForExport(doc.body.cloneNode(true));
+        const _txtRawClone = doc.body.cloneNode(true);
+        if (typeof _builderSyncLiveFormState === "function") _builderSyncLiveFormState(doc.body, _txtRawClone);
+        let _tClone = _builderFinalizeDocumentForExport(_txtRawClone);
         const _txtStudentOnly = typeof _shouldExportStudentOnlyHtml === "function" ? _shouldExportStudentOnlyHtml(exportConfig, typeof builderViewFilter !== "undefined" ? builderViewFilter : "all") : exportConfig?.assessmentMode === true || !exportConfig?.includeTeacherKey && !exportConfig?.includeAnswerKey;
         if (_txtStudentOnly) {
           if (typeof _removeStudentPackageTeacherSections === "function") _removeStudentPackageTeacherSections(_tClone);
-          _tClone.querySelectorAll(".teacher-view,[data-allo-teacher-only],.answer-key,.alloflow-teacher-copy-banner,.alloflow-cs-answer-key,.alloflow-glossary-worksheet-key,.alloflow-math-solution,.alloflow-fluency-key,.alloflow-teacher-plan,.alloflow-teacher-annotations,.alloflow-teacher-annotations-by-resource,#alloflow-interactive-object-profile").forEach((el) => {
+          _tClone.querySelectorAll(".teacher-view,[data-allo-teacher-only],[data-teacher-only],.teacher-only,.answer-key,.alloflow-teacher-copy-banner,.alloflow-cs-answer-key,.alloflow-glossary-worksheet-key,.alloflow-math-solution,.alloflow-fluency-key,.alloflow-teacher-plan,.alloflow-teacher-annotations,.alloflow-teacher-annotations-by-resource,.alloflow-teacher-notes,.alloflow-rubric-key,.alloflow-model-answer,.alloflow-sample-response,.alloflow-scoring-guide,#alloflow-interactive-object-profile,[data-teacher-note],[data-answer-key]").forEach((el) => {
             const prior = el.previousElementSibling;
             if (prior?.classList?.contains("page-break")) prior.remove();
             el.remove();
           });
         }
+        if (exportConfig?.assessmentMode === true && typeof _builderSanitizeAssessmentRoot === "function") _builderSanitizeAssessmentRoot(_tClone);
         _tClone.querySelectorAll("button.alloflow-inline-term").forEach((btn) => {
           btn.replaceWith(doc.createTextNode(btn.textContent || ""));
         });
@@ -9935,7 +10396,7 @@ ${pageCss}
           });
         }
         _tClone.querySelectorAll("details.allo-math-source, details.allo-chart-data > summary, details.allo-image-desc > summary").forEach((el) => el.remove());
-        _tClone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, #allo-builder-edit-css, #allo-builder-view-filter, #allo-builder-paper-css, .alloflow-reading-tools-shell, .alloflow-hud-bar, #alloflow-step-pager, #alloflow-term-popover, .alloflow-term-popover, .alloflow-export-prompt-overlay, .alloflow-save-bar, .alloflow-turnin-bar, .alloflow-keycap, .alloflow-quiz-check-btn, .alloflow-save-status, .alloflow-math-symbolbar, .alloflow-math-symbar, .alloflow-math-controls, .alloflow-gm-controls, .alloflow-gm-status, .alloflow-faq-controls, .alloflow-dir-controls, .alloflow-glossary-card-actions, .alloflow-dbq-evidence-tracker, .alloflow-export-save-tools, .alloflow-venn-place-button, .alloflow-venn-screen-instructions, .alloflow-cloze-controls, .alloflow-cs-controls, .alloflow-cs-actions, .alloflow-venn-controls, .alloflow-venn-status, .alloflow-tl-controls, .alloflow-tl-arrows, .alloflow-glossary-controls, .alloflow-glossary-card-controls, .alloflow-glossary-card-status, .alloflow-cornell-controls, .alloflow-ws-controls, .alloflow-quiz-feedback, .alloflow-inline-chart svg, [hidden], [aria-hidden="true"], button, select, input, textarea, script, style').forEach((el) => el.remove());
+        _tClone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, #allo-builder-edit-css, #allo-builder-view-filter, #allo-builder-paper-css, .alloflow-reading-tools-shell, .alloflow-hud-bar, #alloflow-step-pager, #alloflow-term-popover, .alloflow-term-popover, .alloflow-export-prompt-overlay, .alloflow-save-bar, .alloflow-turnin-bar, .alloflow-keycap, .alloflow-quiz-check-btn, .alloflow-save-status, .alloflow-math-symbolbar, .alloflow-math-symbar, .alloflow-math-controls, .alloflow-gm-controls, .alloflow-gm-status, .alloflow-faq-controls, .alloflow-dir-controls, .alloflow-glossary-card-actions, .alloflow-dbq-evidence-tracker, .alloflow-export-save-tools, .alloflow-venn-place-button, .alloflow-venn-screen-instructions, .alloflow-cloze-controls, .alloflow-cs-controls, .alloflow-cs-actions, .alloflow-venn-controls, .alloflow-venn-status, .alloflow-tl-controls, .alloflow-tl-arrows, .alloflow-match-controls, .alloflow-ac-controls, .alloflow-quiz-controls, .alloflow-glossary-controls, .alloflow-glossary-card-controls, .alloflow-glossary-card-status, .alloflow-cornell-controls, .alloflow-ws-controls, .alloflow-quiz-feedback, .alloflow-inline-chart svg, [hidden], [aria-hidden="true"], button, select, input, textarea, script, style').forEach((el) => el.remove());
         _tClone.querySelectorAll("h1,h2,h3,h4,h5,h6,p,li,tr,figcaption,blockquote,div").forEach((el) => {
           try {
             el.appendChild(doc.createTextNode("\n"));
@@ -9960,7 +10421,7 @@ ${pageCss}
       if (!beginAlternativeExport("markdown")) return;
       try {
         const _mdStudentOnly = typeof _shouldExportStudentOnlyHtml === "function" ? _shouldExportStudentOnlyHtml(exportConfig, typeof builderViewFilter !== "undefined" ? builderViewFilter : "all") : exportConfig?.assessmentMode === true || !exportConfig?.includeTeacherKey && !exportConfig?.includeAnswerKey;
-        const root = _builderCleanMarkdownRoot(doc, { includeTeacherKey: !_mdStudentOnly });
+        const root = _builderCleanMarkdownRoot(doc, { includeTeacherKey: !_mdStudentOnly, assessmentMode: exportConfig?.assessmentMode === true });
         const math = Array.from(root.querySelectorAll("math"));
         let spokenByBlock = null;
         if (math.length) {
@@ -10063,8 +10524,9 @@ ${pageCss}
         const today = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
         const title = exportConfig && (exportConfig.title || exportConfig.docTitle || exportConfig.lessonTitle) || doc && doc.title || items[0] && items[0].title || _rawItems[0] && _rawItems[0].title || "AlloFlow Lesson";
         const esc = (v) => v == null ? "" : String(v);
-        const out = ["---", "title: " + esc(title), "source: AlloFlow (Universal Design for Learning toolkit)", "date_exported: " + today, "---", "", "# " + esc(title), ""];
+        const out = ["---", "title: " + JSON.stringify(esc(title).replace(/[\r\n]+/g, " ").trim()), "source: AlloFlow (Universal Design for Learning toolkit)", "date_exported: " + today, "---", "", "# " + esc(title), ""];
         if (items.length && !hasLiveEdits) {
+          const _hideLearnerWork = !_showKey && (exportConfig?.assessmentMode === true || exportConfig?.includeStudentResponses === false);
           const _nlmShuffle = (list, seedPrefix, labelFn) => {
             const fnv = (v) => {
               let h = 2166136261;
@@ -10089,16 +10551,28 @@ ${pageCss}
             const ty = it.type, d = it.data;
             out.push("## " + esc(it.title || (ty ? ty.charAt(0).toUpperCase() + ty.slice(1).replace(/[-_]/g, " ") : "Resource")), "");
             if (ty === "simplified") {
-              let simTxt = typeof d === "string" ? d : String(d && (d.text || d.content || d.summary) || "");
+              let simTxt = typeof d === "string" ? d : String(d && (d.text || d.clozeText || d.passage || d.content || d.summary) || "");
               const cutIdx = simTxt.search(/\r?\n---\s*ENGLISH TRANSLATION\s*---\r?\n/i);
               if (cutIdx !== -1) simTxt = simTxt.slice(0, cutIdx);
               simTxt = simTxt.replace(/\[\[CHART:\s*\{[\s\S]*?\}\s*\]\]/gi, "").replace(/<[^>]+>/g, " ").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
-              if (!_showKey && (it.clozeWorksheet || d && d.clozeWorksheet || exportConfig?.clozeWorksheet)) {
+              const _blankedTerms = [];
+              const _isClozeExport = !_showKey && (it.clozeWorksheet || d && d.clozeWorksheet || exportConfig?.clozeWorksheet);
+              if (_isClozeExport) {
                 const _collectClozeTerms = (src) => {
                   if (!src) return [];
-                  if (typeof src === "string") return [src];
-                  if (Array.isArray(src)) return src.flatMap(_collectClozeTerms);
+                  if (typeof src === "string") {
+                    const trimmed = src.trim();
+                    if (/^\s*[\[{]/.test(trimmed)) {
+                      try {
+                        return _collectClozeTerms(JSON.parse(trimmed));
+                      } catch (_) {
+                      }
+                    }
+                    return [src];
+                  }
+                  if (Array.isArray(src)) return src.filter((entry) => !(entry && typeof entry === "object" && entry.isSelected === false)).flatMap(_collectClozeTerms);
                   if (typeof src === "object") {
+                    if (src.isSelected === false) return [];
                     if (src.term || src.word) return [String(src.term || src.word)];
                     if (src.data || src.terms || src.items || src.entries || src.glossary) {
                       return _collectClozeTerms(src.data || src.terms || src.items || src.entries || src.glossary);
@@ -10106,48 +10580,208 @@ ${pageCss}
                   }
                   return [];
                 };
-                const _terms = [].concat(_collectClozeTerms(it.glossary), _collectClozeTerms(it.terms), _collectClozeTerms(it.wordBank), _collectClozeTerms(_nlmPaired.filter((h) => h && h.type === "glossary"))).map((termVal) => String(termVal || "").trim()).filter((termVal) => termVal.length >= 2).sort((a, b) => b.length - a.length);
+                const _unitOfCloze = (x) => {
+                  const u = x && (x.unitId || x.config && x.config.unitId);
+                  return u && u !== "all" && u !== "uncategorized" ? String(u) : null;
+                };
+                const _familyOfCloze = (x) => {
+                  const f = x && (x.sourceFamilyId || x.config && x.config.sourceFamilyId);
+                  return f ? String(f) : null;
+                };
+                const _cUnit = _unitOfCloze(it);
+                const _cFam = _familyOfCloze(it);
+                const _histGloss = _nlmPaired.filter((h) => h && h.type === "glossary").reverse();
+                let _scopedGloss = [];
+                if (_cUnit || _cFam) {
+                  const _inUnit = _histGloss.filter((g) => _unitOfCloze(g) === _cUnit);
+                  const _matched = _cFam && (_inUnit.find((g) => _familyOfCloze(g) === _cFam) || _histGloss.find((g) => _familyOfCloze(g) === _cFam)) || _inUnit[0] || null;
+                  _scopedGloss = _matched ? [_matched] : [];
+                } else {
+                  _scopedGloss = _histGloss;
+                }
+                const _terms = [].concat(
+                  _collectClozeTerms(it.glossary),
+                  _collectClozeTerms(it.terms),
+                  _collectClozeTerms(it.wordBank),
+                  _collectClozeTerms(d && typeof d === "object" ? d.glossary || d.terms || d.wordBank : null),
+                  _collectClozeTerms(_scopedGloss)
+                ).map((termVal) => String(termVal || "").replace(/[*/:]/g, " ").replace(/\s+/g, " ").trim()).filter((termVal) => termVal.length >= 2).sort((a, b) => b.length - a.length);
+                const _noBreakRe = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\u0e00-\u0e7f]/;
                 const _seenT = /* @__PURE__ */ new Set();
                 _terms.forEach((termVal) => {
                   const k = termVal.toLowerCase();
                   if (_seenT.has(k)) return;
                   _seenT.add(k);
                   const escTerm = termVal.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-                  try {
-                    simTxt = simTxt.replace(new RegExp("(^|[^\\p{L}\\p{N}_])(" + escTerm + ")(?=$|[^\\p{L}\\p{N}_])", "giu"), "$1_____");
-                  } catch (_) {
-                    simTxt = simTxt.replace(new RegExp("(^|[^A-Za-z0-9_])(" + escTerm + ")(?=$|[^A-Za-z0-9_])", "gi"), "$1_____");
+                  let replaced = false;
+                  if (_noBreakRe.test(termVal)) {
+                    simTxt = simTxt.replace(new RegExp("()(" + escTerm + ")", "iu"), (m, p1) => {
+                      replaced = true;
+                      return p1 + "_____";
+                    });
+                  } else {
+                    try {
+                      simTxt = simTxt.replace(new RegExp("(^|[^\\p{L}\\p{M}\\p{N}_])(" + escTerm + ")(?=$|[^\\p{L}\\p{M}\\p{N}_])", "iu"), (m, p1) => {
+                        replaced = true;
+                        return p1 + "_____";
+                      });
+                    } catch (_) {
+                      simTxt = simTxt.replace(new RegExp("(^|[^A-Za-z0-9_])(" + escTerm + ")(?=$|[^A-Za-z0-9_])", "i"), (m, p1) => {
+                        replaced = true;
+                        return p1 + "_____";
+                      });
+                    }
                   }
+                  if (replaced) _blankedTerms.push(termVal);
                 });
               }
               if (simTxt) out.push(simTxt, "");
+              if (_isClozeExport && _blankedTerms.length) {
+                const _bank = _nlmShuffle(_blankedTerms, (it.id || "cloze") + ":wb", (x) => String(x));
+                out.push("**Word Bank:** " + _bank.map(esc).join(", "), "");
+              }
             } else if (typeof d === "string") {
               out.push(d.trim(), "");
-            } else if (ty === "glossary" && Array.isArray(d)) {
-              d.forEach((g) => {
+            } else if (ty === "glossary" && d && (Array.isArray(d) || typeof d === "object" && Array.isArray(d.terms || d.items || d.entries || d.glossary))) {
+              const gListRaw = Array.isArray(d) ? d : d.terms || d.items || d.entries || d.glossary;
+              const gList = gListRaw.filter((g) => !(g && typeof g === "object" && g.isSelected === false));
+              const isAssessGlossary = !_showKey && exportConfig?.assessmentMode === true;
+              let wroteGlossary = false;
+              gList.forEach((g) => {
                 if (!g) return;
-                out.push("- **" + esc(g.term) + "** \u2014 " + esc(g.def));
-                if (typeof g.contextSentence === "string" && g.contextSentence.trim()) out.push("  - _In the text:_ " + esc(g.contextSentence.trim()));
-                if (g.translations && Object.keys(g.translations).length) out.push("  - _Translations:_ " + Object.values(g.translations).map((t2) => esc(t2)).join(" / "));
-                if (g.etymology) out.push("  - _Etymology:_ " + esc(g.etymology));
+                if (typeof g === "string") {
+                  if (g.trim()) {
+                    out.push("- **" + esc(g.trim()) + "**" + (isAssessGlossary ? " \u2014 _____" : ""));
+                    wroteGlossary = true;
+                  }
+                  return;
+                }
+                const gTerm = g.term || g.word || "";
+                const gDef = isAssessGlossary ? "" : g.def || g.definition || g.meaning || "";
+                if (!gTerm && !gDef) return;
+                out.push("- **" + esc(gTerm) + "**" + (isAssessGlossary ? " \u2014 _____" : gDef ? " \u2014 " + esc(gDef) : ""));
+                wroteGlossary = true;
+                if (!isAssessGlossary) {
+                  if (typeof g.contextSentence === "string" && g.contextSentence.trim()) out.push("  - _In the text:_ " + esc(g.contextSentence.trim()));
+                  if (g.translations && Object.keys(g.translations).length) out.push("  - _Translations:_ " + Object.values(g.translations).map((trv) => esc(trv)).join(" / "));
+                  if (g.etymology) out.push("  - _Etymology:_ " + esc(g.etymology));
+                }
               });
-              out.push("");
+              if (wroteGlossary) out.push("");
+            } else if (ty === "flashcards" && d && (Array.isArray(d) || typeof d === "object" && Array.isArray(d.cards || d.items || d.entries || d.flashcards))) {
+              const fcList = (Array.isArray(d) ? d : d.cards || d.items || d.entries || d.flashcards).filter((fc) => !(fc && typeof fc === "object" && fc.isSelected === false));
+              const isAssessStudent = !_showKey && exportConfig?.assessmentMode === true;
+              fcList.forEach((fc, idx) => {
+                if (!fc) return;
+                if (typeof fc === "string") {
+                  if (fc.trim()) out.push("- **Card " + (idx + 1) + ":** " + esc(fc.trim()));
+                  return;
+                }
+                const front = String(fc.front || fc.term || fc.question || fc.word || "").trim();
+                const back = isAssessStudent ? "" : String(fc.back || fc.def || fc.definition || fc.answer || "").trim();
+                const hint = isAssessStudent ? "" : String(fc.hint || fc.cue || "").trim();
+                const ex = isAssessStudent ? "" : String(fc.example || fc.contextSentence || fc.sentence || "").trim();
+                if (!front && !back) return;
+                out.push("- **" + esc(front || "Card " + (idx + 1)) + "**" + (back ? " \u2014 " + esc(back) : ""));
+                if (hint) out.push("  - _Hint:_ " + esc(hint));
+                if (ex) out.push("  - _Example:_ " + esc(ex));
+              });
+              if (fcList.length) out.push("");
+            } else if (ty === "word-wall" && d && (Array.isArray(d) || typeof d === "object" && Array.isArray(d.words || d.terms || d.items || d.entries))) {
+              const wwList = (Array.isArray(d) ? d : d.words || d.terms || d.items || d.entries).filter((w) => !(w && typeof w === "object" && w.isSelected === false));
+              let wroteWordWall = false;
+              wwList.forEach((w) => {
+                if (!w) return;
+                if (typeof w === "string") {
+                  if (w.trim()) {
+                    out.push("- **" + esc(w.trim()) + "**");
+                    wroteWordWall = true;
+                  }
+                  return;
+                }
+                const term = String(w.word || w.term || w.label || "").trim();
+                const def = String(w.definition || w.def || w.meaning || "").trim();
+                const ex = String(w.example || w.sentence || w.context || w.contextSentence || "").trim();
+                if (!term && !def) return;
+                out.push("- **" + esc(term || def) + "**" + (term && def ? " \u2014 " + esc(def) : ""));
+                wroteWordWall = true;
+                if (ex) out.push("  - _Example:_ " + esc(ex));
+              });
+              if (wroteWordWall) out.push("");
             } else if (ty === "quiz" && d && Array.isArray(d.questions)) {
-              const _normQt = (raw) => {
-                const k = String(raw || "mcq").trim();
-                if (k === "multiple-choice") return "mcq";
-                if (k === "shortAnswer") return "short-answer";
-                if (k === "order") return "ordering";
-                return k;
+              const _NLM_QT_MAP = {
+                multiplechoice: "mcq",
+                "multiple-choice": "mcq",
+                "single-choice": "mcq",
+                singlechoice: "mcq",
+                mcq: "mcq",
+                "true-false": "true-false",
+                truefalse: "true-false",
+                tf: "true-false",
+                multiselect: "multi-select",
+                "multi-select": "multi-select",
+                checkbox: "multi-select",
+                checkboxes: "multi-select",
+                fillblank: "fill-blank",
+                "fill-blank": "fill-blank",
+                fill: "fill-blank",
+                "fill-in-the-blank": "fill-blank",
+                numeric: "numeric-response",
+                number: "numeric-response",
+                "numeric-response": "numeric-response",
+                shortanswer: "short-answer",
+                "short-answer": "short-answer",
+                order: "ordering",
+                ordering: "ordering"
               };
-              d.questions.forEach((q, i) => {
-                if (!q) return;
+              const _normQt = (raw) => {
+                const k = String(raw || "mcq").trim().toLowerCase();
+                return _NLM_QT_MAP[k] || k;
+              };
+              const _qOptText = (o) => esc(o && typeof o === "object" ? o.text || o.label || o.value || "" : o).trim();
+              const _qRawEntries = (rawList) => (Array.isArray(rawList) ? rawList : []).map((o, rawIdx) => ({ text: _qOptText(o), rawIdx })).filter((entry) => Boolean(entry.text));
+              const _qResolveIdx = (entries, cand, allowBoolean = false) => {
+                if (!Array.isArray(entries) || !entries.length || cand === void 0 || cand === null) return -1;
+                if (typeof cand === "boolean") {
+                  if (!allowBoolean) return -1;
+                  const target = cand ? "true" : "false";
+                  const byLabel = entries.findIndex((e) => e.text.toLowerCase() === target);
+                  if (byLabel >= 0) return byLabel;
+                  if (entries.length === 2) return cand ? 0 : 1;
+                  return -1;
+                }
+                if (typeof cand === "number") {
+                  return Number.isInteger(cand) ? entries.findIndex((e) => e.rawIdx === cand) : -1;
+                }
+                const rawCand = _qOptText(cand);
+                if (!rawCand) return -1;
+                const exact = entries.findIndex((e) => e.text === rawCand);
+                if (exact >= 0) return exact;
+                const lower = rawCand.toLowerCase();
+                const ci = entries.findIndex((e) => e.text.toLowerCase() === lower);
+                if (ci >= 0) return ci;
+                if (/^[A-Za-z]$/.test(rawCand)) {
+                  const li = rawCand.toUpperCase().charCodeAt(0) - 65;
+                  const byLetter = entries.findIndex((e) => e.rawIdx === li);
+                  if (byLetter >= 0) return byLetter;
+                }
+                if (/^\d+$/.test(rawCand)) {
+                  const ni = Number(rawCand);
+                  const byNum = entries.findIndex((e) => e.rawIdx === ni);
+                  if (byNum >= 0) return byNum;
+                }
+                return -1;
+              };
+              d.questions.forEach((rawQ, i) => {
+                if (!rawQ) return;
+                const q = rawQ.question != null && rawQ.question !== "" ? rawQ : { ...rawQ, question: rawQ.prompt || rawQ.text || "" };
                 const qt = _normQt(q.type);
                 out.push("**Q" + (i + 1) + ".** " + esc(q.question), "");
-                if (qt === "mcq" || qt === "multi-select") {
-                  (q.options || []).forEach((o, k) => out.push(String.fromCharCode(65 + k) + ". " + esc(o)));
+                if (qt === "mcq" || qt === "multi-select" || qt === "true-false") {
+                  const rawOpts = Array.isArray(q.options) && q.options.length ? q.options : qt === "true-false" ? ["True", "False"] : [];
+                  _qRawEntries(rawOpts).forEach((entry, k) => out.push(String.fromCharCode(65 + k) + ". " + entry.text));
                 } else if (qt === "fill-blank") {
-                  if (Array.isArray(q.wordBank) && q.wordBank.length) out.push("Word bank: " + q.wordBank.map((o) => esc(o)).join(", "));
+                  if (Array.isArray(q.wordBank) && q.wordBank.length) out.push("Word bank: " + q.wordBank.map((o) => _qOptText(o)).filter(Boolean).join(", "));
                   else out.push("_Fill in the blank._");
                 } else if (qt === "numeric-response") {
                   out.push("_Numeric answer" + (q.unit ? " (" + esc(q.unit) + ")" : "") + "._");
@@ -10159,20 +10793,31 @@ ${pageCss}
                   const _rhs = _showKey ? _rhsRaw : _nlmShuffle(_rhsRaw, (it.id || "qz") + ":m:" + i);
                   if (_rhs.length) out.push("Match choices: " + _rhs.join(" | "));
                 } else if (qt === "ordering" || qt === "sequence-sense") {
-                  const _ordItems = _showKey ? q.items || [] : _nlmShuffle(q.items || [], (it.id || "qz") + ":o:" + i, (x) => esc(x));
-                  _ordItems.forEach((stepIt, k) => out.push(k + 1 + ". " + esc(stepIt)));
+                  const rawBaseItems = Array.isArray(q.items) && q.items.length ? q.items : Array.isArray(q.correctOrder) ? q.correctOrder : [];
+                  const _ordItems = _showKey ? Array.isArray(q.correctOrder) && q.correctOrder.length ? q.correctOrder : rawBaseItems : Array.isArray(q.presentedOrder) && q.presentedOrder.length ? q.presentedOrder.map((entry) => typeof entry === "number" && Array.isArray(q.items) && q.items[entry] !== void 0 ? q.items[entry] : entry) : _nlmShuffle(rawBaseItems, (it.id || "qz") + ":o:" + i, (x) => _qOptText(x));
+                  _ordItems.forEach((stepIt, k) => {
+                    const st = _qOptText(stepIt);
+                    if (st) out.push(k + 1 + ". " + st);
+                  });
                 } else if (qt === "answer-evidence") {
-                  (q.answerOptions || []).forEach((o, k) => out.push(String.fromCharCode(65 + k) + ". " + esc(o)));
-                  if (Array.isArray(q.evidenceOptions) && q.evidenceOptions.length) {
+                  _qRawEntries(q.answerOptions).forEach((entry, k) => out.push(String.fromCharCode(65 + k) + ". " + entry.text));
+                  const evEntries = _qRawEntries(q.evidenceOptions);
+                  if (evEntries.length) {
                     out.push("Evidence options:");
-                    q.evidenceOptions.forEach((e, k) => out.push("  " + (k + 1) + ". " + esc(e)));
+                    evEntries.forEach((entry, k) => out.push("  " + (k + 1) + ". " + entry.text));
                   }
                 } else if (qt === "relation-mismatch") {
                   (q.pairs || []).forEach((p, k) => {
-                    if (p) out.push(k + 1 + ". " + esc(p.left || "") + " \u2014 " + esc(p.right || ""));
+                    if (p) out.push(k + 1 + ". " + esc(p.left || p.prompt || "") + " \u2014 " + esc(p.right || p.match || p.answer || ""));
                   });
-                } else if (q.explanationPrompt) {
-                  out.push("_" + esc(q.explanationPrompt) + "_");
+                  const _candRaw = _qRawEntries(q.candidatePartners).map((e) => e.text);
+                  if (_candRaw.length) {
+                    const _cands = _showKey ? _candRaw : _nlmShuffle(_candRaw, (it.id || "qz") + ":rm:" + i, (x) => x);
+                    out.push("Repair choices: " + _cands.join(" | "));
+                  }
+                }
+                if (q.requireReasoning || q.explanationPrompt) {
+                  out.push("_" + esc(q.explanationPrompt || "Explain your reasoning.") + "_");
                 }
                 out.push("");
               });
@@ -10182,31 +10827,21 @@ ${pageCss}
                   if (!q) return;
                   const qt = _normQt(q.type);
                   let ansText = "";
-                  if (qt === "mcq") {
-                    const opts = Array.isArray(q.options) ? q.options : [];
-                    let idx = -1;
-                    if (Number.isInteger(q.correctIndex) && opts[q.correctIndex] != null) idx = q.correctIndex;
-                    else if (typeof q.correctIndex === "string" && q.correctIndex.trim() !== "") {
-                      const rawCi = q.correctIndex.trim();
-                      if (/^\d+$/.test(rawCi)) {
-                        const n = parseInt(rawCi, 10);
-                        if (opts[n] != null) idx = n;
-                      } else if (/^[A-Za-z]$/.test(rawCi)) {
-                        const n = rawCi.toUpperCase().charCodeAt(0) - 65;
-                        if (opts[n] != null) idx = n;
-                      }
-                    }
-                    if (idx < 0 && q.correctAnswer != null && opts.length) idx = opts.indexOf(q.correctAnswer);
-                    const _ans = idx >= 0 && opts[idx] != null ? opts[idx] : q.correctAnswer;
-                    const li = idx >= 0 ? idx : opts.indexOf(_ans);
-                    ansText = (li >= 0 ? String.fromCharCode(65 + li) + ". " : "") + esc(_ans || "");
+                  if (qt === "mcq" || qt === "true-false") {
+                    const rawOpts = Array.isArray(q.options) && q.options.length ? q.options : qt === "true-false" ? ["True", "False"] : [];
+                    const optEntries = _qRawEntries(rawOpts);
+                    const cand = q.correctIndex !== void 0 && q.correctIndex !== null ? q.correctIndex : q.correct !== void 0 && q.correct !== null ? q.correct : q.correctAnswer;
+                    const li = _qResolveIdx(optEntries, cand, qt === "true-false");
+                    const _ans = li >= 0 ? optEntries[li].text : _qOptText(q.correctAnswer !== void 0 ? q.correctAnswer : cand !== void 0 ? cand : "");
+                    ansText = (li >= 0 ? String.fromCharCode(65 + li) + ". " : "") + _ans;
                   } else if (qt === "multi-select") {
-                    const opts = Array.isArray(q.options) ? q.options : [];
-                    const rawList = Array.isArray(q.correctAnswers) && q.correctAnswers.length ? q.correctAnswers : Array.isArray(q.correctIndices) ? q.correctIndices.map((idx) => opts[idx]).filter((v) => v != null) : [];
+                    const optEntries = _qRawEntries(q.options);
+                    const rawList = Array.isArray(q.correctAnswers) && q.correctAnswers.length ? q.correctAnswers : Array.isArray(q.correctIndices) && q.correctIndices.length ? q.correctIndices : q.correctAnswer !== void 0 && q.correctAnswer !== null ? [q.correctAnswer] : q.correctIndex !== void 0 && q.correctIndex !== null ? [q.correctIndex] : [];
                     ansText = rawList.map((a) => {
-                      const li = opts.indexOf(a);
-                      return (li >= 0 ? String.fromCharCode(65 + li) + ". " : "") + esc(a);
-                    }).join("; ");
+                      const li = _qResolveIdx(optEntries, a, false);
+                      const txt = li >= 0 ? optEntries[li].text : _qOptText(a);
+                      return txt ? (li >= 0 ? String.fromCharCode(65 + li) + ". " : "") + txt : "";
+                    }).filter(Boolean).join("; ");
                   } else if (qt === "fill-blank") {
                     ansText = esc(q.expectedFill || q.correctAnswer || "");
                   } else if (qt === "numeric-response") {
@@ -10214,15 +10849,23 @@ ${pageCss}
                   } else if (qt === "matching") {
                     ansText = (q.pairs || []).map((p) => p ? esc(p.left || p.prompt || "") + " -> " + esc(p.right || p.match || p.answer || "") : "").filter(Boolean).join("; ");
                   } else if (qt === "ordering" || qt === "sequence-sense") {
-                    ansText = (Array.isArray(q.correctOrder) ? q.correctOrder : q.items || []).map((x) => esc(x)).join(" -> ");
+                    ansText = (Array.isArray(q.correctOrder) ? q.correctOrder : q.items || []).map((x) => _qOptText(x)).filter(Boolean).join(" -> ");
                   } else if (qt === "answer-evidence") {
-                    const aOpts = Array.isArray(q.answerOptions) ? q.answerOptions : [];
-                    const eOpts = Array.isArray(q.evidenceOptions) ? q.evidenceOptions : [];
-                    const ansVal = Number.isInteger(q.correctAnswerIndex) && aOpts[q.correctAnswerIndex] != null ? aOpts[q.correctAnswerIndex] : q.correctAnswer;
-                    const evVal = Number.isInteger(q.correctEvidenceIndex) && eOpts[q.correctEvidenceIndex] != null ? eOpts[q.correctEvidenceIndex] : q.correctEvidence;
-                    ansText = [ansVal != null && String(ansVal).trim() ? esc(ansVal) : "", evVal != null && String(evVal).trim() ? "Evidence: " + esc(evVal) : ""].filter(Boolean).join(" | ");
+                    const aEntries = _qRawEntries(q.answerOptions);
+                    const eEntries = _qRawEntries(q.evidenceOptions);
+                    const aCand = q.correctAnswerIndex !== void 0 && q.correctAnswerIndex !== null ? q.correctAnswerIndex : q.correctAnswer;
+                    const eCand = q.correctEvidenceIndex !== void 0 && q.correctEvidenceIndex !== null ? q.correctEvidenceIndex : q.correctEvidence;
+                    const aIdx = _qResolveIdx(aEntries, aCand, false);
+                    const eIdx = _qResolveIdx(eEntries, eCand, false);
+                    const ansVal = aIdx >= 0 ? aEntries[aIdx].text : _qOptText(q.correctAnswer);
+                    const evVal = eIdx >= 0 ? eEntries[eIdx].text : _qOptText(q.correctEvidence);
+                    ansText = [ansVal, evVal ? "Evidence: " + evVal : ""].filter(Boolean).join(" | ");
                   } else if (qt === "relation-mismatch") {
-                    ansText = Number.isInteger(q.wrongPairIndex) && Array.isArray(q.pairs) && q.pairs[q.wrongPairIndex] ? "Mismatch #" + (q.wrongPairIndex + 1) + (q.correctPartnerForWrong ? " -> " + esc(q.correctPartnerForWrong) : "") : esc(q.correctAnswer || "");
+                    const candEntries = _qRawEntries(q.candidatePartners);
+                    const partnerCand = q.correctPartnerForWrong !== void 0 && q.correctPartnerForWrong !== null ? q.correctPartnerForWrong : q.correctPartnerIndex;
+                    const pIdx = _qResolveIdx(candEntries, partnerCand, false);
+                    const resolvedPartner = pIdx >= 0 ? candEntries[pIdx].text : _qOptText(q.correctPartnerForWrong);
+                    ansText = Number.isInteger(q.wrongPairIndex) && Array.isArray(q.pairs) && q.pairs[q.wrongPairIndex] ? "Mismatch #" + (q.wrongPairIndex + 1) + (resolvedPartner ? " -> " + resolvedPartner : "") : esc(q.correctAnswer || "");
                   } else {
                     ansText = esc(q.sampleAnswer || q.correctAnswer || q.rubric || "Teacher-reviewed response");
                   }
@@ -10266,7 +10909,8 @@ ${pageCss}
                 }
               } else if (/^memory\s+palace$/i.test(rawStruct)) {
                 const store = d.memoryPalace && typeof d.memoryPalace === "object" ? d.memoryPalace : {};
-                const own = exportConfig?.includeStudentResponses !== false && store.myMnemonics && typeof store.myMnemonics === "object" ? store.myMnemonics : {};
+                const _redactPalaceMnemonics = !_showKey && exportConfig?.assessmentMode === true;
+                const own = !_redactPalaceMnemonics && exportConfig?.includeStudentResponses !== false && store.myMnemonics && typeof store.myMnemonics === "object" ? store.myMnemonics : {};
                 const rooms = branches.map((b, bi) => ({
                   key: "b" + bi,
                   title: b && b.title || "Room " + (bi + 1),
@@ -10274,7 +10918,7 @@ ${pageCss}
                     const lid = "b" + bi + "_i" + li;
                     const mnems = Array.isArray(b && b.mnemonics) ? b.mnemonics : [];
                     const ownTxt = typeof own[lid] === "string" ? own[lid].trim() : "";
-                    const mn = ownTxt || (mnems[li] != null ? String(mnems[li]).trim() : "");
+                    const mn = _redactPalaceMnemonics ? "" : ownTxt || (mnems[li] != null ? String(mnems[li]).trim() : "");
                     return { text: entryTxt(loc), mnemonic: esc(mn).trim() };
                   }).filter((l) => l.text || l.mnemonic)
                 }));
@@ -10293,7 +10937,7 @@ ${pageCss}
                   const lid = e.id != null ? String(e.id) : "";
                   const ownTxt = lid && typeof own[lid] === "string" ? own[lid].trim() : "";
                   const txt = esc(e.label != null ? e.label : e.text || "").trim();
-                  const mn = esc(ownTxt || (e.mnemonic != null ? String(e.mnemonic).trim() : "")).trim();
+                  const mn = _redactPalaceMnemonics ? "" : esc(ownTxt || (e.mnemonic != null ? String(e.mnemonic).trim() : "")).trim();
                   if (txt || mn) room.loci.push({ text: txt, mnemonic: mn });
                 });
                 rooms.forEach((room) => {
@@ -10397,19 +11041,23 @@ ${pageCss}
                   out.push("");
                 }
                 const verified = !!(maRules && typeof maRules.isCardVerified === "function" && maRules.isCardVerified(c));
-                out.push("**" + (verified ? maT("facts_student_heading", "Facts to remember") : maT("facts_pending_student_note", "Your teacher is still checking these facts. Recall practice opens when they finish.")) + ":**");
-                (Array.isArray(c.essentialFacts) ? c.essentialFacts : []).slice(0, 10).forEach((f) => {
-                  if (f) out.push("- " + esc(f));
-                });
-                const currentLinks = maRules && typeof maRules.activeConnections === "function" ? maRules.activeConnections(c) : [];
-                const customCue = !(maRules && typeof maRules.customCue === "function") || maRules.customCue(c);
-                if (!c.cueNeedsReview && currentLinks.length) {
-                  out.push("", "**" + maT("mapping_heading", "How the cue connects") + ":**");
-                  currentLinks.forEach((link) => {
-                    const fact = (c.essentialFacts || [])[link.factIndex];
-                    if (fact) out.push("- **" + esc(link.cue) + "**: " + esc(fact) + (link.explanation ? " " + esc(link.explanation) : ""));
+                const canShowMaFacts = verified || _showKey;
+                out.push("**" + (verified ? maT("facts_student_heading", "Facts to remember") : maT("facts_pending_student_note", "Your teacher is still checking these facts. Recall practice opens when they finish.")) + (canShowMaFacts ? ":**" : "**"));
+                if (canShowMaFacts) {
+                  const maFacts = Array.isArray(c.essentialFacts) ? c.essentialFacts : Array.isArray(c.facts) ? c.facts : [];
+                  maFacts.slice(0, 10).forEach((f) => {
+                    if (f) out.push("- " + esc(f));
                   });
-                } else if (!c.cueNeedsReview && !customCue && c.mapping) out.push("", "_" + maT("mapping_heading", "How the cue connects") + ":_ " + esc(c.mapping));
+                  const currentLinks = maRules && typeof maRules.activeConnections === "function" ? maRules.activeConnections(c) : [];
+                  const customCue = !(maRules && typeof maRules.customCue === "function") || maRules.customCue(c);
+                  if (!c.cueNeedsReview && currentLinks.length) {
+                    out.push("", "**" + maT("mapping_heading", "How the cue connects") + ":**");
+                    currentLinks.forEach((link) => {
+                      const fact = maFacts[link.factIndex];
+                      if (fact) out.push("- **" + esc(link.cue) + "**: " + esc(fact) + (link.explanation ? " " + esc(link.explanation) : ""));
+                    });
+                  } else if (!c.cueNeedsReview && !customCue && c.mapping) out.push("", "_" + maT("mapping_heading", "How the cue connects") + ":_ " + esc(c.mapping));
+                }
                 const hook = maRules && typeof maRules.hookFact === "function" ? maRules.hookFact(c) : null;
                 if (hook) {
                   const mdText = String(hook.text || "").replace(/([\\`*_[\]()~>#+=|{}!-])/g, "\\$1");
@@ -10518,7 +11166,7 @@ ${pageCss}
                 const blanks = Array.isArray(d.blanks) ? d.blanks : [];
                 blanks.forEach((b, bi) => {
                   if (!b || typeof b !== "object") return;
-                  const rawAns = _showKey ? b.answer || b.expected || b.studentAnswer : b.studentAnswer;
+                  const rawAns = _showKey ? b.answer || b.expected || b.studentAnswer : _hideLearnerWork ? "" : b.studentAnswer;
                   const ans = rawAns != null && String(rawAns).trim() ? esc(rawAns).trim() : "";
                   const blankText = ans ? "[" + ans + "]" : "_____";
                   const before = esc(b.before || b.prefix || "").trim();
@@ -10527,30 +11175,38 @@ ${pageCss}
                   out.push(bi + 1 + ". " + (before ? before + " " : "") + blankText + joinAfter);
                 });
                 if (blanks.length) out.push("");
-                if (d.notesExtra && String(d.notesExtra).trim()) out.push("**Additional Notes:** " + esc(d.notesExtra).trim(), "");
+                if (d.notesExtra && String(d.notesExtra).trim()) out.push("**Additional Notes:** " + (_hideLearnerWork ? "_____" : esc(d.notesExtra).trim()), "");
               } else if (tt === "q-and-a" || Array.isArray(d.pairs)) {
-                const pairs = Array.isArray(d.pairs) ? d.pairs : [];
+                const pairs = Array.isArray(d.pairs) ? d.pairs : Array.isArray(d.questions) ? d.questions : [];
                 pairs.forEach((p, pi) => {
-                  if (!p || typeof p !== "object") return;
-                  const qTxt = esc(p.question || p.prompt || "").trim();
-                  const aTxt = esc(_showKey ? p.answer || p.sampleAnswer || "" : p.studentAnswer || "").trim();
+                  if (!p) return;
+                  if (typeof p === "string") {
+                    if (p.trim()) {
+                      out.push("**Q" + (pi + 1) + ".** " + esc(p.trim()));
+                      out.push("- _Response:_ _____");
+                    }
+                    return;
+                  }
+                  if (typeof p !== "object") return;
+                  const qTxt = esc(p.question || p.prompt || p.text || "").trim();
+                  const aTxt = esc(_showKey ? p.answer || p.sampleAnswer || "" : _hideLearnerWork ? "" : p.studentAnswer || "").trim();
                   if (qTxt) out.push("**Q" + (pi + 1) + ".** " + qTxt);
                   out.push(aTxt ? "- **Answer:** " + aTxt : "- _Response:_ _____");
                 });
                 if (pairs.length) out.push("");
               } else if (tt === "double-entry" || Array.isArray(d.entries)) {
                 const heads = Array.isArray(d.columnHeads) && d.columnHeads.length === 2 ? d.columnHeads : ["Quote / Passage", "Response / Thinking"];
-                const entries = Array.isArray(d.entries) ? d.entries : [];
+                const entries = Array.isArray(d.entries) ? d.entries : Array.isArray(d.rows) ? d.rows : [];
                 entries.forEach((en) => {
                   if (!en || typeof en !== "object") return;
                   const q = esc(en.quote || "").trim();
-                  const r = esc(en.response || "").trim();
+                  const r = _hideLearnerWork ? "" : esc(en.response || "").trim();
                   if (q || r) out.push("- **" + esc(heads[0]) + ":** " + (q || "\u2014") + " | **" + esc(heads[1]) + ":** " + (r || "_____"));
                 });
                 if (entries.length) out.push("");
               } else if (tt === "lab" || d.hypothesis || d.conclusion || Array.isArray(d.materials) || Array.isArray(d.procedure)) {
                 if (d.question) out.push("**Research Question:** " + esc(d.question).trim(), "");
-                if (d.hypothesis) out.push("**Hypothesis:** " + esc(d.hypothesis).trim(), "");
+                if (d.hypothesis || _hideLearnerWork && tt === "lab") out.push("**Hypothesis:** " + (_hideLearnerWork ? "_____" : esc(d.hypothesis).trim()), "");
                 if (Array.isArray(d.materials) && d.materials.length) {
                   out.push("**Materials:**");
                   d.materials.forEach((m) => {
@@ -10567,24 +11223,33 @@ ${pageCss}
                   });
                   out.push("");
                 }
-                if (d.data) out.push("**Data / Observations:** " + esc(d.data).trim(), "");
-                if (d.analysis) out.push("**Analysis:** " + esc(d.analysis).trim(), "");
-                if (d.conclusion) out.push("**Conclusion:** " + esc(d.conclusion).trim(), "");
-              } else if (tt === "reading-response" || d.favoriteLine || d.thinkings) {
-                if (d.favoriteLine) out.push("**Favorite Line or Passage:** " + esc(d.favoriteLine).trim(), "");
-                if (d.thinkings) out.push("**What This Made Me Think About:** " + esc(d.thinkings).trim(), "");
-                const connTxt = d.connection && typeof d.connection === "object" ? d.connection.text : d.connection;
-                if (connTxt) out.push("**Connection:** " + esc(connTxt).trim(), "");
-                if (d.question) out.push("**One Question I Have:** " + esc(d.question).trim(), "");
+                if (d.data || _hideLearnerWork && tt === "lab") out.push("**Data / Observations:** " + (_hideLearnerWork ? "_____" : esc(d.data).trim()), "");
+                if (d.analysis || _hideLearnerWork && tt === "lab") out.push("**Analysis:** " + (_hideLearnerWork ? "_____" : esc(d.analysis).trim()), "");
+                if (d.conclusion || _hideLearnerWork && tt === "lab") out.push("**Conclusion:** " + (_hideLearnerWork ? "_____" : esc(d.conclusion).trim()), "");
+              } else if (tt === "reading-response" || d.favoriteLine || d.thinkings || Array.isArray(d.prompts)) {
+                if (Array.isArray(d.prompts) && d.prompts.length) {
+                  d.prompts.forEach((p, pi) => {
+                    const lbl = esc(p && typeof p === "object" ? p.label || p.title || p.prompt || p.question || "Prompt " + (pi + 1) : p).trim();
+                    const ans = _hideLearnerWork ? "" : esc(p && typeof p === "object" ? p.response || p.studentAnswer || p.answer || "" : "").trim();
+                    if (lbl) out.push("**" + lbl + ":** " + (ans || "_____"), "");
+                  });
+                } else {
+                  if (d.favoriteLine || _hideLearnerWork) out.push("**Favorite Line or Passage:** " + (_hideLearnerWork ? "_____" : esc(d.favoriteLine).trim()), "");
+                  if (d.thinkings || _hideLearnerWork) out.push("**What This Made Me Think About:** " + (_hideLearnerWork ? "_____" : esc(d.thinkings).trim()), "");
+                  const connTxt = d.connection && typeof d.connection === "object" ? d.connection.text : d.connection;
+                  if (connTxt || _hideLearnerWork) out.push("**Connection:** " + (_hideLearnerWork ? "_____" : esc(connTxt || "").trim()), "");
+                  if (d.question || _hideLearnerWork) out.push("**One Question I Have:** " + (_hideLearnerWork ? "_____" : esc(d.question).trim()), "");
+                }
               } else if (cues.length || notes.length || d.summary) {
                 const rowCount = Math.max(cues.length, notes.length);
                 for (let r = 0; r < rowCount; r += 1) {
                   const c = esc(cues[r] && (cues[r].text || cues[r])).trim();
-                  const n = esc(notes[r] && (notes[r].text || notes[r])).trim();
-                  if (c || n) out.push("- **" + (c || "Cue") + ":** " + n);
+                  const rawN = esc(notes[r] && (notes[r].text || notes[r])).trim();
+                  const n = _hideLearnerWork ? "" : rawN;
+                  if (c || n || _hideLearnerWork && rawN) out.push("- **" + (c || "Cue") + ":** " + (n || (_hideLearnerWork ? "_____" : "")));
                 }
                 if (rowCount) out.push("");
-                if (d.summary) out.push("**Summary:** " + esc(d.summary).trim(), "");
+                if (d.summary) out.push("**Summary:** " + (_hideLearnerWork ? "_____" : esc(d.summary).trim()), "");
               }
             } else if (ty === "sentence-frames" && d && typeof d === "object") {
               const bank = Array.isArray(d.wordBank) ? d.wordBank.map((w) => esc(w && typeof w === "object" ? w.word || w.term || w.text || "" : w).trim()).filter(Boolean) : [];
@@ -10765,6 +11430,14 @@ ${pageCss}
                     briefLines.push("- **" + lbl + ":** " + esc(val).trim());
                   }
                 });
+                const factsReviewed = br.factVerified === true && br.factLocked !== false;
+                if (Array.isArray(br.lockedLessonFacts) && br.lockedLessonFacts.length && (factsReviewed || _showKey)) {
+                  const facts = br.lockedLessonFacts.map((x) => esc(String(x || "").trim())).filter(Boolean);
+                  if (facts.length) {
+                    const factLbl = factsReviewed ? "Teacher-verified lesson facts" : "Lesson facts awaiting teacher review";
+                    briefLines.push("- **" + factLbl + ":** " + facts.join("; "));
+                  }
+                }
                 if (briefLines.length) {
                   out.push("### Design Brief", "");
                   briefLines.forEach((bl) => out.push(bl));
@@ -10780,31 +11453,35 @@ ${pageCss}
                 const pKey = String(ph.id || ph.key || "phase-" + (pi + 1));
                 const pTitle = String(ph.title || ph.label || "Phase " + (pi + 1)).trim();
                 const pPrompt = String(ph.prompt || acPrompts && !Array.isArray(acPrompts) && acPrompts[pKey] || "").trim();
-                const pResp = String(ph.response || ph.content || acWork && !Array.isArray(acWork) && acWork[pKey] || "").trim();
-                if (!pPrompt && !pResp) return;
+                const rawResp = String(ph.response || ph.content || acWork && !Array.isArray(acWork) && acWork[pKey] || "").trim();
+                const pResp = _hideLearnerWork ? "" : rawResp;
+                if (!pPrompt && !rawResp) return;
                 renderedKeys.add(pKey);
                 out.push("### " + esc(pTitle), "");
                 if (pPrompt) out.push("_Prompt:_ " + esc(pPrompt), "");
-                if (pResp) out.push(esc(pResp), "");
+                if (_hideLearnerWork) out.push("_Response:_ _____", "");
+                else if (pResp) out.push(esc(pResp), "");
               });
               if (acPrompts && typeof acPrompts === "object" && !Array.isArray(acPrompts)) {
                 Object.keys(acPrompts).forEach((k) => {
                   if (renderedKeys.has(k)) return;
                   const pPrompt = String(acPrompts[k] || "").trim();
-                  const pResp = acWork && !Array.isArray(acWork) ? String(acWork[k] || "").trim() : "";
-                  if (!pPrompt && !pResp) return;
+                  const rawResp = acWork && !Array.isArray(acWork) ? String(acWork[k] || "").trim() : "";
+                  const pResp = _hideLearnerWork ? "" : rawResp;
+                  if (!pPrompt && !rawResp) return;
                   renderedKeys.add(k);
                   out.push("### " + esc(k), "");
                   if (pPrompt) out.push("_Prompt:_ " + esc(pPrompt), "");
-                  if (pResp) out.push(esc(pResp), "");
+                  if (_hideLearnerWork) out.push("_Response:_ _____", "");
+                  else if (pResp) out.push(esc(pResp), "");
                 });
               }
               if (acWork && !Array.isArray(acWork)) {
                 Object.keys(acWork).forEach((k) => {
                   if (renderedKeys.has(k)) return;
-                  const pResp = String(acWork[k] || "").trim();
-                  if (!pResp) return;
-                  out.push("### " + esc(k), "", esc(pResp), "");
+                  const rawResp = String(acWork[k] || "").trim();
+                  if (!rawResp) return;
+                  out.push("### " + esc(k), "", _hideLearnerWork ? "_Response:_ _____" : esc(rawResp), "");
                 });
               }
               if (_showKey && d.teacherComment && String(d.teacherComment).trim()) {
@@ -10820,7 +11497,7 @@ ${pageCss}
               if (tx) out.push(esc(tx).trim(), "");
               else if (d && typeof d === "object") {
                 const eh = typeof window !== "undefined" && window.AlloModules && window.AlloModules.ExportHandlers || null;
-                const lines = eh && typeof eh.summarizeResourceText === "function" ? eh.summarizeResourceText(it, { maxChars: 4e3 }) : [];
+                const lines = eh && typeof eh.summarizeResourceText === "function" ? eh.summarizeResourceText(it, { maxChars: 4e3, hideAnswers: !_showKey, assessmentMode: exportConfig?.assessmentMode === true }) : [];
                 if (lines.length) {
                   lines.forEach((line) => out.push("- " + esc(line)));
                   out.push("");
@@ -10829,7 +11506,7 @@ ${pageCss}
             }
           });
         } else if (doc) {
-          const root = _builderCleanMarkdownRoot(doc, { includeTeacherKey: !_nlmForceStudent && !!exportConfig?.includeTeacherKey });
+          const root = _builderCleanMarkdownRoot(doc, { includeTeacherKey: _showKey, assessmentMode: exportConfig?.assessmentMode === true });
           const converted = _builderMarkdownFromRoot(root, { baseURI: doc.baseURI });
           out.push(converted.markdown);
           converted.warnings.forEach((message) => addToast(message, "warning"));
@@ -10867,6 +11544,40 @@ ${pageCss}
       try {
         let _clone = doc.documentElement.cloneNode(true);
         try {
+          if (typeof _builderSyncLiveFormState === "function") {
+            _builderSyncLiveFormState(doc.documentElement, _clone);
+          } else {
+            try {
+              const _sCtrls = doc.documentElement.querySelectorAll("input, textarea, select");
+              const _dCtrls = _clone.querySelectorAll("input, textarea, select");
+              if (_sCtrls.length === _dCtrls.length) {
+                for (let _ci = 0; _ci < _sCtrls.length; _ci += 1) {
+                  const _sc = _sCtrls[_ci], _dc = _dCtrls[_ci], _tg = String(_sc.tagName || "").toUpperCase();
+                  if (_tg === "TEXTAREA") {
+                    _dc.value = _sc.value;
+                    _dc.textContent = _sc.value;
+                  } else if (_tg === "SELECT") {
+                    _dc.selectedIndex = _sc.selectedIndex;
+                    Array.from(_dc.options || _dc.querySelectorAll("option") || []).forEach((o, oi) => {
+                      if (oi === _sc.selectedIndex || _sc.options?.[oi]?.selected) o.setAttribute("selected", "");
+                      else o.removeAttribute("selected");
+                    });
+                  } else if (_tg === "INPUT") {
+                    const _it = String(_sc.type || _sc.getAttribute("type") || "text").toLowerCase();
+                    if (_it === "checkbox" || _it === "radio") {
+                      _dc.checked = !!_sc.checked;
+                      if (_sc.checked) _dc.setAttribute("checked", "");
+                      else _dc.removeAttribute("checked");
+                    } else {
+                      _dc.value = _sc.value;
+                      if (_sc.value != null) _dc.setAttribute("value", _sc.value);
+                    }
+                  }
+                }
+              }
+            } catch (_) {
+            }
+          }
           _clone = _builderFinalizeDocumentForExport(_clone);
           const _epubStudentOnly = typeof _shouldExportStudentOnlyHtml === "function" ? _shouldExportStudentOnlyHtml(exportConfig, typeof builderViewFilter !== "undefined" ? builderViewFilter : "all") : exportConfig?.assessmentMode === true || !exportConfig?.includeTeacherKey && !exportConfig?.includeAnswerKey;
           if (_epubStudentOnly) {
@@ -10877,6 +11588,7 @@ ${pageCss}
               el.remove();
             });
           }
+          if (exportConfig?.assessmentMode === true && typeof _builderSanitizeAssessmentRoot === "function") _builderSanitizeAssessmentRoot(_clone);
           _clone.querySelectorAll("button.alloflow-inline-term").forEach((btn) => {
             const span = doc.createElement("span");
             span.className = "alloflow-inline-term";
@@ -10957,7 +11669,43 @@ ${pageCss}
               svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
             }
           });
-          _clone.querySelectorAll(".allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, #allo-builder-edit-css, #allo-builder-view-filter, #allo-builder-paper-css, .alloflow-reading-tools-shell, .alloflow-hud-bar, #alloflow-step-pager, #alloflow-term-popover, .alloflow-term-popover, .alloflow-export-prompt-overlay, .alloflow-save-bar, .alloflow-turnin-bar, .alloflow-keycap, .alloflow-quiz-check-btn, .alloflow-save-status, .alloflow-math-symbolbar, .alloflow-math-symbar, .alloflow-math-controls, .alloflow-gm-controls, .alloflow-gm-status, .alloflow-faq-controls, .alloflow-dir-controls, .alloflow-glossary-card-actions, .alloflow-dbq-evidence-tracker, .alloflow-export-save-tools, .alloflow-venn-place-button, .alloflow-venn-screen-instructions, .alloflow-cloze-controls, .alloflow-cs-controls, .alloflow-cs-actions, .alloflow-venn-controls, .alloflow-venn-status, .alloflow-tl-controls, .alloflow-tl-arrows, .alloflow-glossary-controls, .alloflow-glossary-card-controls, .alloflow-glossary-card-status, .alloflow-cornell-controls, .alloflow-ws-controls, .alloflow-quiz-feedback, .alloflow-inline-chart svg, annotation, annotation-xml, [data-allo-footnote-backlink], details.allo-math-source, select.alloflow-cs-response[hidden], select.alloflow-venn-response[hidden], [hidden], script").forEach((el) => el.remove());
+          _clone.querySelectorAll(".allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, #allo-builder-edit-css, #allo-builder-view-filter, #allo-builder-paper-css, .alloflow-reading-tools-shell, .alloflow-hud-bar, #alloflow-step-pager, #alloflow-term-popover, .alloflow-term-popover, .alloflow-export-prompt-overlay, .alloflow-save-bar, .alloflow-turnin-bar, .alloflow-keycap, .alloflow-quiz-check-btn, .alloflow-save-status, .alloflow-math-symbolbar, .alloflow-math-symbar, .alloflow-math-controls, .alloflow-gm-controls, .alloflow-gm-status, .alloflow-faq-controls, .alloflow-dir-controls, .alloflow-glossary-card-actions, .alloflow-dbq-evidence-tracker, .alloflow-export-save-tools, .alloflow-venn-place-button, .alloflow-venn-screen-instructions, .alloflow-cloze-controls, .alloflow-cs-controls, .alloflow-cs-actions, .alloflow-venn-controls, .alloflow-venn-status, .alloflow-tl-controls, .alloflow-tl-arrows, .alloflow-match-controls, .alloflow-ac-controls, .alloflow-quiz-controls, .alloflow-glossary-controls, .alloflow-glossary-card-controls, .alloflow-glossary-card-status, .alloflow-cornell-controls, .alloflow-ws-controls, .alloflow-quiz-feedback, .alloflow-inline-chart svg, annotation, annotation-xml, [data-allo-footnote-backlink], details.allo-math-source, select.alloflow-cs-response[hidden], select.alloflow-venn-response[hidden], [hidden], script").forEach((el) => el.remove());
+          _clone.querySelectorAll("select").forEach((sel) => {
+            const opts = sel.options ? Array.from(sel.options) : Array.from(sel.querySelectorAll("option"));
+            const selOpt = sel.selectedOptions && sel.selectedOptions[0] || (typeof sel.selectedIndex === "number" && sel.selectedIndex >= 0 ? opts[sel.selectedIndex] : null);
+            const hasVal = (o) => o && !o.disabled && String(o.value != null ? o.value : o.getAttribute && o.getAttribute("value") != null ? o.getAttribute("value") : o.textContent || "").trim() !== "";
+            const opt = (hasVal(selOpt) ? selOpt : null) || opts.find((o) => (o.selected || o.hasAttribute("selected")) && hasVal(o));
+            const chosenTxt = opt ? String(opt.textContent || opt.value || "").replace(/\s+/g, " ").trim() : "";
+            const span = doc.createElement("span");
+            span.className = "alloflow-response-value";
+            span.textContent = chosenTxt || "_____";
+            sel.replaceWith(span);
+          });
+          _clone.querySelectorAll("textarea").forEach((ta) => {
+            const val = String(ta.value != null ? ta.value : ta.textContent || "").trim();
+            const div = doc.createElement("div");
+            div.className = "alloflow-response-value";
+            div.textContent = val || "_____";
+            ta.replaceWith(div);
+          });
+          _clone.querySelectorAll("input").forEach((inp) => {
+            const itype = String(inp.getAttribute("type") || inp.type || "text").trim().toLowerCase();
+            if (itype === "hidden" || itype === "button" || itype === "submit" || itype === "reset" || itype === "file" || itype === "image") {
+              inp.remove();
+              return;
+            }
+            const span = doc.createElement("span");
+            span.className = "alloflow-response-value";
+            if (itype === "checkbox" || itype === "radio") {
+              const checked = !!(inp.checked || inp.hasAttribute("checked"));
+              span.textContent = checked ? "[x]" : "[ ]";
+            } else {
+              const val = String(inp.value != null ? inp.value : inp.getAttribute("value") || "").trim();
+              span.textContent = val || "_____";
+            }
+            inp.replaceWith(span);
+          });
+          _clone.querySelectorAll("button, select, input, textarea").forEach((el) => el.remove());
           _clone.querySelectorAll("[data-allo-crop-tabindex-added]").forEach((el) => {
             const added = el.getAttribute("data-allo-crop-tabindex-added") === "added";
             el.removeAttribute("data-allo-crop-tabindex-added");
@@ -10982,15 +11730,39 @@ ${pageCss}
         });
         const _rawLang = (doc.documentElement.getAttribute("lang") || "en").trim().replace(/_/g, "-");
         const lang = /^[a-z]{2,8}(?:-[a-z0-9]{1,8})*$/i.test(_rawLang) ? _rawLang : "en";
+        const _dirAttr = (doc.documentElement.getAttribute("dir") || doc.body && doc.body.getAttribute("dir") || "").trim().toLowerCase();
+        const _isRtl = _dirAttr === "rtl" || /^(ar|fa|he|iw|ps|sd|ug|ur|yi)(?:-|$)/i.test(lang);
+        try {
+          if (_isRtl && !(_clone.getAttribute("dir") || "").trim()) _clone.setAttribute("dir", "rtl");
+        } catch (_) {
+        }
         const xmlTitle = _escXml(title);
         const _navItems = [];
         try {
+          const _seenIds = /* @__PURE__ */ new Set();
+          Array.from(_clone.querySelectorAll("[id]")).forEach((el) => {
+            const rawId = String(el.getAttribute("id") || "").trim();
+            const baseId = rawId.replace(/\s+/g, "-") || "allo-id";
+            let nextId = baseId;
+            let seq = 1;
+            while (_seenIds.has(nextId)) {
+              nextId = baseId + "-" + seq;
+              seq += 1;
+            }
+            _seenIds.add(nextId);
+            if (nextId !== el.getAttribute("id")) el.setAttribute("id", nextId);
+          });
           const _hs = _clone.querySelectorAll("h1, h2, h3");
           for (let _hi = 0; _hi < _hs.length; _hi++) {
             const _h = _hs[_hi];
             const _txt = (_h.textContent || "").replace(/\s+/g, " ").trim().substring(0, 120);
             if (!_txt) continue;
-            if (!_h.id) _h.id = "allo-toc-" + _hi;
+            if (!_h.id) {
+              let tocId = "allo-toc-" + _hi;
+              while (_seenIds.has(tocId)) tocId += "-n";
+              _seenIds.add(tocId);
+              _h.id = tocId;
+            }
             _navItems.push('<li><a href="content.xhtml#' + _escXml(_h.id) + '">' + _escXml(_txt) + "</a></li>");
           }
         } catch (_) {
@@ -11061,7 +11833,7 @@ ${pageCss}
         } catch (_) {
         }
         const _contentPropAttr = _contentProps.length ? ' properties="' + _contentProps.join(" ") + '"' : "";
-        zip.file("OEBPS/content.opf", `<?xml version="1.0" encoding="UTF-8"?><package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier id="uid">${_uid}</dc:identifier><dc:title>${xmlTitle}</dc:title><dc:language>${_escXml(lang)}</dc:language><meta property="dcterms:modified">${(/* @__PURE__ */ new Date()).toISOString().replace(/\.\d+Z$/, "Z")}</meta></metadata><manifest><item id="content" href="content.xhtml" media-type="application/xhtml+xml"${_contentPropAttr}/><item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>${_imageManifest.join("")}</manifest><spine><itemref idref="content"/></spine></package>`);
+        zip.file("OEBPS/content.opf", `<?xml version="1.0" encoding="UTF-8"?><package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid"${_isRtl ? ' dir="rtl"' : ""}><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier id="uid">${_uid}</dc:identifier><dc:title>${xmlTitle}</dc:title><dc:language>${_escXml(lang)}</dc:language><meta property="dcterms:modified">${(/* @__PURE__ */ new Date()).toISOString().replace(/\.\d+Z$/, "Z")}</meta></metadata><manifest><item id="content" href="content.xhtml" media-type="application/xhtml+xml"${_contentPropAttr}/><item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>${_imageManifest.join("")}</manifest><spine${_isRtl ? ' page-progression-direction="rtl"' : ""}><itemref idref="content"/></spine></package>`);
         let xhtml;
         try {
           xhtml = new XMLSerializer().serializeToString(_clone).replace(/\sxmlns="([^"]+)"(?=[^<>]*\sxmlns="\1")/g, "");
@@ -11071,7 +11843,7 @@ ${pageCss}
         if (!/^<html\b[^>]*\sxmlns=/i.test(xhtml)) xhtml = xhtml.replace(/^<html\b/i, '<html xmlns="http://www.w3.org/1999/xhtml"');
         xhtml = xhtml.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\uFFFE\uFFFF]/g, "");
         zip.file("OEBPS/content.xhtml", xhtml);
-        zip.file("OEBPS/nav.xhtml", `<?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="${_escXml(lang)}" xml:lang="${_escXml(lang)}"><head><title>${xmlTitle} \u2014 Contents</title></head><body><nav epub:type="toc"><h1>Contents</h1><ol>${_navList}</ol></nav></body></html>`);
+        zip.file("OEBPS/nav.xhtml", `<?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="${_escXml(lang)}" xml:lang="${_escXml(lang)}"${_isRtl ? ' dir="rtl"' : ""}><head><title>${xmlTitle} \u2014 Contents</title></head><body><nav epub:type="toc"><h1>Contents</h1><ol>${_navList}</ol></nav></body></html>`);
         const blob = await zip.generateAsync({ type: "blob", mimeType: "application/epub+zip" });
         downloadBuilderBlob(blob, { extension: "epub" });
         if (_unavailableRemoteImages) {
@@ -11092,16 +11864,19 @@ ${pageCss}
       try {
         let text = "";
         try {
-          const _bClone = _builderFinalizeDocumentForExport(doc.body.cloneNode(true));
+          const _brfRawClone = doc.body.cloneNode(true);
+          if (typeof _builderSyncLiveFormState === "function") _builderSyncLiveFormState(doc.body, _brfRawClone);
+          const _bClone = _builderFinalizeDocumentForExport(_brfRawClone);
           const _brfStudentOnly = typeof _shouldExportStudentOnlyHtml === "function" ? _shouldExportStudentOnlyHtml(exportConfig, typeof builderViewFilter !== "undefined" ? builderViewFilter : "all") : exportConfig?.assessmentMode === true || !exportConfig?.includeTeacherKey && !exportConfig?.includeAnswerKey;
           if (_brfStudentOnly) {
             if (typeof _removeStudentPackageTeacherSections === "function") _removeStudentPackageTeacherSections(_bClone);
-            _bClone.querySelectorAll(".teacher-view,[data-allo-teacher-only],.answer-key,.alloflow-teacher-copy-banner,.alloflow-cs-answer-key,.alloflow-glossary-worksheet-key,.alloflow-math-solution,.alloflow-fluency-key,.alloflow-teacher-plan,.alloflow-teacher-annotations,.alloflow-teacher-annotations-by-resource,#alloflow-interactive-object-profile").forEach((el) => {
+            _bClone.querySelectorAll(".teacher-view,[data-allo-teacher-only],[data-teacher-only],.teacher-only,.answer-key,.alloflow-teacher-copy-banner,.alloflow-cs-answer-key,.alloflow-glossary-worksheet-key,.alloflow-math-solution,.alloflow-fluency-key,.alloflow-teacher-plan,.alloflow-teacher-annotations,.alloflow-teacher-annotations-by-resource,.alloflow-teacher-notes,.alloflow-rubric-key,.alloflow-model-answer,.alloflow-sample-response,.alloflow-scoring-guide,#alloflow-interactive-object-profile,[data-teacher-note],[data-answer-key]").forEach((el) => {
               const prior = el.previousElementSibling;
               if (prior?.classList?.contains("page-break")) prior.remove();
               el.remove();
             });
           }
+          if (exportConfig?.assessmentMode === true && typeof _builderSanitizeAssessmentRoot === "function") _builderSanitizeAssessmentRoot(_bClone);
           _bClone.querySelectorAll("button.alloflow-inline-term").forEach((btn) => {
             btn.replaceWith(doc.createTextNode(btn.textContent || ""));
           });
@@ -11206,7 +11981,7 @@ ${pageCss}
             });
           }
           _bClone.querySelectorAll("details.allo-math-source, details.allo-chart-data > summary, details.allo-image-desc > summary").forEach((el) => el.remove());
-          _bClone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, #allo-builder-edit-css, #allo-builder-view-filter, #allo-builder-paper-css, .alloflow-reading-tools-shell, .alloflow-hud-bar, #alloflow-step-pager, #alloflow-term-popover, .alloflow-term-popover, .alloflow-export-prompt-overlay, .alloflow-save-bar, .alloflow-turnin-bar, .alloflow-keycap, .alloflow-quiz-check-btn, .alloflow-save-status, .alloflow-math-symbolbar, .alloflow-math-symbar, .alloflow-math-controls, .alloflow-gm-controls, .alloflow-gm-status, .alloflow-faq-controls, .alloflow-dir-controls, .alloflow-glossary-card-actions, .alloflow-dbq-evidence-tracker, .alloflow-export-save-tools, .alloflow-venn-place-button, .alloflow-venn-screen-instructions, .alloflow-cloze-controls, .alloflow-cs-controls, .alloflow-cs-actions, .alloflow-venn-controls, .alloflow-venn-status, .alloflow-tl-controls, .alloflow-tl-arrows, .alloflow-glossary-controls, .alloflow-glossary-card-controls, .alloflow-glossary-card-status, .alloflow-cornell-controls, .alloflow-ws-controls, .alloflow-quiz-feedback, .alloflow-inline-chart svg, [hidden], [aria-hidden="true"], button, select, input, textarea, script, style').forEach((el) => el.remove());
+          _bClone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, #allo-builder-edit-css, #allo-builder-view-filter, #allo-builder-paper-css, .alloflow-reading-tools-shell, .alloflow-hud-bar, #alloflow-step-pager, #alloflow-term-popover, .alloflow-term-popover, .alloflow-export-prompt-overlay, .alloflow-save-bar, .alloflow-turnin-bar, .alloflow-keycap, .alloflow-quiz-check-btn, .alloflow-save-status, .alloflow-math-symbolbar, .alloflow-math-symbar, .alloflow-math-controls, .alloflow-gm-controls, .alloflow-gm-status, .alloflow-faq-controls, .alloflow-dir-controls, .alloflow-glossary-card-actions, .alloflow-dbq-evidence-tracker, .alloflow-export-save-tools, .alloflow-venn-place-button, .alloflow-venn-screen-instructions, .alloflow-cloze-controls, .alloflow-cs-controls, .alloflow-cs-actions, .alloflow-venn-controls, .alloflow-venn-status, .alloflow-tl-controls, .alloflow-tl-arrows, .alloflow-match-controls, .alloflow-ac-controls, .alloflow-quiz-controls, .alloflow-glossary-controls, .alloflow-glossary-card-controls, .alloflow-glossary-card-status, .alloflow-cornell-controls, .alloflow-ws-controls, .alloflow-quiz-feedback, .alloflow-inline-chart svg, [hidden], [aria-hidden="true"], button, select, input, textarea, script, style').forEach((el) => el.remove());
           _bClone.querySelectorAll("h1,h2,h3,h4,h5,h6").forEach((el) => {
             try {
               el.insertAdjacentText("beforebegin", "\n\n");
@@ -12408,7 +13183,7 @@ ${pageCss}
       event.stopPropagation();
       event.currentTarget.open = false;
       event.currentTarget.querySelector("summary")?.focus();
-    } }, /* @__PURE__ */ React.createElement("summary", { className: "flex h-7 cursor-pointer list-none items-center rounded px-1.5 text-[10px] font-black text-slate-600 hover:bg-slate-200", "aria-label": t("export_preview.accessibility.customize_quick_access_toolbar") || "Customize Quick Access toolbar", title: t("export_preview.accessibility.customize_quick_access_toolbar") || "Customize Quick Access toolbar" }, "+"), /* @__PURE__ */ React.createElement("div", { className: "absolute right-0 top-full z-50 mt-1 w-72 rounded-lg border border-slate-300 bg-white p-2 text-left shadow-xl" }, /* @__PURE__ */ React.createElement("div", { className: "mb-2 flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("strong", { className: "text-[11px] text-slate-800" }, "Customize Quick Access"), /* @__PURE__ */ React.createElement("span", { className: "text-[9px] text-slate-500" }, "Up to 6")), /* @__PURE__ */ React.createElement("div", { className: "space-y-1" }, _BUILDER_QUICK_ACCESS_OPTIONS.map((option) => {
+    } }, /* @__PURE__ */ React.createElement("summary", { className: "flex min-w-6 min-h-6 h-7 cursor-pointer list-none items-center justify-center rounded px-1.5 text-[10px] font-black text-slate-600 hover:bg-slate-200", "aria-label": t("export_preview.accessibility.customize_quick_access_toolbar") || "Customize Quick Access toolbar", title: t("export_preview.accessibility.customize_quick_access_toolbar") || "Customize Quick Access toolbar" }, "+"), /* @__PURE__ */ React.createElement("div", { className: "absolute right-0 top-full z-50 mt-1 w-72 rounded-lg border border-slate-300 bg-white p-2 text-left shadow-xl" }, /* @__PURE__ */ React.createElement("div", { className: "mb-2 flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("strong", { className: "text-[11px] text-slate-800" }, "Customize Quick Access"), /* @__PURE__ */ React.createElement("span", { className: "text-[9px] text-slate-500" }, "Up to 6")), /* @__PURE__ */ React.createElement("div", { className: "space-y-1" }, _BUILDER_QUICK_ACCESS_OPTIONS.map((option) => {
       const selected = quickAccessItems.includes(option.id);
       const position = quickAccessItems.indexOf(option.id);
       return /* @__PURE__ */ React.createElement("div", { key: option.id, className: "flex min-h-7 items-center gap-1 rounded px-1 hover:bg-slate-50" }, /* @__PURE__ */ React.createElement("label", { className: "flex min-w-0 flex-1 cursor-pointer items-center gap-2 text-[10px] font-semibold text-slate-700" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: selected, onChange: () => toggleQuickAccessItem(option.id), className: "accent-indigo-700" }), " ", /* @__PURE__ */ React.createElement("span", { className: "truncate" }, option.label)), selected && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("button", { type: "button", disabled: position === 0, onClick: () => moveQuickAccessItem(option.id, -1), className: "h-6 w-6 rounded text-[11px] font-bold text-slate-600 hover:bg-slate-200 disabled:opacity-30", "aria-label": "Move " + option.shortLabel + " left" }, "\u2190"), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: position === quickAccessItems.length - 1, onClick: () => moveQuickAccessItem(option.id, 1), className: "h-6 w-6 rounded text-[11px] font-bold text-slate-600 hover:bg-slate-200 disabled:opacity-30", "aria-label": "Move " + option.shortLabel + " right" }, "\u2192")));
@@ -13731,10 +14506,14 @@ ${_pageCss}
           try {
             const inner = _builderKeyboardTargets(doc2);
             const active = doc2.activeElement;
+            let skipTargetUnreachable = false;
             if (!e.shiftKey && active === doc2.body && inner.length) {
-              e.preventDefault();
               inner[0].focus();
-              return;
+              if (doc2.activeElement === inner[0]) {
+                e.preventDefault();
+                return;
+              }
+              skipTargetUnreachable = true;
             }
             const innerIndex = inner.indexOf(active);
             const adjacent = inner[innerIndex + (e.shiftKey ? -1 : 1)];
@@ -13744,7 +14523,7 @@ ${_pageCss}
               return;
             }
             const atStart = !inner.length || active === doc2.body || active === inner[0];
-            const atEnd = !inner.length || active === inner[inner.length - 1];
+            const atEnd = !inner.length || active === inner[inner.length - 1] || skipTargetUnreachable;
             if (e.shiftKey && atStart || !e.shiftKey && atEnd) {
               const frame = exportPreviewRef.current;
               const dialog = frame && frame.closest('[role="dialog"]');
@@ -13923,7 +14702,10 @@ ${_pageCss}
       const _openBuilderCropModal = (img) => {
         try {
           const _old = doc2.getElementById("allo-crop-overlay");
-          if (_old) _old.remove();
+          if (_old) {
+            if (typeof _old.__alloClose === "function") _old.__alloClose(false);
+            else _old.remove();
+          }
         } catch (_) {
         }
         const returnFocus = img;
@@ -14012,17 +14794,29 @@ ${_pageCss}
         wrapper.addEventListener("pointerup", () => {
           _dragging = false;
         });
-        const _close = () => {
+        let _closed = false;
+        let _bgState = [];
+        const _close = (restore = true) => {
+          if (_closed) return;
+          _closed = true;
+          _bgState.forEach((item) => {
+            if (!item.inert) item.el.removeAttribute("inert");
+            if (item.ariaHidden === null) item.el.removeAttribute("aria-hidden");
+            else item.el.setAttribute("aria-hidden", item.ariaHidden);
+          });
           try {
             overlay.remove();
           } catch (_) {
           }
-          try {
-            if (returnFocus && returnFocus.isConnected && returnFocus.focus) returnFocus.focus();
-            else if (doc2.body && doc2.body.focus) doc2.body.focus();
-          } catch (_) {
+          if (restore !== false) {
+            try {
+              if (returnFocus && returnFocus.isConnected && returnFocus.focus) returnFocus.focus();
+              else if (doc2.body && doc2.body.focus) doc2.body.focus();
+            } catch (_) {
+            }
           }
         };
+        overlay.__alloClose = _close;
         overlay.addEventListener("keydown", (e) => {
           if (e.key === "Escape") {
             e.preventDefault();
@@ -14031,13 +14825,20 @@ ${_pageCss}
             return;
           }
           if (e.key === "Tab") {
-            const controls = Array.from(overlay.querySelectorAll('button:not([disabled]),[tabindex]:not([tabindex="-1"])')).filter((el) => el.getClientRects().length > 0);
+            const candidates = Array.from(overlay.querySelectorAll('button:not([disabled]),[tabindex]:not([tabindex="-1"])')).filter((el) => !el.hidden && el.getAttribute("aria-hidden") !== "true" && (!el.style || el.style.display !== "none" && el.style.visibility !== "hidden"));
+            const rectControls = candidates.filter((el) => el.getClientRects().length > 0);
+            const controls = rectControls.length ? rectControls : candidates;
             if (!controls.length) {
               e.preventDefault();
               overlay.focus();
               return;
             }
             const first = controls[0], last = controls[controls.length - 1];
+            if (controls.indexOf(doc2.activeElement) === -1) {
+              e.preventDefault();
+              (e.shiftKey ? last : first).focus();
+              return;
+            }
             if (e.shiftKey && doc2.activeElement === first) {
               e.preventDefault();
               last.focus();
@@ -14157,6 +14958,15 @@ ${_pageCss}
         overlay.appendChild(btnRow);
         overlay.appendChild(statusEl);
         doc2.body.appendChild(overlay);
+        _bgState = Array.from(doc2.body.children).filter((el) => el !== overlay && !/^(SCRIPT|STYLE)$/i.test(el.tagName || "")).map((el) => ({
+          el,
+          inert: el.hasAttribute("inert"),
+          ariaHidden: el.hasAttribute("aria-hidden") ? el.getAttribute("aria-hidden") : null
+        }));
+        _bgState.forEach((item) => {
+          item.el.setAttribute("inert", "");
+          item.el.setAttribute("aria-hidden", "true");
+        });
         try {
           applyBtn.focus();
         } catch (_) {

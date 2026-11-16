@@ -153,8 +153,9 @@ module.exports = {
     ctx.root.appendChild(status);
     ctx.root.appendChild(ctx.el('div', { class: 'row' }, [submit]));
     update();
-    if (!ctx.isDone()) hear([item.promptAudio, item.wordAudio], true);
+    if (!ctx.isDone()) hear(ctx.skipDirections ? [item.wordAudio] : [item.promptAudio, item.wordAudio], true);
     return {
+      replay: function () { if (!ctx.isDone()) hear([item.promptAudio, item.wordAudio], true); },
       reveal: function () {
         token++;
         busy = false;

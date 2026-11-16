@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-04T12:57:29.102Z",
+  "generatedAt": "2026-11-15T23:35:28.804Z",
   "toolCount": 72,
   "themesAudited": [
     "light",
@@ -15,9 +15,9 @@
     "toolsWithIssues": 0,
     "toolsWithoutStandardShell": [],
     "contrastCoverage": {
-      "textNodesGraded": 18488,
+      "textNodesGraded": 18608,
       "skippedGradientBackground": 817,
-      "skippedColourFromCssClass": 738,
+      "skippedColourFromCssClass": 741,
       "note": "Skipped nodes are NOT passes. Gradient-backed text has no single background to measure; class-sourced colours cannot be resolved from SSR markup."
     }
   },
@@ -25,7 +25,7 @@
     {
       "id": "advocacy",
       "label": "Self-Advocacy Workshop",
-      "renderedBytes": 430375,
+      "renderedBytes": 430447,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -33,7 +33,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 143461,
+          "renderedBytes": 143485,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -42,7 +42,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 143461,
+          "renderedBytes": 143485,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -51,7 +51,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 143453,
+          "renderedBytes": 143477,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -454,7 +454,7 @@
     {
       "id": "conflict",
       "label": "Conflict Resolution Lab",
-      "renderedBytes": 70059,
+      "renderedBytes": 70857,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -462,7 +462,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 23356,
+          "renderedBytes": 23622,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -471,7 +471,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 23356,
+          "renderedBytes": 23622,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -480,7 +480,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 23347,
+          "renderedBytes": 23613,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -493,7 +493,7 @@
     {
       "id": "conflicttheater",
       "label": "Conflict Theater (Beta)",
-      "renderedBytes": 39330,
+      "renderedBytes": 40863,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -501,7 +501,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 13110,
+          "renderedBytes": 13621,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -510,7 +510,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 13110,
+          "renderedBytes": 13621,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -519,7 +519,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 13110,
+          "renderedBytes": 13621,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -532,7 +532,7 @@
     {
       "id": "coping",
       "label": "Coping Toolkit",
-      "renderedBytes": 941685,
+      "renderedBytes": 942456,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -540,7 +540,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 313894,
+          "renderedBytes": 314151,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -549,7 +549,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 313894,
+          "renderedBytes": 314151,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -558,7 +558,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 313897,
+          "renderedBytes": 314154,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -688,7 +688,7 @@
     {
       "id": "cultureExplorer",
       "label": "Culture Explorer",
-      "renderedBytes": 50484,
+      "renderedBytes": 50493,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -696,7 +696,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 16828,
+          "renderedBytes": 16831,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -705,7 +705,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 16828,
+          "renderedBytes": 16831,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -714,7 +714,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 16828,
+          "renderedBytes": 16831,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1663,7 +1663,7 @@
     {
       "id": "peersupport",
       "label": "Peer Support Coach",
-      "renderedBytes": 45045,
+      "renderedBytes": 55884,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1671,7 +1671,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 15015,
+          "renderedBytes": 18628,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1680,7 +1680,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 15015,
+          "renderedBytes": 18628,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1689,7 +1689,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 15015,
+          "renderedBytes": 18628,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1819,7 +1819,7 @@
     {
       "id": "quietQuestions",
       "label": "Quiet Questions",
-      "renderedBytes": 25464,
+      "renderedBytes": 25362,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1827,7 +1827,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 8486,
+          "renderedBytes": 8452,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1836,7 +1836,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 8486,
+          "renderedBytes": 8452,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1845,7 +1845,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 8492,
+          "renderedBytes": 8458,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1858,7 +1858,7 @@
     {
       "id": "restorativeCircle",
       "label": "Restorative Circle",
-      "renderedBytes": 52530,
+      "renderedBytes": 53346,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1866,7 +1866,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 17510,
+          "renderedBytes": 17782,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1875,7 +1875,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 17510,
+          "renderedBytes": 17782,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1884,7 +1884,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 17510,
+          "renderedBytes": 17782,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1936,7 +1936,7 @@
     {
       "id": "selfAdvocacy",
       "label": "Self-Advocacy Studio",
-      "renderedBytes": 111063,
+      "renderedBytes": 111081,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1944,7 +1944,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 37021,
+          "renderedBytes": 37027,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1953,7 +1953,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 37021,
+          "renderedBytes": 37027,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1962,7 +1962,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 37021,
+          "renderedBytes": 37027,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2131,7 +2131,7 @@
     {
       "id": "sociallab",
       "label": "Social Skills Roleplay",
-      "renderedBytes": 40347,
+      "renderedBytes": 50730,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2139,7 +2139,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 13449,
+          "renderedBytes": 16910,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2148,7 +2148,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 13449,
+          "renderedBytes": 16910,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2157,7 +2157,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 13449,
+          "renderedBytes": 16910,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,

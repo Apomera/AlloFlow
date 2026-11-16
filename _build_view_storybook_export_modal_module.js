@@ -60,4 +60,14 @@ ${compiled}
 
 fs.writeFileSync(OUTPUT, outputCode, 'utf-8');
 fs.writeFileSync(path.join(ROOT, 'desktop/web-app/public/view_storybook_export_modal_module.js'), outputCode, 'utf-8');
+for (const mirrorOut of [
+    path.join(ROOT, 'desktop', 'app-build', 'view_storybook_export_modal_module.js'),
+    path.join(ROOT, 'desktop', 'web-app', 'build', 'view_storybook_export_modal_module.js')
+]) {
+    if (fs.existsSync(path.dirname(mirrorOut))) {
+        const tmp = mirrorOut + '.build-' + process.pid + '.tmp';
+        fs.writeFileSync(tmp, outputCode, 'utf-8');
+        fs.renameSync(tmp, mirrorOut);
+    }
+}
 console.log(`Built ${OUTPUT} (${outputCode.split('\n').length} lines)`);

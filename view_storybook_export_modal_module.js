@@ -22,18 +22,48 @@ function _useStorybookDialogFocus(dialogRef, onClose, busy) {
     const root = dialogRef.current;
     if (!root || typeof document === "undefined") return void 0;
     const previouslyFocused = document.activeElement;
+    const prevBodyOverflow = document.body ? document.body.style.overflow : "";
+    const hiddenSiblings = [];
+    if (document.body) {
+      document.body.style.overflow = "hidden";
+      Array.from(document.body.children || []).forEach((sibling) => {
+        if (!sibling || sibling === root || sibling.contains(root)) return;
+        const tag = String(sibling.tagName || "").toUpperCase();
+        if (tag === "SCRIPT" || tag === "STYLE" || tag === "LINK" || tag === "TEMPLATE") return;
+        hiddenSiblings.push({
+          node: sibling,
+          hadAriaHidden: sibling.hasAttribute("aria-hidden"),
+          prevAriaHidden: sibling.getAttribute("aria-hidden"),
+          hadInertAttr: sibling.hasAttribute("inert"),
+          prevInertProp: sibling.inert
+        });
+        sibling.setAttribute("aria-hidden", "true");
+        try {
+          sibling.inert = true;
+        } catch (_) {
+        }
+        try {
+          sibling.setAttribute("inert", "");
+        } catch (_) {
+        }
+      });
+    }
     const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
     const trap = { root };
     trapStack.push(trap);
     const isTopTrap = () => trapStack[trapStack.length - 1] === trap;
     const getFocusable = () => Array.from(root.querySelectorAll(
-      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
     )).filter((element) => {
       if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      const closedDetails = element.closest("details:not([open])");
+      if (closedDetails && !(element.tagName === "SUMMARY" && element.parentElement === closedDetails)) return false;
       const style = typeof window.getComputedStyle === "function" ? window.getComputedStyle(element) : null;
       return !style || style.display !== "none" && style.visibility !== "hidden";
     });
     const handleKeyDown = (event) => {
+      if (!root.isConnected) return;
+      if (event.isComposing || event.keyCode === 229) return;
       if (!isTopTrap()) return;
       if (event.key === "Escape") {
         event.preventDefault();
@@ -50,7 +80,7 @@ function _useStorybookDialogFocus(dialogRef, onClose, busy) {
       }
       const first = focusable2[0];
       const last = focusable2[focusable2.length - 1];
-      if (!root.contains(document.activeElement)) {
+      if (!root.contains(document.activeElement) || document.activeElement === root) {
         event.preventDefault();
         (event.shiftKey ? last : first).focus();
       } else if (event.shiftKey && document.activeElement === first) {
@@ -68,10 +98,26 @@ function _useStorybookDialogFocus(dialogRef, onClose, busy) {
     initialFocus.focus();
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
+      if (document.body) document.body.style.overflow = prevBodyOverflow;
+      hiddenSiblings.forEach(({ node, hadAriaHidden, prevAriaHidden, hadInertAttr, prevInertProp }) => {
+        if (!node) return;
+        if (hadAriaHidden && prevAriaHidden !== null) node.setAttribute("aria-hidden", prevAriaHidden);
+        else node.removeAttribute("aria-hidden");
+        try {
+          node.inert = Boolean(prevInertProp);
+        } catch (_) {
+        }
+        if (!hadInertAttr) {
+          try {
+            node.removeAttribute("inert");
+          } catch (_) {
+          }
+        }
+      });
       const wasTopTrap = isTopTrap();
       const trapIndex = trapStack.indexOf(trap);
       if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
-      if (wasTopTrap && previouslyFocused && previouslyFocused !== document.body && previouslyFocused.isConnected && typeof previouslyFocused.focus === "function") {
+      if (wasTopTrap && previouslyFocused && previouslyFocused !== document.body && previouslyFocused !== document.documentElement && previouslyFocused.isConnected && typeof previouslyFocused.focus === "function") {
         previouslyFocused.focus();
       }
     };
@@ -84,9 +130,9 @@ function StorybookExportModal({
   setShowStorybookExportModal,
   t
 }) {
-  const BookOpen = window.BookOpen || (() => null);
-  const ImageIcon = window.ImageIcon || (() => null);
-  const Type = window.Type || (() => null);
+  const BookOpen = window.AlloIcons && window.AlloIcons.BookOpen || window.BookOpen || (() => null);
+  const ImageIcon = window.AlloIcons && window.AlloIcons.ImageIcon || window.ImageIcon || (() => null);
+  const Type = window.AlloIcons && window.AlloIcons.Type || window.Type || (() => null);
   const [includeNarration, setIncludeNarration] = React.useState(false);
   const [localProcessing, setLocalProcessing] = React.useState(false);
   const [progress, setProgress] = React.useState(null);

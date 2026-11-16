@@ -117,7 +117,7 @@
         overflow: "hidden"
       } }, s.text || ""), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "4px", fontSize: "10px", color: "#475569" } }, "confidence: ", s.confidence || "?", confDelta && /* @__PURE__ */ React.createElement("span", { style: { marginLeft: "6px", color: "#7c3aed", fontStyle: "italic" } }, "(", confDelta, ")")), s.knownUnknowns && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "4px", fontSize: "10px", color: "#475569", fontStyle: "italic" } }, "unknowns: ", clip(s.knownUnknowns, 60)));
     })), claims.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "8px" } }, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "11px", color: "#475569" } }, "Final claims (", claims.length, "):"), /* @__PURE__ */ React.createElement("ul", { style: { margin: "4px 0 0", paddingLeft: "20px", fontSize: "11px", color: "#1e293b" } }, claims.map(function(c, i) {
-      return /* @__PURE__ */ React.createElement("li", { key: i }, clip(c.text, 100), c.label && /* @__PURE__ */ React.createElement("span", { style: { marginLeft: "6px", color: c.staleLabel ? "#b45309" : "#16a34a", fontWeight: 700 } }, "[", c.label, c.staleLabel ? " \u2014 STALE" : "", "]"));
+      return /* @__PURE__ */ React.createElement("li", { key: i }, clip(c.text, 100), c.label && /* @__PURE__ */ React.createElement("span", { style: { marginLeft: "6px", color: c.staleLabel ? "#92400e" : "#166534", fontWeight: 700 } }, "[", c.label, c.staleLabel ? " \u2014 STALE" : "", "]"));
     }))), /* @__PURE__ */ React.createElement(Note, null, "v:1 vs v:N delta is the artifact \u2014 not v:N alone. Confidence movement (high\u2192medium IS revision) and ", "\u{1F501}", " loop-origin badges show real thinking."));
   }
   function BuildTestTrajectoryPanel(props) {
@@ -166,7 +166,7 @@
         WebkitLineClamp: 3,
         WebkitBoxOrient: "vertical",
         overflow: "hidden"
-      } }, b.buildText || ""), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "4px", display: "flex", gap: "6px", fontSize: "10px" } }, passes > 0 && /* @__PURE__ */ React.createElement("span", { style: { color: "#16a34a", fontWeight: 700 } }, passes, " pass"), fails > 0 && /* @__PURE__ */ React.createElement("span", { style: { color: "#dc2626", fontWeight: 700 } }, fails, " fail"), linkedFail > 0 && /* @__PURE__ */ React.createElement("span", { style: { color: "#b45309", fontWeight: 700 } }, "\u{1F501} " + linkedFail)));
+      } }, b.buildText || ""), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "4px", display: "flex", gap: "6px", fontSize: "10px" } }, passes > 0 && /* @__PURE__ */ React.createElement("span", { style: { color: "#166534", fontWeight: 700 } }, passes, " pass"), fails > 0 && /* @__PURE__ */ React.createElement("span", { style: { color: "#991b1b", fontWeight: 700 } }, fails, " fail"), linkedFail > 0 && /* @__PURE__ */ React.createElement("span", { style: { color: "#92400e", fontWeight: 700 } }, "\u{1F501} " + linkedFail)));
     })), failureLog.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "8px" } }, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "11px", color: "#475569" } }, "Failure loops (", failureLog.length, "):"), /* @__PURE__ */ React.createElement("ul", { style: { margin: "4px 0 0", paddingLeft: "20px", fontSize: "11px", color: "#1e293b" } }, failureLog.map(function(f, i) {
       var src = (j.testRun || []).filter(function(r) {
         return r.id === f.fromTestRunId;
@@ -181,10 +181,10 @@
       }
       return /* @__PURE__ */ React.createElement("li", { key: i }, /* @__PURE__ */ React.createElement("em", null, clip(f.modeText, 60)), deltaText, f.predictionVsRealityRadio && /* @__PURE__ */ React.createElement("span", { style: {
         marginLeft: "6px",
-        color: f.predictionVsRealityRadio === "confirmed" ? "#16a34a" : f.predictionVsRealityRadio === "refuted" ? "#dc2626" : "#d97706",
+        color: f.predictionVsRealityRadio === "confirmed" ? "#166534" : f.predictionVsRealityRadio === "refuted" ? "#991b1b" : "#92400e",
         fontWeight: 700
       } }, "[", f.predictionVsRealityRadio, "]"));
-    }))), weightGameFlag && /* @__PURE__ */ React.createElement("div", { role: "alert", style: {
+    }))), weightGameFlag && /* @__PURE__ */ React.createElement("div", { role: "status", style: {
       marginTop: "8px",
       padding: "8px 10px",
       borderRadius: "8px",
@@ -193,7 +193,7 @@
       fontSize: "11px",
       color: "#92400e"
     } }, /* @__PURE__ */ React.createElement("strong", null, "\u26A0\uFE0F ", "criteriaWeightLog flag:"), " at least one weight changed AFTER the decision matrix was filled (potential weight-gaming pattern; ask student to walk through why)."), designClaims.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "8px" } }, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "11px", color: "#475569" } }, "Final design claims (", designClaims.length, "):"), /* @__PURE__ */ React.createElement("ul", { style: { margin: "4px 0 0", paddingLeft: "20px", fontSize: "11px", color: "#1e293b" } }, designClaims.map(function(c, i) {
-      return /* @__PURE__ */ React.createElement("li", { key: i }, clip(c.text, 100), c.label && /* @__PURE__ */ React.createElement("span", { style: { marginLeft: "6px", color: c.staleLabel ? "#b45309" : "#16a34a", fontWeight: 700 } }, "[", c.label, c.staleLabel ? " \u2014 STALE" : "", "]"));
+      return /* @__PURE__ */ React.createElement("li", { key: i }, clip(c.text, 100), c.label && /* @__PURE__ */ React.createElement("span", { style: { marginLeft: "6px", color: c.staleLabel ? "#92400e" : "#166534", fontWeight: 700 } }, "[", c.label, c.staleLabel ? " \u2014 STALE" : "", "]"));
     }))), /* @__PURE__ */ React.createElement(Note, null, "Failure loops with predictionVsRealityRadio set to refuted/partially are HONEST RECONCILIATIONS. A clean v:1-meets-all-criteria session is usually the UNDER-iterated submission."));
   }
   function WarrantTrajectoryPanel(props) {
@@ -238,7 +238,7 @@
     }).length, "/", sources.length, " sources identify their relationship and historical/material context; ", sources.filter(function(s) {
       var r = (s.humanitiesContext || {}).inquiryRelationship;
       return r === "challenges" || r === "complicates";
-    }).length, " challenge or complicate the current position."), "        ", /* @__PURE__ */ React.createElement("div", { style: { marginBottom: "10px" } }, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "11px", color: "#475569" } }, "Source tier movement:"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "4px", display: "flex", flexWrap: "wrap", gap: "4px" } }, /* @__PURE__ */ React.createElement(Pill, { color: "#16a34a", label: tierPromotions + " promotion(s)" }), /* @__PURE__ */ React.createElement(Pill, { color: "#d97706", label: tierDowngrades + " downgrade(s) \u2014 good data" }), /* @__PURE__ */ React.createElement(Pill, { color: "#dc2626", label: failedSIFT + " failed SIFT" })), /* @__PURE__ */ React.createElement(Note, { small: true }, "Downgrades and failed-SIFT entries are the lateral reading working as intended. Never penalize them.")), links.map(function(l) {
+    }).length, " challenge or complicate the current position."), "        ", /* @__PURE__ */ React.createElement("div", { style: { marginBottom: "10px" } }, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "11px", color: "#475569" } }, "Source tier movement:"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "4px", display: "flex", flexWrap: "wrap", gap: "4px" } }, /* @__PURE__ */ React.createElement(Pill, { color: "#166534", label: tierPromotions + " promotion(s)" }), /* @__PURE__ */ React.createElement(Pill, { color: "#92400e", label: tierDowngrades + " downgrade(s) \u2014 good data" }), /* @__PURE__ */ React.createElement(Pill, { color: "#991b1b", label: failedSIFT + " failed SIFT" })), /* @__PURE__ */ React.createElement(Note, { small: true }, "Downgrades and failed-SIFT entries are the lateral reading working as intended. Never penalize them.")), links.map(function(l) {
       var qLog = l.qualifierRevisionLog || [];
       var wLog = l.warrantRevisionLog || [];
       var linkProbes = probes.filter(function(p) {
@@ -255,7 +255,7 @@
           Pill,
           {
             key: "q" + qi,
-            color: "#d97706",
+            color: "#92400e",
             label: "qual v" + (qi + 2) + (q.deltaJaccard != null ? " \u0394" + q.deltaJaccard.toFixed(2) : "")
           }
         );
@@ -264,12 +264,12 @@
           Pill,
           {
             key: "w" + wi,
-            color: "#a855f7",
+            color: "#6b21a8",
             label: "warrant v" + (wi + 2)
           }
         );
       }), linkProbes.map(function(p, pi) {
-        var color = p.verdict === "warrant_survives" ? "#16a34a" : p.verdict === "warrant_contracts" ? "#d97706" : "#dc2626";
+        var color = p.verdict === "warrant_survives" ? "#166534" : p.verdict === "warrant_contracts" ? "#92400e" : "#991b1b";
         return /* @__PURE__ */ React.createElement(
           Pill,
           {
@@ -279,7 +279,7 @@
           }
         );
       })));
-    }), probes.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "8px" } }, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "11px", color: "#475569" } }, "Framing probes (", probes.length, "):"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "4px", display: "flex", gap: "4px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(Pill, { color: "#16a34a", label: byVerdict.warrant_survives + " survives" }), /* @__PURE__ */ React.createElement(Pill, { color: "#d97706", label: byVerdict.warrant_contracts + " contracts" }), /* @__PURE__ */ React.createElement(Pill, { color: "#dc2626", label: byVerdict.warrant_fails + " fails" })), allSurvivesFlag && /* @__PURE__ */ React.createElement("div", { role: "alert", style: {
+    }), probes.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "8px" } }, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "11px", color: "#475569" } }, "Framing probes (", probes.length, "):"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "4px", display: "flex", gap: "4px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(Pill, { color: "#166534", label: byVerdict.warrant_survives + " survives" }), /* @__PURE__ */ React.createElement(Pill, { color: "#92400e", label: byVerdict.warrant_contracts + " contracts" }), /* @__PURE__ */ React.createElement(Pill, { color: "#991b1b", label: byVerdict.warrant_fails + " fails" })), allSurvivesFlag && /* @__PURE__ */ React.createElement("div", { role: "status", style: {
       marginTop: "6px",
       padding: "6px 8px",
       borderRadius: "6px",
@@ -293,7 +293,7 @@
       var avMissing = av.filter(function(a) {
         return a.whoseVoiceText && coda.indexOf(a.whoseVoiceText.slice(0, 20)) === -1;
       }).length;
-      return /* @__PURE__ */ React.createElement("li", { key: i }, "v", c.v, " \xB7 genre: ", c.genreChoice, " \xB7", " ", /* @__PURE__ */ React.createElement("span", { style: { color: avMissing > 0 ? "#dc2626" : "#16a34a" } }, "Foreclosure Coda ", avMissing > 0 ? "missing " + avMissing + " absent voice(s)" : "complete"));
+      return /* @__PURE__ */ React.createElement("li", { key: i }, "v", c.v, " \xB7 genre: ", c.genreChoice, " \xB7", " ", /* @__PURE__ */ React.createElement("span", { style: { color: avMissing > 0 ? "#991b1b" : "#166534" } }, "Foreclosure Coda ", avMissing > 0 ? "missing " + avMissing + " absent voice(s)" : "complete"));
     }))), /* @__PURE__ */ React.createElement(Note, null, "qualifierRevisionLog is THE assessment artifact for humanities. Multiple contractions under framing pressure = real warrant work. Source tier downgrades are good data; never penalize."));
   }
   function LoopBackPanel(props) {
@@ -358,8 +358,8 @@
         }
       );
     })), topBypass.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "6px" } }, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "11px", color: "#475569" } }, "Top bypass signals (gate-reasons):"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "4px", display: "flex", flexWrap: "wrap", gap: "4px" } }, topBypass.map(function(b) {
-      return /* @__PURE__ */ React.createElement(Pill, { key: b, color: "#d97706", label: b + " \xD7 " + bypassDist[b] });
-    }))), qFmtRej > 0 && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "6px", fontSize: "11px", color: "#475569" } }, /* @__PURE__ */ React.createElement("strong", null, "qFormatRejected count:"), " ", qFmtRej, " \u2014 substrate-level question-format validator caught AI output drift. Healthy."), pasteEvents > 0 && /* @__PURE__ */ React.createElement("div", { role: "alert", style: {
+      return /* @__PURE__ */ React.createElement(Pill, { key: b, color: "#92400e", label: b + " \xD7 " + bypassDist[b] });
+    }))), qFmtRej > 0 && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "6px", fontSize: "11px", color: "#475569" } }, /* @__PURE__ */ React.createElement("strong", null, "qFormatRejected count:"), " ", qFmtRej, " \u2014 substrate-level question-format validator caught AI output drift. Healthy."), pasteEvents > 0 && /* @__PURE__ */ React.createElement("div", { role: "status", style: {
       marginTop: "8px",
       padding: "6px 8px",
       borderRadius: "6px",
@@ -375,7 +375,7 @@
       borderRadius: "10px",
       background: "#fef2f2",
       border: "1px solid #fecaca"
-    } }, /* @__PURE__ */ React.createElement("summary", { style: { cursor: "pointer", fontSize: "11px", fontWeight: 800, color: "#991b1b" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F6AB} "), "What NOT to grade on (click to expand)"), /* @__PURE__ */ React.createElement("ul", { style: { margin: "8px 0 0", paddingLeft: "20px", fontSize: "11px", color: "#7f1d1d", lineHeight: 1.6 } }, /* @__PURE__ */ React.createElement("li", null, '"How polished is the op-ed / model / design" \u2014 all three lanes are designed so polish does not require thinking'), /* @__PURE__ */ React.createElement("li", null, "Mark down loop-backs \u2014 they are ", /* @__PURE__ */ React.createElement("em", null, "the"), " signal of real revision"), /* @__PURE__ */ React.createElement("li", null, "Count source tier downgrades as failure \u2014 downgrades = lateral reading working as intended"), /* @__PURE__ */ React.createElement("li", null, "Treat blocked AI calls as student failure \u2014 means the student-first gate enforced thinking-first"), /* @__PURE__ */ React.createElement("li", null, "Read bodyText alone \u2014 the humanities artifact is bodyText + ForeclosureCoda + warrant trajectory + standpoint snapshots ", /* @__PURE__ */ React.createElement("em", null, "together")), /* @__PURE__ */ React.createElement("li", null, "Compare students by aiCallCount \u2014 the cap is per-session; usage is not a quality signal")));
+    } }, /* @__PURE__ */ React.createElement("summary", { className: "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-700 rounded", style: { cursor: "pointer", fontSize: "11px", fontWeight: 800, color: "#991b1b", minHeight: "44px", display: "flex", alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F6AB} "), "What NOT to grade on (click to expand)"), /* @__PURE__ */ React.createElement("ul", { style: { margin: "8px 0 0", paddingLeft: "20px", fontSize: "11px", color: "#7f1d1d", lineHeight: 1.6 } }, /* @__PURE__ */ React.createElement("li", null, '"How polished is the op-ed / model / design" \u2014 all three lanes are designed so polish does not require thinking'), /* @__PURE__ */ React.createElement("li", null, "Mark down loop-backs \u2014 they are ", /* @__PURE__ */ React.createElement("em", null, "the"), " signal of real revision"), /* @__PURE__ */ React.createElement("li", null, "Count source tier downgrades as failure \u2014 downgrades = lateral reading working as intended"), /* @__PURE__ */ React.createElement("li", null, "Treat blocked AI calls as student failure \u2014 means the student-first gate enforced thinking-first"), /* @__PURE__ */ React.createElement("li", null, "Read bodyText alone \u2014 the humanities artifact is bodyText + ForeclosureCoda + warrant trajectory + standpoint snapshots ", /* @__PURE__ */ React.createElement("em", null, "together")), /* @__PURE__ */ React.createElement("li", null, "Compare students by aiCallCount \u2014 the cap is per-session; usage is not a quality signal")));
   }
   function Panel(props) {
     return /* @__PURE__ */ React.createElement("div", { style: {
@@ -406,7 +406,7 @@
     } }, props.children);
   }
   function EmptyTrajectory(title, body) {
-    return /* @__PURE__ */ React.createElement(Panel, { title }, /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontSize: "11px", color: "#94a3b8", fontStyle: "italic" } }, body));
+    return /* @__PURE__ */ React.createElement(Panel, { title }, /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontSize: "11px", color: "#475569", fontStyle: "italic" } }, body));
   }
   function MethodProvenancePanel(props) {
     var j = props.journal;
@@ -425,7 +425,7 @@
     var helper = window.ResearchHub && window.ResearchHub.helpers && window.ResearchHub.helpers.researchStorageHealth;
     if (typeof helper !== "function") return null;
     var health = helper(props.journal);
-    var color = health.status === "healthy" ? "#2563eb" : health.status === "warning" ? "#d97706" : "#dc2626";
+    var color = health.status === "healthy" ? "#1d4ed8" : health.status === "warning" ? "#92400e" : "#991b1b";
     return /* @__PURE__ */ React.createElement(Panel, { title: "Local portfolio storage", subtitle: health.percent + "% of 4 MB safety budget" }, /* @__PURE__ */ React.createElement("div", { "data-educator-storage-health": "true", style: { height: "7px", borderRadius: "999px", overflow: "hidden", background: "#e2e8f0" } }, /* @__PURE__ */ React.createElement("div", { style: { height: "100%", width: Math.min(100, health.percent) + "%", background: color } })), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "6px", fontSize: "10px", color: health.status === "healthy" ? "#475569" : color } }, health.status === "healthy" ? "Storage is within the local safety budget." : "Recommend portfolio export or artifact archiving before additional audio or tool captures."));
   }
   function IntegrationHealthPanel(props) {
@@ -449,7 +449,7 @@
       var artifact = row.artifact;
       var contract = artifact.integrationContract || {};
       var receipt = artifact.reproducibilityReceipt || {};
-      var color = row.health.status === "healthy" ? "#16a34a" : row.health.status === "action_needed" ? "#dc2626" : "#d97706";
+      var color = row.health.status === "healthy" ? "#166534" : row.health.status === "action_needed" ? "#991b1b" : "#92400e";
       return /* @__PURE__ */ React.createElement("div", { key: artifact.id, style: { padding: "8px 10px", borderRadius: "9px", border: "1px solid " + color, background: color + "0d" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", gap: "8px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "10px", color: "#1e293b" } }, artifact.sourceToolName || artifact.sourceToolId, " \xB7 ", artifact.sourceToolVersion || "version unknown"), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "9px", fontWeight: 900, color } }, row.health.status.replace("_", " "))), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "3px", fontSize: "9px", color: "#64748b" } }, "Contract v", contract.schemaVersion || "?", " \xB7 license: ", contract.license && (contract.license.spdx || contract.license.name) || "missing", " \xB7 citation: ", contract.citation && contract.citation.text ? "declared" : "missing", " \xB7 reproducibility: ", receipt.status || "missing", /* @__PURE__ */ React.createElement("span", null, " \xB7 review after: ", contract.reviewAfter || "unknown")), receipt.missingFields && receipt.missingFields.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "3px", fontSize: "9px", color: "#92400e" } }, /* @__PURE__ */ React.createElement("strong", null, "Receipt gaps:"), " ", receipt.missingFields.join(", ")), artifact.privacyFindings && artifact.privacyFindings.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "3px", fontSize: "9px", color: "#5b21b6" } }, /* @__PURE__ */ React.createElement("strong", null, "Privacy controls:"), " ", artifact.privacyFindings.map(function(finding) {
         return finding.code;
       }).join(", ")), artifact.legacyProvenance && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "3px", fontSize: "9px", color: "#92400e" } }, /* @__PURE__ */ React.createElement("strong", null, "Legacy metadata:"), " ", artifact.legacyProvenance.reason, artifact.legacyContextNote ? " Learner context attached." : ""), row.health.issues && row.health.issues.length > 0 && /* @__PURE__ */ React.createElement("ul", { style: { margin: "4px 0 0", paddingLeft: "17px", fontSize: "9px", color: "#475569" } }, row.health.issues.map(function(issue) {
@@ -468,14 +468,18 @@
       {
         type: "button",
         onClick: onExit,
+        className: "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1",
         style: {
           alignSelf: "flex-start",
-          padding: "4px 12px",
+          minHeight: "44px",
+          display: "inline-flex",
+          alignItems: "center",
+          padding: "8px 16px",
           borderRadius: "999px",
           background: "#f1f5f9",
-          color: "#475569",
-          border: "none",
-          fontSize: "11px",
+          color: "#334155",
+          border: "1px solid #cbd5e1",
+          fontSize: "12px",
           fontWeight: 700,
           cursor: "pointer"
         }

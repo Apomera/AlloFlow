@@ -1024,7 +1024,7 @@
                   h('pre', { style: { margin: 0, whiteSpace: 'pre-wrap', font: '11.5px ui-monospace, monospace', color: hc ? HC_FG : (dark ? '#fca5a5' : '#991b1b') } }, String(smoke.error || '').slice(0, 800)))
           ) : null,
           // live preview iframe (sandboxed: allow-scripts only)
-          h('div', { style: { border: '1px solid ' + border, borderRadius: 10, overflow: 'hidden', background: '#fff', minHeight: 220, flex: 1 } },
+          h('div', { style: { border: '1px solid ' + border, borderRadius: 10, overflow: 'hidden', background: smokeDoc ? '#fff' : panelBg, minHeight: 220, flex: 1 } },
             smokeDoc
               ? h('iframe', { ref: iframeRef, srcDoc: smokeDoc, sandbox: 'allow-scripts', title: t('stem.forge.preview', 'Plugin preview (sandboxed)'), style: { width: '100%', height: 280, border: 0, background: '#fff' } })
               : h('div', { style: { padding: 16, color: sub, fontSize: 12.5 } }, t('stem.forge.preview_hint', 'Press “Validate + preview” to render this plugin in an isolated sandbox.'))

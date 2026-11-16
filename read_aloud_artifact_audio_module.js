@@ -21,6 +21,9 @@ const createReadAloudArtifactAudio = (dependencies = {}) => {
         ? dependencies.callTTS
         : (...args) => {
             if (typeof window !== 'undefined' && typeof window.callTTS === 'function') {
+                if (window.callTTS._alloQrBlocked === true) {
+                    throw artifactAudioError('tts-unavailable', 'Cloud text-to-speech is disabled in this session.');
+                }
                 return window.callTTS(...args);
             }
             throw artifactAudioError('tts-unavailable', 'Text-to-speech is not available for this artifact.');
@@ -43,7 +46,11 @@ const createReadAloudArtifactAudio = (dependencies = {}) => {
 
     function cleanToken(value, fallback, max = 160) {
         const clean = String(value == null ? '' : value).trim();
-        return (clean || fallback).slice(0, max);
+        const token = (clean || fallback).slice(0, max);
+        if (token === '__proto__' || token === 'constructor' || token === 'prototype') {
+            return String(fallback || '').slice(0, max);
+        }
+        return token;
     }
 
     function cleanText(value) {
@@ -227,6 +234,10 @@ const createReadAloudArtifactAudio = (dependencies = {}) => {
                 const voice = cleanToken(profile && profile.voice, defaults.voice, 160);
                 const language = cleanToken(profile && profile.language, defaults.language, 100);
                 const speed = Number(profile && (profile.synthesisRate == null ? profile.speed : profile.synthesisRate)) || defaults.speed;
+                const requestedProvider = String((profile && (profile.requestedProvider || profile.provider)) || defaults.requestedProvider || defaults.provider || '').toLowerCase();
+                if (typeof dependencies.callTTS !== 'function' && typeof window !== 'undefined' && window.__alloAiSecretsLocked === true && (requestedProvider === 'gemini' || requestedProvider === 'cloud')) {
+                    throw artifactAudioError('tts-unavailable', 'Cloud text-to-speech is disabled while AI keys are locked.');
+                }
                 let resolvedProfile = {};
                 const audio = await callTTS(text, voice, speed, {
                     maxRetries: Number(options.maxRetries) >= 0 ? Number(options.maxRetries) : 2,
@@ -299,24 +310,29 @@ const createReadAloudArtifactAudio = (dependencies = {}) => {
                 if (!segmentId || typeof base64 !== 'string' || !base64) return;
                 if (!segments.some(segment => segment.segmentId === segmentId) || service.inspect(segmentId).status !== 'ready') return;
                 const profile = entry.synthesisProfile || {};
-                audioBySegmentId[segmentId] = {
-                    encoding: 'base64',
-                    mime: entry.mime || 'audio/mpeg',
-                    base64: base64.replace(/^data:[^,]*,/, '').replace(/\s+/g, ''),
-                    byteLength: byteLengthOfBase64(base64),
-                    source: entry.source === 'human-teacher' ? entry.source : cleanToken(options.source, 'tts-artifact', 80),
-                    vetted: true,
-                    vettingMethod: 'owner-approved',
-                    synthesisProfile: {
-                        voice: cleanToken(profile.voice, defaults.voice, 160),
-                        language: cleanToken(profile.language, defaults.language, 100),
-                        provider: cleanToken(profile.provider, defaults.provider || 'tts-resolver', 80),
-                        synthesisRate: Number(profile.synthesisRate == null ? profile.speed : profile.synthesisRate) || defaults.speed,
-                        voiceResolverVersion: Number(profile.voiceResolverVersion) > 0
-                            ? Math.floor(Number(profile.voiceResolverVersion))
-                            : defaults.voiceResolverVersion,
+                Object.defineProperty(audioBySegmentId, segmentId, {
+                    enumerable: true,
+                    configurable: true,
+                    writable: true,
+                    value: {
+                        encoding: 'base64',
+                        mime: entry.mime || 'audio/mpeg',
+                        base64: base64.replace(/^data:[^,]*,/, '').replace(/\s+/g, ''),
+                        byteLength: byteLengthOfBase64(base64),
+                        source: entry.source === 'human-teacher' ? entry.source : cleanToken(options.source, 'tts-artifact', 80),
+                        vetted: true,
+                        vettingMethod: 'owner-approved',
+                        synthesisProfile: {
+                            voice: cleanToken(profile.voice, defaults.voice, 160),
+                            language: cleanToken(profile.language, defaults.language, 100),
+                            provider: cleanToken(profile.provider, defaults.provider || 'tts-resolver', 80),
+                            synthesisRate: Number(profile.synthesisRate == null ? profile.speed : profile.synthesisRate) || defaults.speed,
+                            voiceResolverVersion: Number(profile.voiceResolverVersion) > 0
+                                ? Math.floor(Number(profile.voiceResolverVersion))
+                                : defaults.voiceResolverVersion,
+                        },
                     },
-                };
+                });
             });
             const estimatedBytes = Object.values(audioBySegmentId)
                 .reduce((sum, audio) => sum + (Number(audio.byteLength) || 0), 0);

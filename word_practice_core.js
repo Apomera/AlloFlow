@@ -310,6 +310,7 @@
         intervalSeconds: bounded(options.intervalSeconds == null ? 3 : options.intervalSeconds, 3, 1, 30),
         includeAudio: options.includeAudio !== false,
         includePictures: options.includePictures !== false,
+        pictureSlides: options.pictureSlides === true,
         vocabularyFirst: options.vocabularyFirst === 'meaning' ? 'meaning' : 'word',
         translationLanguages: normalizeTranslationLanguages(options.translationLanguages),
         cardFont: ['default', 'arial', 'verdana', 'georgia'].includes(options.cardFont) ? options.cardFont : 'default',

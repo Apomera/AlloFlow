@@ -1,7 +1,19 @@
 
+function _outlineAiDoor(t) {
+  try {
+    if (typeof window !== 'undefined' && typeof window.__alloAiSetupDoorway === 'function') {
+      return window.__alloAiSetupDoorway('text', t);
+    }
+  } catch (_) {}
+  return { disabled: false };
+}
+
 function OutlineView(props) {
   // Pure data + state reads
   var t = props.t;
+  var outlineAiDoor = _outlineAiDoor(t);
+  var outlineAiOff = !!(outlineAiDoor && (outlineAiDoor.disabled || outlineAiDoor.available === false));
+  var outlineAiTitle = outlineAiOff ? (outlineAiDoor.title || (typeof t === 'function' && t('ai.setup_required')) || 'Set up AI to use this feature') : undefined;
   // English fallback whether t returns '' or the key itself for a missing string.
   var tl = function (key, fallback) { var v = typeof t === 'function' ? t(key) : ''; return v && v !== key ? v : fallback; };
   var generatedContent = props.generatedContent;
@@ -192,7 +204,8 @@ function OutlineView(props) {
                             <button
                                 type="button" style={controlSize} data-outline-regenerate
                                 onClick={() => handleGenerate('outline')}
-                                disabled={isProcessing} aria-busy={isProcessing}
+                                disabled={isProcessing || outlineAiOff} aria-busy={isProcessing}
+                                title={outlineAiTitle}
                                 className="flex items-center gap-2 bg-orange-100 text-orange-700 px-3 py-1.5 rounded-md text-xs font-bold hover:bg-orange-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <RefreshCw size={14} className={isProcessing ? "animate-spin motion-reduce:animate-none" : ""} /> {t('common.regenerate')}
@@ -247,10 +260,11 @@ function OutlineView(props) {
                                 <button
                                     type="button" style={controlSize}
                                     onClick={handleInitializeMap}
-                                    disabled={isProcessing} aria-busy={isProcessing}
-                                    className="w-full p-4 text-xl font-bold bg-indigo-600 text-white rounded-xl shadow-lg hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    disabled={isProcessing || outlineAiOff} aria-busy={isProcessing}
+                                    title={outlineAiTitle}
+                                    className="w-full p-4 text-xl font-bold bg-indigo-600 text-white rounded-xl shadow-lg hover:bg-indigo-700 transition-all motion-reduce:transform-none flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    {isProcessing ? <RefreshCw size={24} className="animate-spin motion-reduce:animate-none"/> : <Sparkles size={24} className="text-yellow-700 fill-current"/>}
+                                    {isProcessing ? <RefreshCw size={24} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <Sparkles size={24} className="text-yellow-300 fill-current" aria-hidden="true"/>}
                                     {isProcessing ? t('concept_map.setup.organizing') : t('concept_map.setup.create_diagram')}
                                 </button>
                             </div>

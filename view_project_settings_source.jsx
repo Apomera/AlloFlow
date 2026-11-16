@@ -66,8 +66,8 @@ function EvaluationPortalQr(props) {
         <p className="text-xs font-black uppercase tracking-wider text-violet-700">{t('project_settings.portal_qr_label') || "Portal QR code"}</p>
         <h5 className="mt-1 text-sm font-black text-slate-900">{t('project_settings.portal_qr_title') || "Open the district evaluation portal on another device"}</h5>
         <p className="mt-1 text-xs leading-relaxed text-slate-600">Scanning opens the same authenticated district portal. Google sign-in and server-side assignments still control access; the QR code does not grant permission by itself.</p>
-        {state.error && <p className="mt-2 text-xs font-bold text-rose-700">{state.error}</p>}
-        <button type="button" onClick={copyPortalLink} className="mt-3 min-h-10 rounded-xl border border-violet-300 bg-white px-3 py-2 text-xs font-black text-violet-800 hover:bg-violet-100 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2">Copy portal link</button>
+        {state.error && <p role="alert" className="mt-2 text-xs font-bold text-rose-700">{state.error}</p>}
+        <button type="button" onClick={copyPortalLink} className="mt-3 min-h-11 rounded-xl border border-violet-300 bg-white px-3 py-2 text-xs font-black text-violet-800 hover:bg-violet-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2">Copy portal link</button>
       </div>
     </div>
   );
@@ -100,10 +100,14 @@ function ProjectSettingsDialogFocusManager(props) {
           ancestor = ancestor.parentElement;
         }
         var style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(element) : null;
-        return !style || (style.display !== 'none' && style.visibility !== 'hidden');
+        if (style && (style.display === 'none' || style.visibility === 'hidden')) return false;
+        var hasLayout = typeof root.getBoundingClientRect === 'function' && (root.getBoundingClientRect().width > 0 || root.getBoundingClientRect().height > 0);
+        if (hasLayout && typeof element.getClientRects === 'function' && element.getClientRects().length === 0) return false;
+        return true;
       });
     };
     var handleKeyDown = function(event) {
+      if (event.isComposing || event.keyCode === 229) return;
       if (!isTopTrap() || event.key !== 'Tab') return;
       var focusableElements = getFocusableElements();
       if (!focusableElements.length) {
@@ -129,7 +133,7 @@ function ProjectSettingsDialogFocusManager(props) {
       var wasTopTrap = isTopTrap();
       var trapIndex = trapStack.indexOf(trap);
       if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
-      if (wasTopTrap && previouslyFocused && previouslyFocused !== document.body
+      if (wasTopTrap && previouslyFocused && previouslyFocused !== document.body && previouslyFocused !== document.documentElement
           && previouslyFocused.isConnected && typeof previouslyFocused.focus === 'function') {
         try { previouslyFocused.focus(); } catch (_) {}
       }
@@ -371,9 +375,9 @@ function ProjectSettingsView(props) {
 
   return (
     <div
-      className="fixed inset-0 z-[300] flex items-center justify-center bg-slate-950/80 p-3 backdrop-blur-sm animate-in fade-in duration-200 sm:p-6"
+      className="fixed inset-0 z-[300] flex items-center justify-center bg-slate-950/80 p-3 backdrop-blur-sm animate-in fade-in duration-200 motion-reduce:animate-none sm:p-6"
       onMouseDown={(event) => { if (event.target === event.currentTarget) handleSetIsProjectSettingsOpenToFalse(); }}
-      onKeyDown={(event) => { if (event.key === 'Escape') { event.preventDefault(); handleSetIsProjectSettingsOpenToFalse(); } }}
+      onKeyDown={(event) => { if (event.isComposing || event.keyCode === 229) return; if (event.key === 'Escape') { event.preventDefault(); handleSetIsProjectSettingsOpenToFalse(); } }}
     >
       <ProjectSettingsDialogFocusManager dialogId="project-settings-dialog" />
       <section
@@ -397,7 +401,7 @@ function ProjectSettingsView(props) {
           <button
             type="button"
             onClick={handleSetIsProjectSettingsOpenToFalse}
-            className="absolute right-3 top-3 min-h-11 min-w-11 grid place-items-center rounded-full p-2 text-slate-600 transition-colors hover:bg-white hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="absolute right-3 top-3 min-h-11 min-w-11 grid place-items-center rounded-full p-2 text-slate-600 transition-colors motion-reduce:transition-none hover:bg-white hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
             aria-label={t('common.close')}
           ><X size={20}/></button>
         </header>
@@ -416,7 +420,7 @@ function ProjectSettingsView(props) {
                     type="button"
                     aria-pressed={selected}
                     onClick={() => applyPreset(preset.id)}
-                    className={`rounded-xl border p-3 text-left transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 ${selected ? 'border-indigo-500 bg-indigo-50 ring-1 ring-indigo-200' : 'border-slate-200 bg-white hover:border-indigo-300 hover:bg-indigo-50/50'}`}
+                    className={`min-h-11 rounded-xl border p-3 text-left transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${selected ? 'border-indigo-500 bg-indigo-50 ring-1 ring-indigo-200' : 'border-slate-200 bg-white hover:border-indigo-300 hover:bg-indigo-50/50'}`}
                   >
                     <span className="flex items-center justify-between gap-2">
                       <span className="text-sm font-black text-slate-900">{preset.title}</span>
@@ -472,12 +476,12 @@ function ProjectSettingsView(props) {
           </fieldset>
 
           <details className="group rounded-xl border border-slate-200 bg-slate-50">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+            <summary className="min-h-11 flex cursor-pointer list-none items-center justify-between gap-4 rounded-xl px-4 py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600">
               <span>
                 <span className="flex items-center gap-2 text-sm font-black text-slate-900"><Settings2 size={16} aria-hidden="true"/> {tx('project_settings.advanced_title', 'Advanced lesson configuration')}</span>
                 <span className="mt-1 block text-xs text-slate-600">{tx('project_settings.advanced_desc', 'Learner identity, tutor guidance, XP pacing, permissions, and privacy.')}</span>
               </span>
-              <span className="text-lg font-bold text-indigo-600 transition-transform group-open:rotate-45" aria-hidden="true">+</span>
+              <span className="text-lg font-bold text-indigo-600 transition-transform motion-reduce:transition-none group-open:rotate-45" aria-hidden="true">+</span>
             </summary>
 
             <div className="space-y-6 border-t border-slate-200 bg-white p-4">
@@ -493,7 +497,7 @@ function ProjectSettingsView(props) {
                   value={studentProjectSettings.nickname || ''}
                   onChange={(event) => updateSetting('nickname', event.target.value.slice(0, 80))}
                   placeholder={tx('project_settings.nickname_placeholder', 'Optional name used in saved work')}
-                  className="mt-1 w-full rounded-lg border-2 border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20"
+                  className="mt-1 min-h-11 w-full rounded-lg border-2 border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus-visible:outline-none focus-visible:border-indigo-600 focus-visible:ring-4 focus-visible:ring-indigo-600/20"
                 />
                 <p className="mt-1 text-xs text-slate-600">{tx('project_settings.nickname_desc', 'Use a codename when identifiable student information should not appear in project files.')}</p>
               </section>
@@ -510,9 +514,9 @@ function ProjectSettingsView(props) {
                     maxLength={600}
                     rows={3}
                     placeholder={t('project_settings.socratic_instructions_placeholder')}
-                    className="mt-2 w-full resize-y rounded-lg border-2 border-slate-200 bg-white p-3 text-sm text-slate-800 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20"
+                    className="mt-2 w-full resize-y rounded-lg border-2 border-slate-200 bg-white p-3 text-sm text-slate-800 focus-visible:outline-none focus-visible:border-indigo-600 focus-visible:ring-4 focus-visible:ring-indigo-600/20"
                   />
-                  <div className="mt-1 text-right text-[11px] font-medium text-slate-500">{(studentProjectSettings.socraticCustomInstructions || '').length}/600</div>
+                  <div className="mt-1 text-right text-[11px] font-medium text-slate-600">{(studentProjectSettings.socraticCustomInstructions || '').length}/600</div>
                 </section>
               )}
 
@@ -521,17 +525,17 @@ function ProjectSettingsView(props) {
                 <div className="mt-3 grid gap-3 sm:grid-cols-3">
                   <label className="text-sm font-bold text-slate-800">
                     <span className="flex items-center gap-2"><MapIcon size={16} className="text-emerald-600" aria-hidden="true"/> {t('project_settings.unlock_xp')}</span>
-                    <input data-help-key="settings_unlock_xp" type="number" min="0" step="100" value={studentProjectSettings.adventureUnlockXP ?? 0} onChange={(event) => updateSetting('adventureUnlockXP', Math.max(0, parseInt(event.target.value, 10) || 0))} className="mt-1 w-full rounded-lg border-2 border-slate-200 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20"/>
+                    <input data-help-key="settings_unlock_xp" type="number" min="0" step="100" value={studentProjectSettings.adventureUnlockXP ?? 0} onChange={(event) => updateSetting('adventureUnlockXP', Math.max(0, parseInt(event.target.value, 10) || 0))} className="mt-1 min-h-11 w-full rounded-lg border-2 border-slate-200 px-3 py-2 text-sm focus-visible:outline-none focus-visible:border-indigo-600 focus-visible:ring-4 focus-visible:ring-indigo-600/20"/>
                     <span className="mt-1 block text-[11px] font-normal leading-relaxed text-slate-600">{t('project_settings.unlock_xp_desc')}</span>
                   </label>
                   <label className="text-sm font-bold text-slate-800">
                     <span className="flex items-center gap-2"><Trophy size={16} className="text-blue-600" aria-hidden="true"/> {t('project_settings.base_xp')}</span>
-                    <input data-help-key="settings_base_xp" type="number" min="10" step="10" value={studentProjectSettings.baseXP ?? 100} onChange={(event) => updateSetting('baseXP', Math.max(10, parseInt(event.target.value, 10) || 100))} className="mt-1 w-full rounded-lg border-2 border-slate-200 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20"/>
+                    <input data-help-key="settings_base_xp" type="number" min="10" step="10" value={studentProjectSettings.baseXP ?? 100} onChange={(event) => updateSetting('baseXP', Math.max(10, parseInt(event.target.value, 10) || 100))} className="mt-1 min-h-11 w-full rounded-lg border-2 border-slate-200 px-3 py-2 text-sm focus-visible:outline-none focus-visible:border-indigo-600 focus-visible:ring-4 focus-visible:ring-indigo-600/20"/>
                     <span className="mt-1 block text-[11px] font-normal leading-relaxed text-slate-600">{t('project_settings.base_xp_desc')}</span>
                   </label>
                   <label className="text-sm font-bold text-slate-800">
                     <span className="flex items-center gap-2"><Trophy size={16} className="text-amber-600" aria-hidden="true"/> {t('project_settings.storybook_xp')}</span>
-                    <input data-help-key="settings_adventure_xp" type="number" min="0" step="100" value={studentProjectSettings.adventureMinXP ?? 0} onChange={(event) => updateSetting('adventureMinXP', Math.max(0, parseInt(event.target.value, 10) || 0))} className="mt-1 w-full rounded-lg border-2 border-slate-200 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20"/>
+                    <input data-help-key="settings_adventure_xp" type="number" min="0" step="100" value={studentProjectSettings.adventureMinXP ?? 0} onChange={(event) => updateSetting('adventureMinXP', Math.max(0, parseInt(event.target.value, 10) || 0))} className="mt-1 min-h-11 w-full rounded-lg border-2 border-slate-200 px-3 py-2 text-sm focus-visible:outline-none focus-visible:border-indigo-600 focus-visible:ring-4 focus-visible:ring-indigo-600/20"/>
                     <span className="mt-1 block text-[11px] font-normal leading-relaxed text-slate-600">{t('project_settings.storybook_xp_desc')}</span>
                   </label>
                 </div>
@@ -566,7 +570,7 @@ function ProjectSettingsView(props) {
           </details>
 
           {isSchoolRole && <details id="project-school-connections" className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-            <summary className="min-h-11 cursor-pointer rounded-lg px-1 py-2 text-sm font-bold text-slate-800">
+            <summary className="min-h-11 cursor-pointer rounded-lg px-1 py-2 text-sm font-bold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">
               {tx('project_settings.school_connections', 'School connections')}
               <span className="mt-1 block text-xs font-normal text-slate-600">{tx('project_settings.school_connections_desc', 'School Rewards and Principal Evaluation')}</span>
             </summary>
@@ -575,23 +579,23 @@ function ProjectSettingsView(props) {
             <section aria-labelledby="school-rewards-title" className="rounded-2xl border border-emerald-200 bg-gradient-to-r from-emerald-50 via-white to-teal-50 p-4 shadow-sm sm:p-5">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className={`text-xs font-black uppercase tracking-wider ${isRewardsPortalConnected ? 'text-emerald-700' : 'text-amber-700'}`}>{isRewardsPortalConnected ? 'School rewards connected' : 'Google Education setup required'}</p>
+                  <p className={`text-xs font-black uppercase tracking-wider ${isRewardsPortalConnected ? 'text-emerald-700' : 'text-amber-800'}`}>{isRewardsPortalConnected ? 'School rewards connected' : 'Google Education setup required'}</p>
                   <h4 id="school-rewards-title" className="mt-1 text-base font-black text-slate-900">School Rewards & Store</h4>
                   <p className="mt-1 max-w-2xl text-sm leading-relaxed text-slate-600">A school-owned rewards ledger for staff recognition, private balance emails to managed student addresses, prize previews, and locked trimester checkout. The pilot stays separate from AlloHaven XP and can later point to a district-owned deployment without changing this launcher.</p>
                 </div>
-                <button type="button" onClick={onOpenSchoolRewards} className={`shrink-0 rounded-xl px-4 py-2.5 text-sm font-black shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${isRewardsPortalConnected ? 'bg-emerald-700 text-white hover:bg-emerald-800 focus:ring-emerald-600' : 'border border-amber-500 bg-white text-amber-800 hover:bg-amber-50 focus:ring-amber-500'}`}>{isRewardsPortalConnected ? 'Open School Rewards' : 'Connect School Rewards'}</button>
+                <button type="button" onClick={onOpenSchoolRewards} className={`min-h-11 shrink-0 rounded-xl px-4 py-2.5 text-sm font-black shadow-sm transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${isRewardsPortalConnected ? 'bg-emerald-700 text-white hover:bg-emerald-800 focus-visible:ring-emerald-600' : 'border border-amber-500 bg-white text-amber-800 hover:bg-amber-50 focus-visible:ring-amber-600'}`}>{isRewardsPortalConnected ? 'Open School Rewards' : 'Connect School Rewards'}</button>
               </div>
               {typeof onSaveRewardsPortalUrl === 'function' && (
                 <details open={!isRewardsPortalConnected} className="mt-4">
-                  <summary className="min-h-11 cursor-pointer rounded-lg px-2 py-3 text-xs font-bold text-emerald-800">{tx('project_settings.connection_setup', 'Connection setup')}</summary>
+                  <summary className="min-h-11 cursor-pointer rounded-lg px-2 py-3 text-xs font-bold text-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">{tx('project_settings.connection_setup', 'Connection setup')}</summary>
                 <form className="mt-2 border-t border-emerald-100 pt-4" onSubmit={function(event) { event.preventDefault(); applyRewardsPortalUrl(rewardsPortalUrlDraft); }}>
                   <label htmlFor="school-rewards-portal-url" className="block text-xs font-black text-slate-700">School or district Apps Script web-app URL</label>
                   <div className="mt-2 flex flex-col gap-2 sm:flex-row">
-                    <input id="school-rewards-portal-url" type="url" inputMode="url" autoComplete="off" spellCheck={false} defaultValue={rewardsPortalUrlDraft} onChange={function(event) { rewardsPortalUrlDraft = event.target.value; }} aria-describedby="school-rewards-portal-help" placeholder="https://script.google.com/macros/s/…/exec" className="min-h-11 min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-inner focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
-                    <button type="submit" className="min-h-11 rounded-xl border border-emerald-700 bg-white px-4 py-2 text-sm font-black text-emerald-800 hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2">{isRewardsPortalConnected ? 'Update connection' : 'Connect portal'}</button>
-                    {isRewardsPortalConnected && <button type="button" onClick={function() { applyRewardsPortalUrl(''); }} className="min-h-11 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2">Disconnect</button>}
+                    <input id="school-rewards-portal-url" type="url" inputMode="url" autoComplete="off" spellCheck={false} defaultValue={rewardsPortalUrlDraft} onChange={function(event) { rewardsPortalUrlDraft = event.target.value; }} aria-describedby="school-rewards-portal-help" placeholder="https://script.google.com/macros/s/…/exec" className="min-h-11 min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-inner focus-visible:border-emerald-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600" />
+                    <button type="submit" className="min-h-11 rounded-xl border border-emerald-700 bg-white px-4 py-2 text-sm font-black text-emerald-800 hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2">{isRewardsPortalConnected ? 'Update connection' : 'Connect portal'}</button>
+                    {isRewardsPortalConnected && <button type="button" onClick={function() { applyRewardsPortalUrl(''); }} className="min-h-11 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2">Disconnect</button>}
                   </div>
-                  <p id="school-rewards-portal-help" className="mt-2 text-xs leading-relaxed text-slate-500">{isRewardsPortalConnected ? 'This device opens the exact Google-hosted /exec deployment. Google sign-in and server-side roles control awards, checkout, and administration.' : 'Open School Rewards & Store from Leadership Hub for the step-by-step setup: it copies the reviewed apps_script/school_rewards package, generates the one-time setup call, and saves the /exec URL. You can also paste the URL here. AlloFlow stores only the launcher address.'}</p>
+                  <p id="school-rewards-portal-help" className="mt-2 text-xs leading-relaxed text-slate-600">{isRewardsPortalConnected ? 'This device opens the exact Google-hosted /exec deployment. Google sign-in and server-side roles control awards, checkout, and administration.' : 'Open School Rewards & Store from Leadership Hub for the step-by-step setup: it copies the reviewed apps_script/school_rewards package, generates the one-time setup call, and saves the /exec URL. You can also paste the URL here. AlloFlow stores only the launcher address.'}</p>
                 </form>
                 </details>
               )}
@@ -609,7 +613,7 @@ function ProjectSettingsView(props) {
                       about to get. Before this the not-connected state read
                       "Local preview available", which does not tell a principal
                       whether the tool is ready to use on real staff. */}
-                  <p className={`text-xs font-black uppercase tracking-wider ${isEvaluationPortalConnected ? 'text-indigo-700' : 'text-amber-700'}`}>{isEvaluationPortalConnected ? 'District portal connected' : 'On-device workspace · portal not connected'}</p>
+                  <p className={`text-xs font-black uppercase tracking-wider ${isEvaluationPortalConnected ? 'text-indigo-700' : 'text-amber-800'}`}>{isEvaluationPortalConnected ? 'District portal connected' : 'On-device workspace · portal not connected'}</p>
                   <h4 id="principal-evaluation-title" className="mt-1 text-base font-black text-slate-900">Principal Evaluation</h4>
                   <p className="mt-1 max-w-2xl text-sm leading-relaxed text-slate-600">
                     {isEvaluationPortalConnected
@@ -620,7 +624,7 @@ function ProjectSettingsView(props) {
                 <button
                   type="button"
                   onClick={onOpenPrincipalEvaluation}
-                  className={`shrink-0 rounded-xl px-4 py-2.5 text-sm font-black shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${isEvaluationPortalConnected ? 'bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500' : 'border border-amber-500 bg-white text-amber-800 hover:bg-amber-50 focus:ring-amber-500'}`}
+                  className={`min-h-11 shrink-0 rounded-xl px-4 py-2.5 text-sm font-black shadow-sm transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${isEvaluationPortalConnected ? 'bg-indigo-700 text-white hover:bg-indigo-800 focus-visible:ring-indigo-600' : 'border border-amber-500 bg-white text-amber-800 hover:bg-amber-50 focus-visible:ring-amber-600'}`}
                 >{isEvaluationPortalConnected ? 'Open district portal' : 'Open Educator Evaluation'}</button>
               </div>
               <p className="mt-2 text-xs font-semibold">
@@ -628,14 +632,14 @@ function ProjectSettingsView(props) {
                   href="https://alloflow-cdn.pages.dev/educator-evaluation-manual"
                   target="_blank"
                   rel="noreferrer"
-                  className="text-indigo-700 underline hover:text-indigo-900"
+                  className="min-h-11 inline-flex items-center rounded text-indigo-700 underline hover:text-indigo-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                 >Read the user manual</a>
                 <span className="ml-1 font-normal text-slate-600">covers the private, principal-managed Drive, and district portal paths, plus the evaluation cycle and privacy.</span>
               </p>
               {!isEvaluationPortalConnected && <p className="mt-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs leading-relaxed text-blue-900"><strong>Need the middle path?</strong> Open Educator Evaluation, choose <strong>Setup</strong>, then select <strong>Principal-managed Drive</strong>. A resumable seven-step checklist provides script.new, three source-copy buttons, private-deployment warnings, a helper-link field, and the deployment check.</p>}
               {typeof onSaveEvaluationPortalUrl === 'function' && (
                 <details open={!isEvaluationPortalConnected} className="mt-4">
-                  <summary className="min-h-11 cursor-pointer rounded-lg px-2 py-3 text-xs font-bold text-indigo-800">{tx('project_settings.connection_setup', 'Connection setup')}</summary>
+                  <summary className="min-h-11 cursor-pointer rounded-lg px-2 py-3 text-xs font-bold text-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{tx('project_settings.connection_setup', 'Connection setup')}</summary>
                   <form className="mt-2 border-t border-indigo-100 pt-4" onSubmit={function(event) { event.preventDefault(); applyEvaluationPortalUrl(portalUrlDraft); }}>
                   <label htmlFor="principal-evaluation-portal-url" className="block text-xs font-black text-slate-700">District Apps Script web-app URL</label>
                   <div className="mt-2 flex flex-col gap-2 sm:flex-row">
@@ -650,12 +654,12 @@ function ProjectSettingsView(props) {
                       aria-describedby="principal-evaluation-portal-help"
 
                       placeholder="https://script.google.com/macros/s/…/exec"
-                      className="min-h-11 min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-inner focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                      className="min-h-11 min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-inner focus-visible:border-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                     />
-                    <button type="submit" className="min-h-11 rounded-xl border border-indigo-600 bg-white px-4 py-2 text-sm font-black text-indigo-700 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">{isEvaluationPortalConnected ? 'Update connection' : 'Connect portal'}</button>
-                    {isEvaluationPortalConnected && <button type="button" onClick={function() { applyEvaluationPortalUrl(''); }} className="min-h-11 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Disconnect</button>}
+                    <button type="submit" className="min-h-11 rounded-xl border border-indigo-600 bg-white px-4 py-2 text-sm font-black text-indigo-700 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2">{isEvaluationPortalConnected ? 'Update connection' : 'Connect portal'}</button>
+                    {isEvaluationPortalConnected && <button type="button" onClick={function() { applyEvaluationPortalUrl(''); }} className="min-h-11 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2">Disconnect</button>}
                   </div>
-                  <p id="principal-evaluation-portal-help" className="mt-2 text-xs leading-relaxed text-slate-500">
+                  <p id="principal-evaluation-portal-help" className="mt-2 text-xs leading-relaxed text-slate-600">
                     {isEvaluationPortalConnected ? 'This device will open the exact district /exec deployment in a separate tab. Google sign-in and server assignments control access; emailed links do not.' : 'Paste the district-owned HTTPS Apps Script deployment URL ending in /exec. AlloFlow stores only this launcher address on this device.'}
                   </p>
 
@@ -665,7 +669,7 @@ function ProjectSettingsView(props) {
                       principal will ever open. The field above asked for a URL
                       and never said where to get one. */}
                   <details className="mt-4 rounded-xl border border-slate-200 bg-white/70 p-3">
-                    <summary className="cursor-pointer text-xs font-black text-slate-800">Where does this URL come from?</summary>
+                    <summary className="min-h-11 flex items-center cursor-pointer rounded-lg text-xs font-black text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">Where does this URL come from?</summary>
                     <div className="mt-2 space-y-2 text-xs leading-relaxed text-slate-600">
                       <p><strong>This is not a self-serve setup.</strong> The portal is a Google Apps Script web app that a district-controlled Workspace account deploys and owns. It holds personnel records, so your district has to review and approve it first.</p>
                       <ol className="ml-4 list-decimal space-y-1">
@@ -709,7 +713,7 @@ function ProjectSettingsView(props) {
                 console.warn('[Settings] Report-a-problem button failed:', error);
               }
             }}
-            className="flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-slate-600 transition-colors hover:bg-rose-50 hover:text-rose-700"
+            className="min-h-11 flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-slate-600 transition-colors motion-reduce:transition-none hover:bg-rose-50 hover:text-rose-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
           >
             <CircleHelp size={14} aria-hidden="true"/>
             {tx('project_settings.feedback', 'Report a problem or send feedback')}
@@ -722,7 +726,7 @@ function ProjectSettingsView(props) {
             type="button"
             data-help-key="settings_close_btn"
             onClick={handleSetIsProjectSettingsOpenToFalse}
-            className="flex-none rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-bold text-white shadow-md transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            className="min-h-11 flex-none rounded-xl bg-indigo-700 px-6 py-2.5 text-sm font-bold text-white shadow-md transition-colors motion-reduce:transition-none hover:bg-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
           >
             {t('common.close')}
           </button>

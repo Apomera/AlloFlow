@@ -133,7 +133,7 @@ module.exports = {
     if (hear) ctx.root.appendChild(hear.node);
     ctx.root.appendChild(list);
     if (!ctx.isDone()) {
-      run([{ id: item.promptAudio, gap: 200 }, { id: item.wordAudio, gap: 200 }].concat(item.choices.map(function (c, i) { return { id: c.audio, gap: 350, hi: i }; })));
+      run((ctx.skipDirections ? [] : [{ id: item.promptAudio, gap: 200 }]).concat([{ id: item.wordAudio, gap: 200 }], item.choices.map(function (c, i) { return { id: c.audio, gap: 350, hi: i }; })));
     }
     return {
       // The R key: the question and the word again.

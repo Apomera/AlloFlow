@@ -1,6 +1,526 @@
 {
   "about": "A person's decisions about which Mulberry symbol a Word Sounds word gets. They win over dev-tools/build_word_sounds_symbols.cjs. After a change run: node dev-tools/build_word_sounds_symbols.cjs",
   "how": "Add the word under \"words\". To use a symbol: {\"status\": \"reviewed\", \"file\": \"name.svg\"} (the file must be one of the word's candidates in data/word_sounds_symbols_map_en.json; leave \"file\" out to approve the one the script chose). To use none: {\"status\": \"rejected\"}. An optional \"note\" says why. A decision on a word also holds for its plain plural.",
-  "example": { "watch": { "status": "reviewed", "file": "watch.svg", "note": "the wristwatch" }, "smoke": { "status": "rejected" } },
-  "words": {}
+  "example": {
+    "watch": {
+      "status": "reviewed",
+      "file": "watch.svg",
+      "note": "the wristwatch"
+    },
+    "smoke": {
+      "status": "rejected"
+    }
+  },
+  "words": {
+    "asks": {
+      "status": "reviewed",
+      "file": "ask_,_to.svg",
+      "note": "s form"
+    },
+    "bandage": {
+      "status": "reviewed",
+      "file": "plaster.svg",
+      "note": "other name"
+    },
+    "bends": {
+      "status": "reviewed",
+      "file": "bend_,_to.svg",
+      "note": "s form"
+    },
+    "bites": {
+      "status": "reviewed",
+      "file": "bite_,_to.svg",
+      "note": "s form"
+    },
+    "blows": {
+      "status": "reviewed",
+      "file": "blow_,_to.svg",
+      "note": "s form"
+    },
+    "breaks": {
+      "status": "reviewed",
+      "file": "break_,_to.svg",
+      "note": "s form"
+    },
+    "brings": {
+      "status": "reviewed",
+      "file": "bring_,_to.svg",
+      "note": "s form"
+    },
+    "burns": {
+      "status": "reviewed",
+      "file": "burn_2_,_to.svg",
+      "note": "s form"
+    },
+    "carries": {
+      "status": "reviewed",
+      "file": "carry_,_to.svg",
+      "note": "s form"
+    },
+    "catches": {
+      "status": "reviewed",
+      "file": "catch_,_to.svg",
+      "note": "s form"
+    },
+    "changes": {
+      "status": "reviewed",
+      "file": "change_,_to.svg",
+      "note": "s form"
+    },
+    "closes": {
+      "status": "reviewed",
+      "file": "close_,_to.svg",
+      "note": "s form"
+    },
+    "closet": {
+      "status": "reviewed",
+      "file": "wardrobe.svg",
+      "note": "other name"
+    },
+    "comes": {
+      "status": "reviewed",
+      "file": "come_,_to.svg",
+      "note": "s form"
+    },
+    "copies": {
+      "status": "reviewed",
+      "file": "copy_,_to.svg",
+      "note": "s form"
+    },
+    "counts": {
+      "status": "reviewed",
+      "file": "count_,_to.svg",
+      "note": "s form"
+    },
+    "crib": {
+      "status": "reviewed",
+      "file": "cot.svg",
+      "note": "other name"
+    },
+    "deeper": {
+      "status": "reviewed",
+      "file": "deep.svg",
+      "note": "adjective form"
+    },
+    "deepest": {
+      "status": "reviewed",
+      "file": "deep.svg",
+      "note": "adjective form"
+    },
+    "dreams": {
+      "status": "reviewed",
+      "file": "dream_,_to.svg",
+      "note": "s form"
+    },
+    "drives": {
+      "status": "reviewed",
+      "file": "drive_,_to.svg",
+      "note": "s form"
+    },
+    "eats": {
+      "status": "reviewed",
+      "file": "eat_,_to.svg",
+      "note": "s form"
+    },
+    "exercises": {
+      "status": "reviewed",
+      "file": "exercise_,_to.svg",
+      "note": "s form"
+    },
+    "faster": {
+      "status": "reviewed",
+      "file": "fast_2.svg",
+      "note": "adjective form"
+    },
+    "fastest": {
+      "status": "reviewed",
+      "file": "fast_2.svg",
+      "note": "adjective form"
+    },
+    "fills": {
+      "status": "reviewed",
+      "file": "fill_2_,_to.svg",
+      "note": "s form"
+    },
+    "finds": {
+      "status": "reviewed",
+      "file": "find_,_to.svg",
+      "note": "s form"
+    },
+    "gets": {
+      "status": "reviewed",
+      "file": "get_,_to.svg",
+      "note": "s form"
+    },
+    "gives": {
+      "status": "reviewed",
+      "file": "give_,_to.svg",
+      "note": "s form"
+    },
+    "goes": {
+      "status": "reviewed",
+      "file": "go_,_to.svg",
+      "note": "s form"
+    },
+    "grabs": {
+      "status": "reviewed",
+      "file": "grab_,_to.svg",
+      "note": "s form"
+    },
+    "grows": {
+      "status": "reviewed",
+      "file": "grow_,_to.svg",
+      "note": "s form"
+    },
+    "harder": {
+      "status": "reviewed",
+      "file": "hard.svg",
+      "note": "adjective form"
+    },
+    "hardest": {
+      "status": "reviewed",
+      "file": "hard.svg",
+      "note": "adjective form"
+    },
+    "hears": {
+      "status": "reviewed",
+      "file": "hear_,_to.svg",
+      "note": "s form"
+    },
+    "heavier": {
+      "status": "reviewed",
+      "file": "heavy.svg",
+      "note": "adjective form"
+    },
+    "helps": {
+      "status": "reviewed",
+      "file": "help_,_to.svg",
+      "note": "s form"
+    },
+    "higher": {
+      "status": "reviewed",
+      "file": "high.svg",
+      "note": "adjective form"
+    },
+    "hits": {
+      "status": "reviewed",
+      "file": "hit_,_to.svg",
+      "note": "s form"
+    },
+    "holds": {
+      "status": "reviewed",
+      "file": "hold_,_to.svg",
+      "note": "s form"
+    },
+    "hotter": {
+      "status": "reviewed",
+      "file": "hot.svg",
+      "note": "adjective form"
+    },
+    "keeps": {
+      "status": "reviewed",
+      "file": "keep_,_to.svg",
+      "note": "s form"
+    },
+    "larger": {
+      "status": "reviewed",
+      "file": "large.svg",
+      "note": "adjective form"
+    },
+    "largest": {
+      "status": "reviewed",
+      "file": "large.svg",
+      "note": "adjective form"
+    },
+    "longer": {
+      "status": "reviewed",
+      "file": "long.svg",
+      "note": "adjective form"
+    },
+    "longest": {
+      "status": "reviewed",
+      "file": "long.svg",
+      "note": "adjective form"
+    },
+    "looks": {
+      "status": "reviewed",
+      "file": "look_,_to.svg",
+      "note": "s form"
+    },
+    "louder": {
+      "status": "reviewed",
+      "file": "loud.svg",
+      "note": "adjective form"
+    },
+    "makes": {
+      "status": "reviewed",
+      "file": "make_,_to.svg",
+      "note": "s form"
+    },
+    "math": {
+      "status": "reviewed",
+      "file": "maths.svg",
+      "note": "other name"
+    },
+    "moves": {
+      "status": "reviewed",
+      "file": "move_,_to.svg",
+      "note": "s form"
+    },
+    "nods": {
+      "status": "reviewed",
+      "file": "nod_,_to.svg",
+      "note": "s form"
+    },
+    "opens": {
+      "status": "reviewed",
+      "file": "open_,_to.svg",
+      "note": "s form"
+    },
+    "orders": {
+      "status": "reviewed",
+      "file": "order_1_,_to.svg",
+      "note": "s form"
+    },
+    "picks": {
+      "status": "reviewed",
+      "file": "pick_,_to.svg",
+      "note": "s form"
+    },
+    "plays": {
+      "status": "reviewed",
+      "file": "play_,_to.svg",
+      "note": "s form"
+    },
+    "points": {
+      "status": "reviewed",
+      "file": "point_,_to.svg",
+      "note": "s form"
+    },
+    "pulls": {
+      "status": "reviewed",
+      "file": "pull_,_to.svg",
+      "note": "s form"
+    },
+    "pushes": {
+      "status": "reviewed",
+      "file": "push_,_to.svg",
+      "note": "s form"
+    },
+    "puts": {
+      "status": "reviewed",
+      "file": "put_,_to.svg",
+      "note": "s form"
+    },
+    "quieter": {
+      "status": "reviewed",
+      "file": "quiet.svg",
+      "note": "adjective form"
+    },
+    "reads": {
+      "status": "reviewed",
+      "file": "read_,_to.svg",
+      "note": "s form"
+    },
+    "returns": {
+      "status": "reviewed",
+      "file": "return_,_to.svg",
+      "note": "s form"
+    },
+    "serves": {
+      "status": "reviewed",
+      "file": "serve_,_to.svg",
+      "note": "s form"
+    },
+    "shakes": {
+      "status": "reviewed",
+      "file": "shake_,_to.svg",
+      "note": "s form"
+    },
+    "shorter": {
+      "status": "reviewed",
+      "file": "short.svg",
+      "note": "adjective form"
+    },
+    "shouts": {
+      "status": "reviewed",
+      "file": "shout_,_to.svg",
+      "note": "s form"
+    },
+    "sings": {
+      "status": "reviewed",
+      "file": "sing_,_to.svg",
+      "note": "s form"
+    },
+    "sits": {
+      "status": "reviewed",
+      "file": "sit_,_to.svg",
+      "note": "s form"
+    },
+    "skates": {
+      "status": "reviewed",
+      "file": "skate_,_to.svg",
+      "note": "s form"
+    },
+    "smiles": {
+      "status": "reviewed",
+      "file": "smile_,_to.svg",
+      "note": "s form"
+    },
+    "soccer": {
+      "status": "reviewed",
+      "file": "football.svg",
+      "note": "other name"
+    },
+    "softer": {
+      "status": "reviewed",
+      "file": "soft.svg",
+      "note": "adjective form"
+    },
+    "sorts": {
+      "status": "reviewed",
+      "file": "sort_,_to.svg",
+      "note": "s form"
+    },
+    "spells": {
+      "status": "reviewed",
+      "file": "spell_,_to.svg",
+      "note": "s form"
+    },
+    "spins": {
+      "status": "reviewed",
+      "file": "spin_,_to.svg",
+      "note": "s form"
+    },
+    "stands": {
+      "status": "reviewed",
+      "file": "stand_,_to.svg",
+      "note": "s form"
+    },
+    "stove": {
+      "status": "reviewed",
+      "file": "cooker.svg",
+      "note": "other name"
+    },
+    "stretches": {
+      "status": "reviewed",
+      "file": "stretch_,_to.svg",
+      "note": "s form"
+    },
+    "strokes": {
+      "status": "reviewed",
+      "file": "stroke_,_to.svg",
+      "note": "s form"
+    },
+    "stronger": {
+      "status": "reviewed",
+      "file": "strong.svg",
+      "note": "adjective form"
+    },
+    "strongest": {
+      "status": "reviewed",
+      "file": "strong.svg",
+      "note": "adjective form"
+    },
+    "studies": {
+      "status": "reviewed",
+      "file": "study_,_to.svg",
+      "note": "s form"
+    },
+    "sweater": {
+      "status": "reviewed",
+      "file": "jumper.svg",
+      "note": "other name"
+    },
+    "takes": {
+      "status": "reviewed",
+      "file": "take_,_to.svg",
+      "note": "s form"
+    },
+    "talks": {
+      "status": "reviewed",
+      "file": "talk_1_,_to.svg",
+      "note": "s form"
+    },
+    "tastes": {
+      "status": "reviewed",
+      "file": "taste_,_to.svg",
+      "note": "s form"
+    },
+    "thicker": {
+      "status": "reviewed",
+      "file": "thick.svg",
+      "note": "adjective form"
+    },
+    "thinks": {
+      "status": "reviewed",
+      "file": "think_,_to.svg",
+      "note": "s form"
+    },
+    "torch": {
+      "status": "reviewed",
+      "file": "torch.svg",
+      "note": "concrete noun"
+    },
+    "torches": {
+      "status": "reviewed",
+      "file": "torch.svg",
+      "note": "concrete noun"
+    },
+    "touches": {
+      "status": "reviewed",
+      "file": "touch_,_to.svg",
+      "note": "s form"
+    },
+    "truck": {
+      "status": "reviewed",
+      "file": "lorry.svg",
+      "note": "other name"
+    },
+    "turns": {
+      "status": "reviewed",
+      "file": "turn_,_to.svg",
+      "note": "s form"
+    },
+    "types": {
+      "status": "reviewed",
+      "file": "type_,_to.svg",
+      "note": "s form"
+    },
+    "visits": {
+      "status": "reviewed",
+      "file": "visit_,_to.svg",
+      "note": "s form"
+    },
+    "walks": {
+      "status": "reviewed",
+      "file": "walk_,_to.svg",
+      "note": "s form"
+    },
+    "wants": {
+      "status": "reviewed",
+      "file": "want_,_to.svg",
+      "note": "s form"
+    },
+    "whispers": {
+      "status": "reviewed",
+      "file": "whisper_,_to.svg",
+      "note": "s form"
+    },
+    "works": {
+      "status": "reviewed",
+      "file": "work_,_to.svg",
+      "note": "s form"
+    },
+    "younger": {
+      "status": "reviewed",
+      "file": "young.svg",
+      "note": "adjective form"
+    },
+    "youngest": {
+      "status": "reviewed",
+      "file": "young.svg",
+      "note": "adjective form"
+    }
+  }
 }

@@ -41,6 +41,9 @@ function _b64decode(s) {
   for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
   return bytes;
 }
+var MAX_WRAPPED_KEY_B64 = 4096;
+var MAX_IV_B64 = 64;
+var MAX_CIPHERTEXT_B64 = 32 * 1024 * 1024;
 function _getSubtle() {
   // Lazy lookup so this module is safe to load before the page's other
   // crypto consumers (per feedback_iife_lazy_lookup.md). crypto.subtle
@@ -99,8 +102,11 @@ async function encryptSubmission(payloadObj, publicJwk) {
 // Returns the original payload object.
 async function decryptSubmission(blob, privateJwk) {
   var subtle = _getSubtle();
-  if (!blob || !blob.wrappedKey || !blob.iv || !blob.ciphertext) {
+  if (!blob || typeof blob.wrappedKey !== 'string' || typeof blob.iv !== 'string' || typeof blob.ciphertext !== 'string' || !blob.wrappedKey || !blob.iv || !blob.ciphertext) {
     throw new Error('Malformed submission blob: missing wrappedKey, iv, or ciphertext.');
+  }
+  if (blob.wrappedKey.length > MAX_WRAPPED_KEY_B64 || blob.iv.length > MAX_IV_B64 || blob.ciphertext.length > MAX_CIPHERTEXT_B64) {
+    throw new Error('Malformed submission blob: encrypted field exceeds maximum size.');
   }
 
   var privateKey = await subtle.importKey('jwk', privateJwk, { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['decrypt']);
@@ -115,10 +121,20 @@ async function decryptSubmission(blob, privateJwk) {
 
   var aesKey = await subtle.importKey('raw', aesKeyRaw, { name: 'AES-GCM' }, false, ['decrypt']);
   var iv = _b64decode(blob.iv);
+  if (iv.byteLength !== 12) {
+    throw new Error('Malformed submission blob: AES-GCM IV must be 12 bytes.');
+  }
   var ciphertext = _b64decode(blob.ciphertext);
-  var payloadBuf = await subtle.decrypt({ name: 'AES-GCM', iv: iv }, aesKey, ciphertext);
+  var payloadBuf = await subtle.decrypt({ name: 'AES-GCM', iv: iv, tagLength: 128 }, aesKey, ciphertext);
   var payloadJson = _dec.decode(payloadBuf);
-  return JSON.parse(payloadJson);
+  var parsed = JSON.parse(payloadJson, function (key, value) {
+    if (key === '__proto__' || key === 'constructor' || key === 'prototype') return undefined;
+    return value;
+  });
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new Error('Malformed submission payload: expected JSON object.');
+  }
+  return parsed;
 }
 
 // ── Inline encryption script for exported worksheets ──────────────────

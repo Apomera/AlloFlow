@@ -101,7 +101,8 @@ const VOICE_MAX_BYTES = 500 * 1024;
   s.id = 'alloflow-anno-suite-styles';
   s.textContent = '@keyframes alloflow-anno-pulse { 0% { transform: scale(0.6); opacity: 1; } 100% { transform: scale(1.8); opacity: 0; } }\n' +
     '@keyframes alloflow-undo-flash { 0% { background-color: rgba(99,102,241,0.55); transform: scale(0.94); } 60% { background-color: rgba(99,102,241,0.25); } 100% { background-color: transparent; transform: scale(1); } }\n' +
-    '.alloflow-undo-flash { animation: alloflow-undo-flash 0.45s ease-out; }';
+    '.alloflow-undo-flash { animation: alloflow-undo-flash 0.45s ease-out; }\n' +
+    '@media (prefers-reduced-motion: reduce) { .alloflow-undo-flash { animation: none !important; } }';
   document.head.appendChild(s);
 })();
 
@@ -275,6 +276,7 @@ function announceAnnotationMove(message) {
 
 function makeKeyboardMoveHandler(annotation, hostFinder, onMove, onActivate) {
   return function (e) {
+    if (e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229))) return;
     if ((e.key === 'Enter' || e.key === ' ') && onActivate) {
       e.preventDefault();
       onActivate();
@@ -1174,7 +1176,7 @@ function Toolbar(props) {
       {/* Sticker mode toggle */}
       <button type="button"
         onClick={toggleStickerMode}
-        className={'p-1.5 rounded-full transition-all motion-reduce:transition-none flex items-center gap-1 text-xs font-bold px-2 me-1 ' + (mode === 'sticker' ? 'bg-indigo-100 text-indigo-700 ring-2 ring-indigo-200' : 'text-slate-600 hover:bg-slate-100')}
+        className={'min-h-11 min-w-11 py-2 rounded-full transition-all motion-reduce:transition-none flex items-center justify-center gap-1 text-xs font-bold px-2.5 me-1 ' + (mode === 'sticker' ? 'bg-indigo-100 text-indigo-700 ring-2 ring-indigo-200' : 'text-slate-600 hover:bg-slate-100')}
         title={tt('toolbar.stickers_tooltip')}
         aria-pressed={mode === 'sticker'}
       >
@@ -1185,7 +1187,7 @@ function Toolbar(props) {
       {/* Note mode toggle */}
       <button type="button"
         onClick={toggleNoteMode}
-        className={'p-1.5 rounded-full transition-all motion-reduce:transition-none flex items-center gap-1 text-xs font-bold px-2 me-1 ' + (mode === 'note' ? 'bg-amber-100 text-amber-700 ring-2 ring-amber-200' : 'text-slate-600 hover:bg-slate-100')}
+        className={'min-h-11 min-w-11 py-2 rounded-full transition-all motion-reduce:transition-none flex items-center justify-center gap-1 text-xs font-bold px-2.5 me-1 ' + (mode === 'note' ? 'bg-amber-100 text-amber-700 ring-2 ring-amber-200' : 'text-slate-600 hover:bg-slate-100')}
         title="Sticky note: click anywhere to leave a note"
         aria-pressed={mode === 'note'}
       >
@@ -1196,7 +1198,7 @@ function Toolbar(props) {
       {/* Highlight mode toggle */}
       <button type="button"
         onClick={toggleHighlightMode}
-        className={'p-1.5 rounded-full transition-all motion-reduce:transition-none flex items-center gap-1 text-xs font-bold px-2 me-1 ' + (mode === 'highlight' ? 'bg-yellow-100 text-yellow-800 ring-2 ring-yellow-300' : 'text-slate-600 hover:bg-slate-100')}
+        className={'min-h-11 min-w-11 py-2 rounded-full transition-all motion-reduce:transition-none flex items-center justify-center gap-1 text-xs font-bold px-2.5 me-1 ' + (mode === 'highlight' ? 'bg-yellow-100 text-yellow-800 ring-2 ring-yellow-300' : 'text-slate-600 hover:bg-slate-100')}
         title="Highlighter: select text to highlight"
         aria-pressed={mode === 'highlight'}
       >
@@ -1207,7 +1209,7 @@ function Toolbar(props) {
       {/* Voice mode toggle */}
       <button type="button"
         onClick={toggleVoiceMode}
-        className={'p-1.5 rounded-full transition-all motion-reduce:transition-none flex items-center gap-1 text-xs font-bold px-2 me-1 ' + (mode === 'voice' ? 'bg-red-100 text-red-700 ring-2 ring-red-200' : 'text-slate-600 hover:bg-slate-100')}
+        className={'min-h-11 min-w-11 py-2 rounded-full transition-all motion-reduce:transition-none flex items-center justify-center gap-1 text-xs font-bold px-2.5 me-1 ' + (mode === 'voice' ? 'bg-red-100 text-red-700 ring-2 ring-red-200' : 'text-slate-600 hover:bg-slate-100')}
         title="Voice note: click to start recording (max 60s, stays local)"
         aria-pressed={mode === 'voice'}
       >
@@ -1218,7 +1220,7 @@ function Toolbar(props) {
       {/* Draw mode toggle */}
       <button type="button"
         onClick={toggleDrawMode}
-        className={'p-1.5 rounded-full transition-all motion-reduce:transition-none flex items-center gap-1 text-xs font-bold px-2 me-1 ' + (mode === 'draw' ? 'bg-fuchsia-100 text-fuchsia-700 ring-2 ring-fuchsia-200' : 'text-slate-600 hover:bg-slate-100')}
+        className={'min-h-11 min-w-11 py-2 rounded-full transition-all motion-reduce:transition-none flex items-center justify-center gap-1 text-xs font-bold px-2.5 me-1 ' + (mode === 'draw' ? 'bg-fuchsia-100 text-fuchsia-700 ring-2 ring-fuchsia-200' : 'text-slate-600 hover:bg-slate-100')}
         title="Drawing: freehand pen overlay"
         aria-pressed={mode === 'draw'}
       >
@@ -1791,8 +1793,9 @@ function focusAnnotation(hostEl, a) {
   // Pulse: drop a temporary ring at the focus point that fades out.
   // Pure DOM so it works regardless of which annotation library renders.
   try {
+    const reduceMotion = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const pulse = document.createElement('div');
-    pulse.style.cssText = 'position:absolute;top:' + (fy - 24) + 'px;left:' + (fx - 24) + 'px;width:48px;height:48px;border-radius:50%;border:3px solid #6366f1;pointer-events:none;z-index:60;animation:alloflow-anno-pulse 1.2s ease-out forwards;';
+    pulse.style.cssText = 'position:absolute;top:' + (fy - 24) + 'px;left:' + (fx - 24) + 'px;width:48px;height:48px;border-radius:50%;border:3px solid #6366f1;pointer-events:none;z-index:60;' + (reduceMotion ? '' : 'animation:alloflow-anno-pulse 1.2s ease-out forwards;');
     hostEl.appendChild(pulse);
     setTimeout(function () { try { pulse.remove(); } catch (_) {} }, 1300);
   } catch (_) {}
@@ -2398,16 +2401,16 @@ function Workspace(props) {
             onPickTemplate={setNoteTemplate} onPickDrawColor={setDrawColor} onPickDrawWidth={setDrawWidth} onPickDrawShape={setDrawShape}
             onClear={function () { stopVoice(true); commit(latest.current.filter(function (a) { return !canEdit(a); })); }} t={tt} />
           <button type="button" data-allo-undo-btn="true" onClick={undoCount ? undo : undefined} disabled={!undoCount}
-            className={'p-1.5 rounded-full flex items-center gap-1 text-xs font-bold px-2 ' + (undoCount ? 'text-slate-600 hover:bg-slate-100' : 'text-slate-300 cursor-not-allowed')}
+            className={'min-h-11 min-w-11 py-2 rounded-full flex items-center justify-center gap-1 text-xs font-bold px-2.5 ' + (undoCount ? 'text-slate-600 hover:bg-slate-100' : 'text-slate-300 cursor-not-allowed')}
             aria-label={say('annotation.undo_aria', 'Undo last annotation')}>{say('annotation.undo_button', '↩ Undo')}</button>
           <button type="button" aria-pressed={showList} onClick={function () { setShowList(function (v) { return !v; }); }}
-            className={'p-1.5 rounded-full flex items-center gap-1 text-xs font-bold px-2 ' + (showList ? 'bg-slate-200 text-slate-700' : 'text-slate-600 hover:bg-slate-100')}
+            className={'min-h-11 min-w-11 py-2 rounded-full flex items-center justify-center gap-1 text-xs font-bold px-2.5 ' + (showList ? 'bg-slate-200 text-slate-700' : 'text-slate-600 hover:bg-slate-100')}
             aria-label={say('annotation.toggle_list_aria', 'Toggle annotation list')}>
             {say('annotation.list_button', '📋 List')}
             {total > 0 && <span className="ms-0.5 bg-indigo-600 text-white text-[9px] font-bold rounded-full px-1.5 py-0.5 leading-none">{total}</span>}
           </button>
-          <button type="button" onClick={saveAnnotations} className="p-1.5 text-xs font-bold rounded" aria-label={say('annotation.save_aria', 'Save annotations')}>{say('annotation.save_button', 'Save annotations')}</button>
-          <button type="button" onClick={function () { if (inputRef.current) inputRef.current.click(); }} className="p-1.5 text-xs font-bold rounded" aria-label={say('annotation.import_aria', 'Import annotations')}>{say('annotation.import_button', 'Import')}</button>
+          <button type="button" onClick={saveAnnotations} className="min-h-11 min-w-11 px-3 py-2 text-xs font-bold rounded inline-flex items-center justify-center" aria-label={say('annotation.save_aria', 'Save annotations')}>{say('annotation.save_button', 'Save annotations')}</button>
+          <button type="button" onClick={function () { if (inputRef.current) inputRef.current.click(); }} className="min-h-11 min-w-11 px-3 py-2 text-xs font-bold rounded inline-flex items-center justify-center" aria-label={say('annotation.import_aria', 'Import annotations')}>{say('annotation.import_button', 'Import')}</button>
           <input ref={inputRef} type="file" accept=".json,application/json" hidden onChange={importFile} aria-label={say('annotation.import_aria', 'Import annotations')} />
         </div>
       )}

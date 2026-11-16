@@ -20,6 +20,16 @@ const provenanceFooterHtml = new Function(source.slice(footerStart, footerEnd) +
 const titleStart = source.indexOf('function _alloTitleFromHeading(html) {');
 const titleEnd = source.indexOf('\n}', titleStart) + 2;
 const titleFromHeading = new Function(source.slice(titleStart, titleEnd) + '\nreturn _alloTitleFromHeading;')();
+// Step 3a marks the English skip link and Step 3b strips scripts/editor chrome for export-equivalent AI scoring (2026-11-05).
+const auditPrepStart = source.indexOf('function _stripGeneratedImageEditorControls(html, stripFileHandlers) {');
+const chromeStart = source.indexOf('function _stripChromeForAudit(html) {', auditPrepStart);
+const auditPrepEnd = source.indexOf('\n}', chromeStart) + 2;
+if (auditPrepStart < 0 || chromeStart < 0 || auditPrepEnd < 2) {
+  throw new Error('Audit-prep helper extraction boundaries changed');
+}
+const { _alloSkipLinkLang, _stripExecutableScripts, _stripChromeForAudit } = new Function(
+  source.slice(auditPrepStart, auditPrepEnd) + '\nreturn { _alloSkipLinkLang, _stripExecutableScripts, _stripChromeForAudit };',
+)();
 // Execute the real wrapper and both initial audit calls, stopping before unrelated fixes.
 // The deterministic-text fixture bypasses the OCR spelling branch in this production segment.
 const baselineSource = source.slice(generationStart, baselineEnd);
@@ -37,6 +47,10 @@ async function captureInitialAudits(documentLanguage, rtl = false) {
     _alloEscapePromptDisplayText: text => String(text),
     _alloOutputProvenanceFooterHtml: provenanceFooterHtml,
     _alloTitleFromHeading: titleFromHeading,
+    batchOverrides: null,
+    _alloSkipLinkLang,
+    _stripExecutableScripts,
+    _stripChromeForAudit,
     bodyContent: prose,
     pageCount: 1,
     _pageRange: null, // (2026-10-28) the footer names a page-range slice
@@ -68,8 +82,9 @@ function expectBothAudits(result, language, direction = null) {
     expect(documentElement(html).getAttribute('dir')).toBe(direction);
     expect(html).toContain(prose);
   }
-  expect(result.inputs[0].html).toBe(result.inputs[1].html);
-  expect(result.html).toBe(result.inputs[1].html);
+  expect(result.inputs[0].html).toBe(result.html);
+  expect(result.inputs[1].html).toBe(_stripChromeForAudit(result.html));
+  expect(result.inputs[1].html).not.toContain('<script');
   // The English provenance footer is marked as English inside any document language.
   const footer = new DOMParser().parseFromString(result.html, 'text/html').querySelector('footer[role="contentinfo"]');
   expect(footer && footer.getAttribute('lang')).toBe('en');

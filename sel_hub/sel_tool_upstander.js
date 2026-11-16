@@ -18,6 +18,13 @@ window.SelHub = window.SelHub || {
 
 (function() {
   'use strict';
+  function __alloT(key, fallback) {
+    try {
+      var fn = typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : null;
+      if (fn) { var v = fn(key, fallback); if (v != null && v !== key) return v; }
+    } catch (_) {}
+    return fallback != null ? fallback : key;
+  }
   (function() {
     if (document.getElementById('allo-live-upstander')) return;
     var lr = document.createElement('div');
@@ -10590,7 +10597,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
                         if (_upSpFinished(done).length >= 3) tryAwardBadge('scripted_moves', 15);
                       }
                     })
-                  : h('div', { role: 'group', 'aria-label': 'Scripted practice scenes', style: { display: 'grid', gap: 8 } },
+                  : h('div', { role: 'group', 'aria-label': __alloT('sel.upstander.scripted_scenes_aria', 'Scripted practice scenes'), style: { display: 'grid', gap: 8 } },
                       spOrder.map(function(sid) {
                         return h('button', {
                           key: sid, type: 'button', 'data-sp-start': sid,

@@ -15,17 +15,26 @@
 // the worker as it was on 2026-09-13 morning and passes on the fixed one.
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import http from 'node:http';
+import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { chromium } from 'playwright';
 
 const ROOT = process.cwd();
-const WORKER = readFileSync(path.join(ROOT, 'app', 'sw.js'), 'utf8');
-const PRECACHE = JSON.parse(WORKER.match(/const PRECACHE_PATHS = (\[[^\n]*\]);/)[1]);
-const RELEASE_ID = WORKER.match(/const RELEASE_ID = ['"]([^'"]+)['"];/)?.[1] || '';
-const RELEASE_BUILT_AT = Number(WORKER.match(/const RELEASE_BUILT_AT = (\d+);/)?.[1]) || 0;
+const RAW_WORKER = readFileSync(path.join(ROOT, 'app', 'sw.js'), 'utf8');
+const PRECACHE = JSON.parse(RAW_WORKER.match(/const PRECACHE_PATHS = (\[[^\n]*\]);/)[1]);
+const RELEASE_ID = RAW_WORKER.match(/const RELEASE_ID = ['"]([^'"]+)['"];/)?.[1] || '';
+const RELEASE_BUILT_AT = Number(RAW_WORKER.match(/const RELEASE_BUILT_AT = (\d+);/)?.[1]) || 0;
 
 const SHELL = '<!doctype html><html><head><meta charset="utf-8"><title>shell</title><script>window.__alloReleaseId=' + JSON.stringify(RELEASE_ID) + ';window.__alloReleaseBuiltAt=' + RELEASE_BUILT_AT + ';</script></head><body>shell<script>navigator.serviceWorker.register("./sw.js", { scope: "./" });</script></body></html>';
+const ASSET = '/* asset */';
+const digestRecord = (body) => ({
+  sha384: createHash('sha384').update(body, 'utf8').digest('hex'),
+  bytes: Buffer.byteLength(body, 'utf8'),
+});
+const DIGESTS = Object.fromEntries(PRECACHE.map((p) => [p, digestRecord(p === './index.html' ? SHELL : ASSET)]));
+const WORKER = RAW_WORKER.replace(/const PRECACHE_DIGESTS = \{[^\n]*\};/, `const PRECACHE_DIGESTS = ${JSON.stringify(DIGESTS)};`);
+if (WORKER === RAW_WORKER) throw new Error('Failed to inject test PRECACHE_DIGESTS into app/sw.js');
 
 let server, base, browser;
 beforeAll(async () => {
@@ -34,7 +43,7 @@ beforeAll(async () => {
     if (url.pathname === '/app/index.html') { res.writeHead(308, { Location: '/app/' }); res.end(); return; }
     if (url.pathname === '/app/' || url.pathname === '/app') { res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' }); res.end(SHELL); return; }
     if (url.pathname === '/app/sw.js') { res.writeHead(200, { 'Content-Type': 'application/javascript' }); res.end(WORKER); return; }
-    if (url.pathname.startsWith('/app/')) { res.writeHead(200, { 'Content-Type': url.pathname.endsWith('.css') ? 'text/css' : 'application/javascript' }); res.end('/* asset */'); return; }
+    if (url.pathname.startsWith('/app/')) { res.writeHead(200, { 'Content-Type': url.pathname.endsWith('.css') ? 'text/css' : 'application/javascript' }); res.end(ASSET); return; }
     res.writeHead(404); res.end();
   });
   await new Promise((r) => server.listen(0, '127.0.0.1', r));

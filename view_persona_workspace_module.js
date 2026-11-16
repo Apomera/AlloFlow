@@ -38,6 +38,16 @@ function PersonaWorkspaceView({
     const value = t("persona.workspace." + key, params);
     return value && value !== "persona.workspace." + key ? value : fallback;
   };
+  const getEditorFocusables = (dialog) => {
+    if (!dialog || typeof dialog.querySelectorAll !== "function") return [];
+    return Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])')).filter((el) => {
+      if (el.disabled || el.hidden || el.getAttribute("aria-hidden") === "true") return false;
+      if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      const closedDetails = el.closest("details:not([open])");
+      if (closedDetails && !(el.tagName === "SUMMARY" && el.parentElement === closedDetails)) return false;
+      return true;
+    });
+  };
   return /* @__PURE__ */ React.createElement(ErrorBoundary, { fallbackMessage: t("persona.error_boundary_fallback") }, /* @__PURE__ */ React.createElement("div", { className: "h-full min-h-0 min-w-0 flex flex-col relative", "data-help-key": "persona_panel", "aria-busy": isProcessing || isGeneratingPersona }, /* @__PURE__ */ React.createElement("div", { className: "bg-yellow-50 p-3 rounded-lg border border-yellow-200 mb-2 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0 shadow-sm" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 w-full sm:w-auto" }, /* @__PURE__ */ React.createElement("div", { className: "w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center border-2 border-yellow-200 text-yellow-700 shrink-0" }, /* @__PURE__ */ React.createElement(History, { size: 20 })), /* @__PURE__ */ React.createElement("div", { className: "text-start flex-grow" }, /* @__PURE__ */ React.createElement("h2", { className: "text-lg font-black text-slate-800 leading-tight" }, t("persona.setup_title")), /* @__PURE__ */ React.createElement("p", { "data-persona-mode-guide": true, className: "text-slate-600 text-xs leading-relaxed max-w-lg mt-1" }, personaState.mode === "single" ? workspaceLabel("single_guide", "Choose one figure to explore their ideas and ask follow-up questions.") : workspaceLabel("panel_guide", "Choose two figures to compare perspectives, ask both a question, and explore where their ideas differ.")))), /* @__PURE__ */ React.createElement("div", { className: "flex bg-white/60 p-1 rounded-lg border border-yellow-200 shrink-0" }, /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -49,7 +59,7 @@ function PersonaWorkspaceView({
         if (isProcessing || isGeneratingPersona) return;
         setPersonaState((prev) => ({ ...prev, mode: "single", selectedCharacters: [] }));
       },
-      className: `px-3 py-1.5 rounded-md text-xs font-bold transition-all ${personaState.mode === "single" ? "bg-white text-yellow-900 shadow-sm ring-1 ring-yellow-200" : "text-yellow-700 hover:bg-yellow-100"}`
+      className: `min-h-11 px-3 py-1.5 rounded-md text-xs font-bold transition-all motion-reduce:transition-none ${personaState.mode === "single" ? "bg-white text-yellow-900 shadow-sm ring-1 ring-yellow-200" : "text-yellow-700 hover:bg-yellow-100"}`
     },
     t("persona.mode_single")
   ), /* @__PURE__ */ React.createElement(
@@ -63,10 +73,10 @@ function PersonaWorkspaceView({
         if (isProcessing || isGeneratingPersona) return;
         setPersonaState((prev) => ({ ...prev, mode: "panel" }));
       },
-      className: `px-3 py-1.5 rounded-md text-xs font-bold transition-all ${personaState.mode === "panel" ? "bg-white text-yellow-900 shadow-sm ring-1 ring-yellow-200" : "text-yellow-700 hover:bg-yellow-100"}`
+      className: `min-h-11 px-3 py-1.5 rounded-md text-xs font-bold transition-all motion-reduce:transition-none ${personaState.mode === "panel" ? "bg-white text-yellow-900 shadow-sm ring-1 ring-yellow-200" : "text-yellow-700 hover:bg-yellow-100"}`
     },
     t("persona.mode_panel")
-  )), isTeacherMode && /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 rounded-lg border border-slate-200 bg-white/80 px-2 py-1 text-[11px] font-bold text-slate-700" }, /* @__PURE__ */ React.createElement("span", null, t("persona.resume_retention")), /* @__PURE__ */ React.createElement("select", { "aria-label": t("persona.resume_retention"), disabled: isProcessing || isGeneratingPersona, defaultValue: (() => {
+  )), isTeacherMode && /* @__PURE__ */ React.createElement("label", { className: "min-h-11 flex items-center gap-2 rounded-lg border border-slate-200 bg-white/80 px-2 py-1 text-[11px] font-bold text-slate-700" }, /* @__PURE__ */ React.createElement("span", null, t("persona.resume_retention")), /* @__PURE__ */ React.createElement("select", { "aria-label": t("persona.resume_retention"), disabled: isProcessing || isGeneratingPersona, defaultValue: (() => {
     try {
       return String(normalizePersonaResumeDays(localStorage.getItem("allo_persona_resume_days")));
     } catch (_) {
@@ -81,7 +91,7 @@ function PersonaWorkspaceView({
     } catch (_) {
       addToast(t("persona.retention_update_failed"), "error");
     }
-  }, className: "rounded border border-slate-300 bg-white px-1.5 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-60" }, /* @__PURE__ */ React.createElement("option", { value: "0" }, t("persona.retention_off")), /* @__PURE__ */ React.createElement("option", { value: "7" }, "7 ", t("persona.days")), /* @__PURE__ */ React.createElement("option", { value: "14" }, "14 ", t("persona.days")), /* @__PURE__ */ React.createElement("option", { value: "30" }, "30 ", t("persona.days"))))), (() => {
+  }, className: "min-h-11 rounded border border-slate-300 bg-white px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-60" }, /* @__PURE__ */ React.createElement("option", { value: "0" }, t("persona.retention_off")), /* @__PURE__ */ React.createElement("option", { value: "7" }, "7 ", t("persona.days")), /* @__PURE__ */ React.createElement("option", { value: "14" }, "14 ", t("persona.days")), /* @__PURE__ */ React.createElement("option", { value: "30" }, "30 ", t("persona.days"))))), (() => {
     const sourceBinding = generatedContent?.config?.personaSource;
     const groundingMetadata = sourceBinding?.groundingMetadata ?? generatedContent?.config?.groundingMetadata;
     const grounding = extractPersonaGroundingDisclosure(groundingMetadata);
@@ -90,7 +100,7 @@ function PersonaWorkspaceView({
     const sourceExcerpt = String(sourceBinding?.excerpt || "").trim().slice(0, 800);
     if (!sourceBinding && grounding.links.length === 0 && grounding.queries.length === 0) return null;
     const disclosureCount = grounding.links.length + grounding.queries.length + (sourceBinding ? 1 : 0);
-    return /* @__PURE__ */ React.createElement("details", { className: "mx-3 mb-2 max-h-40 shrink-0 overflow-auto rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs text-slate-700" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-sky-900" }, t("persona.verified_sources") || "Sources and search context", " (", disclosureCount, ")"), sourceBinding && /* @__PURE__ */ React.createElement("div", { className: "mt-2 rounded-md border border-sky-100 bg-white/70 p-2" }, sourceTopic && /* @__PURE__ */ React.createElement("p", { className: "font-bold text-slate-800" }, sourceTopic), sourceFingerprint && /* @__PURE__ */ React.createElement("p", { role: "group", className: "mt-1 break-all font-mono text-[10px] text-slate-500", "aria-label": t("persona.source_fingerprint") || "Source fingerprint" }, sourceFingerprint), sourceExcerpt && /* @__PURE__ */ React.createElement("blockquote", { className: "mt-2 border-s-2 border-sky-200 ps-2 text-slate-600", "aria-label": t("persona.bound_source_excerpt") || "Bound lesson source excerpt" }, sourceExcerpt, String(sourceBinding?.excerpt || "").trim().length > sourceExcerpt.length ? "\u2026" : "")), grounding.links.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "mt-2 list-disc space-y-1 ps-5" }, grounding.links.map((source, sourceIndex) => /* @__PURE__ */ React.createElement("li", { key: source.url }, /* @__PURE__ */ React.createElement("a", { href: source.url, target: "_blank", rel: "noopener noreferrer", className: "font-semibold text-sky-800 underline decoration-sky-300 hover:text-sky-950" }, source.title || "Source " + (sourceIndex + 1))))), grounding.queries.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("p", { className: "font-bold text-slate-700" }, t("persona.source_queries") || "Search queries used"), /* @__PURE__ */ React.createElement("ul", { className: "mt-1 list-disc space-y-1 ps-5" }, grounding.queries.map((query) => /* @__PURE__ */ React.createElement("li", { key: query }, query)))));
+    return /* @__PURE__ */ React.createElement("details", { className: "mx-3 mb-2 max-h-40 shrink-0 overflow-auto rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs text-slate-700" }, /* @__PURE__ */ React.createElement("summary", { className: "min-h-11 flex items-center cursor-pointer font-bold text-sky-900" }, t("persona.verified_sources") || "Sources and search context", " (", disclosureCount, ")"), sourceBinding && /* @__PURE__ */ React.createElement("div", { className: "mt-2 rounded-md border border-sky-100 bg-white/70 p-2" }, sourceTopic && /* @__PURE__ */ React.createElement("p", { className: "font-bold text-slate-800" }, sourceTopic), sourceFingerprint && /* @__PURE__ */ React.createElement("p", { role: "group", className: "mt-1 break-all font-mono text-[10px] text-slate-500", "aria-label": t("persona.source_fingerprint") || "Source fingerprint" }, sourceFingerprint), sourceExcerpt && /* @__PURE__ */ React.createElement("blockquote", { className: "mt-2 border-s-2 border-sky-200 ps-2 text-slate-600", "aria-label": t("persona.bound_source_excerpt") || "Bound lesson source excerpt" }, sourceExcerpt, String(sourceBinding?.excerpt || "").trim().length > sourceExcerpt.length ? "\u2026" : "")), grounding.links.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "mt-2 list-disc space-y-1 ps-5" }, grounding.links.map((source, sourceIndex) => /* @__PURE__ */ React.createElement("li", { key: source.url }, /* @__PURE__ */ React.createElement("a", { href: source.url, target: "_blank", rel: "noopener noreferrer", className: "font-semibold text-sky-800 underline decoration-sky-300 hover:text-sky-950" }, source.title || "Source " + (sourceIndex + 1))))), grounding.queries.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("p", { className: "font-bold text-slate-700" }, t("persona.source_queries") || "Search queries used"), /* @__PURE__ */ React.createElement("ul", { className: "mt-1 list-disc space-y-1 ps-5" }, grounding.queries.map((query) => /* @__PURE__ */ React.createElement("li", { key: query }, query)))));
   })(), /* @__PURE__ */ React.createElement("div", { className: "flex flex-nowrap gap-4 sm:gap-6 overflow-auto p-3 sm:p-6 custom-scrollbar flex-grow min-h-0 items-start sm:items-center snap-x snap-mandatory z-10 w-full bg-slate-50/50 relative" }, isGeneratingPersona && /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", className: "absolute inset-0 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center z-50 rounded-lg" }, /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "w-20 h-20 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin motion-reduce:animate-none" }), /* @__PURE__ */ React.createElement(Sparkles, { size: 28, className: "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-purple-600 animate-pulse motion-reduce:animate-none" })), /* @__PURE__ */ React.createElement("p", { className: "mt-6 text-lg font-bold text-slate-700" }, t("persona.identifying")), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mt-1" }, t("persona.analyzing_historical_figures") || "Analyzing content for historical figures...")), (Array.isArray(generatedContent?.data) ? generatedContent?.data : []).map((persona, idx) => {
     const isSelectedInPanel = personaState.mode === "panel" && personaState.selectedCharacters.some((c) => c.name === persona.name);
     return /* @__PURE__ */ React.createElement(
@@ -113,7 +123,7 @@ function PersonaWorkspaceView({
         }
       },
       /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "absolute -bottom-4 -right-4 p-4 opacity-5 group-hover:opacity-10 transition-opacity motion-reduce:transition-none transform group-hover:scale-110 motion-reduce:group-hover:scale-100 duration-500" }, /* @__PURE__ */ React.createElement(History, { size: 120, "aria-hidden": "true", className: "text-indigo-900" })),
-      /* @__PURE__ */ React.createElement("div", { className: "mb-4 relative z-10" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "inline-block bg-yellow-100 text-yellow-800 text-[11px] font-black uppercase tracking-wider px-2 py-0.5 rounded border border-yellow-200" }, persona.year), isTeacherMode && /* @__PURE__ */ React.createElement("button", { type: "button", disabled: isProcessing || isGeneratingPersona, className: "min-h-[32px] rounded-md border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-[11px] font-bold text-indigo-700 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50", onClick: (e) => {
+      /* @__PURE__ */ React.createElement("div", { className: "mb-4 relative z-10" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "inline-block bg-yellow-100 text-yellow-800 text-[11px] font-black uppercase tracking-wider px-2 py-0.5 rounded border border-yellow-200" }, persona.year), isTeacherMode && /* @__PURE__ */ React.createElement("button", { type: "button", disabled: isProcessing || isGeneratingPersona, className: "min-h-11 rounded-md border border-indigo-200 bg-indigo-50 px-3 py-1 text-[11px] font-bold text-indigo-700 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50", onClick: (e) => {
         e.stopPropagation();
         if (isProcessing || isGeneratingPersona) return;
         openPersonaTeacherEditor(persona, idx);
@@ -136,7 +146,7 @@ function PersonaWorkspaceView({
               handleTogglePanelSelection(persona);
             }
           },
-          className: `w-full py-3 border-2 rounded-xl font-bold text-sm transition-all motion-reduce:transition-none shadow-sm relative z-10 flex items-center justify-center gap-2 group/btn focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2
+          className: `min-h-11 w-full py-3 border-2 rounded-xl font-bold text-sm transition-all motion-reduce:transition-none shadow-sm relative z-10 flex items-center justify-center gap-2 group/btn focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2
                                         ${personaState.mode === "single" ? "bg-white border-indigo-100 text-indigo-700 hover:bg-indigo-600 hover:text-white hover:border-indigo-600" : isSelectedInPanel ? "bg-purple-600 border-purple-600 text-white" : "bg-white border-purple-100 text-purple-700 hover:bg-purple-50"}
                                         `
         },
@@ -150,7 +160,7 @@ function PersonaWorkspaceView({
       onClick: handleStartPanelChat,
       disabled: personaState.selectedCharacters.length !== 2 || isProcessing || isGeneratingPersona,
       "aria-busy": isProcessing || isGeneratingPersona,
-      className: "bg-purple-600 text-white px-5 py-3 rounded-xl font-bold text-sm shadow-sm hover:bg-purple-700 transition-all motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 active:scale-95 shrink-0"
+      className: "min-h-11 bg-purple-600 text-white px-5 py-3 rounded-xl font-bold text-sm shadow-sm hover:bg-purple-700 transition-all motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 active:scale-95 shrink-0"
     },
     isProcessing || isGeneratingPersona ? /* @__PURE__ */ React.createElement(RefreshCw, { className: "animate-spin motion-reduce:animate-none" }) : /* @__PURE__ */ React.createElement(Users, { size: 24 }),
     t("persona.start_panel")
@@ -171,13 +181,16 @@ function PersonaWorkspaceView({
         "aria-labelledby": "persona-teacher-editor-title",
         tabIndex: -1,
         onKeyDown: (event) => {
+          if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229) return;
+          if (event.defaultPrevented) return;
           if (event.key === "Escape") {
+            event.preventDefault();
             if (typeof event.stopPropagation === "function") event.stopPropagation();
             setPersonaTeacherEditor(null);
             return;
           }
-          if (event.key === "Tab" && event.currentTarget && typeof event.currentTarget.querySelectorAll === "function") {
-            const focusables = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+          if (event.key === "Tab" && event.currentTarget) {
+            const focusables = getEditorFocusables(event.currentTarget);
             if (focusables.length > 0) {
               const first = focusables[0];
               const last = focusables[focusables.length - 1];
@@ -201,7 +214,7 @@ function PersonaWorkspaceView({
           autoFocus: true,
           "aria-label": t("common.close"),
           onClick: () => setPersonaTeacherEditor(null),
-          className: "rounded-lg border border-slate-200 px-3 py-1.5 text-lg font-bold text-slate-600 hover:bg-slate-100"
+          className: "min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg border border-slate-200 px-3 py-2 text-lg font-bold text-slate-600 hover:bg-slate-100"
         },
         "\xD7"
       )),
@@ -211,7 +224,7 @@ function PersonaWorkspaceView({
           value: personaTeacherEditor.role,
           maxLength: 200,
           onChange: (event) => updatePersonaTeacherEditor({ role: event.target.value }),
-          className: "w-full rounded-lg border border-slate-300 px-3 py-2 font-normal text-slate-900"
+          className: "min-h-11 w-full rounded-lg border border-slate-300 px-3 py-2 font-normal text-slate-900"
         }
       )), /* @__PURE__ */ React.createElement("label", { className: "space-y-1 text-sm font-bold text-slate-700" }, /* @__PURE__ */ React.createElement("span", null, t("persona.edit_voice") || "TTS voice"), /* @__PURE__ */ React.createElement(
         "select",
@@ -219,7 +232,7 @@ function PersonaWorkspaceView({
           value: personaTeacherEditor.voice,
           onChange: (event) => updatePersonaTeacherEditor({ voice: event.target.value }),
           disabled: getPersonaVoiceOptions().length === 0,
-          className: "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 font-normal text-slate-900 disabled:bg-slate-100"
+          className: "min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 font-normal text-slate-900 disabled:bg-slate-100"
         },
         getPersonaVoiceOptions().length === 0 ? /* @__PURE__ */ React.createElement("option", { value: personaTeacherEditor.voice }, personaTeacherEditor.voice || t("persona.no_voice_available") || "Use the default voice") : getPersonaVoiceOptions().map((voice) => /* @__PURE__ */ React.createElement("option", { key: voice, value: voice }, voice))
       ))), /* @__PURE__ */ React.createElement("label", { className: "block space-y-1 text-sm font-bold text-slate-700" }, /* @__PURE__ */ React.createElement("span", null, t("persona.edit_context") || "Character context"), /* @__PURE__ */ React.createElement(
@@ -248,7 +261,7 @@ function PersonaWorkspaceView({
           onChange: (event) => updatePersonaTeacherEditor({
             quests: personaTeacherEditor.quests.map((item, index) => index === questIndex ? { ...item, text: event.target.value } : item)
           }),
-          className: "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 font-normal text-slate-900"
+          className: "min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 font-normal text-slate-900"
         }
       )), /* @__PURE__ */ React.createElement("label", { className: "space-y-1 text-xs font-bold text-slate-700" }, /* @__PURE__ */ React.createElement("span", null, (() => {
         const value = t("persona.story_bonus_rapport");
@@ -273,7 +286,7 @@ function PersonaWorkspaceView({
               quests: personaTeacherEditor.quests.map((item, index) => index === questIndex ? { ...item, difficulty: clamped } : item)
             });
           },
-          className: "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 font-normal text-slate-900"
+          className: "min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 font-normal text-slate-900"
         }
       )), /* @__PURE__ */ React.createElement(
         "button",
@@ -282,7 +295,7 @@ function PersonaWorkspaceView({
           onClick: () => updatePersonaTeacherEditor({
             quests: personaTeacherEditor.quests.filter((_, index) => index !== questIndex)
           }),
-          className: "rounded-lg border border-red-200 bg-white px-3 py-2 text-xs font-bold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+          className: "min-h-11 rounded-lg border border-red-200 bg-white px-3 py-2 text-xs font-bold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
         },
         t("persona.remove_quest") || "Remove"
       ))), /* @__PURE__ */ React.createElement(
@@ -301,12 +314,12 @@ function PersonaWorkspaceView({
               }]
             });
           },
-          className: "rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-50"
+          className: "min-h-11 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-50"
         },
         "+ ",
         t("persona.add_quest") || "Add quest"
       ))),
-      /* @__PURE__ */ React.createElement("div", { className: "sticky bottom-0 flex justify-end gap-2 border-t border-slate-200 bg-white px-5 py-4" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setPersonaTeacherEditor(null), className: "rounded-lg border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100" }, t("common.cancel")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: savePersonaTeacherEditor, className: "rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700" }, t("persona.save_changes") || t("common.save")))
+      /* @__PURE__ */ React.createElement("div", { className: "sticky bottom-0 flex justify-end gap-2 border-t border-slate-200 bg-white px-5 py-4" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setPersonaTeacherEditor(null), className: "min-h-11 rounded-lg border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100" }, t("common.cancel")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: savePersonaTeacherEditor, className: "min-h-11 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700" }, t("persona.save_changes") || t("common.save")))
     )
   )));
 }

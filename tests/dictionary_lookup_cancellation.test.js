@@ -16,7 +16,7 @@ describe('dictionary cancellation and retry cache ownership', () => {
     const response = deferred(), controller = new AbortController();
     const fetch = vi.fn(() => response.promise); vi.stubGlobal('fetch', fetch);
     const pending = window.AlloDictionary.lookup('bank', { signal: controller.signal }); await Promise.resolve();
-    expect(fetch).toHaveBeenCalledWith('https://api.dictionaryapi.dev/api/v2/entries/en/bank', { signal: controller.signal });
+    expect(fetch).toHaveBeenCalledWith('https://api.dictionaryapi.dev/api/v2/entries/en/bank', { signal: controller.signal, credentials: 'omit' });
     controller.abort(); response.resolve({ ok: true, json: () => Promise.resolve(rows) });
     expect(await pending).toBeNull(); expect(window.AlloDictionary.getCached('bank')).toBeUndefined();
   });

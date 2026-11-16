@@ -5764,9 +5764,13 @@
           body.style.overflow = 'hidden';
           body.style.overscrollBehavior = 'none';
         }
+        var rootNow = _stemDialogRef.current;
+        if (rootNow && typeof rootNow.focus === 'function') {
+          try { rootNow.focus({ preventScroll: true }); } catch (_) { rootNow.focus(); }
+        }
         var focusTimer = setTimeout(function () {
           var root = _stemDialogRef.current;
-          if (root && typeof root.focus === 'function') {
+          if (root && !root.contains(document.activeElement) && typeof root.focus === 'function') {
             try { root.focus({ preventScroll: true }); } catch (_) { root.focus(); }
           }
         }, 0);
@@ -7338,7 +7342,7 @@
           transition: 'box-shadow 0.3s ease'
         },
         title: 'View XP Progress',
-        'aria-label': 'View XP Progress — ' + totalStemXP + ' total XP',
+        'aria-label': totalStemXP + ' XP — View XP Progress',
         onClick: function() { _setShowXpPanel(function(v) { return !v; }); }
       },
         React.createElement("span", { style: { filter: 'drop-shadow(0 0 3px rgba(255,200,0,0.8))', fontSize: '14px' } }, "\u2B50"),
@@ -7372,7 +7376,7 @@
         }, /*#__PURE__*/React.createElement("h2", {
           className: "text-lg font-bold tracking-tight"
         }, "\uD83E\uDDEA STEAM Lab"), /*#__PURE__*/React.createElement("p", {
-          className: "text-xs text-white/70"
+          className: "text-xs text-white"
         }, t('stem.solver.manipulatives') || "Interactive tools & labs"))), /*#__PURE__*/React.createElement("div", {
           className: "stem-lab-actionbar flex items-center gap-3"
         }, _stemTeacherView && /*#__PURE__*/React.createElement("button", {
@@ -9446,7 +9450,7 @@
                   cursor: _stemToolSuggesting ? 'wait' : 'pointer',
                   opacity: _stemToolSuggesting ? 0.78 : 1
                 },
-                "aria-label": "Suggest STEM tools with AI"
+                "aria-label": _stemToolSuggesting ? "Thinking..." : "Suggest tools with AI"
               }, React.createElement("span", { "aria-hidden": "true" }, "AI"), React.createElement("span", null, _stemToolSuggesting ? "Thinking..." : "Suggest tools"))
             ),
             (_stemToolSuggesting || _stemToolSuggestError) && React.createElement("p", {

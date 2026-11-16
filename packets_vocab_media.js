@@ -14,10 +14,11 @@
   var FORMAT = 'alloflow-word-audio-index/1';
   var FILE_NAME = /^[a-z0-9_][a-z0-9_-]*\.json$/;
   var AUDIO = /^data:audio\/[a-z0-9.+-]+(?:;[a-z0-9=.+-]+)*;base64,/i;
+  var CONCURRENCY = 6;
   var own = function (o, k) { return !!o && Object.prototype.hasOwnProperty.call(o, k); };
   var isObject = function (v) { return !!v && typeof v === 'object' && !Array.isArray(v); };
 
-  var index = null, loadingIndex = null, files = {}, wavs = {};
+  var index = null, loadingIndex = null, files = Object.create(null), wavs = Object.create(null);
   function getJson(url) {
     return Promise.resolve().then(function () { return root.fetch(url); }).then(function (reply) {
       if (!reply.ok) throw new Error(url + ' answered ' + reply.status);
@@ -58,17 +59,25 @@
     return store().then(function () {
       var want = plan(words).words, urls = [];
       want.forEach(function (w) { var f = fileOf(w); if (urls.indexOf(f.url) < 0 && !files[f.url]) urls.push(f.url); });
-      var done = 0;
-      return urls.reduce(function (chain, url) {
-        return chain.then(function () {
-          tell('Getting the recordings: ' + (++done) + ' of ' + urls.length + ' small files.');
-          return getJson(url).then(function (data) { if (!isObject(data)) throw new Error(url + ' is not a sound file'); files[url] = data; });
-        });
-      }, Promise.resolve()).then(function () {
-        var todo = { audio: {} };
+      var done = 0, cursor = 0;
+      var workers = Array.from({ length: Math.min(CONCURRENCY, urls.length) }, function () {
+        return (function next() {
+          if (cursor >= urls.length) return Promise.resolve();
+          var url = urls[cursor++];
+          return getJson(url).then(function (data) {
+            if (!isObject(data)) throw new Error(url + ' is not a sound file');
+            files[url] = data;
+            tell('Getting the recordings: ' + (++done) + ' of ' + urls.length + ' small files.');
+          }).then(next);
+        })();
+      });
+      return Promise.all(workers).then(function () {
+        var todo = { audio: Object.create(null) };
         want.forEach(function (w) {
-          if (wavs[w]) return;
-          var clip = files[fileOf(w).url][w];
+          if (own(wavs, w)) return;
+          var shardObj = files[fileOf(w).url];
+          var wordsMap = isObject(shardObj) && isObject(shardObj.words) ? shardObj.words : shardObj;
+          var clip = own(wordsMap, w) ? wordsMap[w] : null;
           if (typeof clip === 'string' && AUDIO.test(clip)) todo.audio[w] = clip;
         });
         var names = Object.keys(todo.audio);
@@ -80,7 +89,7 @@
         });
       }).then(function () {
         var out = {};
-        want.forEach(function (w) { if (wavs[w]) out[w] = wavs[w]; });
+        want.forEach(function (w) { if (own(wavs, w)) out[w] = wavs[w]; });
         return out;
       });
     });

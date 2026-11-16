@@ -12,7 +12,7 @@ describe('Model UN authored form labels', () => {
     ['mun_clause_text', 'Operative clause text'],
     ['mun_amendment_text', 'Text to remove'],
     ['mun_amendment_rationale', 'Diplomatic rationale (optional, one sentence)'],
-    ['mun_backchannel_note', 'Private note to the selected delegation'],
+    ['mun_backchannel_note', 'Diplomatic note to the selected delegation'],
     ['mun_private_notes', 'Private notes'],
   ])('associates %s with visible instructions', (id, labelText) => {
     expect(source).toContain("htmlFor: '" + id + "'");

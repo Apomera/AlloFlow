@@ -26,6 +26,8 @@ function LearningHubModal(props) {
     userRole = '',
   } = props;
   const dialogRef = React.useRef(null);
+  const closeHandlerRef = React.useRef(setShowLearningHub);
+  closeHandlerRef.current = setShowLearningHub;
   React.useEffect(function () {
     const dialog = dialogRef.current;
     if (!dialog) return undefined;
@@ -33,6 +35,25 @@ function LearningHubModal(props) {
     const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
     const trap = { root: dialog };
     trapStack.push(trap);
+    const isolated = [];
+    const seenSiblings = new Set();
+    let cursor = dialog;
+    while (cursor && cursor.parentElement) {
+      const parent = cursor.parentElement;
+      Array.from(parent.children).forEach(function (sibling) {
+        if (!sibling || sibling === cursor || seenSiblings.has(sibling) || !sibling.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName)) return;
+        seenSiblings.add(sibling);
+        const hadInert = sibling.hasAttribute('inert');
+        const prevInert = sibling.inert;
+        const ariaHidden = sibling.getAttribute('aria-hidden');
+        isolated.push({ sibling, hadInert, prevInert, ariaHidden });
+        try { sibling.inert = true; } catch (_) {}
+        try { sibling.setAttribute('inert', ''); } catch (_) {}
+        try { sibling.setAttribute('aria-hidden', 'true'); } catch (_) {}
+      });
+      if (parent === document.body) break;
+      cursor = parent;
+    }
     // Ref-counted shared body scroll lock — see window.__alloScrollLockState.
     // Without it the page behind the hub scrolls under a touch drag, which on
     // a phone reads as the tiles sliding away and not coming back.
@@ -45,9 +66,17 @@ function LearningHubModal(props) {
     const isTopTrap = function () { return trapStack[trapStack.length - 1] === trap; };
     const getFocusable = function () {
       return Array.from(dialog.querySelectorAll(
-        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
+        'button:not([disabled]), summary, [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
       )).filter(function (element) {
         if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+        let ancestor = element.parentElement;
+        while (ancestor && ancestor !== dialog) {
+          if (ancestor.matches && ancestor.matches('details:not([open])')) {
+            const directSummary = ancestor.querySelector(':scope > summary');
+            if (element !== directSummary) return false;
+          }
+          ancestor = ancestor.parentElement;
+        }
         const style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(element) : null;
         return !style || (style.display !== 'none' && style.visibility !== 'hidden');
       });
@@ -56,12 +85,16 @@ function LearningHubModal(props) {
     (first || dialog).focus();
     const onKeyDown = function (event) {
       if (!isTopTrap()) return;
-      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); setShowLearningHub(false); return; }
+      if (!dialog.isConnected) return;
+      if (event.key === 'Escape') {
+        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+        event.preventDefault(); event.stopPropagation(); closeHandlerRef.current && closeHandlerRef.current(false); return;
+      }
       if (event.key !== 'Tab') return;
       const focusable = getFocusable();
       if (focusable.length === 0) { event.preventDefault(); dialog.focus(); return; }
       const firstItem = focusable[0], lastItem = focusable[focusable.length - 1];
-      if (!dialog.contains(document.activeElement)) { event.preventDefault(); (event.shiftKey ? lastItem : firstItem).focus(); }
+      if (!dialog.contains(document.activeElement) || document.activeElement === dialog) { event.preventDefault(); (event.shiftKey ? lastItem : firstItem).focus(); }
       else if (event.shiftKey && document.activeElement === firstItem) { event.preventDefault(); lastItem.focus(); }
       else if (!event.shiftKey && document.activeElement === lastItem) { event.preventDefault(); firstItem.focus(); }
     };
@@ -74,12 +107,23 @@ function LearningHubModal(props) {
           if (scrollLock.count === 0) document.body.style.overflow = scrollLock.prev;
         }
       } catch (_) {}
+      isolated.forEach(function ({ sibling, hadInert, prevInert, ariaHidden }) {
+        if (!sibling || !sibling.isConnected) return;
+        if (!hadInert) {
+          try { sibling.inert = false; } catch (_) {}
+          try { sibling.removeAttribute('inert'); } catch (_) {}
+        } else {
+          try { sibling.inert = Boolean(prevInert); } catch (_) {}
+        }
+        if (ariaHidden == null) { try { sibling.removeAttribute('aria-hidden'); } catch (_) {} }
+        else { try { sibling.setAttribute('aria-hidden', ariaHidden); } catch (_) {} }
+      });
       const wasTopTrap = isTopTrap();
       const trapIndex = trapStack.indexOf(trap);
       if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
-      if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus.isConnected && typeof previousFocus.focus === 'function') previousFocus.focus();
+      if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus !== document.documentElement && previousFocus.isConnected && typeof previousFocus.focus === 'function') previousFocus.focus();
     };
-  }, [setShowLearningHub]);
+  }, []);
   const tr = (key, fallback) => {
     try { const value = typeof t === 'function' ? t(key) : ''; return value && value !== key ? value : fallback; }
     catch (_) { return fallback; }
@@ -99,7 +143,7 @@ function LearningHubModal(props) {
     } catch (_) {}
     let popup = null;
     try { popup = window.open(url, 'alloflow-text-inquiry', 'width=1320,height=900'); } catch (_) { popup = null; }
-    if (!popup) { setTextInquiryLaunchError('The Text Inquiry Studio window was blocked. Allow pop-ups for this site, then try again.'); return; }
+    if (!popup) { setTextInquiryLaunchError(tr('learning_hub.text_inquiry_popup_blocked', 'The Text Inquiry Studio window was blocked. Allow pop-ups for this site, then try again.')); return; }
     setTextInquiryLaunchError('');
     setShowLearningHub(false);
   };
@@ -230,7 +274,7 @@ function LearningHubModal(props) {
   const hubRolePreference = hubRoleOverride || userRole || (isTeacherMode ? 'teacher' : 'student');
   const hubRoleRaw = String(hubRolePreference).toLowerCase();
   const hubRoleKey = hubRoleRaw.includes('family') ? 'family' : (hubRoleRaw.includes('teacher') || hubRoleRaw.includes('educator')) ? 'teacher' : 'student';
-  const hubRoleLabel = ({ teacher: 'teachers', student: 'students', family: 'families' }[hubRoleKey] || 'learners');
+  const hubRoleLabel = ({ teacher: tr('hub.role_teacher_lower', 'teachers'), student: tr('hub.role_student_lower', 'students'), family: tr('hub.role_family_lower', 'families') }[hubRoleKey] || tr('hub.role_learners_lower', 'learners'));
   const hubRoleRecommendations = { teacher: ['learning-web-explorer', 'throughline', 'research-hub', 'stem-lab', 'reading-library'], student: ['learning-web-explorer', 'lumen-study', 'reading-library', 'stem-lab', 'text-inquiry'], family: ['reading-library', 'lingua-practice', 'sel-hub', 'allohaven', 'storyforge'] };
   const hubUsageRankedIds = Object.entries(hubUsageCounts).sort((a, b) => Number(b[1]) - Number(a[1])).map(([id]) => id);
   const hubRecommendedIds = Array.from(new Set([...(hubRoleRecommendations[hubRoleKey] || hubRoleRecommendations.student), ...hubUsageRankedIds])).slice(0, 5);
@@ -294,7 +338,7 @@ function LearningHubModal(props) {
                     {hubCards.map((card) => (
                       <div key={card.id} className="flex items-center gap-2 rounded-lg bg-white border border-slate-200 p-2">
                         <button type="button" onClick={() => activateHubCard(card.id)} className="min-h-10 flex-1 text-left text-sm font-semibold text-slate-700 hover:text-indigo-700">{card.label}</button>
-                        <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes(card.id)} aria-label={hubFavoriteIds.includes(card.id) ? tr('hub.remove_favorite', 'Remove from favorites') + ': ' + card.label : tr('hub.add_favorite', 'Add to favorites') + ': ' + card.label} onClick={() => toggleHubFavorite(card.id)} className="min-w-9 min-h-9 rounded-full text-amber-700 text-lg hover:bg-amber-50">{hubFavoriteIds.includes(card.id) ? '★' : '☆'}</button>
+                        <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes(card.id)} aria-label={hubFavoriteIds.includes(card.id) ? tr('hub.remove_favorite', 'Remove from favorites') + ': ' + card.label : tr('hub.add_favorite', 'Add to favorites') + ': ' + card.label} onClick={() => toggleHubFavorite(card.id)} className="min-w-11 min-h-11 inline-flex items-center justify-center rounded-full text-amber-700 text-lg hover:bg-amber-50">{hubFavoriteIds.includes(card.id) ? '★' : '☆'}</button>
                       </div>
                     ))}
                   </div>
@@ -306,8 +350,8 @@ function LearningHubModal(props) {
                   <div className="flex flex-wrap gap-2">
                     {quickCards.map((card) => (
                       <div key={card.id} className="inline-flex items-center rounded-lg border border-indigo-200 bg-white shadow-sm">
-                        <button type="button" onClick={() => activateHubCard(card.id)} className="min-h-10 px-3 text-left text-xs font-bold text-indigo-800 hover:bg-indigo-50">{card.label}</button>
-                        <button type="button" aria-pressed={hubFavoriteIds.includes(card.id)} aria-label={hubFavoriteIds.includes(card.id) ? tr('hub.remove_favorite', 'Remove from favorites') + ': ' + card.label : tr('hub.add_favorite', 'Add to favorites') + ': ' + card.label} onClick={() => toggleHubFavorite(card.id)} className="min-w-9 min-h-10 border-l border-indigo-200 text-amber-700 text-lg hover:bg-amber-50">{hubFavoriteIds.includes(card.id) ? '★' : '☆'}</button>
+                        <button type="button" onClick={() => activateHubCard(card.id)} className="min-h-11 px-3 text-left text-xs font-bold text-indigo-800 hover:bg-indigo-50">{card.label}</button>
+                        <button type="button" aria-pressed={hubFavoriteIds.includes(card.id)} aria-label={hubFavoriteIds.includes(card.id) ? tr('hub.remove_favorite', 'Remove from favorites') + ': ' + card.label : tr('hub.add_favorite', 'Add to favorites') + ': ' + card.label} onClick={() => toggleHubFavorite(card.id)} className="min-w-11 min-h-11 inline-flex items-center justify-center border-l border-indigo-200 text-amber-700 text-lg hover:bg-amber-50">{hubFavoriteIds.includes(card.id) ? '★' : '☆'}</button>
                       </div>
                     ))}
                   </div>
@@ -320,7 +364,7 @@ function LearningHubModal(props) {
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <h3 className="text-sm font-black uppercase tracking-wide text-indigo-800">{tr('learning_hub.section_core_title', 'Core learning')}</h3>
-                    <p className="text-xs text-slate-500 mt-1">{tr('learning_hub.section_core_desc', 'Start with reading, evidence, inquiry, and subject exploration.')}</p>
+                    <p className="text-xs text-slate-600 mt-1">{tr('learning_hub.section_core_desc', 'Start with reading, evidence, inquiry, and subject exploration.')}</p>
                   </div>
                   <button type="button" data-hub-section-toggle="core" aria-expanded={!hubCollapsedSections.includes('core')} aria-label={hubCollapsedSections.includes('core') ? tr('hub.expand_section', 'Expand section') : tr('hub.collapse_section', 'Collapse section')} onClick={() => toggleHubSection('core')} className="min-h-11 min-w-11 rounded-lg border border-slate-300 bg-white text-slate-700 text-lg font-black hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubCollapsedSections.includes('core') ? '+' : '-'}</button>
                 </div>
@@ -340,7 +384,7 @@ function LearningHubModal(props) {
                   </div>
                 </button>
 
-                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('lumen-study')} aria-label={hubFavoriteIds.includes('lumen-study') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Lumen Study' : tr('hub.add_favorite', 'Add to favorites') + ': Lumen Study'} title={hubFavoriteIds.includes('lumen-study') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('lumen-study'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-700 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('lumen-study') ? '★' : '☆'}</button>
+                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('lumen-study')} aria-label={hubFavoriteIds.includes('lumen-study') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Lumen Study' : tr('hub.add_favorite', 'Add to favorites') + ': Lumen Study'} title={hubFavoriteIds.includes('lumen-study') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('lumen-study'); }} className="absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-700 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('lumen-study') ? '★' : '☆'}</button>
                 </div>
               )}
               {typeof setIsReadingLibraryOpen === 'function' && (
@@ -353,7 +397,7 @@ function LearningHubModal(props) {
                   </div>
                 </button>
 
-                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('reading-library')} aria-label={hubFavoriteIds.includes('reading-library') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Reading Library' : tr('hub.add_favorite', 'Add to favorites') + ': Reading Library'} title={hubFavoriteIds.includes('reading-library') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('reading-library'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-700 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('reading-library') ? '★' : '☆'}</button>
+                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('reading-library')} aria-label={hubFavoriteIds.includes('reading-library') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Reading Library' : tr('hub.add_favorite', 'Add to favorites') + ': Reading Library'} title={hubFavoriteIds.includes('reading-library') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('reading-library'); }} className="absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-700 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('reading-library') ? '★' : '☆'}</button>
                 </div>
               )}
               <div className="relative group" data-hub-id="stem-lab" data-hub-label="STEAM Lab" data-hub-section="core">
@@ -361,29 +405,29 @@ function LearningHubModal(props) {
                 <span className="text-4xl" aria-hidden="true">{'\uD83D\uDD2C'}</span>
                 <div>
                   <h3 className="font-bold text-indigo-800">{t('learning_hub.stem_title') || 'STEAM Lab'}</h3>
-                  <p className="text-xs text-indigo-600 mt-1">{t('learning_hub.stem_desc') || '100+ interactive math & science explorations'}</p>
+                  <p className="text-xs text-indigo-700 mt-1">{t('learning_hub.stem_desc') || '100+ interactive math & science explorations'}</p>
                 </div>
               </button>
 
-                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('stem-lab')} aria-label={hubFavoriteIds.includes('stem-lab') ? tr('hub.remove_favorite', 'Remove from favorites') + ': STEAM Lab' : tr('hub.add_favorite', 'Add to favorites') + ': STEAM Lab'} title={hubFavoriteIds.includes('stem-lab') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('stem-lab'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-700 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('stem-lab') ? '★' : '☆'}</button>
+                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('stem-lab')} aria-label={hubFavoriteIds.includes('stem-lab') ? tr('hub.remove_favorite', 'Remove from favorites') + ': STEAM Lab' : tr('hub.add_favorite', 'Add to favorites') + ': STEAM Lab'} title={hubFavoriteIds.includes('stem-lab') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('stem-lab'); }} className="absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-700 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('stem-lab') ? '★' : '☆'}</button>
               </div>
               <div className="relative group" data-hub-ai-only="true" data-hub-id="text-inquiry" data-hub-label="Text Inquiry Studio" data-hub-section="core">
                 <button type="button" data-hub-launch="true" data-help-key="learning_hub_text_inquiry_card" onClick={openTextInquiryStudio} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-fuchsia-50 to-cyan-50 border border-fuchsia-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center" aria-describedby={textInquiryLaunchError ? 'text-inquiry-launch-error' : undefined}>
                 <span className="text-4xl" aria-hidden="true">{'\uD83D\uDCC3'}</span>
                 <div>
-                  <h3 className="font-bold text-fuchsia-900">Text Inquiry Studio</h3>
-                  <p className="text-xs text-fuchsia-800 mt-1">Inspect frequency and concordance, then test an interpretation against exceptions and context.</p>
+                  <h3 className="font-bold text-fuchsia-900">{tr('learning_hub.text_inquiry_title', 'Text Inquiry Studio')}</h3>
+                  <p className="text-xs text-fuchsia-800 mt-1">{tr('learning_hub.text_inquiry_desc', 'Inspect frequency and concordance, then test an interpretation against exceptions and context.')}</p>
                 </div>
               </button>
 
-                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('text-inquiry')} aria-label={hubFavoriteIds.includes('text-inquiry') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Text Inquiry Studio' : tr('hub.add_favorite', 'Add to favorites') + ': Text Inquiry Studio'} title={hubFavoriteIds.includes('text-inquiry') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('text-inquiry'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-700 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('text-inquiry') ? '★' : '☆'}</button>
+                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('text-inquiry')} aria-label={hubFavoriteIds.includes('text-inquiry') ? tr('hub.remove_favorite', 'Remove from favorites') + ': ' + tr('learning_hub.text_inquiry_title', 'Text Inquiry Studio') : tr('hub.add_favorite', 'Add to favorites') + ': ' + tr('learning_hub.text_inquiry_title', 'Text Inquiry Studio')} title={hubFavoriteIds.includes('text-inquiry') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('text-inquiry'); }} className="absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-700 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('text-inquiry') ? '★' : '☆'}</button>
               </div>
               {textInquiryLaunchError && <p id="text-inquiry-launch-error" role="alert" className="sm:col-span-3 text-xs font-bold text-red-700 bg-red-50 border border-red-300 rounded-lg p-3">{textInquiryLaunchError}</p>}
                             <div className="col-span-full mt-1 mb-[-0.25rem]" data-hub-section-heading="practice">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <h3 className="text-sm font-black uppercase tracking-wide text-indigo-800">{tr('learning_hub.section_practice_title', 'Practice and progress')}</h3>
-                    <p className="text-xs text-slate-500 mt-1">{tr('learning_hub.section_practice_desc', 'Build fluency, prepare for assessments, and support learner wellbeing.')}</p>
+                    <p className="text-xs text-slate-600 mt-1">{tr('learning_hub.section_practice_desc', 'Build fluency, prepare for assessments, and support learner wellbeing.')}</p>
                   </div>
                   <button type="button" data-hub-section-toggle="practice" aria-expanded={!hubCollapsedSections.includes('practice')} aria-label={hubCollapsedSections.includes('practice') ? tr('hub.expand_section', 'Expand section') : tr('hub.collapse_section', 'Collapse section')} onClick={() => toggleHubSection('practice')} className="min-h-11 min-w-11 rounded-lg border border-slate-300 bg-white text-slate-700 text-lg font-black hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubCollapsedSections.includes('practice') ? '+' : '-'}</button>
                 </div>
@@ -398,7 +442,7 @@ function LearningHubModal(props) {
                   </div>
                 </button>
 
-                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('lingua-practice')} aria-label={hubFavoriteIds.includes('lingua-practice') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Lingua Practice' : tr('hub.add_favorite', 'Add to favorites') + ': Lingua Practice'} title={hubFavoriteIds.includes('lingua-practice') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('lingua-practice'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-700 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('lingua-practice') ? '★' : '☆'}</button>
+                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('lingua-practice')} aria-label={hubFavoriteIds.includes('lingua-practice') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Lingua Practice' : tr('hub.add_favorite', 'Add to favorites') + ': Lingua Practice'} title={hubFavoriteIds.includes('lingua-practice') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('lingua-practice'); }} className="absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-700 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('lingua-practice') ? '★' : '☆'}</button>
                 </div>
               )}
               {typeof setIsTestPrepHubOpen === 'function' && (
@@ -411,7 +455,7 @@ function LearningHubModal(props) {
                   </div>
                 </button>
 
-                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('test-prep')} aria-label={hubFavoriteIds.includes('test-prep') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Test Prep Hub' : tr('hub.add_favorite', 'Add to favorites') + ': Test Prep Hub'} title={hubFavoriteIds.includes('test-prep') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('test-prep'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-700 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('test-prep') ? '★' : '☆'}</button>
+                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('test-prep')} aria-label={hubFavoriteIds.includes('test-prep') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Test Prep Hub' : tr('hub.add_favorite', 'Add to favorites') + ': Test Prep Hub'} title={hubFavoriteIds.includes('test-prep') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('test-prep'); }} className="absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-700 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('test-prep') ? '★' : '☆'}</button>
                 </div>
               )}
               <div className="relative group" data-hub-id="sel-hub" data-hub-label="SEL Hub" data-hub-section="practice">
@@ -419,11 +463,11 @@ function LearningHubModal(props) {
                 <span className="text-4xl" aria-hidden="true">{'\uD83D\uDC96'}</span>
                 <div>
                   <h3 className="font-bold text-emerald-800">{t('learning_hub.sel_title') || 'SEL Hub'}</h3>
-                  <p className="text-xs text-emerald-600 mt-1">{t('learning_hub.sel_desc') || 'Social-emotional learning for self-awareness & growth'}</p>
+                  <p className="text-xs text-emerald-700 mt-1">{t('learning_hub.sel_desc') || 'Social-emotional learning for self-awareness & growth'}</p>
                 </div>
               </button>
 
-                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('sel-hub')} aria-label={hubFavoriteIds.includes('sel-hub') ? tr('hub.remove_favorite', 'Remove from favorites') + ': SEL Hub' : tr('hub.add_favorite', 'Add to favorites') + ': SEL Hub'} title={hubFavoriteIds.includes('sel-hub') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('sel-hub'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-700 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('sel-hub') ? '★' : '☆'}</button>
+                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('sel-hub')} aria-label={hubFavoriteIds.includes('sel-hub') ? tr('hub.remove_favorite', 'Remove from favorites') + ': SEL Hub' : tr('hub.add_favorite', 'Add to favorites') + ': SEL Hub'} title={hubFavoriteIds.includes('sel-hub') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('sel-hub'); }} className="absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-700 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('sel-hub') ? '★' : '☆'}</button>
               </div>
               {/* Screen Coach. Opens the standalone page, always in the LEARNER
                   posture: this is the learner surface, so the card cannot be the
@@ -438,13 +482,13 @@ function LearningHubModal(props) {
                 </div>
               </button>
 
-                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('screen-coach')} aria-label={hubFavoriteIds.includes('screen-coach') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Screen Coach' : tr('hub.add_favorite', 'Add to favorites') + ': Screen Coach'} title={hubFavoriteIds.includes('screen-coach') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('screen-coach'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-700 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('screen-coach') ? '★' : '☆'}</button>
+                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('screen-coach')} aria-label={hubFavoriteIds.includes('screen-coach') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Screen Coach' : tr('hub.add_favorite', 'Add to favorites') + ': Screen Coach'} title={hubFavoriteIds.includes('screen-coach') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('screen-coach'); }} className="absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-700 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('screen-coach') ? '★' : '☆'}</button>
               </div>
                             <div className="col-span-full mt-1 mb-[-0.25rem]" data-hub-section-heading="explore">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <h3 className="text-sm font-black uppercase tracking-wide text-indigo-800">{tr('learning_hub.section_explore_title', 'Explore and organize')}</h3>
-                    <p className="text-xs text-slate-500 mt-1">{tr('learning_hub.section_explore_desc', 'Connect ideas, investigate questions, and make sense of complex material.')}</p>
+                    <p className="text-xs text-slate-600 mt-1">{tr('learning_hub.section_explore_desc', 'Connect ideas, investigate questions, and make sense of complex material.')}</p>
                   </div>
                   <button type="button" data-hub-section-toggle="explore" aria-expanded={!hubCollapsedSections.includes('explore')} aria-label={hubCollapsedSections.includes('explore') ? tr('hub.expand_section', 'Expand section') : tr('hub.collapse_section', 'Collapse section')} onClick={() => toggleHubSection('explore')} className="min-h-11 min-w-11 rounded-lg border border-slate-300 bg-white text-slate-700 text-lg font-black hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubCollapsedSections.includes('explore') ? '+' : '-'}</button>
                 </div>
@@ -458,7 +502,7 @@ function LearningHubModal(props) {
                 </div>
               </button>
 
-                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('research-hub')} aria-label={hubFavoriteIds.includes('research-hub') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Research Hub' : tr('hub.add_favorite', 'Add to favorites') + ': Research Hub'} title={hubFavoriteIds.includes('research-hub') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('research-hub'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-700 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('research-hub') ? '★' : '☆'}</button>
+                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('research-hub')} aria-label={hubFavoriteIds.includes('research-hub') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Research Hub' : tr('hub.add_favorite', 'Add to favorites') + ': Research Hub'} title={hubFavoriteIds.includes('research-hub') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('research-hub'); }} className="absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-700 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('research-hub') ? '★' : '☆'}</button>
               </div>
               {typeof setShowLearningWebExplorer === 'function' && (
                 <div className="relative group" data-hub-ai-only="true" data-hub-id="learning-web-explorer" data-hub-label="Learning Web: Explore" data-hub-section="explore">
@@ -469,7 +513,7 @@ function LearningHubModal(props) {
                       <p className="text-xs text-violet-700 mt-1">{tr('learning_hub.learning_web_explorer_desc', 'Explore standards, concepts, lessons, evidence, and word connections in one accessible map.')}</p>
                     </div>
                   </button>
-                  <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('learning-web-explorer')} aria-label={hubFavoriteIds.includes('learning-web-explorer') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Learning Web: Explore' : tr('hub.add_favorite', 'Add to favorites') + ': Learning Web: Explore'} title={hubFavoriteIds.includes('learning-web-explorer') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('learning-web-explorer'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-violet-700 text-lg leading-none shadow-sm hover:bg-violet-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('learning-web-explorer') ? '★' : '☆'}</button>
+                  <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('learning-web-explorer')} aria-label={hubFavoriteIds.includes('learning-web-explorer') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Learning Web: Explore' : tr('hub.add_favorite', 'Add to favorites') + ': Learning Web: Explore'} title={hubFavoriteIds.includes('learning-web-explorer') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('learning-web-explorer'); }} className="absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-violet-700 text-lg leading-none shadow-sm hover:bg-violet-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('learning-web-explorer') ? '★' : '☆'}</button>
                 </div>
               )}
               {typeof setIsTimelineStudioOpen === 'function' && (
@@ -482,14 +526,14 @@ function LearningHubModal(props) {
                   </div>
                 </button>
 
-                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('timeline-studio')} aria-label={hubFavoriteIds.includes('timeline-studio') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Timeline Studio' : tr('hub.add_favorite', 'Add to favorites') + ': Timeline Studio'} title={hubFavoriteIds.includes('timeline-studio') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('timeline-studio'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-700 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('timeline-studio') ? '★' : '☆'}</button>
+                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('timeline-studio')} aria-label={hubFavoriteIds.includes('timeline-studio') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Timeline Studio' : tr('hub.add_favorite', 'Add to favorites') + ': Timeline Studio'} title={hubFavoriteIds.includes('timeline-studio') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('timeline-studio'); }} className="absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-700 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('timeline-studio') ? '★' : '☆'}</button>
                 </div>
               )}
                             <div className="col-span-full mt-1 mb-[-0.25rem]" data-hub-section-heading="create">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <h3 className="text-sm font-black uppercase tracking-wide text-indigo-800">{tr('learning_hub.section_create_title', 'Create and express')}</h3>
-                    <p className="text-xs text-slate-500 mt-1">{tr('learning_hub.section_create_desc', 'Use voice, story, music, poetry, and reflection to demonstrate understanding.')}</p>
+                    <p className="text-xs text-slate-600 mt-1">{tr('learning_hub.section_create_desc', 'Use voice, story, music, poetry, and reflection to demonstrate understanding.')}</p>
                   </div>
                   <button type="button" data-hub-section-toggle="create" aria-expanded={!hubCollapsedSections.includes('create')} aria-label={hubCollapsedSections.includes('create') ? tr('hub.expand_section', 'Expand section') : tr('hub.collapse_section', 'Collapse section')} onClick={() => toggleHubSection('create')} className="min-h-11 min-w-11 rounded-lg border border-slate-300 bg-white text-slate-700 text-lg font-black hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubCollapsedSections.includes('create') ? '+' : '-'}</button>
                 </div>
@@ -499,33 +543,33 @@ function LearningHubModal(props) {
                 <span className="text-4xl" aria-hidden="true">{'\uD83D\uDCD6'}</span>
                 <div>
                   <h3 className="font-bold text-rose-800">{t('learning_hub.storyforge_title') || 'StoryForge'}</h3>
-                  <p className="text-xs text-rose-600 mt-1">{t('learning_hub.storyforge_desc') || 'Create illustrated stories with AI writing tools'}</p>
+                  <p className="text-xs text-rose-700 mt-1">{t('learning_hub.storyforge_desc') || 'Create illustrated stories with AI writing tools'}</p>
                 </div>
               </button>
 
-                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('storyforge')} aria-label={hubFavoriteIds.includes('storyforge') ? tr('hub.remove_favorite', 'Remove from favorites') + ': StoryForge' : tr('hub.add_favorite', 'Add to favorites') + ': StoryForge'} title={hubFavoriteIds.includes('storyforge') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('storyforge'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-700 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('storyforge') ? '★' : '☆'}</button>
+                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('storyforge')} aria-label={hubFavoriteIds.includes('storyforge') ? tr('hub.remove_favorite', 'Remove from favorites') + ': StoryForge' : tr('hub.add_favorite', 'Add to favorites') + ': StoryForge'} title={hubFavoriteIds.includes('storyforge') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('storyforge'); }} className="absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-700 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('storyforge') ? '★' : '☆'}</button>
               </div>
               <div className="relative group" data-hub-id="litlab" data-hub-label="LitLab" data-hub-section="create">
                 <button type="button" data-hub-launch="true" onClick={() => { setShowLearningHub(false); setShowLitLab(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center">
                 <span className="text-4xl" aria-hidden="true">🎭</span>
                 <div>
                   <h3 className="font-bold text-violet-800">{t('learning_hub.litlab_title') || 'LitLab'}</h3>
-                  <p className="text-xs text-violet-600 mt-1">{t('learning_hub.litlab_desc') || 'Bring stories to life with character voices & literary analysis'}</p>
+                  <p className="text-xs text-violet-700 mt-1">{t('learning_hub.litlab_desc') || 'Bring stories to life with character voices & literary analysis'}</p>
                 </div>
               </button>
 
-                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('litlab')} aria-label={hubFavoriteIds.includes('litlab') ? tr('hub.remove_favorite', 'Remove from favorites') + ': LitLab' : tr('hub.add_favorite', 'Add to favorites') + ': LitLab'} title={hubFavoriteIds.includes('litlab') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('litlab'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-700 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('litlab') ? '★' : '☆'}</button>
+                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('litlab')} aria-label={hubFavoriteIds.includes('litlab') ? tr('hub.remove_favorite', 'Remove from favorites') + ': LitLab' : tr('hub.add_favorite', 'Add to favorites') + ': LitLab'} title={hubFavoriteIds.includes('litlab') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('litlab'); }} className="absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-700 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('litlab') ? '★' : '☆'}</button>
               </div>
               <div className="relative group" data-hub-id="poettree" data-hub-label="PoetTree" data-hub-section="create">
                 <button type="button" data-hub-launch="true" onClick={() => { setShowLearningHub(false); setShowPoetTree(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center">
                 <span className="text-4xl" aria-hidden="true">{'\uD83C\uDF43'}</span>
                 <div>
                   <h3 className="font-bold text-teal-800">{t('learning_hub.poettree_title') || 'PoetTree'}</h3>
-                  <p className="text-xs text-teal-600 mt-1">{t('learning_hub.poettree_desc') || 'Write poems with form scaffolds, rhyme & meter analysis, AI feedback'}</p>
+                  <p className="text-xs text-teal-700 mt-1">{t('learning_hub.poettree_desc') || 'Write poems with form scaffolds, rhyme & meter analysis, AI feedback'}</p>
                 </div>
               </button>
 
-                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('poettree')} aria-label={hubFavoriteIds.includes('poettree') ? tr('hub.remove_favorite', 'Remove from favorites') + ': PoetTree' : tr('hub.add_favorite', 'Add to favorites') + ': PoetTree'} title={hubFavoriteIds.includes('poettree') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('poettree'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-700 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('poettree') ? '★' : '☆'}</button>
+                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('poettree')} aria-label={hubFavoriteIds.includes('poettree') ? tr('hub.remove_favorite', 'Remove from favorites') + ': PoetTree' : tr('hub.add_favorite', 'Add to favorites') + ': PoetTree'} title={hubFavoriteIds.includes('poettree') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('poettree'); }} className="absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-700 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('poettree') ? '★' : '☆'}</button>
               </div>
               {typeof setIsOpenGrooveOpen === 'function' && (
                 <div className="relative group" data-hub-id="open-groove" data-hub-label="Open Groove Studio" data-hub-section="create">
@@ -537,19 +581,19 @@ function LearningHubModal(props) {
                   </div>
                 </button>
 
-                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('open-groove')} aria-label={hubFavoriteIds.includes('open-groove') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Open Groove Studio' : tr('hub.add_favorite', 'Add to favorites') + ': Open Groove Studio'} title={hubFavoriteIds.includes('open-groove') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('open-groove'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-700 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('open-groove') ? '★' : '☆'}</button>
+                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('open-groove')} aria-label={hubFavoriteIds.includes('open-groove') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Open Groove Studio' : tr('hub.add_favorite', 'Add to favorites') + ': Open Groove Studio'} title={hubFavoriteIds.includes('open-groove') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('open-groove'); }} className="absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-700 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('open-groove') ? '★' : '☆'}</button>
                 </div>
               )}
               <div className="relative group" data-hub-id="allohaven" data-hub-label="AlloHaven" data-hub-section="create">
                 <button type="button" data-hub-launch="true" onClick={() => { setShowLearningHub(false); setIsAlloHavenOpen(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-green-50 to-lime-50 border border-green-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-center">
                 <span className="text-4xl" aria-hidden="true">🌿</span>
                 <div>
-                  <h3 className="font-bold text-green-800">AlloHaven</h3>
-                  <p className="text-xs text-green-700 mt-1">A cozy room you build by focusing and reflecting. Pomodoro + journal + AI decorations. No leaderboards, no streak guilt.</p>
+                  <h3 className="font-bold text-green-800">{tr('learning_hub.allohaven_title', 'AlloHaven')}</h3>
+                  <p className="text-xs text-green-700 mt-1">{tr('learning_hub.allohaven_desc', 'A cozy room you build by focusing and reflecting. Pomodoro + journal + AI decorations. No leaderboards, no streak guilt.')}</p>
                 </div>
               </button>
 
-                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('allohaven')} aria-label={hubFavoriteIds.includes('allohaven') ? tr('hub.remove_favorite', 'Remove from favorites') + ': AlloHaven' : tr('hub.add_favorite', 'Add to favorites') + ': AlloHaven'} title={hubFavoriteIds.includes('allohaven') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('allohaven'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-700 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('allohaven') ? '★' : '☆'}</button>
+                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('allohaven')} aria-label={hubFavoriteIds.includes('allohaven') ? tr('hub.remove_favorite', 'Remove from favorites') + ': ' + tr('learning_hub.allohaven_title', 'AlloHaven') : tr('hub.add_favorite', 'Add to favorites') + ': ' + tr('learning_hub.allohaven_title', 'AlloHaven')} title={hubFavoriteIds.includes('allohaven') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('allohaven'); }} className="absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-700 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('allohaven') ? '★' : '☆'}</button>
               </div>
             </div>
           </div>

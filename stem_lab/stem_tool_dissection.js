@@ -28512,7 +28512,7 @@ var d = labToolData.dissection || {};
                     React.createElement("button", { type: "button", "aria-label": __alloT('stem.dissection.a11y_move_specimen_right', 'Move specimen right'), onClick: function (e) { panCanvasByControl(e, 54, 0, 'right'); } }, '\u2192'),
                     React.createElement("button", { type: "button", "aria-label": __alloT('stem.dissection.a11y_move_specimen_down', 'Move specimen down'), onClick: function (e) { panCanvasByControl(e, 0, 54, 'down'); } }, '\u2193')
                   ) : null,
-                  React.createElement("button", { "aria-label": "Reset specimen view to 100%",
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_reset_specimen_view', 'Reset specimen view to 100%'),
                     onClick: function (e) { resetCanvasView(e); },
                     className: "transition-colors px-2 py-0.5 rounded text-[11px] font-bold bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 active:scale-[0.97]"
                   }, '\u21BA Reset specimen view to 100%'),
@@ -29007,7 +29007,7 @@ var d = labToolData.dissection || {};
                             } }, depth.charAt(0).toUpperCase() + depth.slice(1));
                           }),
                           )),
-                          React.createElement("div", { className: "diss-optics__setting", role: "group", "aria-label": "Inspection magnification", "aria-describedby": "diss-optics-magnification-help" },
+                          React.createElement("div", { className: "diss-optics__setting", role: "group", "aria-label": __alloT('stem.dissection.a11y_inspection_magnification', 'Inspection magnification'), "aria-describedby": "diss-optics-magnification-help" },
                           React.createElement("strong", null, 'Lens magnification'),
                           React.createElement("p", { id: "diss-optics-magnification-help" }, 'Enlarge local detail in the inspection lens and inset.'),
                           React.createElement("div", { className: "diss-optics__options" },

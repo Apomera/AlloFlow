@@ -319,3 +319,7 @@ __pycache__/
 /dbg1.png
 /ui_strings.js.codex-sync.tmp
 /syllable_table_en.js.syllable-build-*.tmp
+
+# Keep >25 MiB ffmpeg-core.wasm out of git at root level as well
+/video_studio/vendor/ffmpeg/core/ffmpeg-core.wasm
+/desktop/web-app/public/video_studio/vendor/ffmpeg/core/ffmpeg-core.wasm

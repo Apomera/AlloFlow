@@ -244,14 +244,20 @@ const LargeFileTranscriptionModal = React.memo(({
     trapStack.push(trap);
     const isTopTrap = () => trapStack[trapStack.length - 1] === trap;
     const getFocusable = () => Array.from(dialog.querySelectorAll(
-      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
     )).filter((element) => {
       if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      const closedDetails = element.closest("details:not([open])");
+      if (closedDetails && !(element.tagName === "SUMMARY" && element.parentElement === closedDetails)) return false;
       const style = typeof window.getComputedStyle === "function" ? window.getComputedStyle(element) : null;
-      return !style || style.display !== "none" && style.visibility !== "hidden";
+      if (style && (style.display === "none" || style.visibility === "hidden")) return false;
+      const hasLayout = typeof dialog.getBoundingClientRect === "function" && (dialog.getBoundingClientRect().width > 0 || dialog.getBoundingClientRect().height > 0);
+      if (hasLayout && typeof element.getClientRects === "function" && element.getClientRects().length === 0) return false;
+      return true;
     });
     (getFocusable()[0] || dialog).focus();
     const onKeyDown = (event) => {
+      if (event.isComposing || event.keyCode === 229) return;
       if (!isTopTrap()) return;
       if (event.key === "Escape") {
         if (!processingRef.current) {
@@ -287,7 +293,7 @@ const LargeFileTranscriptionModal = React.memo(({
       const wasTopTrap = isTopTrap();
       const trapIndex = trapStack.indexOf(trap);
       if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
-      if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus.isConnected && typeof previousFocus.focus === "function") previousFocus.focus();
+      if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus !== document.documentElement && previousFocus.isConnected && typeof previousFocus.focus === "function") previousFocus.focus();
     };
   }, [isOpen]);
   if (!isOpen || !file) return null;
@@ -328,13 +334,13 @@ const LargeFileTranscriptionModal = React.memo(({
           onClick: onClose,
           "data-help-key": "dashboard_close_btn",
           disabled: isProcessing,
-          className: "absolute top-4 right-4 min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-full text-slate-600 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className: "absolute top-4 right-4 min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-full text-slate-600 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-600 transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
         },
         /* @__PURE__ */ React.createElement("span", { className: "text-xl", "aria-hidden": "true" }, "\xD7")
       ),
       /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mb-4 pr-10" }, /* @__PURE__ */ React.createElement("div", { className: "bg-amber-100 p-3 rounded-full" }, /* @__PURE__ */ React.createElement("span", { className: "text-2xl", "aria-hidden": "true" }, isVideo ? "\u{1F3AC}" : "\u{1F3B5}")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "large-file-modal-title", className: "text-lg font-black text-slate-800" }, isVideo ? t?.("large_file.title_video") || "Large Video File Detected" : t?.("large_file.title") || "Large Audio File Detected"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 font-medium break-words" }, file.name))),
       /* @__PURE__ */ React.createElement("div", { id: "large-file-description", className: "bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-amber-800 leading-relaxed" }, isVideo ? t?.("large_file.description_video") || `This video is ${fileSizeMB} MB. The audio will be extracted and split into ~${estimatedChunks} smaller chunks for transcription, then combined.` : t?.("large_file.description") || `This file is ${fileSizeMB} MB and exceeds the 20MB limit for direct transcription. It will be split into ~${estimatedChunks} smaller chunks and transcribed separately, then combined.`)),
-      isProcessing && /* @__PURE__ */ React.createElement("div", { className: "mb-4", role: "status", "aria-live": "polite", "aria-atomic": "true" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider" }, status || "Processing..."), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-600" }, chunkProgress, "/", chunkTotal, " (", progressPercent, "%)")), /* @__PURE__ */ React.createElement("div", { className: "h-3 bg-slate-100 rounded-full overflow-hidden", role: "progressbar", "aria-label": status || "Transcription progress", "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": chunkTotal > 0 ? progressPercent : void 0, "aria-valuetext": progressValueText }, /* @__PURE__ */ React.createElement(
+      isProcessing && /* @__PURE__ */ React.createElement("div", { className: "mb-4", role: "status", "aria-live": "polite", "aria-atomic": "true" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider" }, status || "Processing..."), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-700" }, chunkProgress, "/", chunkTotal, " (", progressPercent, "%)")), /* @__PURE__ */ React.createElement("div", { className: "h-3 bg-slate-100 rounded-full overflow-hidden", role: "progressbar", "aria-label": status || "Transcription progress", "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": chunkTotal > 0 ? progressPercent : void 0, "aria-valuetext": progressValueText }, /* @__PURE__ */ React.createElement(
         "div",
         {
           className: "h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-300 ease-out motion-reduce:transition-none",
@@ -347,7 +353,7 @@ const LargeFileTranscriptionModal = React.memo(({
           type: "button",
           onClick: onClose,
           disabled: isProcessing,
-          className: "min-h-11 px-4 py-2 rounded-lg text-slate-600 font-bold hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className: "min-h-11 px-4 py-2 rounded-lg text-slate-700 font-bold hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-600 transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
         },
         t?.("common.cancel") || "Cancel"
       ), /* @__PURE__ */ React.createElement(
@@ -359,7 +365,7 @@ const LargeFileTranscriptionModal = React.memo(({
           },
           "aria-disabled": isProcessing,
           "aria-busy": isProcessing,
-          className: `min-h-11 px-6 py-2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 transition-colors shadow-md flex items-center justify-center gap-2 ${isProcessing ? "opacity-50 cursor-not-allowed" : ""}`
+          className: `min-h-11 px-6 py-2 bg-indigo-700 text-white font-bold rounded-xl hover:bg-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-700 transition-colors motion-reduce:transition-none shadow-md flex items-center justify-center gap-2 ${isProcessing ? "opacity-50 cursor-not-allowed" : ""}`
         },
         isProcessing ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }, "\u23F3"), t?.("modals.large_file.processing") || "Transcribing...") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2728"), t?.("modals.large_file.confirm") || "Start Chunked Transcription")
       ))

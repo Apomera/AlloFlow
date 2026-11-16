@@ -273,7 +273,7 @@
         var realHead = await repository.read();
         if (realHead.store != null && !isDeletionTombstone(realHead.store)) throw failure('PROTECTED_CONFLICT', 'Another window created protected records. Reopen protection before continuing.');
         var legacy = await scanLegacy(); if (started !== ticket || disposed) throw aborted(); setupBaseRevision = clone(realHead.revision); setupBaseDeletedMarker = isDeletionTombstone(realHead.store) ? realHead.store.deletedAt : null; staging = true; stagedStore = null; stagedRevision = 0;
-        setupMeta = { version: 1, ready: false, migrationPlan: legacy.plan, archives: legacy.archives, idleMinutes: [0, 5, 15, 30].includes(idleMinutes) ? idleMinutes : 0 };
+        setupMeta = { version: 1, ready: false, migrationPlan: legacy.plan, archives: legacy.archives, idleMinutes: idleMinutes === undefined ? 15 : ([0, 5, 15, 30].includes(idleMinutes) ? idleMinutes : 0) };
         pendingSeed = vaultModule.emptyPlainStore();
         pendingSeed.snapshots = FEATURES.map(function (f) { return snapshot(f, legacy.buckets.get(f)); }).concat(snapshot(META, setupMeta));
         try {
@@ -727,7 +727,7 @@
     var statusState = React.useState({ phase: 'loading' }), status = statusState[0], setStatus = statusState[1];
     var errorState = React.useState(''), error = errorState[0], setError = errorState[1];
     var busyState = React.useState(false), busy = busyState[0], setBusy = busyState[1];
-    var formState = React.useState({ password: '', confirm: '', recovery: '', saved: false, idle: 0, recover: false, backupSecret: '', restoreRecovery: false, restoreNewPassword: '', deletePassword: '', deletePhrase: '', retentionApproved: false, holdsReviewed: false, otherClinicalWindowsClosed: false }), form = formState[0], setForm = formState[1];
+    var formState = React.useState({ password: '', confirm: '', recovery: '', saved: false, idle: 15, recover: false, backupSecret: '', restoreRecovery: false, restoreNewPassword: '', deletePassword: '', deletePhrase: '', retentionApproved: false, holdsReviewed: false, otherClinicalWindowsClosed: false }), form = formState[0], setForm = formState[1];
     var live = React.useRef(true), childRef = React.useRef(null), lockStatusRef = React.useRef(null), sessionRef = React.useRef(null), renderedChildRef = React.useRef(null);
     var actionOwnerRef = React.useRef({ source: props.service }), actionRef = React.useRef(null), resolvedServiceRef = React.useRef(null);
     // Invalidate pending UI work as soon as a different owner is rendered,
@@ -782,8 +782,8 @@
       finally { if (currentView()) { actionRef.current = null; setBusy(false); } }
     }
     function field(name, label, type) { return h('label', { style: { display: 'block', margin: '12px 0' } }, label,
-      h('input', { type: type || 'password', value: form[name], autoComplete: 'off', disabled: busy, onChange: function (e) { var value = e.target.value; setForm(function (f) { var n = Object.assign({}, f); n[name] = value; return n; }); }, style: { display: 'block', width: '100%', fontSize: 16, padding: 10, border: '1px solid #64748b', borderRadius: 6 } })); }
-    function button(label, fn, disabled, ref) { return h('button', { type: 'button', ref: ref, disabled: busy || disabled, onClick: fn, style: { padding: '10px 14px', margin: '8px 8px 8px 0', background: '#1e40af', color: '#fff', border: '1px solid #1e3a8a', borderRadius: 6, fontSize: 16, cursor: 'pointer' } }, label); }
+      h('input', { type: type || 'password', value: form[name], autoComplete: 'off', disabled: busy, onChange: function (e) { var value = e.target.value; setForm(function (f) { var n = Object.assign({}, f); n[name] = value; return n; }); }, style: { boxSizing: 'border-box', display: 'block', width: '100%', maxWidth: '100%', fontSize: 16, padding: 10, border: '1px solid #64748b', borderRadius: 6 } })); }
+    function button(label, fn, disabled, ref) { return h('button', { type: 'button', ref: ref, disabled: busy || disabled, onClick: fn, style: { boxSizing: 'border-box', maxWidth: '100%', whiteSpace: 'normal', textAlign: 'left', padding: '10px 14px', margin: '8px 8px 8px 0', background: '#1e40af', color: '#fff', border: '1px solid #1e3a8a', borderRadius: 6, fontSize: 16, cursor: 'pointer' } }, label); }
     var title = { 'behavior-lens': 'BehaviorLens', 'dynamic-assessment': 'Dynamic Assessment', 'report-writer': 'Report Writer' }[feature];
     var warning = error || status.error;
     if (service && status.phase === 'deletion-unverified') return h('section', { ref: deletionPanelRef, 'aria-label': __alloT("sensitive_workspace.a11y_unverified_clinical_deletion", 'Unverified clinical deletion'), style: { maxWidth: 760, margin: '24px auto', padding: 24, color: '#0f172a', background: '#fff', border: '2px solid #991b1b', borderRadius: 12 } },
@@ -833,7 +833,7 @@
         h('div', { ref: childRef, 'aria-busy': status.phase === 'locking', hidden: status.phase === 'locking', 'aria-hidden': status.phase === 'locking' ? true : undefined }, renderedChildRef.current));
       }
     }
-    return h('section', { 'aria-label': title + ' record protection', style: { maxWidth: 760, margin: '24px auto', padding: 24, color: '#0f172a', background: '#fff', border: '1px solid #64748b', borderRadius: 12 } },
+    return h('section', { 'aria-label': title + ' record protection', style: { boxSizing: 'border-box', width: '100%', maxWidth: 'min(760px, 100%)', margin: '24px auto', padding: 16, color: '#0f172a', background: '#fff', border: '1px solid #64748b', borderRadius: 12, overflowX: 'hidden' } },
       h('h2', null, title + ': protect student records'),
       h('p', null, 'Ordinary teaching tools and student activities do not need this password. Real clinical records use a separate encrypted workspace.'),
       h('details', { open: true }, h('summary', null, 'View a synthetic example'),

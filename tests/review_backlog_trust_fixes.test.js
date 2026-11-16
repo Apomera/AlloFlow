@@ -55,7 +55,7 @@ describe('Timeline verification requires a verdict for every item', () => {
   it('reports concerns when every item is covered and one is flagged', async () => {
     const r = await verify([ok(0), { ...ok(1), isPositionCorrect: false, concern: 'too late' }, ok(2)]);
     expect(r.kind).toBe('warning');
-    expect(r.message).toMatch(/1 item\(s\) flagged/);
+    expect(r.message).toMatch(/flagged 1 for your review/);
     expect(r.items[1].verification.position).toBe(false);
   });
   it('treats an empty array as a failed check and changes nothing', async () => {
@@ -66,23 +66,23 @@ describe('Timeline verification requires a verdict for every item', () => {
   it('leaves a missing item unchecked and does not say all items look accurate', async () => {
     const r = await verify([ok(0), ok(2)]);
     expect(r.kind).toBe('warning');
-    expect(r.message).toMatch(/Checked 2 of 3/);
+    expect(r.message).toMatch(/AI reviewed 2 of 3/);
     expect(r.items[1].verification).toBeUndefined();
   });
   it('discards both verdicts of a duplicated index', async () => {
     const r = await verify([ok(0), ok(1), { ...ok(1), isFactuallyAccurate: false }, ok(2)]);
-    expect(r.message).toMatch(/Checked 2 of 3/);
+    expect(r.message).toMatch(/AI reviewed 2 of 3/);
     expect(r.items[1].verification).toBeUndefined();
   });
   it('ignores out-of-range, fractional and string indices', async () => {
     const r = await verify([ok(0), ok(1), ok(3), { ...ok(2), index: 1.5 }, { ...ok(2), index: '2' }, { ...ok(2), index: -1 }]);
-    expect(r.message).toMatch(/Checked 2 of 3/);
+    expect(r.message).toMatch(/AI reviewed 2 of 3/);
     expect(r.items[2].verification).toBeUndefined();
   });
   it('does not count an omitted boolean as accurate', async () => {
     const { isPositionCorrect, ...noPosition } = ok(2);
     const r = await verify([ok(0), ok(1), noPosition]);
-    expect(r.message).toMatch(/Checked 2 of 3/);
+    expect(r.message).toMatch(/AI reviewed 2 of 3/);
     expect(r.items[2].verification).toBeUndefined();
   });
   it('does not read a string "false" as accurate', async () => {

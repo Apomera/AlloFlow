@@ -1413,6 +1413,8 @@ let _ommlToolsPromise = null;
 async function _latexToOmml(latex) {
   try {
     if (!latex || typeof window === "undefined") return null;
+    const _loc = window.location;
+    if (_loc && /^(localhost|127\.0\.0\.1|\[::1\])$/i.test(_loc.hostname || "") && String(_loc.pathname || "").indexOf("/app/") === 0 && (!window.temml || !window.temml.renderToString)) return null;
     if (!_ommlToolsPromise) {
       _ommlToolsPromise = (async () => {
         if (!window.temml || !window.temml.renderToString) {
@@ -1424,6 +1426,8 @@ async function _latexToOmml(latex) {
                 return;
               }
               const s = document.createElement("script");
+              s.crossOrigin = "anonymous";
+              s.referrerPolicy = "no-referrer";
               s.src = urls[i];
               s.onload = () => window.temml ? resolve(null) : reject(new Error("temml missing after load"));
               s.onerror = () => {
@@ -2308,12 +2312,13 @@ function _normTokenForDiffShared(s) {
   return _viewNormTokenFallback(s);
 }
 function _htmlToStructuredText(html, markdown) {
+  const opts = arguments.length > 2 ? arguments[2] : void 0;
   const _chosenSelectText = (sel) => {
     if (!sel) return "";
-    const opts = sel.options ? Array.from(sel.options) : Array.from(sel.querySelectorAll("option"));
+    const opts2 = sel.options ? Array.from(sel.options) : Array.from(sel.querySelectorAll("option"));
     const selOpt = sel.selectedOptions && sel.selectedOptions[0];
     const hasVal = (o) => o && !o.disabled && String(o.getAttribute && o.getAttribute("value") != null ? o.getAttribute("value") : o.value != null ? o.value : o.textContent || "").trim() !== "";
-    const chosen = (hasVal(selOpt) ? selOpt : null) || opts.find((o) => (o.selected || o.hasAttribute("selected")) && hasVal(o)) || null;
+    const chosen = (hasVal(selOpt) ? selOpt : null) || opts2.find((o) => (o.selected || o.hasAttribute("selected")) && hasVal(o)) || null;
     return chosen ? String(chosen.textContent || chosen.value || "").replace(/\s+/g, " ").trim() : "";
   };
   const _chromeSel = ".alloflow-cloze-controls,.alloflow-cs-controls,.alloflow-cs-actions,.alloflow-venn-controls,.alloflow-venn-status,.alloflow-venn-place-button,.alloflow-venn-screen-instructions,.alloflow-tl-controls,.alloflow-tl-arrows,.alloflow-glossary-controls,.alloflow-glossary-card-controls,.alloflow-glossary-card-actions,.alloflow-glossary-card-status,.alloflow-gm-controls,.alloflow-gm-status,.alloflow-faq-controls,.alloflow-dir-controls,.alloflow-cornell-controls,.alloflow-ws-controls,.alloflow-quiz-feedback,.alloflow-quiz-check-btn,.alloflow-math-symbolbar,.alloflow-math-symbar,.alloflow-math-controls,.alloflow-dbq-evidence-tracker,.alloflow-export-save-tools,.alloflow-save-status";
@@ -2334,8 +2339,82 @@ function _htmlToStructuredText(html, markdown) {
       });
     }
   });
+  doc.querySelectorAll("select[hidden]").forEach((sel) => {
+    const chosenText = _chosenSelectText(sel);
+    if (chosenText) sel.replaceWith(doc.createTextNode(" \u2014 " + chosenText));
+    else sel.remove();
+  });
+  if (!(opts && opts.includeTeacherOnly)) {
+    const _teacherSel = typeof _ALLO_TEACHER_ONLY_SEL === "string" ? _ALLO_TEACHER_ONLY_SEL : ".teacher-view,[data-allo-teacher-only],[data-teacher-only],.teacher-only,.answer-key,.alloflow-teacher-copy-banner,.alloflow-cs-answer-key,.alloflow-glossary-worksheet-key,.alloflow-math-solution,.alloflow-fluency-key,.alloflow-teacher-plan,.alloflow-teacher-annotations,.alloflow-teacher-annotations-by-resource,.alloflow-gm-check-btn,.alloflow-gm-feedback,.alloflow-match-check-btn,.alloflow-match-feedback,.alloflow-teacher-notes,.alloflow-rubric-key,.alloflow-model-answer,.alloflow-sample-response,.alloflow-scoring-guide,#alloflow-interactive-object-profile,[data-teacher-note],[data-answer-key]";
+    doc.querySelectorAll(_teacherSel).forEach((el) => el.remove());
+  }
   doc.querySelectorAll("button.alloflow-inline-term").forEach((btn) => btn.replaceWith(doc.createTextNode(btn.textContent || "")));
-  doc.querySelectorAll('.alloflow-reading-tools-shell,.alloflow-hud-bar,#alloflow-step-pager,#alloflow-term-popover,.alloflow-term-popover,.alloflow-export-prompt-overlay,.alloflow-save-bar,.alloflow-turnin-bar,.alloflow-keycap,.alloflow-inline-chart svg,.alloflow-glossary-card-actions,.alloflow-glossary-card-controls,.alloflow-glossary-progress,.alloflow-quiz-feedback,annotation,annotation-xml,[data-allo-footnote-backlink],details.allo-math-source,details.allo-chart-data > summary,details.allo-image-desc > summary,button,[hidden],[aria-hidden="true"],' + _chromeSel).forEach((el) => el.remove());
+  doc.querySelectorAll('.alloflow-reading-tools-shell,.alloflow-hud-bar,#alloflow-step-pager,#alloflow-term-popover,.alloflow-term-popover,.alloflow-export-prompt-overlay,.alloflow-save-bar,.alloflow-turnin-bar,.alloflow-keycap,.alloflow-inline-chart svg,.alloflow-glossary-card-actions,.alloflow-glossary-card-controls,.alloflow-glossary-progress,.alloflow-quiz-feedback,annotation,annotation-xml,[data-allo-footnote-backlink],details.allo-math-source,details.allo-chart-data > summary,details.allo-image-desc > summary,button,[hidden],[aria-hidden="true"],del[data-allo-change-id],[data-allo-change-kind="structure-delete"],' + _chromeSel).forEach((el) => el.remove());
+  const _cleanSp = (s) => String(s || "").replace(/\s+/g, " ").trim();
+  const _mathAtom = (s) => /^[A-Za-z0-9.]+$/.test(s) ? s : "(" + s + ")";
+  const _mathScript = (s) => /^-?[A-Za-z0-9]+$/.test(s) ? s : "(" + s + ")";
+  const _walkMath = (node) => {
+    if (!node) return "";
+    if (node.nodeType === 3) return String(node.textContent || "");
+    if (node.nodeType !== 1) return "";
+    const t = String(node.tagName || "").toLowerCase();
+    if (t === "annotation" || t === "annotation-xml") return "";
+    const ch = Array.from(node.children || []);
+    if (t === "mfrac" && ch.length >= 2) {
+      const n = _cleanSp(_walkMath(ch[0]));
+      const d = _cleanSp(_walkMath(ch[1]));
+      return n && d ? _mathAtom(n) + "/" + _mathAtom(d) : _cleanSp(n + " " + d);
+    }
+    if (t === "msup" && ch.length >= 2) {
+      const b = _cleanSp(_walkMath(ch[0]));
+      const e = _cleanSp(_walkMath(ch[1]));
+      return b ? _mathAtom(b) + "^" + _mathScript(e) : e;
+    }
+    if (t === "msub" && ch.length >= 2) {
+      const b = _cleanSp(_walkMath(ch[0]));
+      const s = _cleanSp(_walkMath(ch[1]));
+      return b ? _mathAtom(b) + "_" + _mathScript(s) : s;
+    }
+    if (t === "msubsup" && ch.length >= 3) {
+      const b = _cleanSp(_walkMath(ch[0]));
+      const s = _cleanSp(_walkMath(ch[1]));
+      const e = _cleanSp(_walkMath(ch[2]));
+      return b ? _mathAtom(b) + "_" + _mathScript(s) + "^" + _mathScript(e) : "";
+    }
+    if (t === "msqrt") {
+      const inner = _cleanSp(Array.from(node.childNodes || []).map(_walkMath).join(""));
+      return inner ? "sqrt(" + inner + ")" : "";
+    }
+    if (t === "mroot" && ch.length >= 2) {
+      const b = _cleanSp(_walkMath(ch[0]));
+      const idx = _cleanSp(_walkMath(ch[1]));
+      return b && idx ? "root(" + idx + ", " + b + ")" : _cleanSp(b);
+    }
+    return Array.from(node.childNodes || []).map(_walkMath).join("");
+  };
+  doc.querySelectorAll("math").forEach((mathEl) => {
+    const aria = _cleanSp(mathEl.getAttribute("aria-label") || mathEl.getAttribute("alttext") || "");
+    const latex = _cleanSp(mathEl.getAttribute("data-allo-latex") || "");
+    const readable = aria || _cleanSp(_walkMath(mathEl)) || latex;
+    mathEl.replaceWith(doc.createTextNode(readable ? " " + readable + " " : ""));
+  });
+  if (typeof _replaceAccessibleMathAndSvgForSpeech === "function") {
+    _replaceAccessibleMathAndSvgForSpeech(doc.body || doc, { doc, includeTeacherOnly: true });
+  } else {
+    doc.querySelectorAll("svg").forEach((svgEl) => {
+      if (svgEl.closest && svgEl.closest(".alloflow-inline-chart")) {
+        svgEl.remove();
+        return;
+      }
+      if (svgEl.getAttribute("aria-hidden") === "true" || svgEl.getAttribute("role") === "presentation" || svgEl.getAttribute("role") === "none") {
+        svgEl.remove();
+        return;
+      }
+      const label = _cleanSp(svgEl.getAttribute("aria-label") || Array.from(svgEl.querySelectorAll("title, desc")).map((n) => (n.textContent || "").trim()).filter(Boolean).join(". "));
+      if (label) svgEl.replaceWith(doc.createTextNode(" " + label + " "));
+      else svgEl.remove();
+    });
+  }
   const lines = [];
   const mdTick = String.fromCharCode(96);
   const clean = (value) => String(value || "").replace(/\s+/g, " ").trim();
@@ -2362,6 +2441,14 @@ function _htmlToStructuredText(html, markdown) {
       return _chosenSelectText(node) || "________";
     }
     let text = Array.from(node.childNodes || []).map(inline).join("");
+    if (tag === "sup") {
+      const st = clean(text);
+      return st ? "^" + (/^[A-Za-z0-9]+$/.test(st) ? st : "(" + st + ")") : "";
+    }
+    if (tag === "sub") {
+      const st = clean(text);
+      return st ? "_" + (/^[A-Za-z0-9]+$/.test(st) ? st : "(" + st + ")") : "";
+    }
     if (markdown && tag === "a" && node.getAttribute("href")) text = "[" + (text || node.getAttribute("href")) + "](" + node.getAttribute("href").replace(/([()\\])/g, "\\$1") + ")";
     if (markdown && (tag === "strong" || tag === "b")) text = "**" + text + "**";
     if (markdown && (tag === "em" || tag === "i")) text = "*" + text + "*";
@@ -2490,6 +2577,7 @@ function _htmlToDocxSpec(html) {
     if (el && el.id === "alloflow-term-popover") return true;
     const upperTag = String(el.tagName || "").toUpperCase();
     if (upperTag === "ANNOTATION" || upperTag === "ANNOTATION-XML") return true;
+    if (upperTag === "DEL" && el.hasAttribute && el.hasAttribute("data-allo-change-id") || el.getAttribute && el.getAttribute("data-allo-change-kind") === "structure-delete") return true;
     if (upperTag === "SELECT" && typeof el.matches === "function" && el.matches("select.alloflow-cs-response, select.alloflow-venn-response")) return false;
     if (el.hasAttribute && (el.hasAttribute("hidden") || el.hasAttribute("data-allo-page-element") || el.hasAttribute("data-allo-footnote-backlink"))) return true;
     if (el.getAttribute && el.getAttribute("aria-hidden") === "true") return true;
@@ -2502,8 +2590,11 @@ function _htmlToDocxSpec(html) {
   };
   const _mathReadableText = (mathEl) => {
     if (!mathEl) return "";
-    const spoken = _cleanXml(mathEl.getAttribute("aria-label") || mathEl.getAttribute("alttext") || "").replace(/\s+/g, " ").trim();
+    const _cleanSp = (s) => _cleanXml(String(s || "")).replace(/\s+/g, " ").trim();
+    const spoken = _cleanSp(mathEl.getAttribute("aria-label") || mathEl.getAttribute("alttext") || "");
     if (spoken) return spoken;
+    const _mathAtom = (s) => /^[A-Za-z0-9.]+$/.test(s) ? s : "(" + s + ")";
+    const _mathScript = (s) => /^-?[A-Za-z0-9]+$/.test(s) ? s : "(" + s + ")";
     const walkMath = (node) => {
       if (!node) return "";
       if (node.nodeType === 3) return _cleanXml(node.textContent || "");
@@ -2511,13 +2602,35 @@ function _htmlToDocxSpec(html) {
       const t = (node.tagName || "").toLowerCase();
       if (t === "annotation" || t === "annotation-xml") return "";
       const ch = Array.from(node.children || []);
-      if (t === "mfrac" && ch.length >= 2) return "(" + walkMath(ch[0]) + ")/(" + walkMath(ch[1]) + ")";
-      if (t === "msup" && ch.length >= 2) return walkMath(ch[0]) + "^" + walkMath(ch[1]);
-      if (t === "msub" && ch.length >= 2) return walkMath(ch[0]) + "_" + walkMath(ch[1]);
-      if (t === "msqrt") return "sqrt(" + Array.from(node.childNodes || []).map(walkMath).join("") + ")";
-      return Array.from(node.childNodes || []).map(walkMath).join(" ");
+      if (t === "mfrac" && ch.length >= 2) return "(" + _cleanSp(walkMath(ch[0])) + ")/(" + _cleanSp(walkMath(ch[1])) + ")";
+      if (t === "msup" && ch.length >= 2) {
+        const b = _cleanSp(walkMath(ch[0]));
+        const e = _cleanSp(walkMath(ch[1]));
+        return b ? _mathAtom(b) + "^" + _mathScript(e) : e;
+      }
+      if (t === "msub" && ch.length >= 2) {
+        const b = _cleanSp(walkMath(ch[0]));
+        const s = _cleanSp(walkMath(ch[1]));
+        return b ? _mathAtom(b) + "_" + _mathScript(s) : s;
+      }
+      if (t === "msubsup" && ch.length >= 3) {
+        const b = _cleanSp(walkMath(ch[0]));
+        const s = _cleanSp(walkMath(ch[1]));
+        const e = _cleanSp(walkMath(ch[2]));
+        return b ? _mathAtom(b) + "_" + _mathScript(s) + "^" + _mathScript(e) : "";
+      }
+      if (t === "msqrt") {
+        const inner = _cleanSp(Array.from(node.childNodes || []).map(walkMath).join(""));
+        return inner ? "sqrt(" + inner + ")" : "";
+      }
+      if (t === "mroot" && ch.length >= 2) {
+        const b = _cleanSp(walkMath(ch[0]));
+        const idx = _cleanSp(walkMath(ch[1]));
+        return b && idx ? "root(" + idx + ", " + b + ")" : b;
+      }
+      return Array.from(node.childNodes || []).map(walkMath).join("");
     };
-    return _cleanXml(walkMath(mathEl).replace(/\s+/g, " ").trim() || (mathEl.getAttribute("data-allo-latex") || "").trim());
+    return _cleanSp(walkMath(mathEl)) || _cleanSp(mathEl.getAttribute("data-allo-latex") || "");
   };
   const inlineRuns = (el, fmt) => {
     fmt = fmt || {};
@@ -2635,7 +2748,7 @@ function _htmlToDocxSpec(html) {
   const _runsText = (runs) => runs.map((r) => r.text || "").join("").trim();
   const pushParagraph = (runs, opts) => {
     if (_runsText(runs)) {
-      blocks.push({ type: "paragraph", runs, ...opts && opts.hanging ? { hanging: true } : {}, ...opts && opts.centered ? { centered: true } : {} });
+      blocks.push({ type: "paragraph", runs, ...opts && opts.hanging ? { hanging: true } : {}, ...opts && opts.centered ? { centered: true } : {}, ...opts && opts.indented ? { indented: true } : {} });
       counts.paragraphs++;
     }
   };
@@ -2668,16 +2781,43 @@ function _htmlToDocxSpec(html) {
     blocks.push({ type: "image", src: /^data:image\//.test(src) ? src : null, alt, width: img.getAttribute("width"), height: img.getAttribute("height"), latex: img.getAttribute("data-allo-latex") || null });
     counts.images++;
   };
-  const listItems = (listEl, level, items) => {
+  const listItems = (listEl, level, items, ordered) => {
+    const isOrd = ordered !== void 0 ? !!ordered : String(listEl.tagName || "").toUpperCase() === "OL";
     const kids = listEl.children || [];
+    const blockTags = /* @__PURE__ */ new Set(["P", "DIV", "BLOCKQUOTE", "PRE"]);
     for (let i = 0; i < kids.length; i++) {
       const li = kids[i];
       if (li.tagName !== "LI" || _isControlEl(li)) continue;
-      const liInline = { childNodes: Array.prototype.filter.call(li.childNodes, (c) => !(c.nodeType === 1 && (c.tagName === "UL" || c.tagName === "OL"))) };
-      const runs = inlineRuns(liInline, {});
-      if (_runsText(runs) || runs.some((r) => r.img)) items.push({ runs, level });
+      const runs = [];
+      let inlineBuf = [];
+      const flushBuf = (needBr) => {
+        if (!inlineBuf.length) return;
+        const seg = inlineRuns({ childNodes: inlineBuf }, {});
+        inlineBuf = [];
+        if (!seg.length) return;
+        if (needBr && runs.length && !runs[runs.length - 1].br) runs.push({ br: true });
+        runs.push(...seg);
+      };
+      const liNodes = li.childNodes || [];
+      for (let k = 0; k < liNodes.length; k++) {
+        const c = liNodes[k];
+        if (c.nodeType === 1 && (c.tagName === "UL" || c.tagName === "OL")) continue;
+        if (c.nodeType === 1 && blockTags.has(String(c.tagName || "").toUpperCase())) {
+          flushBuf(true);
+          const bSeg = inlineRuns(c, {});
+          if (bSeg.length) {
+            if (runs.length && !runs[runs.length - 1].br) runs.push({ br: true });
+            runs.push(...bSeg);
+          }
+        } else {
+          inlineBuf.push(c);
+        }
+      }
+      flushBuf(runs.length > 0);
+      if (_runsText(runs) || runs.some((r) => r.img)) items.push({ runs, level, ordered: isOrd });
       for (let j = 0; j < li.children.length; j++) {
-        if (li.children[j].tagName === "UL" || li.children[j].tagName === "OL") listItems(li.children[j], level + 1, items);
+        const chTag = String(li.children[j].tagName || "").toUpperCase();
+        if (chTag === "UL" || chTag === "OL") listItems(li.children[j], level + 1, items, chTag === "OL");
       }
     }
   };
@@ -2756,13 +2896,14 @@ function _htmlToDocxSpec(html) {
       }
       if (tag === "P" || tag === "BLOCKQUOTE" || tag === "DT" || tag === "DD" || tag === "FIGCAPTION" || tag === "CAPTION") {
         const isRef = n.classList && n.classList.contains("allo-ref-entry") || n.closest && n.closest('.allo-references, [data-allo-bibliography="1"]');
-        if (tag === "P" && n.querySelector && n.querySelector("img")) pushMixedParagraph(n, { hanging: !!isRef, centered: !!_inTitlePage });
-        else pushParagraph(inlineRuns(n, tag === "DT" ? { bold: true } : {}), { hanging: !!isRef, centered: !!_inTitlePage });
+        const isIndented = !isRef && (tag === "BLOCKQUOTE" || tag === "DD" || !!(n.closest && (n.closest("blockquote") || n.closest("dd"))));
+        if (tag === "P" && n.querySelector && n.querySelector("img")) pushMixedParagraph(n, { hanging: !!isRef, centered: !!_inTitlePage, indented: isIndented });
+        else pushParagraph(inlineRuns(n, tag === "DT" ? { bold: true } : {}), { hanging: !!isRef, centered: !!_inTitlePage, indented: isIndented });
         continue;
       }
       if (tag === "UL" || tag === "OL") {
         const items = [];
-        listItems(n, 0, items);
+        listItems(n, 0, items, tag === "OL");
         if (items.length) {
           blocks.push({ type: "list", ordered: tag === "OL", items });
           counts.lists++;
@@ -2910,15 +3051,35 @@ function _odtRuns(runs, footnotes) {
     return t;
   }).join("");
 }
-function _buildNestedListXml(items, listOpenTag, itemOpen, itemCloseTag, listCloseTag) {
+function _buildNestedListXml(items, listOpenTag, itemOpen, itemCloseTag, listCloseTag, wrapperItemOpen) {
   let out = "";
   let depth = 0;
   const open = [];
+  const closeStack = [];
+  const orderedStack = [];
+  const openTagFor = (it) => typeof listOpenTag === "function" ? listOpenTag(it) : listOpenTag;
+  const closeTagFor = (it) => typeof listCloseTag === "function" ? listCloseTag(it) : listCloseTag;
+  const wrapOpen = wrapperItemOpen || (itemCloseTag === "</text:list-item>" ? "<text:list-item>" : "<li>");
   for (const it of items || []) {
-    const L = Math.max(1, (it.level || 0) + 1);
+    const L = Math.max(1, (it && it.level || 0) + 1);
+    const itOrd = it && it.ordered !== void 0 ? !!it.ordered : void 0;
+    if (depth === L && itOrd !== void 0 && orderedStack[depth] !== void 0 && orderedStack[depth] !== itOrd) {
+      if (open[depth]) {
+        out += itemCloseTag;
+        open[depth] = false;
+      }
+      out += closeStack[depth] || closeTagFor(it);
+      depth--;
+    }
     while (depth < L) {
-      out += listOpenTag;
+      if (depth > 0 && !open[depth]) {
+        out += wrapOpen;
+        open[depth] = true;
+      }
+      out += openTagFor(it);
       depth++;
+      closeStack[depth] = closeTagFor(it);
+      orderedStack[depth] = itOrd;
       open[depth] = false;
     }
     while (depth > L) {
@@ -2926,7 +3087,7 @@ function _buildNestedListXml(items, listOpenTag, itemOpen, itemCloseTag, listClo
         out += itemCloseTag;
         open[depth] = false;
       }
-      out += listCloseTag;
+      out += closeStack[depth] || closeTagFor(it);
       depth--;
     }
     if (open[depth]) out += itemCloseTag;
@@ -2938,7 +3099,7 @@ function _buildNestedListXml(items, listOpenTag, itemOpen, itemCloseTag, listClo
       out += itemCloseTag;
       open[depth] = false;
     }
-    out += listCloseTag;
+    out += closeStack[depth] || closeTagFor(null);
     depth--;
   }
   return out;
@@ -3008,8 +3169,25 @@ function _imageDisplayPx(info, widthAttr, heightAttr) {
   const scale = Math.min(1, 600 / Math.max(1, width), 720 / Math.max(1, height));
   return { width: Math.max(24, Math.round(width * scale)), height: Math.max(24, Math.round(height * scale)) };
 }
+const _CJK_LANGS = /* @__PURE__ */ new Set(["zh", "ja", "ko", "yue", "wuu"]);
+const _CTL_LANGS = /* @__PURE__ */ new Set(["ar", "fa", "he", "iw", "ps", "sd", "ug", "ur", "yi", "hi", "bn", "ta", "te", "ml", "kn", "mr", "gu", "pa", "or", "si", "th", "lo", "km", "my", "bo", "am", "ti"]);
+function _parseOdtBcp47(langTag) {
+  const raw = String(langTag || "").trim();
+  const parts = raw.split(/[-_]/).filter(Boolean);
+  const primary = /^[A-Za-z]{2,3}$/.test(parts[0] || "") ? parts[0].toLowerCase() : "none";
+  const rest = parts.slice(1);
+  const scriptPart = rest.find((p) => /^[A-Za-z]{4}$/.test(p));
+  const script = scriptPart ? scriptPart[0].toUpperCase() + scriptPart.slice(1).toLowerCase() : "";
+  const regionPart = rest.find((p) => /^(?:[A-Za-z]{2}|[0-9]{3})$/.test(p));
+  const country = regionPart ? regionPart.toUpperCase() : "";
+  const foAttrs = 'fo:language="' + _expXmlEsc(primary) + '"' + (country ? ' fo:country="' + _expXmlEsc(country) + '"' : "") + (script ? ' fo:script="' + _expXmlEsc(script) + '"' : "");
+  const asianAttrs = _CJK_LANGS.has(primary) ? ' style:language-asian="' + _expXmlEsc(primary) + '"' + (country ? ' style:country-asian="' + _expXmlEsc(country) + '"' : "") + (script ? ' style:script-asian="' + _expXmlEsc(script) + '"' : "") : "";
+  const complexAttrs = _CTL_LANGS.has(primary) ? ' style:language-complex="' + _expXmlEsc(primary) + '"' + (country ? ' style:country-complex="' + _expXmlEsc(country) + '"' : "") + (script ? ' style:script-complex="' + _expXmlEsc(script) + '"' : "") : "";
+  return { raw, primary, script, country, foAttrs, asianAttrs, complexAttrs, allAttrs: foAttrs + asianAttrs + complexAttrs };
+}
 function _htmlToOdtContentXml(html, imageAssets) {
   const spec = _htmlToDocxSpec(html);
+  const _isRtl = !!spec.rtl;
   const body = [];
   const _odtLangs = /* @__PURE__ */ new Set();
   const _collectLangs = (runs) => (runs || []).forEach((run) => {
@@ -3022,24 +3200,25 @@ function _htmlToOdtContentXml(html, imageAssets) {
   }
   Object.keys(spec.footnotes || {}).forEach((key) => _collectLangs(spec.footnotes[key]));
   const _odtLangStyles = Array.from(_odtLangs).map((language) => {
-    const parts = String(language).split(/[-_]/);
-    const primary = /^[A-Za-z]{2,3}$/.test(parts[0] || "") ? parts[0].toLowerCase() : "none";
-    const region = parts.slice(1).find((part) => /^(?:[A-Za-z]{2}|[0-9]{3})$/.test(part));
-    return '<style:style style:name="' + _odtLangStyleName(language) + '" style:family="text"><style:text-properties fo:language="' + _expXmlEsc(primary) + '"' + (region ? ' fo:country="' + _expXmlEsc(region.toUpperCase()) + '"' : "") + "/></style:style>";
+    const _parsed = _parseOdtBcp47(language);
+    return '<style:style style:name="' + _odtLangStyleName(language) + '" style:family="text"><style:text-properties ' + _parsed.allAttrs + "/></style:style>";
   }).join("");
   const imageBySrc = new Map((imageAssets || []).map((asset) => [asset.src, asset]));
   let tableSeq = 0, imageFrameSeq = 0;
+  const _pStyle = _isRtl ? "Standard_RTL" : "Standard";
+  const _pIndentStyle = _isRtl ? "P_Indent_RTL" : "P_Indent";
   for (const b of spec.blocks || []) {
     if (b.type === "heading") {
       const lvl = Math.min(6, Math.max(1, b.level || 1));
-      body.push('<text:h text:style-name="Heading_20_' + lvl + '" text:outline-level="' + lvl + '">' + _odtRuns(b.runs, spec.footnotes) + "</text:h>");
+      const _hStyle = _isRtl ? "Heading_20_" + lvl + "_RTL" : "Heading_20_" + lvl;
+      body.push('<text:h text:style-name="' + _hStyle + '" text:outline-level="' + lvl + '">' + _odtRuns(b.runs, spec.footnotes) + "</text:h>");
     } else if (b.type === "paragraph") {
-      body.push('<text:p text:style-name="Standard">' + _odtRuns(b.runs, spec.footnotes) + "</text:p>");
+      body.push('<text:p text:style-name="' + (b.indented ? _pIndentStyle : _pStyle) + '">' + _odtRuns(b.runs, spec.footnotes) + "</text:p>");
     } else if (b.type === "list") {
       body.push(_buildNestedListXml(
         b.items,
-        '<text:list text:style-name="' + (b.ordered ? "L_Number" : "L_Bullet") + '">',
-        (it) => '<text:list-item><text:p text:style-name="Standard">' + _odtRuns(it.runs, spec.footnotes) + "</text:p>",
+        (it) => '<text:list text:style-name="' + ((it && it.ordered !== void 0 ? it.ordered : b.ordered) ? "L_Number" : "L_Bullet") + '">',
+        (it) => '<text:list-item><text:p text:style-name="' + _pStyle + '">' + _odtRuns(it.runs, spec.footnotes) + "</text:p>",
         "</text:list-item>",
         "</text:list>"
       ));
@@ -3062,7 +3241,7 @@ function _htmlToOdtContentXml(html, imageAssets) {
           if (!c) break;
           const cs = Math.max(1, c.colSpan || 1), rs = Math.max(1, c.rowSpan || 1);
           const _cellStyle = c.header ? "TableHeaderCell" : "TableCell";
-          const _paraStyle = c.header ? "P_TableHeader" : "Standard";
+          const _paraStyle = _isRtl ? c.header ? "P_TableHeader_RTL" : "Standard_RTL" : c.header ? "P_TableHeader" : "Standard";
           out += '<table:table-cell table:style-name="' + _cellStyle + '" office:value-type="string"' + (cs > 1 ? ' table:number-columns-spanned="' + cs + '"' : "") + (rs > 1 ? ' table:number-rows-spanned="' + rs + '"' : "") + '><text:p text:style-name="' + _paraStyle + '">' + _odtRuns(c.runs, spec.footnotes) + "</text:p></table:table-cell>";
           if (cs > 1) out += Array(cs - 1).fill("<table:covered-table-cell/>").join("");
           if (rs > 1) for (let k = 0; k < cs; k++) _pend[col + k] = (_pend[col + k] || 0) + (rs - 1);
@@ -3083,7 +3262,7 @@ function _htmlToOdtContentXml(html, imageAssets) {
       let _hdr = 0;
       while (_hdr < _rows.length && _rows[_hdr].header) _hdr++;
       const _hdrXml = _hdr > 0 ? "<table:table-header-rows>" + _rows.slice(0, _hdr).map(_odtRow).join("") + "</table:table-header-rows>" : "";
-      body.push('<table:table table:name="Table' + ++tableSeq + '">' + _colXml + _hdrXml + _rows.slice(_hdr).map(_odtRow).join("") + "</table:table>");
+      body.push('<table:table table:name="Table' + ++tableSeq + '"' + (_isRtl ? ' table:style-name="Table_RTL"' : "") + ">" + _colXml + _hdrXml + _rows.slice(_hdr).map(_odtRow).join("") + "</table:table>");
     } else if (b.type === "image") {
       const asset = b.src ? imageBySrc.get(b.src) : null;
       if (asset) {
@@ -3091,13 +3270,14 @@ function _htmlToOdtContentXml(html, imageAssets) {
         const widthIn = Math.max(0.25, size.width / 96).toFixed(3);
         const heightIn = Math.max(0.25, size.height / 96).toFixed(3);
         const alt = _expXmlEsc(b.alt || "Image");
-        body.push('<text:p text:style-name="Standard"><draw:frame draw:name="Image' + ++imageFrameSeq + '" text:anchor-type="as-char" svg:width="' + widthIn + 'in" svg:height="' + heightIn + 'in" draw:z-index="0"><draw:image xlink:href="' + _expXmlEsc(asset.path) + '" xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad"/><svg:title>' + alt + "</svg:title><svg:desc>" + alt + "</svg:desc></draw:frame></text:p>");
-      } else if (b.alt) body.push('<text:p text:style-name="Standard">[Image: ' + _expXmlEsc(b.alt) + "]</text:p>");
+        body.push('<text:p text:style-name="' + _pStyle + '"><draw:frame draw:name="Image' + ++imageFrameSeq + '" text:anchor-type="as-char" svg:width="' + widthIn + 'in" svg:height="' + heightIn + 'in" draw:z-index="0"><draw:image xlink:href="' + _expXmlEsc(asset.path) + '" xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad"/><svg:title>' + alt + "</svg:title><svg:desc>" + alt + "</svg:desc></draw:frame></text:p>");
+      } else if (b.alt) body.push('<text:p text:style-name="' + _pStyle + '">[Image: ' + _expXmlEsc(b.alt) + "]</text:p>");
     } else if (b.type === "pagebreak") {
       body.push('<text:p text:style-name="P_PageBreak"/>');
     }
   }
-  return '<?xml version="1.0" encoding="UTF-8"?>\n<office:document-content xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0" xmlns:draw="urn:oasis:names:tc:opendocument:xmlns:drawing:1.0" xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" xmlns:xlink="http://www.w3.org/1999/xlink" office:version="1.2">\n<office:automatic-styles><style:style style:name="T_Bold" style:family="text"><style:text-properties fo:font-weight="bold"/></style:style><style:style style:name="T_Italic" style:family="text"><style:text-properties fo:font-style="italic"/></style:style><style:style style:name="T_Sub" style:family="text"><style:text-properties style:text-position="sub 58%"/></style:style><style:style style:name="T_Sup" style:family="text"><style:text-properties style:text-position="super 58%"/></style:style><style:style style:name="T_Code" style:family="text"><style:text-properties style:font-name="Liberation Mono"/></style:style><style:style style:name="T_Strike" style:family="text"><style:text-properties style:text-line-through-style="solid"/></style:style><style:style style:name="T_Highlight" style:family="text"><style:text-properties fo:background-color="#FFF59D"/></style:style><style:style style:name="T_Underline" style:family="text"><style:text-properties style:text-underline-style="solid" style:text-underline-width="auto" style:text-underline-color="font-color"/></style:style>' + _odtLangStyles + '<style:style style:name="P_TableHeader" style:family="paragraph"><style:text-properties fo:font-weight="bold"/></style:style><style:style style:name="TableCell" style:family="table-cell"><style:table-cell-properties fo:border="0.75pt solid #94A3B8" fo:padding="0.06in"/></style:style><style:style style:name="TableHeaderCell" style:family="table-cell"><style:table-cell-properties fo:background-color="#E2E8F0" fo:border="0.75pt solid #64748B" fo:padding="0.06in"/></style:style><style:style style:name="P_PageBreak" style:family="paragraph"><style:paragraph-properties fo:break-before="page"/></style:style><text:list-style style:name="L_Bullet">' + ["\u2022", "\u25E6", "\u25AA", "\u2022", "\u25E6"].map((ch, idx) => '<text:list-level-style-bullet text:level="' + (idx + 1) + '" text:bullet-char="' + ch + '"><style:list-level-properties text:space-before="' + ((idx + 1) * 0.25).toFixed(2) + 'in" text:min-label-width="0.25in"/></text:list-level-style-bullet>').join("") + '</text:list-style><text:list-style style:name="L_Number">' + [1, 2, 3, 4, 5].map((lvl) => '<text:list-level-style-number text:level="' + lvl + '" style:num-format="1" text:num-suffix="."><style:list-level-properties text:space-before="' + (lvl * 0.25).toFixed(2) + 'in" text:min-label-width="0.25in"/></text:list-level-style-number>').join("") + "</text:list-style></office:automatic-styles>\n<office:body><office:text>" + body.join("\n") + "</office:text></office:body>\n</office:document-content>";
+  const _odtRtlStyles = _isRtl ? '<style:style style:name="Standard_RTL" style:family="paragraph" style:parent-style-name="Standard"><style:paragraph-properties style:writing-mode="rl-tb" fo:text-align="end"/></style:style>' + [1, 2, 3, 4, 5, 6].map((n) => '<style:style style:name="Heading_20_' + n + '_RTL" style:family="paragraph" style:parent-style-name="Heading_20_' + n + '"><style:paragraph-properties style:writing-mode="rl-tb" fo:text-align="end"/></style:style>').join("") + '<style:style style:name="P_TableHeader_RTL" style:family="paragraph"><style:paragraph-properties style:writing-mode="rl-tb" fo:text-align="end"/><style:text-properties fo:font-weight="bold"/></style:style><style:style style:name="Table_RTL" style:family="table"><style:table-properties style:writing-mode="rl-tb"/></style:style>' : "";
+  return '<?xml version="1.0" encoding="UTF-8"?>\n<office:document-content xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0" xmlns:draw="urn:oasis:names:tc:opendocument:xmlns:drawing:1.0" xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" xmlns:xlink="http://www.w3.org/1999/xlink" office:version="1.2">\n<office:automatic-styles><style:style style:name="T_Bold" style:family="text"><style:text-properties fo:font-weight="bold"/></style:style><style:style style:name="T_Italic" style:family="text"><style:text-properties fo:font-style="italic"/></style:style><style:style style:name="T_Sub" style:family="text"><style:text-properties style:text-position="sub 58%"/></style:style><style:style style:name="T_Sup" style:family="text"><style:text-properties style:text-position="super 58%"/></style:style><style:style style:name="T_Code" style:family="text"><style:text-properties style:font-name="Liberation Mono"/></style:style><style:style style:name="T_Strike" style:family="text"><style:text-properties style:text-line-through-style="solid"/></style:style><style:style style:name="T_Highlight" style:family="text"><style:text-properties fo:background-color="#FFF59D"/></style:style><style:style style:name="T_Underline" style:family="text"><style:text-properties style:text-underline-style="solid" style:text-underline-width="auto" style:text-underline-color="font-color"/></style:style>' + _odtLangStyles + '<style:style style:name="P_TableHeader" style:family="paragraph"><style:text-properties fo:font-weight="bold"/></style:style><style:style style:name="P_Indent" style:family="paragraph" style:parent-style-name="Standard"><style:paragraph-properties fo:margin-left="0.5in"/></style:style><style:style style:name="P_Indent_RTL" style:family="paragraph" style:parent-style-name="Standard_RTL"><style:paragraph-properties fo:margin-right="0.5in" style:writing-mode="rl-tb" fo:text-align="end"/></style:style>' + _odtRtlStyles + '<style:style style:name="TableCell" style:family="table-cell"><style:table-cell-properties fo:border="0.75pt solid #94A3B8" fo:padding="0.06in"/></style:style><style:style style:name="TableHeaderCell" style:family="table-cell"><style:table-cell-properties fo:background-color="#E2E8F0" fo:border="0.75pt solid #64748B" fo:padding="0.06in"/></style:style><style:style style:name="P_PageBreak" style:family="paragraph"><style:paragraph-properties fo:break-before="page"/></style:style><text:list-style style:name="L_Bullet">' + ["\u2022", "\u25E6", "\u25AA", "\u2022", "\u25E6"].map((ch, idx) => '<text:list-level-style-bullet text:level="' + (idx + 1) + '" text:bullet-char="' + ch + '"><style:list-level-properties text:space-before="' + ((idx + 1) * 0.25).toFixed(2) + 'in" text:min-label-width="0.25in"/></text:list-level-style-bullet>').join("") + '</text:list-style><text:list-style style:name="L_Number">' + [1, 2, 3, 4, 5].map((lvl) => '<text:list-level-style-number text:level="' + lvl + '" style:num-format="1" text:num-suffix="."><style:list-level-properties text:space-before="' + (lvl * 0.25).toFixed(2) + 'in" text:min-label-width="0.25in"/></text:list-level-style-number>').join("") + "</text:list-style></office:automatic-styles>\n<office:body><office:text>" + body.join("\n") + "</office:text></office:body>\n</office:document-content>";
 }
 function _htmlToOdtPackageParts(html) {
   const spec = _htmlToDocxSpec(html);
@@ -3154,7 +3334,8 @@ function _htmlToDtbookXml(html, lang, uid) {
   };
   for (const b of spec.blocks || []) {
     if (b.type === "heading") {
-      const lvl = Math.min(6, Math.max(1, b.level || 1));
+      const rawLvl = Math.min(6, Math.max(1, b.level || 1));
+      const lvl = Math.min(rawLvl, depth + 1);
       while (depth >= lvl) {
         out.push("</level" + depth + ">");
         depth--;
@@ -3172,7 +3353,7 @@ function _htmlToDtbookXml(html, lang, uid) {
       ensureContentLevel();
       out.push(_buildNestedListXml(
         b.items,
-        '<list type="' + (b.ordered ? "ol" : "ul") + '">',
+        (it) => '<list type="' + ((it && it.ordered !== void 0 ? it.ordered : b.ordered) ? "ol" : "ul") + '">',
         (it) => "<li>" + _expDtbookRuns(it.runs),
         "</li>",
         "</list>"
@@ -3181,7 +3362,9 @@ function _htmlToDtbookXml(html, lang, uid) {
       ensureContentLevel();
       out.push("<table>" + (b.rows || []).map((r) => "<tr>" + (r.cells || []).map((c) => {
         const tg = c.header ? "th" : "td";
-        return "<" + tg + ">" + _expDtbookRuns(c.runs) + "</" + tg + ">";
+        const cs = Math.max(1, c.colSpan || 1), rs = Math.max(1, c.rowSpan || 1);
+        const sc = c.header && /^(?:row|col|rowgroup|colgroup)$/i.test(String(c.scope || "").trim()) ? ' scope="' + String(c.scope).trim().toLowerCase() + '"' : "";
+        return "<" + tg + sc + (cs > 1 ? ' colspan="' + cs + '"' : "") + (rs > 1 ? ' rowspan="' + rs + '"' : "") + ">" + _expDtbookRuns(c.runs) + "</" + tg + ">";
       }).join("") + "</tr>").join("") + "</table>");
     } else if (b.type === "image") {
       ensureContentLevel();
@@ -3206,14 +3389,32 @@ function _htmlToDtbookXml(html, lang, uid) {
 }
 function _htmlToDaisyNcx(html, title, uid) {
   const spec = _htmlToDocxSpec(html);
+  const L = spec.lang || "en";
   const heads = (spec.blocks || []).filter((b) => b.type === "heading");
+  const stack = [];
+  let maxDepth = 1;
   let i = 0;
-  const navPoints = heads.map((h) => {
+  const navChunks = [];
+  heads.forEach((h) => {
     i++;
+    const rawLvl = Math.min(6, Math.max(1, h.level || 1));
+    const curDepth = stack.length ? stack[stack.length - 1] : 0;
+    const lvl = Math.min(rawLvl, curDepth + 1);
+    while (stack.length && stack[stack.length - 1] >= lvl) {
+      stack.pop();
+      navChunks.push("</navPoint>");
+    }
+    if (lvl > maxDepth) maxDepth = lvl;
     const label = _expXmlEsc((h.runs || []).map((r) => r.text || "").join("") || "Section " + i);
-    return '<navPoint id="np' + i + '" playOrder="' + i + '"><navLabel><text>' + label + '</text></navLabel><content src="book.smil#par' + i + '"/></navPoint>';
-  }).join("\n");
-  return '<?xml version="1.0" encoding="utf-8"?>\n<!DOCTYPE ncx PUBLIC "-//NISO//DTD ncx 2005-1//EN" "http://www.daisy.org/z3986/2005/ncx-2005-1.dtd">\n<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">\n<head><meta name="dtb:uid" content="' + _expXmlEsc(uid || "alloflow-daisy") + '"/><meta name="dtb:generator" content="AlloFlow"/><meta name="dtb:depth" content="1"/><meta name="dtb:totalPageCount" content="0"/><meta name="dtb:maxPageNumber" content="0"/></head>\n<docTitle><text>' + _expXmlEsc(title || spec.title || "Document") + "</text></docTitle>\n<navMap>" + (navPoints || '<navPoint id="np1" playOrder="1"><navLabel><text>' + _expXmlEsc(title || "Document") + '</text></navLabel><content src="book.smil#par1"/></navPoint>') + "</navMap>\n</ncx>";
+    navChunks.push('<navPoint id="np' + i + '" playOrder="' + i + '"><navLabel><text>' + label + '</text></navLabel><content src="book.smil#par' + i + '"/>');
+    stack.push(lvl);
+  });
+  while (stack.length) {
+    stack.pop();
+    navChunks.push("</navPoint>");
+  }
+  const navPoints = navChunks.join("\n");
+  return '<?xml version="1.0" encoding="utf-8"?>\n<!DOCTYPE ncx PUBLIC "-//NISO//DTD ncx 2005-1//EN" "http://www.daisy.org/z3986/2005/ncx-2005-1.dtd">\n<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1" xml:lang="' + _expXmlEsc(L) + '"' + (spec.rtl ? ' dir="rtl"' : "") + '>\n<head><meta name="dtb:uid" content="' + _expXmlEsc(uid || "alloflow-daisy") + '"/><meta name="dtb:generator" content="AlloFlow"/><meta name="dtb:depth" content="' + maxDepth + '"/><meta name="dtb:totalPageCount" content="0"/><meta name="dtb:maxPageNumber" content="0"/></head>\n<docTitle><text>' + _expXmlEsc(title || spec.title || "Document") + "</text></docTitle>\n<navMap>" + (navPoints || '<navPoint id="np1" playOrder="1"><navLabel><text>' + _expXmlEsc(title || "Document") + '</text></navLabel><content src="book.smil#par1"/></navPoint>') + "</navMap>\n</ncx>";
 }
 function _htmlToDaisySmil(html, uid) {
   const spec = _htmlToDocxSpec(html);
@@ -3250,6 +3451,64 @@ function _moClock(sec) {
   return Math.round(s * 1e3) / 1e3 + "s";
 }
 const _ALLO_INTERACTIVE_CHROME_SEL = ".alloflow-cloze-controls,.alloflow-cs-controls,.alloflow-cs-actions,.alloflow-venn-controls,.alloflow-venn-status,.alloflow-venn-place-button,.alloflow-venn-screen-instructions,.alloflow-tl-controls,.alloflow-tl-arrows,.alloflow-glossary-controls,.alloflow-glossary-card-controls,.alloflow-glossary-card-actions,.alloflow-glossary-card-status,.alloflow-gm-controls,.alloflow-gm-status,.alloflow-faq-controls,.alloflow-dir-controls,.alloflow-cornell-controls,.alloflow-ws-controls,.alloflow-quiz-feedback,.alloflow-quiz-check-btn,.alloflow-math-symbolbar,.alloflow-math-symbar,.alloflow-math-controls,.alloflow-dbq-evidence-tracker,.alloflow-export-save-tools,.alloflow-save-status";
+function _alloTeacherOnlySel() {
+  return typeof _ALLO_TEACHER_ONLY_SEL === "string" ? _ALLO_TEACHER_ONLY_SEL : ".teacher-view, [data-allo-teacher-only], [data-teacher-only], .teacher-only, .answer-key, .alloflow-teacher-copy-banner, .alloflow-cs-answer-key, .alloflow-glossary-worksheet-key, .alloflow-math-solution, .alloflow-fluency-key, .alloflow-teacher-plan, .alloflow-teacher-annotations, .alloflow-teacher-annotations-by-resource, .alloflow-gm-check-btn, .alloflow-gm-feedback, .alloflow-match-check-btn, .alloflow-match-feedback, .alloflow-teacher-notes, .alloflow-rubric-key, .alloflow-model-answer, .alloflow-sample-response, .alloflow-scoring-guide, #alloflow-interactive-object-profile, [data-teacher-note], [data-answer-key]";
+}
+function _alloSpeechMathSvg(root, opts) {
+  if (typeof _replaceAccessibleMathAndSvgForSpeech === "function") {
+    _replaceAccessibleMathAndSvgForSpeech(root, opts);
+    return;
+  }
+  if (!root || !root.querySelectorAll) return;
+  const doc = opts && opts.doc || root.ownerDocument || document;
+  if (!(opts && opts.includeTeacherOnly)) {
+    root.querySelectorAll(_alloTeacherOnlySel()).forEach((el) => {
+      try {
+        el.remove();
+      } catch (_) {
+      }
+    });
+  }
+  const makeNode = (txt) => {
+    const clean = String(txt || "").replace(/\s+/g, " ").trim();
+    return doc.createTextNode(clean ? " " + clean + " " : "");
+  };
+  root.querySelectorAll("math").forEach((mathEl) => {
+    try {
+      if (mathEl.closest && mathEl.closest('[hidden], [aria-hidden="true"]')) {
+        mathEl.remove();
+        return;
+      }
+      const readable = typeof _alloLinearizeSpeechMath === "function" ? _alloLinearizeSpeechMath(mathEl) : (() => {
+        let txt = String(mathEl.getAttribute("aria-label") || mathEl.getAttribute("alttext") || "").replace(/\s+/g, " ").trim();
+        if (!txt) {
+          const clone = mathEl.cloneNode(true);
+          if (clone.querySelectorAll) clone.querySelectorAll("annotation, annotation-xml").forEach((a) => a.remove());
+          txt = String(clone.textContent || "").replace(/\s+/g, " ").trim() || String(mathEl.getAttribute("data-allo-latex") || "").replace(/\s+/g, " ").trim();
+        }
+        return txt;
+      })();
+      mathEl.replaceWith(makeNode(readable));
+    } catch (_) {
+    }
+  });
+  root.querySelectorAll("svg").forEach((svgEl) => {
+    try {
+      if (svgEl.closest && svgEl.closest(".alloflow-inline-chart")) {
+        svgEl.remove();
+        return;
+      }
+      if (svgEl.getAttribute("aria-hidden") === "true" || svgEl.getAttribute("role") === "presentation" || svgEl.getAttribute("role") === "none" || svgEl.closest && svgEl.closest('[hidden], [aria-hidden="true"]')) {
+        svgEl.remove();
+        return;
+      }
+      const label = String(svgEl.getAttribute("aria-label") || Array.from(svgEl.querySelectorAll("title, desc")).map((n) => (n.textContent || "").trim()).filter(Boolean).join(". ")).replace(/\s+/g, " ").trim();
+      if (label) svgEl.replaceWith(makeNode(label));
+      else svgEl.remove();
+    } catch (_) {
+    }
+  });
+}
 function _alloChosenSelectText(sel) {
   if (!sel) return "";
   const opts = sel.options ? Array.from(sel.options) : Array.from(sel.querySelectorAll("option"));
@@ -3366,19 +3625,24 @@ function _alloReplaceFormControlsForText(doc, root, blankToken, alloFieldsOnly, 
     }
   });
 }
-function _collectMoSegments(html) {
+function _collectMoSegments(html, opts) {
   const doc = new DOMParser().parseFromString(html || "", "text/html");
   const root = doc.body || doc.documentElement;
-  if (!root) return { segments: [], bodyHtml: "", lang: "en" };
+  const _moLang = doc.documentElement && doc.documentElement.getAttribute("lang") || "en";
+  const _moRtl = /<(?:html|body)\b[^>]*\bdir\s*=\s*['"]?rtl\b/i.test(String(html || "")) || /^(?:ar|fa|he|iw|ps|sd|ug|ur|yi)(?:-|$)/i.test(String(_moLang).trim());
+  if (!root) return { segments: [], bodyHtml: "", lang: "en", rtl: _moRtl };
+  if (!(opts && opts.includeTeacherOnly)) {
+    root.querySelectorAll(_alloTeacherOnlySel()).forEach((el) => el.remove());
+  }
   _alloDedupeVennActivityDom(root);
   _alloUnwrapInlineTermsToSpan(doc, root);
-  root.querySelectorAll("select.alloflow-cs-response[hidden], select.alloflow-venn-response[hidden]").forEach((sel) => {
+  root.querySelectorAll("select[hidden]").forEach((sel) => {
     const chosenTxt = _alloChosenSelectText(sel);
     if (chosenTxt) sel.replaceWith(doc.createTextNode(" \u2014 " + chosenTxt));
     else sel.remove();
   });
-  root.querySelectorAll(".allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], annotation, annotation-xml, [data-allo-footnote-backlink], details.allo-math-source, script, style, .allo-block-controls, .allo-block-remove, " + _ALLO_INTERACTIVE_CHROME_SEL).forEach((el) => el.remove());
-  const SEL = "p,h1,h2,h3,h4,h5,h6,li,blockquote,figcaption,caption,dt,dd,th,td,.alloflow-cs-strip,.alloflow-cs-card,.alloflow-tl-strip";
+  root.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], annotation, annotation-xml, [data-allo-footnote-backlink], details.allo-math-source, script, style, .allo-block-controls, .allo-block-remove, del[data-allo-change-id],[data-allo-change-kind="structure-delete"], ' + _ALLO_INTERACTIVE_CHROME_SEL).forEach((el) => el.remove());
+  const SEL = "p,h1,h2,h3,h4,h5,h6,li,blockquote,figcaption,caption,dt,dd,th,td,pre,.alloflow-cs-strip,.alloflow-cs-card,.alloflow-tl-strip";
   const segments = [];
   const _seen = /* @__PURE__ */ new Set();
   const _usedIds = new Set(Array.from(root.querySelectorAll("[id]")).map((el) => el.getAttribute("id")).filter(Boolean));
@@ -3410,6 +3674,7 @@ function _collectMoSegments(html) {
     const clone = el.cloneNode(true);
     _alloReplaceFormControlsForText(doc, clone, " blank ", true, true);
     clone.querySelectorAll('[hidden],[aria-hidden="true"],button,input,select,textarea').forEach((n) => n.remove());
+    _alloSpeechMathSvg(clone, { doc, includeTeacherOnly: true });
     const text = (clone.textContent || "").replace(/\s+/g, " ").trim();
     if (!text) return;
     let _id = el.getAttribute("id");
@@ -3428,7 +3693,7 @@ function _collectMoSegments(html) {
     bodyHtml = root.innerHTML;
   }
   bodyHtml = bodyHtml.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\uFFFE\uFFFF]/g, "");
-  return { segments, bodyHtml, lang: doc.documentElement.getAttribute("lang") || "en" };
+  return { segments, bodyHtml, lang: _moLang, rtl: _moRtl };
 }
 function _pdfAuditArtifactAudioEntryToBlob(entry) {
   if (!entry || typeof Blob === "undefined" || typeof atob !== "function") return null;
@@ -3498,14 +3763,21 @@ function _buildMoSmil(segments, durations, ext, hasAudio) {
   }).join("\n");
   return '<?xml version="1.0" encoding="utf-8"?>\n<smil xmlns="http://www.w3.org/ns/SMIL" xmlns:epub="http://www.idpf.org/2007/ops" version="3.0">\n<body><seq epub:textref="content.xhtml">' + pars + "</seq></body>\n</smil>";
 }
-function _buildMoOpf(title, lang, segments, totalSec, modifiedIso, ext, mime, hasAudio, contentProperties) {
+function _buildMoOpf(title, lang, segments, totalSec, modifiedIso, ext, mime, hasAudio, contentProperties, opts) {
   const _ext = ext || "mp3";
   const _mime = mime || "audio/mpeg";
-  const _contentProps = Array.isArray(contentProperties) ? contentProperties.filter((p) => p === "svg" || p === "mathml") : [];
+  const _allowedProps = /* @__PURE__ */ new Set(["svg", "mathml", "remote-resources"]);
+  const _contentProps = Array.isArray(contentProperties) ? contentProperties.filter((p) => _allowedProps.has(p)) : [];
   const _contentPropAttr = _contentProps.length ? ' properties="' + Array.from(new Set(_contentProps)).join(" ") + '"' : "";
+  const _isRtl = !!(opts && opts.rtl) || /^(?:ar|fa|he|iw|ps|sd|ug|ur|yi)(?:-|$)/i.test(String(lang || "").trim());
   const _has = (i) => !hasAudio || hasAudio[i];
-  const audioItems = (segments || []).map((s, i) => _has(i) ? '<item id="aud' + (i + 1) + '" href="audio/seg' + (i + 1) + "." + _ext + '" media-type="' + _mime + '"/>' : "").filter(Boolean).join("\n");
-  return '<?xml version="1.0" encoding="UTF-8"?>\n<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid" xml:lang="' + _expXmlEsc(lang || "en") + '" prefix="media: http://www.idpf.org/epub/vocab/overlays/#">\n<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">\n<dc:identifier id="uid">alloflow-mo-' + Date.now() + "</dc:identifier><dc:title>" + _expXmlEsc(title) + "</dc:title><dc:language>" + _expXmlEsc(lang || "en") + '</dc:language><dc:creator>AlloFlow Document Pipeline</dc:creator><meta property="dcterms:modified">' + _expXmlEsc(modifiedIso || (/* @__PURE__ */ new Date()).toISOString().replace(/\.\d+Z/, "Z")) + '</meta><meta property="media:duration">' + _moClock(totalSec) + '</meta><meta property="media:duration" refines="#smil">' + _moClock(totalSec) + '</meta><meta property="media:active-class">-epub-media-overlay-active</meta><meta property="schema:accessMode">textual</meta><meta property="schema:accessMode">auditory</meta><meta property="schema:accessModeSufficient">textual,auditory</meta><meta property="schema:accessibilityFeature">readingOrder</meta><meta property="schema:accessibilityFeature">synchronizedAudioText</meta><meta property="schema:accessibilityFeature">structuralNavigation</meta><meta property="schema:accessibilityHazard">none</meta><meta property="schema:accessibilitySummary">Read-along ebook: AlloFlow text-to-speech narration synchronized to the text via EPUB3 Media Overlays.</meta></metadata>\n<manifest>\n<item id="content" href="content.xhtml" media-type="application/xhtml+xml"' + _contentPropAttr + ' media-overlay="smil"/>\n<item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>\n<item id="smil" href="content.smil" media-type="application/smil+xml"/>\n' + audioItems + '\n</manifest>\n<spine><itemref idref="content"/></spine>\n</package>';
+  const audioItems = (segments || []).map((s, i) => {
+    if (!_has(i)) return "";
+    const href = s && typeof s.audioHref === "string" && s.audioHref ? s.audioHref : "audio/seg" + (i + 1) + "." + _ext;
+    const remoteAttr = /^(?:https?:)?\/\//i.test(href) || opts && opts.remoteAudio ? ' properties="remote-resources"' : "";
+    return '<item id="aud' + (i + 1) + '" href="' + _expXmlEsc(href) + '" media-type="' + _mime + '"' + remoteAttr + "/>";
+  }).filter(Boolean).join("\n");
+  return '<?xml version="1.0" encoding="UTF-8"?>\n<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid" xml:lang="' + _expXmlEsc(lang || "en") + '"' + (_isRtl ? ' dir="rtl"' : "") + ' prefix="media: http://www.idpf.org/epub/vocab/overlays/#">\n<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">\n<dc:identifier id="uid">alloflow-mo-' + Date.now() + "</dc:identifier><dc:title>" + _expXmlEsc(title) + "</dc:title><dc:language>" + _expXmlEsc(lang || "en") + '</dc:language><dc:creator>AlloFlow Document Pipeline</dc:creator><meta property="dcterms:modified">' + _expXmlEsc(modifiedIso || (/* @__PURE__ */ new Date()).toISOString().replace(/\.\d+Z/, "Z")) + '</meta><meta property="media:duration">' + _moClock(totalSec) + '</meta><meta property="media:duration" refines="#smil">' + _moClock(totalSec) + '</meta><meta property="media:active-class">-epub-media-overlay-active</meta><meta property="schema:accessMode">textual</meta><meta property="schema:accessMode">auditory</meta><meta property="schema:accessModeSufficient">textual,auditory</meta><meta property="schema:accessibilityFeature">readingOrder</meta><meta property="schema:accessibilityFeature">synchronizedAudioText</meta><meta property="schema:accessibilityFeature">structuralNavigation</meta><meta property="schema:accessibilityHazard">none</meta><meta property="schema:accessibilitySummary">Read-along ebook: AlloFlow text-to-speech narration synchronized to the text via EPUB3 Media Overlays.</meta></metadata>\n<manifest>\n<item id="content" href="content.xhtml" media-type="application/xhtml+xml"' + _contentPropAttr + ' media-overlay="smil"/>\n<item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>\n<item id="smil" href="content.smil" media-type="application/smil+xml"/>\n' + audioItems + "\n</manifest>\n<spine" + (_isRtl ? ' page-progression-direction="rtl"' : "") + '><itemref idref="content"/></spine>\n</package>';
 }
 function validateEpubStructure(files) {
   const issues = [];
@@ -3645,15 +3917,56 @@ function _altFmtUid(prefix) {
   const rand = globalThis.crypto && typeof globalThis.crypto.randomUUID === "function" ? globalThis.crypto.randomUUID() : Date.now() + "-" + Math.random().toString(16).slice(2);
   return (prefix || "alloflow-") + rand;
 }
-function _altFmtXhtmlFromHtml(html) {
+function _altFmtXhtmlFromHtml(html, opts) {
   let xhtml;
   try {
     const d = new DOMParser().parseFromString(String(html), "text/html");
+    if (!(opts && opts.includeTeacherOnly)) {
+      d.querySelectorAll(_alloTeacherOnlySel()).forEach((el) => {
+        try {
+          el.remove();
+        } catch (_) {
+        }
+      });
+    }
     _alloDedupeVennActivityDom(d);
-    d.querySelectorAll(".alloflow-reading-tools-shell,.alloflow-hud-bar,#alloflow-step-pager,#alloflow-term-popover,.alloflow-term-popover,.alloflow-export-prompt-overlay,.alloflow-save-bar,.alloflow-turnin-bar,.alloflow-keycap,#allo-builder-view-filter,#allo-builder-paper-css,.alloflow-inline-chart svg,annotation,annotation-xml,[data-allo-footnote-backlink],details.allo-math-source,script," + _ALLO_INTERACTIVE_CHROME_SEL).forEach((el) => el.remove());
+    d.querySelectorAll('.alloflow-reading-tools-shell,.alloflow-hud-bar,#alloflow-step-pager,#alloflow-term-popover,.alloflow-term-popover,.alloflow-export-prompt-overlay,.alloflow-save-bar,.alloflow-turnin-bar,.alloflow-keycap,#allo-builder-view-filter,#allo-builder-paper-css,.alloflow-inline-chart svg,annotation,annotation-xml,[data-allo-footnote-backlink],details.allo-math-source,script,del[data-allo-change-id],[data-allo-change-kind="structure-delete"],' + _ALLO_INTERACTIVE_CHROME_SEL).forEach((el) => el.remove());
+    d.querySelectorAll("ins[data-allo-change-id]").forEach((ins) => {
+      const p = ins.parentNode;
+      if (p) {
+        while (ins.firstChild) p.insertBefore(ins.firstChild, ins);
+        p.removeChild(ins);
+      }
+    });
     _alloReplaceFormControlsForText(d, d.body || d, " ___ ", false, true);
     _alloUnwrapInlineTermsToSpan(d, d);
-    const usedIds = new Set(Array.from(d.querySelectorAll("[id]")).map((el) => el.getAttribute("id")).filter(Boolean));
+    d.querySelectorAll("button,select,input,textarea").forEach((el) => el.remove());
+    d.querySelectorAll('link[rel~="stylesheet"][href]').forEach((link) => {
+      const href = String(link.getAttribute("href") || "").trim();
+      if (/^(?:https?:)?\/\//i.test(href)) link.remove();
+    });
+    d.querySelectorAll("style").forEach((style) => {
+      const css = style.textContent || "";
+      style.textContent = css.replace(/@import\s+[^;]+;/gi, "").replace(/@font-face\s*\{[^}]*(?:https?:|\/\/)[^}]*\}/gi, "").replace(/url\(\s*(['"]?)(?:https?:)?\/\/[^)]+\)/gi, "none");
+    });
+    d.querySelectorAll("svg").forEach((svg) => {
+      if ((!svg.namespaceURI || svg.namespaceURI === "http://www.w3.org/1999/xhtml") && !svg.getAttribute("xmlns")) {
+        svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+      }
+    });
+    const usedIds = /* @__PURE__ */ new Set();
+    Array.from(d.querySelectorAll("[id]")).forEach((el) => {
+      const raw = String(el.getAttribute("id") || "").trim();
+      const base = raw.replace(/\s+/g, "-") || "allo-id";
+      let cand = base;
+      let dup = 1;
+      while (usedIds.has(cand)) {
+        cand = base + "-" + dup;
+        dup += 1;
+      }
+      usedIds.add(cand);
+      if (cand !== el.getAttribute("id")) el.setAttribute("id", cand);
+    });
     let secSeq = 0;
     d.querySelectorAll("h1,h2,h3").forEach((h) => {
       if (!h.getAttribute("id")) {
@@ -3680,13 +3993,32 @@ function _buildEpubPackageFiles(html, opts) {
   const uid = o.uid || _altFmtUid("alloflow-");
   const nowIso = o.modifiedIso || (/* @__PURE__ */ new Date()).toISOString();
   const xmlTitle = _expXmlEsc(title);
-  const contentXhtml = _altFmtXhtmlFromHtml(html);
+  const isRtl = /\bdir\s*=\s*['"]?rtl\b/i.test(String(html || "")) || /^(?:ar|fa|he|iw|ps|sd|ug|ur|yi)(?:-|$)/i.test(String(lang || ""));
+  let contentXhtml = _altFmtXhtmlFromHtml(html, o);
+  if (isRtl && !/^<html\b[^>]*\bdir=/i.test(contentXhtml)) {
+    contentXhtml = contentXhtml.replace(/^<html\b/i, '<html dir="rtl"');
+  }
   const props = [];
-  if (/<svg\b/i.test(contentXhtml)) props.push("svg");
-  if (/<math\b/i.test(contentXhtml)) props.push("mathml");
+  if (/<svg\b/i.test(html)) props.push("svg");
+  if (/<math\b/i.test(html)) props.push("mathml");
+  if (props.indexOf("svg") === -1 && /<svg\b/i.test(String(contentXhtml || ""))) props.push("svg");
+  if (props.indexOf("mathml") === -1 && /<math\b/i.test(String(contentXhtml || ""))) props.push("mathml");
+  if (/<(?:img|audio|video|source|object|iframe)\b[^>]*(?:src|data)\s*=\s*["']?(?:https?:)?\/\//i.test(contentXhtml)) props.push("remote-resources");
   const propAttr = props.length ? ' properties="' + props.join(" ") + '"' : "";
-  const opf = '<?xml version="1.0" encoding="UTF-8"?>\n<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid" xml:lang="' + _expXmlEsc(lang) + '">\n  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">\n    <dc:identifier id="uid">' + _expXmlEsc(uid) + "</dc:identifier>\n    <dc:title>" + xmlTitle + "</dc:title>\n    <dc:language>" + _expXmlEsc(lang) + "</dc:language>\n    <dc:creator>AlloFlow Document Pipeline</dc:creator>\n    <dc:date>" + nowIso.split("T")[0] + '</dc:date>\n    <meta property="dcterms:modified">' + nowIso.replace(/\.\d+Z/, "Z") + '</meta>\n    <meta property="schema:accessMode">textual</meta>\n    <meta property="schema:accessMode">visual</meta>\n    <meta property="schema:accessModeSufficient">textual</meta>\n    <meta property="schema:accessibilityFeature">structuralNavigation</meta>\n    <meta property="schema:accessibilityFeature">tableOfContents</meta>\n    <meta property="schema:accessibilityFeature">readingOrder</meta>\n    <meta property="schema:accessibilityFeature">alternativeText</meta>\n    <meta property="schema:accessibilityHazard">none</meta>\n    <meta property="schema:accessibilitySummary">Document exported by AlloFlow with navigation. Review the content, reading order, descriptions, and verification reports before distributing.</meta>\n  </metadata>\n  <manifest>\n    <item id="content" href="content.xhtml" media-type="application/xhtml+xml"' + propAttr + '/>\n    <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>\n  </manifest>\n  <spine><itemref idref="content"/></spine>\n</package>';
-  const navEsc = (s) => _expXmlEsc(String(s == null ? "" : s));
+  const opf = '<?xml version="1.0" encoding="UTF-8"?>\n<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid" xml:lang="' + _expXmlEsc(lang) + '"' + (isRtl ? ' dir="rtl"' : "") + '>\n  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">\n    <dc:identifier id="uid">' + _expXmlEsc(uid) + "</dc:identifier>\n    <dc:title>" + xmlTitle + "</dc:title>\n    <dc:language>" + _expXmlEsc(lang) + "</dc:language>\n    <dc:creator>AlloFlow Document Pipeline</dc:creator>\n    <dc:date>" + nowIso.split("T")[0] + '</dc:date>\n    <meta property="dcterms:modified">' + nowIso.replace(/\.\d+Z/, "Z") + '</meta>\n    <meta property="schema:accessMode">textual</meta>\n    <meta property="schema:accessMode">visual</meta>\n    <meta property="schema:accessModeSufficient">textual</meta>\n    <meta property="schema:accessibilityFeature">structuralNavigation</meta>\n    <meta property="schema:accessibilityFeature">tableOfContents</meta>\n    <meta property="schema:accessibilityFeature">readingOrder</meta>\n    <meta property="schema:accessibilityFeature">alternativeText</meta>\n    <meta property="schema:accessibilityHazard">none</meta>\n    <meta property="schema:accessibilitySummary">Document exported by AlloFlow with navigation. Review the content, reading order, descriptions, and verification reports before distributing.</meta>\n  </metadata>\n  <manifest>\n    <item id="content" href="content.xhtml" media-type="application/xhtml+xml"' + propAttr + '/>\n    <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>\n  </manifest>\n  <spine' + (isRtl ? ' page-progression-direction="rtl"' : "") + '><itemref idref="content"/></spine>\n</package>';
+  const decodeXmlEntities = (s) => String(s == null ? "" : s).replace(/&#x([0-9a-f]+);|&#(\d+);|&(quot|apos|lt|gt|amp);/gi, (full, hex, dec, named) => {
+    if (hex) {
+      const cp = parseInt(hex, 16);
+      return Number.isFinite(cp) && cp > 0 ? String.fromCodePoint(cp) : full;
+    }
+    if (dec) {
+      const cp = parseInt(dec, 10);
+      return Number.isFinite(cp) && cp > 0 ? String.fromCodePoint(cp) : full;
+    }
+    const k = String(named || "").toLowerCase();
+    return k === "quot" ? '"' : k === "apos" ? "'" : k === "lt" ? "<" : k === "gt" ? ">" : k === "amp" ? "&" : full;
+  });
+  const navEsc = (s) => _expXmlEsc(decodeXmlEntities(s));
   const headings = [...String(contentXhtml).matchAll(/<h([1-3])[^>]*\bid="([^"]*)"[^>]*>([\s\S]*?)<\/h\1>/gi)];
   const navItems = headings.length > 0 ? headings.map((m) => '<li><a href="content.xhtml#' + navEsc(m[2]) + '">' + (navEsc(m[3].replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim()) || "Section") + "</a></li>").join("\n") : '<li><a href="content.xhtml">Document</a></li>';
   const files = {
@@ -3694,7 +4026,7 @@ function _buildEpubPackageFiles(html, opts) {
     "META-INF/container.xml": '<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>',
     "OEBPS/content.opf": opf,
     "OEBPS/content.xhtml": contentXhtml,
-    "OEBPS/nav.xhtml": '<?xml version="1.0" encoding="UTF-8"?>\n<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="' + _expXmlEsc(lang) + '" xml:lang="' + _expXmlEsc(lang) + '">\n<head><title lang="en">Navigation</title></head>\n<body><nav epub:type="toc" role="doc-toc"><h1 lang="en">Table of Contents</h1><ol>' + navItems + "</ol></nav></body>\n</html>"
+    "OEBPS/nav.xhtml": '<?xml version="1.0" encoding="UTF-8"?>\n<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="' + _expXmlEsc(lang) + '" xml:lang="' + _expXmlEsc(lang) + '"' + (isRtl ? ' dir="rtl"' : "") + '>\n<head><title lang="en" dir="ltr">Navigation</title></head>\n<body><nav epub:type="toc" role="doc-toc"><h1 lang="en" dir="ltr">Table of Contents</h1><ol>' + navItems + "</ol></nav></body>\n</html>"
   };
   let validation = { valid: true, issues: [] };
   try {
@@ -3705,14 +4037,30 @@ function _buildEpubPackageFiles(html, opts) {
 }
 function _buildDaisyPackageFiles(html, opts) {
   const o = opts || {};
+  let cleanHtml = String(html == null ? "" : html);
+  if (!(o && o.includeTeacherOnly) && cleanHtml && typeof DOMParser !== "undefined") {
+    try {
+      const d = new DOMParser().parseFromString(cleanHtml, "text/html");
+      let removed = false;
+      d.querySelectorAll(_alloTeacherOnlySel()).forEach((el) => {
+        try {
+          el.remove();
+          removed = true;
+        } catch (_) {
+        }
+      });
+      if (removed && d.documentElement) cleanHtml = d.documentElement.outerHTML;
+    } catch (_) {
+    }
+  }
   const title = String(o.title || "document");
-  const lang = o.lang || _altFmtHtmlLang(html);
+  const lang = o.lang || _altFmtHtmlLang(cleanHtml);
   const uid = o.uid || _altFmtUid("urn:uuid:");
   return {
     files: {
-      "dtbook.xml": _htmlToDtbookXml(html, lang, uid),
-      "navigation.ncx": _htmlToDaisyNcx(html, title, uid),
-      "book.smil": _htmlToDaisySmil(html, uid),
+      "dtbook.xml": _htmlToDtbookXml(cleanHtml, lang, uid),
+      "navigation.ncx": _htmlToDaisyNcx(cleanHtml, title, uid),
+      "book.smil": _htmlToDaisySmil(cleanHtml, uid),
       "package.opf": _DAISY_OPF_XML(title, lang, uid)
     },
     title,
@@ -3720,23 +4068,36 @@ function _buildDaisyPackageFiles(html, opts) {
     uid
   };
 }
-function _altFmtHtmlToPlainText(html) {
-  try {
-    const d = new DOMParser().parseFromString(String(html), "text/html");
-    d.querySelectorAll("button.alloflow-inline-term").forEach((btn) => {
-      try {
-        btn.replaceWith(d.createTextNode(btn.textContent || ""));
-      } catch (_) {
-      }
-    });
-    _alloDedupeVennActivityDom(d);
-    _alloReplaceFormControlsForText(d, d.body || d, " ___ ", false, true);
-    d.querySelectorAll('script, style, title, head, .allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], details.allo-math-source, annotation, annotation-xml, [data-allo-footnote-backlink], .alloflow-reading-tools-shell, .alloflow-hud-bar, #alloflow-step-pager, #alloflow-term-popover, .alloflow-term-popover, .alloflow-export-prompt-overlay, .alloflow-save-bar, .alloflow-turnin-bar, .alloflow-keycap, .alloflow-inline-chart svg, [hidden], [aria-hidden="true"], button, select, input, textarea, ' + _ALLO_INTERACTIVE_CHROME_SEL).forEach((el) => {
+function _alloPrepAltFmtPlainDom(d, opts) {
+  d.querySelectorAll("button.alloflow-inline-term").forEach((btn) => {
+    try {
+      btn.replaceWith(d.createTextNode(btn.textContent || ""));
+    } catch (_) {
+    }
+  });
+  if (!(opts && opts.includeTeacherOnly)) {
+    d.querySelectorAll(_alloTeacherOnlySel()).forEach((el) => {
       try {
         el.remove();
       } catch (_) {
       }
     });
+  }
+  _alloDedupeVennActivityDom(d);
+  _alloReplaceFormControlsForText(d, d.body || d, " ___ ", false, true);
+}
+function _altFmtHtmlToPlainText(html, opts) {
+  if (!html || typeof html !== "string") return "";
+  try {
+    const d = new DOMParser().parseFromString(String(html), "text/html");
+    _alloPrepAltFmtPlainDom(d, opts);
+    d.querySelectorAll('script, style, title, head, .allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], details.allo-math-source, annotation, annotation-xml, [data-allo-footnote-backlink], .alloflow-reading-tools-shell, .alloflow-hud-bar, #alloflow-step-pager, #alloflow-term-popover, .alloflow-term-popover, .alloflow-export-prompt-overlay, .alloflow-save-bar, .alloflow-turnin-bar, .alloflow-keycap, .alloflow-inline-chart svg, [hidden], [aria-hidden="true"], button, select, input, textarea, del[data-allo-change-id],[data-allo-change-kind="structure-delete"], ' + _ALLO_INTERACTIVE_CHROME_SEL).forEach((el) => {
+      try {
+        el.remove();
+      } catch (_) {
+      }
+    });
+    _alloSpeechMathSvg(d.body || d, { doc: d, includeTeacherOnly: !!(opts && opts.includeTeacherOnly) });
     d.querySelectorAll("img").forEach((img) => {
       try {
         const alt = String(img.getAttribute("alt") || "").replace(/\s+/g, " ").trim();
@@ -3770,7 +4131,13 @@ function _altFmtHtmlToPlainText(html) {
       } catch (_) {
       }
     });
-    d.querySelectorAll("p,li,tr,figcaption,blockquote,div,br").forEach((el) => {
+    d.querySelectorAll("pre").forEach((el) => {
+      try {
+        el.insertAdjacentText("beforebegin", "\n");
+      } catch (_) {
+      }
+    });
+    d.querySelectorAll("p,li,tr,figcaption,blockquote,div,dt,dd,pre,br").forEach((el) => {
       try {
         el.appendChild(d.createTextNode("\n"));
       } catch (_) {
@@ -3782,8 +4149,97 @@ function _altFmtHtmlToPlainText(html) {
   }
 }
 const _BRF_DIGIT = { "1": "A", "2": "B", "3": "C", "4": "D", "5": "E", "6": "F", "7": "G", "8": "H", "9": "I", "0": "J" };
-const _BRF_PUNCT = { ",": "1", ";": "2", ":": "3", ".": "4", "!": "6", "?": "8", "(": '"<', ")": '">', "'": "'", "-": "-", "/": "_/", "*": '"9', "&": "@&", "+": '"6', "=": '"7', "<": "@<", ">": "@>" };
-const _BRF_SMART = { "\u2018": "'", "\u2019": "'", "\u2013": "-", "\u2014": "-", "\u2026": "...", "\xA0": " ", "\u2022": "*" };
+const _BRF_PUNCT = {
+  ",": "1",
+  ";": "2",
+  ":": "3",
+  ".": "4",
+  "!": "6",
+  "?": "8",
+  "(": '"<',
+  ")": '">',
+  "'": "'",
+  "-": "-",
+  "/": "_/",
+  "*": '"9',
+  "&": "@&",
+  "+": '"6',
+  "=": '"7',
+  "<": "@<",
+  ">": "@>",
+  "%": ".0",
+  "^": "^",
+  "~": "@9",
+  "[": ".<",
+  "]": ".>",
+  "{": "_<",
+  "}": "_>",
+  "_": "..-",
+  "@": "@A",
+  "#": "_?",
+  "$": "$",
+  "\\": "_*"
+};
+const _BRF_SMART = {
+  "\u2018": "'",
+  "\u2019": "'",
+  "\u2013": "-",
+  "\u2014": "-",
+  "\u2026": "...",
+  "\xA0": " ",
+  "\u2022": "*",
+  "\xD7": " * ",
+  "\xF7": " / ",
+  "\u2212": "-",
+  "\xB1": "+/-",
+  "\u2264": "<=",
+  "\u2265": ">=",
+  "\u2260": "!=",
+  "\u2248": "~=",
+  "\xB0": " deg",
+  "\u2192": " -> ",
+  "\u2190": " <- ",
+  "\u2194": " <-> ",
+  "\u21CC": " <-> ",
+  "\u21D2": " => ",
+  "\xB2": "^2",
+  "\xB3": "^3",
+  "\xB9": "^1",
+  "\u2070": "^0",
+  "\u2074": "^4",
+  "\u2075": "^5",
+  "\u2076": "^6",
+  "\u2077": "^7",
+  "\u2078": "^8",
+  "\u2079": "^9",
+  "\u2080": "0",
+  "\u2081": "1",
+  "\u2082": "2",
+  "\u2083": "3",
+  "\u2084": "4",
+  "\u2085": "5",
+  "\u2086": "6",
+  "\u2087": "7",
+  "\u2088": "8",
+  "\u2089": "9",
+  "\u03B1": "alpha",
+  "\u03B2": "beta",
+  "\u03B3": "gamma",
+  "\u03B4": "delta",
+  "\u03B5": "epsilon",
+  "\u03B8": "theta",
+  "\u03BB": "lambda",
+  "\u03BC": "mu",
+  "\u03C0": "pi",
+  "\u03C3": "sigma",
+  "\u03A9": "Omega",
+  "\u221E": "infinity",
+  "\u221A": "sqrt",
+  "\xBD": "1/2",
+  "\xBC": "1/4",
+  "\xBE": "3/4"
+};
+const _BRF_SMART_RE = new RegExp("[" + Object.keys(_BRF_SMART).map((k) => k.replace(/[\\\]^-]/g, "\\$&")).join("") + "]", "g");
 const _BRF_OPEN_QUOTE = "\uE000", _BRF_CLOSE_QUOTE = "\uE001";
 const _BRF_PREFIX = /[#,;@_^".]$/;
 function _brfHardSplit(word, into, cells) {
@@ -3831,7 +4287,7 @@ function _brfWrap(line, into, cells) {
 function _altFmtToBRF(src, opts) {
   const cells = opts && opts.cellsPerLine || 40;
   let norm = String(src == null ? "" : src).replace(/[\u201c\u00ab]/g, _BRF_OPEN_QUOTE).replace(/[\u201d\u00bb]/g, _BRF_CLOSE_QUOTE);
-  norm = norm.replace(/[\u2018\u2019\u2013\u2014\u2026\u00a0\u2022]/g, (c) => _BRF_SMART[c] || "");
+  norm = norm.replace(_BRF_SMART_RE, (c) => _BRF_SMART[c] || "");
   try {
     norm = norm.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   } catch (_) {
@@ -3902,7 +4358,7 @@ function _altFmtToBRF(src, opts) {
   return opts && opts.withMeta ? { brf, dropped } : brf;
 }
 function _buildBrailleBrf(html, opts) {
-  const text = _altFmtHtmlToPlainText(html);
+  const text = _altFmtHtmlToPlainText(html, opts);
   const r = _altFmtToBRF(text, Object.assign({ withMeta: true }, opts || {}));
   return { brf: r.brf, dropped: r.dropped, text, grade: 1, code: "North American Braille Computer Code (uncontracted)" };
 }
@@ -3942,14 +4398,29 @@ async function _buildDocxBlobFromSpec(spec, d, mode) {
     else if (b.type === "paragraph") {
       const pp = { children: runsTo(b.runs) };
       if (b.hanging) pp.indent = { left: 720, hanging: 720 };
+      else if (b.indented) pp.indent = { left: 720 };
       if (b.centered && d.AlignmentType) pp.alignment = d.AlignmentType.CENTER;
       children.push(_P(pp));
     } else if (b.type === "list") {
-      const _olRef = b.ordered ? "allo-ol-" + _olCount++ : null;
+      const _olRefs = {};
+      let _prevOrd = null;
+      let _prevLvl = -1;
       for (const it of b.items) {
+        const _isOrd = it && it.ordered !== void 0 ? !!it.ordered : !!b.ordered;
+        const _lvl = it.level || 0;
+        if (_isOrd) {
+          if (!_olRefs[_lvl] || _lvl > _prevLvl || _lvl === _prevLvl && !_prevOrd) {
+            _olRefs[_lvl] = "allo-ol-" + _olCount++;
+          }
+          for (const k of Object.keys(_olRefs)) {
+            if (Number(k) > _lvl) delete _olRefs[k];
+          }
+        }
+        _prevOrd = _isOrd;
+        _prevLvl = _lvl;
         children.push(_P({
           children: runsTo(it.runs),
-          ...b.ordered ? { numbering: { reference: _olRef, level: Math.min(it.level || 0, 4) } } : { bullet: { level: Math.min(it.level || 0, 8) } }
+          ..._isOrd ? { numbering: { reference: _olRefs[_lvl], level: Math.min(_lvl, 4) } } : { bullet: { level: Math.min(_lvl, 8) } }
         }));
       }
     } else if (b.type === "table" && b.rows.length) {
@@ -4373,6 +4844,108 @@ async function _buildPptxBlobFromSlides(deck, P, theme) {
   }
   return p.write({ outputType: "blob" });
 }
+const _ALLO_TEACHER_ONLY_SEL = ".teacher-view, [data-allo-teacher-only], [data-teacher-only], .teacher-only, .answer-key, .alloflow-teacher-copy-banner, .alloflow-cs-answer-key, .alloflow-glossary-worksheet-key, .alloflow-math-solution, .alloflow-fluency-key, .alloflow-teacher-plan, .alloflow-teacher-annotations, .alloflow-teacher-annotations-by-resource, .alloflow-gm-check-btn, .alloflow-gm-feedback, .alloflow-match-check-btn, .alloflow-match-feedback, .alloflow-teacher-notes, .alloflow-rubric-key, .alloflow-model-answer, .alloflow-sample-response, .alloflow-scoring-guide, #alloflow-interactive-object-profile, [data-teacher-note], [data-answer-key]";
+function _alloLinearizeSpeechMath(mathEl) {
+  if (!mathEl) return "";
+  const cleanSp = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
+  const explicit = cleanSp(mathEl.getAttribute && (mathEl.getAttribute("aria-label") || mathEl.getAttribute("alttext")) || "");
+  if (explicit) return explicit;
+  const mathAtom = (s) => /^[A-Za-z0-9.]+$/.test(s) ? s : "(" + s + ")";
+  const mathScript = (s) => /^-?[A-Za-z0-9]+$/.test(s) ? s : "(" + s + ")";
+  const walkMath = (node) => {
+    if (!node) return "";
+    if (node.nodeType === 3) return String(node.nodeValue || node.textContent || "");
+    if (node.nodeType !== 1) return "";
+    const t = String(node.tagName || "").toLowerCase();
+    if (t === "annotation" || t === "annotation-xml") return "";
+    if (t === "mspace") return " ";
+    const ch = Array.from(node.children || []);
+    if (t === "mfrac" && ch.length >= 2) return "(" + cleanSp(walkMath(ch[0])) + ")/(" + cleanSp(walkMath(ch[1])) + ")";
+    if (t === "msup" && ch.length >= 2) {
+      const b = cleanSp(walkMath(ch[0]));
+      const e = cleanSp(walkMath(ch[1]));
+      return b ? mathAtom(b) + "^" + mathScript(e) : e;
+    }
+    if (t === "msub" && ch.length >= 2) {
+      const b = cleanSp(walkMath(ch[0]));
+      const s = cleanSp(walkMath(ch[1]));
+      return b ? mathAtom(b) + "_" + mathScript(s) : s;
+    }
+    if (t === "msubsup" && ch.length >= 3) {
+      const b = cleanSp(walkMath(ch[0]));
+      const s = cleanSp(walkMath(ch[1]));
+      const e = cleanSp(walkMath(ch[2]));
+      return b ? mathAtom(b) + "_" + mathScript(s) + "^" + mathScript(e) : "";
+    }
+    if (t === "msqrt") {
+      const inner = cleanSp(Array.from(node.childNodes || []).map(walkMath).join(""));
+      return inner ? "sqrt(" + inner + ")" : "";
+    }
+    if (t === "mroot" && ch.length >= 2) {
+      const b = cleanSp(walkMath(ch[0]));
+      const idx = cleanSp(walkMath(ch[1]));
+      return b && idx ? "root(" + idx + ", " + b + ")" : b;
+    }
+    return Array.from(node.childNodes || []).map(walkMath).join("");
+  };
+  return cleanSp(walkMath(mathEl)) || cleanSp(mathEl.getAttribute && mathEl.getAttribute("data-allo-latex") || "");
+}
+function _replaceAccessibleMathAndSvgForSpeech(root, opts) {
+  if (!root || !root.querySelectorAll) return;
+  const doc = opts && opts.doc || root.ownerDocument || document;
+  const includeTeacherOnly = !!(opts && opts.includeTeacherOnly);
+  const preserveLanguageNodes = !!(opts && opts.preserveLanguageNodes);
+  if (!includeTeacherOnly) {
+    root.querySelectorAll(_ALLO_TEACHER_ONLY_SEL).forEach((el) => {
+      try {
+        el.remove();
+      } catch (_) {
+      }
+    });
+  }
+  const makeSpokenNode = (sourceEl, labelText) => {
+    const clean = String(labelText || "").replace(/\s+/g, " ").trim();
+    if (!clean) return doc.createTextNode("");
+    if (preserveLanguageNodes) {
+      const span = doc.createElement("span");
+      span.setAttribute("data-allo-spoken-media", "1");
+      const lang = sourceEl && sourceEl.getAttribute && (sourceEl.getAttribute("lang") || sourceEl.getAttribute("xml:lang"));
+      if (lang) span.setAttribute("lang", lang);
+      span.textContent = " " + clean + " ";
+      return span;
+    }
+    return doc.createTextNode(" " + clean + " ");
+  };
+  root.querySelectorAll("math").forEach((mathEl) => {
+    try {
+      if (mathEl.closest && mathEl.closest('[hidden], [aria-hidden="true"]')) {
+        mathEl.remove();
+        return;
+      }
+      const readable = _alloLinearizeSpeechMath(mathEl);
+      mathEl.replaceWith(makeSpokenNode(mathEl, readable));
+    } catch (_) {
+    }
+  });
+  root.querySelectorAll("svg").forEach((svgEl) => {
+    try {
+      if (svgEl.closest && svgEl.closest(".alloflow-inline-chart")) {
+        svgEl.remove();
+        return;
+      }
+      if (svgEl.getAttribute("aria-hidden") === "true" || svgEl.getAttribute("role") === "presentation" || svgEl.getAttribute("role") === "none" || svgEl.closest && svgEl.closest('[hidden], [aria-hidden="true"]')) {
+        svgEl.remove();
+        return;
+      }
+      const label = String(
+        svgEl.getAttribute("aria-label") || Array.from(svgEl.querySelectorAll("title, desc")).map((n) => (n.textContent || "").trim()).filter(Boolean).join(". ")
+      ).replace(/\s+/g, " ").trim();
+      if (label) svgEl.replaceWith(makeSpokenNode(svgEl, label));
+      else svgEl.remove();
+    } catch (_) {
+    }
+  });
+}
 function _audioReadyText(html, narrationOptions) {
   const options = narrationOptions || {};
   const doc = new DOMParser().parseFromString(html || "", "text/html");
@@ -4402,7 +4975,8 @@ function _audioReadyText(html, narrationOptions) {
     span.textContent = btn.textContent || "";
     btn.replaceWith(span);
   });
-  root.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], [data-allo-translation-note], [data-allo-plain-note], [data-allo-footnote-backlink], details.allo-math-source, .alloflow-reading-tools-shell, .alloflow-hud-bar, #alloflow-term-popover, .alloflow-term-popover, .alloflow-export-prompt-overlay, .alloflow-save-bar, .alloflow-turnin-bar, .alloflow-keycap, .alloflow-inline-chart svg, [hidden], [aria-hidden="true"], script, style, button, input, select, textarea, ' + _ALLO_INTERACTIVE_CHROME_SEL).forEach((el) => el.remove());
+  root.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], [data-allo-translation-note], [data-allo-plain-note], [data-allo-footnote-backlink], details.allo-math-source, .alloflow-reading-tools-shell, .alloflow-hud-bar, #alloflow-term-popover, .alloflow-term-popover, .alloflow-export-prompt-overlay, .alloflow-save-bar, .alloflow-turnin-bar, .alloflow-keycap, .alloflow-inline-chart svg, [hidden], [aria-hidden="true"], script, style, button, input, select, textarea, del[data-allo-change-id],[data-allo-change-kind="structure-delete"], ' + _ALLO_INTERACTIVE_CHROME_SEL).forEach((el) => el.remove());
+  _replaceAccessibleMathAndSvgForSpeech(root, { doc, includeTeacherOnly: !!options.includeTeacherOnly, preserveLanguageNodes: false });
   root.querySelectorAll("details.allo-chart-data > summary, details.allo-image-desc > summary").forEach((el) => el.remove());
   root.querySelectorAll("details em, figcaption em").forEach((el) => {
     if (/verify|AI-estimated|AI-generated|Transcribed from the image/i.test(el.textContent || "")) el.remove();
@@ -4429,13 +5003,20 @@ function _audioReadyText(html, narrationOptions) {
     }
     if (img) {
       const alt = (img.getAttribute("alt") || "").trim();
-      const isPres = img.getAttribute("role") === "presentation" || img.getAttribute("aria-hidden") === "true";
+      const role = img.getAttribute("role");
+      const isPres = role === "presentation" || role === "none" || img.getAttribute("aria-hidden") === "true";
       const capText = cap ? cap.textContent.trim() : "";
       const say = capText || (isPres ? "" : alt);
       const replacement = options.languageRuns ? imageText(img, capText ? cap : null, say) : doc.createTextNode(say ? "Image: " + say + ". " : "");
       if (cap) cap.remove();
       img.replaceWith(replacement);
     }
+  });
+  root.querySelectorAll("img").forEach((img) => {
+    const role = img.getAttribute("role");
+    const isPres = role === "presentation" || role === "none" || img.getAttribute("aria-hidden") === "true";
+    const alt = isPres ? "" : (img.getAttribute("alt") || "").trim();
+    img.replaceWith(options.languageRuns ? imageText(img, null, alt) : doc.createTextNode(alt ? "Image: " + alt + ". " : ""));
   });
   root.querySelectorAll("p, h1, h2, h3, h4, h5, h6, li, blockquote, dd, dt, tr, caption, figcaption, .alloflow-cs-strip, .alloflow-tl-strip").forEach((el) => {
     el.appendChild(doc.createTextNode(". "));
@@ -4596,11 +5177,9 @@ async function _buildAccessibleOfficeExport({ html, title, format }) {
   zip.file("content.xml", odtParts.contentXml);
   odtParts.images.forEach((image) => zip.file(image.path, image.base64, { base64: true }));
   const lang = ((html.match(/<html[^>]*lang=["']([^"']+)["']/i) || [])[1] || "en").trim();
-  const langParts = lang.split(/[-_]/);
-  const language = (langParts[0] || "en").toLowerCase();
-  const country = langParts[1] ? langParts[1].toUpperCase() : "none";
+  const parsedOdtLang = _parseOdtBcp47(lang);
   const rtl = /<(?:html|body)[^>]*\bdir=["']rtl/i.test(html);
-  let styles = _ODT_STYLES_XML.replace('<style:text-properties style:font-name="Liberation Serif" fo:font-size="12pt"/>', '<style:text-properties style:font-name="Liberation Serif" fo:font-size="12pt" fo:language="' + language + '" fo:country="' + country + '"/>');
+  let styles = _ODT_STYLES_XML.replace('<style:text-properties style:font-name="Liberation Serif" fo:font-size="12pt"/>', '<style:text-properties style:font-name="Liberation Serif" fo:font-size="12pt" ' + parsedOdtLang.allAttrs + "/>");
   if (rtl) styles = styles.replace('<style:default-style style:family="paragraph">', '<style:default-style style:family="paragraph"><style:paragraph-properties style:writing-mode="rl-tb"/>');
   zip.file("styles.xml", styles);
   zip.file("meta.xml", '<?xml version="1.0" encoding="UTF-8"?>\n<office:document-meta xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0" xmlns:dc="http://purl.org/dc/elements/1.1/" office:version="1.2"><office:meta><meta:generator>AlloFlow</meta:generator><dc:title>' + _expXmlEsc(safeTitle) + "</dc:title><dc:language>" + _expXmlEsc(lang) + "</dc:language></office:meta></office:document-meta>");
@@ -4709,10 +5288,11 @@ function _narrationPrepareDocument(doc, options) {
     span.textContent = btn.textContent || "";
     btn.replaceWith(span);
   });
-  doc.querySelectorAll('script,style,button,input,select,textarea,audio,video,template,[hidden],[aria-hidden="true"],.allo-img-controls,[data-alloflow-picker],[data-alloflow-nomsg],[data-allo-footnote-backlink],details.allo-math-source,#allo-reader-bar,#allo-reader-ruler,.alloflow-reading-tools-shell,.alloflow-hud-bar,#alloflow-term-popover,.alloflow-term-popover,.alloflow-export-prompt-overlay,.alloflow-save-bar,.alloflow-turnin-bar,.alloflow-keycap,.alloflow-inline-chart svg,annotation,annotation-xml,[data-allo-latex-src],' + _ALLO_INTERACTIVE_CHROME_SEL).forEach((node) => node.remove());
+  doc.querySelectorAll('script,style,button,input,select,textarea,audio,video,template,[hidden],[aria-hidden="true"],.allo-img-controls,[data-alloflow-picker],[data-alloflow-nomsg],[data-allo-footnote-backlink],details.allo-math-source,#allo-reader-bar,#allo-reader-ruler,.alloflow-reading-tools-shell,.alloflow-hud-bar,#alloflow-term-popover,.alloflow-term-popover,.alloflow-export-prompt-overlay,.alloflow-save-bar,.alloflow-turnin-bar,.alloflow-keycap,.alloflow-inline-chart svg,annotation,annotation-xml,[data-allo-latex-src],del[data-allo-change-id],[data-allo-change-kind="structure-delete"],' + _ALLO_INTERACTIVE_CHROME_SEL).forEach((node) => node.remove());
   doc.querySelectorAll("[style]").forEach((node) => {
     if (node.style.display === "none" || node.style.visibility === "hidden") node.remove();
   });
+  _replaceAccessibleMathAndSvgForSpeech(doc.body || doc, { doc, includeTeacherOnly: !!(options && options.includeTeacherOnly), preserveLanguageNodes: !!(options && options.languageRuns) });
 }
 function _narrationTextRuns(node, fallback) {
   const runs = [];
@@ -4729,11 +5309,11 @@ function _narrationTextRuns(node, fallback) {
       return;
     }
     if (/^(math|svg)$/i.test(n.tagName)) {
-      const description = n.getAttribute("aria-label") || n.getAttribute("alttext") || (n.tagName.toLowerCase() === "svg" ? Array.from(n.querySelectorAll("title,desc")).map((el) => el.textContent.trim()).filter(Boolean).join(". ") : "");
-      if (description) {
-        runs.push({ text: description + ". ", language });
-        return;
-      }
+      const tag = n.tagName.toLowerCase();
+      if (tag === "svg" && (n.getAttribute("aria-hidden") === "true" || n.getAttribute("role") === "presentation" || n.getAttribute("role") === "none" || n.closest && n.closest(".alloflow-inline-chart"))) return;
+      const description = tag === "math" ? _alloLinearizeSpeechMath(n) : n.getAttribute("aria-label") || n.getAttribute("alttext") || Array.from(n.querySelectorAll("title,desc")).map((el) => el.textContent.trim()).filter(Boolean).join(". ");
+      if (description) runs.push({ text: description + ". ", language });
+      return;
     }
     Array.from(n.childNodes).forEach(visit);
   };
@@ -4796,16 +5376,29 @@ function _srStyleTextFromHtml(html, spokenLabels, narrationOptions) {
         continue;
       }
       if (tag === "ul" || tag === "ol") {
-        const items = Array.from(node.children).filter((c) => c.tagName && c.tagName.toLowerCase() === "li");
-        add(node, say(node, tag === "ul" ? "list" : "numbered", (tag === "ul" ? "List, " : "Numbered list, ") + items.length + " item" + (items.length === 1 ? "" : "s"), items.length) + ".");
-        items.forEach((li, i) => {
-          if (readable(li)) add(li, (tag === "ul" ? say(li, "bullet", "Bullet") : say(li, "item", "Item " + (i + 1), i + 1)) + ". ", li, ".");
-        });
-        add(node, say(node, "listEnd", "List end") + ".");
+        const emitList = (listEl) => {
+          const lTag = listEl.tagName.toLowerCase();
+          const items = Array.from(listEl.children).filter((c) => c.tagName && c.tagName.toLowerCase() === "li");
+          add(listEl, say(listEl, lTag === "ul" ? "list" : "numbered", (lTag === "ul" ? "List, " : "Numbered list, ") + items.length + " item" + (items.length === 1 ? "" : "s"), items.length) + ".");
+          items.forEach((li, i) => {
+            const prefix = (lTag === "ul" ? say(li, "bullet", "Bullet") : say(li, "item", "Item " + (i + 1), i + 1)) + ". ";
+            const nestedLists = Array.from(li.querySelectorAll("ul,ol")).filter((sub) => sub.parentElement && sub.parentElement.closest("li") === li);
+            if (!nestedLists.length) {
+              if (readable(li)) add(li, prefix, li, ".");
+              return;
+            }
+            const ownClone = li.cloneNode(true);
+            ownClone.querySelectorAll("ul,ol").forEach((sub) => sub.remove());
+            if (readable(ownClone)) add(li, prefix, ownClone, ".");
+            nestedLists.forEach(emitList);
+          });
+          add(listEl, say(listEl, "listEnd", "List end") + ".");
+        };
+        emitList(node);
         continue;
       }
       if (tag === "table") {
-        const rows = Array.from(node.querySelectorAll("tr")), cols = rows.length ? Math.max.apply(null, rows.map((r) => r.children.length)) : 0, cap = node.querySelector("caption");
+        const rows = Array.from(node.querySelectorAll("tr")), cols = rows.length ? Math.max.apply(null, rows.map((r) => Array.from(r.children).reduce((sum, c) => sum + Math.max(1, parseInt(c.getAttribute && c.getAttribute("colspan"), 10) || 1), 0))) : 0, cap = node.querySelector("caption");
         add(node, say(node, "table", "Table"), ...cap && cap.textContent.trim() ? [", ", cap] : [], ", " + say(node, "rows", rows.length + " row" + (rows.length === 1 ? "" : "s"), rows.length) + ", " + say(node, "columns", cols + " column" + (cols === 1 ? "" : "s"), cols) + ".");
         rows.forEach((row, i) => {
           const cells = Array.from(row.children).filter((c) => readable(c));
@@ -4819,7 +5412,7 @@ function _srStyleTextFromHtml(html, spokenLabels, narrationOptions) {
         if (node.getAttribute("role") !== "presentation" && node.getAttribute("role") !== "none" && alt) add(node, say(node, "image", "Image") + ". " + alt + ".");
         continue;
       }
-      if (options.languageRuns && (tag === "math" || tag === "svg")) {
+      if (options.languageRuns && (tag === "math" || tag === "svg" || node.getAttribute("data-allo-spoken-media") === "1")) {
         add(node, node);
         continue;
       }
@@ -7718,11 +8311,12 @@ function PdfAuditView(props) {
       zip.file("content.xml", odtParts.contentXml);
       odtParts.images.forEach((image) => zip.file(image.path, image.base64, { base64: true }));
       const _odtLang = ((html.match(/<html[^>]*lang=["']([^"']+)["']/i) || [])[1] || "en").trim();
-      const _odtLangParts = _odtLang.split(/[-_]/);
-      const _odtLg = (_odtLangParts[0] || "en").toLowerCase();
-      const _odtCt = _odtLangParts[1] ? _odtLangParts[1].toUpperCase() : "none";
+      const _odtParsed = _parseOdtBcp47(_odtLang);
+      const _odtLg = _odtParsed.primary === "none" ? "en" : _odtParsed.primary;
+      const _odtCt = _odtParsed.country;
+      const _odtLangAttrs = (_odtCt ? 'fo:language="' + _odtLg + '" fo:country="' + _odtCt + '"' : 'fo:language="' + _odtLg + '"') + (_odtParsed.script ? ' fo:script="' + _odtParsed.script + '"' : "") + _odtParsed.asianAttrs + _odtParsed.complexAttrs;
       const _odtRtl = /<(?:html|body)[^>]*\bdir=["']rtl/i.test(html);
-      let _odtStyles = _ODT_STYLES_XML.replace('<style:text-properties style:font-name="Liberation Serif" fo:font-size="12pt"/>', '<style:text-properties style:font-name="Liberation Serif" fo:font-size="12pt" fo:language="' + _odtLg + '" fo:country="' + _odtCt + '"/>');
+      let _odtStyles = _ODT_STYLES_XML.replace('<style:text-properties style:font-name="Liberation Serif" fo:font-size="12pt"/>', '<style:text-properties style:font-name="Liberation Serif" fo:font-size="12pt" ' + _odtLangAttrs + "/>");
       if (_odtRtl) _odtStyles = _odtStyles.replace('<style:default-style style:family="paragraph">', '<style:default-style style:family="paragraph"><style:paragraph-properties style:writing-mode="rl-tb"/>');
       zip.file("styles.xml", _odtStyles);
       zip.file("meta.xml", '<?xml version="1.0" encoding="UTF-8"?>\n<office:document-meta xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0" xmlns:dc="http://purl.org/dc/elements/1.1/" office:version="1.2"><office:meta><meta:generator>AlloFlow</meta:generator><dc:title>' + _expXmlEsc(title) + "</dc:title><dc:language>" + _expXmlEsc(_odtLang) + "</dc:language></office:meta></office:document-meta>");
@@ -7785,7 +8379,7 @@ function PdfAuditView(props) {
       addToast(t("toasts.mo_busy") || "A read-along export is already running.", "info");
       return;
     }
-    const { segments, bodyHtml, lang } = _collectMoSegments(html);
+    const { segments, bodyHtml, lang, rtl } = _collectMoSegments(html);
     if (!segments.length) {
       addToast(t("toasts.mo_no_text") || "No readable text found to narrate.", "error");
       return;
@@ -7830,7 +8424,7 @@ function PdfAuditView(props) {
         language: narrationLanguage,
         speed: 1
       }));
-      const resourceSlug = String(title).replace(/[^a-zA-Z0-9_-]+/g, "-").slice(0, 120) || "document";
+      const resourceSlug = String(title || "").normalize("NFC").replace(/[^\p{L}\p{M}\p{N}_-]+/gu, "-").replace(/^-+|-+$/g, "").slice(0, 120) || "document";
       const prepared = await _preparePdfArtifactAudio(artifactSegments, {
         resourceId: "pdf-audit-readalong-" + resourceSlug,
         resourceType: "pdf-audit-read-along-epub",
@@ -7891,14 +8485,16 @@ function PdfAuditView(props) {
       const _hasAudio = audioBlobs.map(Boolean);
       const zip = new window.JSZip();
       const _containerXml = '<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>';
-      let xhtml = '<?xml version="1.0" encoding="utf-8"?>\n<!DOCTYPE html>\n<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="' + _expXmlEsc(epubLang) + '" lang="' + _expXmlEsc(epubLang) + '"><head><meta charset="utf-8"/><title>' + _expXmlEsc(title) + "</title></head><body>" + bodyHtml + "</body></html>";
+      const _rtlAttr = rtl ? ' dir="rtl"' : "";
+      let xhtml = '<?xml version="1.0" encoding="utf-8"?>\n<!DOCTYPE html>\n<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="' + _expXmlEsc(epubLang) + '" lang="' + _expXmlEsc(epubLang) + '"' + _rtlAttr + '><head><meta charset="utf-8"/><title>' + _expXmlEsc(title) + "</title></head><body>" + bodyHtml + "</body></html>";
       xhtml = xhtml.replace(/<br>/g, "<br/>").replace(/<hr>/g, "<hr/>").replace(/<img([^>]*[^/])>/g, "<img$1/>").replace(/&nbsp;/g, "&#160;");
       const _smilXml = _buildMoSmil(segments, durations, ext, _hasAudio);
       const _moContentProperties = [];
       if (/<svg\b/i.test(bodyHtml)) _moContentProperties.push("svg");
       if (/<math\b/i.test(bodyHtml)) _moContentProperties.push("mathml");
-      const _opfXml = _buildMoOpf(title, epubLang, segments, totalSec, null, ext, mime, _hasAudio, _moContentProperties);
-      const _navXhtml = '<?xml version="1.0" encoding="utf-8"?>\n<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="' + _expXmlEsc(epubLang) + '" xml:lang="' + _expXmlEsc(epubLang) + '"><head><title lang="en">Navigation</title></head><body><nav epub:type="toc" role="doc-toc"><h1 lang="en">Contents</h1><ol><li><a href="content.xhtml">' + _expXmlEsc(title) + "</a></li></ol></nav></body></html>";
+      if (/<(?:img|audio|video|source|object|iframe)\b[^>]*(?:src|data)\s*=\s*["']?(?:https?:)?\/\//i.test(bodyHtml)) _moContentProperties.push("remote-resources");
+      const _opfXml = _buildMoOpf(title, epubLang, segments, totalSec, null, ext, mime, _hasAudio, _moContentProperties, { rtl });
+      const _navXhtml = '<?xml version="1.0" encoding="utf-8"?>\n<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="' + _expXmlEsc(epubLang) + '" xml:lang="' + _expXmlEsc(epubLang) + '"' + _rtlAttr + '><head><title lang="en">Navigation</title></head><body><nav epub:type="toc" role="doc-toc"><h1 lang="en">Contents</h1><ol><li><a href="content.xhtml">' + _expXmlEsc(title) + "</a></li></ol></nav></body></html>";
       zip.file("mimetype", "application/epub+zip", { compression: "STORE" });
       zip.file("META-INF/container.xml", _containerXml);
       zip.file("OEBPS/content.xhtml", xhtml);
@@ -10602,6 +11198,12 @@ This is a rough estimate \u2014 actual cost varies with file complexity (scanned
       });
       const topViolations = Object.entries(allViolations).sort((a, b) => b[1] - a[1]).slice(0, 10);
       const win = window.open("", "_blank");
+      if (win) {
+        try {
+          win.opener = null;
+        } catch (_) {
+        }
+      }
       if (!win) {
         addToast(t("toasts.pop_up_blocked"), "error");
         return;
@@ -11670,11 +12272,15 @@ Return ONLY JSON:
         _stageTally[s] = (_stageTally[s] || 0) + 1;
       });
       const _topStage = Object.keys(_stageTally).sort((a, b) => _stageTally[b] - _stageTally[a])[0] || null;
-      return /* @__PURE__ */ React.createElement("div", { className: "mt-2 bg-indigo-50/60 border border-indigo-200 rounded-xl px-3 py-2 text-[11px] text-slate-700 flex items-center gap-2 flex-wrap", "data-help-key": "pdf_audit_run_history_panel" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-indigo-800" }, "\u{1F4C8} ", t("pdf_audit.history.lead") || "Remediation history", ":"), /* @__PURE__ */ React.createElement("span", null, _hist.length, " ", t("pdf_audit.history.runs") || "document(s)", _avgGain != null ? " \xB7 " + (t("pdf_audit.history.avg") || "average gain") + " +" + _avgGain : "", _last ? " \xB7 " + (t("pdf_audit.history.last") || "last") + ": " + _last.fileName + (_last.beforeScore != null ? " (" + _last.beforeScore + "\u2192" + _last.afterScore + ")" : "") : ""), _outcomed.length > 0 && /* @__PURE__ */ React.createElement("span", { className: _failed.length === 0 && _incomplete.length === 0 && _cancelled.length === 0 ? "text-emerald-700 font-bold" : "text-amber-700 font-bold", title: _failed.length > 0 && _topStage ? "Most failures at: " + _topStage : "" }, "\xB7 ", _successRate, "% ", t("pdf_audit.history.success") || "success", " (", _succeeded.length, "/", _outcomed.length, _incomplete.length > 0 ? ", " + _incomplete.length + " " + (t("pdf_audit.history.incomplete") || "below target") : "", _failed.length > 0 ? ", " + _failed.length + " " + (t("pdf_audit.history.failed") || "failed") + (_topStage ? " \xB7 " + (t("pdf_audit.history.mostly_at") || "mostly at") + " " + _topStage : "") : "", _cancelled.length > 0 ? ", " + _cancelled.length + " " + (t("pdf_audit.history.cancelled") || "stopped or superseded") : "", ")"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+      return /* @__PURE__ */ React.createElement("div", { className: "mt-2 bg-indigo-50/60 border border-indigo-200 rounded-xl px-3 py-2 text-[11px] text-slate-700 flex items-center gap-2 flex-wrap", "data-help-key": "pdf_audit_run_history_panel" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-indigo-800" }, "\u{1F4C8} ", t("pdf_audit.history.lead") || "Remediation history", ":"), /* @__PURE__ */ React.createElement("span", null, _hist.length, " ", t("pdf_audit.history.runs") || "document(s)", _avgGain != null ? " \xB7 " + (t("pdf_audit.history.avg") || "average gain") + " +" + _avgGain : "", _last ? " \xB7 " + (t("pdf_audit.history.last") || "last") + ": " + _last.fileName + (_last.beforeScore != null ? " (" + _last.beforeScore + "\u2192" + _last.afterScore + ")" : "") : ""), _outcomed.length > 0 && /* @__PURE__ */ React.createElement("span", { className: _failed.length === 0 && _incomplete.length === 0 && _cancelled.length === 0 ? "text-emerald-700 font-bold" : "text-amber-700 font-bold", title: _failed.length > 0 && _topStage ? "Most failures at: " + _topStage : "" }, "\xB7 ", _successRate, "% ", t("pdf_audit.history.success") || "success", " (", _succeeded.length, "/", _outcomed.length, _incomplete.length > 0 ? ", " + _incomplete.length + " " + (t("pdf_audit.history.incomplete") || "below target") : "", _failed.length > 0 ? ", " + _failed.length + " " + (t("pdf_audit.history.failed") || "failed") + (_topStage ? " \xB7 " + (t("pdf_audit.history.mostly_at") || "mostly at") + " " + _topStage : "") : "", _cancelled.length > 0 ? ", " + _cancelled.length + " " + (t("pdf_audit.history.cancelled") || "stopped or superseded") : "", ")"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
         const head = "date,file,source,outcome,verification,fail_stage,fail_reason,before,after,gain,passes,axe_violations,pages,retries,vision_calls,api_calls,api_ms,duration_s";
-        const _csv = (v) => '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"';
+        const _csv = (v) => {
+          let s = String(v == null ? "" : v);
+          if (/^\s*[=+\-@|]|^[\t\r\n]/.test(s)) s = "'" + s;
+          return '"' + s.replace(/"/g, '""') + '"';
+        };
         const lines = _hist.map((r) => [String(r.at || "").slice(0, 10), _csv(r.fileName || ""), _csv(r.source || "single"), r.outcome || "", _csv(r.verificationState || ""), _csv(r.failStage || ""), _csv(r.failReason || ""), r.beforeScore != null ? r.beforeScore : "", r.afterScore != null ? r.afterScore : "", r.beforeScore != null && r.afterScore != null ? r.afterScore - r.beforeScore : "", r.passes != null ? r.passes : "", r.axeViolations != null ? r.axeViolations : "", r.pages != null ? r.pages : "", r.retries != null ? r.retries : "", r.visionCalls != null ? r.visionCalls : "", r.apiCalls != null ? r.apiCalls : "", r.apiMs != null ? r.apiMs : "", r.durationMs != null ? Math.round(r.durationMs / 1e3) : ""].join(","));
-        safeDownloadBlob(new Blob([head + "\n" + lines.join("\n")], { type: "text/csv" }), "alloflow-remediation-history.csv");
+        safeDownloadBlob(new Blob(["\uFEFF" + head + "\n" + lines.join("\n")], { type: "text/csv;charset=utf-8" }), "alloflow-remediation-history.csv");
       }, className: "ml-auto px-2 py-0.5 bg-white border border-indigo-300 text-indigo-700 rounded-full font-bold hover:bg-indigo-100 shrink-0" }, "\u2B07 CSV"));
     })()) : pdfAuditLoading ? /* @__PURE__ */ React.createElement("div", { className: "p-12 text-center", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("div", { className: "text-5xl mb-4 animate-pulse", "aria-hidden": "true" }, "\u267F"), /* @__PURE__ */ React.createElement("h3", { className: "text-lg font-black text-slate-800 mb-2" }, t("pdf_audit.loading.title") || "Checking your document\u2026"), (() => {
       const _kb = pendingPdfFile && pendingPdfFile.size ? Math.round(pendingPdfFile.size / 1024) : pendingPdfBase64 ? Math.round(pendingPdfBase64.length * 0.75 / 1024) : 0;
@@ -13011,6 +13617,12 @@ Return ONLY JSON:
         return;
       }
       const w = window.open("", "_blank");
+      if (w) {
+        try {
+          w.opener = null;
+        } catch (_) {
+        }
+      }
       if (w) {
         w.document.write(html);
         w.document.close();
@@ -14495,17 +15107,20 @@ Return ONLY JSON:
                                   var words = node.textContent.split(/(s+)/);
                                   var span = d.createElement('span');
                                   span.className = 'bionic-wrap';
-                                  span.innerHTML = words.map(function(w) {
-                                    if (/^s+$/.test(w)) return w;
+                                  words.forEach(function(w) {
+                                    if (/^s+$/.test(w)) { span.appendChild(d.createTextNode(w)); return; }
                                     var half = Math.ceil(w.length * 0.5);
-                                    return '<strong>' + w.substring(0, half) + '</strong>' + w.substring(half);
-                                  }).join('');
+                                    var st = d.createElement('strong');
+                                    st.textContent = w.substring(0, half);
+                                    span.appendChild(st);
+                                    if (half < w.length) span.appendChild(d.createTextNode(w.substring(half)));
+                                  });
                                   node.parentNode.replaceChild(span, node);
                                 });
                               } else {
                                 btn.style.background = 'transparent'; btn.style.color = '#86efac';
                                 d.querySelectorAll('.bionic-wrap').forEach(function(el) {
-                                  el.outerHTML = el.textContent;
+                                  if (el.parentNode) el.parentNode.replaceChild(d.createTextNode(el.textContent), el);
                                 });
                               }
                             }
@@ -15189,6 +15804,12 @@ Return ONLY JSON:
       }
       const w = window.open("", "_blank");
       if (w) {
+        try {
+          w.opener = null;
+        } catch (_) {
+        }
+      }
+      if (w) {
         w.document.write(html);
         w.document.close();
         const banner = w.document.createElement("div");
@@ -15743,7 +16364,7 @@ Return ONLY JSON:
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = templateName.replace(/[^a-zA-Z0-9]/g, "_").toLowerCase() + ".alloflow-template.json";
+      a.download = (String(templateName || "").normalize("NFC").replace(/[^\p{L}\p{M}\p{N}]+/gu, "_").replace(/^_+|_+$/g, "").toLowerCase() || "template") + ".alloflow-template.json";
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -16777,6 +17398,12 @@ Return ONLY the plain-language summary.`, false));
           const _safeLang = _escSum(lang);
           const _safeName = _escSum(pendingPdfFile?.name || "document");
           const win = window.open("", "_blank");
+          if (win) {
+            try {
+              win.opener = null;
+            } catch (_) {
+            }
+          }
           if (win) {
             win.document.write(`<!DOCTYPE html><html${_langAttr} dir="${dir}"><head><meta charset="UTF-8"><title>Plain Language Summary: ${_safeLang}</title><style>body{font-family:'Lexend',system-ui,sans-serif;max-width:600px;margin:2rem auto;padding:0 1.5rem;line-height:1.8;color:#1e293b;font-size:${level === "3" ? "18" : "16"}px;direction:${dir}}h1{color:#4f46e5;font-size:1.4rem;border-bottom:3px solid #6366f1;padding-bottom:0.5rem}h2{color:#4f46e5;font-size:1.1rem;margin-top:1.5rem}li{margin-bottom:0.5rem}p{margin-bottom:1rem}.badge{display:inline-flex;gap:6px;align-items:center;background:#e0e7ff;color:#4338ca;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;margin-bottom:1rem}.footer{margin-top:2rem;padding-top:1rem;border-top:2px solid #e2e8f0;font-size:11px;color:#94a3b8}@media print{body{font-size:14px;max-width:100%}}</style></head><body><div class="badge">\u{1F4D6} ${_safeLang} \xB7 ${gradeLabel}</div><h1>${lang === "English" ? "Easy-to-Read Summary" : "Summary"}</h1>${_summaryHtml}<div class="footer"><p>Source: ${_safeName} \xB7 Generated ${(/* @__PURE__ */ new Date()).toLocaleDateString()} by AlloFlow</p><button onclick="window.print()" style="margin-top:8px;padding:8px 16px;background:#4f46e5;color:white;border:none;border-radius:6px;font-weight:bold;cursor:pointer">\u{1F5A8}\uFE0F Print</button></div></body></html>`);
             win.document.close();

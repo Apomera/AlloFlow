@@ -213,7 +213,7 @@ function mtssSiblingCounts(storage) {
 function mtssCsv(dataset) {
   const esc = (v) => {
     const raw = v == null ? '' : String(v);
-    const s = (/^[\t\r\n]/.test(raw) || /^\s*[=+\-@]/.test(raw)) ? "'" + raw : raw;
+    const s = (/^[\t\r\n]/.test(raw) || /^\s*[=+\-@|]/.test(raw)) ? "'" + raw : raw;
     return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
   };
   const board = mtssBoard(dataset);
@@ -279,39 +279,101 @@ function MtssTriagePanel(props) {
   React.useEffect(() => { mtssStore(MTSS_DATASETS_KEY, datasets); }, [datasets]);
   React.useEffect(() => { mtssStore(MTSS_GROUPS_KEY, groups); }, [groups]);
 
+  const onCloseRef = React.useRef(onClose);
+  onCloseRef.current = onClose;
+
   React.useEffect(() => {
     const dialog = dialogRef.current;
-    if (!dialog) return undefined;
+    if (!dialog || typeof document === 'undefined') return undefined;
     const previousFocus = document.activeElement;
     const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
     const trap = { root: dialog };
     trapStack.push(trap);
     const isTopTrap = () => trapStack[trapStack.length - 1] === trap;
+    const isolated = [];
+    const seenSiblings = new Set();
+    let cursor = dialog;
+    while (cursor && cursor.parentElement) {
+      const parent = cursor.parentElement;
+      Array.from(parent.children).forEach((sibling) => {
+        if (!sibling || sibling === cursor || seenSiblings.has(sibling) || !sibling.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName)) return;
+        seenSiblings.add(sibling);
+        isolated.push({
+          sibling,
+          hadInert: sibling.hasAttribute('inert'),
+          prevInert: sibling.inert,
+          ariaHidden: sibling.getAttribute('aria-hidden'),
+        });
+        try { sibling.inert = true; } catch (_) {}
+        try { sibling.setAttribute('inert', ''); } catch (_) {}
+        try { sibling.setAttribute('aria-hidden', 'true'); } catch (_) {}
+      });
+      if (parent === document.body) break;
+      cursor = parent;
+    }
+    const body = document.body;
+    const scrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: '' });
+    let scrollLocked = false;
+    try {
+      if (body) {
+        scrollLocked = true;
+        if (++scrollLock.count === 1) { scrollLock.prev = body.style.overflow; body.style.overflow = 'hidden'; }
+      }
+    } catch (_) {}
     const getFocusable = () => Array.from(dialog.querySelectorAll(
-      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-    )).filter((el) => !el.closest('[hidden], [inert], [aria-hidden="true"]'));
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])'
+    )).filter((el) => {
+      if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      const closedDetails = el.closest('details:not([open])');
+      if (closedDetails && !(el.tagName === 'SUMMARY' && el.parentElement === closedDetails)) return false;
+      const st = typeof window !== 'undefined' && typeof window.getComputedStyle === 'function' ? window.getComputedStyle(el) : null;
+      return !st || (st.display !== 'none' && st.visibility !== 'hidden');
+    });
     const first = getFocusable()[0];
-    (first || dialog).focus();
+    if (!dialog.contains(document.activeElement)) (first || dialog).focus();
     const onKeyDown = (event) => {
-      if (!isTopTrap()) return;
-      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); onClose(); return; }
+      if (event.defaultPrevented || !dialog.isConnected || !isTopTrap()) return;
+      if ((event.nativeEvent && event.nativeEvent.isComposing) || event.isComposing || event.keyCode === 229) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        if (typeof onCloseRef.current === 'function') onCloseRef.current();
+        return;
+      }
       if (event.key !== 'Tab') return;
       const focusable = getFocusable();
       if (focusable.length === 0) { event.preventDefault(); dialog.focus(); return; }
       const firstItem = focusable[0], lastItem = focusable[focusable.length - 1];
-      if (!dialog.contains(document.activeElement)) { event.preventDefault(); (event.shiftKey ? lastItem : firstItem).focus(); }
+      if (!dialog.contains(document.activeElement) || document.activeElement === dialog) { event.preventDefault(); (event.shiftKey ? lastItem : firstItem).focus(); }
       else if (event.shiftKey && document.activeElement === firstItem) { event.preventDefault(); lastItem.focus(); }
       else if (!event.shiftKey && document.activeElement === lastItem) { event.preventDefault(); firstItem.focus(); }
     };
     document.addEventListener('keydown', onKeyDown);
     return () => {
       document.removeEventListener('keydown', onKeyDown);
+      try {
+        if (scrollLocked && body) {
+          scrollLock.count = Math.max(0, scrollLock.count - 1);
+          if (scrollLock.count === 0) body.style.overflow = scrollLock.prev;
+        }
+      } catch (_) {}
+      isolated.forEach(({ sibling, hadInert, prevInert, ariaHidden }) => {
+        if (!sibling || !sibling.isConnected) return;
+        if (!hadInert) {
+          try { sibling.inert = false; } catch (_) {}
+          try { sibling.removeAttribute('inert'); } catch (_) {}
+        } else {
+          try { sibling.inert = Boolean(prevInert); } catch (_) {}
+        }
+        if (ariaHidden == null) { try { sibling.removeAttribute('aria-hidden'); } catch (_) {} }
+        else { try { sibling.setAttribute('aria-hidden', ariaHidden); } catch (_) {} }
+      });
       const wasTop = isTopTrap();
-      const idx = trapStack.indexOf(trap);
+      const idx = trapStack.lastIndexOf(trap);
       if (idx !== -1) trapStack.splice(idx, 1);
-      if (wasTop && previousFocus && previousFocus !== document.body && previousFocus.isConnected && typeof previousFocus.focus === 'function') previousFocus.focus();
+      if (wasTop && previousFocus && previousFocus !== document.body && previousFocus !== document.documentElement && previousFocus.isConnected && typeof previousFocus.focus === 'function') previousFocus.focus();
     };
-  }, [onClose]);
+  }, []);
 
   const active = activeId ? datasets.find((d) => d.id === activeId) : null;
   const board = active ? mtssBoard(active) : null;
@@ -393,6 +455,7 @@ function MtssTriagePanel(props) {
                 aria-controls="mtss-tabpanel" tabIndex={tab === tb.id ? 0 : -1} data-help-key="mtss_tab"
                 onClick={() => setTab(tb.id)}
                 onKeyDown={(e) => {
+                  if ((e.nativeEvent && e.nativeEvent.isComposing) || e.isComposing || e.keyCode === 229) return;
                   let next = null;
                   if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (tbIdx + 1) % tabs.length;
                   else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (tbIdx - 1 + tabs.length) % tabs.length;
@@ -411,7 +474,7 @@ function MtssTriagePanel(props) {
         </div>
 
         <div className="p-4" role="tabpanel" id="mtss-tabpanel" aria-labelledby={'mtss-tab-' + tab} tabIndex={-1}>
-          <p className="text-[10px] text-slate-500 mb-3">
+          <p className="text-[10px] text-slate-600 mb-3">
             {tt('mtss.context_strip', 'Building context (from this device’s Leadership Hub data):')}{' '}
             {context.walkthroughVisits} {tt('mtss.ctx_visits', 'walkthrough visits')} · {context.disproAnalyses} {tt('mtss.ctx_dispro', 'equity analyses')} · {context.spedOpen} {tt('mtss.ctx_sped', 'open SpEd timelines')} · {context.meetings} {tt('mtss.ctx_meetings', 'meeting records')}
           </p>
@@ -454,7 +517,7 @@ function MtssTriagePanel(props) {
                 <textarea id="mtss-paste" rows={5} value={form.paste} onChange={(e) => setForm((f) => ({ ...f, paste: e.target.value }))}
                   placeholder={'Code,Score\nJD,42\nMR,71\nAL,18'}
                   className="w-full text-xs font-mono border border-slate-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-                <p className="text-[10px] text-slate-500 mt-1">{tt('mtss.cuts_note', 'Enter YOUR measure’s benchmark cut scores (publisher tables are measure- and season-specific — this tool ships none). "At the cut" counts as the less intensive band.')}</p>
+                <p className="text-[10px] text-slate-600 mt-1">{tt('mtss.cuts_note', 'Enter YOUR measure’s benchmark cut scores (publisher tables are measure- and season-specific — this tool ships none). "At the cut" counts as the less intensive band.')}</p>
                 <button type="button" onClick={saveDataset} className="mt-2 min-h-11 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700">{tt('mtss.save_dataset', 'Save window & triage')}</button>
               </div>
 
@@ -463,7 +526,7 @@ function MtssTriagePanel(props) {
                   {datasets.map((d) => (
                     <button key={d.id} type="button" aria-pressed={activeId === d.id}
                       onClick={() => { setActiveId(d.id); setChecked({}); }}
-                      className={'min-h-9 px-2.5 py-1 rounded-full border text-xs font-bold ' + (activeId === d.id ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-100')}>
+                      className={'min-h-11 px-3 py-1.5 rounded-full border text-xs font-bold ' + (activeId === d.id ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-100')}>
                       {d.label} · {d.window}
                     </button>
                   ))}
@@ -476,13 +539,13 @@ function MtssTriagePanel(props) {
                     <p className="text-xs text-slate-600">{board.total} {tt('mtss.students', 'students')} · {board.invalid.length > 0 ? (board.invalid.length + ' ' + tt('mtss.invalid_rows', 'invalid/duplicate rows ignored')) : ''}</p>
                     <div className="flex gap-2">
                       <button type="button" onClick={() => mtssDownload('mtss-' + (active.window || 'window').replace(/\s+/g, '-') + '.csv', 'text/csv;charset=utf-8', '\uFEFF' + mtssCsv(active), addToast, tt('mtss.export_toast', 'Export started — check your downloads.'), tt('mtss.export_failed', 'Export failed: '))}
-                        className="min-h-9 px-2.5 py-1 rounded-lg border border-slate-300 bg-white text-xs font-bold text-slate-700 hover:bg-slate-100"><span aria-hidden="true">⬇️</span> {tt('mtss.export_csv', 'CSV')}</button>
+                        className="min-h-11 px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs font-bold text-slate-700 hover:bg-slate-100"><span aria-hidden="true">⬇️</span> {tt('mtss.export_csv', 'CSV')}</button>
                       <button type="button"
                         onClick={() => {
                           if (armDelete === active.id) { setDatasets((l) => l.filter((x) => x.id !== active.id)); setActiveId(null); setArmDelete(null); addToast(tt('mtss.dataset_deleted', 'Window deleted.'), 'info'); }
                           else { setArmDelete(active.id); mtssAnnounce(tt('mtss.delete_arm_announce', 'Activate delete again to permanently remove this window.')); }
                         }}
-                        className={'min-h-9 px-2.5 py-1 rounded-lg border text-xs font-bold ' + (armDelete === active.id ? 'bg-rose-600 text-white border-rose-700' : 'bg-white text-rose-700 border-rose-300 hover:bg-rose-50')}
+                        className={'min-h-11 px-3 py-1.5 rounded-lg border text-xs font-bold ' + (armDelete === active.id ? 'bg-rose-600 text-white border-rose-700' : 'bg-white text-rose-700 border-rose-300 hover:bg-rose-50')}
                       >{armDelete === active.id ? tt('mtss.delete_confirm', 'Tap again to delete') : tt('mtss.delete', 'Delete')}</button>
                     </div>
                   </div>
@@ -512,17 +575,17 @@ function MtssTriagePanel(props) {
                       <div className="flex-1 min-w-40">
                         <label htmlFor="mtss-group-name" className="block text-[10px] font-bold text-slate-600 mb-0.5">{tt('mtss.group_name', 'Group name')}</label>
                         <input id="mtss-group-name" type="text" value={groupName} onChange={(e) => setGroupName(e.target.value)}
-                          className="w-full min-h-10 border border-slate-300 rounded-lg px-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                          className="w-full min-h-11 border border-slate-300 rounded-lg px-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                       </div>
                       <div className="flex-1 min-w-40">
                         <label htmlFor="mtss-group-focus" className="block text-[10px] font-bold text-slate-600 mb-0.5">{tt('mtss.group_focus', 'Focus (e.g. decoding, fluency)')}</label>
                         <input id="mtss-group-focus" type="text" value={groupFocus} onChange={(e) => setGroupFocus(e.target.value)}
-                          className="w-full min-h-10 border border-slate-300 rounded-lg px-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                          className="w-full min-h-11 border border-slate-300 rounded-lg px-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                       </div>
-                      <button type="button" onClick={createGroup} className="min-h-10 px-3 py-2 rounded-lg bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700">{tt('mtss.create_group', 'Create group')}</button>
+                      <button type="button" onClick={createGroup} className="min-h-11 px-3 py-2 rounded-lg bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700">{tt('mtss.create_group', 'Create group')}</button>
                     </div>
                   </div>
-                  <p className="mt-2 text-[10px] text-slate-500">
+                  <p className="mt-2 text-[10px] text-slate-600">
                     {tt('mtss.integrity_note', 'Tiers here are suggested risk bands from ONE screener against the cut scores you entered — a flag for team review, never a placement. MTSS teams decide with multiple data sources (progress monitoring, classroom evidence, family input). All computation happens on this device.')}
                   </p>
                 </div>
@@ -541,14 +604,14 @@ function MtssTriagePanel(props) {
                     <div className="flex items-center justify-between gap-2">
                       <div className="min-w-0">
                         <span className="block font-bold text-sm text-slate-800">{g.name}{g.focus ? <span className="font-normal text-slate-600"> — {g.focus}</span> : null}</span>
-                        <span className="block text-[10px] text-slate-500">{g.measure} · {g.window} · {tt('mtss.started', 'created')} {g.createdAt}</span>
+                        <span className="block text-[10px] text-slate-600">{g.measure} · {g.window} · {tt('mtss.started', 'created')} {g.createdAt}</span>
                       </div>
                       <button type="button"
                         onClick={() => {
                           if (armDelete === g.id) { setGroups((l) => l.filter((x) => x.id !== g.id)); setArmDelete(null); addToast(tt('mtss.group_deleted', 'Group deleted.'), 'info'); }
                           else { setArmDelete(g.id); mtssAnnounce(tt('mtss.delete_arm_announce', 'Activate delete again to permanently remove this group.')); }
                         }}
-                        className={'shrink-0 min-h-9 px-2.5 py-1 rounded-lg border text-xs font-bold ' + (armDelete === g.id ? 'bg-rose-600 text-white border-rose-700' : 'bg-white text-rose-700 border-rose-300 hover:bg-rose-50')}
+                        className={'shrink-0 min-h-11 px-3 py-1.5 rounded-lg border text-xs font-bold ' + (armDelete === g.id ? 'bg-rose-600 text-white border-rose-700' : 'bg-white text-rose-700 border-rose-300 hover:bg-rose-50')}
                       >{armDelete === g.id ? tt('mtss.delete_confirm', 'Tap again to delete') : tt('mtss.delete', 'Delete')}</button>
                     </div>
                     <ul className="mt-1.5 flex flex-wrap gap-1">

@@ -2256,14 +2256,15 @@ function aeCsv(rows) {
   const headers = Object.keys(rows[0]);
   const cell = (value) => {
     let s = String(value == null ? "" : value);
-    if (/^[\t\r\n ]*[=+\-@]/.test(s)) s = "'" + s;
+    if (/^(?:[\t\r\n ]*[=+\-@|]|[\t\r\n])/.test(s)) s = "'" + s;
     return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
   };
   return [headers.map(cell).join(","), ...rows.map((row) => headers.map((header) => cell(row[header])).join(","))].join("\r\n");
 }
 function aeDownload(name, type, content) {
   const safeName = String(name || "download").replace(/[^A-Za-z0-9._-]/g, "_").replace(/^\.+/, "") || "download";
-  const blob = new Blob([content], { type });
+  const body = /^text\/csv/i.test(String(type || "")) && String(content == null ? "" : content).charCodeAt(0) !== 65279 ? "\uFEFF" + String(content == null ? "" : content) : content;
+  const blob = new Blob([body], { type });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -2436,6 +2437,7 @@ function AeLocalOnboarding({ onChoose }) {
     if (firstRef.current) firstRef.current.focus();
   }, []);
   const trapTab = (event) => {
+    if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229) return;
     if (event.key === "Escape") {
       event.preventDefault();
       event.stopPropagation();
@@ -2478,6 +2480,7 @@ function AeReleaseReview({ state, onCancel, onConfirm }) {
   }, [busy]);
   const trapFocus = (event) => {
     if (event.key === "Escape") {
+      if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229) return;
       event.preventDefault();
       event.stopPropagation();
       if (!busy) onCancel();
@@ -2531,6 +2534,7 @@ function AeNotificationReview({ state, onRecipientChange, onContinue, onCancel, 
   }, [busy]);
   const trapFocus = (event) => {
     if (event.key === "Escape") {
+      if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229) return;
       event.preventDefault();
       event.stopPropagation();
       if (!busy) onCancel();
@@ -2572,6 +2576,7 @@ function AeActionReview({ review, onCancel, onConfirm }) {
   }, [review.token]);
   const trapFocus = (event) => {
     if (event.key === "Escape") {
+      if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229) return;
       event.preventDefault();
       event.stopPropagation();
       onCancel();
@@ -5220,20 +5225,75 @@ function EducatorEvaluationPanel(props) {
     window.addEventListener("beforeunload", beforeUnload);
     return () => window.removeEventListener("beforeunload", beforeUnload);
   }, [isRemote, remoteState.status]);
+  const initialOpenerRef = React.useRef(void 0);
+  if (initialOpenerRef.current === void 0 && typeof document !== "undefined") {
+    initialOpenerRef.current = document.activeElement;
+  }
   React.useEffect(() => {
     if (standalone) return void 0;
     const dialog = dialogRef.current;
-    if (!dialog) return void 0;
-    const previous = document.activeElement;
+    if (!dialog || typeof document === "undefined") return void 0;
+    const shellRoot = typeof dialog.closest === "function" && dialog.closest(".ae-shell") || dialog;
+    const previous = document.activeElement && shellRoot.contains(document.activeElement) ? initialOpenerRef.current : document.activeElement;
     const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
     const trap = { root: dialog };
     trapStack.push(trap);
     const isTopTrap = () => trapStack[trapStack.length - 1] === trap;
-    const focusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')).filter((el) => !el.closest('[hidden],[inert],[aria-hidden="true"]'));
-    (focusable()[0] || dialog).focus();
+    const isolated = [];
+    const seenSiblings = /* @__PURE__ */ new Set();
+    let cursor = shellRoot;
+    while (cursor && cursor.parentElement) {
+      const parent = cursor.parentElement;
+      Array.from(parent.children).forEach((sibling) => {
+        if (!sibling || sibling === cursor || seenSiblings.has(sibling) || !sibling.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName)) return;
+        seenSiblings.add(sibling);
+        isolated.push({
+          sibling,
+          hadInert: sibling.hasAttribute("inert"),
+          prevInert: sibling.inert,
+          ariaHidden: sibling.getAttribute("aria-hidden")
+        });
+        try {
+          sibling.inert = true;
+        } catch (_) {
+        }
+        try {
+          sibling.setAttribute("inert", "");
+        } catch (_) {
+        }
+        try {
+          sibling.setAttribute("aria-hidden", "true");
+        } catch (_) {
+        }
+      });
+      if (parent === document.body) break;
+      cursor = parent;
+    }
+    const body2 = document.body;
+    const scrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: "" });
+    let scrollLocked = false;
+    try {
+      if (body2) {
+        scrollLocked = true;
+        if (++scrollLock.count === 1) {
+          scrollLock.prev = body2.style.overflow;
+          body2.style.overflow = "hidden";
+        }
+      }
+    } catch (_) {
+    }
+    const focusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),summary,[tabindex]:not([tabindex="-1"])')).filter((el) => {
+      if (el.closest('[hidden],[inert],[aria-hidden="true"]')) return false;
+      const closedDetails = el.closest("details:not([open])");
+      if (closedDetails && !(el.tagName === "SUMMARY" && el.parentElement === closedDetails)) return false;
+      const st = typeof window !== "undefined" && typeof window.getComputedStyle === "function" ? window.getComputedStyle(el) : null;
+      return !st || st.display !== "none" && st.visibility !== "hidden";
+    });
+    if (!shellRoot.contains(document.activeElement)) (focusable()[0] || dialog).focus();
     const keydown = (event) => {
-      if (event.defaultPrevented || !isTopTrap() || dialog.closest('[inert],[aria-hidden="true"]')) return;
+      if (event.defaultPrevented || !dialog.isConnected || !isTopTrap() || dialog.closest('[inert],[aria-hidden="true"]')) return;
       if (event.key === "Escape") {
+        if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229) return;
         event.preventDefault();
         event.stopPropagation();
         requestCloseRef.current();
@@ -5247,7 +5307,7 @@ function EducatorEvaluationPanel(props) {
         return;
       }
       const first = items[0], last = items[items.length - 1];
-      if (!dialog.contains(document.activeElement)) {
+      if (!dialog.contains(document.activeElement) || document.activeElement === dialog) {
         event.preventDefault();
         (event.shiftKey ? last : first).focus();
       } else if (event.shiftKey && document.activeElement === first) {
@@ -5261,10 +5321,46 @@ function EducatorEvaluationPanel(props) {
     document.addEventListener("keydown", keydown);
     return () => {
       document.removeEventListener("keydown", keydown);
+      try {
+        if (scrollLocked && body2) {
+          scrollLock.count = Math.max(0, scrollLock.count - 1);
+          if (scrollLock.count === 0) body2.style.overflow = scrollLock.prev;
+        }
+      } catch (_) {
+      }
+      isolated.forEach(({ sibling, hadInert, prevInert, ariaHidden }) => {
+        if (!sibling || !sibling.isConnected) return;
+        if (!hadInert) {
+          try {
+            sibling.inert = false;
+          } catch (_) {
+          }
+          try {
+            sibling.removeAttribute("inert");
+          } catch (_) {
+          }
+        } else {
+          try {
+            sibling.inert = Boolean(prevInert);
+          } catch (_) {
+          }
+        }
+        if (ariaHidden == null) {
+          try {
+            sibling.removeAttribute("aria-hidden");
+          } catch (_) {
+          }
+        } else {
+          try {
+            sibling.setAttribute("aria-hidden", ariaHidden);
+          } catch (_) {
+          }
+        }
+      });
       const wasTop = isTopTrap();
-      const index = trapStack.indexOf(trap);
+      const index = trapStack.lastIndexOf(trap);
       if (index !== -1) trapStack.splice(index, 1);
-      if (wasTop && previous && previous !== document.body && previous.isConnected && typeof previous.focus === "function") previous.focus();
+      if (wasTop && previous && previous !== document.body && previous !== document.documentElement && previous.isConnected && typeof previous.focus === "function") previous.focus();
     };
   }, [standalone]);
   const announce = React.useCallback((message) => {

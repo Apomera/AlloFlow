@@ -215,6 +215,98 @@ function collectChecks(options, dependencies = {}) {
   checkSource(ctx, options.sha, false);
   return Object.keys(REQUIRED).filter(name => name !== PRODUCER).map(workflow => latestRun(ctx, workflow, options.sha));
 }
+function hasDotSegment(rel) {
+  return String(rel || '').split('/').some(part => part.startsWith('.'));
+}
+function parseAssetsIgnore(text) {
+  return String(text || '').split(/\r?\n/).map(line => line.trim()).filter(line => line && !line.startsWith('#'))
+    .map(rule => rule.replace(/^\/+|\/+$/g, '')).filter(Boolean);
+}
+function matchesAssetsIgnore(rel, rules) {
+  return rules.some(rule => rel === rule || rel.startsWith(rule + '/'));
+}
+function collectCandidateInputs(ctx) {
+  noSymlinkAncestors(ctx.root);
+  const sources = new Map();
+  const seenLower = new Map();
+  const record = (rel, fullPath) => {
+    const normalized = rel.replace(/\\/g, '/');
+    if (hasDotSegment(normalized) || deploymentControl('site/' + normalized)) return;
+    if (!safeRelative('site/' + normalized)) fail('artifact contains an unsupported or ambiguous path');
+    const lower = normalized.toLowerCase();
+    const existing = seenLower.get(lower);
+    if (existing && existing !== normalized) fail('artifact contains an unsupported or ambiguous path');
+    seenLower.set(lower, normalized);
+    sources.set(normalized, noSymlinkAncestors(fullPath));
+  };
+  const walkDirectory = (directory, initialPrefix) => {
+    const base = noSymlinkAncestors(directory);
+    const walk = (dir, prefix) => {
+      if (fs.lstatSync(dir).isSymbolicLink()) fail('artifact contains a symbolic link');
+      for (const item of fs.readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name, 'en'))) {
+        const rel = prefix + item.name;
+        const fullPath = path.join(dir, item.name);
+        const stat = fs.lstatSync(fullPath);
+        if (stat.isSymbolicLink()) fail('artifact contains a symbolic link');
+        if (hasDotSegment(rel) || deploymentControl('site/' + rel)) continue;
+        if (stat.isDirectory()) {
+          if (!safeRelative('site/' + rel + '/_directory')) fail('artifact contains an unsupported or ambiguous path');
+          walk(fullPath, rel + '/');
+        } else if (stat.isFile()) {
+          record(rel, fullPath);
+        }
+      }
+    };
+    walk(base, initialPrefix);
+  };
+  const assetsIgnorePath = path.join(ctx.root, '.assetsignore');
+  if (fs.existsSync(assetsIgnorePath)) {
+    const ignoreRules = parseAssetsIgnore(readSafeFile(assetsIgnorePath).toString('utf8'));
+    const tracked = ctx.run('git', ['ls-files', '-z']).split('\0').filter(Boolean);
+    for (const rel of tracked.sort((a, b) => a.localeCompare(b, 'en'))) {
+      if (rel.startsWith('app/') || rel.startsWith('desktop/') || matchesAssetsIgnore(rel, ignoreRules)) continue;
+      if (hasDotSegment(rel) || deploymentControl('site/' + rel)) continue;
+      if (!safeRelative('site/' + rel)) fail('artifact contains an unsupported or ambiguous path');
+      const fullPath = path.join(ctx.root, rel);
+      let stat;
+      try { stat = fs.lstatSync(fullPath); }
+      catch (error) { if (error && error.code === 'ENOENT') continue; throw error; }
+      if (stat.isSymbolicLink()) fail('artifact contains a symbolic link');
+      if (stat.isFile()) record(rel, fullPath);
+    }
+    const rootApp = path.join(ctx.root, 'app');
+    const publicApp = path.join(ctx.root, 'desktop/web-app/public/app');
+    const appDir = fs.existsSync(rootApp) ? rootApp : publicApp;
+    if (!fs.existsSync(appDir)) fail('Cloudflare hosting artifact is incomplete');
+    walkDirectory(appDir, 'app/');
+    if (!sources.has('_headers')) fail('Cloudflare Pages _headers file is missing from candidate');
+  } else {
+    walkDirectory(path.join(ctx.root, 'desktop/web-app/public'), '');
+  }
+  return sources;
+}
+function dryRunSite(options = {}, dependencies = {}) {
+  const ctx = context(options, dependencies);
+  const sources = collectCandidateInputs(ctx);
+  if (!sources.size || sources.size > MAX_FILES) fail('artifact manifest is missing or exceeds Cloudflare Pages bounds');
+  const sortedRels = [...sources.keys()].sort((a, b) => a < b ? -1 : a > b ? 1 : 0);
+  let totalBytes = 0;
+  const records = [];
+  for (const rel of sortedRels) {
+    const bytes = readSafeFile(sources.get(rel));
+    totalBytes += bytes.length;
+    records.push({ path: 'site/' + rel, bytes: bytes.length, sha256: sha256(bytes) });
+  }
+  requireHostedFiles(records);
+  return {
+    files: records.length,
+    totalBytes,
+    hasHeaders: sources.has('_headers'),
+    hasGuide: sources.has('guide/index.html'),
+    hasVeraPdf: sources.has('verapdf/verapdf_validator.html') && sources.has('verapdf/verapdf-cli.jar'),
+    hasStudentShell: sources.has('app/index.html') && sources.has('app/sw.js'),
+  };
+}
 function createCandidate(options, dependencies = {}) {
   const ctx = context(options, dependencies), env = dependencies.env || process.env;
   if (env.GITHUB_ACTIONS !== 'true' || env.GITHUB_REPOSITORY !== REPOSITORY || env.GITHUB_EVENT_NAME !== 'workflow_dispatch'
@@ -222,19 +314,39 @@ function createCandidate(options, dependencies = {}) {
       || !sourceRef(env.GITHUB_REF) || !sourceSha(env.GITHUB_SHA) || !positive(Number(env.GITHUB_RUN_ID)) || !positive(Number(env.GITHUB_RUN_ATTEMPT))) fail('candidate packaging must run in the reviewed CI workflow');
   checkSource(ctx, env.GITHUB_SHA, false);
   const checks = collectChecks({ root: ctx.root, sha: env.GITHUB_SHA }, dependencies);
-  const output = path.resolve(options.output || ''), build = noSymlinkAncestors(path.join(ctx.root, 'desktop/web-app/public'));
-  if (!options.output || fs.existsSync(output) || output === ctx.root || withinDirectory(output, build)) fail('candidate output must be a new separate directory');
+  const output = path.resolve(options.output || ''), build = path.join(ctx.root, 'desktop/web-app/public'), rootApp = path.join(ctx.root, 'app');
+  if (!options.output || fs.existsSync(output) || output === ctx.root || withinDirectory(output, build) || withinDirectory(output, rootApp)) fail('candidate output must be a new separate directory');
   noSymlinkAncestors(output, true);
-  // Inventory the complete hosted tree before copying, using the same site/
-  // contract without materialising a second input directory.
-  const sourceFiles = inventorySite(build);
-  requireHostedFiles(sourceFiles);
-  fs.mkdirSync(path.join(output, 'payload'), { recursive: true });
-  noSymlinkAncestors(build); noSymlinkAncestors(path.join(output, 'payload'));
-  fs.cpSync(build, path.join(output, 'payload/site'), { recursive: true, dereference: false });
+  // Assemble and hash the complete hosted tree before copying.
+  const sources = collectCandidateInputs(ctx);
+  if (!sources.size || sources.size > MAX_FILES) fail('artifact manifest is missing or exceeds Cloudflare Pages bounds');
+  const sortedRels = [...sources.keys()].sort((a, b) => a < b ? -1 : a > b ? 1 : 0);
+  const preCopy = [];
+  const buffers = new Map();
+  for (const rel of sortedRels) {
+    const bytes = readSafeFile(sources.get(rel));
+    preCopy.push({ path: 'site/' + rel, bytes: bytes.length, sha256: sha256(bytes) });
+    buffers.set(rel, bytes);
+  }
+  requireHostedFiles(preCopy);
+  fs.mkdirSync(path.join(output, 'payload/site'), { recursive: true });
+  noSymlinkAncestors(path.join(output, 'payload/site'));
+  for (const rel of sortedRels) {
+    const dest = path.join(output, 'payload/site', rel);
+    fs.mkdirSync(path.dirname(dest), { recursive: true });
+    fs.writeFileSync(dest, buffers.get(rel), { flag: 'wx' });
+  }
+  buffers.clear();
   const files = inventory(path.join(output, 'payload'));
-  if (JSON.stringify(sourceFiles) !== JSON.stringify(files)) fail('complete hosted source changed while copying');
-  if (JSON.stringify(inventorySite(build)) !== JSON.stringify(sourceFiles)) fail('complete hosted source changed during packaging');
+  if (JSON.stringify(preCopy) !== JSON.stringify(files)) fail('complete hosted source changed while copying');
+  const postSources = collectCandidateInputs(ctx);
+  const postRels = [...postSources.keys()].sort((a, b) => a < b ? -1 : a > b ? 1 : 0);
+  if (JSON.stringify(postRels) !== JSON.stringify(sortedRels)) fail('complete hosted source changed during packaging');
+  const postCopy = postRels.map(rel => {
+    const bytes = readSafeFile(postSources.get(rel));
+    return { path: 'site/' + rel, bytes: bytes.length, sha256: sha256(bytes) };
+  });
+  if (JSON.stringify(postCopy) !== JSON.stringify(preCopy)) fail('complete hosted source changed during packaging');
   checkPayload(path.join(output, 'payload'), files);
   const manifest = { schemaVersion: 2, repository: REPOSITORY, sourceSha: env.GITHUB_SHA, sourceRef: env.GITHUB_REF, hosting: { ...HOSTING },
     producer: { runId: Number(env.GITHUB_RUN_ID), runAttempt: Number(env.GITHUB_RUN_ATTEMPT) },
@@ -292,9 +404,11 @@ function main(args = process.argv.slice(2)) {
   else if (command === 'stage') console.log(stageCandidate(options));
   else if (command === 'check-ci') { collectChecks(options); console.log('Required exact-SHA CI checks passed.'); }
   else if (command === 'create') { createCandidate(options); console.log('Candidate manifest created; signing and final verification remain required.'); }
-  else fail('use verify, verified-source, stage, check-ci, or create; legacy combined build/publish is disabled');
+  else if (command === 'dry-run-site') { console.log(JSON.stringify(dryRunSite(options), null, 2)); }
+  else fail('use verify, verified-source, stage, check-ci, create, or dry-run-site; legacy combined build/publish is disabled');
 }
 module.exports = { REPOSITORY, PRODUCER, REQUIRED, MAX_AGE_MS, MAX_FILES, MAX_FILE_BYTES, HOSTING,
   safeRelative, deploymentControl, noSymlinkAncestors, readSafeFile, inventory, inventorySite, checkPayload, latestRun, validateManifest,
+  hasDotSegment, parseAssetsIgnore, matchesAssetsIgnore, collectCandidateInputs, dryRunSite,
   verifyCandidate, collectChecks, createCandidate, stageCandidate, selftest, main };
 if (require.main === module) { try { main(); } catch (error) { console.error(error.message); process.exitCode = 2; } }

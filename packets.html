@@ -48,7 +48,7 @@
     <div class="wrap">
       <h1><span>Quick Practice &amp; Checks.</span> <span class="h1-accent">Runs without AI. No accounts.</span></h1>
       <p class="lead">Make a practice file or a short check for your students in three steps. A student opens it, completes it and saves a results file that you can open in a spreadsheet.</p>
-      <p class="facts">One file. Word Sounds practice is usually 1 to 5 MB; math files are about 95 to 140 KB; vocabulary files are about 100 KB, more with recordings. Works with no internet.</p>
+      <p class="facts">One file. Word Sounds practice is usually 1 to 5 MB; math, vocabulary and Symbol Runner files are about 95 to 250 KB, more with recordings or pictures. Works with no internet.</p>
       <p class="scope">For practice and for checking progress. Not a standardized test.</p>
     </div>
   </section>
@@ -72,6 +72,16 @@
         <h2><a href="packets-vocab.html">Make vocabulary practice</a></h2>
         <p>Type the words of a unit, check the questions, save one file. Practice, or a short check.</p>
         <p class="card-foot">Three steps. Meanings from open dictionaries.</p>
+      </div>
+      <div class="card card-main">
+        <h2><a href="packets-symbol-runner.html">Make Symbol Runner practice</a></h2>
+        <p>Letters, sounds, numbers, dot patterns, or Stroop and flanker focus sets in 3D lanes, 2D lanes, or a 5x8 sheet. Practice, or a 1-minute check.</p>
+        <p class="card-foot">Three steps. Works offline.</p>
+      </div>
+      <div class="card card-main">
+        <h2><a href="packets-present-export.html">Present and export word cards</a></h2>
+        <p>Present a word list in class, match or import pictures, and export HTML, Word, PDF, or individual PowerPoint slides.</p>
+        <p class="card-foot">Pre-loaded words, sounds, and pictures.</p>
       </div>
       <div class="card card-go">
         <h2><a href="packets-results.html">Add up results</a></h2>
@@ -141,7 +151,7 @@
           <li>Open the same file in a text editor. Near the top is a <code>Content-Security-Policy</code> line that ends with <code>connect-src 'none'</code>. That is the rule that refuses every connection.</li>
           <li>Read the code. The file has one script that runs, plus one data block that describes the file. The script is not minified. The long runs of letters inside it are the recordings.</li>
           <li>Open the file with the browser's developer tools on the Network tab and complete it. No request leaves the device. Entries that start with <code>data:</code> are the recordings inside the file.</li>
-          <li>Read the source. It is public: <a href="https://github.com/Apomera/AlloFlow" rel="noopener noreferrer">AlloFlow on GitHub</a>, license AGPL-3.0. Word Sounds practice is built by <code>word_sounds_packet_builder.js</code>, math fact practice by <code>packet_math_practice_builder.js</code>, a math check by <code>packet_check_builder.js</code> and vocabulary practice by <code>packet_vocab_builder.js</code>, each with <code>word_sounds_take_home_loader.js</code>.</li>
+          <li>Read the source. It is public: <a href="https://github.com/Apomera/AlloFlow" rel="noopener noreferrer">AlloFlow on GitHub</a>, license AGPL-3.0. Word Sounds practice is built by <code>word_sounds_packet_builder.js</code>, math fact practice by <code>packet_math_practice_builder.js</code>, a math check by <code>packet_check_builder.js</code>, vocabulary practice by <code>packet_vocab_builder.js</code> and Symbol Runner practice by <code>packet_symbol_runner_builder.js</code>, each with <code>word_sounds_take_home_loader.js</code>.</li>
         </ol>
         <p class="actions"><a class="btn btn-primary" href="packets-verify.html">Look inside a file</a> <a class="btn" href="packets-it.html">Guide for school IT</a></p>
       </div>
@@ -154,7 +164,7 @@
       <div class="today">
         <div>
           <h3>Available today</h3>
-          <p>Word Sounds practice, math fact practice, math checks and vocabulary practice, with a results file for each student.</p>
+          <p>Word Sounds practice, math fact practice, math checks, vocabulary practice, Symbol Runner practice and word card export, with a results file for each student.</p>
         </div>
         <div>
           <h3>Being built</h3>

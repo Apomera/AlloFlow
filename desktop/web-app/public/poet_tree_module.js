@@ -53,6 +53,8 @@
       '.pt-tool button:focus-visible, .pt-tool input:focus-visible, .pt-tool textarea:focus-visible, .pt-tool select:focus-visible, .pt-tool [tabindex]:focus-visible { outline: 3px solid #0f766e !important; outline-offset: 2px !important; }',
       '@media (forced-colors: active) { .pt-tool button:focus-visible, .pt-tool input:focus-visible, .pt-tool textarea:focus-visible, .pt-tool select:focus-visible, .pt-tool [tabindex]:focus-visible { outline-color: CanvasText !important; } }',
       '.pt-erasure-word { display: inline-block; min-width: 24px; min-height: 24px; line-height: 24px; text-align: center; }',
+      '.theme-contrast .pt-tool [style*="gradient"] { background-image: none !important; background-color: #000000 !important; color: #ffff00 !important; }',
+      '.theme-contrast .pt-tool #pt-poettree-title, .theme-contrast .pt-tool #pt-poettree-title + p { color: #ffff00 !important; }',
       '.pt-erasure-word:focus-visible { outline: 3px solid #f59e0b; outline-offset: 2px; }'
     ].join('\n');
     document.head.appendChild(st);
@@ -3452,7 +3454,7 @@
             style: { padding: '6px 10px', background: privacyOpen ? TEAL : '#fff', color: privacyOpen ? '#fff' : TEAL_DARK, border: '1px solid ' + TEAL, borderRadius: '8px', cursor: 'pointer', fontSize: '12px', fontWeight: 700 }
           }, 'Privacy'),
           onClose && e('button', { onClick: onClose, autoFocus: true, 'data-alloflow-close-on-escape': 'true', 'aria-label': tr('Close PoetTree'),
-            style: { padding: '6px 14px', background: '#fff', border: '1px solid #94a3b8', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 700 }
+            style: { padding: '6px 14px', background: '#fff', color: '#0f172a', border: '1px solid #94a3b8', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 700 }
           }, '✕ Close')
         ),
 
@@ -3585,7 +3587,7 @@
               e('button', {
                 onClick: saveAsAssignment,
                 disabled: !teacherPrompt.trim() && !form,
-                'aria-label': tr('Save this PoetTree setup as an assignment in My Resources'),
+                'aria-label': tr('Save as Assignment — PoetTree setup in My Resources'),
                 style: { marginTop: '10px', padding: '8px 16px', background: !teacherPrompt.trim() && !form ? '#cbd5e1' : '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: !teacherPrompt.trim() && !form ? 'not-allowed' : 'pointer' }
               }, '💾 Save as Assignment')
             ),
@@ -3598,7 +3600,7 @@
                 return e('button', { key: f.id,
                   onClick: function () { setForm(f); announcePT('Selected form: ' + f.name); },
                   'aria-pressed': selected ? 'true' : 'false',
-                  'aria-label': tr('Choose form ') + tr(f.name) + ' — ' + tr(f.tagline),
+                  'aria-label': tr(f.name) + ' — ' + tr(f.tagline),
                   style: { textAlign: 'left', padding: '14px', borderRadius: '12px', border: selected ? '2px solid ' + TEAL : '1px solid #e5e7eb', background: selected ? TEAL_LIGHT : '#fff', cursor: 'pointer' }
                 },
                   e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' } },

@@ -31,6 +31,15 @@ var Sparkles = _lazyIcon('Sparkles');
 var Unlock = _lazyIcon('Unlock');
 var Unplug = _lazyIcon('Unplug');
 var X = _lazyIcon('X');
+function _vrCopy(t, key, fallback) {
+  try {
+    const fn = typeof t === "function" ? t : typeof window !== "undefined" && typeof window.__alloT === "function" ? window.__alloT : null;
+    const v = fn ? fn(key) : "";
+    return v && v !== key ? v : fallback;
+  } catch (_) {
+    return fallback;
+  }
+}
 const _alloAiUsableKind = (kind, fn) => {
   try {
     if (typeof window.__alloAiUsable === "function") return !!window.__alloAiUsable(kind, fn);
@@ -1075,7 +1084,7 @@ const renderOutlineContentCore = (deps) => {
   const _closeLiveOrganizerPreview = (type2) => {
     if (!isTeacherMode || interactiveOrganizerSync?.type !== type2 || !["starting", "live"].includes(interactiveOrganizerSync.status)) return;
     if (typeof deps.addToast === "function") {
-      deps.addToast("Teacher preview closed. The activity is still live for students; use \u201CStop for students\u201D to end it.", "info");
+      deps.addToast(_vrCopy(t, "organizer.live_preview_closed", "Teacher preview closed. The activity is still live for students; use \u201CStop for students\u201D to end it."), "info");
     }
   };
   const LiveOrganizerStatus = ({ type: type2 }) => {
@@ -1138,7 +1147,7 @@ const renderOutlineContentCore = (deps) => {
   const _startOrganizerGame = async (activityType, startLocal, activityConfig = null) => {
     const readiness = _readinessFor(activityType);
     if (!readiness.ok) {
-      if (typeof deps.addToast === "function") deps.addToast(readiness.message || "Finish setting up this organizer before starting the activity.", "info");
+      if (typeof deps.addToast === "function") deps.addToast(readiness.message || _vrCopy(t, "organizer.setup_incomplete", "Finish setting up this organizer before starting the activity."), "info");
       return false;
     }
     if (isTeacherMode && deps.activeSessionCode) {
@@ -1238,6 +1247,7 @@ const renderOutlineContentCore = (deps) => {
     return /* @__PURE__ */ React.createElement("div", { className: "mx-auto max-w-7xl" }, showGameButton && /* @__PURE__ */ React.createElement("div", { className: "mb-4 flex justify-center" }, /* @__PURE__ */ React.createElement(GameButtonHint, null), /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: () => _startOrganizerGame("pipeline", () => setIsPipelinePlaying(true)),
         disabled: !organizerLaunchReadiness.ok,
         className: "flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 px-5 py-2 text-sm font-bold text-white shadow-md transition-all hover:scale-105 hover:shadow-lg motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100",
@@ -1322,7 +1332,7 @@ const renderOutlineContentCore = (deps) => {
       ));
     }
     if (isInteractiveVenn) {
-      return /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-center mb-8" }, /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-indigo-900 flex items-center justify-center gap-2" }, /* @__PURE__ */ React.createElement(Layout, { size: 24, className: "text-purple-500" }), " ", t("concept_map.venn.setup_title")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 text-sm" }, t("concept_map.venn.setup_desc"))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-6 mb-8" }, /* @__PURE__ */ React.createElement("div", { className: "bg-rose-50 rounded-xl border-2 border-rose-200 p-4 flex flex-col" }, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-rose-800 mb-3 text-center uppercase tracking-wider" }, setA.title), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-3" }, /* @__PURE__ */ React.createElement(
+      return /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-center mb-8" }, /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-indigo-900 flex items-center justify-center gap-2" }, /* @__PURE__ */ React.createElement(Layout, { size: 24, className: "text-purple-500" }), " ", t("concept_map.venn.setup_title")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 text-sm" }, t("concept_map.venn.setup_desc"))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-6 mb-8" }, /* @__PURE__ */ React.createElement("div", { className: "bg-rose-50 rounded-xl border-2 border-rose-200 p-4 flex flex-col" }, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-rose-800 mb-3 text-center uppercase tracking-wider" }, setA.title), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-3" }, /* @__PURE__ */ React.createElement(
         "input",
         {
           "aria-label": t("common.enter_venn_inputs"),
@@ -1358,6 +1368,7 @@ const renderOutlineContentCore = (deps) => {
       ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleAddVennItem("setB"), className: "min-h-11 min-w-11 bg-blue-200 hover:bg-blue-300 text-blue-800 p-2 rounded transition-colors focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2", "aria-label": `${t("common.add")}: ${setB.title}` }, /* @__PURE__ */ React.createElement(Plus, { size: 14 }))), /* @__PURE__ */ React.createElement("div", { className: "space-y-2 flex-grow overflow-y-auto max-h-60 custom-scrollbar pr-1" }, vennGameData.setB.map((item, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-white p-2 rounded shadow-sm border border-blue-100 text-xs flex justify-between items-center group" }, /* @__PURE__ */ React.createElement("span", null, typeof item === "object" ? item.text : item), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleRemoveVennItem("setB", i), className: "min-h-11 min-w-11 text-blue-700 hover:text-blue-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity rounded focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2", "aria-label": `${t("common.remove")}: ${typeof item === "object" ? item.text : item}` }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), vennGameData.setB.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-blue-700 italic text-center" }, t("concept_sort.no_items"))))), /* @__PURE__ */ React.createElement("div", { className: "mb-4 flex justify-center" }, /* @__PURE__ */ React.createElement(LiveOrganizerStatus, { type: "venn" })), /* @__PURE__ */ React.createElement(
         "button",
         {
+          type: "button",
           "aria-label": isTeacherMode && deps.activeSessionCode ? "Start activity for students" : "Practice activity",
           disabled: !isVennGameReady,
           "aria-describedby": !isVennGameReady ? "venn-game-readiness" : void 0,
@@ -1375,6 +1386,7 @@ const renderOutlineContentCore = (deps) => {
     return /* @__PURE__ */ React.createElement("div", { className: "max-w-3xl mx-auto py-8" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-8 gap-3" }, /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         "data-venn-interactive-start": true,
         onClick: handleInitializeVenn,
         className: "flex items-center gap-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-4 py-2 rounded-full font-bold text-sm transition-colors border border-indigo-200 shadow-sm"
@@ -1464,6 +1476,7 @@ const renderOutlineContentCore = (deps) => {
     return /* @__PURE__ */ React.createElement("div", { className: "max-w-5xl mx-auto px-2" }, /* @__PURE__ */ React.createElement(MainTitle, null), showGameButton && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement(GameButtonHint, null), /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: () => _startOrganizerGame("tchart", () => setIsTChartPlaying(true)),
         disabled: !organizerLaunchReadiness.ok,
         className: "flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-indigo-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100",
@@ -1513,6 +1526,7 @@ const renderOutlineContentCore = (deps) => {
     return /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto px-2" }, /* @__PURE__ */ React.createElement(MainTitle, null), showGameButton && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement(GameButtonHint, null), /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: () => _startOrganizerGame("fishbone", () => setIsFishboneSortPlaying(true)),
         disabled: !organizerLaunchReadiness.ok,
         className: "flex items-center gap-2 bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100",
@@ -1630,6 +1644,7 @@ const renderOutlineContentCore = (deps) => {
       return /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto px-2" }, showGameButton && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement(GameButtonHint, null), /* @__PURE__ */ React.createElement(
         "button",
         {
+          type: "button",
           onClick: () => _startOrganizerGame("cesort", () => setIsCESortPlaying(true)),
           disabled: !organizerLaunchReadiness.ok,
           className: "flex items-center gap-2 bg-gradient-to-r from-orange-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100",
@@ -1652,6 +1667,7 @@ const renderOutlineContentCore = (deps) => {
     return /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto px-4 py-8" }, showGameButton && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-6" }, /* @__PURE__ */ React.createElement(GameButtonHint, null), /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: () => _startOrganizerGame("cesort", () => setIsCESortPlaying(true)),
         disabled: !organizerLaunchReadiness.ok,
         className: "flex items-center gap-2 bg-gradient-to-r from-orange-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100",
@@ -1687,6 +1703,7 @@ const renderOutlineContentCore = (deps) => {
     return /* @__PURE__ */ React.createElement("div", { className: "max-w-5xl mx-auto px-4 py-12" }, showPSGame && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-6" }, /* @__PURE__ */ React.createElement(GameButtonHint, null), /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: () => _startOrganizerGame("problemsolution", () => setIsProblemSolutionSortPlaying(true)),
         disabled: !organizerLaunchReadiness.ok,
         className: "flex items-center gap-2 bg-gradient-to-r from-rose-500 to-pink-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100",
@@ -1702,6 +1719,7 @@ const renderOutlineContentCore = (deps) => {
     })), /* @__PURE__ */ React.createElement("div", { className: "absolute bottom-[-2rem] left-[10%] right-[10%] h-1 bg-slate-200 rounded-full hidden md:block" })), /* @__PURE__ */ React.createElement("div", { className: "relative max-w-3xl mx-auto" }, /* @__PURE__ */ React.createElement("div", { className: "absolute -top-16 left-1/2 -translate-x-1/2 h-16 w-1 bg-slate-200 flex items-end justify-center pb-1" }, /* @__PURE__ */ React.createElement(ArrowDown, { size: 24, className: "text-slate-600" })), /* @__PURE__ */ React.createElement("div", { className: "bg-blue-50 border-2 border-blue-200 rounded-3xl p-8 text-center relative shadow-lg" }, /* @__PURE__ */ React.createElement("div", { className: "inline-flex items-center justify-center p-3 bg-blue-100 text-blue-800 rounded-full mb-4 shadow-sm border border-blue-200" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 24 })), outcomeBranch ? /* @__PURE__ */ React.createElement("div", { className: "text-left" }, /* @__PURE__ */ React.createElement(BranchItem, { branch: outcomeBranch, bIdx: outcomeIndex, colorClass: "bg-transparent border-none shadow-none p-0" })) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("h3", { className: "text-xl font-black text-blue-900 mb-2" }, t("outline.labels.outcome")), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-blue-800/80 max-w-lg mx-auto leading-relaxed italic" }, "Analyze the results here. Did the proposed solutions effectively address the challenge? What were the trade-offs or final results?"), isTeacherMode && /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: handleGenerateOutcome,
         disabled: isProcessing,
         className: "mt-4 text-xs font-bold bg-blue-100 text-blue-700 px-4 py-2 rounded-full hover:bg-blue-200 transition-colors flex items-center gap-2 mx-auto disabled:opacity-50 disabled:cursor-not-allowed disabled:cursor-wait"
@@ -1730,6 +1748,7 @@ const renderOutlineContentCore = (deps) => {
     return /* @__PURE__ */ React.createElement("div", null, showGameButton && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement(GameButtonHint, null), /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: () => _startOrganizerGame("conceptmap", () => setIsConceptMapSortPlaying(true)),
         disabled: !organizerLaunchReadiness.ok,
         className: "flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100",
@@ -1803,6 +1822,7 @@ const renderOutlineContentCore = (deps) => {
     return /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto px-4 py-6 relative" }, showGameButton && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement(GameButtonHint, null), /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: () => _startOrganizerGame("frayer", () => setIsFrayerSortPlaying(true)),
         disabled: !organizerLaunchReadiness.ok,
         className: "flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-emerald-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100",
@@ -1815,6 +1835,7 @@ const renderOutlineContentCore = (deps) => {
     ), /* @__PURE__ */ React.createElement(LiveOrganizerStatus, { type: "frayer" })), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-0 border-2 border-slate-400 rounded-2xl overflow-hidden shadow-lg bg-white relative", style: { minHeight: "460px" } }, renderQuadrant(defBranch, "indigo", "border-r border-b border-slate-300", "Definition", false, false), renderQuadrant(charBranch, "emerald", "border-b border-slate-300", "Characteristics", false, false), renderQuadrant(exBranch, "amber", "border-r border-slate-300", "Examples", true, true), renderQuadrant(nonExBranch, "rose", "", "Non-Examples", false, true), /* @__PURE__ */ React.createElement("div", { className: "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white border-4 border-slate-700 rounded-full px-5 py-2 shadow-2xl z-10 max-w-[180px]" }, /* @__PURE__ */ React.createElement("div", { className: "text-center font-black text-base text-slate-800 leading-tight whitespace-normal break-words" }, main || "Vocabulary Term"))), isTeacherMode ? /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 justify-center mt-3" }, frayerImage ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: onRefineFrayerVisual,
         disabled: isProcessing,
         className: "px-3 py-1.5 text-xs font-bold bg-violet-50 text-violet-800 border border-violet-300 rounded-md hover:bg-violet-100 disabled:opacity-50",
@@ -1824,6 +1845,7 @@ const renderOutlineContentCore = (deps) => {
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: onRemoveFrayerVisual,
         disabled: isProcessing,
         className: "px-3 py-1.5 text-xs font-bold bg-white text-slate-700 border border-slate-300 rounded-md hover:bg-slate-100 disabled:opacity-50",
@@ -1833,6 +1855,7 @@ const renderOutlineContentCore = (deps) => {
     )) : /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: onGenerateFrayerVisual,
         disabled: isProcessing,
         className: "px-3 py-1.5 text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300 rounded-md hover:bg-amber-100 disabled:opacity-50",
@@ -1878,6 +1901,7 @@ const renderOutlineContentCore = (deps) => {
     return /* @__PURE__ */ React.createElement("div", { className: "max-w-5xl mx-auto px-4 py-6" }, /* @__PURE__ */ React.createElement(MainTitle, null), showGameButton && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement(GameButtonHint, null), /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: () => _startOrganizerGame("seethinkwonder", () => setIsSeeThinkWonderSortPlaying(true)),
         disabled: !organizerLaunchReadiness.ok,
         className: "flex items-center gap-2 bg-gradient-to-r from-sky-500 to-amber-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100",
@@ -1997,6 +2021,7 @@ const renderOutlineContentCore = (deps) => {
     return /* @__PURE__ */ React.createElement("div", { className: "max-w-5xl mx-auto px-4 py-6" }, /* @__PURE__ */ React.createElement(MainTitle, null), showGameButton && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement(GameButtonHint, null), /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: () => _startOrganizerGame("storymap", () => setIsStoryMapSortPlaying(true)),
         disabled: !organizerLaunchReadiness.ok,
         className: "flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-rose-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100",
@@ -2096,6 +2121,7 @@ const renderOutlineContentCore = (deps) => {
     return /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto px-4 py-6" }, /* @__PURE__ */ React.createElement(MainTitle, null), showGameButton && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement(GameButtonHint, null), /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: () => _startOrganizerGame("outline", () => setIsOutlineSortPlaying(true)),
         disabled: !organizerLaunchReadiness.ok,
         className: "flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100",
@@ -2105,7 +2131,7 @@ const renderOutlineContentCore = (deps) => {
       /* @__PURE__ */ React.createElement(Gamepad2, { size: 16 }),
       " ",
       isTeacherMode && deps.activeSessionCode ? "Start activity for students" : "Practice activity"
-    ), /* @__PURE__ */ React.createElement(LiveOrganizerStatus, { type: "outline" })), /* @__PURE__ */ React.createElement("div", { className: "relative mt-8 space-y-8 ml-4 md:ml-12" }, /* @__PURE__ */ React.createElement("div", { className: "absolute left-[-24px] top-4 bottom-8 w-0.5 bg-indigo-200/50 rounded-full" }), branches.map((branch, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "relative group animate-in slide-in-from-left-4 duration-500", style: { animationDelay: `${i * 100}ms` } }, /* @__PURE__ */ React.createElement("div", { className: "absolute left-[-29px] top-6 w-3 h-3 rounded-full bg-white border-2 border-indigo-400 z-10 group-hover:scale-125 transition-transform shadow-sm" }), /* @__PURE__ */ React.createElement("div", { className: "absolute left-[-24px] top-[29px] w-6 h-px bg-indigo-300" }), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-r-xl rounded-bl-xl border-l-4 border-l-indigo-500 border-y border-r border-indigo-100 p-5 shadow-sm hover:shadow-md transition-all" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3 mb-3" }, /* @__PURE__ */ React.createElement("span", { className: "font-serif font-bold text-indigo-200 text-3xl leading-none select-none -mt-1" }, toRoman(i + 1)), /* @__PURE__ */ React.createElement("div", { className: "flex-grow" }, isEditingOutline ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-1" }, /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement(LiveOrganizerStatus, { type: "outline" })), /* @__PURE__ */ React.createElement("div", { className: "relative mt-8 space-y-8 ml-4 md:ml-12" }, /* @__PURE__ */ React.createElement("div", { className: "absolute left-[-24px] top-4 bottom-8 w-0.5 bg-indigo-200/50 rounded-full" }), branches.map((branch, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "relative group animate-in motion-reduce:animate-none slide-in-from-left-4 duration-500", style: { animationDelay: `${i * 100}ms` } }, /* @__PURE__ */ React.createElement("div", { className: "absolute left-[-29px] top-6 w-3 h-3 rounded-full bg-white border-2 border-indigo-400 z-10 group-hover:scale-125 transition-transform shadow-sm" }), /* @__PURE__ */ React.createElement("div", { className: "absolute left-[-24px] top-[29px] w-6 h-px bg-indigo-300" }), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-r-xl rounded-bl-xl border-l-4 border-l-indigo-500 border-y border-r border-indigo-100 p-5 shadow-sm hover:shadow-md transition-all" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3 mb-3" }, /* @__PURE__ */ React.createElement("span", { className: "font-serif font-bold text-indigo-200 text-3xl leading-none select-none -mt-1" }, toRoman(i + 1)), /* @__PURE__ */ React.createElement("div", { className: "flex-grow" }, isEditingOutline ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-1" }, /* @__PURE__ */ React.createElement(
       "input",
       {
         "aria-label": t("common.enter_branch"),
@@ -2248,8 +2274,11 @@ function openConceptMap3D(opts) {
     return function() {
     };
   }
+  var existingOverlay = document.getElementById("vo-cg3d-overlay");
+  if (existingOverlay && typeof existingOverlay.__alloDestroy === "function") existingOverlay.__alloDestroy(false);
   var previouslyFocused = document.activeElement;
   var overlay = document.createElement("div");
+  overlay.id = "vo-cg3d-overlay";
   overlay.setAttribute("role", "dialog");
   overlay.setAttribute("aria-modal", "true");
   overlay.setAttribute("aria-labelledby", "vo-cg3d-title");
@@ -2288,10 +2317,23 @@ function openConceptMap3D(opts) {
   overlay.appendChild(header);
   overlay.appendChild(body);
   document.body.appendChild(overlay);
+  var background = Array.prototype.slice.call(document.body.children).filter(function(el) {
+    return el !== overlay && !/^(SCRIPT|STYLE)$/i.test(el.tagName || "");
+  }).map(function(el) {
+    return {
+      el,
+      inert: el.hasAttribute("inert"),
+      ariaHidden: el.hasAttribute("aria-hidden") ? el.getAttribute("aria-hidden") : null
+    };
+  });
+  background.forEach(function(item) {
+    item.el.setAttribute("inert", "");
+    item.el.setAttribute("aria-hidden", "true");
+  });
   closeBtn.focus();
   var handle = null, aiBtn = null;
   var destroyed = false;
-  function destroy() {
+  function destroy(restoreFocus) {
     if (destroyed) return;
     destroyed = true;
     try {
@@ -2303,30 +2345,49 @@ function openConceptMap3D(opts) {
     } catch (e) {
     }
     try {
+      background.forEach(function(item) {
+        if (!item.inert) item.el.removeAttribute("inert");
+        if (item.ariaHidden === null) item.el.removeAttribute("aria-hidden");
+        else item.el.setAttribute("aria-hidden", item.ariaHidden);
+      });
+    } catch (e) {
+    }
+    try {
       if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
     } catch (e) {
     }
     try {
-      if (previouslyFocused && document.contains(previouslyFocused)) previouslyFocused.focus();
+      if (restoreFocus !== false && previouslyFocused && document.contains(previouslyFocused)) previouslyFocused.focus();
     } catch (e) {
     }
   }
+  overlay.__alloDestroy = destroy;
   function onKey(e) {
     if (e.key === "Escape") {
       e.preventDefault();
+      e.stopPropagation();
       destroy();
       return;
     }
     if (e.key !== "Tab") return;
-    var focusable = Array.from(overlay.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')).filter(function(el) {
+    var candidates = Array.from(overlay.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')).filter(function(el) {
+      return !el.hidden && el.getAttribute("aria-hidden") !== "true" && (!el.style || el.style.display !== "none" && el.style.visibility !== "hidden");
+    });
+    var rectFocusable = candidates.filter(function(el) {
       return el.getClientRects().length > 0;
     });
+    var focusable = rectFocusable.length ? rectFocusable : candidates;
     if (!focusable.length) {
       e.preventDefault();
       overlay.focus();
       return;
     }
     var first = focusable[0], last = focusable[focusable.length - 1];
+    if (focusable.indexOf(document.activeElement) === -1) {
+      e.preventDefault();
+      (e.shiftKey ? last : first).focus();
+      return;
+    }
     if (e.shiftKey && document.activeElement === first) {
       e.preventDefault();
       last.focus();
@@ -2623,7 +2684,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   };
   const startChallenge = (viaArm) => {
     if (isTeacherMode && viaArm !== true && challengeLiveReadiness?.ok === false) {
-      if (addToast) addToast(challengeLiveReadiness.message || "Finish setting up this organizer before starting the student activity.", "info");
+      if (addToast) addToast(challengeLiveReadiness.message || _vrCopy(t, "concept_space.setup_incomplete", "Finish setting up this organizer before starting the student activity."), "info");
       return;
     }
     const E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
@@ -3157,7 +3218,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     if (!recallEligible || challenge || furnishing) return;
     const startedFromArm = viaArm === true;
     if (isTeacherMode && !startedFromArm && recallLiveReadiness?.ok === false) {
-      if (addToast) addToast(recallLiveReadiness.message || "Finish setting up Concept Recall before starting the student activity.", "info");
+      if (addToast) addToast(recallLiveReadiness.message || _vrCopy(t, "concept_space.recall_setup_incomplete", "Finish setting up Concept Recall before starting the student activity."), "info");
       return;
     }
     const begin = () => {
@@ -3401,6 +3462,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   return /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-3 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-500" }, challenge ? t("concept_space.challenge_hint") || "\u{1F3AF} Click a fallen concept, then give it a strand (chips in its panel, or [ and ] keys). Check when ready." : t("concept_space.hint") || "Position carries meaning: left \u2192 right = sequence \xB7 higher = more abstract \xB7 depth = strand."), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, challenge ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-1.5 rounded-full tabular-nums" }, "\u23F1 ", fmtTime(elapsed), " \xB7 ", (t("concept_space.challenge_progress") || "{placed}/{total} placed").replace("{placed}", String(placedCount)).replace("{total}", String(challenge.targets.length))), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: checkChallenge,
       disabled: placedCount === 0,
       className: "flex items-center gap-1 bg-emerald-700 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:bg-emerald-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -3410,6 +3472,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   ), lastScore && !lastScore.complete && _alloRuntimeAiAvailable() && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: requestHint,
       disabled: hintLoading,
       className: "flex items-center gap-1 bg-amber-100 text-amber-800 border border-amber-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-amber-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
@@ -3420,6 +3483,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: retryChallenge,
       className: "flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
     },
@@ -3428,6 +3492,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: exitChallenge,
       className: "flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
     },
@@ -3435,6 +3500,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   )) : recall ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-sky-700 bg-sky-50 border border-sky-200 px-3 py-1.5 rounded-full tabular-nums" }, "\u{1F9E0} ", (t("concept_space.recall_progress") || "{n} of {total}").replace("{n}", String(Math.min(recallIdx + 1, recall.order.length))).replace("{total}", String(recall.order.length))), !recallScore && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-0.5 bg-slate-100 rounded-full p-0.5", role: "group", "aria-label": t("concept_space.recall_mode_label") || "How to answer" }, /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => {
         setRecallAnswerMode("bank");
         setTypedAnswer("");
@@ -3446,6 +3512,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   ), isTeacherMode && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => setRecallAnswerMode("typed"),
       "aria-pressed": recallAnswerMode === "typed" ? "true" : "false",
       title: t("concept_space.recall_mode_typed_tooltip") || "Expert: type the name instead of choosing it",
@@ -3455,6 +3522,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   )), recallScore && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: startRecall,
       className: "flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
     },
@@ -3463,6 +3531,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: exitRecall,
       className: "flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
     },
@@ -3470,6 +3539,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   )) : /* @__PURE__ */ React.createElement(React.Fragment, null, hasContent && recallEligible && !failed && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: startRecall,
       disabled: isTeacherMode && recallLiveReadiness?.ok === false,
       className: "flex items-center gap-1 bg-gradient-to-r from-sky-500 to-cyan-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100",
@@ -3480,6 +3550,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   ), hasContent && challengeEligible && !failed && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => startChallenge(false),
       disabled: isTeacherMode && challengeLiveReadiness?.ok === false,
       className: "flex items-center gap-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100",
@@ -3490,6 +3561,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   ), isTeacherMode && !challenge && !recall && challengeLiveReadiness?.ok === false && /* @__PURE__ */ React.createElement("span", { role: "status", className: "max-w-xs rounded-lg border border-amber-300 bg-amber-50 px-2 py-1 text-[11px] font-bold text-amber-900" }, "Strand Challenge: ", challengeLiveReadiness.message), isTeacherMode && !challenge && !recall && recallLiveReadiness?.ok === false && /* @__PURE__ */ React.createElement("span", { role: "status", className: "max-w-xs rounded-lg border border-amber-300 bg-amber-50 px-2 py-1 text-[11px] font-bold text-amber-900" }, "Concept Recall: ", recallLiveReadiness.message), hasContent && _alloRuntimeAiAvailable() && !failed && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleArrange,
       disabled: arranging,
       className: "flex items-center gap-1 bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed",
@@ -3500,6 +3572,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   ), hasContent && persist && isTeacherMode && data?.conceptSpace && !failed && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => {
         persist(null, "conceptSpace");
         setNonce((n) => n + 1);
@@ -3512,6 +3585,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   ), hasContent && persist && isTeacherMode && !failed && _alloRuntimeAiAvailable() && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => setFurnishOpen((o) => !o),
       "aria-pressed": furnishOpen ? "true" : "false",
       className: `flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${furnishOpen || furnishing ? "bg-fuchsia-600 text-white border-fuchsia-600" : "bg-white text-fuchsia-700 border-fuchsia-300 hover:bg-fuchsia-50"}`,
@@ -3522,6 +3596,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   ), hasContent && persist && !failed && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => setConstelOpen((o) => !o),
       "aria-pressed": constelOpen ? "true" : "false",
       className: `flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${constelOpen ? "bg-slate-800 text-indigo-200 border-slate-800" : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"}`,
@@ -3532,6 +3607,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   ), hasContent && !failed && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleFullscreen,
       className: "flex items-center gap-1 bg-white text-indigo-600 border border-indigo-200 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-indigo-50 transition-colors",
       title: t("concept_space.fullscreen_tooltip") || "Open this concept space full screen"
@@ -3550,6 +3626,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   ), recallScore ? /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600" }, (t("concept_space.recall_summary_detail") || "{eventual} took another go \xB7 {revealed} shown \xB7 {points} points").replace("{eventual}", String(recallScore.eventual)).replace("{revealed}", String(recallScore.revealed)).replace("{points}", String(recallScore.points))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 italic mt-2" }, t("concept_space.recall_framing") || "Naming a concept from its picture is retrieval practice, which is what makes the images worth making. It is a study strategy, not a measure of ability.")) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 mb-2", "aria-hidden": "true" }, (t("concept_space.recall_look") || "Concept {n} of {total} \u2014 the glowing node is the one being asked about.").replace("{n}", String(recallIdx + 1)).replace("{total}", String(recall.order.length))), recallDescription && /* @__PURE__ */ React.createElement("div", { className: "mb-2" }, /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => setDescribeOpen((o) => !o),
       "aria-expanded": describeOpen ? "true" : "false",
       "aria-controls": "cg3d-recall-desc",
@@ -3598,6 +3675,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   ) : /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5 flex-wrap", role: "group", "aria-label": t("concept_space.recall_choices_aria") || "Possible names" }, recallChoices.map((c) => /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       key: c.id,
       onClick: () => submitRecallAnswer(c.label),
       disabled: !!recallFeedback,
@@ -3607,6 +3685,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   ))), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: revealRecallAnswer,
       disabled: !!recallFeedback,
       className: "text-[11px] text-slate-500 underline hover:text-slate-700 mt-2 disabled:opacity-50"
@@ -3615,6 +3694,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   ))), furnishOpen && hasContent && persist && isTeacherMode && !failed && /* @__PURE__ */ React.createElement("div", { className: "mb-3 bg-white border border-fuchsia-300 rounded-xl px-4 py-3 text-slate-800", role: "group", "aria-label": t("concept_space.furnish_panel_aria") || "Furnish every concept" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap mb-2" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-extrabold text-fuchsia-700" }, "\u{1F3A8} ", t("concept_space.furnish_heading") || "Furnish every concept"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-500 ml-auto" }, (t("concept_space.furnish_pending") || "{n} still need art").replace("{n}", String(furnishTargets.length)))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-0.5 bg-slate-100 rounded-full p-0.5 w-fit mb-2", role: "group", "aria-label": t("concept_space.furnish_mode_label") || "What to generate" }, /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => setFurnishMode("sculpture"),
       "aria-pressed": furnishMode === "sculpture" ? "true" : "false",
       disabled: !!furnishing,
@@ -3625,6 +3705,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => setFurnishMode("image"),
       "aria-pressed": furnishMode === "image" ? "true" : "false",
       disabled: !canImagen || !!furnishing,
@@ -3665,6 +3746,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: stopFurnish,
       className: "px-3 py-1.5 rounded-full text-xs font-bold bg-white text-rose-800 border border-rose-300 hover:bg-rose-50 transition-colors"
     },
@@ -3673,6 +3755,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   )) : /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleFurnishAll,
       disabled: !furnishTargets.length,
       className: "px-3 py-1.5 rounded-full text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -3682,6 +3765,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   ), !furnishing && artCount > 0 && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleClearAllArt,
       "aria-describedby": clearArmed ? "cg3d-clear-armed" : void 0,
       className: `px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${clearArmed ? "bg-rose-600 text-white border-rose-600" : "bg-white text-rose-800 border-rose-300 hover:bg-rose-50"}`,
@@ -3692,6 +3776,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   ), clearArmed && !furnishing && /* @__PURE__ */ React.createElement("span", { id: "cg3d-clear-armed", role: "status", "aria-live": "assertive", className: "text-[11px] font-bold text-rose-700" }, (t("concept_space.furnish_clear_armed") || "This removes the art from {n} concepts. Press the button again to confirm.").replace("{n}", String(artCount)))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 italic mt-2" }, t("concept_space.furnish_framing") || "Students can still make and refine art on any single concept by clicking it. Building the image yourself is where most of the memory benefit lives, so use this to seed a space rather than to replace their turn.")), constelOpen && hasContent && persist && !failed && /* @__PURE__ */ React.createElement("div", { className: "mb-3 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-slate-200" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-300" }, "\u{1F30C} ", t("cg3d.constel_heading") || "Constellation \u2014 weight the connections yourself"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-0.5 bg-slate-800 rounded-full p-0.5 ml-auto", role: "group", "aria-label": t("cg3d.constel_mode_label") || "Constellation view mode" }, ["off", "mine", "ai", "diff"].map((m) => /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       key: m,
       onClick: () => setConstelMode(m),
       "aria-pressed": constelMode === m ? "true" : "false",
@@ -3744,6 +3829,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: saveConstelLink,
       disabled: !constelA || !constelB || constelA === constelB,
       className: "px-3 py-1.5 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed"
@@ -3753,6 +3839,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   ), _alloRuntimeAiAvailable() && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: aiRateConstelLink,
       disabled: !constelA || !constelB || constelA === constelB || constelBusy,
       className: "px-3 py-1.5 rounded-full text-xs font-bold bg-slate-700 text-indigo-200 hover:bg-slate-600 disabled:opacity-40 disabled:cursor-not-allowed",
@@ -3763,18 +3850,19 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   )), constelMode === "diff" && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-400 mt-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-indigo-300 font-bold" }, "\u25A0"), " ", t("cg3d.constel_diff_mine") || "you rated it stronger", " \xB7 ", /* @__PURE__ */ React.createElement("span", { className: "text-amber-400 font-bold" }, "\u25A0"), " ", t("cg3d.constel_diff_ai") || "the AI rated it stronger", " \xB7 ", /* @__PURE__ */ React.createElement("span", { className: "text-slate-200 font-bold" }, "\u25A0"), " ", t("cg3d.constel_diff_agree") || "you roughly agree"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 italic mt-2" }, t("cg3d.constel_framing") || "Brightness shows how strongly YOU rated each link. Comparing with the AI shows where your mental maps differ \u2014 a window into weighted connections and semantic similarity (closest to spreading-activation models of memory), not literally \u201Chow neural networks work.\u201D")), hint && /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-2 mb-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5 text-sm text-amber-900", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4A1}"), /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, (t("concept_space.hint_for") || "Thinking about \u201C{label}\u201D:").replace("{label}", hint.label)), " ", hint.text), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => setHint(null),
       "aria-label": t("common.close") || "Close",
       className: "text-amber-700 hover:text-amber-900 font-bold px-1"
     },
     "\u2715"
-  )), /* @__PURE__ */ React.createElement("div", { className: "relative rounded-2xl overflow-hidden border-2 border-slate-700 shadow-xl", style: { background: "#0b1020", height: "min(64vh, 560px)", minHeight: "380px" } }, !hasContent ? /* @__PURE__ */ React.createElement("div", { className: "h-full flex flex-col items-center justify-center gap-2 text-center p-8", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "text-3xl", "aria-hidden": "true" }, "\u{1F9CA}"), /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold text-slate-200" }, t("concept_space.empty_title") || "Nothing to map yet"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-400 max-w-sm" }, t("concept_space.empty_body") || "Generate this organizer from a source text (or add sections in Edit text) and the concepts will appear here as an orbitable 3D space.")) : failed ? /* @__PURE__ */ React.createElement("div", { className: "p-6 text-slate-200 text-sm overflow-auto h-full", role: "status" }, /* @__PURE__ */ React.createElement("p", { className: "mb-3 text-amber-300" }, t("cg3d.load_error") || "The 3D library could not load. Showing the reading-order outline instead."), /* @__PURE__ */ React.createElement("ol", { className: "list-decimal pl-6 space-y-2" }, (Array.isArray(data?.branches) ? data.branches : []).map((b, bi) => /* @__PURE__ */ React.createElement("li", { key: bi }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, b.title), Array.isArray(b.items) && b.items.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "list-disc pl-5 mt-1 space-y-0.5" }, b.items.map((it, ii) => /* @__PURE__ */ React.createElement("li", { key: ii }, typeof it === "object" ? it.text : it))))))) : /* @__PURE__ */ React.createElement("div", { ref: hostRef, className: "absolute inset-0" }), !challenge && !recall && persist && selectedNode && !failed && /* @__PURE__ */ React.createElement("div", { className: "absolute left-3 bottom-3 z-10 w-72 max-w-[85%] max-h-[80%] overflow-auto rounded-xl bg-white/95 backdrop-blur border border-fuchsia-300 shadow-xl p-3 text-slate-800", role: "group", "aria-label": t("concept_space.art_panel_aria") || "Concept art" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-extrabold text-fuchsia-700 truncate pr-2" }, "\u{1F3A8} ", selectedNode.label), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+  )), /* @__PURE__ */ React.createElement("div", { className: "relative rounded-2xl overflow-hidden border-2 border-slate-700 shadow-xl", style: { background: "#0b1020", height: "min(64vh, 560px)", minHeight: "380px" } }, !hasContent ? /* @__PURE__ */ React.createElement("div", { className: "h-full flex flex-col items-center justify-center gap-2 text-center p-8", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "text-3xl", "aria-hidden": "true" }, "\u{1F9CA}"), /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold text-slate-200" }, t("concept_space.empty_title") || "Nothing to map yet"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-400 max-w-sm" }, t("concept_space.empty_body") || "Generate this organizer from a source text (or add sections in Edit text) and the concepts will appear here as an orbitable 3D space.")) : failed ? /* @__PURE__ */ React.createElement("div", { className: "p-6 text-slate-200 text-sm overflow-auto h-full", role: "status" }, /* @__PURE__ */ React.createElement("p", { className: "mb-3 text-amber-300" }, t("cg3d.load_error") || "The 3D library could not load. Showing the reading-order outline instead."), /* @__PURE__ */ React.createElement("ol", { className: "list-decimal pl-6 space-y-2" }, (Array.isArray(data?.branches) ? data.branches : []).map((b, bi) => /* @__PURE__ */ React.createElement("li", { key: bi }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, b.title), Array.isArray(b.items) && b.items.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "list-disc pl-5 mt-1 space-y-0.5" }, b.items.map((it, ii) => /* @__PURE__ */ React.createElement("li", { key: ii }, typeof it === "object" ? it.text : it))))))) : /* @__PURE__ */ React.createElement("div", { ref: hostRef, className: "absolute inset-0" }), !challenge && !recall && persist && selectedNode && !failed && /* @__PURE__ */ React.createElement("div", { className: "absolute left-3 bottom-3 z-10 w-72 max-w-[85%] max-h-[80%] overflow-auto rounded-xl bg-white/95 backdrop-blur border border-fuchsia-300 shadow-xl p-3 text-slate-800", role: "group", "aria-label": t("concept_space.art_panel_aria") || "Concept art" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-extrabold text-fuchsia-700 truncate pr-2" }, "\u{1F3A8} ", selectedNode.label), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
     setSelectedNode(null);
     selectedNodeRef.current = null;
-  }, "aria-label": t("common.close") || "Close", className: "text-slate-600 hover:text-slate-700 font-bold text-sm leading-none" }, "\u2715")), nodeArtType ? /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500" }, nodeArtType === "sculpture" ? t("concept_space.art_has_sculpture") || "A sculpture floats above this concept." : t("concept_space.art_has_image") || "An image floats above this concept."), nodeArtType === "sculpture" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, /* @__PURE__ */ React.createElement("button", { onClick: () => handleArtManualTweak("bigger"), className: "px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100" }, "\u{1F50D}+ ", t("memory_palace.refine_bigger") || "Bigger"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleArtManualTweak("smaller"), className: "px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100" }, "\u{1F50D}\u2212 ", t("memory_palace.refine_smaller") || "Smaller"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleArtManualTweak("rotate"), className: "px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100" }, "\u27F3 ", t("memory_palace.refine_rotate") || "Rotate"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleArtManualTweak("recolor"), className: "px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100" }, "\u{1F3A8} ", t("memory_palace.refine_recolor") || "Recolor")), /* @__PURE__ */ React.createElement("form", { onSubmit: (e) => {
+  }, "aria-label": t("common.close") || "Close", className: "text-slate-600 hover:text-slate-700 font-bold text-sm leading-none" }, "\u2715")), nodeArtType ? /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500" }, nodeArtType === "sculpture" ? t("concept_space.art_has_sculpture") || "A sculpture floats above this concept." : t("concept_space.art_has_image") || "An image floats above this concept."), nodeArtType === "sculpture" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleArtManualTweak("bigger"), className: "px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100" }, "\u{1F50D}+ ", t("memory_palace.refine_bigger") || "Bigger"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleArtManualTweak("smaller"), className: "px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100" }, "\u{1F50D}\u2212 ", t("memory_palace.refine_smaller") || "Smaller"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleArtManualTweak("rotate"), className: "px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100" }, "\u27F3 ", t("memory_palace.refine_rotate") || "Rotate"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleArtManualTweak("recolor"), className: "px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100" }, "\u{1F3A8} ", t("memory_palace.refine_recolor") || "Recolor")), /* @__PURE__ */ React.createElement("form", { onSubmit: (e) => {
     e.preventDefault();
     handleArtRefine();
-  }, className: "flex gap-1" }, /* @__PURE__ */ React.createElement("input", { value: refinePrompt, onChange: (e) => setRefinePrompt(e.target.value), disabled: refineBusy, placeholder: t("concept_space.refine_placeholder") || "Tell the AI what to change\u2026", "aria-label": t("concept_space.refine_placeholder") || "Tell the AI what to change", className: "flex-1 min-w-0 text-xs px-2 py-1.5 rounded-lg border border-fuchsia-200 focus:ring-2 focus:ring-fuchsia-400" }), /* @__PURE__ */ React.createElement("button", { type: "submit", disabled: !refinePrompt.trim() || refineBusy, className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50" }, "\u2728"))), /* @__PURE__ */ React.createElement("button", { onClick: handleArtClear, className: "w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-white text-rose-800 border border-rose-200 hover:bg-rose-50" }, "\u{1F5D1} ", t("concept_space.art_remove") || "Remove art")) : /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, directBusy ? /* @__PURE__ */ React.createElement("div", { className: "text-xs text-fuchsia-700 font-bold py-2 text-center", role: "status" }, directBusy === "evaluating" ? t("concept_space.art_checking") || "\u2026 Checking your idea" : t("concept_space.art_creating") || "\u2026 Creating") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("button", { onClick: doSculptFromLabel, disabled: !_alloRuntimeAiAvailable(), className: "w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50" }, "\u{1F9CA} ", t("concept_space.art_sculpt_auto") || "Sculpt from this concept"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 text-center" }, t("concept_space.art_or_direct") || "or describe your own:"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, /* @__PURE__ */ React.createElement("button", { onClick: () => setArtType("sculpture"), className: `flex-1 px-2 py-1 rounded-full text-[11px] font-bold border ${artType === "sculpture" ? "bg-fuchsia-600 text-white border-fuchsia-600" : "bg-white text-fuchsia-700 border-fuchsia-300"}` }, "\u{1F9CA} ", t("memory_palace.direct_sculpture") || "Sculpture"), /* @__PURE__ */ React.createElement("button", { onClick: () => setArtType("image"), disabled: !canImagen, title: !canImagen ? t("concept_space.art_no_imagen") || "Image generation is unavailable here \u2014 try a sculpture." : void 0, className: `flex-1 px-2 py-1 rounded-full text-[11px] font-bold border disabled:opacity-40 ${artType === "image" ? "bg-fuchsia-600 text-white border-fuchsia-600" : "bg-white text-fuchsia-700 border-fuchsia-300"}` }, "\u{1F5BC} ", t("memory_palace.direct_image") || "Image")), directEval && directEval.verdict === "reject" && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] bg-amber-50 border border-amber-200 rounded-lg p-1.5 text-amber-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("memory_palace.direct_rejected") || "Let\u2019s adjust:"), " ", directEval.reason), directEval && directEval.verdict === "enhance" && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] bg-fuchsia-50 border border-fuchsia-200 rounded-lg p-1.5" }, directEval.reason && /* @__PURE__ */ React.createElement("div", { className: "mb-1 text-fuchsia-900" }, directEval.reason), directEval.enhancedPrompt && /* @__PURE__ */ React.createElement("div", { className: "italic text-fuchsia-800 mb-1" }, "\u201C", directEval.enhancedPrompt, "\u201D"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, /* @__PURE__ */ React.createElement("button", { onClick: () => handleArtGenerate(directEval.enhancedPrompt || directPrompt), className: "flex-1 px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700" }, "\u2728 ", t("memory_palace.direct_use_enhanced") || "Use the improved version"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleArtGenerate(directPrompt), className: "px-2 py-1 rounded-full text-[11px] font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-50" }, t("memory_palace.direct_use_mine") || "Use mine"))), (!directEval || directEval.verdict === "reject") && /* @__PURE__ */ React.createElement("form", { onSubmit: (e) => {
+  }, className: "flex gap-1" }, /* @__PURE__ */ React.createElement("input", { value: refinePrompt, onChange: (e) => setRefinePrompt(e.target.value), disabled: refineBusy, placeholder: t("concept_space.refine_placeholder") || "Tell the AI what to change\u2026", "aria-label": t("concept_space.refine_placeholder") || "Tell the AI what to change", className: "flex-1 min-w-0 text-xs px-2 py-1.5 rounded-lg border border-fuchsia-200 focus:ring-2 focus:ring-fuchsia-400" }), /* @__PURE__ */ React.createElement("button", { type: "submit", disabled: !refinePrompt.trim() || refineBusy, className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50" }, "\u2728"))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleArtClear, className: "w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-white text-rose-800 border border-rose-200 hover:bg-rose-50" }, "\u{1F5D1} ", t("concept_space.art_remove") || "Remove art")) : /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, directBusy ? /* @__PURE__ */ React.createElement("div", { className: "text-xs text-fuchsia-700 font-bold py-2 text-center", role: "status" }, directBusy === "evaluating" ? t("concept_space.art_checking") || "\u2026 Checking your idea" : t("concept_space.art_creating") || "\u2026 Creating") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: doSculptFromLabel, disabled: !_alloRuntimeAiAvailable(), className: "w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50" }, "\u{1F9CA} ", t("concept_space.art_sculpt_auto") || "Sculpt from this concept"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 text-center" }, t("concept_space.art_or_direct") || "or describe your own:"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setArtType("sculpture"), className: `flex-1 px-2 py-1 rounded-full text-[11px] font-bold border ${artType === "sculpture" ? "bg-fuchsia-600 text-white border-fuchsia-600" : "bg-white text-fuchsia-700 border-fuchsia-300"}` }, "\u{1F9CA} ", t("memory_palace.direct_sculpture") || "Sculpture"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setArtType("image"), disabled: !canImagen, title: !canImagen ? t("concept_space.art_no_imagen") || "Image generation is unavailable here \u2014 try a sculpture." : void 0, className: `flex-1 px-2 py-1 rounded-full text-[11px] font-bold border disabled:opacity-40 ${artType === "image" ? "bg-fuchsia-600 text-white border-fuchsia-600" : "bg-white text-fuchsia-700 border-fuchsia-300"}` }, "\u{1F5BC} ", t("memory_palace.direct_image") || "Image")), directEval && directEval.verdict === "reject" && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] bg-amber-50 border border-amber-200 rounded-lg p-1.5 text-amber-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("memory_palace.direct_rejected") || "Let\u2019s adjust:"), " ", directEval.reason), directEval && directEval.verdict === "enhance" && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] bg-fuchsia-50 border border-fuchsia-200 rounded-lg p-1.5" }, directEval.reason && /* @__PURE__ */ React.createElement("div", { className: "mb-1 text-fuchsia-900" }, directEval.reason), directEval.enhancedPrompt && /* @__PURE__ */ React.createElement("div", { className: "italic text-fuchsia-800 mb-1" }, "\u201C", directEval.enhancedPrompt, "\u201D"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleArtGenerate(directEval.enhancedPrompt || directPrompt), className: "flex-1 px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700" }, "\u2728 ", t("memory_palace.direct_use_enhanced") || "Use the improved version"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleArtGenerate(directPrompt), className: "px-2 py-1 rounded-full text-[11px] font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-50" }, t("memory_palace.direct_use_mine") || "Use mine"))), (!directEval || directEval.verdict === "reject") && /* @__PURE__ */ React.createElement("form", { onSubmit: (e) => {
     e.preventDefault();
     handleArtSubmit();
   }, className: "flex gap-1" }, /* @__PURE__ */ React.createElement("input", { value: directPrompt, onChange: (e) => {
@@ -4339,7 +4427,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const MP = window.AlloModules && window.AlloModules.MemoryPalace;
     if (!MP || recall || artJobRef.current || noWalk) return;
     if (isTeacherMode && viaArm !== true && liveRecallReadiness?.ok === false) {
-      if (addToast) addToast(liveRecallReadiness.message || "Finish setting up this Memory Palace before starting the student activity.", "info");
+      if (addToast) addToast(liveRecallReadiness.message || _vrCopy(t, "memory_palace.setup_incomplete", "Finish setting up this Memory Palace before starting the student activity."), "info");
       return;
     }
     const palace = MP.buildPalace(data || {});
@@ -4732,8 +4820,14 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       return `<section class="room"><h2 style="border-color:${_mpEsc(room.color)}">${_mpEsc(room.label)}</h2><ol>${rows}</ol></section>`;
     }).join("");
     const sheetTitle = _mpEsc(palace.title || data?.main || title || "Memory Palace");
-    const html = `<!doctype html><html lang="${String(document.documentElement.lang || "en").replace(/[^\w-]/g, "")}"${document.documentElement.dir === "rtl" ? ' dir="rtl"' : ""}><head><meta charset="utf-8"><title>${sheetTitle}</title><style>body{font-family:system-ui,-apple-system,sans-serif;color:#1e293b;max-width:760px;margin:0 auto;padding:32px 24px;line-height:1.5;}h1{font-size:24px;margin:0 0 4px;}.sub{color:#64748b;font-size:13px;margin:0 0 22px;}.room{page-break-inside:avoid;margin-bottom:20px;}.room h2{font-size:16px;border-left:5px solid #6366f1;padding-left:10px;margin:0 0 8px;}ol{list-style:none;padding:0;margin:0;}li{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid #eef2f7;page-break-inside:avoid;}.num{flex:0 0 28px;height:28px;border-radius:50%;background:#6366f1;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:13px;}.fact{font-weight:700;}.mnem{font-size:13px;color:#4338ca;margin-top:2px;}.decor{font-size:12px;color:#475569;margin-top:2px;}.method{margin-top:24px;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;font-size:12px;color:#475569;}.no-print{text-align:center;margin-bottom:22px;}button{background:#4f46e5;color:#fff;border:none;padding:10px 20px;font-size:15px;font-weight:700;border-radius:6px;cursor:pointer;}@media print{.no-print{display:none;}}</style></head><body><div class="no-print"><button onclick="window.print()">${_mpEsc(t("common.print") || "Print")}</button></div><h1>${sheetTitle}</h1><p class="sub">${_mpEsc(t("memory_palace.sheet_subtitle") || "Memory palace study sheet \u2014 walk the route in order and picture each image vividly.")}</p>` + roomsHtml + `<div class="method">${_mpEsc(t("memory_palace.caption") || "")}</div></body></html>`;
+    const html = `<!doctype html><html lang="${String(document.documentElement.lang || "en").replace(/[^\w-]/g, "")}"${document.documentElement.dir === "rtl" ? ' dir="rtl"' : ""}><head><meta charset="utf-8"><title>${sheetTitle}</title><style>body{font-family:system-ui,-apple-system,sans-serif;color:#1e293b;max-width:760px;margin:0 auto;padding:32px 24px;line-height:1.5;}h1{font-size:24px;margin:0 0 4px;}.sub{color:#64748b;font-size:13px;margin:0 0 22px;}.room{page-break-inside:avoid;margin-bottom:20px;}.room h2{font-size:16px;border-left:5px solid #6366f1;padding-left:10px;margin:0 0 8px;}ol{list-style:none;padding:0;margin:0;}li{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid #eef2f7;page-break-inside:avoid;}.num{flex:0 0 28px;height:28px;border-radius:50%;background:#6366f1;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:13px;}.fact{font-weight:700;}.mnem{font-size:13px;color:#4338ca;margin-top:2px;}.decor{font-size:12px;color:#475569;margin-top:2px;}.method{margin-top:24px;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;font-size:12px;color:#475569;}.no-print{text-align:center;margin-bottom:22px;}button{background:#4f46e5;color:#fff;border:none;padding:10px 20px;font-size:15px;font-weight:700;border-radius:6px;cursor:pointer;}@media print{.no-print{display:none;}}</style></head><body><div class="no-print"><button type="button" onclick="window.print()">${_mpEsc(t("common.print") || "Print")}</button></div><h1>${sheetTitle}</h1><p class="sub">${_mpEsc(t("memory_palace.sheet_subtitle") || "Memory palace study sheet \u2014 walk the route in order and picture each image vividly.")}</p>` + roomsHtml + `<div class="method">${_mpEsc(t("memory_palace.caption") || "")}</div></body></html>`;
     const win = window.open("", "_blank");
+    if (win) {
+      try {
+        win.opener = null;
+      } catch (_) {
+      }
+    }
     if (win) {
       win.document.write(html);
       win.document.close();
@@ -5737,6 +5831,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   } }, recall ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-1.5 rounded-full tabular-nums" }, "\u23F1 ", fmtTime(elapsed), " \xB7 ", (t("memory_palace.review_progress") || "{done}/{total} reviewed").replace("{done}", String(answered)).replace("{total}", String(recallOrderRef.current.length || (palaceRef.current?.route?.length || 1) - 1))), finished && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => retryRecall(),
       className: "flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
     },
@@ -5745,6 +5840,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: (event) => {
         recallReturnModeRef.current = event.detail === 0 ? recall.choiceFallback ? "bank" : recall.mode : null;
         exitRecall();
@@ -5776,6 +5872,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   ), hasContent && !failed && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handlePrintStudySheet,
       className: "flex items-center gap-1 bg-white text-slate-700 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors",
       title: t("memory_palace.sheet_tooltip") || "Open a printable study sheet: the route, loci and mnemonics in walking order"
@@ -5785,6 +5882,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   ), hasContent && !failed && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handlePresentation,
       disabled: routeEditing,
       className: "flex items-center gap-1 bg-slate-900 text-white border border-slate-700 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-800 transition-colors disabled:cursor-not-allowed disabled:opacity-40",
@@ -5795,6 +5893,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   ), hasContent && !failed && !noWalk && persist && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => setCustomizeOpen((o) => !o),
       "aria-expanded": customizeOpen ? "true" : "false",
       className: `flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${customizeOpen ? "bg-indigo-600 text-white border-indigo-600" : "bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-50"}`,
@@ -5807,6 +5906,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   ))), hasContent && !failed && !noWalk && /* @__PURE__ */ React.createElement("section", { className: "min-w-0 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm", role: "group", "aria-label": t("memory_palace.controls_practice") || "Practice" }, /* @__PURE__ */ React.createElement("div", { className: "mb-2 text-[11px] font-extrabold uppercase tracking-wider text-slate-500" }, t("memory_palace.controls_practice") || "Practice"), !recallEligible && /* @__PURE__ */ React.createElement("p", { className: "mb-2 text-xs leading-relaxed text-slate-600" }, t("memory_palace.practice_minimum") || "Add a second memory stop to unlock recall practice."), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, "                            ", hasContent && !failed && !noWalk && recallEligible && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       "data-recall-mode": "bank",
       onClick: () => startRecall("bank", false),
       disabled: artBusy || routeEditing || isTeacherMode && liveRecallReadiness?.ok === false,
@@ -5818,6 +5918,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   ), hasContent && !failed && !noWalk && recallEligible && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       "data-recall-mode": "self",
       onClick: () => startRecall("self", false),
       disabled: artBusy || routeEditing || isTeacherMode && liveRecallReadiness?.ok === false,
@@ -5829,6 +5930,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   ), hasContent && !failed && recallEligible && isTeacherMode && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       "data-recall-mode": "type",
       onClick: () => startRecall("type", false),
       disabled: artBusy || routeEditing || isTeacherMode && liveRecallReadiness?.ok === false,
@@ -5840,6 +5942,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   ), isTeacherMode && liveRecallReadiness?.ok === false && /* @__PURE__ */ React.createElement("span", { role: "status", className: "max-w-xs rounded-lg border border-amber-300 bg-amber-50 px-2 py-1 text-[11px] font-bold text-amber-900" }, "Recall walk: ", liveRecallReadiness.message))), (customizeOpen || furnishing || sculpting) && /* @__PURE__ */ React.createElement("div", { className: "col-span-full rounded-2xl border border-indigo-200 bg-indigo-50/60 p-3", role: "group", "aria-label": t("memory_palace.controls_create") || "Create & personalize" }, /* @__PURE__ */ React.createElement("div", { className: "mb-2 text-[11px] font-extrabold uppercase tracking-wider text-indigo-800" }, t("memory_palace.controls_create") || "Create & personalize"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, hasContent && !failed && !noWalk && persist && _alloRuntimeAiAvailable() && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => {
         setDirectMode((d) => !d);
         setDirectEval(null);
@@ -5853,6 +5956,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   ), hasContent && !failed && !noWalk && persist && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => setDecorMode((d) => !d),
       "aria-pressed": decorMode ? "true" : "false",
       className: `flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${decorMode ? "bg-emerald-700 text-white border-emerald-600" : "bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-50"}`,
@@ -5863,6 +5967,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   ), hasContent && !failed && !noWalk && persist && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => {
         setBuildMode((b) => !b);
         setPendingSpot(null);
@@ -5878,6 +5983,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   ), hasContent && !failed && !noWalk && canImagen && persist && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => setReliefOn((r) => !r),
       disabled: artBusy,
       "aria-pressed": reliefOn ? "true" : "false",
@@ -5889,6 +5995,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   ), hasContent && !failed && !noWalk && canImagen && persist && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleFurnish,
       disabled: artBusy,
       className: "flex items-center gap-1 bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed",
@@ -5899,6 +6006,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   ), hasContent && !failed && !noWalk && persist && _alloRuntimeAiAvailable() && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleSculpt,
       disabled: artBusy || !window.AlloModules?.Prim3D,
       className: "flex items-center gap-1 bg-gradient-to-r from-slate-600 to-slate-800 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed",
@@ -5909,6 +6017,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   ), (furnishing || sculpting) && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => {
         genCancelRef.current = true;
         setStopRequested(true);
@@ -5945,6 +6054,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     return /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         key: thm,
         onClick: () => handleSetTheme(thm),
         "aria-pressed": on ? "true" : "false",
@@ -5965,6 +6075,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   )), !presenting && recallContentChanged && !recall && /* @__PURE__ */ React.createElement("div", { className: "mb-3 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-950", role: "status" }, /* @__PURE__ */ React.createElement("p", { className: "font-bold" }, t("memory_palace.content_changed_heading") || "The palace has changed"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 leading-relaxed" }, t("memory_palace.content_changed_help") || "The previous review ended because its facts or stops changed. Its unfinished results were not scored. Start a new review when you are ready.")), !presenting && !recall && dueInfo && dueInfo.dueCount > 0 && /* @__PURE__ */ React.createElement("div", { className: "mb-3 flex flex-wrap items-center justify-between gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm text-amber-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "\u{1F501} ", (t("memory_palace.review_due") || "{count} loci are ready for review").replace("{count}", String(dueInfo.dueCount))), " ", /* @__PURE__ */ React.createElement("span", { className: "text-amber-800" }, t("memory_palace.review_due_why") || "\u2014 walk the palace again to strengthen the ones fading from memory.")), recallEligible && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => startRecall("bank", false, "forward", (dueInfo.due || []).concat(dueInfo.newIds || [])),
       className: "min-h-[44px] flex-shrink-0 flex items-center gap-1 bg-amber-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm hover:bg-amber-800 transition-colors"
     },
@@ -6359,7 +6470,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       autoFocus: true,
       maxLength: 80,
       placeholder: t("memory_palace.build_name_placeholder") || "A fact, a word, a step\u2026",
-      className: "min-w-[12rem] flex-1 rounded-lg border border-sky-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-sky-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-600"
+      className: "min-w-[12rem] flex-1 rounded-lg border border-sky-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 placeholder:text-slate-600 focus:border-sky-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-600"
     }
   ), /* @__PURE__ */ React.createElement("button", { type: "submit", disabled: !spotLabel.trim(), className: "rounded-full bg-sky-700 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-sky-800 disabled:cursor-not-allowed disabled:opacity-40" }, t("memory_palace.build_place") || "Place it"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
     setPendingSpot(null);
@@ -6376,7 +6487,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       autoFocus: true,
       maxLength: 40,
       placeholder: t("memory_palace.build_room_placeholder") || "The Attic, Grandma\u2019s kitchen\u2026",
-      className: "min-w-[12rem] flex-1 rounded-lg border border-sky-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-sky-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-600"
+      className: "min-w-[12rem] flex-1 rounded-lg border border-sky-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 placeholder:text-slate-600 focus:border-sky-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-600"
     }
   ), /* @__PURE__ */ React.createElement("button", { type: "submit", disabled: !roomName.trim(), className: "rounded-full bg-sky-700 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-sky-800 disabled:cursor-not-allowed disabled:opacity-40" }, t("memory_palace.build_room_add") || "Add room"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
     setAddingRoom(false);
@@ -6427,7 +6538,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       rows: 2,
       autoFocus: true,
       placeholder: t("memory_palace.own_placeholder") || "Something you can SEE happening right here...",
-      className: "w-full rounded-lg border border-indigo-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600"
+      className: "w-full rounded-lg border border-indigo-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 placeholder:text-slate-600 focus:border-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600"
     }
   ), /* @__PURE__ */ React.createElement("ul", { className: "mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-indigo-700" }, /* @__PURE__ */ React.createElement("li", null, t("memory_palace.own_crit_action") || "Is something MOVING in it?"), /* @__PURE__ */ React.createElement("li", null, t("memory_palace.own_crit_sensory") || "Can you see a colour or hear a sound?"), /* @__PURE__ */ React.createElement("li", null, t("memory_palace.own_crit_placed") || "Is it happening at THIS spot?"), /* @__PURE__ */ React.createElement("li", null, t("memory_palace.own_crit_personal") || "Does it connect to something of yours?")), mnFeedback && mnFeedback.echoesLabel && /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-[11px] font-bold text-amber-700", role: "status" }, t("memory_palace.own_warn_echo") || "That is the item name again \u2014 describe a picture of it instead."), mnFeedback && mnFeedback.tooShort && !mnFeedback.echoesLabel && /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-[11px] font-bold text-amber-700", role: "status" }, t("memory_palace.own_warn_short") || "A little more detail gives your memory something to hold on to."), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap items-center gap-1.5" }, /* @__PURE__ */ React.createElement(
     "button",
@@ -6458,7 +6569,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     },
     "\u21A9 ",
     t("memory_palace.own_revert") || "Use the generated one"
-  )))), !presenting && directMode && !recall && hasContent && !failed && /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-fuchsia-50 border border-fuchsia-200 rounded-xl px-4 py-3" }, !current || current.entry ? /* @__PURE__ */ React.createElement("div", { className: "text-sm text-fuchsia-900" }, t("memory_palace.direct_at_entry") || "\u270D\uFE0F Walk to a locus (\u25B6 or WASD), then direct the AI to create its image or sculpture.") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-fuchsia-800 mb-1" }, (t("memory_palace.direct_for") || "Direct the AI for: {label}").replace("{label}", current.label)), current.mnemonic && /* @__PURE__ */ React.createElement("div", { className: "text-xs text-fuchsia-700 italic mb-2" }, t("memory_palace.picture_this") || "Picture this:", " ", current.mnemonic), objects3d[current.id] && /* @__PURE__ */ React.createElement("div", { className: "mb-3 pb-3 border-b border-fuchsia-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-fuchsia-800 mb-1.5" }, t("memory_palace.refine_title") || "Refine this sculpture"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-2" }, /* @__PURE__ */ React.createElement("button", { onClick: () => handleManualTweak("bigger"), className: "px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100" }, "\u{1F50D}+ ", t("memory_palace.refine_bigger") || "Bigger"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleManualTweak("smaller"), className: "px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100" }, "\u{1F50D}\u2212 ", t("memory_palace.refine_smaller") || "Smaller"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleManualTweak("rotate"), className: "px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100" }, "\u27F3 ", t("memory_palace.refine_rotate") || "Rotate"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleManualTweak("recolor"), className: "px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100" }, "\u{1F3A8} ", t("memory_palace.refine_recolor") || "Recolor")), !objects3d[current.id].glbItem && /* @__PURE__ */ React.createElement("form", { onSubmit: (e) => {
+  )))), !presenting && directMode && !recall && hasContent && !failed && /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-fuchsia-50 border border-fuchsia-200 rounded-xl px-4 py-3" }, !current || current.entry ? /* @__PURE__ */ React.createElement("div", { className: "text-sm text-fuchsia-900" }, t("memory_palace.direct_at_entry") || "\u270D\uFE0F Walk to a locus (\u25B6 or WASD), then direct the AI to create its image or sculpture.") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-fuchsia-800 mb-1" }, (t("memory_palace.direct_for") || "Direct the AI for: {label}").replace("{label}", current.label)), current.mnemonic && /* @__PURE__ */ React.createElement("div", { className: "text-xs text-fuchsia-700 italic mb-2" }, t("memory_palace.picture_this") || "Picture this:", " ", current.mnemonic), objects3d[current.id] && /* @__PURE__ */ React.createElement("div", { className: "mb-3 pb-3 border-b border-fuchsia-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-fuchsia-800 mb-1.5" }, t("memory_palace.refine_title") || "Refine this sculpture"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleManualTweak("bigger"), className: "px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100" }, "\u{1F50D}+ ", t("memory_palace.refine_bigger") || "Bigger"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleManualTweak("smaller"), className: "px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100" }, "\u{1F50D}\u2212 ", t("memory_palace.refine_smaller") || "Smaller"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleManualTweak("rotate"), className: "px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100" }, "\u27F3 ", t("memory_palace.refine_rotate") || "Rotate"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleManualTweak("recolor"), className: "px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100" }, "\u{1F3A8} ", t("memory_palace.refine_recolor") || "Recolor")), !objects3d[current.id].glbItem && /* @__PURE__ */ React.createElement("form", { onSubmit: (e) => {
     e.preventDefault();
     handleAiRefine();
   }, className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
@@ -6470,13 +6581,13 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       "aria-label": t("memory_palace.refine_placeholder") || "Tell the AI what to change",
       className: "flex-1 text-sm p-2 rounded-lg border border-fuchsia-300 focus:ring-2 focus:ring-fuchsia-400 bg-white"
     }
-  ), /* @__PURE__ */ React.createElement("button", { type: "submit", disabled: !refinePrompt.trim() || artBusy, className: "px-3 py-2 rounded-lg text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50 disabled:cursor-not-allowed" }, refineBusy ? t("memory_palace.direct_creating") || "Creating\u2026" : "\u2728 " + (t("memory_palace.refine_apply") || "Refine")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-fuchsia-800" }, t("memory_palace.direct_make") || "Make:"), /* @__PURE__ */ React.createElement("button", { disabled: artBusy || !canImagen, "aria-pressed": directType === "image", onClick: () => {
+  ), /* @__PURE__ */ React.createElement("button", { type: "submit", disabled: !refinePrompt.trim() || artBusy, className: "px-3 py-2 rounded-lg text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50 disabled:cursor-not-allowed" }, refineBusy ? t("memory_palace.direct_creating") || "Creating\u2026" : "\u2728 " + (t("memory_palace.refine_apply") || "Refine")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-fuchsia-800" }, t("memory_palace.direct_make") || "Make:"), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: artBusy || !canImagen, "aria-pressed": directType === "image", onClick: () => {
     setDirectType("image");
     setDirectEval(null);
-  }, className: `px-2.5 py-1 rounded-full text-xs font-bold border ${directType === "image" ? "bg-fuchsia-600 text-white border-fuchsia-600" : "bg-white text-fuchsia-700 border-fuchsia-300"}` }, "\u{1F5BC} ", t("memory_palace.direct_image") || "Image"), /* @__PURE__ */ React.createElement("button", { disabled: artBusy || !window.AlloModules?.Prim3D, "aria-pressed": directType === "sculpture", onClick: () => {
+  }, className: `px-2.5 py-1 rounded-full text-xs font-bold border ${directType === "image" ? "bg-fuchsia-600 text-white border-fuchsia-600" : "bg-white text-fuchsia-700 border-fuchsia-300"}` }, "\u{1F5BC} ", t("memory_palace.direct_image") || "Image"), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: artBusy || !window.AlloModules?.Prim3D, "aria-pressed": directType === "sculpture", onClick: () => {
     setDirectType("sculpture");
     setDirectEval(null);
-  }, className: `px-2.5 py-1 rounded-full text-xs font-bold border ${directType === "sculpture" ? "bg-fuchsia-600 text-white border-fuchsia-600" : "bg-white text-fuchsia-700 border-fuchsia-300"}` }, "\u{1F5FF} ", t("memory_palace.direct_sculpture") || "Sculpture")), /* @__PURE__ */ React.createElement("p", { className: "mb-3 text-xs leading-relaxed text-fuchsia-800" }, t("memory_palace.direct_format_draft") || "Switch between image and sculpture without losing your prompt."), directEval && directEval.verdict === "reject" && /* @__PURE__ */ React.createElement("div", { className: "mb-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("memory_palace.direct_rejected") || "Let\u2019s adjust:"), " ", directEval.reason), directEval && directEval.verdict === "enhance" && /* @__PURE__ */ React.createElement("div", { className: "mb-2 text-sm text-fuchsia-900 bg-white border border-fuchsia-200 rounded-lg px-3 py-2", role: "status", "aria-live": "polite" }, directEval.reason && /* @__PURE__ */ React.createElement("div", { className: "mb-1" }, directEval.reason), directEval.enhancedPrompt && /* @__PURE__ */ React.createElement("div", { className: "italic text-fuchsia-800 mb-2" }, "\u201C", directEval.enhancedPrompt, "\u201D"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("button", { onClick: () => handleDirectGenerate(directEval.enhancedPrompt || directPrompt), disabled: artBusy, className: "px-3 py-1.5 rounded-full text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50" }, "\u2728 ", t("memory_palace.direct_use_enhanced") || "Use the improved version"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleDirectGenerate(directPrompt), disabled: artBusy, className: "px-3 py-1.5 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-50 disabled:opacity-50" }, t("memory_palace.direct_use_mine") || "Use mine as-is"))), (!directEval || directEval.verdict === "reject") && /* @__PURE__ */ React.createElement("form", { onSubmit: (e) => {
+  }, className: `px-2.5 py-1 rounded-full text-xs font-bold border ${directType === "sculpture" ? "bg-fuchsia-600 text-white border-fuchsia-600" : "bg-white text-fuchsia-700 border-fuchsia-300"}` }, "\u{1F5FF} ", t("memory_palace.direct_sculpture") || "Sculpture")), /* @__PURE__ */ React.createElement("p", { className: "mb-3 text-xs leading-relaxed text-fuchsia-800" }, t("memory_palace.direct_format_draft") || "Switch between image and sculpture without losing your prompt."), directEval && directEval.verdict === "reject" && /* @__PURE__ */ React.createElement("div", { className: "mb-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("memory_palace.direct_rejected") || "Let\u2019s adjust:"), " ", directEval.reason), directEval && directEval.verdict === "enhance" && /* @__PURE__ */ React.createElement("div", { className: "mb-2 text-sm text-fuchsia-900 bg-white border border-fuchsia-200 rounded-lg px-3 py-2", role: "status", "aria-live": "polite" }, directEval.reason && /* @__PURE__ */ React.createElement("div", { className: "mb-1" }, directEval.reason), directEval.enhancedPrompt && /* @__PURE__ */ React.createElement("div", { className: "italic text-fuchsia-800 mb-2" }, "\u201C", directEval.enhancedPrompt, "\u201D"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleDirectGenerate(directEval.enhancedPrompt || directPrompt), disabled: artBusy, className: "px-3 py-1.5 rounded-full text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50" }, "\u2728 ", t("memory_palace.direct_use_enhanced") || "Use the improved version"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleDirectGenerate(directPrompt), disabled: artBusy, className: "px-3 py-1.5 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-50 disabled:opacity-50" }, t("memory_palace.direct_use_mine") || "Use mine as-is"))), (!directEval || directEval.verdict === "reject") && /* @__PURE__ */ React.createElement("form", { onSubmit: (e) => {
     e.preventDefault();
     handleDirectSubmit();
   } }, /* @__PURE__ */ React.createElement(
@@ -6509,6 +6620,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     return /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         key: p.id,
         onClick: () => handlePlacePreset(p.id),
         title: label,
@@ -6524,6 +6636,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     return /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         key: it.id,
         onClick: () => handlePlaceCollectible(it),
         title: label,
@@ -6538,6 +6651,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     return /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         key: s.id,
         onClick: () => handlePlaceStamp(s),
         title: label,
@@ -6549,6 +6663,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   }))), (images[current.id] || objects3d[current.id]) && /* @__PURE__ */ React.createElement("div", { className: "mt-2 pt-2 border-t border-emerald-200" }, /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleDecorRemove,
       title: t("memory_palace.decorate_remove_tooltip") || "Clear the image and 3D object at this locus",
       className: "px-2.5 py-1 rounded-full text-xs font-bold bg-white text-slate-600 border border-slate-300 hover:bg-slate-50 transition-colors"
@@ -6584,6 +6699,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   ))), !finished && current && (!current.entry && !_inRecallScope(current.id) ? /* @__PURE__ */ React.createElement("div", { className: "mt-3 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-950", role: "status" }, /* @__PURE__ */ React.createElement("p", null, t("memory_palace.outside_review") || "This stop is outside your focused review. Its practice record will stay unchanged."), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: advanceRecall, className: "mt-2 min-h-[44px] rounded-xl bg-indigo-700 px-3 py-2 text-xs font-bold text-white hover:bg-indigo-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" }, t("memory_palace.return_review") || "Return to review")) : current.entry ? /* @__PURE__ */ React.createElement("div", { className: "mt-3 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-950", role: "status" }, /* @__PURE__ */ React.createElement("p", { className: "font-bold" }, t("memory_palace.recall_entrance_heading") || "You are at the entrance"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 leading-relaxed" }, answered > 0 && answered === recallOrderRef.current.length ? t("memory_palace.recall_entrance_complete") || "All review stops are complete. Continue to see your results." : t("memory_palace.recall_entrance_help") || "Return to the next unanswered stop in your review. Your recorded responses are kept."), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: advanceRecall, className: "mt-3 min-h-[44px] rounded-xl bg-indigo-700 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600" }, t("memory_palace.next_review_stop") || "Continue review")) : /* @__PURE__ */ React.createElement("div", { className: `mt-3 rounded-xl px-4 py-3 border transition-colors [&_button]:min-h-[44px] [&_button]:rounded-xl [&_button:focus-visible]:outline [&_button:focus-visible]:outline-2 [&_button:focus-visible]:outline-offset-2 ${wrongFlash ? "bg-red-50 border-red-300" : "bg-amber-50 border-amber-200"}` }, /* @__PURE__ */ React.createElement("div", { className: "mb-2 flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-amber-800" }, /* @__PURE__ */ React.createElement("span", null, (t("memory_palace.review_stop_of") || "Review stop {idx} of {total}").replace("{idx}", String(recallOrderRef.current.indexOf(current.id) + 1)).replace("{total}", String(recallOrderRef.current.length || current.total))), /* @__PURE__ */ React.createElement("span", { className: "rounded-lg border border-amber-200 bg-white px-2 py-1 tabular-nums text-slate-600" }, (t("memory_palace.review_frame_number") || "Palace frame {number}").replace("{number}", String(current.idx)))), /* @__PURE__ */ React.createElement("h3", { className: "mb-3 text-sm font-bold text-slate-900" }, t("memory_palace.recall_q") || "What belongs at this locus?"), recallResultsRef.current[current.id]?.correct || recallResultsRef.current[current.id]?.revealed || recallResultsRef.current[current.id]?.selfChecked ? /* @__PURE__ */ React.createElement("div", { className: "space-y-3 text-sm text-amber-950" }, /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-amber-200 bg-white px-3 py-3", role: "status" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-bold leading-relaxed text-amber-800" }, _recallResultLabel(recallResultsRef.current[current.id])), /* @__PURE__ */ React.createElement("p", { className: "mt-1 break-words font-bold text-slate-900" }, current.label), current.mnemonic && /* @__PURE__ */ React.createElement("p", { className: "mt-1 break-words leading-relaxed text-slate-600" }, current.mnemonic), recallResultsRef.current[current.id]?.revealed && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-xs leading-relaxed text-amber-900" }, t("memory_palace.reveal_pause") || "Take a moment to connect this fact with the cue. Continue when you are ready.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: advanceRecall, className: "px-4 py-2 bg-indigo-700 text-white font-bold text-xs hover:bg-indigo-800" }, t("memory_palace.next_review_stop") || "Continue review")) : recall.mode === "self" ? selfRevealId === current.id ? /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-indigo-200 bg-white px-3 py-2 text-sm text-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600", tabIndex: -1, "data-recall-focus": "true", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, current.label), current.mnemonic ? /* @__PURE__ */ React.createElement("span", { className: "block mt-1 text-xs text-slate-600" }, "\u{1F4A1} ", current.mnemonic) : null), /* @__PURE__ */ React.createElement("p", { className: "text-sm leading-relaxed text-slate-700" }, t("memory_palace.self_rate_before_reveal") || "Before revealing the answer, did you remember it? Rate that first recall."), /* @__PURE__ */ React.createElement("div", { role: "group", className: "flex flex-wrap gap-2", "aria-label": t("memory_palace.self_check_result") || "How well did you remember this locus?" }, /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => markSelfCheck(true),
       className: "min-h-11 px-4 py-2 rounded-full text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-800 transition-colors"
     },
@@ -6592,6 +6708,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => markSelfCheck(false),
       className: "min-h-11 px-4 py-2 rounded-full text-xs font-bold bg-white text-red-700 border border-red-300 hover:bg-red-50 transition-colors"
     },
@@ -6600,6 +6717,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   ))) : /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: revealSelfCheck,
       className: "min-h-11 px-4 py-2 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
     },
@@ -6608,6 +6726,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   ) : recall.mode === "bank" ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2", "data-palace-recall-choices": "true" }, /* @__PURE__ */ React.createElement("p", { className: "w-full text-sm leading-relaxed text-slate-700" }, t("memory_palace.recall_choice_guidance") || "Picture the cue at this stop, then choose its answer."), recallChoices.map((chip) => /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       key: chip.id,
       onClick: () => submitRecallAnswer(chip.label, chip.id),
       className: "min-w-0 max-w-full whitespace-normal [overflow-wrap:anywhere] px-3 py-2 rounded-full text-left text-sm leading-relaxed font-bold bg-white text-amber-900 border border-amber-300 hover:bg-amber-100 transition-colors"
@@ -6864,6 +6983,7 @@ const renderInteractiveMap = (deps) => {
   return /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 bg-slate-50 p-2 rounded-lg border border-slate-400 justify-between min-h-[50px]" }, isVenn ? /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center w-full gap-4" }, /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleVennResetBoard,
       disabled: isMapLocked,
       className: `flex items-center gap-2 bg-white text-indigo-600 border border-indigo-200 px-4 py-2 rounded-full text-xs font-bold hover:bg-indigo-50 transition-colors shadow-sm ${isMapLocked ? "opacity-50 cursor-not-allowed" : ""}`
@@ -6874,6 +6994,7 @@ const renderInteractiveMap = (deps) => {
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleVennScrambleBank,
       disabled: isMapLocked,
       className: `flex items-center gap-2 bg-white text-slate-600 border border-slate-400 px-4 py-2 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors shadow-sm ${isMapLocked ? "opacity-50 cursor-not-allowed" : ""}`
@@ -6884,6 +7005,7 @@ const renderInteractiveMap = (deps) => {
   ), /* @__PURE__ */ React.createElement("div", { className: "w-px h-6 bg-slate-300 mx-2" }), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => {
         setIsInteractiveMap(false);
         setIsInteractiveVenn(false);
@@ -6896,6 +7018,7 @@ const renderInteractiveMap = (deps) => {
   ), /* @__PURE__ */ React.createElement("div", { className: "w-px h-6 bg-slate-300 mx-2" }), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleToggleIsMapLocked,
       className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isMapLocked ? "bg-green-700 text-white hover:bg-green-700 ring-2 ring-green-200" : "bg-white text-slate-600 border border-slate-400 hover:text-indigo-600 hover:bg-indigo-50"}`,
       title: isMapLocked ? t("concept_map.toolbar.unlock_tooltip") : t("concept_map.toolbar.lock_tooltip")
@@ -6905,6 +7028,7 @@ const renderInteractiveMap = (deps) => {
   )) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, !isChallengeActive && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleSetIsConceptMapReadyToFalse,
       disabled: isMapLocked,
       className: `flex items-center gap-1 text-slate-600 hover:text-indigo-600 px-3 py-1.5 rounded text-xs font-bold hover:bg-indigo-50 transition-colors border border-transparent hover:border-indigo-200 ${isMapLocked ? "opacity-50 cursor-not-allowed" : ""}`,
@@ -6929,6 +7053,7 @@ const renderInteractiveMap = (deps) => {
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       "aria-label": t("common.add"),
       onClick: handleAddManualNode,
       disabled: !nodeInputText.trim() || isChallengeActive || isMapLocked,
@@ -6940,6 +7065,7 @@ const renderInteractiveMap = (deps) => {
   ), /* @__PURE__ */ React.createElement("div", { className: "w-px h-6 bg-slate-300 mx-1 hidden sm:block" }), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleResetLayout,
       disabled: isMapLocked,
       className: `flex items-center gap-1 text-slate-600 hover:text-indigo-600 px-3 py-1.5 rounded text-xs font-bold hover:bg-indigo-50 transition-colors ${isMapLocked ? "opacity-50 cursor-not-allowed" : ""}`,
@@ -6952,6 +7078,7 @@ const renderInteractiveMap = (deps) => {
   ), !isChallengeActive && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => handleAutoLayout(),
       disabled: isProcessing || isMapLocked,
       className: "flex items-center gap-1 text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-indigo-100",
@@ -6963,6 +7090,7 @@ const renderInteractiveMap = (deps) => {
   ), !isChallengeActive && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleClearEdges,
       disabled: isMapLocked,
       className: `flex items-center gap-1 text-slate-600 hover:text-red-500 px-3 py-1.5 rounded text-xs font-bold hover:bg-red-50 transition-colors ${isMapLocked ? "opacity-50 cursor-not-allowed" : ""}`,
@@ -6975,6 +7103,7 @@ const renderInteractiveMap = (deps) => {
   ), /* @__PURE__ */ React.createElement("div", { className: "w-px h-6 bg-slate-300 mx-2" }), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleToggleIsMapLocked,
       className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isMapLocked ? "bg-green-700 text-white hover:bg-green-700 ring-2 ring-green-200" : "bg-white text-slate-600 border border-slate-400 hover:text-indigo-600 hover:bg-indigo-50"}`,
       title: isMapLocked ? t("concept_map.toolbar.unlock_tooltip") : t("concept_map.toolbar.lock_tooltip"),
@@ -6985,6 +7114,7 @@ const renderInteractiveMap = (deps) => {
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => openConceptMap3D({
         nodes: conceptMapNodes,
         edges: conceptMapEdges,
@@ -7017,6 +7147,7 @@ const renderInteractiveMap = (deps) => {
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleCreateChallenge,
       disabled: isMapLocked,
       className: `flex items-center gap-1 bg-yellow-700 hover:bg-yellow-800 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm ${isMapLocked ? "opacity-50 cursor-not-allowed" : ""}`,
@@ -7026,9 +7157,10 @@ const renderInteractiveMap = (deps) => {
     /* @__PURE__ */ React.createElement(Gamepad2, { size: 14 }),
     " ",
     t("concept_map.challenge.create")
-  )) : isChallengeActive ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, challengeFeedback && (activeChallengeMode === "strict" ? /* @__PURE__ */ React.createElement("span", { className: `text-xs font-black px-2 py-1 rounded ${challengeFeedback.score >= 90 ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"}` }, "Score: ", challengeFeedback.score, "%") : /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-end gap-1 max-w-[250px]" }, /* @__PURE__ */ React.createElement("span", { className: `text-xs font-black px-2 py-1 rounded ${challengeFeedback.score >= 90 ? "bg-green-100 text-green-700" : challengeFeedback.score >= 70 ? "bg-yellow-100 text-yellow-800" : "bg-orange-100 text-orange-700"}` }, "AI Score: ", challengeFeedback.score, "%"), challengeFeedback.feedbackText && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 italic text-right leading-tight bg-white/80 p-1.5 rounded border border-slate-400 shadow-sm animate-in slide-in-from-right-2" }, challengeFeedback.feedbackText))), /* @__PURE__ */ React.createElement(
+  )) : isChallengeActive ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, challengeFeedback && (activeChallengeMode === "strict" ? /* @__PURE__ */ React.createElement("span", { className: `text-xs font-black px-2 py-1 rounded ${challengeFeedback.score >= 90 ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"}` }, "Score: ", challengeFeedback.score, "%") : /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-end gap-1 max-w-[250px]" }, /* @__PURE__ */ React.createElement("span", { className: `text-xs font-black px-2 py-1 rounded ${challengeFeedback.score >= 90 ? "bg-green-100 text-green-700" : challengeFeedback.score >= 70 ? "bg-yellow-100 text-yellow-800" : "bg-orange-100 text-orange-700"}` }, "AI Score: ", challengeFeedback.score, "%"), challengeFeedback.feedbackText && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 italic text-right leading-tight bg-white/80 p-1.5 rounded border border-slate-400 shadow-sm animate-in motion-reduce:animate-none slide-in-from-right-2" }, challengeFeedback.feedbackText))), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleRetryChallenge,
       className: "flex items-center gap-1 bg-white text-slate-600 hover:text-indigo-600 border border-slate-400 hover:border-indigo-600 px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm",
       title: t("concept_map.challenge.retry_tooltip"),
@@ -7039,6 +7171,7 @@ const renderInteractiveMap = (deps) => {
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleCheckChallengeRouter,
       disabled: isCheckingChallenge,
       className: "flex items-center gap-1 bg-green-700 hover:bg-green-800 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
@@ -7048,6 +7181,7 @@ const renderInteractiveMap = (deps) => {
   ), isTeacherMode && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleExitChallenge,
       className: "flex items-center justify-center bg-slate-100 hover:bg-red-100 text-slate-600 hover:text-red-700 border border-slate-400 hover:border-red-200 w-8 h-8 rounded-full transition-colors",
       title: t("concept_map.challenge.exit"),

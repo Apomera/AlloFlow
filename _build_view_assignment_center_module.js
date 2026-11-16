@@ -53,5 +53,15 @@ if (require.main === module) {
   fs.writeFileSync(OUTPUT, output, 'utf8');
   fs.mkdirSync(path.dirname(PUBLIC), { recursive: true });
   fs.writeFileSync(PUBLIC, output, 'utf8');
+  for (const extraOut of [
+    path.join(ROOT, 'desktop', 'app-build', 'view_assignment_center_module.js'),
+    path.join(ROOT, 'desktop', 'web-app', 'build', 'view_assignment_center_module.js')
+  ]) {
+    if (fs.existsSync(path.dirname(extraOut))) {
+      const tmp = extraOut + '.build-' + process.pid + '.tmp';
+      fs.writeFileSync(tmp, output, 'utf8');
+      fs.renameSync(tmp, extraOut);
+    }
+  }
   console.log('Built view_assignment_center_module.js and public mirror (' + Buffer.byteLength(output) + ' bytes)');
 }

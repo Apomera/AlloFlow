@@ -5250,7 +5250,7 @@ window.StemLab = window.StemLab || {
             h("button", { type: "button", id: "dna-repl-play", onClick: function() { controlDnaReplication('play'); }, "aria-disabled": replStale || !replValid, "aria-describedby": "dna-repl-controls-help", className: "px-4 py-2 text-sm font-bold rounded-xl " + (replPlaying ? 'bg-amber-700 text-white' : 'bg-teal-700 text-white hover:bg-teal-800') }, replPlaying ? 'Pause' : replComplete ? 'Replay' : replStep > 0 || d.replPlaying ? 'Resume' : 'Replicate'),
             h("button", { type: "button", id: "dna-repl-step", onClick: function() { controlDnaReplication('step'); }, "aria-disabled": replPlaying || replStale || !replValid || replComplete, "aria-describedby": "dna-repl-controls-help", className: "px-3 py-2 text-sm font-bold rounded-xl bg-indigo-700 text-white" }, "Copy one base pair"),
             h("button", { type: "button", id: "dna-repl-reset", onClick: function() { controlDnaReplication('reset'); }, className: "px-3 py-2 text-sm font-bold bg-slate-200 text-slate-700 rounded-xl" }, "Reset replication"),
-            h("div", { className: "flex items-center gap-2 flex-wrap", role: "group", "aria-label": "Replication speed" },
+            h("div", { className: "flex items-center gap-2 flex-wrap", role: "group", "aria-label": __alloT('stem.dna.replicationSpeed', 'Replication speed') },
               h("span", { className: "text-xs text-slate-700" }, 'Speed:'),
               [0.5, 1, 2, 4].map(function(rate) { return h("button", { type: "button", key: rate, "data-dna-repl-speed": rate, "aria-pressed": replSpeed === rate, "aria-label": rate + 'x replication speed', onClick: function() { controlDnaReplication('speed', rate); }, className: "px-2 py-1 text-xs font-bold rounded-lg " + (replSpeed === rate ? 'bg-teal-700 text-white' : 'bg-slate-100 text-slate-700') }, rate + 'x'); })
             )
@@ -5259,7 +5259,7 @@ window.StemLab = window.StemLab || {
           h("p", { id: "dna-repl-status", role: "status", "aria-live": "polite", "aria-atomic": "true", className: "rounded-xl border border-teal-600 bg-white p-3 text-xs font-bold text-slate-800" }, replStatus),
           h("div", { className: "bg-white rounded-xl border border-slate-400 p-4 space-y-3" },
             h("div", { className: "flex justify-between flex-wrap gap-2 text-xs text-slate-700 mb-1" }, h("span", null, replStep + '/' + replSequence.length + ' base-pair positions copied'), h("span", null, replPercent + '%')),
-            h("div", { id: "dna-repl-progress", role: "progressbar", "aria-label": "DNA replication progress", "aria-valuemin": 0, "aria-valuemax": Math.max(1, replSequence.length), "aria-valuenow": replStep, "aria-valuetext": replStep + ' of ' + replSequence.length + ' base-pair positions copied', className: "w-full bg-slate-100 rounded-full h-2" }, h("div", { className: "bg-teal-700 rounded-full h-2", style: { width: replPercent + '%' } })),
+            h("div", { id: "dna-repl-progress", role: "progressbar", "aria-label": __alloT('stem.dna.replicationProgress', 'DNA replication progress'), "aria-valuemin": 0, "aria-valuemax": Math.max(1, replSequence.length), "aria-valuenow": replStep, "aria-valuetext": replStep + ' of ' + replSequence.length + ' base-pair positions copied', className: "w-full bg-slate-100 rounded-full h-2" }, h("div", { className: "bg-teal-700 rounded-full h-2", style: { width: replPercent + '%' } })),
             h("p", { className: "text-xs text-slate-600 mt-2 leading-relaxed" },
               gradeText(
                 '\uD83E\uDDEC DNA replication is like photocopying a recipe. The cell unzips the DNA ladder and builds two exact copies so both new cells get the instructions!',
@@ -5326,7 +5326,7 @@ window.StemLab = window.StemLab || {
             h("button", { type: "button", id: "dna-tx-play", onClick: function() { controlDnaTranscription('play'); }, "aria-disabled": txStale || txMismatch || !txValid, "aria-describedby": "dna-tx-controls-help", className: "px-4 py-2 text-sm font-bold rounded-xl " + (txPlaying ? 'bg-amber-700 text-white' : 'bg-violet-700 text-white hover:bg-violet-800') }, txPlaying ? 'Pause' : txComplete ? 'Replay' : txStep > 0 || d.animPlaying ? 'Resume' : 'Transcribe'),
             h("button", { type: "button", id: "dna-tx-step", onClick: function() { controlDnaTranscription('step'); }, "aria-disabled": txPlaying || txStale || txMismatch || !txValid || txComplete, "aria-describedby": "dna-tx-controls-help", className: "px-3 py-2 text-sm font-bold rounded-xl bg-indigo-700 text-white" }, "Add one RNA base"),
             h("button", { type: "button", id: "dna-tx-reset", onClick: function() { controlDnaTranscription('reset'); }, className: "px-3 py-2 text-sm font-bold bg-slate-200 text-slate-700 rounded-xl" }, "Reset transcription"),
-            h("div", { className: "flex items-center gap-2 flex-wrap", role: "group", "aria-label": "Transcription speed" },
+            h("div", { className: "flex items-center gap-2 flex-wrap", role: "group", "aria-label": __alloT('stem.dna.transcriptionSpeed', 'Transcription speed') },
               h("span", { className: "text-xs text-slate-700" }, "Speed:"),
               [0.5, 1, 2, 4].map(function(rate) { return h("button", { type: "button", key: rate, "data-dna-tx-speed": rate, "aria-pressed": txSpeed === rate, "aria-label": rate + 'x transcription speed', onClick: function() { controlDnaTranscription('speed', rate); }, className: "px-2 py-1 text-xs font-bold rounded-lg " + (txSpeed === rate ? 'bg-violet-700 text-white' : 'bg-slate-100 text-slate-700') }, rate + 'x'); })
             )
@@ -5335,7 +5335,7 @@ window.StemLab = window.StemLab || {
           h("p", { id: "dna-tx-status", role: "status", "aria-live": "polite", "aria-atomic": "true", className: "rounded-xl border border-violet-600 bg-white p-3 text-xs font-bold text-slate-800" }, txStatus),
           h("div", { className: "rounded-xl border border-slate-400 bg-white p-4" },
             h("div", { className: "mb-2 flex flex-wrap justify-between gap-2 text-xs text-slate-700" }, h("span", null, txStep + '/' + txSequence.length + ' RNA bases added'), h("span", null, txPercent + '%')),
-            h("div", { id: "dna-tx-progress", role: "progressbar", "aria-label": "Transcription progress", "aria-valuemin": 0, "aria-valuemax": Math.max(1, txSequence.length), "aria-valuenow": txStep, "aria-valuetext": txStep + ' of ' + txSequence.length + ' RNA bases added', className: "h-2 w-full rounded-full bg-slate-100" }, h("div", { className: "h-2 rounded-full bg-violet-700", style: { width: txPercent + '%' } }))
+            h("div", { id: "dna-tx-progress", role: "progressbar", "aria-label": __alloT('stem.dna.transcriptionProgress', 'Transcription progress'), "aria-valuemin": 0, "aria-valuemax": Math.max(1, txSequence.length), "aria-valuenow": txStep, "aria-valuetext": txStep + ' of ' + txSequence.length + ' RNA bases added', className: "h-2 w-full rounded-full bg-slate-100" }, h("div", { className: "h-2 rounded-full bg-violet-700", style: { width: txPercent + '%' } }))
           ),
           h("section", { className: "rounded-xl border border-indigo-600 bg-white p-4", "aria-labelledby": "dna-tx-prediction-title" },
             h("fieldset", { id: "dna-tx-prediction", disabled: txPlaying || txStale || txMismatch || !txValid || txComplete, "aria-describedby": "dna-tx-prediction-help", className: "min-w-0" },
@@ -5718,7 +5718,7 @@ window.StemLab = window.StemLab || {
                 );
               })
             ),
-            h("div", { className: "mt-1 flex flex-wrap items-center justify-between gap-2 rounded-xl border px-3 py-2.5 " + (experimentComparison ? "border-emerald-200 bg-emerald-50" : "border-indigo-200 bg-indigo-50"), "data-dna-comparison-readiness": true, "data-comparison-state": experimentComparison ? "ready" : compareLeft || compareRight ? "one-selected" : "empty", role: "group", "aria-label": "Comparison readiness" },
+            h("div", { className: "mt-1 flex flex-wrap items-center justify-between gap-2 rounded-xl border px-3 py-2.5 " + (experimentComparison ? "border-emerald-200 bg-emerald-50" : "border-indigo-200 bg-indigo-50"), "data-dna-comparison-readiness": true, "data-comparison-state": experimentComparison ? "ready" : compareLeft || compareRight ? "one-selected" : "empty", role: "group", "aria-label": __alloT('stem.dna.comparisonReadiness', 'Comparison readiness') },
               h("div", null,
                 h("div", { className: "text-[0.625rem] font-black " + (experimentComparison ? "text-emerald-900" : "text-indigo-900") }, experimentComparison ? "Ready to compare" : compareLeft || compareRight ? "Choose two different checkpoints" : "Choose comparison A and B"),
                 h("div", { className: "mt-0.5 text-[0.5625rem] leading-relaxed text-slate-600" }, experimentComparison ? dnaCheckpointLabel(compareLeft) + " \u2194 " + dnaCheckpointLabel(compareRight) : "Use the card buttons above or the selectors below.")
@@ -5859,7 +5859,7 @@ window.StemLab = window.StemLab || {
               { label: "PAM", value: pamSites.length, tone: "#8b5cf6" },
               { label: "Scan", value: crisprScanPos + "/" + (selectedPAMSite ? selectedPAMSite.cutSite : 0), tone: "#0ea5e9" }
             ],
-            h("canvas", { ref: _crisprCanvasRef, className: "block w-full", style: { width: '100%', height: 280 }, id: 'dna-crispr-canvas', tabIndex: 0, role: "img", 'aria-label': 'CRISPR-Cas9 target and repair model', 'aria-describedby': 'dna-crispr-description dna-crispr-target-readout' }),
+            h("canvas", { ref: _crisprCanvasRef, className: "block w-full", style: { width: '100%', height: 280 }, id: 'dna-crispr-canvas', tabIndex: 0, role: "img", 'aria-label': __alloT('stem.dna.crisprModelLabel', 'CRISPR-Cas9 target and repair model'), 'aria-describedby': 'dna-crispr-description dna-crispr-target-readout' }),
             t('stem.dna.crispr_cas9_gene_editing_simulation', 'CRISPR-Cas9 gene editing simulation')
           ),
 
@@ -5926,7 +5926,7 @@ window.StemLab = window.StemLab || {
             // Scanning phase: each control works with native keyboard activation.
             crisprPhase === 'scanning' && !crisprAttemptStale && h("div", { className: "space-y-3", "data-dna-crispr-scan-controls": true },
               h("p", { id: "dna-crispr-scan-help", className: "text-xs text-slate-700" }, "Pause to inspect the model. While paused, move one base at a time, or skip the scan animation to choose a repair. These controls do not change the DNA."),
-              h("div", { className: "w-full rounded-full bg-slate-200 h-3", role: "progressbar", "aria-label": "Cas9 scan progress", "aria-valuemin": 0, "aria-valuemax": selectedPAMSite.cutSite, "aria-valuenow": crisprScanPos, "aria-valuetext": "Scan position " + crisprScanPos + " of " + selectedPAMSite.cutSite + (crisprPaused ? ", paused" : ", scanning") },
+              h("div", { className: "w-full rounded-full bg-slate-200 h-3", role: "progressbar", "aria-label": __alloT('stem.dna.cas9ScanProgress', 'Cas9 scan progress'), "aria-valuemin": 0, "aria-valuemax": selectedPAMSite.cutSite, "aria-valuenow": crisprScanPos, "aria-valuetext": "Scan position " + crisprScanPos + " of " + selectedPAMSite.cutSite + (crisprPaused ? ", paused" : ", scanning") },
                 h("div", { className: "h-3 rounded-full bg-violet-700", style: { width: (crisprScanPos / selectedPAMSite.cutSite * 100) + '%' } })
               ),
               h("div", { className: "flex flex-wrap gap-2" },

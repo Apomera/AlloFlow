@@ -24405,7 +24405,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           : 'Winter — feeder birds, irruptive owls, and resilient year-round residents.';
         return h('div', { className: 'birdlab-shell p-6 max-w-6xl mx-auto', 'data-birdlab-menu': 'true', 'data-birdlab-atmosphere':atmosphereOn ? 'moving' : 'still' },
           // ── Hero: layered SVG scene with title overlay ──
-          h('div', { className: 'birdlab-hero mb-6 rounded-3xl overflow-hidden shadow-lg relative', style: { background: 'var(--allo-stem-canvas, #0f172a)' } },
+          h('div', { className: 'birdlab-hero mb-6 rounded-3xl overflow-hidden shadow-lg relative', style: { background: '#102e2b' } },
             h('svg', {
               viewBox: '0 0 800 240', width: '100%',
               role: 'img', 'aria-label': __alloT('stem.birdlab.birdlab_hero_illustration_sky_with_fly', 'BirdLab hero illustration: sky with flying birds over Maine pine silhouettes'),

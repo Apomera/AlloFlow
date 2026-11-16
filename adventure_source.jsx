@@ -2145,7 +2145,7 @@ const AdventureShop = React.memo(({ gold, globalXP, energy = 100, inventory = []
                     : blockReason === 'energy_full'
                         ? (t('adventure.shop_energy_full') || 'Energy full')
                         : blockReason === 'boost_active'
-                            ? (t('adventure.shop_boost_active') || (Number(activeGoldBuffTurns) > 0 ? 'Boost active' : 'Boost active'))
+                            ? (t('adventure.shop_boost_active') || 'Boost active')
                             : (t('adventure.need_more_gold', { amount: item.cost - gold }) || `Need ${item.cost - gold}G more`);
                 return (
                 <div key={item.id} className="bg-slate-800 border-2 border-slate-700 rounded-2xl p-3 sm:p-4 flex flex-col hover:border-indigo-500 transition-colors group relative overflow-hidden">

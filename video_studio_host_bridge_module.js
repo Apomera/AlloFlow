@@ -8,6 +8,25 @@ if (window.AlloModules.VideoStudioHostBridgeView) return;
 // Auto-extracted cold-path view source. Edit this file, then rebuild its CDN module.
 
 // Extracted from AlloFlowANTI.txt (video-studio-host-bridge).
+const _safeVideoHostedUrl = raw => {
+  if (typeof raw !== 'string') return '';
+  const cleaned = raw.replace(/[\x00-\x1f\x7f]/g, '').trim();
+  if (!cleaned || cleaned.length > 2048) return '';
+  try {
+    const u = new URL(cleaned);
+    const host = String(u.hostname || '').toLowerCase();
+    const isLocalHttp = u.protocol === 'http:' && (host === 'localhost' || host === '127.0.0.1' || host === '[::1]');
+    if ((u.protocol === 'https:' || isLocalHttp) && !u.username && !u.password) return u.href;
+  } catch (_) {}
+  return '';
+};
+const _videoStudioReducedMotion = () => typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const _videoStudioAiTextUsable = callGemini => {
+  if (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true)) return false;
+  if (callGemini && callGemini._alloQrBlocked === true) return false;
+  if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return Boolean(window.__alloAiUsable('text', callGemini));
+  return Boolean(callGemini);
+};
 function VideoStudioHostBridgeView(props) {
   const {
     CDNModuleGate,
@@ -40,6 +59,15 @@ function VideoStudioHostBridgeView(props) {
     sourceTopic,
     t
   } = props;
+  const [, setAiConfigTick] = React.useState(0);
+  React.useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.addEventListener !== 'function') return undefined;
+    const bump = () => setAiConfigTick(n => (n + 1) % 1000000);
+    const evs = ['alloflow:ai-config-changed', 'alloflow:student-ai-config-changed', 'alloflow:ai-key-lock-changed', 'storage'];
+    evs.forEach(ev => window.addEventListener(ev, bump));
+    return () => evs.forEach(ev => window.removeEventListener(ev, bump));
+  }, []);
+  const aiTextUsable = _videoStudioAiTextUsable(callGemini);
   return /*#__PURE__*/React.createElement(CDNModuleGate, {
     moduleKey: "VideoStudio",
     isOpen: isVideoStudioOpen,
@@ -51,7 +79,7 @@ function VideoStudioHostBridgeView(props) {
     onClose: () => setIsVideoStudioOpen(false),
     addToast,
     t,
-    callGemini: callGemini,
+    callGemini: aiTextUsable ? callGemini : null,
     getCoachAiInfo: () => {
       const profile = (_alloCmdCtxRef.current || _alloCmdCtx())?.aiProviderProfile || {};
       const info = {};
@@ -102,17 +130,19 @@ function VideoStudioHostBridgeView(props) {
       // optional hosted link — never bytes) as a 'video-ref' card.
       if (!ref || ref.type !== 'videoRef') throw new Error('Not a video reference.');
       const refTitle = String(ref.title || 'Teacher video').slice(0, 120);
+      const safeHostedUrl = _safeVideoHostedUrl(ref.hostedUrl);
       const newRefId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
       const refItem = {
         id: newRefId,
         type: 'video-ref',
         title: refTitle,
-        text: `${refTitle} — video (${Math.floor((ref.durationSec || 0) / 60)}:${String((ref.durationSec || 0) % 60).padStart(2, '0')})${ref.hostedUrl ? ` — ${ref.hostedUrl}` : ''}`,
+        text: `${refTitle} — video (${Math.floor((ref.durationSec || 0) / 60)}:${String((ref.durationSec || 0) % 60).padStart(2, '0')})${safeHostedUrl ? ` — ${safeHostedUrl}` : ''}`,
         content: '',
         data: {
-          ...ref
+          ...ref,
+          hostedUrl: safeHostedUrl
         },
-        meta: ref.hostedUrl ? 'Video Studio card · hosted link attached' : 'Video Studio card · re-attach the downloaded file to play',
+        meta: safeHostedUrl ? 'Video Studio card · hosted link attached' : 'Video Studio card · re-attach the downloaded file to play',
         timestamp: new Date(),
         config: {},
         source: 'video_studio'
@@ -170,9 +200,10 @@ function VideoStudioHostBridgeView(props) {
           if (!el) await wait(100);
         }
         if (!el) throw new Error('Tutorial target is not visible: ' + anchorId);
+        const reducedMotion = _videoStudioReducedMotion();
         try {
           el.scrollIntoView({
-            behavior: 'smooth',
+            behavior: reducedMotion ? 'auto' : 'smooth',
             block: 'center'
           });
         } catch (_) {}
@@ -185,9 +216,9 @@ function VideoStudioHostBridgeView(props) {
           const rect = el.getBoundingClientRect();
           cursorMarker = document.createElement('div');
           cursorMarker.setAttribute('aria-hidden', 'true');
-          cursorMarker.style.cssText = 'position:fixed;z-index:2147483000;pointer-events:none;width:34px;height:34px;border:4px solid #f59e0b;border-radius:999px;left:' + Math.max(4, Math.min(window.innerWidth - 38, rect.left + rect.width / 2 - 17)) + 'px;top:' + Math.max(4, Math.min(window.innerHeight - 38, rect.top + rect.height / 2 - 17)) + 'px;box-shadow:0 0 0 8px rgba(245,158,11,.24),0 4px 16px rgba(15,23,42,.35);background:rgba(255,255,255,.2);transition:transform .25s ease,opacity .25s ease';
+          cursorMarker.style.cssText = 'position:fixed;z-index:2147483000;pointer-events:none;width:34px;height:34px;border:4px solid #f59e0b;border-radius:999px;left:' + Math.max(4, Math.min(window.innerWidth - 38, rect.left + rect.width / 2 - 17)) + 'px;top:' + Math.max(4, Math.min(window.innerHeight - 38, rect.top + rect.height / 2 - 17)) + 'px;box-shadow:0 0 0 8px rgba(245,158,11,.24),0 4px 16px rgba(15,23,42,.35);background:rgba(255,255,255,.2)' + (reducedMotion ? '' : ';transition:transform .25s ease,opacity .25s ease');
           document.body.appendChild(cursorMarker);
-          requestAnimationFrame(() => {
+          if (!reducedMotion) requestAnimationFrame(() => {
             if (cursorMarker) cursorMarker.style.transform = 'scale(.72)';
           });
         }
@@ -283,36 +314,65 @@ function VideoStudioHostBridgeView(props) {
         throw new Error('The command planner is still loading — wait a moment and try again.');
       }
       const cleanGoal = String(goal || '').slice(0, 300);
-      let steps = await AC.planUtterance(_alloCmdCtx(), cleanGoal, {
-        demoSafeOnly: true,
-        comprehensiveDemo: true,
-        maxSteps: 16,
-        signal: options.signal || null
-      });
-      if ((!steps || !steps.length) && typeof AC.routeUtterance === 'function') {
-        // Single-action demos are legitimate ("show how to open the
-        // reading library") but planUtterance requires 2+ steps — an
-        // AlloBot rule we shouldn't loosen globally. Fall back to the
-        // single-command router and wrap its match as a 1-step plan.
-        try {
-          const m = await AC.routeUtterance(_alloCmdCtx(), cleanGoal, {
-            allowAi: true,
-            preview: true,
-            signal: options.signal || null
-          });
-          if (m && m.commandId) {
-            const candidate = [{
-              commandId: m.commandId,
-              params: m.params || {},
-              why: ''
-            }];
-            const report = AC.validatePlan(_alloCmdCtx(), candidate, {
-              demoSafeOnly: true
+      let steps = [];
+      if (!_videoStudioAiTextUsable(callGemini)) {
+        if (typeof AC.routeUtterance === 'function') {
+          try {
+            const m = await AC.routeUtterance(_alloCmdCtx(), cleanGoal, {
+              allowAi: false,
+              preview: true,
+              signal: options.signal || null
             });
-            if (report && report.ok) steps = candidate;
+            if (m && m.commandId) {
+              const candidate = [{
+                commandId: m.commandId,
+                params: m.params || {},
+                why: ''
+              }];
+              const report = AC.validatePlan(_alloCmdCtx(), candidate, {
+                demoSafeOnly: true
+              });
+              if (report && report.ok) steps = candidate;
+            }
+          } catch (error) {
+            if (error && error.name === 'AbortError') throw error;
           }
-        } catch (error) {
-          if (error && error.name === 'AbortError') throw error;
+        }
+        if (!steps || !steps.length) {
+          throw new Error('AI demo planning needs an AI connection — connect an AI provider in Settings or use an official tutorial.');
+        }
+      } else {
+        steps = await AC.planUtterance(_alloCmdCtx(), cleanGoal, {
+          demoSafeOnly: true,
+          comprehensiveDemo: true,
+          maxSteps: 16,
+          signal: options.signal || null
+        });
+        if ((!steps || !steps.length) && typeof AC.routeUtterance === 'function') {
+          // Single-action demos are legitimate ("show how to open the
+          // reading library") but planUtterance requires 2+ steps — an
+          // AlloBot rule we shouldn't loosen globally. Fall back to the
+          // single-command router and wrap its match as a 1-step plan.
+          try {
+            const m = await AC.routeUtterance(_alloCmdCtx(), cleanGoal, {
+              allowAi: true,
+              preview: true,
+              signal: options.signal || null
+            });
+            if (m && m.commandId) {
+              const candidate = [{
+                commandId: m.commandId,
+                params: m.params || {},
+                why: ''
+              }];
+              const report = AC.validatePlan(_alloCmdCtx(), candidate, {
+                demoSafeOnly: true
+              });
+              if (report && report.ok) steps = candidate;
+            }
+          } catch (error) {
+            if (error && error.name === 'AbortError') throw error;
+          }
         }
       }
       if (!steps || !steps.length) return {
@@ -389,20 +449,21 @@ function VideoStudioHostBridgeView(props) {
           width: 2,
           height: 2
         };
+        const reducedMotion = _videoStudioReducedMotion();
         const marker = document.createElement('div');
         marker.setAttribute('aria-hidden', 'true');
-        marker.style.cssText = 'position:fixed;z-index:2147483000;pointer-events:none;width:32px;height:32px;border:4px solid #f59e0b;border-radius:999px;left:' + Math.max(4, Math.min(window.innerWidth - 36, rect.left + rect.width / 2 - 16)) + 'px;top:' + Math.max(4, Math.min(window.innerHeight - 36, rect.top + rect.height / 2 - 16)) + 'px;box-shadow:0 0 0 8px rgba(245,158,11,.24),0 4px 16px rgba(15,23,42,.35);background:rgba(255,255,255,.18);transform:scale(1.2);transition:transform .3s ease,opacity .3s ease';
+        marker.style.cssText = 'position:fixed;z-index:2147483000;pointer-events:none;width:32px;height:32px;border:4px solid #f59e0b;border-radius:999px;left:' + Math.max(4, Math.min(window.innerWidth - 36, rect.left + rect.width / 2 - 16)) + 'px;top:' + Math.max(4, Math.min(window.innerHeight - 36, rect.top + rect.height / 2 - 16)) + 'px;box-shadow:0 0 0 8px rgba(245,158,11,.24),0 4px 16px rgba(15,23,42,.35);background:rgba(255,255,255,.18)' + (reducedMotion ? '' : ';transform:scale(1.2);transition:transform .3s ease,opacity .3s ease');
         document.body.appendChild(marker);
         cursorMarkers.add(marker);
-        requestAnimationFrame(() => {
+        if (!reducedMotion) requestAnimationFrame(() => {
           marker.style.transform = 'scale(.7)';
         });
         setTimeout(() => {
-          marker.style.opacity = '0';
+          if (!reducedMotion) marker.style.opacity = '0';
           setTimeout(() => {
             cursorMarkers.delete(marker);
             marker.remove();
-          }, 320);
+          }, reducedMotion ? 0 : 320);
         }, 700);
       };
       try {

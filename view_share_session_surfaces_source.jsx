@@ -10,9 +10,63 @@ function HomeworkQrDialogView(props) {
   const count = Number.isFinite(Number(qrShareModal.resourceCount)) ? Math.max(0, Math.trunc(Number(qrShareModal.resourceCount))) : 1;
   const readingRows = delivery && Array.isArray(delivery.readings) ? delivery.readings : [];
   const deliveryText = (key, fallback) => { const value = typeof t === 'function' ? t(key) : ''; return value && value !== key ? value : fallback; };
+  const fallbackQrDialogRef = React.useRef(null);
+  const activeQrDialogRef = homeworkQrDialogRef || fallbackQrDialogRef;
+  React.useEffect(() => {
+    const dialog = activeQrDialogRef && activeQrDialogRef.current;
+    if (!dialog || typeof document === 'undefined') return undefined;
+    const trapId = Symbol('homework-qr-focus-trap');
+    const stack = typeof window !== 'undefined'
+      ? (window.__alloFocusTrapStack = window.__alloFocusTrapStack || [])
+      : null;
+    const prevFocus = document.activeElement;
+    if (stack) stack.push(trapId);
+    const getFocusable = () => Array.from(dialog.querySelectorAll('a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])')).filter(el => {
+      if (el.disabled || el.getAttribute('aria-hidden') === 'true') return false;
+      const st = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(el) : null;
+      return !st || (st.display !== 'none' && st.visibility !== 'hidden');
+    });
+    const onKeyDown = (event) => {
+      if (event.defaultPrevented) return;
+      if (stack && stack[stack.length - 1] !== trapId) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        if (typeof setQrShareModal === 'function') setQrShareModal(null);
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const items = getFocusable();
+      if (!items.length) {
+        event.preventDefault();
+        try { dialog.focus({ preventScroll: true }); } catch (_) {}
+        return;
+      }
+      const first = items[0], last = items[items.length - 1];
+      if (event.shiftKey) {
+        if (document.activeElement === first || !dialog.contains(document.activeElement)) {
+          event.preventDefault();
+          try { last.focus({ preventScroll: true }); } catch (_) {}
+        }
+      } else if (document.activeElement === last || !dialog.contains(document.activeElement)) {
+        event.preventDefault();
+        try { first.focus({ preventScroll: true }); } catch (_) {}
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      if (stack) {
+        const idx = stack.lastIndexOf(trapId);
+        if (idx >= 0) stack.splice(idx, 1);
+      }
+      if (prevFocus && typeof prevFocus.focus === 'function') {
+        try { prevFocus.focus({ preventScroll: true }); } catch (_) {}
+      }
+    };
+  }, [activeQrDialogRef, setQrShareModal]);
   return (
-<div ref={homeworkQrDialogRef} tabIndex={-1} className="bg-gradient-to-b from-violet-50 to-white rounded-3xl shadow-2xl border border-violet-200 p-6 text-center max-w-md w-full relative max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <button onClick={() => setQrShareModal(null)} className="absolute top-3 right-3 p-2 rounded-full text-slate-600 hover:bg-slate-100" aria-label={t('common.close') || 'Close'}><X size={20}/></button>
+<div ref={activeQrDialogRef} tabIndex={-1} className="bg-gradient-to-b from-violet-50 to-white rounded-3xl shadow-2xl border border-violet-200 p-6 text-center max-w-md w-full relative max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <button type="button" onClick={() => setQrShareModal(null)} className="absolute top-3 right-3 min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-full text-slate-600 hover:bg-slate-100" aria-label={t('common.close') || 'Close'}><X size={20}/></button>
             <div className="mx-auto mb-3 w-14 h-14 rounded-2xl bg-violet-700 text-white flex items-center justify-center shadow-lg shadow-violet-200"><ClipboardList size={28}/></div>
             <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 border border-amber-300 px-3 py-1 text-[11px] font-black uppercase tracking-wider text-amber-900 mb-2"><BookOpen size={13}/> {t('share_collect.take_home_assignment') || 'Take-home assignment'}</div>
             <h2 id="alloflow-homework-qr-title" className="text-2xl font-black text-slate-900 mb-1">{qrShareModal.type === 'assignment-pack-hosted' ? deliveryText('share_collect.title_hosted', 'Hosted homework assignment') : qrShareModal.type === 'assignment-pack' ? deliveryText('share_collect.title_self_contained', 'Self-contained homework assignment') : deliveryText('share_collect.title_ready', 'Homework assignment ready')}</h2>
@@ -90,8 +144,8 @@ function HomeworkQrDialogView(props) {
             </div>
             {qrShareModal.type === 'assignment-pack-hosted' && qrShareModal.sharedActivity && (
               <details className="mb-3 rounded-xl border border-sky-200 bg-sky-50 p-3 text-left">
-                <summary className="cursor-pointer text-xs font-black text-sky-900">{t('share_collect.manage_shared') || 'Manage shared'} {qrShareModal.sharedActivity.type === 'rating' ? 'class rating' : qrShareModal.sharedActivity.type === 'survey' ? 'survey' : 'class Word Cloud'}</summary>
-                <p className="mt-2 text-[11px] leading-relaxed text-sky-800">{qrShareModal.sharedActivity.type === 'rating' ? 'Students rate on their own time. Only the anonymous distribution appears after the participation threshold.' : 'Students contribute on their own time. Open this section later from Recent homework links to approve or hide entries.'}</p>
+                <summary className="cursor-pointer text-xs font-black text-sky-900">{t('share_collect.manage_shared') || 'Manage shared'} {qrShareModal.sharedActivity.type === 'rating' ? 'class rating' : qrShareModal.sharedActivity.type === 'survey' ? 'survey' : qrShareModal.sharedActivity.type === 'poll' ? 'class poll' : qrShareModal.sharedActivity.type === 'discussion' ? 'class discussion' : qrShareModal.sharedActivity.type === 'exit-ticket' ? 'exit ticket' : 'class Word Cloud'}</summary>
+                <p className="mt-2 text-[11px] leading-relaxed text-sky-800">{qrShareModal.sharedActivity.type === 'rating' ? 'Students rate on their own time. Only the anonymous distribution appears after the participation threshold.' : qrShareModal.sharedActivity.type === 'poll' ? 'Students vote on their own time. Results update as learners submit responses.' : qrShareModal.sharedActivity.type === 'exit-ticket' ? 'Students complete the exit ticket on their own time. Open this section later from Recent homework links to review responses.' : 'Students contribute on their own time. Open this section later from Recent homework links to approve or hide entries.'}</p>
                 <div className="mt-3">
                   {qrShareMailbox ? <SharedAssignmentActivityPanel
                     mode="teacher"
@@ -105,36 +159,51 @@ function HomeworkQrDialogView(props) {
             )}
             <p role="status" aria-live="polite" aria-atomic="true" className="text-[11px] text-slate-500 mb-3">{qrShareModal.noQr ? deliveryText('share_collect.link_ready', 'Homework link ready') : qrShareSvg ? (t('share_collect.ready_to_scan') || 'Ready to scan') : qrShareError ? (t('share_collect.qr_unavailable_use_link') || 'QR unavailable - use the link below') : (t('share_collect.validating_qr_code') || 'Validating QR code...')} &middot; {(t('share_collect.expires_on') || 'Expires {date}.').replace('{date}', qrShareModal.expiresAt ? new Date(qrShareModal.expiresAt).toLocaleDateString() : (t('share_collect.expires_default_window') || '14 days after creation'))}</p>
             <div className="mb-2 grid grid-cols-2 gap-2">
-              <button onClick={testHomeworkAsStudent} className="flex min-h-10 items-center justify-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 p-2 text-xs font-bold text-emerald-900 hover:border-emerald-500">
+              <button type="button" onClick={testHomeworkAsStudent} className="flex min-h-10 items-center justify-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 p-2 text-xs font-bold text-emerald-900 hover:border-emerald-500">
                 {t('share_collect.test_as_student') || 'Test as student'} <ExternalLink size={12}/>
               </button>
-              <button onClick={() => printQrSheet(qrShareSvg, 'AlloFlow homework assignment', qrShareModal.title, `${deliveryText('share_collect.print_sheet_resources', 'Teacher-prepared resources')} · ${qrShareModal.aiPolicy === 'student-byok' ? deliveryText('share_collect.personal_ai_optional', 'Personal AI optional') : deliveryText('share_collect.student_ai_off', 'Student AI off')} · ${deliveryText('share_collect.no_live_session', 'No live session')}`)} disabled={!qrShareSvg} className="flex min-h-10 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white p-2 text-xs font-bold text-slate-800 hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50">
+              <button type="button" onClick={() => printQrSheet(qrShareSvg, 'AlloFlow homework assignment', qrShareModal.title, `${deliveryText('share_collect.print_sheet_resources', 'Teacher-prepared resources')} · ${qrShareModal.aiPolicy === 'student-byok' ? deliveryText('share_collect.personal_ai_optional', 'Personal AI optional') : deliveryText('share_collect.student_ai_off', 'Student AI off')} · ${deliveryText('share_collect.no_live_session', 'No live session')}`)} disabled={!qrShareSvg} className="flex min-h-10 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white p-2 text-xs font-bold text-slate-800 hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50">
                 {t('share_collect.print_qr') || 'Print QR'} <Printer size={12}/>
               </button>
             </div>
-            <button onClick={() => copyToClipboard(qrShareModal.url)} className="w-full flex items-center justify-center gap-2 text-xs font-bold text-violet-900 hover:text-violet-950 bg-violet-100 border border-violet-300 hover:border-violet-500 rounded-lg p-2 transition-all break-all">
+            <button type="button" onClick={() => copyToClipboard(qrShareModal.url)} className="w-full flex items-center justify-center gap-2 text-xs font-bold text-violet-900 hover:text-violet-950 bg-violet-100 border border-violet-300 hover:border-violet-500 rounded-lg p-2 transition-all break-all">
               {qrShareModal.type === 'assignment-pack-hosted' ? deliveryText('share_collect.copy_hosted_link', 'Copy hosted homework link') : qrShareModal.type === 'assignment-pack' ? deliveryText('share_collect.copy_self_contained_link', 'Copy self-contained link') : deliveryText('share_collect.copy_homework_link', 'Copy homework link')} <Copy size={12}/>
             </button>
             <input aria-label={t('share_collect.link_aria') || 'Selectable homework link'} readOnly value={qrShareModal.url || ''} onFocus={event => event.target.select()} className="mt-2 w-full rounded-lg border border-violet-200 bg-white px-3 py-2 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-violet-500" />
             {qrShareModal.type !== 'assignment-pack' && (
-              <button onClick={revokeHomeworkAssignment} className="w-full mt-2 flex items-center justify-center gap-2 text-xs font-bold text-red-800 bg-red-50 border border-red-300 hover:border-red-500 rounded-lg p-2 transition-all">
+              <button type="button" onClick={revokeHomeworkAssignment} className="w-full mt-2 flex items-center justify-center gap-2 text-xs font-bold text-red-800 bg-red-50 border border-red-300 hover:border-red-500 rounded-lg p-2 transition-all">
                 {t('share_collect.revoke_homework_link') || 'Revoke homework link'} <Trash2 size={12}/>
               </button>
             )}
             {qrShareModal.type === 'assignment-pack' && <p className="text-[11px] text-amber-800 mt-2">{t('share_collect.self_contained_links_cannot_be_remotely') || 'Self-contained links cannot be remotely revoked; their built-in expiration still applies.'}</p>}
-            {(qrShareModal.type === 'assignment' || qrShareModal.type === 'assignment-pack') && <p className="mt-2 text-[11px] text-slate-600">{canConvertSelection
-              ? deliveryText('share_collect.convert_saved_selection', 'Another link type uses the current saved versions of these resources and keeps this link’s student AI setting.')
-              : deliveryText('share_collect.reselect_for_conversion', 'To create another link type, select the resources again in History. This saved link does not have a reusable selection.')}</p>}
-            {qrShareModal.type === 'assignment' && (
-              <button onClick={() => { if (canConvertSelection) createSelfContainedHomeworkLink(conversionIds.slice(), { aiPolicy: qrShareModal.aiPolicy === 'student-byok' ? 'student-byok' : 'off' }); }} disabled={!canConvertSelection} className="w-full mt-2 flex items-center justify-center gap-2 text-xs font-bold text-emerald-800 hover:text-emerald-900 bg-emerald-50 border border-emerald-300 hover:border-emerald-400 rounded-lg p-2 transition-all disabled:opacity-60 disabled:cursor-not-allowed">
-                {t('share_collect.make_self_contained_version_no_accounts') || 'Make self-contained version (no accounts needed)'} <Share2 size={12}/>
-              </button>
-            )}
-            {(qrShareModal.type === 'assignment' || qrShareModal.type === 'assignment-pack') && (
-              <button onClick={() => { if (canConvertSelection) hostPackOnMailbox(conversionIds.slice(), { includeSharedActivity: false, aiPolicy: qrShareModal.aiPolicy === 'student-byok' ? 'student-byok' : 'off' }); }} disabled={mbBusy || !canConvertSelection} className="w-full mt-2 flex items-center justify-center gap-2 text-xs font-bold text-indigo-800 hover:text-indigo-900 bg-indigo-50 border border-indigo-300 hover:border-indigo-400 rounded-lg p-2 transition-all disabled:opacity-60">
-                {mbBusy ? deliveryText('share_collect.uploading_to_mailbox', 'Uploading to your mailbox…') : deliveryText('share_collect.host_on_mailbox', 'Host on Class Mailbox (small QR, images OK)')} <Share2 size={12}/>
-              </button>
-            )}
+            {(qrShareModal.type === 'assignment' || qrShareModal.type === 'assignment-pack') && (() => {
+              const buildConversionOptions = (isHosted) => {
+                const opts = isHosted
+                  ? { includeSharedActivity: Boolean(qrShareModal.sharedActivity), aiPolicy: qrShareModal.aiPolicy === 'student-byok' ? 'student-byok' : 'off' }
+                  : { aiPolicy: qrShareModal.aiPolicy === 'student-byok' ? 'student-byok' : 'off' };
+                ['dueAt', 'assessmentMode', 'classId', 'assignmentId'].forEach(k => {
+                  if (qrShareModal[k] != null && qrShareModal[k] !== '') opts[k] = qrShareModal[k];
+                });
+                if (qrShareModal.researchMeta != null) opts.researchMeta = qrShareModal.researchMeta;
+                if (qrShareModal.sharedActivity != null) opts.sharedActivity = qrShareModal.sharedActivity;
+                return opts;
+              };
+              return (
+                <React.Fragment>
+                  <p className="mt-2 text-[11px] text-slate-600">{canConvertSelection
+                    ? deliveryText('share_collect.convert_saved_selection', 'Another link type uses the current saved versions of these resources and keeps this link’s student AI setting.')
+                    : deliveryText('share_collect.reselect_for_conversion', 'To create another link type, select the resources again in History. This saved link does not have a reusable selection.')}</p>
+                  {qrShareModal.type === 'assignment' && (
+                    <button type="button" onClick={() => { if (canConvertSelection) createSelfContainedHomeworkLink(conversionIds.slice(), buildConversionOptions(false)); }} disabled={!canConvertSelection} className="w-full mt-2 flex items-center justify-center gap-2 text-xs font-bold text-emerald-800 hover:text-emerald-900 bg-emerald-50 border border-emerald-300 hover:border-emerald-400 rounded-lg p-2 transition-all disabled:opacity-60 disabled:cursor-not-allowed">
+                      {t('share_collect.make_self_contained_version_no_accounts') || 'Make self-contained version (no accounts needed)'} <Share2 size={12}/>
+                    </button>
+                  )}
+                  <button type="button" onClick={() => { if (canConvertSelection) hostPackOnMailbox(conversionIds.slice(), buildConversionOptions(true)); }} disabled={mbBusy || !canConvertSelection} className="w-full mt-2 flex items-center justify-center gap-2 text-xs font-bold text-indigo-800 hover:text-indigo-900 bg-indigo-50 border border-indigo-300 hover:border-indigo-400 rounded-lg p-2 transition-all disabled:opacity-60">
+                    {mbBusy ? deliveryText('share_collect.uploading_to_mailbox', 'Uploading to your mailbox…') : deliveryText('share_collect.host_on_mailbox', 'Host on Class Mailbox (small QR, images OK)')} <Share2 size={12}/>
+                  </button>
+                </React.Fragment>
+              );
+            })()}
             {qrShareModal.type === 'assignment-pack-hosted' ? (
               <p className="text-[11px] text-slate-500 mt-3">{t('share_collect.the_activity_images_included_is_stored') || 'The activity (images included) is stored in YOUR Google Drive via your Class Mailbox — students need no account, and'} {qrShareModal.aiPolicy === 'student-byok' ? deliveryText('share_collect.may_connect_own_ai', 'may connect their own AI provider for that tab') : deliveryText('share_collect.ai_stays_off', 'AI stays off')}. {deliveryText('share_collect.delete_from_drive_folder', 'Delete it any time from the "AlloFlow Class Mailbox" Drive folder.')}</p>
             ) : qrShareModal.type === 'assignment-pack' ? (
@@ -169,7 +238,7 @@ function ClassMailboxSetupView(props) {
     : pendingMailboxShare ? tx('mailbox.connect_and_share', 'Connect and share') : tx('mailbox.connect_self_test', 'Connect & self-test');
   return (
 <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative text-left max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <button ref={closeButtonRef} onClick={closeSetup} className="absolute top-3 right-3 p-2 rounded-full text-slate-600 hover:bg-slate-100" aria-label={t('common.close') || 'Close'}><X size={20}/></button>
+            <button type="button" ref={closeButtonRef} onClick={closeSetup} className="absolute top-3 right-3 p-2 rounded-full text-slate-600 hover:bg-slate-100" aria-label={t('common.close') || 'Close'}><X size={20}/></button>
             <h2 className="text-xl font-black text-slate-900 mb-1">{t('mailbox.live_class_without_accounts') || 'Live class without accounts'} <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100 rounded px-1.5 py-0.5 align-middle">beta</span></h2>
             <p className="text-xs text-slate-600 mb-3">{t('mailbox.runs_from_a_google_apps_script') || 'Runs from a Google Apps Script project that you create and control. Students use codenames and scan a QR without signing into Google. Live state is temporary; hosted homework and completed mailbox submissions are saved in your private Drive folder.'}</p>
             {pendingMailboxShare && (
@@ -241,7 +310,7 @@ function ClassMailboxSetupView(props) {
                 </ol>
                 <input value={mbUrlInput} onChange={e => setMbUrlInput(e.target.value)} placeholder="https://script.google.com/macros/s/…/exec" className="w-full text-xs border border-slate-300 rounded-lg p-2 mb-2 font-mono" aria-label={t('mailbox.webapp_url_aria') || 'Class Mailbox web app URL'} />
                 <input type="password" autoComplete="off" spellCheck={false} value={mbAdminInput} onChange={e => setMbAdminInput(e.target.value)} placeholder={tx('mailbox.owner_admin_token_placeholder', 'Admin token from Apps Script properties')} className="w-full text-xs border border-slate-200 rounded-lg p-2 mb-2 font-mono" aria-label={tx('mailbox.owner_admin_token_aria', 'Class Mailbox admin token')} />
-                <button ref={connectionButtonRef} onClick={connectMailbox} disabled={mbBusy} className="w-full flex items-center justify-center gap-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg p-2.5 transition-all disabled:opacity-60">
+                <button type="button" ref={connectionButtonRef} onClick={connectMailbox} disabled={mbBusy} className="w-full flex items-center justify-center gap-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg p-2.5 transition-all disabled:opacity-60">
                   {connectLabel}
                 </button>
               </div>
@@ -266,12 +335,12 @@ function ClassMailboxSetupView(props) {
               <div className="mb-3 bg-emerald-50 border-2 border-emerald-200 rounded-xl p-3">
                 <p className="text-xs font-bold text-emerald-800 mb-2">{mbResumable.length === 1 ? 'A live session is still running:' : mbResumable.length + ' live sessions are still running:'}</p>
                 {mbResumable.map(s => (
-                  <button key={s.c} onClick={() => resumeMailboxLiveSession(s)} className="w-full flex items-center justify-between gap-2 text-sm font-black text-white bg-emerald-700 hover:bg-emerald-800 rounded-lg p-2.5 transition-all mb-1">
+                  <button type="button" key={s.c} onClick={() => resumeMailboxLiveSession(s)} className="w-full flex items-center justify-between gap-2 text-sm font-black text-white bg-emerald-700 hover:bg-emerald-800 rounded-lg p-2.5 transition-all mb-1">
                     <span>{t('mailbox.resume_class') || 'Resume class'} {String(s.c).toUpperCase()}</span>
                     <span aria-hidden="true">↻</span>
                   </button>
                 ))}
-                <button onClick={() => setMbResumable([])} className="w-full text-[11px] font-bold text-slate-500 hover:text-slate-700 underline underline-offset-2 mt-1">{t('mailbox.start_a_new_session_instead') || 'Start a new session instead'}</button>
+                <button type="button" onClick={() => setMbResumable([])} className="w-full text-[11px] font-bold text-slate-500 hover:text-slate-700 underline underline-offset-2 mt-1">{t('mailbox.start_a_new_session_instead') || 'Start a new session instead'}</button>
               </div>
             )}
             {mbConfig && !mbLive && (
@@ -287,26 +356,26 @@ function ClassMailboxSetupView(props) {
                       <span className="text-[11px] font-mono text-slate-700 truncate flex-1" title={mbShowAdmin ? mbConfig.admin : 'Hidden'}>
                         {mbShowAdmin ? mbConfig.admin : '••••••••••••••••••••••••'}
                       </span>
-                      <button onClick={() => setMbShowAdmin(v => !v)} className="p-1.5 text-slate-600 hover:text-slate-900" title={mbShowAdmin ? 'Hide admin token' : 'Reveal admin token'} aria-label={mbShowAdmin ? 'Hide admin token' : 'Reveal admin token'}>
+                      <button type="button" onClick={() => setMbShowAdmin(v => !v)} className="p-1.5 text-slate-600 hover:text-slate-900" title={mbShowAdmin ? 'Hide admin token' : 'Reveal admin token'} aria-label={mbShowAdmin ? 'Hide admin token' : 'Reveal admin token'}>
                         {mbShowAdmin ? <EyeOff size={15} /> : <Eye size={15} />}
                       </button>
-                      <button onClick={() => copyToClipboard(mbConfig.admin)} className="p-1.5 text-indigo-700 hover:text-indigo-900" title={t('mailbox.copy_admin_token') || 'Copy admin token'} aria-label={t('mailbox.copy_admin_token') || 'Copy admin token'}>
+                      <button type="button" onClick={() => copyToClipboard(mbConfig.admin)} className="p-1.5 text-indigo-700 hover:text-indigo-900" title={t('mailbox.copy_admin_token') || 'Copy admin token'} aria-label={t('mailbox.copy_admin_token') || 'Copy admin token'}>
                         <Copy size={15} />
                       </button>
                     </div>
                     <p className="text-[10px] text-slate-600 mt-1">{t('mailbox.students_never_receive_this_token_the') || 'Students never receive this token. The QR contains only a one-session join secret.'}</p>
                     <div className="flex gap-2 mt-2">
-                      <button onClick={rotateMailboxAdmin} disabled={mbBusy || mbResumable.length > 0} className="flex-1 text-[10px] font-bold border border-slate-300 rounded-md px-2 py-1.5 disabled:opacity-50" title={mbResumable.length ? 'Close active sessions before rotating' : 'Invalidate the old admin token'}>{t('mailbox.rotate_token') || 'Rotate token'}</button>
-                      {mbResumable.length > 0 && <button onClick={closeAllMailboxSessions} disabled={mbBusy} className="flex-1 text-[10px] font-bold border border-rose-300 text-rose-700 rounded-md px-2 py-1.5 disabled:opacity-50">{t('mailbox.close_all_sessions') || 'Close all sessions'}</button>}
+                      <button type="button" onClick={rotateMailboxAdmin} disabled={mbBusy || mbResumable.length > 0} className="flex-1 text-[10px] font-bold border border-slate-300 rounded-md px-2 py-1.5 disabled:opacity-50" title={mbResumable.length ? 'Close active sessions before rotating' : 'Invalidate the old admin token'}>{t('mailbox.rotate_token') || 'Rotate token'}</button>
+                      {mbResumable.length > 0 && <button type="button" onClick={closeAllMailboxSessions} disabled={mbBusy} className="flex-1 text-[10px] font-bold border border-rose-300 text-rose-700 rounded-md px-2 py-1.5 disabled:opacity-50">{t('mailbox.close_all_sessions') || 'Close all sessions'}</button>}
                     </div>
                   </div>
                 )}
 <p className="mb-3 rounded-lg border border-emerald-200 bg-emerald-50 p-2 text-[11px] font-semibold text-emerald-900">{t('mailbox.completed_student_submissions_save_automatically') || 'Completed student submissions save automatically as JSON files in your private Drive mailbox folder. Students receive a local backup download if delivery fails. To review them, download the JSON files from Drive and import them through AlloFlow’s Submission Inbox.'} {tx('mailbox.inbox_pickup_v29', 'With mailbox script v29 or newer, skip the Drive download: in the Submission Inbox, choose Get submissions from Class Mailbox.')}</p>
-                <button onClick={startMailboxLiveSession} disabled={mbBusy} className="w-full flex items-center justify-center gap-2 text-sm font-black text-white bg-emerald-700 hover:bg-emerald-800 rounded-xl p-3 transition-all disabled:opacity-60">
+                <button type="button" onClick={startMailboxLiveSession} disabled={mbBusy} className="w-full flex items-center justify-center gap-2 text-sm font-black text-white bg-emerald-700 hover:bg-emerald-800 rounded-xl p-3 transition-all disabled:opacity-60">
                   {mbBusy ? 'Starting…' : 'Teach live'}
                 </button>
                 <div className="mt-2 flex flex-wrap gap-2">
-                  <button onClick={exportMailboxConfig} className="flex-1 text-[11px] font-bold text-sky-700 underline underline-offset-2 hover:text-sky-900">{t('mailbox.save_setup_to_a_file') || 'Save setup to a file'}</button>
+                  <button type="button" onClick={exportMailboxConfig} className="flex-1 text-[11px] font-bold text-sky-700 underline underline-offset-2 hover:text-sky-900">{t('mailbox.save_setup_to_a_file') || 'Save setup to a file'}</button>
                   <label className="flex-1 cursor-pointer text-center text-[11px] font-bold text-sky-700 underline underline-offset-2 hover:text-sky-900">
                     {t('mailbox.restore_from_a_file') || 'Restore from a file'}
                     <input
@@ -321,8 +390,8 @@ function ClassMailboxSetupView(props) {
                   {t('mailbox.the_saved_file_holds_an_access') || 'The saved file holds an access key for your mailbox. Keep it somewhere you would keep a password, and it will restore this setup on another device or after storage is cleared.'}
                 </p>
                 <div className="flex gap-2 mt-2">
-                  <button onClick={() => { setMbUrlInput(mbConfig.url); setMbConfig(null); setMbStatus(''); }} className="flex-1 text-[11px] font-bold text-slate-500 hover:text-slate-700 underline underline-offset-2">{t('mailbox.change_mailbox') || 'Change mailbox'}</button>
-                  <button onClick={() => { cancelPendingMailboxShare?.(); /* Clears the BRIDGE as well as the cache. Without this the hydrate on next load would resurrect a mailbox the teacher just forgot. */ alloPersistMailboxConfig(null); setMbConfig(null); setMbUrlInput(''); setMbStatus('Mailbox forgotten on this device. To reconnect later you may need to reset the admin token (see the setup guide).'); }} className="flex-1 text-[11px] font-bold text-rose-500 hover:text-rose-700 underline underline-offset-2">{t('mailbox.forget_mailbox') || 'Forget mailbox'}</button>
+                  <button type="button" onClick={() => { setMbUrlInput(mbConfig.url); setMbConfig(null); setMbStatus(''); }} className="flex-1 text-[11px] font-bold text-slate-500 hover:text-slate-700 underline underline-offset-2">{t('mailbox.change_mailbox') || 'Change mailbox'}</button>
+                  <button type="button" onClick={() => { cancelPendingMailboxShare?.(); /* Clears the BRIDGE as well as the cache. Without this the hydrate on next load would resurrect a mailbox the teacher just forgot. */ alloPersistMailboxConfig(null); setMbConfig(null); setMbUrlInput(''); setMbStatus('Mailbox forgotten on this device. To reconnect later you may need to reset the admin token (see the setup guide).'); }} className="flex-1 text-[11px] font-bold text-rose-500 hover:text-rose-700 underline underline-offset-2">{t('mailbox.forget_mailbox') || 'Forget mailbox'}</button>
                 </div>
               </div>
             )}
@@ -341,16 +410,16 @@ function ClassMailboxSetupView(props) {
                 )}
                 <p role="status" aria-live="polite" aria-atomic="true" className="mb-2 text-center text-[11px] text-indigo-800">{mbQrSvg ? `Ready to scan · ${mbLive.aiPolicy === 'student-byok' ? 'Personal AI optional' : 'AI tools off'} · Active until you end the session` : 'The class code remains available while the QR loads.'}</p>
                 <div className="mb-3 grid grid-cols-1 gap-2 sm:grid-cols-4">
-                  <button onClick={() => copyToClipboard(mbLive.joinUrl)} className="flex min-h-10 items-center justify-center gap-1 rounded-lg border border-indigo-300 bg-white p-2 text-[11px] font-bold text-indigo-800 hover:border-indigo-500">
+                  <button type="button" onClick={() => copyToClipboard(mbLive.joinUrl)} className="flex min-h-10 items-center justify-center gap-1 rounded-lg border border-indigo-300 bg-white p-2 text-[11px] font-bold text-indigo-800 hover:border-indigo-500">
                     {t('mailbox.copy_link') || 'Copy link'} <Copy size={12}/>
                   </button>
-                  <button onClick={() => openStudentQrPreview(mbLive.joinUrl, 'live-session link as a student')} className="flex min-h-10 items-center justify-center gap-1 rounded-lg border border-emerald-300 bg-emerald-50 p-2 text-[11px] font-bold text-emerald-900 hover:border-emerald-500">
+                  <button type="button" onClick={() => openStudentQrPreview(mbLive.joinUrl, 'live-session link as a student')} className="flex min-h-10 items-center justify-center gap-1 rounded-lg border border-emerald-300 bg-emerald-50 p-2 text-[11px] font-bold text-emerald-900 hover:border-emerald-500">
                     {t('mailbox.test') || 'Test'} <ExternalLink size={12}/>
                   </button>
-                  <button onClick={() => printQrSheet(mbQrSvg, 'AlloFlow live session', 'Class code ' + mbLive.code, `Class Mailbox QR join · ${mbLive.aiPolicy === 'student-byok' ? 'Personal AI optional' : 'Student AI off'}`, mbLive.code)} disabled={!mbQrSvg} className="flex min-h-10 items-center justify-center gap-1 rounded-lg border border-slate-300 bg-white p-2 text-[11px] font-bold text-slate-800 hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50">
+                  <button type="button" onClick={() => printQrSheet(mbQrSvg, 'AlloFlow live session', 'Class code ' + mbLive.code, `Class Mailbox QR join · ${mbLive.aiPolicy === 'student-byok' ? 'Personal AI optional' : 'Student AI off'}`, mbLive.code)} disabled={!mbQrSvg} className="flex min-h-10 items-center justify-center gap-1 rounded-lg border border-slate-300 bg-white p-2 text-[11px] font-bold text-slate-800 hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50">
                     {t('mailbox.print') || 'Print'} <Printer size={12}/>
                   </button>
-                  <button onClick={() => { closeSetup(); setShowSessionModal(true); }} className="flex min-h-10 items-center justify-center gap-1 rounded-lg border border-cyan-300 bg-cyan-50 p-2 text-[11px] font-bold text-cyan-900 hover:border-cyan-500">
+                  <button type="button" onClick={() => { closeSetup(); setShowSessionModal(true); }} className="flex min-h-10 items-center justify-center gap-1 rounded-lg border border-cyan-300 bg-cyan-50 p-2 text-[11px] font-bold text-cyan-900 hover:border-cyan-500">
                     {t('mailbox.project') || 'Project'} <Maximize size={12}/>
                   </button>
                 </div>
@@ -371,10 +440,10 @@ function ClassMailboxSetupView(props) {
                     );
                   })}</ul>}
                 </div>
-                <button onClick={() => setMbMode(m => m === 'sync' ? 'async' : 'sync')} className={`w-full flex items-center justify-center gap-2 text-xs font-bold rounded-lg p-2 transition-all mb-2 border ${mbMode === 'sync' ? 'text-emerald-800 bg-emerald-50 border-emerald-300' : 'text-sky-800 bg-sky-50 border-sky-300'}`}>
+                <button type="button" onClick={() => setMbMode(m => m === 'sync' ? 'async' : 'sync')} className={`w-full flex items-center justify-center gap-2 text-xs font-bold rounded-lg p-2 transition-all mb-2 border ${mbMode === 'sync' ? 'text-emerald-800 bg-emerald-50 border-emerald-300' : 'text-sky-800 bg-sky-50 border-sky-300'}`}>
                   {mbMode === 'sync' ? 'Teacher-led: students follow your screen (tap to switch)' : 'Student-paced: students explore independently (tap to switch)'}
                 </button>
-                <button onClick={shareFullPackToMailbox} disabled={mbBusy} className="w-full flex items-center justify-center gap-2 text-[11px] font-bold text-indigo-800 hover:text-indigo-900 bg-indigo-50 border border-indigo-300 hover:border-indigo-400 rounded-lg p-2 transition-all disabled:opacity-60 mb-2">
+                <button type="button" onClick={shareFullPackToMailbox} disabled={mbBusy} className="w-full flex items-center justify-center gap-2 text-[11px] font-bold text-indigo-800 hover:text-indigo-900 bg-indigo-50 border border-indigo-300 hover:border-indigo-400 rounded-lg p-2 transition-all disabled:opacity-60 mb-2">
                   {t('mailbox.re_send_full_pack_troubleshooting_it') || 'Re-send full pack (troubleshooting — it already syncs automatically)'}
                 </button>
                 <p className="text-[10px] text-slate-600 mb-2 text-center">{t('mailbox.your_resource_pack_shares_to_the') || 'Your resource pack shares to the class automatically, like a regular live session.'}</p>
@@ -387,23 +456,23 @@ function ClassMailboxSetupView(props) {
                         <input value={mbDirectionsDraft.due || ''} onChange={e => setMbDirectionsDraft(p => ({ ...(p || {}), due: e.target.value }))} placeholder={t('directions.due_placeholder') || 'Due (optional, e.g. Friday)'} aria-label={t('directions.due_aria') || 'Due date'} className="w-full text-[11px] border border-slate-300 rounded p-1.5 bg-white text-slate-800" />
                         <input type="datetime-local" value={mbDirectionsDraft.dueAt || ''} onChange={e => { const dueAt = e.target.value; setMbDirectionsDraft(p => { const prev = p || {}; const next = { ...prev, dueAt }; if (dueAt) { const dt = new Date(dueAt); if (!Number.isNaN(dt.getTime())) { const formatted = dt.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }); if (!String(prev.due || '').trim() || prev._dueAuto === prev.due) { next.due = formatted; next._dueAuto = formatted; } } } else if (prev._dueAuto === prev.due) { next.due = ''; delete next._dueAuto; } return next; }); }} aria-label={t('directions.due_datetime_aria') || 'Optional exact due date and time'} className="w-full text-[11px] border border-slate-300 rounded p-1.5 bg-white text-slate-800" />
                       </div>
-                      <button onClick={deriveDirectionsDraft} disabled={directionsDeriving} className="w-full flex items-center justify-center gap-1 text-[11px] font-bold text-indigo-800 hover:text-indigo-900 bg-indigo-50 border border-indigo-300 hover:border-indigo-400 rounded-lg p-1.5 transition-all disabled:opacity-60">
+                      <button type="button" onClick={deriveDirectionsDraft} disabled={directionsDeriving} className="w-full flex items-center justify-center gap-1 text-[11px] font-bold text-indigo-800 hover:text-indigo-900 bg-indigo-50 border border-indigo-300 hover:border-indigo-400 rounded-lg p-1.5 transition-all disabled:opacity-60">
                         <Sparkles size={12} /> {directionsDeriving ? (t('directions.drafting') || 'Drafting…') : (t('directions.draft_for_me') || 'Draft for me (from lesson plan + pack)')}
                       </button>
-                      <button onClick={() => setShowDirectionsComposer(true)} className="w-full text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 hover:border-amber-400 rounded-lg p-1 transition-all">
+                      <button type="button" onClick={() => setShowDirectionsComposer(true)} className="w-full text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 hover:border-amber-400 rounded-lg p-1 transition-all">
                         🎯 {(mbDirectionsDraft?.choiceBoard?.enabled ? 'Edit goals and activity choices (full composer)' : (mbDirectionsDraft?.objectives?.length ? (t('directions.edit_goals_n', { count: mbDirectionsDraft.objectives.length }) || (mbDirectionsDraft.objectives.length + ' goal(s) — edit in full composer')) : (t('directions.add_goals') || 'Add goals or activity choices (full composer)')))}
                       </button>
                       <div className="flex gap-1">
-                        <button onClick={addDirectionsToPack} className="flex-1 text-[11px] font-bold text-emerald-800 hover:text-emerald-900 bg-emerald-50 border border-emerald-300 hover:border-emerald-400 rounded-lg p-1.5 transition-all">{t('mailbox.add_to_pack') || 'Add to pack'}</button>
-                        <button onClick={() => setMbDirectionsDraft(null)} className="text-[11px] text-slate-500 hover:text-slate-700 border border-slate-200 rounded-lg px-2 transition-all">{t('mailbox.cancel') || 'Cancel'}</button>
+                        <button type="button" onClick={addDirectionsToPack} className="flex-1 text-[11px] font-bold text-emerald-800 hover:text-emerald-900 bg-emerald-50 border border-emerald-300 hover:border-emerald-400 rounded-lg p-1.5 transition-all">{t('mailbox.add_to_pack') || 'Add to pack'}</button>
+                        <button type="button" onClick={() => setMbDirectionsDraft(null)} className="text-[11px] text-slate-500 hover:text-slate-700 border border-slate-200 rounded-lg px-2 transition-all">{t('mailbox.cancel') || 'Cancel'}</button>
                       </div>
                     </div>
                   ) : (
-                    <button onClick={() => setMbDirectionsDraft({})} className="w-full flex items-center justify-center gap-2 text-[11px] font-bold text-emerald-800 hover:text-emerald-900 bg-emerald-50 border border-emerald-300 hover:border-emerald-400 rounded-lg p-2 transition-all mb-1">
+                    <button type="button" onClick={() => setMbDirectionsDraft({})} className="w-full flex items-center justify-center gap-2 text-[11px] font-bold text-emerald-800 hover:text-emerald-900 bg-emerald-50 border border-emerald-300 hover:border-emerald-400 rounded-lg p-2 transition-all mb-1">
                       <ClipboardList size={13} /> {t('mailbox.write_assignment_directions') || 'Write assignment directions'}
                     </button>
                   )}
-                  <button onClick={sendPackHome} disabled={mbBusy} className="w-full flex items-center justify-center gap-2 text-[11px] font-bold text-amber-800 hover:text-amber-900 bg-amber-50 border border-amber-300 hover:border-amber-400 rounded-lg p-2 transition-all disabled:opacity-60">
+                  <button type="button" onClick={sendPackHome} disabled={mbBusy} className="w-full flex items-center justify-center gap-2 text-[11px] font-bold text-amber-800 hover:text-amber-900 bg-amber-50 border border-amber-300 hover:border-amber-400 rounded-lg p-2 transition-all disabled:opacity-60">
                     <FolderDown size={13} /> {t('mailbox.send_home_saves_on_student_devices') || 'Send home (saves on student devices)'}
                   </button>
                   <p className="text-[10px] text-slate-600 mt-1 text-center">{t('mailbox.students_keep_the_pack_directions_on') || 'Students keep the pack + directions on their device for homework — no code needed at home.'}</p>
@@ -438,7 +507,7 @@ function ClassMailboxSetupView(props) {
                     </div>
                   )}
                 </div>
-                <button onClick={requestEndLiveSession} className="w-full text-xs font-bold text-rose-800 hover:text-rose-800 bg-rose-50 border border-rose-200 rounded-lg p-2 transition-all">{t('mailbox.end_session') || 'End session'}</button>
+                <button type="button" onClick={requestEndLiveSession} className="w-full text-xs font-bold text-rose-800 hover:text-rose-800 bg-rose-50 border border-rose-200 rounded-lg p-2 transition-all">{t('mailbox.end_session') || 'End session'}</button>
               </div>
             )}
             {mbStatus && <p role="status" aria-live="polite" aria-atomic="true" className="text-xs text-slate-600 mt-3">{mbStatus}</p>}

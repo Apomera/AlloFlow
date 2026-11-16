@@ -60,6 +60,16 @@ function SocraticChat({
   const X = window.X || noop;
   const RefreshCw = window.RefreshCw || noop;
   const Send = window.Send || noop;
+  const previousFocusRef = React.useRef(typeof document !== 'undefined' ? document.activeElement : null);
+  const isComposingRef = React.useRef(false);
+  React.useEffect(() => () => {
+    const prev = previousFocusRef.current;
+    if (prev && prev.isConnected && typeof prev.focus === 'function') {
+      try { prev.focus(); } catch (_) {}
+    } else if (typeof document !== 'undefined') {
+      try { document.querySelector('[data-help-key="socratic_toggle"]')?.focus(); } catch (_) {}
+    }
+  }, []);
 
   // Theme-aware classes: fall back to the original teal-on-white styling when
   // chatStyles is empty (e.g., before the host wires it through), so the
@@ -137,6 +147,7 @@ function SocraticChat({
     return true;
   };
   const handleSubmitForm = (e) => {
+    if (e?.nativeEvent?.isComposing || isComposingRef.current) { e.preventDefault(); return; }
     e.preventDefault();
     if (!String(socraticInput || '').trim() || isSocraticThinking) return;
     handleSocraticSubmit();
@@ -185,7 +196,7 @@ function SocraticChat({
             type="button"
             onClick={handleToggleSocraticAutoRead}
             data-help-key="socratic_auto_read"
-            className={`min-w-9 min-h-9 inline-flex items-center justify-center rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${socraticAutoRead ? _button : _secondaryButton}`}
+            className={`min-w-11 min-h-11 inline-flex items-center justify-center rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${socraticAutoRead ? _button : _secondaryButton}`}
             title={t('socratic.auto_read')}
             aria-label={t('socratic.auto_read')}
             aria-pressed={socraticAutoRead}
@@ -196,7 +207,7 @@ function SocraticChat({
             type="button"
             onClick={handleToggleSocraticAutoSend}
             data-help-key="socratic_auto_send"
-            className={`min-w-9 min-h-9 inline-flex items-center justify-center rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${socraticAutoSend ? _button : _secondaryButton}`}
+            className={`min-w-11 min-h-11 inline-flex items-center justify-center rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${socraticAutoSend ? _button : _secondaryButton}`}
             title={t('socratic.auto_send')}
             aria-label={t('socratic.auto_send')}
             aria-pressed={socraticAutoSend}
@@ -207,14 +218,14 @@ function SocraticChat({
             type="button"
             onClick={handleToggleIsSocraticExpanded}
             data-help-key="socratic_expand"
-            className={`min-w-9 min-h-9 inline-flex items-center justify-center rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${_secondaryButton}`}
+            className={`min-w-11 min-h-11 inline-flex items-center justify-center rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${_secondaryButton}`}
             title={isSocraticExpanded ? t('socratic.collapse_tooltip') : t('socratic.expand_tooltip')}
             aria-label={isSocraticExpanded ? t('socratic.collapse_tooltip') : t('socratic.expand_tooltip')}
             aria-expanded={isSocraticExpanded}
           >
             {isSocraticExpanded ? <Minimize2 size={14} aria-hidden="true"/> : <Maximize2 size={14} aria-hidden="true"/>}
           </button>
-          <button type="button" data-help-key="socratic_close" data-help-ignore onClick={handleSetShowSocraticChatToFalse} className={`min-w-9 min-h-9 inline-flex items-center justify-center rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${_secondaryButton}`} aria-label={t('common.close')}>
+          <button type="button" data-help-key="socratic_close" data-help-ignore onClick={handleSetShowSocraticChatToFalse} className={`min-w-11 min-h-11 inline-flex items-center justify-center rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${_secondaryButton}`} aria-label={t('common.close')}>
             <X size={14} aria-hidden="true"/>
           </button>
         </div>
@@ -237,7 +248,7 @@ function SocraticChat({
                   <button
                     type="button"
                     onClick={() => _speakSocraticMessage(msg.text)}
-                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] opacity-80 hover:opacity-100 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                    className="inline-flex items-center gap-1 min-h-11 px-2.5 py-0.5 rounded text-[11px] opacity-80 hover:opacity-100 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
                     aria-label={socraticLabel('socratic.listen_reply', 'Read tutor reply aloud')}
                     title={socraticLabel('socratic.listen_reply', 'Read tutor reply aloud')}
                   >
@@ -275,7 +286,7 @@ function SocraticChat({
             }
           }}
           disabled={isSocraticThinking || !canDictate}
-          className={`p-2 rounded-lg transition-colors shadow-sm flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${isSocraticDictating ? 'bg-red-700 text-white animate-pulse motion-reduce:animate-none' : _secondaryButton}`}
+          className={`min-w-11 min-h-11 p-2 rounded-lg transition-colors shadow-sm flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${isSocraticDictating ? 'bg-red-700 text-white animate-pulse motion-reduce:animate-none' : _secondaryButton}`}
           title={canDictate ? t('socratic.mic_tooltip') : socraticLabel('socratic.mic_unavailable', 'Voice input is not supported in this browser')}
           aria-label={canDictate ? t('socratic.mic_tooltip') : socraticLabel('socratic.mic_unavailable', 'Voice input is not supported in this browser')}
           aria-pressed={isSocraticDictating}
@@ -288,8 +299,11 @@ function SocraticChat({
           maxLength={2000}
           value={socraticInput}
           onChange={(e) => setSocraticInput(e.target.value)}
+          onCompositionStart={() => { isComposingRef.current = true; }}
+          onCompositionEnd={() => { isComposingRef.current = false; }}
+          onKeyDown={(e) => { if (e.key === 'Enter' && (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229 || e.nativeEvent?.keyCode === 229 || isComposingRef.current)) { e.preventDefault(); } }}
           placeholder={isSocraticDictating ? t('socratic.listening') : t('socratic.placeholder')}
-          className={`flex-grow text-xs p-2 border ${_input} rounded-lg focus-visible:ring-2 focus-visible:outline-none transition-all`}
+          className={`flex-grow min-h-11 text-xs p-2 border ${_input} rounded-lg focus-visible:ring-2 focus-visible:outline-none transition-all`}
           autoFocus
           disabled={isSocraticThinking}
           aria-controls={logId}
@@ -298,7 +312,7 @@ function SocraticChat({
           type="submit"
           aria-label={t('common.socratic_submit')}
           disabled={!String(socraticInput || '').trim() || isSocraticThinking}
-          className={`p-2 rounded-lg disabled:opacity-60 disabled:cursor-not-allowed transition-colors shadow-sm flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${_button}`}
+          className={`min-w-11 min-h-11 p-2 rounded-lg disabled:opacity-60 disabled:cursor-not-allowed transition-colors shadow-sm flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${_button}`}
         >
           {isSocraticThinking ? <RefreshCw size={16} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <Send size={16} aria-hidden="true"/>}
         </button>

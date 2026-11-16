@@ -2220,7 +2220,7 @@
   var CSV_HEADERS = ['Language','Term','Meaning','Pronunciation','Example','Example pronunciation','Translation','Related forms','Word features JSON','Related forms JSON','Personal note','Tags'];
   function csvCell(value) {
     var s = String(value == null ? '' : value);
-    if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+    if (typeof value !== 'number' && /^(?:[\t\r\n ]*[=+\-@|]|[\t\r\n])/.test(s)) s = "'" + s;
     return '"' + s.replace(/"/g, '""') + '"';
   }
   function wordBankCsv(items) {
@@ -2848,7 +2848,7 @@
     '.lingua-primary:hover:not(:disabled){box-shadow:0 8px 18px -5px rgba(4,120,87,.5)}',
     '.lingua-primary:active:not(:disabled){transform:translateY(1px)}',
     '.lingua-nav{overscroll-behavior:contain}',
-    '.lingua-nav-track{scroll-snap-type:x proximity}',
+    '.lingua-nav-track{scroll-snap-type:x proximity;max-width:100%}',
     '.lingua-nav-btn{scroll-snap-align:start;transition:background-color .15s ease,color .15s ease,box-shadow .15s ease}',
     '.lingua-nav-active{box-shadow:0 8px 18px -8px rgba(4,120,87,.6)}',
     '.lingua-chatlog{background:linear-gradient(180deg,#f8fafc 0%,#f1f5f9 100%)}',
@@ -5004,7 +5004,7 @@ useEffect(function(){
         e('div',{className:'sr-only',role:'status','aria-live':'polite','aria-atomic':'true'},speechStatus),
         e('header',{className:'lingua-header min-h-16 shrink-0 border-b border-slate-200 px-4 py-2 sm:px-6 flex items-center gap-3'},
           e('div',{className:'lingua-badge w-10 h-10 rounded-xl text-white flex items-center justify-center font-black text-sm','aria-hidden':'true'},'A/文'),
-          e('div',{className:'min-w-0 flex-1'},e('h2',{id:'lingua-title',className:'text-lg font-bold text-slate-900'},'Lingua Practice'),e('p',{className:'text-xs text-slate-600 truncate'},profile.target+' · '+levelLabel(profile.level))),
+          e('div',{className:'min-w-0 flex-1'},e('h2',{id:'lingua-title',className:'text-lg font-bold text-slate-900'},'Lingua Practice'),e('p',{className:'text-xs text-slate-600 break-words'},profile.target+' · '+levelLabel(profile.level))),
           e('button',{type:'button',onClick:toggleSlow,disabled:!speech.playback,'aria-pressed':audioSlow,title:!speech.playback?tr('audio_unavailable'):(audioSlow?tr('slow_title_on'):tr('slow_title_off')),'data-help-key':'lingua_slow_audio',
             className:'shrink-0 inline-flex items-center gap-1.5 h-8 px-3 rounded-full border text-xs font-bold transition-colors '+(audioSlow?'border-emerald-300 bg-emerald-50 text-emerald-800':'border-slate-300 bg-white text-slate-600 hover:border-emerald-300 hover:text-emerald-700')+focusClass},navIcon('Volume2'),tr('slow')),
           e('span',{className:'hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-full px-3 py-1'},tr('due_saved',{due:allDue.length,saved:(progress.saved||[]).length})),
@@ -5016,7 +5016,7 @@ useEffect(function(){
         e('div',{className:'flex-1 min-h-0 flex flex-col md:flex-row'},
           e('nav',{ref:navRef,className:'lingua-nav shrink-0 md:w-52 border-b md:border-b-0 md:border-r border-slate-200 bg-slate-50 p-2 md:p-4 overflow-x-auto','aria-label':tr('sections')},
             e('p',{id:'lingua-nav-keyboard-help',className:'sr-only'},tr('nav_keyboard_help')),
-            e('div',{className:'lingua-nav-track flex md:flex-col gap-1 min-w-max md:min-w-0',role:'toolbar','aria-label':tr('sections'),'aria-describedby':'lingua-nav-keyboard-help'},nav.map(function(n){var disabled=navItemDisabled(n);return e('button',{type:'button',key:n[0],'data-lingua-nav-key':n[0],disabled:disabled,tabIndex:!disabled&&effectiveNavFocusKey===n[0]?0:-1,onFocus:function(){setNavFocusKey(n[0]);},onKeyDown:function(event){moveNavFocus(event,n[0]);},onClick:function(){setTab(n[0]);},'aria-current':tab===n[0]?'page':undefined,
+            e('div',{className:'lingua-nav-track flex flex-wrap md:flex-col gap-1 max-w-full min-w-0',role:'toolbar','aria-label':tr('sections'),'aria-describedby':'lingua-nav-keyboard-help'},nav.map(function(n){var disabled=navItemDisabled(n);return e('button',{type:'button',key:n[0],'data-lingua-nav-key':n[0],disabled:disabled,tabIndex:!disabled&&effectiveNavFocusKey===n[0]?0:-1,onFocus:function(){setNavFocusKey(n[0]);},onKeyDown:function(event){moveNavFocus(event,n[0]);},onClick:function(){setTab(n[0]);},'aria-current':tab===n[0]?'page':undefined,
               className:'lingua-nav-btn min-h-11 shrink-0 px-3 rounded-lg text-sm font-semibold text-left whitespace-nowrap '+(tab===n[0]?'lingua-nav-active bg-emerald-700 text-white':'text-slate-700 hover:bg-slate-200 disabled:opacity-35')+focusClass},e('span',{className:'inline-flex items-center gap-2.5'},navIcon(n[2]),n[1]));}))
           ),
           e('main',{className:'lingua-scene flex-1 min-w-0 overflow-y-auto'},

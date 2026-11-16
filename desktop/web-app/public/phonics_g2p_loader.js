@@ -100,6 +100,7 @@
   };
 
   var _factoryPromise = null;
+  var _factoryReady = false;
 
   // → verified espeak voice id, or NULL when the language has no voice.
   // English callers (and legacy callers passing nothing) keep 'en-us' exactly
@@ -158,19 +159,53 @@
     return { raw: raw2, norm: norm };
   }
 
+  function isSameOriginOrRelativeUrl(rawUrl) {
+    var u = String(rawUrl || '').trim();
+    if (!u) return false;
+    if (!/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(u) && !/^\/\//.test(u)) return true;
+    try {
+      if (typeof window !== 'undefined' && window.location && window.location.origin && window.location.origin !== 'null') {
+        return new URL(u, window.location.href).origin === window.location.origin;
+      }
+    } catch (_) {}
+    return false;
+  }
+
   function loadFactory() {
-    if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) {
-      return Promise.reject(new Error('Remote eSpeak CDN is disabled in Desktop mode'));
+    var preRegistered = typeof window !== 'undefined' && (window.__ALLO_ESPEAK_FACTORY || window.ESpeakNg);
+    if (typeof preRegistered === 'function') {
+      _factoryReady = true;
+      return Promise.resolve(preRegistered);
+    }
+    var remoteBlocked = typeof window !== 'undefined' && (
+      window._isDesktopBundledApp === true ||
+      window.__ALLO_LOCAL_BOX === true ||
+      window.__alloStudentAiDisabled === true ||
+      (typeof navigator !== 'undefined' && navigator.onLine === false)
+    );
+    var urls = [];
+    if (typeof window !== 'undefined' && typeof window._ALLO_ESPEAK_URL === 'string') {
+      var customUrl = window._ALLO_ESPEAK_URL.trim();
+      if (customUrl && (!remoteBlocked || isSameOriginOrRelativeUrl(customUrl))) {
+        urls.push(customUrl);
+      }
+    }
+    if (!remoteBlocked) {
+      for (var u = 0; u < ESPEAK_URLS.length; u++) urls.push(ESPEAK_URLS[u]);
+    }
+    if (!urls.length) {
+      return Promise.reject(new Error('Remote eSpeak CDN is disabled in offline/restricted mode'));
     }
     if (_factoryPromise) return _factoryPromise;
     _factoryPromise = (function tryAt(i) {
-      if (i >= ESPEAK_URLS.length) return Promise.reject(new Error('espeak-ng sources failed'));
-      return import(/* webpackIgnore: true */ ESPEAK_URLS[i]).then(function (m) {
+      if (i >= urls.length) return Promise.reject(new Error('espeak-ng sources failed'));
+      return import(/* webpackIgnore: true */ urls[i]).then(function (m) {
         var factory = m && (m.default || m.ESpeakNg || m);
         if (typeof factory !== 'function') throw new Error('espeak-ng: no factory export');
+        _factoryReady = true;
         return factory;
       }).catch(function () { return tryAt(i + 1); });
-    })(0).catch(function (e) { _factoryPromise = null; throw e; });
+    })(0).catch(function (e) { _factoryPromise = null; _factoryReady = false; throw e; });
     return _factoryPromise;
   }
 
@@ -187,7 +222,7 @@
     // old [^a-z'] filter silently DELETED accented letters ("niño" → "nio").
     // English words contain only a-z' so the English output is unchanged; the
     // digraph tables below only ever match a-z pairs.
-    var w = String(word || '').toLowerCase().replace(/[^\p{L}\p{M}']/gu, '');
+    var w = String(word || '').toLowerCase().replace(/[\u2018\u2019\u02BC]/g, "'").replace(/[^\p{L}\p{M}']/gu, '');
     if (!w || !count || count < 1) return null;
     // greedy multi-letter pass
     var greedy = [];
@@ -229,7 +264,7 @@
   }
 
   window.AlloPhonics = {
-    ready: function () { return !!_factoryPromise; },
+    ready: function () { return !!_factoryReady; },
     // Exposed for unit tests + reuse (pure).
     _parse: parseIpaOutput,
     _normalizeToken: normalizeToken,
@@ -287,7 +322,7 @@
      * or NULL on any failure. Never throws.
      */
     toPhonemes: function (word, opts) {
-      var w = String(word == null ? '' : word).trim();
+      var w = String(word == null ? '' : word).trim().replace(/[\u2018\u2019\u02BC]/g, "'").replace(/[\u2010-\u2015]/g, '-');
       if (!w) return Promise.resolve(null);
       // Single tokens only (this seam never needs phrases/digits/symbols).
       if (/[^\p{L}\p{M}'’‑-]/u.test(w) || /\s/.test(w)) return Promise.resolve(null);

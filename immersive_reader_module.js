@@ -45,8 +45,110 @@ const safeT = (t, key, fb) => {
 };
 const isInteractiveShortcutTarget = (target) => !!(target && target.closest && target.closest('button, input, select, textarea, a[href], [contenteditable="true"]'));
 const readerGraphemes = (text) => typeof Intl.Segmenter === "function" ? Array.from(new Intl.Segmenter(void 0, { granularity: "grapheme" }).segment(text), (part) => part.segment) : Array.from(text);
+const _linearizeImmersiveMath = (mathEl) => {
+  if (!mathEl) return "";
+  const cleanSp = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
+  const explicit = cleanSp(mathEl.getAttribute && (mathEl.getAttribute("aria-label") || mathEl.getAttribute("alttext")) || "");
+  if (explicit) return explicit;
+  const mathAtom = (s) => /^[A-Za-z0-9.]+$/.test(s) ? s : "(" + s + ")";
+  const mathScript = (s) => /^-?[A-Za-z0-9]+$/.test(s) ? s : "(" + s + ")";
+  const walk = (node) => {
+    if (!node) return "";
+    if (node.nodeType === 3) return String(node.nodeValue || node.textContent || "");
+    if (node.nodeType !== 1) return "";
+    const tag = String(node.tagName || "").toLowerCase();
+    if (tag === "annotation" || tag === "annotation-xml") return "";
+    if (tag === "mspace") return " ";
+    const ch = Array.from(node.children || []);
+    if (tag === "mfrac" && ch.length >= 2) return "(" + cleanSp(walk(ch[0])) + ")/(" + cleanSp(walk(ch[1])) + ")";
+    if (tag === "msup" && ch.length >= 2) {
+      const b = cleanSp(walk(ch[0])), e = cleanSp(walk(ch[1]));
+      return b ? mathAtom(b) + "^" + mathScript(e) : e;
+    }
+    if (tag === "msub" && ch.length >= 2) {
+      const b = cleanSp(walk(ch[0])), s = cleanSp(walk(ch[1]));
+      return b ? mathAtom(b) + "_" + mathScript(s) : s;
+    }
+    if (tag === "msubsup" && ch.length >= 3) {
+      const b = cleanSp(walk(ch[0])), s = cleanSp(walk(ch[1])), e = cleanSp(walk(ch[2]));
+      return b ? mathAtom(b) + "_" + mathScript(s) + "^" + mathScript(e) : "";
+    }
+    if (tag === "msqrt") {
+      const inner = cleanSp(Array.from(node.childNodes || []).map(walk).join(""));
+      return inner ? "sqrt(" + inner + ")" : "";
+    }
+    if (tag === "mroot" && ch.length >= 2) {
+      const b = cleanSp(walk(ch[0])), idx = cleanSp(walk(ch[1]));
+      return b && idx ? "root(" + idx + ", " + b + ")" : b;
+    }
+    return Array.from(node.childNodes || []).map(walk).join("");
+  };
+  return cleanSp(walk(mathEl)) || cleanSp(mathEl.getAttribute && mathEl.getAttribute("data-allo-latex") || "");
+};
+const _cleanImmersiveSourceText = (value, preserveParagraphs = false) => {
+  let str = String(value || "").replace(/\[\[CHART:\s*\{[\s\S]*?\}\s*\]\]/gi, " ");
+  if (!str.trim()) return "";
+  const hasMarkup = /<[a-z!/]/i.test(str) || /&(?:#\d+|#x[0-9a-f]+|[a-z][a-z0-9]+);/i.test(str);
+  if (hasMarkup) {
+    if (typeof DOMParser !== "undefined") {
+      try {
+        const parsed = new DOMParser().parseFromString("<!DOCTYPE html><html><body>" + str + "</body></html>", "text/html");
+        const body = parsed && parsed.body;
+        if (body) {
+          body.querySelectorAll('script, style, link, meta, noscript, template, .teacher-view, [data-allo-teacher-only], [data-teacher-only], .teacher-only, .answer-key, .alloflow-teacher-copy-banner, .sr-only-dup, [hidden], [aria-hidden="true"]').forEach((el) => el.remove());
+          const padInlineLabel = (node, label) => {
+            const prevRaw = node.previousSibling ? node.previousSibling.nodeType === 3 ? node.previousSibling.nodeValue : node.previousSibling.textContent : "";
+            const nextRaw = node.nextSibling ? node.nextSibling.nodeType === 3 ? node.nextSibling.nodeValue : node.nextSibling.textContent : "";
+            const prevCh = prevRaw ? prevRaw.slice(-1) : "";
+            const nextCh = nextRaw ? nextRaw.slice(0, 1) : "";
+            const lead = !prevCh || /[\s(\[{]/.test(prevCh) ? "" : " ";
+            const trail = !nextCh || /[\s.,;:!?)\]}]/.test(nextCh) ? "" : " ";
+            return lead + label + trail;
+          };
+          body.querySelectorAll("math").forEach((m) => {
+            if (!m.parentNode) return;
+            const textVal = _linearizeImmersiveMath(m);
+            if (textVal) m.replaceWith(parsed.createTextNode(padInlineLabel(m, textVal)));
+            else m.remove();
+          });
+          body.querySelectorAll("annotation, annotation-xml, [data-allo-latex-src]").forEach((el) => el.remove());
+          body.querySelectorAll("svg").forEach((svg) => {
+            const role = String(svg.getAttribute("role") || "").toLowerCase();
+            const decorative = role === "presentation" || role === "none" || !!svg.closest(".alloflow-inline-chart");
+            let label = "";
+            if (!decorative) {
+              label = String(svg.getAttribute("aria-label") || "").trim();
+              if (!label) {
+                const titleEl = Array.from(svg.children || []).find((c) => String(c.tagName || "").toLowerCase() === "title");
+                if (titleEl) label = String(titleEl.textContent || "").trim();
+              }
+            }
+            if (label) svg.replaceWith(parsed.createTextNode(padInlineLabel(svg, label)));
+            else svg.remove();
+          });
+          body.querySelectorAll("br").forEach((br) => br.replaceWith(parsed.createTextNode(preserveParagraphs ? "\n" : " ")));
+          body.querySelectorAll("p, div, section, article, li, h1, h2, h3, h4, h5, h6, blockquote, tr, pre, td, th").forEach((el) => {
+            const sep = preserveParagraphs && !/^(td|th)$/i.test(el.tagName || "") ? "\n\n" : " ";
+            el.insertAdjacentText("beforebegin", sep);
+            el.insertAdjacentText("afterend", sep);
+          });
+          str = body.textContent || "";
+        }
+      } catch (_) {
+        str = str.replace(/<(script|style|svg)\b[\s\S]*?<\/\1>/gi, " ").replace(/<\/?[a-z][^>]*>/gi, " ");
+      }
+    } else {
+      str = str.replace(/<(script|style|svg)\b[\s\S]*?<\/\1>/gi, " ").replace(/<\/?[a-z][^>]*>/gi, " ");
+    }
+  }
+  str = str.replace(/^\s{0,3}#{1,6}\s+/gm, "").replace(/\[([^\]]+)\]\((?:https?:\/\/|\/)[^)]+\)/g, "$1").replace(/(\*\*|__|~~)([\s\S]+?)\1/g, "$2").replace(/`([^`\n]+)`/g, "$1").replace(/(^|[\s([{"'\u201C\u2018])\*([^\s*](?:[^*\n]*?[^\s*])?)\*(?=$|[\s)\]}"'.,!?;:\u201D\u2019])/gm, "$1$2");
+  if (preserveParagraphs) {
+    return str.replace(/\r\n?/g, "\n").split("\n").map((line) => line.replace(/[ \t]+/g, " ").trim()).join("\n").replace(/\n{3,}/g, "\n\n").trim();
+  }
+  return str.replace(/\s+/g, " ").trim();
+};
 const segmentFocusWords = (value, language) => {
-  const cleaned = String(value || "").replace(/<\/?[a-z][^>]*>/gi, " ").replace(/^\s{0,3}#{1,6}\s+/gm, "").replace(/\[([^\]]+)\]\((?:https?:\/\/|\/)[^)]+\)/g, "$1").replace(/(\*\*|__)([\s\S]+?)\1/g, "$2").replace(/\s+/g, " ").trim();
+  const cleaned = _cleanImmersiveSourceText(value, false);
   const unspaced = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Thai}\p{Script=Lao}\p{Script=Khmer}\p{Script=Myanmar}]/u;
   const locales = { chinese: "zh", "mandarin chinese": "zh", japanese: "ja", thai: "th", lao: "lo", khmer: "km", burmese: "my" };
   const locale = locales[String(language || "").toLowerCase()] || language || void 0;
@@ -74,6 +176,12 @@ const segmentFocusWords = (value, language) => {
     return out;
   });
 };
+const isImeComposing = (e) => !!(e && (e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229 || e.nativeEvent?.keyCode === 229));
+const isTopOverlayTrap = (dialogEl) => {
+  if (typeof window === "undefined" || !Array.isArray(window.__alloFocusTrapStack) || window.__alloFocusTrapStack.length === 0) return true;
+  const top = window.__alloFocusTrapStack[window.__alloFocusTrapStack.length - 1];
+  return !top || !top.root || top.root === dialogEl;
+};
 const useOverlayDialogFocus = (isOpen) => {
   const dialogRef = useRef(null);
   const restoreFocusRef = useRef(null);
@@ -82,13 +190,39 @@ const useOverlayDialogFocus = (isOpen) => {
     const dialog = dialogRef.current;
     if (!dialog) return;
     restoreFocusRef.current = document.activeElement;
-    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter((el) => el.tabIndex >= 0 && !el.closest('[hidden], [inert], [aria-hidden="true"]') && getComputedStyle(el).display !== "none" && getComputedStyle(el).visibility !== "hidden");
+    const backgroundState = [];
+    const seenNodes = /* @__PURE__ */ new Set();
+    for (let branch = dialog; branch && branch !== document.body && branch.parentElement; branch = branch.parentElement) {
+      Array.from(branch.parentElement.children).forEach((sibling) => {
+        if (sibling === branch || seenNodes.has(sibling) || /^(?:SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName)) return;
+        seenNodes.add(sibling);
+        backgroundState.push({
+          node: sibling,
+          hadInert: sibling.hasAttribute("inert"),
+          ariaHidden: sibling.getAttribute("aria-hidden")
+        });
+        sibling.setAttribute("inert", "");
+        sibling.setAttribute("aria-hidden", "true");
+      });
+    }
+    const prevBodyOverflow = document.body ? document.body.style.overflow : "";
+    if (document.body) document.body.style.overflow = "hidden";
+    const trap = { root: dialog };
+    const trapStack = typeof window !== "undefined" ? Array.isArray(window.__alloFocusTrapStack) ? window.__alloFocusTrapStack : window.__alloFocusTrapStack = [] : null;
+    if (trapStack) trapStack.push(trap);
+    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter((el) => {
+      if (el.tabIndex < 0 || el.disabled || el.hidden || el.getAttribute("aria-hidden") === "true" || el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      const closedDetails = el.closest("details:not([open])");
+      if (closedDetails && !(el.tagName === "SUMMARY" && el.parentElement === closedDetails)) return false;
+      return getComputedStyle(el).display !== "none" && getComputedStyle(el).visibility !== "hidden";
+    });
     const focusTimer = setTimeout(() => {
       const focusable = getFocusable();
       (focusable[0] || dialog).focus();
     }, 0);
     const containFocus = (e) => {
-      if (e.key !== "Tab" || e.defaultPrevented) return;
+      if (!dialog.isConnected || e.key !== "Tab" || e.defaultPrevented || isImeComposing(e)) return;
+      if (trapStack && trapStack.length > 0 && trapStack[trapStack.length - 1] !== trap) return;
       const nearest = e.target?.closest?.("[role=dialog]");
       if (nearest && nearest !== dialog && dialog.contains(nearest)) return;
       const focusable = getFocusable();
@@ -111,8 +245,21 @@ const useOverlayDialogFocus = (isOpen) => {
     return () => {
       clearTimeout(focusTimer);
       document.removeEventListener("keydown", containFocus, true);
+      if (document.body) document.body.style.overflow = prevBodyOverflow;
+      backgroundState.forEach(({ node, hadInert, ariaHidden }) => {
+        if (!node || !node.isConnected) return;
+        if (!hadInert) node.removeAttribute("inert");
+        if (ariaHidden == null) node.removeAttribute("aria-hidden");
+        else node.setAttribute("aria-hidden", ariaHidden);
+      });
+      let wasTop = true;
+      if (trapStack) {
+        const idx = trapStack.lastIndexOf(trap);
+        wasTop = idx === trapStack.length - 1;
+        if (idx !== -1) trapStack.splice(idx, 1);
+      }
       const previous = restoreFocusRef.current;
-      if (previous && typeof previous.focus === "function" && document.contains(previous)) previous.focus();
+      if (wasTop && previous && typeof previous.focus === "function" && document.contains(previous)) previous.focus();
     };
   }, [isOpen]);
   return dialogRef;
@@ -151,7 +298,7 @@ const FocusReaderOverlay = React.memo(({ text, language, onClose, isOpen }) => {
   const themes = {
     warm: { bg: "#fdfbf7", strong: "#111827", light: "#6b7280", accent: "#4f46e5", panel: "rgba(255,255,255,0.85)" },
     dark: { bg: "#0f172a", strong: "#f1f5f9", light: "#94a3b8", accent: "#818cf8", panel: "rgba(15,23,42,0.85)" },
-    sepia: { bg: "#f4ecd8", strong: "#3b2a1a", light: "#8b6f4e", accent: "#b45309", panel: "rgba(244,236,216,0.85)" }
+    sepia: { bg: "#f4ecd8", strong: "#3b2a1a", light: "#6b5335", accent: "#b45309", panel: "rgba(244,236,216,0.85)" }
   };
   const c = themes[theme] || themes.warm;
   const colorOptions = [
@@ -240,8 +387,8 @@ const FocusReaderOverlay = React.memo(({ text, language, onClose, isOpen }) => {
   }, [isOpen, chunks.length]);
   useEffect(() => {
     const handler = (e) => {
-      if (!isOpen) return;
-      if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return;
+      if (!isOpen || !isTopOverlayTrap(dialogRef.current)) return;
+      if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || isImeComposing(e)) return;
       if (e.key !== "Escape" && isInteractiveShortcutTarget(e.target)) return;
       if (e.code === "Space") {
         e.preventDefault();
@@ -252,8 +399,11 @@ const FocusReaderOverlay = React.memo(({ text, language, onClose, isOpen }) => {
       } else if (e.code === "ArrowRight") {
         e.preventDefault();
         moveChunk(1);
-      } else if (e.key === "Escape") onClose();
-      else if (e.key === "+" || e.key === "=") setWpm((w) => Math.min(900, w + 25));
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        e.stopPropagation();
+        onClose();
+      } else if (e.key === "+" || e.key === "=") setWpm((w) => Math.min(900, w + 25));
       else if (e.key === "-" || e.key === "_") setWpm((w) => Math.max(100, w - 25));
       else if (e.key === "[") setChunkSize((s) => Math.max(1, s - 1));
       else if (e.key === "]") setChunkSize((s) => Math.min(6, s + 1));
@@ -274,14 +424,14 @@ const FocusReaderOverlay = React.memo(({ text, language, onClose, isOpen }) => {
     const boldLen = Math.max(1, Math.ceil(letters.length * 0.4));
     return /* @__PURE__ */ React.createElement("span", { key: i }, /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 900, color: c.strong } }, letters.slice(0, boldLen).join("")), /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 400, color: c.light } }, letters.slice(boldLen).join("")), i < currentChunk.length - 1 ? " " : "");
   };
-  return /* @__PURE__ */ React.createElement("div", { ref: dialogRef, role: "dialog", "aria-modal": "true", "aria-labelledby": "focus-reader-dialog-title", tabIndex: -1, className: "fixed inset-0 z-[300] overflow-y-auto flex flex-col animate-in fade-in duration-200 motion-reduce:animate-none", style: { backgroundColor: c.bg } }, /* @__PURE__ */ React.createElement("div", { className: "p-4 flex justify-between items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, "aria-label": safeT(t, "common.close", "Close"), className: "p-2 rounded-full hover:bg-black/5", style: { color: c.strong } }, /* @__PURE__ */ React.createElement(ArrowLeft, { size: 22 })), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col" }, /* @__PURE__ */ React.createElement("h2", { id: "focus-reader-dialog-title", className: "font-bold text-base", style: { color: c.strong } }, safeT(t, "immersive.focus_mode", "Focus Mode")), /* @__PURE__ */ React.createElement("span", { className: "text-xs", style: { color: c.light } }, chunks.length ? chunkIdx + 1 : 0, " / ", chunks.length, " \xB7 ", rsvp ? "single-word RSVP" : `${chunkSize}-word chunks \xB7 bold-assist`))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4 flex-wrap text-xs font-bold", style: { color: c.strong } }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { color: c.light } }, "WORDS"), /* @__PURE__ */ React.createElement("input", { "aria-label": safeT(t, "immersive.words_per_chunk_aria", "Words per chunk"), type: "range", min: "1", max: "6", value: chunkSize, onChange: (e) => setChunkSize(parseInt(e.target.value)), className: "w-16 accent-indigo-600" }), /* @__PURE__ */ React.createElement("span", { className: "font-mono w-4 text-end" }, chunkSize)), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { color: c.light } }, "SPEED"), /* @__PURE__ */ React.createElement("input", { "aria-label": safeT(t, "common.speed", "Words per minute"), type: "range", min: "100", max: "900", step: "25", value: wpm, onChange: (e) => setWpm(parseInt(e.target.value)), className: "w-28 accent-indigo-600" }), /* @__PURE__ */ React.createElement("span", { className: "font-mono w-16 text-end", title: "Presentation pace, not a fluency score. Word boundaries vary by language." }, wpm, " wpm")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { color: c.light } }, "THEME"), /* @__PURE__ */ React.createElement("select", { "aria-label": "Theme", value: theme, onChange: (e) => setTheme(e.target.value), className: "text-xs rounded px-2 py-1 border", style: { borderColor: c.light, background: c.bg, color: c.strong } }, /* @__PURE__ */ React.createElement("option", { value: "warm" }, "\u2600 Warm"), /* @__PURE__ */ React.createElement("option", { value: "dark" }, "\u{1F319} Dark"), /* @__PURE__ */ React.createElement("option", { value: "sepia" }, "\u{1F4DC} Sepia"))), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { ref: dialogRef, role: "dialog", "aria-modal": "true", "aria-labelledby": "focus-reader-dialog-title", tabIndex: -1, className: "fixed inset-0 z-[300] overflow-y-auto flex flex-col animate-in fade-in duration-200 motion-reduce:animate-none", style: { backgroundColor: c.bg } }, /* @__PURE__ */ React.createElement("div", { className: "p-4 flex justify-between items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, "aria-label": safeT(t, "common.close", "Close"), className: "min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-full hover:bg-black/5 transition-colors motion-reduce:transition-none", style: { color: c.strong } }, /* @__PURE__ */ React.createElement(ArrowLeft, { size: 22 })), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col" }, /* @__PURE__ */ React.createElement("h2", { id: "focus-reader-dialog-title", className: "font-bold text-base", style: { color: c.strong } }, safeT(t, "immersive.focus_mode", "Focus Mode")), /* @__PURE__ */ React.createElement("span", { className: "text-xs", style: { color: c.light } }, chunks.length ? chunkIdx + 1 : 0, " / ", chunks.length, " \xB7 ", rsvp ? "single-word RSVP" : `${chunkSize}-word chunks \xB7 bold-assist`))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4 flex-wrap text-xs font-bold", style: { color: c.strong } }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { color: c.light } }, "WORDS"), /* @__PURE__ */ React.createElement("input", { "aria-label": safeT(t, "immersive.words_per_chunk_aria", "Words per chunk"), type: "range", min: "1", max: "6", value: chunkSize, onChange: (e) => setChunkSize(parseInt(e.target.value)), className: "w-16 accent-indigo-600" }), /* @__PURE__ */ React.createElement("span", { className: "font-mono w-4 text-end" }, chunkSize)), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { color: c.light } }, "SPEED"), /* @__PURE__ */ React.createElement("input", { "aria-label": safeT(t, "common.speed", "Words per minute"), type: "range", min: "100", max: "900", step: "25", value: wpm, onChange: (e) => setWpm(parseInt(e.target.value)), className: "w-28 accent-indigo-600" }), /* @__PURE__ */ React.createElement("span", { className: "font-mono w-16 text-end", title: "Presentation pace, not a fluency score. Word boundaries vary by language." }, wpm, " wpm")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { color: c.light } }, "THEME"), /* @__PURE__ */ React.createElement("select", { "aria-label": "Theme", value: theme, onChange: (e) => setTheme(e.target.value), className: "min-h-11 text-xs rounded px-2 py-1 border", style: { borderColor: c.light, background: c.bg, color: c.strong } }, /* @__PURE__ */ React.createElement("option", { value: "warm" }, "\u2600 Warm"), /* @__PURE__ */ React.createElement("option", { value: "dark" }, "\u{1F319} Dark"), /* @__PURE__ */ React.createElement("option", { value: "sepia" }, "\u{1F4DC} Sepia"))), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
       onClick: () => setPunctPauses((v) => !v),
       "aria-pressed": punctPauses,
       title: punctPauses ? "Punctuation-aware pauses on (P to toggle) \u2014 commas slow slightly, sentence ends longer" : "Punctuation pauses off \u2014 constant cadence (P to toggle)",
-      className: "px-3 py-1 rounded-full text-xs transition-all",
+      className: "min-h-11 px-3 py-1 rounded-full text-xs transition-all motion-reduce:transition-none",
       style: { background: punctPauses ? c.accent + "22" : "transparent", border: `1px solid ${c.light}55`, color: c.strong, opacity: punctPauses ? 1 : 0.7 }
     },
     "\u2025 Pause at punctuation"
@@ -292,12 +442,12 @@ const FocusReaderOverlay = React.memo(({ text, language, onClose, isOpen }) => {
       key: opt.value,
       onClick: () => setFocusColor(opt.value),
       "aria-label": `Focus color ${opt.name}`,
-      className: `w-6 h-6 rounded-full border-2 transition-transform hover:scale-110 ${focusColor === opt.value ? "scale-110" : "border-transparent"}`,
+      className: `w-6 h-6 rounded-full border-2 transition-transform hover:scale-110 motion-reduce:transition-none motion-reduce:transform-none ${focusColor === opt.value ? "scale-110" : "border-transparent"}`,
       style: { backgroundColor: opt.value, borderColor: focusColor === opt.value ? c.strong : "transparent" },
       title: opt.name
     }
   )))))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-h-64 flex flex-col items-center justify-center cursor-pointer select-none px-4 md:px-8 relative overflow-hidden", onClick: handlePlayToggle, role: "button", "aria-pressed": isPlaying, "aria-disabled": !chunks.length, tabIndex: 0, onKeyDown: (e) => {
-    if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return;
+    if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || isImeComposing(e)) return;
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       handlePlayToggle();
@@ -337,7 +487,7 @@ const FocusReaderOverlay = React.memo(({ text, language, onClose, isOpen }) => {
     safeT(t, "common.next", "Next"),
     " ",
     /* @__PURE__ */ React.createElement(ArrowRight, { size: 18, "aria-hidden": "true" })
-  )), /* @__PURE__ */ React.createElement("div", { className: "h-2 w-full shrink-0", role: "progressbar", "aria-label": safeT(t, "a11y.reading_progress", "Reading progress"), "aria-valuenow": Math.round(progressPct), "aria-valuemin": 0, "aria-valuemax": 100, style: { background: c.light + "33" } }, /* @__PURE__ */ React.createElement("div", { className: "h-full transition-all duration-200", style: { width: `${progressPct}%`, backgroundColor: c.accent } })));
+  )), /* @__PURE__ */ React.createElement("div", { className: "h-2 w-full shrink-0", role: "progressbar", "aria-label": safeT(t, "a11y.reading_progress", "Reading progress"), "aria-valuenow": Math.round(progressPct), "aria-valuemin": 0, "aria-valuemax": 100, style: { background: c.light + "33" } }, /* @__PURE__ */ React.createElement("div", { className: "h-full transition-all duration-200 motion-reduce:transition-none", style: { width: `${progressPct}%`, backgroundColor: c.accent } })));
 });
 const ImmersiveToggleButton = React.memo(({ active, onClick, settingKey, toggleSetting, title, children, activeColor = "bg-indigo-600 text-white", ...props }) => /* @__PURE__ */ React.createElement(
   "button",
@@ -346,7 +496,7 @@ const ImmersiveToggleButton = React.memo(({ active, onClick, settingKey, toggleS
     onClick: settingKey ? () => toggleSetting(settingKey) : onClick,
     title,
     "aria-pressed": !!active,
-    className: `min-h-11 px-2.5 py-1 text-xs font-bold rounded-full transition-all disabled:opacity-60 disabled:cursor-wait ${active ? activeColor : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`,
+    className: `min-h-11 px-2.5 py-1 text-xs font-bold rounded-full transition-all motion-reduce:transition-none disabled:opacity-60 disabled:cursor-wait ${active ? activeColor : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`,
     ...props
   },
   children
@@ -406,7 +556,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
       "aria-label": safeT(t, "immersive.close", "Close Immersive Reader"),
       onClick: onClose,
       title: t("immersive.close"),
-      className: "min-h-11 min-w-11 shrink-0 p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-800 transition-colors"
+      className: "min-h-11 min-w-11 shrink-0 p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-800 transition-colors motion-reduce:transition-none"
     },
     /* @__PURE__ */ React.createElement(X, { size: 18 })
   ))), /* @__PURE__ */ React.createElement("div", { id: "immersive-reader-settings", hidden: !settingsExpanded, className: settingsExpanded ? "flex flex-wrap items-center gap-3 max-h-[35vh] overflow-y-auto mt-2 pb-2" : "hidden" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider flex flex-wrap items-center gap-2 min-w-0" }, /* @__PURE__ */ React.createElement(Settings2, { size: 14 }), " ", t("immersive.title")), /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-300 shrink-0" }), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 min-w-0" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-700" }, t("immersive.text_size")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600" }, "A"), /* @__PURE__ */ React.createElement(
@@ -513,7 +663,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
       onClick: () => setInteractionMode("read"),
       "aria-pressed": interactionMode !== "define" && interactionMode !== "phonics",
       title: safeT(t, "immersive.tap_speak", "Tap a word to hear it"),
-      className: `inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-full transition-colors ${interactionMode !== "define" && interactionMode !== "phonics" ? "bg-indigo-600 text-white shadow-sm" : "text-slate-600 hover:text-slate-800"}`
+      className: `min-h-11 inline-flex items-center gap-1 px-3 py-1 text-xs font-bold rounded-full transition-colors motion-reduce:transition-none ${interactionMode !== "define" && interactionMode !== "phonics" ? "bg-indigo-600 text-white shadow-sm" : "text-slate-600 hover:text-slate-800"}`
     },
     /* @__PURE__ */ React.createElement(Volume2, { size: 12 }),
     " ",
@@ -525,19 +675,19 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
       onClick: () => setInteractionMode("define"),
       "aria-pressed": interactionMode === "define",
       title: safeT(t, "immersive.tap_define", "Tap a word to see its definition and picture"),
-      className: `inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-full transition-colors ${interactionMode === "define" ? "bg-yellow-400 text-slate-900 shadow-sm" : "text-slate-600 hover:text-slate-800"}`
+      className: `min-h-11 inline-flex items-center gap-1 px-3 py-1 text-xs font-bold rounded-full transition-colors motion-reduce:transition-none ${interactionMode === "define" ? "bg-yellow-400 text-slate-900 shadow-sm" : "text-slate-600 hover:text-slate-800"}`
     },
     /* @__PURE__ */ React.createElement(BookOpen, { size: 12 }),
     " ",
     safeT(t, "immersive.define", "Define")
-  ))), isChunkReaderActive && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-300 shrink-0" }), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 min-w-0" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setChunkReaderIdx(Math.max(0, chunkReaderIdx - 1)), disabled: chunkReaderIdx <= 0, className: "min-h-11 min-w-11 flex items-center justify-center p-1 rounded-full bg-slate-100 hover:bg-slate-200 disabled:opacity-30 transition-all", title: safeT(t, "common.previous", "Previous") + " (\u2190 / Home)" }, /* @__PURE__ */ React.createElement(ChevronLeft, { size: 14 })), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600 tabular-nums min-w-[3rem] text-center" }, chunkReaderIdx + 1, " / ", totalSentences), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setChunkReaderIdx(Math.min(totalSentences - 1, chunkReaderIdx + 1)), disabled: chunkReaderIdx >= totalSentences - 1, className: "min-h-11 min-w-11 flex items-center justify-center p-1 rounded-full bg-slate-100 hover:bg-slate-200 disabled:opacity-30 transition-all", title: safeT(t, "common.next", "Next") + " (\u2192 / End)" }, /* @__PURE__ */ React.createElement(ChevronRight, { size: 14 })), /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-200" }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setChunkReaderAutoPlay(!chunkReaderAutoPlay), "aria-pressed": !!chunkReaderAutoPlay, "aria-label": chunkReaderAutoPlay ? safeT(t, "common.pause", "Pause") : safeT(t, "common.auto_play", "Auto play"), className: `min-h-11 min-w-11 px-2 py-1 text-xs font-bold rounded-full transition-all ${chunkReaderAutoPlay ? "bg-emerald-700 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`, title: (chunkReaderAutoPlay ? safeT(t, "common.pause", "Pause") : safeT(t, "common.auto_play", "Auto")) + " (Space) \xB7 Esc exits \xB7 Enter skips typewriter reveal" }, chunkReaderAutoPlay ? /* @__PURE__ */ React.createElement(Pause, { size: 12, className: "inline" }) : /* @__PURE__ */ React.createElement(Play, { size: 12, className: "inline" })), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600" }, "1s"), /* @__PURE__ */ React.createElement("input", { type: "range", min: "1000", max: "8000", step: "500", value: chunkReaderSpeed, onChange: (e) => setChunkReaderSpeed(parseInt(e.target.value)), disabled: !!chunkReaderReadAlong, className: `w-14 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-500 ${chunkReaderReadAlong ? "opacity-30" : ""}`, title: chunkReaderReadAlong ? "Disabled while Read Along is on \u2014 audio length drives the pace" : `${(chunkReaderSpeed / 1e3).toFixed(1)}s`, "aria-label": t("immersive.speed") }), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 tabular-nums" }, (chunkReaderSpeed / 1e3).toFixed(1), "s")), onToggleChunkReaderReadAlong && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-200" }), /* @__PURE__ */ React.createElement(
+  ))), isChunkReaderActive && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-300 shrink-0" }), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 min-w-0" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setChunkReaderIdx(Math.max(0, chunkReaderIdx - 1)), disabled: chunkReaderIdx <= 0, className: "min-h-11 min-w-11 flex items-center justify-center p-1 rounded-full bg-slate-100 hover:bg-slate-200 disabled:opacity-30 transition-all motion-reduce:transition-none", title: safeT(t, "common.previous", "Previous") + " (\u2190 / Home)" }, /* @__PURE__ */ React.createElement(ChevronLeft, { size: 14 })), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600 tabular-nums min-w-[3rem] text-center" }, chunkReaderIdx + 1, " / ", totalSentences), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setChunkReaderIdx(Math.min(totalSentences - 1, chunkReaderIdx + 1)), disabled: chunkReaderIdx >= totalSentences - 1, className: "min-h-11 min-w-11 flex items-center justify-center p-1 rounded-full bg-slate-100 hover:bg-slate-200 disabled:opacity-30 transition-all motion-reduce:transition-none", title: safeT(t, "common.next", "Next") + " (\u2192 / End)" }, /* @__PURE__ */ React.createElement(ChevronRight, { size: 14 })), /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-200" }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setChunkReaderAutoPlay(!chunkReaderAutoPlay), "aria-pressed": !!chunkReaderAutoPlay, "aria-label": chunkReaderAutoPlay ? safeT(t, "common.pause", "Pause") : safeT(t, "common.auto_play", "Auto play"), className: `min-h-11 min-w-11 px-2 py-1 text-xs font-bold rounded-full transition-all motion-reduce:transition-none ${chunkReaderAutoPlay ? "bg-emerald-700 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`, title: (chunkReaderAutoPlay ? safeT(t, "common.pause", "Pause") : safeT(t, "common.auto_play", "Auto")) + " (Space) \xB7 Esc exits \xB7 Enter skips typewriter reveal" }, chunkReaderAutoPlay ? /* @__PURE__ */ React.createElement(Pause, { size: 12, className: "inline" }) : /* @__PURE__ */ React.createElement(Play, { size: 12, className: "inline" })), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600" }, "1s"), /* @__PURE__ */ React.createElement("input", { type: "range", min: "1000", max: "8000", step: "500", value: chunkReaderSpeed, onChange: (e) => setChunkReaderSpeed(parseInt(e.target.value)), disabled: !!chunkReaderReadAlong, className: `w-14 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-500 ${chunkReaderReadAlong ? "opacity-30" : ""}`, title: chunkReaderReadAlong ? "Disabled while Read Along is on \u2014 audio length drives the pace" : `${(chunkReaderSpeed / 1e3).toFixed(1)}s`, "aria-label": t("immersive.speed") }), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 tabular-nums" }, (chunkReaderSpeed / 1e3).toFixed(1), "s")), onToggleChunkReaderReadAlong && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-200" }), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
       onClick: onToggleChunkReaderReadAlong,
       "aria-pressed": !!chunkReaderReadAlong,
       title: chunkReaderReadAlong ? "Read-along OFF: return to timer-based advance" : "Read-along ON: play each sentence with a colored gradient that sweeps across the text in sync with the audio",
-      className: `inline-flex items-center gap-1 px-2 py-1 text-xs font-bold rounded-full transition-all ${chunkReaderReadAlong ? "bg-fuchsia-600 text-white shadow-sm" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`,
+      className: `min-h-11 inline-flex items-center gap-1 px-3 py-1 text-xs font-bold rounded-full transition-all motion-reduce:transition-none ${chunkReaderReadAlong ? "bg-fuchsia-600 text-white shadow-sm" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`,
       "data-help-key": "immersive_chunk_read_along"
     },
     /* @__PURE__ */ React.createElement(Volume2, { size: 12, className: "inline" }),
@@ -550,7 +700,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
       value: chunkReaderMood || "highlight",
       onChange: (e) => setChunkReaderMood(e.target.value),
       title: t("immersive.chunk_mood_tooltip") || "Animation mood for active chunk \xB7 Enter skips typewriter reveal",
-      className: "text-[11px] font-bold rounded-full px-2 py-1 border border-slate-300 bg-slate-100 text-slate-700 cursor-pointer hover:bg-slate-200",
+      className: "min-h-11 text-[11px] font-bold rounded-full px-3 py-1 border border-slate-300 bg-slate-100 text-slate-700 cursor-pointer hover:bg-slate-200",
       "data-help-key": "immersive_chunk_mood"
     },
     /* @__PURE__ */ React.createElement("option", { value: "highlight" }, "\u2728 Sweep"),
@@ -605,13 +755,13 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
     },
     t("immersive.adverbs"),
     isGeneratingPOS && settings.showAdverbs ? " \u2026" : ""
-  )), /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-300 shrink-0" }), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600" }, safeT(t, "immersive.font", "Font")), /* @__PURE__ */ React.createElement(
+  ), (onGeneratePOS || onGenerateSyllables) && !posAvailable && !syllablesAvailable && typeof window !== "undefined" && typeof window.AlloAiSetupNotice === "function" && React.createElement(window.AlloAiSetupNotice, { kind: "text", t, compact: true })), /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-300 shrink-0" }), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600" }, safeT(t, "immersive.font", "Font")), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": safeT(t, "immersive.font_family", "Font family"),
       value: settings.fontFamily || "",
       onChange: (e) => setSettings((prev) => ({ ...prev, fontFamily: e.target.value })),
-      className: "text-xs bg-slate-100 border border-slate-400 rounded-full px-2 py-1 cursor-pointer hover:bg-slate-200 transition-all font-medium text-slate-700",
+      className: "min-h-11 text-xs bg-slate-100 border border-slate-400 rounded-full px-3 py-1 cursor-pointer hover:bg-slate-200 transition-all motion-reduce:transition-none font-medium text-slate-700",
       "data-help-key": "immersive_font_family"
     },
     /* @__PURE__ */ React.createElement("option", { value: "" }, "Default"),
@@ -632,7 +782,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
           setSettings((prev) => ({ ...prev, ...presets[e.target.value] }));
         }
       },
-      className: "text-xs bg-slate-100 border border-slate-400 rounded-full px-2 py-1 cursor-pointer hover:bg-slate-200 transition-all font-medium text-slate-600"
+      className: "min-h-11 text-xs bg-slate-100 border border-slate-400 rounded-full px-3 py-1 cursor-pointer hover:bg-slate-200 transition-all motion-reduce:transition-none font-medium text-slate-600"
     },
     /* @__PURE__ */ React.createElement("option", { value: "", disabled: true }, safeT(t, "immersive.custom_colors", "Custom colors")),
     /* @__PURE__ */ React.createElement("option", { value: "warm" }, "\u2600\uFE0F Warm"),
@@ -678,7 +828,7 @@ function useImmersiveTimeouts() {
 const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
   const { t } = useContext(LanguageContext);
   const dialogRef = useOverlayDialogFocus(isOpen);
-  const paragraphs = useMemo(() => isOpen ? String(text || "").replace(/<\/?[a-zA-Z][^<>]*>/g, "").replace(/\n{3,}/g, "\n\n").trim().split(/\n{2,}/).filter(Boolean) : [], [isOpen, text]);
+  const paragraphs = useMemo(() => isOpen ? _cleanImmersiveSourceText(text, true).split(/\n{2,}/).map((s) => s.trim()).filter(Boolean) : [], [isOpen, text]);
   const [speedPxPerSec, setSpeedPxPerSec] = useState(() => {
     try {
       const v = parseInt(localStorage.getItem("allo_crawl_speed"), 10);
@@ -877,13 +1027,17 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
   useEffect(() => {
     if (!isOpen) return;
     const handler = (e) => {
-      if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return;
+      if (!isTopOverlayTrap(dialogRef.current)) return;
+      if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || isImeComposing(e)) return;
       if (e.key !== "Escape" && isInteractiveShortcutTarget(e.target)) return;
       if (e.code === "Space") {
         e.preventDefault();
         togglePlay();
-      } else if (e.key === "Escape") onClose();
-      else if (e.key === "r" || e.key === "R") {
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        e.stopPropagation();
+        onClose();
+      } else if (e.key === "r" || e.key === "R") {
         resetCrawl();
         setIsPlaying(true);
       } else if (e.key === "m" || e.key === "M") setAmbientOn((a) => !a);
@@ -893,7 +1047,7 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
   }, [isOpen, onClose, resetCrawl, togglePlay]);
   if (!isOpen) return null;
   const staticPreview = !isPlaying && translateY === 0;
-  return /* @__PURE__ */ React.createElement("div", { ref: dialogRef, role: "dialog", "aria-modal": "true", "aria-labelledby": "perspective-crawl-dialog-title", tabIndex: -1, "data-help-key": "perspective_crawl_overlay_panel", className: "fixed inset-0 z-[300] flex flex-col", style: { backgroundColor: p.bg, color: p.text } }, /* @__PURE__ */ React.createElement("div", { className: "p-4 flex justify-between items-center gap-3 flex-wrap backdrop-blur-sm", style: { background: "rgba(0,0,0,0.55)" } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "perspective_crawl_exit_btn", onClick: onClose, "aria-label": safeT(t, "common.close", "Close"), className: "p-2 rounded-full", style: { color: p.text } }, /* @__PURE__ */ React.createElement(ArrowLeft, { size: 22 })), /* @__PURE__ */ React.createElement("h2", { id: "perspective-crawl-dialog-title", className: "font-bold text-base" }, safeT(t, "immersive.cinematic_crawl", "Cinematic Crawl"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 text-xs font-bold flex-wrap" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { opacity: 0.7 } }, "SPEED"), /* @__PURE__ */ React.createElement("input", { "data-help-key": "perspective_crawl_speed_control", "aria-label": t("immersive.crawl_speed_aria") || "Crawl speed", type: "range", min: "10", max: "140", value: speedPxPerSec, onChange: (e) => setSpeedPxPerSec(parseInt(e.target.value)), className: "w-24 accent-yellow-400" }), /* @__PURE__ */ React.createElement("span", { className: "font-mono w-14 text-end" }, speedPxPerSec, "px/s")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { opacity: 0.7 } }, "PALETTE"), /* @__PURE__ */ React.createElement("select", { "data-help-key": "perspective_crawl_palette_select", "aria-label": t("a11y.fab_open_palette"), value: palette, onChange: (e) => setPalette(e.target.value), className: "text-xs rounded px-2 py-1 border", style: { borderColor: p.text, background: p.bg, color: p.text } }, /* @__PURE__ */ React.createElement("option", { value: "gold" }, "Golden"), /* @__PURE__ */ React.createElement("option", { value: "teal" }, "Aqua"), /* @__PURE__ */ React.createElement("option", { value: "paper" }, "Paper"))), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { ref: dialogRef, role: "dialog", "aria-modal": "true", "aria-labelledby": "perspective-crawl-dialog-title", tabIndex: -1, "data-help-key": "perspective_crawl_overlay_panel", className: "fixed inset-0 z-[300] flex flex-col", style: { backgroundColor: p.bg, color: p.text } }, /* @__PURE__ */ React.createElement("div", { className: "p-4 flex justify-between items-center gap-3 flex-wrap backdrop-blur-sm", style: { background: "rgba(0,0,0,0.55)" } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "perspective_crawl_exit_btn", onClick: onClose, "aria-label": safeT(t, "common.close", "Close"), className: "min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-full transition-colors motion-reduce:transition-none", style: { color: p.text } }, /* @__PURE__ */ React.createElement(ArrowLeft, { size: 22 })), /* @__PURE__ */ React.createElement("h2", { id: "perspective-crawl-dialog-title", className: "font-bold text-base" }, safeT(t, "immersive.cinematic_crawl", "Cinematic Crawl"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 text-xs font-bold flex-wrap" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { opacity: 0.7 } }, "SPEED"), /* @__PURE__ */ React.createElement("input", { "data-help-key": "perspective_crawl_speed_control", "aria-label": t("immersive.crawl_speed_aria") || "Crawl speed", type: "range", min: "10", max: "140", value: speedPxPerSec, onChange: (e) => setSpeedPxPerSec(parseInt(e.target.value)), className: "w-24 accent-yellow-400" }), /* @__PURE__ */ React.createElement("span", { className: "font-mono w-14 text-end" }, speedPxPerSec, "px/s")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { opacity: 0.7 } }, "PALETTE"), /* @__PURE__ */ React.createElement("select", { "data-help-key": "perspective_crawl_palette_select", "aria-label": t("a11y.fab_open_palette"), value: palette, onChange: (e) => setPalette(e.target.value), className: "min-h-11 text-xs rounded px-2 py-1 border", style: { borderColor: p.text, background: p.bg, color: p.text } }, /* @__PURE__ */ React.createElement("option", { value: "gold" }, "Golden"), /* @__PURE__ */ React.createElement("option", { value: "teal" }, "Aqua"), /* @__PURE__ */ React.createElement("option", { value: "paper" }, "Paper"))), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -902,14 +1056,14 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
       "aria-pressed": ambientOn,
       "aria-label": ambientOn ? t("a11y.mute_ambient_pad") || "Mute ambient pad" : t("a11y.unmute_ambient_pad") || "Unmute ambient pad",
       title: ambientOn ? "Ambient pad on (M to toggle)" : "Ambient pad muted (M to toggle)",
-      className: "px-3 py-1 rounded text-xs",
+      className: "min-h-11 min-w-11 px-3 py-1 rounded text-xs transition-colors motion-reduce:transition-none",
       style: { background: p.text + "22", color: p.text, opacity: ambientOn ? 1 : 0.55 }
     },
     ambientOn ? "\u266A" : "\u266A\u0338"
-  ), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "perspective_crawl_play_pause_btn", onClick: togglePlay, "aria-label": isPlaying ? "Pause" : "Play", className: "px-3 py-1 rounded", style: { background: p.text + "22", color: p.text } }, isPlaying ? /* @__PURE__ */ React.createElement(Pause, { size: 14 }) : /* @__PURE__ */ React.createElement(Play, { size: 14 })), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "perspective_crawl_restart_btn", onClick: () => {
+  ), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "perspective_crawl_play_pause_btn", onClick: togglePlay, "aria-label": isPlaying ? "Pause" : "Play", className: "min-h-11 min-w-11 inline-flex items-center justify-center px-3 py-1 rounded transition-colors motion-reduce:transition-none", style: { background: p.text + "22", color: p.text } }, isPlaying ? /* @__PURE__ */ React.createElement(Pause, { size: 14 }) : /* @__PURE__ */ React.createElement(Play, { size: 14 })), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "perspective_crawl_restart_btn", onClick: () => {
     resetCrawl();
     setIsPlaying(true);
-  }, "aria-label": t("a11y.restart_crawl"), className: "px-3 py-1 rounded text-xs", style: { background: p.text + "22", color: p.text } }, "\u21BA Restart"))), /* @__PURE__ */ React.createElement(
+  }, "aria-label": t("a11y.restart_crawl"), className: "min-h-11 px-3 py-1 rounded text-xs transition-colors motion-reduce:transition-none", style: { background: p.text + "22", color: p.text } }, "\u21BA Restart"))), /* @__PURE__ */ React.createElement(
     "div",
     {
       ref: viewportRef,
@@ -919,6 +1073,7 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
       role: "button",
       tabIndex: 0,
       onKeyDown: (e) => {
+        if (isImeComposing(e)) return;
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
           togglePlay();
@@ -973,7 +1128,7 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
       /* @__PURE__ */ React.createElement("div", { className: "text-xs mt-2", style: { opacity: 0.7 } }, "Click anywhere \xB7 press R to replay \xB7 Esc closes")
     )),
     !isPlaying && !finished && translateYRef.current < -4 && /* @__PURE__ */ React.createElement("div", { className: "absolute top-4 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs pointer-events-none", style: { background: `${p.bg}99`, border: `1px solid ${p.accent}33`, color: p.text } }, "\u23F8 Paused \u2014 click to resume")
-  ), /* @__PURE__ */ React.createElement("div", { className: "h-1 w-full", style: { background: p.text + "22" } }, /* @__PURE__ */ React.createElement("div", { className: "h-full transition-all duration-200 ease-linear", style: { width: `${progressPct}%`, backgroundColor: p.accent } })), /* @__PURE__ */ React.createElement("div", { className: "py-2 text-center text-xs", style: { color: p.text, opacity: 0.6 } }, "Click or Space pauses \xB7 R restarts \xB7 M mutes pad \xB7 Esc closes"));
+  ), /* @__PURE__ */ React.createElement("div", { className: "h-1 w-full", style: { background: p.text + "22" } }, /* @__PURE__ */ React.createElement("div", { className: "h-full transition-all duration-200 ease-linear motion-reduce:transition-none", style: { width: `${progressPct}%`, backgroundColor: p.accent } })), /* @__PURE__ */ React.createElement("div", { className: "py-2 text-center text-xs", style: { color: p.text, opacity: 0.6 } }, "Click or Space pauses \xB7 R restarts \xB7 M mutes pad \xB7 Esc closes"));
 });
 const KARAOKE_TRACE_MAX = 150;
 const karaokeTrace = (event, detail) => {
@@ -1389,11 +1544,12 @@ const KaraokePlaybackOverlay = React.memo(({ text, sentenceList, requestedVoice,
       setSentences([]);
       return;
     }
-    const cleaned = String(text || "").replace(/<\/?[a-zA-Z][^<>]*>/g, "").replace(/\s+/g, " ").trim();
+    const hasMarkup = /<[a-z!/]/i.test(text) || /&(?:#\d+|#x[0-9a-f]+|[a-z][a-z0-9]+);/i.test(text) || /\[\[CHART:/i.test(text);
+    const cleaned = _cleanImmersiveSourceText(text, false);
     const _KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
     if (_KS && typeof _KS.splitSentences === "function") {
-      const _shared = _KS.splitSentences(text);
-      setSentences(_shared.length > 0 ? _shared : [cleaned]);
+      const _shared = _KS.splitSentences(hasMarkup ? cleaned : text);
+      setSentences(_shared.length > 0 ? _shared : cleaned ? [cleaned] : []);
       setSentenceIdx(0);
       setSweepPct(0);
       warmedRef.current = /* @__PURE__ */ new Set();
@@ -1413,7 +1569,7 @@ const KaraokePlaybackOverlay = React.memo(({ text, sentenceList, requestedVoice,
     }
     const tail = buf.trim();
     if (tail) out.push(tail);
-    setSentences(out.length > 0 ? out : [cleaned]);
+    setSentences(out.length > 0 ? out : cleaned ? [cleaned] : []);
     setSentenceIdx(0);
     setSweepPct(0);
     warmedRef.current = /* @__PURE__ */ new Set();
@@ -2465,7 +2621,8 @@ const KaraokePlaybackOverlay = React.memo(({ text, sentenceList, requestedVoice,
   useEffect(() => {
     if (!isOpen) return;
     const handler = (e) => {
-      if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return;
+      if (!isTopOverlayTrap(dialogRef.current)) return;
+      if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || isImeComposing(e)) return;
       if (e.key !== "Escape" && isInteractiveShortcutTarget(e.target)) return;
       if (e.code === "Space") {
         e.preventDefault();
@@ -2484,6 +2641,7 @@ const KaraokePlaybackOverlay = React.memo(({ text, sentenceList, requestedVoice,
         goToSentence(sentences.length - 1);
       } else if (e.key === "Escape") {
         e.preventDefault();
+        e.stopPropagation();
         requestRecordingClose();
       }
     };
@@ -2555,6 +2713,7 @@ const KaraokePlaybackOverlay = React.memo(({ text, sentenceList, requestedVoice,
           "data-karaoke-sentence": idx,
           tabIndex: 0,
           onKeyDown: (e) => {
+            if (isImeComposing(e)) return;
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
               if (!e.repeat) togglePlayback();
@@ -2598,6 +2757,7 @@ const KaraokePlaybackOverlay = React.memo(({ text, sentenceList, requestedVoice,
         "data-karaoke-sentence": idx,
         tabIndex: -1,
         onKeyDown: (e) => {
+          if (isImeComposing(e)) return;
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
             goToSentence(idx);
@@ -2614,14 +2774,14 @@ const KaraokePlaybackOverlay = React.memo(({ text, sentenceList, requestedVoice,
       sText
     );
   };
-  return /* @__PURE__ */ React.createElement("div", { ref: dialogRef, role: "dialog", "aria-modal": "true", "aria-labelledby": "karaoke-reader-dialog-title", tabIndex: -1, className: "fixed inset-0 z-[300] overflow-y-auto flex flex-col animate-in fade-in duration-200 motion-reduce:animate-none", style: { backgroundColor: c.bg, color: c.ink, overflowWrap: "anywhere" } }, /* @__PURE__ */ React.createElement("div", { className: "shrink-0 p-4 flex justify-between items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "flex min-w-0 items-center gap-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", ref: recordingCloseButtonRef, onClick: requestRecordingClose, "aria-label": safeT(t, "common.close", "Close"), className: "p-2 rounded-full hover:bg-black/5", style: { color: c.ink } }, /* @__PURE__ */ React.createElement(ArrowLeft, { size: 22 })), /* @__PURE__ */ React.createElement("div", { className: "flex min-w-0 flex-col" }, /* @__PURE__ */ React.createElement("h2", { id: "karaoke-reader-dialog-title", className: "font-bold text-base" }, safeT(t, "immersive.focus_reader", "Focus Reader")), /* @__PURE__ */ React.createElement("span", { className: "text-xs", style: { color: c.dim } }, "Sentence ", sentenceIdx + 1, " / ", sentences.length, " \xB7 read-along sweep", teacherTake?.url && teacherTake.source === "human-teacher" ? " \xB7 \u{1F3A4} " + safeT(t, "immersive.teacher_recording", "Teacher recording") : ""), playbackNotice ? /* @__PURE__ */ React.createElement("span", { className: "text-xs font-semibold max-w-xl", role: "status", "aria-live": "polite", style: { color: c.sweep } }, playbackNotice) : null)), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4 flex-wrap text-xs font-bold" }, isTeacher && !playbackOnly && /* @__PURE__ */ React.createElement("div", { className: "flex min-w-0 max-w-full flex-wrap items-center gap-2", role: "group", "aria-label": safeT(t, "immersive.teacher_audio_tools", "Read-aloud tools") }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1.5 cursor-pointer", title: safeT(t, "immersive.save_readaloud_tip", "Save each sentence shortly after it starts playing into this resource, so students hear your vetted audio instantly on any device.") }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: captureOn, onChange: (e) => setCaptureOn(e.target.checked), "aria-label": safeT(t, "immersive.save_readaloud", "Save read-aloud as I listen") }), /* @__PURE__ */ React.createElement("span", null, "\u{1F4BE}", " ", safeT(t, "immersive.save_readaloud", "Save read-aloud"))), captureSaveState.pending > 0 && /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", style: { color: c.sweep } }, safeT(t, "immersive.saving_readaloud", "Saving"), " ", captureSaveState.pending), captureSaveState.failed > 0 && captureSaveState.limit && /* @__PURE__ */ React.createElement("span", { role: "alert", title: captureSaveState.message, style: { color: "#b45309" } }, safeT(t, "immersive.readaloud_limit", "Storage limit reached"), " \xB7 ", captureSaveState.failed), captureSaveState.failed > 0 && !captureSaveState.limit && /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { ref: dialogRef, role: "dialog", "aria-modal": "true", "aria-labelledby": "karaoke-reader-dialog-title", tabIndex: -1, className: "fixed inset-0 z-[300] overflow-y-auto flex flex-col animate-in fade-in duration-200 motion-reduce:animate-none", style: { backgroundColor: c.bg, color: c.ink, overflowWrap: "anywhere" } }, /* @__PURE__ */ React.createElement("div", { className: "shrink-0 p-4 flex justify-between items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "flex min-w-0 items-center gap-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", ref: recordingCloseButtonRef, onClick: requestRecordingClose, "aria-label": safeT(t, "common.close", "Close"), className: "min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-full hover:bg-black/5 transition-colors motion-reduce:transition-none", style: { color: c.ink } }, /* @__PURE__ */ React.createElement(ArrowLeft, { size: 22 })), /* @__PURE__ */ React.createElement("div", { className: "flex min-w-0 flex-col" }, /* @__PURE__ */ React.createElement("h2", { id: "karaoke-reader-dialog-title", className: "font-bold text-base" }, safeT(t, "immersive.focus_reader", "Focus Reader")), /* @__PURE__ */ React.createElement("span", { className: "text-xs", style: { color: c.dim } }, "Sentence ", sentenceIdx + 1, " / ", sentences.length, " \xB7 read-along sweep", teacherTake?.url && teacherTake.source === "human-teacher" ? " \xB7 \u{1F3A4} " + safeT(t, "immersive.teacher_recording", "Teacher recording") : ""), playbackNotice ? /* @__PURE__ */ React.createElement("span", { className: "text-xs font-semibold max-w-xl", role: "status", "aria-live": "polite", style: { color: c.sweep } }, playbackNotice) : null)), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4 flex-wrap text-xs font-bold" }, isTeacher && !playbackOnly && /* @__PURE__ */ React.createElement("div", { className: "flex min-w-0 max-w-full flex-wrap items-center gap-2", role: "group", "aria-label": safeT(t, "immersive.teacher_audio_tools", "Read-aloud tools") }, /* @__PURE__ */ React.createElement("label", { className: "min-h-11 flex items-center gap-1.5 cursor-pointer", title: safeT(t, "immersive.save_readaloud_tip", "Save each sentence shortly after it starts playing into this resource, so students hear your vetted audio instantly on any device.") }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: captureOn, onChange: (e) => setCaptureOn(e.target.checked), "aria-label": safeT(t, "immersive.save_readaloud", "Save read-aloud as I listen") }), /* @__PURE__ */ React.createElement("span", null, "\u{1F4BE}", " ", safeT(t, "immersive.save_readaloud", "Save read-aloud"))), captureSaveState.pending > 0 && /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", style: { color: c.sweep } }, safeT(t, "immersive.saving_readaloud", "Saving"), " ", captureSaveState.pending), captureSaveState.failed > 0 && captureSaveState.limit && /* @__PURE__ */ React.createElement("span", { role: "alert", title: captureSaveState.message, style: { color: "#b45309" } }, safeT(t, "immersive.readaloud_limit", "Storage limit reached"), " \xB7 ", captureSaveState.failed), captureSaveState.failed > 0 && !captureSaveState.limit && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
       onClick: retryFailedCaptures,
       disabled: captureRetrying,
       title: captureSaveState.message || safeT(t, "immersive.retry_readaloud_tip", "Retry audio that could not be saved."),
-      className: "px-2.5 py-1 rounded-full transition-all",
+      className: "min-h-11 px-3 py-1 rounded-full transition-all motion-reduce:transition-none",
       style: { background: "transparent", color: "#b91c1c", border: "1px solid #fca5a5", opacity: captureRetrying ? 0.65 : 1 }
     },
     captureRetrying ? "\u2026" : "\u21BB",
@@ -2638,7 +2798,7 @@ const KaraokePlaybackOverlay = React.memo(({ text, sentenceList, requestedVoice,
       },
       disabled: regenBusy || !!recordingDraftRef.current,
       title: safeT(t, "immersive.regenerate_sentence_tip", "Re-generate the audio for this sentence if it sounds off. Students hear your vetted version."),
-      className: "px-2.5 py-1 rounded-full transition-all flex items-center gap-1",
+      className: "min-h-11 px-3 py-1 rounded-full transition-all motion-reduce:transition-none flex items-center gap-1",
       style: { background: "transparent", color: c.ink, border: `1px solid ${c.dim}55`, opacity: regenBusy ? 0.6 : 1 }
     },
     regenBusy ? "\u2026" : "\u{1F504}",
@@ -2652,7 +2812,7 @@ const KaraokePlaybackOverlay = React.memo(({ text, sentenceList, requestedVoice,
       onClick: recordCurrent,
       disabled: recordingPermissionPending || !!recordingDraftRef.current,
       title: safeT(t, "immersive.record_sentence_tip", "Record your own voice for this sentence. Students hear your recording instead of the computer voice."),
-      className: "px-2.5 py-1 rounded-full transition-all flex items-center gap-1",
+      className: "min-h-11 px-3 py-1 rounded-full transition-all motion-reduce:transition-none flex items-center gap-1",
       style: { background: recording ? "#dc2626" : "transparent", color: recording ? "#fff" : c.ink, border: `1px solid ${recording ? "#dc2626" : c.dim + "55"}` }
     },
     recording ? `\u23F9 ${safeT(t, "immersive.stop_recording", "Stop recording")}` : `\u{1F3A4} ${safeT(t, "immersive.record_sentence", "Record my voice")}`
@@ -2670,7 +2830,7 @@ const KaraokePlaybackOverlay = React.memo(({ text, sentenceList, requestedVoice,
         prepareAll();
       },
       title: prepState && prepState.busy ? safeT(t, "immersive.prepare_readaloud_stop", "Stop after the current sentence (already-saved audio is kept).") : safeT(t, "immersive.prepare_readaloud_tip", "Generate audio for every sentence and save it into this resource so students hear it instantly on any device."),
-      className: "px-2.5 py-1 rounded-full transition-all flex items-center gap-1",
+      className: "min-h-11 px-3 py-1 rounded-full transition-all motion-reduce:transition-none flex items-center gap-1",
       style: { background: prepState?.outcome === "saved" ? c.accent : "transparent", color: c.ink, border: `1px solid ${c.dim}55`, opacity: prepState && prepState.busy ? 0.7 : 1 }
     },
     prepState && prepState.busy ? `\u2026 ${prepState.done}/${prepState.total} \u2715` : prepState?.outcome === "stopped" ? "\u21BB " + safeT(t, "immersive.continue_preparation", "Continue preparation") : prepState?.outcome === "failed" ? "\u21BB " + safeT(t, "immersive.retry_preparation", "Retry preparation") : prepState?.outcome === "saved" ? "\u2713 " + safeT(t, "immersive.readaloud_saved", "Saved") : "\u{1F4BE} " + safeT(t, "immersive.prepare_readaloud", "Prepare read-aloud for students")
@@ -2682,7 +2842,7 @@ const KaraokePlaybackOverlay = React.memo(({ text, sentenceList, requestedVoice,
       onClick: recordCurrent,
       disabled: recordingPermissionPending || !!recordingDraftRef.current,
       title: safeT(t, "immersive.record_reading_tip", "Record yourself reading this sentence, then hear it back. The teacher\u2019s read-along stays your reference."),
-      className: "px-2.5 py-1 rounded-full transition-all flex items-center gap-1",
+      className: "min-h-11 px-3 py-1 rounded-full transition-all motion-reduce:transition-none flex items-center gap-1",
       style: { background: recording ? "#dc2626" : "transparent", color: recording ? "#fff" : c.ink, border: `1px solid ${recording ? "#dc2626" : c.dim + "55"}` }
     },
     recording ? `\u23F9 ${safeT(t, "immersive.stop_recording", "Stop recording")}` : "\u{1F3A4} " + (hasStudentTake ? safeT(t, "immersive.record_reading", "Record my reading") : safeT(t, "immersive.record_this_sentence", "Record this sentence"))
@@ -2695,13 +2855,13 @@ const KaraokePlaybackOverlay = React.memo(({ text, sentenceList, requestedVoice,
         if (!recordingDraftRef.current && !protectRecordingTransition()) playStudentTake();
       },
       title: safeT(t, "immersive.hear_my_reading_tip", "Play back your own recording of this sentence."),
-      className: "px-2.5 py-1 rounded-full transition-all flex items-center gap-1",
+      className: "min-h-11 px-3 py-1 rounded-full transition-all motion-reduce:transition-none flex items-center gap-1",
       style: { background: "transparent", color: c.ink, border: `1px solid ${c.dim}55`, opacity: hasStudentTake ? 1 : 0.5 }
     },
     "\u25B6",
     " ",
     safeT(t, "immersive.hear_my_reading", "Hear my reading")
-  )), recordingPermissionPending && /* @__PURE__ */ React.createElement("div", { ref: recordingPermissionPanelRef, tabIndex: -1, "data-recording-permission-pending": true, className: "basis-full rounded-lg border p-3 text-sm", style: { color: c.ink, borderColor: c.dim } }, /* @__PURE__ */ React.createElement("p", { role: "status" }, safeT(t, "immersive.microphone_permission_pending", "Waiting for microphone permission\u2026")), /* @__PURE__ */ React.createElement("button", { type: "button", className: "mt-2 min-h-11 rounded border px-3", onClick: cancelRecordingPermission }, safeT(t, "immersive.cancel_microphone_request", "Cancel microphone request"))), recordingCloseRequested && /* @__PURE__ */ React.createElement("div", { ref: recordingClosePanelRef, tabIndex: -1, "data-recording-close-pending": true, className: "basis-full rounded-lg border p-3 text-sm", style: { color: c.ink, borderColor: c.dim } }, /* @__PURE__ */ React.createElement("p", { role: "status" }, recordingSaveState ? safeT(t, "immersive.recording_close_unsaved", "Save or discard this recording before closing Read Along.") : recording ? safeT(t, "immersive.recording_finishing_close", "Finishing your recording before closing\u2026") : safeT(t, "immersive.recording_no_take_close", "No take was available to save. Review the recording message, then close Read Along.")), /* @__PURE__ */ React.createElement("button", { type: "button", className: "mt-2 min-h-11 rounded border px-3", onClick: cancelRecordingClose }, safeT(t, "immersive.keep_read_along_open", "Keep Read Along open"))), recordingTransitionNotice && /* @__PURE__ */ React.createElement("p", { role: "status", className: "basis-full text-sm" }, recordingTransitionNotice), recordingSaveState && /* @__PURE__ */ React.createElement("div", { ref: recordingRecoveryRef, tabIndex: -1, "data-recording-save-state": recordingSaveState, className: "basis-full rounded-lg border p-3 text-sm", style: { color: c.ink, borderColor: c.dim } }, /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite" }, recordingSaveState === "saving" ? safeT(t, "immersive.recording_saving", "Saving recording\u2026") : recordingSaveState === "saved" ? safeT(t, "immersive.recording_saved", "Recording saved.") : safeT(t, "immersive.recording_save_failed", "Recording could not be saved. Your take is still here. Retry saving or discard it before leaving this sentence.")), recordingDownloadNotice && /* @__PURE__ */ React.createElement("p", { role: "status" }, recordingDownloadNotice), recordingSaveState !== "saved" && /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", className: "min-h-11 rounded border px-3", disabled: recordingSaveState === "saving", onClick: saveRecordingDraft }, safeT(t, "immersive.retry_recording_save", "Retry saving")), /* @__PURE__ */ React.createElement("button", { type: "button", className: "min-h-11 rounded border px-3", "aria-pressed": recordingPreviewPlaying, onClick: previewRecordingDraft }, recordingPreviewPlaying ? safeT(t, "immersive.stop_take_preview", "Stop preview") : safeT(t, "immersive.preview_this_take", "Preview this take")), /* @__PURE__ */ React.createElement("button", { type: "button", className: "min-h-11 rounded border px-3", onClick: downloadRecordingDraft }, safeT(t, "immersive.download_recording", "Download this recording")), /* @__PURE__ */ React.createElement("button", { type: "button", className: "min-h-11 rounded border px-3", disabled: recordingSaveState === "saving", onClick: discardRecordingDraft }, safeT(t, "immersive.discard_recording", "Discard recording")))), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 cursor-pointer" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: autoAdvance, onChange: (e) => setAutoAdvance(e.target.checked), "aria-label": t("immersive.auto_advance_aria") || "Auto-advance to next sentence" }), /* @__PURE__ */ React.createElement("span", { style: { color: c.ink } }, "Auto-advance")), /* @__PURE__ */ React.createElement("div", { className: "flex min-w-0 max-w-full flex-wrap items-center gap-1", role: "group", "aria-label": t("immersive.playback_speed_aria") || "Playback speed" }, /* @__PURE__ */ React.createElement("span", { style: { color: c.dim } }, "SPEED"), [0.75, 1, 1.25, 1.5].map((rate) => /* @__PURE__ */ React.createElement(
+  )), recordingPermissionPending && /* @__PURE__ */ React.createElement("div", { ref: recordingPermissionPanelRef, tabIndex: -1, "data-recording-permission-pending": true, className: "basis-full rounded-lg border p-3 text-sm", style: { color: c.ink, borderColor: c.dim } }, /* @__PURE__ */ React.createElement("p", { role: "status" }, safeT(t, "immersive.microphone_permission_pending", "Waiting for microphone permission\u2026")), /* @__PURE__ */ React.createElement("button", { type: "button", className: "mt-2 min-h-11 rounded border px-3", onClick: cancelRecordingPermission }, safeT(t, "immersive.cancel_microphone_request", "Cancel microphone request"))), recordingCloseRequested && /* @__PURE__ */ React.createElement("div", { ref: recordingClosePanelRef, tabIndex: -1, "data-recording-close-pending": true, className: "basis-full rounded-lg border p-3 text-sm", style: { color: c.ink, borderColor: c.dim } }, /* @__PURE__ */ React.createElement("p", { role: "status" }, recordingSaveState ? safeT(t, "immersive.recording_close_unsaved", "Save or discard this recording before closing Read Along.") : recording ? safeT(t, "immersive.recording_finishing_close", "Finishing your recording before closing\u2026") : safeT(t, "immersive.recording_no_take_close", "No take was available to save. Review the recording message, then close Read Along.")), /* @__PURE__ */ React.createElement("button", { type: "button", className: "mt-2 min-h-11 rounded border px-3", onClick: cancelRecordingClose }, safeT(t, "immersive.keep_read_along_open", "Keep Read Along open"))), recordingTransitionNotice && /* @__PURE__ */ React.createElement("p", { role: "status", className: "basis-full text-sm" }, recordingTransitionNotice), recordingSaveState && /* @__PURE__ */ React.createElement("div", { ref: recordingRecoveryRef, tabIndex: -1, "data-recording-save-state": recordingSaveState, className: "basis-full rounded-lg border p-3 text-sm", style: { color: c.ink, borderColor: c.dim } }, /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite" }, recordingSaveState === "saving" ? safeT(t, "immersive.recording_saving", "Saving recording\u2026") : recordingSaveState === "saved" ? safeT(t, "immersive.recording_saved", "Recording saved.") : safeT(t, "immersive.recording_save_failed", "Recording could not be saved. Your take is still here. Retry saving or discard it before leaving this sentence.")), recordingDownloadNotice && /* @__PURE__ */ React.createElement("p", { role: "status" }, recordingDownloadNotice), recordingSaveState !== "saved" && /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", className: "min-h-11 rounded border px-3", disabled: recordingSaveState === "saving", onClick: saveRecordingDraft }, safeT(t, "immersive.retry_recording_save", "Retry saving")), /* @__PURE__ */ React.createElement("button", { type: "button", className: "min-h-11 rounded border px-3", "aria-pressed": recordingPreviewPlaying, onClick: previewRecordingDraft }, recordingPreviewPlaying ? safeT(t, "immersive.stop_take_preview", "Stop preview") : safeT(t, "immersive.preview_this_take", "Preview this take")), /* @__PURE__ */ React.createElement("button", { type: "button", className: "min-h-11 rounded border px-3", onClick: downloadRecordingDraft }, safeT(t, "immersive.download_recording", "Download this recording")), /* @__PURE__ */ React.createElement("button", { type: "button", className: "min-h-11 rounded border px-3", disabled: recordingSaveState === "saving", onClick: discardRecordingDraft }, safeT(t, "immersive.discard_recording", "Discard recording")))), /* @__PURE__ */ React.createElement("label", { className: "min-h-11 flex items-center gap-2 cursor-pointer" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: autoAdvance, onChange: (e) => setAutoAdvance(e.target.checked), "aria-label": t("immersive.auto_advance_aria") || "Auto-advance to next sentence" }), /* @__PURE__ */ React.createElement("span", { style: { color: c.ink } }, "Auto-advance")), /* @__PURE__ */ React.createElement("div", { className: "flex min-w-0 max-w-full flex-wrap items-center gap-1", role: "group", "aria-label": t("immersive.playback_speed_aria") || "Playback speed" }, /* @__PURE__ */ React.createElement("span", { style: { color: c.dim } }, "SPEED"), [0.75, 1, 1.25, 1.5].map((rate) => /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -2709,7 +2869,7 @@ const KaraokePlaybackOverlay = React.memo(({ text, sentenceList, requestedVoice,
       onClick: () => setPlaybackSpeed(rate),
       "aria-pressed": playbackSpeed === rate,
       title: `Playback speed ${rate}x`,
-      className: "px-2 py-1 text-[11px] rounded-full transition-all tabular-nums",
+      className: "min-h-11 min-w-11 px-2.5 py-1 text-[11px] rounded-full transition-all motion-reduce:transition-none tabular-nums",
       style: {
         background: playbackSpeed === rate ? c.accent : "transparent",
         color: playbackSpeed === rate ? c.ink : c.dim,
@@ -2719,7 +2879,7 @@ const KaraokePlaybackOverlay = React.memo(({ text, sentenceList, requestedVoice,
     },
     rate,
     "\xD7"
-  ))), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { color: c.dim } }, "THEME"), /* @__PURE__ */ React.createElement("select", { "aria-label": "Theme", value: theme, onChange: (e) => setTheme(e.target.value), className: "text-xs rounded px-2 py-1 border", style: { borderColor: c.ink, background: c.bg, color: c.ink } }, /* @__PURE__ */ React.createElement("option", { value: "warm" }, "\u2600\uFE0F Warm"), /* @__PURE__ */ React.createElement("option", { value: "dark" }, "\u{1F319} Dark"), /* @__PURE__ */ React.createElement("option", { value: "sepia" }, "\u{1F4DC} Sepia"))), isAudioLoading && /* @__PURE__ */ React.createElement("span", { id: "karaoke-audio-loading-status", className: "inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-extrabold shadow-sm", role: "status", "aria-live": "polite", "aria-atomic": "true", style: { color: c.ink, background: c.accent, border: `1px solid ${c.sweep}66` } }, /* @__PURE__ */ React.createElement(Loader2, { size: 15, className: "animate-spin motion-reduce:animate-none shrink-0", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", null, audioLoadingText)), /* @__PURE__ */ React.createElement(
+  ))), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { color: c.dim } }, "THEME"), /* @__PURE__ */ React.createElement("select", { "aria-label": "Theme", value: theme, onChange: (e) => setTheme(e.target.value), className: "min-h-11 text-xs rounded px-2 py-1 border", style: { borderColor: c.ink, background: c.bg, color: c.ink } }, /* @__PURE__ */ React.createElement("option", { value: "warm" }, "\u2600\uFE0F Warm"), /* @__PURE__ */ React.createElement("option", { value: "dark" }, "\u{1F319} Dark"), /* @__PURE__ */ React.createElement("option", { value: "sepia" }, "\u{1F4DC} Sepia"))), isAudioLoading && /* @__PURE__ */ React.createElement("span", { id: "karaoke-audio-loading-status", className: "inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-extrabold shadow-sm", role: "status", "aria-live": "polite", "aria-atomic": "true", style: { color: c.ink, background: c.accent, border: `1px solid ${c.sweep}66` } }, /* @__PURE__ */ React.createElement(Loader2, { size: 15, className: "animate-spin motion-reduce:animate-none shrink-0", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", null, audioLoadingText)), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -2729,7 +2889,7 @@ const KaraokePlaybackOverlay = React.memo(({ text, sentenceList, requestedVoice,
       "aria-pressed": isPlaying,
       "aria-busy": isAudioLoading,
       "aria-describedby": isAudioLoading ? "karaoke-audio-loading-status" : void 0,
-      className: "inline-flex min-w-[5.5rem] items-center justify-center gap-1.5 px-3 py-1.5 rounded-full font-extrabold",
+      className: "min-h-11 inline-flex min-w-[5.5rem] items-center justify-center gap-1.5 px-3 py-1.5 rounded-full font-extrabold transition-colors motion-reduce:transition-none",
       style: { background: c.accent, color: c.ink }
     },
     isAudioLoading ? /* @__PURE__ */ React.createElement(Loader2, { size: 14, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }) : isPlaying ? /* @__PURE__ */ React.createElement(Pause, { size: 14 }) : /* @__PURE__ */ React.createElement(Play, { size: 14 }),
@@ -2746,7 +2906,7 @@ const KaraokePlaybackOverlay = React.memo(({ text, sentenceList, requestedVoice,
         setSweepPct(0);
         setIsPlaying(false);
       },
-      className: "px-3 py-1 rounded text-xs",
+      className: "min-h-11 px-3 py-1 rounded text-xs transition-colors motion-reduce:transition-none",
       style: { background: c.dim + "33", color: c.ink },
       "aria-label": t("a11y.restart_first_sentence")
     },
@@ -2756,7 +2916,7 @@ const KaraokePlaybackOverlay = React.memo(({ text, sentenceList, requestedVoice,
     {
       type: "button",
       onClick: copyDiagnostics,
-      className: "px-3 py-1 rounded text-xs",
+      className: "min-h-11 px-3 py-1 rounded text-xs transition-colors motion-reduce:transition-none",
       style: { background: c.dim + "33", color: c.ink },
       "aria-label": "Copy read-aloud diagnostics to clipboard",
       title: "Copies a technical trace of the last read-aloud attempts \u2014 paste it into a bug report if audio gets stuck."
@@ -2789,6 +2949,7 @@ function ReadAlongWithPlace({ listeningPlace, ...props }) {
       "aria-labelledby": "listening-place-title",
       tabIndex: -1,
       onKeyDown: (event) => {
+        if (!isTopOverlayTrap(dialog.current) || isImeComposing(event)) return;
         if (event.key === "Escape") {
           event.preventDefault();
           event.stopPropagation();
@@ -2844,6 +3005,7 @@ const ImmersiveWord = React.memo(({ wordData, settings, onClick, isActive }) => 
     }
   }
   const handleKeyDown = (e) => {
+    if (isImeComposing(e)) return;
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       onClick(e);

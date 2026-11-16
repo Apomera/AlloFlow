@@ -16,6 +16,16 @@
 // Icons used in WSRP: Ban, ChevronDown, ChevronLeft, ImageIcon, Play,
 // RefreshCw, Sparkles. ClozeInput uses LanguageContext for t().
 
+const _safeMiscImageUrl = (raw) => {
+  if (typeof raw !== 'string') return '';
+  const trimmed = raw.trim();
+  if (!trimmed || /[\x00-\x1F\x7F]/.test(trimmed)) return '';
+  if (/^data:image\/(?:png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+/=\s]+$/i.test(trimmed)) return trimmed;
+  if (/^(?:blob:|https:\/\/)/i.test(trimmed)) return trimmed;
+  if (/^\/(?!\/)/.test(trimmed) || /^\.\//.test(trimmed)) return trimmed;
+  return '';
+};
+
 const AnimatedNumber = ({ value, duration = 1000, disableAnimations = false }) => {
   const [displayValue, setDisplayValue] = useState(value);
   const startTimeRef = useRef(null);
@@ -233,7 +243,7 @@ const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved, acceptedAnswer
               onKeyDown={(e) => { if (e.key === 'Enter' && placeBankPick()) e.preventDefault(); }}
               readOnly={status === 'success'}
               className={`
-                  text-center border-b-2 px-1 py-0.5 text-sm font-bold transition-all motion-reduce:transition-none outline-none focus:ring-2 focus:ring-indigo-400 rounded-t
+                  min-h-11 text-center border-b-2 px-1 py-0.5 text-sm font-bold transition-all motion-reduce:transition-none outline-none focus:ring-2 focus-visible:ring-2 focus:ring-indigo-400 rounded-t
                   ${status === 'success' ? 'border-green-500 bg-green-50 text-green-800' :
                     status === 'error' ? 'border-red-500 bg-red-50 animate-pulse motion-reduce:animate-none' :
                     (status === 'active' || armed) ? 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200' :
@@ -359,6 +369,32 @@ const WordSoundsReviewPanel = ({
     };
     React.useEffect(() => {
     }, []);
+    const [, setAiConfigTick] = React.useState(0);
+    React.useEffect(() => {
+        if (typeof window === 'undefined') return undefined;
+        const onChange = () => setAiConfigTick((v) => v + 1);
+        const events = ['alloflow:ai-config-changed', 'alloflow:student-ai-config-changed', 'alloflow:ai-key-lock-changed', 'storage'];
+        events.forEach((ev) => window.addEventListener(ev, onChange));
+        return () => events.forEach((ev) => window.removeEventListener(ev, onChange));
+    }, []);
+    const _wsAiUsable = (kind, fn) => {
+        if (typeof window !== 'undefined') {
+            if (window._alloQrBlocked === true || window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true) {
+                return false;
+            }
+        }
+        if (fn && fn._alloQrBlocked === true) return false;
+        if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') {
+            return Boolean(window.__alloAiUsable(kind || 'text', fn));
+        }
+        return true;
+    };
+    const _wsTextAiReady = _wsAiUsable('text');
+    const _wsImageAiReady = _wsAiUsable('images');
+    const _AlloAiSetupNotice = typeof window !== 'undefined'
+        ? ((window.AlloModules && (window.AlloModules.AlloAiSetupNotice || window.AlloModules.AiSetupNotice)) || window.AlloAiSetupNotice)
+        : null;
+    const [imageLoadErrors, setImageLoadErrors] = React.useState({});
     const [expandedIndex, setExpandedIndex] = React.useState(null);
     React.useEffect(() => {
         if (!syllableReviewRequest || !Number.isInteger(syllableReviewRequest.index)) return;
@@ -474,11 +510,25 @@ const WordSoundsReviewPanel = ({
     const runGapFixes = React.useCallback(async (gaps) => {
         const list = (Array.isArray(gaps) ? gaps : [gaps]).filter(Boolean);
         if (!list.length || gapBusyRef.current) return;
+        const _canRunGap = (g) => {
+            if (!g || !g.needsNetwork) return true;
+            if (g.key === 'images') return _wsAiUsable('images', onGenerateImage);
+            if (g.key === 'audio') {
+                const ttsLocal = typeof window !== 'undefined' && !!(window._kokoroTTS && window._kokoroTTS.ready);
+                return ttsLocal || _wsAiUsable('audio', onRetryFailedTTS);
+            }
+            return _wsAiUsable('text');
+        };
+        const runnableList = list.filter(_canRunGap);
+        if (!runnableList.length) {
+            setReviewError({ message: t('toasts.ai_available') || 'AI is not available right now.' });
+            return;
+        }
         gapBusyRef.current = true;
         setGapFixResult(null);
         const total = { fixed: 0, unchanged: 0, requested: 0, stalled: false };
         try {
-            for (const gap of list) {
+            for (const gap of runnableList) {
                 if (unmountedRef.current) return;
                 const tally = await runOneGapFix(gap);
                 total.fixed += tally.fixed;
@@ -495,7 +545,7 @@ const WordSoundsReviewPanel = ({
                 setGapFixResult(describeGapFix(total));
             }
         }
-    }, [runOneGapFix, t]);
+    }, [runOneGapFix, t, onGenerateImage, onRetryFailedTTS]);
     const [imageRefinementInputs, setImageRefinementInputs] = React.useState({});
     const [draggedPhoneme, setDraggedPhoneme] = React.useState(null);
     const [dragOverIndex, setDragOverIndex] = React.useState(null);
@@ -518,29 +568,77 @@ const WordSoundsReviewPanel = ({
     };
     const trapReviewFocus = (event, container, onEscape) => {
         if (!event || !container) return;
+        if (typeof window !== 'undefined' && Array.isArray(window.__alloFocusTrapStack) && window.__alloFocusTrapStack.length > 0) {
+            const top = window.__alloFocusTrapStack[window.__alloFocusTrapStack.length - 1];
+            const topEl = top && (top.container || top.element || top);
+            if (topEl && topEl !== container) return;
+        }
+        if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return;
         if (event.key === 'Escape') { event.preventDefault(); if (onEscape) onEscape(); return; }
         if (event.key !== 'Tab') return;
-        const focusable = Array.from(container.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter(el => !el.hidden && el.getAttribute('aria-hidden') !== 'true');
+        const hasLayout = typeof container.getClientRects === 'function' && container.getClientRects().length > 0;
+        const focusable = Array.from(container.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"]), summary')).filter((el) => {
+            if (!el || el.disabled) return false;
+            if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+            const closedDetails = el.closest('details:not([open])');
+            if (closedDetails && !(el.tagName === 'SUMMARY' && el.parentElement === closedDetails)) return false;
+            if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
+                const style = window.getComputedStyle(el);
+                if (style && (style.display === 'none' || style.visibility === 'hidden')) return false;
+            }
+            if (hasLayout && typeof el.getClientRects === 'function' && el.getClientRects().length === 0) return false;
+            return true;
+        });
         if (!focusable.length) { event.preventDefault(); container.focus(); return; }
         const first = focusable[0], last = focusable[focusable.length - 1];
-        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
-        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+        const active = document.activeElement;
+        if (event.shiftKey) {
+            if (active === first || active === container || !container.contains(active)) { event.preventDefault(); last.focus(); }
+        } else if (active === last || !container.contains(active)) {
+            event.preventDefault(); first.focus();
+        }
     };
     React.useEffect(() => {
         const previouslyFocused = document.activeElement;
+        const trapEntry = { id: 'word-sounds-review-dialog', get container() { return reviewDialogRef.current; } };
+        if (typeof window !== 'undefined') {
+            window.__alloFocusTrapStack = Array.isArray(window.__alloFocusTrapStack) ? window.__alloFocusTrapStack : [];
+            window.__alloFocusTrapStack.push(trapEntry);
+        }
         const timer = setTimeout(() => reviewBackRef.current?.focus(), 0);
         return () => {
             clearTimeout(timer);
-            if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
+            let wasTop = true;
+            if (typeof window !== 'undefined' && Array.isArray(window.__alloFocusTrapStack)) {
+                wasTop = !window.__alloFocusTrapStack.length || window.__alloFocusTrapStack[window.__alloFocusTrapStack.length - 1] === trapEntry;
+                const idx = window.__alloFocusTrapStack.lastIndexOf(trapEntry);
+                if (idx >= 0) window.__alloFocusTrapStack.splice(idx, 1);
+            }
+            if (wasTop && previouslyFocused && previouslyFocused !== document.body && previouslyFocused !== document.documentElement && previouslyFocused.isConnected !== false && typeof previouslyFocused.focus === 'function') {
+                previouslyFocused.focus();
+            }
         };
     }, []);
     React.useEffect(() => {
         if (!showProbeEndConfirm) return undefined;
         const previouslyFocused = document.activeElement;
+        const trapEntry = { id: 'word-sounds-probe-confirm', get container() { return probeConfirmRef.current; } };
+        if (typeof window !== 'undefined') {
+            window.__alloFocusTrapStack = Array.isArray(window.__alloFocusTrapStack) ? window.__alloFocusTrapStack : [];
+            window.__alloFocusTrapStack.push(trapEntry);
+        }
         const timer = setTimeout(() => probeCancelRef.current?.focus(), 0);
         return () => {
             clearTimeout(timer);
-            if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
+            let wasTop = true;
+            if (typeof window !== 'undefined' && Array.isArray(window.__alloFocusTrapStack)) {
+                wasTop = !window.__alloFocusTrapStack.length || window.__alloFocusTrapStack[window.__alloFocusTrapStack.length - 1] === trapEntry;
+                const idx = window.__alloFocusTrapStack.lastIndexOf(trapEntry);
+                if (idx >= 0) window.__alloFocusTrapStack.splice(idx, 1);
+            }
+            if (wasTop && previouslyFocused && previouslyFocused !== document.body && previouslyFocused !== document.documentElement && previouslyFocused.isConnected !== false && typeof previouslyFocused.focus === 'function') {
+                previouslyFocused.focus();
+            }
         };
     }, [showProbeEndConfirm]);
     React.useEffect(() => {
@@ -782,6 +880,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                 aria-controls="word-sounds-counting-guide"
                                 onClick={() => setIsCountingGuideOpen((open) => !open)}
                                 onKeyDown={(event) => {
+                                    if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return;
                                     if (event.key === 'Escape' && isCountingGuideOpen) {
                                         event.preventDefault();
                                         event.stopPropagation();
@@ -797,20 +896,31 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                             </div>}
                         </div>
                     </div>
-                    <p id="word-sounds-review-description" className="text-sm opacity-80 mt-1 flex items-center gap-2 flex-wrap">
+                    <p id="word-sounds-review-description" className="text-sm text-white/95 mt-1 flex items-center gap-2 flex-wrap">
                         <span>{t('word_sounds.review_and_edit_words') || 'Review and edit words'} • {preloadedWords.length} {t('word_sounds.words_ready') || 'words ready'}</span>
                         {isLoading && <span role="status" aria-live="polite" className="flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full text-xs animate-pulse motion-reduce:animate-none"><div className="w-2 h-2 bg-white rounded-full animate-bounce motion-reduce:animate-none"/> {t('word_sounds.generating_more') || 'Generating more...'}</span>}
                         {!isLoading && preloadedWords.some(w => wordAudioState(w) === 'failed') && (
                             <span className="flex items-center gap-2 bg-red-500/30 border border-red-200/60 px-3 py-1 rounded-full text-xs">
                                 <span>{reviewText('review_missing_audio', "Words missing audio: {count}", { count: preloadedWords.filter(w => wordAudioState(w) === 'failed').length })}</span>
-                                {typeof onRetryFailedTTS === 'function' && (
-                                    <button
-                                        type="button"
-                                        onClick={(e) => { e.stopPropagation(); onRetryFailedTTS(); }}
-                                        className="px-2 py-0.5 bg-white/90 hover:bg-white text-red-600 font-bold rounded-full text-xs"
-                                        title={t('word_sounds.retry_audio_tooltip') || 'Retry audio generation for words that failed'}
-                                    >{t('word_sounds.retry_audio') || 'Retry audio'}</button>
-                                )}
+                                {typeof onRetryFailedTTS === 'function' && (() => {
+                                    const _retryAudioBlocked = !((typeof window !== 'undefined' && window._kokoroTTS && window._kokoroTTS.ready) || _wsAiUsable('audio', onRetryFailedTTS));
+                                    return (
+                                        <button
+                                            type="button"
+                                            disabled={_retryAudioBlocked}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (_retryAudioBlocked) {
+                                                    setReviewError({ message: t('toasts.ai_available') || 'AI is not available right now.' });
+                                                    return;
+                                                }
+                                                onRetryFailedTTS();
+                                            }}
+                                            className="min-h-11 px-3 py-1 bg-white/90 hover:bg-white text-red-700 font-bold rounded-full text-xs disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-1"
+                                            title={t('word_sounds.retry_audio_tooltip') || 'Retry audio generation for words that failed'}
+                                        >{t('word_sounds.retry_audio') || 'Retry audio'}</button>
+                                    );
+                                })()}
                             </span>
                         )}
                     </p>
@@ -827,6 +937,9 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                     </div>
                 )}
                 <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-3 sm:space-y-4 custom-scrollbar">
+                    {!_wsTextAiReady && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true) && _AlloAiSetupNotice && (
+                        <_AlloAiSetupNotice t={t} />
+                    )}
                     {packMaintenance}
                     {teacherSpokenKeys.size > 0 && <p role="status" className="rounded-xl border border-violet-200 bg-violet-50 p-3 text-sm text-violet-900">{reviewText('review_teacher_spoken', 'Teacher-led lesson: say these words aloud during syllable counting: {words}.', { words: [...teacherSpokenKeys].join(', ') })}</p>}
                     {(() => {
@@ -1147,6 +1260,13 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                         if (!gaps.length && fixingGap === null && !gapFixResult) return null;
                         const busy = fixingGap !== null;
                         const fixable = gaps.filter((g) => g.each || g.batch);
+                        const _gapAiBlocked = (g) => {
+                            if (!g || !g.needsNetwork) return false;
+                            if (g.key === 'images') return !_wsImageAiReady;
+                            if (g.key === 'audio') return !((typeof window !== 'undefined' && window._kokoroTTS && window._kokoroTTS.ready) || _wsAiUsable('audio', onRetryFailedTTS));
+                            return !_wsTextAiReady;
+                        };
+                        const runnableFixable = fixable.filter((g) => !_gapAiBlocked(g));
                         const fixableWords = new Set(fixable.flatMap((g) => g.indices)).size;
                         return (
                             <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 text-xs text-amber-900">
@@ -1155,10 +1275,10 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                     {fixable.length > 1 && (
                                         <button
                                             type="button"
-                                            onClick={() => runGapFixes(fixable)}
-                                            disabled={busy}
+                                            onClick={() => runGapFixes(runnableFixable)}
+                                            disabled={busy || !runnableFixable.length}
                                             aria-busy={busy}
-                                            className={`shrink-0 px-2 py-0.5 rounded-full font-bold border transition-colors motion-reduce:transition-none ${busy ? 'bg-white/60 text-amber-800 border-amber-200' : 'bg-amber-700 text-white border-amber-600 hover:bg-amber-700'}`}
+                                            className={`shrink-0 min-h-11 px-3 py-1 rounded-full font-bold border transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700 ${busy || !runnableFixable.length ? 'bg-white/60 text-amber-900 border-amber-200 disabled:opacity-50 disabled:cursor-not-allowed' : 'bg-amber-700 text-white border-amber-600 hover:bg-amber-800'}`}
                                         >
                                             {busy
                                                 ? (t('word_sounds.fixing') || 'Fixing…')
@@ -1174,9 +1294,9 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                 <button
                                                     type="button"
                                                     onClick={() => runGapFixes(g)}
-                                                    disabled={busy}
+                                                    disabled={busy || _gapAiBlocked(g)}
                                                     aria-busy={fixingGap === g.key}
-                                                    className={`shrink-0 px-2 py-0.5 rounded-full font-bold border transition-colors motion-reduce:transition-none ${busy ? 'bg-white/60 text-amber-800 border-amber-200' : 'bg-white text-amber-900 border-amber-400 hover:bg-amber-100'}`}
+                                                    className={`shrink-0 min-h-11 px-3 py-1 rounded-full font-bold border transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700 ${busy || _gapAiBlocked(g) ? 'bg-white/60 text-amber-900 border-amber-200 disabled:opacity-50 disabled:cursor-not-allowed' : 'bg-white text-amber-900 border-amber-400 hover:bg-amber-100'}`}
                                                     // Not a cost warning. It marks the fixes that
                                                     // call out, so a teacher on school wifi knows
                                                     // which ones need a connection to work.
@@ -1246,14 +1366,14 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                             // row reports the result. Only a word the teacher
                                             // says aloud has nothing to play.
                                             disabled={isTeacherSpoken(word) || playingWordIndex !== null}
-                                            className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors motion-reduce:transition-none ${
+                                            className={`min-w-11 min-h-11 rounded-full flex items-center justify-center transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-700 ${
                                                 playingWordIndex === idx
                                                     ? 'bg-pink-200 text-pink-800 animate-pulse motion-reduce:animate-none'
                                                     : wordAudioState(word) === 'failed'
                                                         ? 'bg-red-100 hover:bg-red-200 text-red-700 border-2 border-red-300'
                                                         : playingWordIndex !== null
-                                                            ? 'bg-pink-50 text-pink-300 cursor-not-allowed'
-                                                            : 'bg-pink-100 hover:bg-pink-200 text-pink-700'
+                                                            ? 'bg-pink-50 text-pink-500 cursor-not-allowed'
+                                                            : 'bg-pink-100 hover:bg-pink-200 text-pink-800'
                                             }`}
                                             title={isTeacherSpoken(word) ? reviewText('review_teacher_says_word', 'Teacher says this word aloud') : playingWordIndex === idx ? (t('word_sounds.playing') || 'Playing...') : wordAudioState(word) === 'failed' ? reviewText('review_audio_failed_try_again', 'Audio failed: try again') : (wordAudioState(word) === 'none' && word._audioRequested) ? (t('word_sounds.loading_audio') || 'Loading audio...') : (t('word_sounds.play_word') || 'Play word')}
                                             aria-busy={!isTeacherSpoken(word) && (playingWordIndex === idx || (wordAudioState(word) === 'none' && !!word._audioRequested))}
@@ -1297,70 +1417,90 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                         }
                                                     }
                                                 }}
-                                                className="w-10 h-10 bg-violet-100 hover:bg-violet-200 text-violet-600 rounded-full flex items-center justify-center transition-colors motion-reduce:transition-none"
+                                                className="min-w-11 min-h-11 bg-violet-100 hover:bg-violet-200 text-violet-800 rounded-full flex items-center justify-center transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700"
                                                 data-help-key="word_sounds_review_play_phonemes" title={t('common.play_phoneme_sequence')}
                                             >
-                                                <span className="text-sm font-bold">🔤</span>
+                                                <span className="text-sm font-bold" aria-hidden="true">🔤</span>
                                             </button>
                                         )}
                                         <div className="relative group/img">
-                                            {word.image && !word.imageFailed ? (
-                                                <div className="relative">
-                                                    <img loading="lazy"
-                                                        src={word.image}
-                                                        alt={word.targetWord || word.word}
-                                                        className="w-12 h-12 rounded-lg object-cover border-2 border-indigo-200 shadow-sm"
-                                                        onError={(e) => {
-                                                            e.target.style.display = 'none';
-                                                            e.target.parentElement.innerHTML = '<span class="text-red-400 text-xs">⚠️ Error</span>';
-                                                        }}
-                                                    />
+                                            {(() => {
+                                                const safeThumbImg = _safeMiscImageUrl(word.image);
+                                                const thumbFailed = Boolean(safeThumbImg && imageLoadErrors[idx] === word.image);
+                                                if (safeThumbImg && !word.imageFailed) {
+                                                    return (
+                                                        <div className="relative">
+                                                            {!thumbFailed ? (
+                                                                <img loading="lazy"
+                                                                    src={safeThumbImg}
+                                                                    alt={word.targetWord || word.word}
+                                                                    className="w-12 h-12 rounded-lg object-cover border-2 border-indigo-200 shadow-sm"
+                                                                    onError={() => {
+                                                                        setImageLoadErrors((prev) => ({ ...prev, [idx]: word.image }));
+                                                                    }}
+                                                                />
+                                                            ) : (
+                                                                <span className="text-red-700 text-xs font-semibold">⚠️ Error</span>
+                                                            )}
+                                                            <button type="button"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    if (!_wsAiUsable('images', onGenerateImage)) {
+                                                                        setReviewError({ index: idx, message: t('toasts.ai_available') || 'AI is not available right now.' });
+                                                                        return;
+                                                                    }
+                                                                    setImageLoadErrors((prev) => { if (!prev[idx]) return prev; const n = { ...prev }; delete n[idx]; return n; });
+                                                                    onGenerateImage && onGenerateImage(idx, word.targetWord || word.word);
+                                                                }}
+                                                                disabled={isGeneratingImage(idx) || !_wsImageAiReady}
+                                                                aria-busy={isGeneratingImage(idx)}
+                                                                aria-label={isGeneratingImage(idx) ? (t('word_sounds.generating_image_aria') || 'Generating image') : t('common.regenerate_image')}
+                                                                className="absolute -top-2 -right-2 w-6 h-6 bg-white rounded-full min-w-11 min-h-11 shadow-lg flex items-center justify-center opacity-0 group-hover/img:opacity-100 group-focus-within/img:opacity-100 focus:opacity-100 transition-opacity motion-reduce:transition-none border border-indigo-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                                                                data-help-key="word_sounds_review_image_gen" title={t('common.regenerate_image')}
+                                                            >
+                                                                {isGeneratingImage(idx) ? <RefreshCw size={10} className="animate-spin motion-reduce:animate-none text-indigo-700" aria-hidden="true"/> : <RefreshCw size={10} className="text-indigo-700" aria-hidden="true"/>}
+                                                            </button>
+                                                        </div>
+                                                    );
+                                                }
+                                                return (
                                                     <button type="button"
                                                         onClick={(e) => {
                                                             e.stopPropagation();
+                                                            if (!_wsAiUsable('images', onGenerateImage)) {
+                                                                setReviewError({ index: idx, message: t('toasts.ai_available') || 'AI is not available right now.' });
+                                                                return;
+                                                            }
+                                                            setImageLoadErrors((prev) => { if (!prev[idx]) return prev; const n = { ...prev }; delete n[idx]; return n; });
                                                             onGenerateImage && onGenerateImage(idx, word.targetWord || word.word);
                                                         }}
-                                                        disabled={isGeneratingImage(idx)}
+                                                        disabled={isGeneratingImage(idx) || !_wsImageAiReady}
                                                         aria-busy={isGeneratingImage(idx)}
-                                                        aria-label={isGeneratingImage(idx) ? (t('word_sounds.generating_image_aria') || 'Generating image') : t('common.regenerate_image')}
-                                                        className="absolute -top-2 -right-2 w-6 h-6 bg-white rounded-full shadow-lg flex items-center justify-center opacity-0 group-hover/img:opacity-100 group-focus-within/img:opacity-100 focus:opacity-100 transition-opacity motion-reduce:transition-none border border-indigo-200"
-                                                        data-help-key="word_sounds_review_image_gen" title={t('common.regenerate_image')}
+                                                        className={`min-h-11 px-3 py-2 rounded-lg border-2 flex items-center gap-2 text-sm font-bold transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed ${
+                                                            isGeneratingImage(idx)
+                                                                ? 'border-indigo-400 bg-indigo-100 text-indigo-800 animate-pulse motion-reduce:animate-none'
+                                                                : 'border-dashed border-indigo-300 text-indigo-700 hover:border-indigo-500 hover:bg-indigo-50 hover:scale-105 motion-reduce:hover:scale-100'
+                                                        }`}
+                                                        data-help-key="word_sounds_review_image_gen" title={t('common.generate_image_for_this_word')}
                                                     >
-                                                        {isGeneratingImage(idx) ? <RefreshCw size={10} className="animate-spin motion-reduce:animate-none text-indigo-500" aria-hidden="true"/> : <RefreshCw size={10} className="text-indigo-500" aria-hidden="true"/>}
+                                                        {isGeneratingImage(idx) ? (
+                                                            <><RefreshCw size={16} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> {t('word_sounds.generating_image') || 'Generating...'}</>
+                                                        ) : (
+                                                            <><ImageIcon size={16} aria-hidden="true"/> {t('word_sounds.add_image_button') || '+ Image'}</>
+                                                        )}
                                                     </button>
-                                                </div>
-                                            ) : (
-                                                <button type="button"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        onGenerateImage && onGenerateImage(idx, word.targetWord || word.word);
-                                                    }}
-                                                    disabled={isGeneratingImage(idx)}
-                                                    aria-busy={isGeneratingImage(idx)}
-                                                    className={`px-3 py-2 rounded-lg border-2 flex items-center gap-2 text-sm font-bold transition-all motion-reduce:transition-none ${
-                                                        isGeneratingImage(idx)
-                                                            ? 'border-indigo-400 bg-indigo-100 text-indigo-600 animate-pulse motion-reduce:animate-none'
-                                                            : 'border-dashed border-indigo-300 text-indigo-700 hover:border-indigo-500 hover:bg-indigo-50 hover:scale-105'
-                                                    }`}
-                                                    data-help-key="word_sounds_review_image_gen" title={t('common.generate_image_for_this_word')}
-                                                >
-                                                    {isGeneratingImage(idx) ? (
-                                                        <><RefreshCw size={16} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> {t('word_sounds.generating_image') || 'Generating...'}</>
-                                                    ) : (
-                                                        <><ImageIcon size={16} aria-hidden="true"/> {t('word_sounds.add_image_button') || '+ Image'}</>
-                                                    )}
-                                                </button>
-                                            )}
+                                                );
+                                            })()}
                                         </div>
                                         <span className="min-w-0 break-words text-xl font-bold text-slate-800">{word.targetWord || word.word}</span>
                                         <select aria-label={(t('word_sounds.difficulty') || 'Difficulty') + ': ' + (word.targetWord || word.word || (t('common.word') || 'Word') + ' ' + (idx + 1))}
                                             value={word.difficulty || 'medium'}
                                             onClick={(e) => e.stopPropagation()}
                                             onChange={(e) => onUpdateWord(idx, { ...word, difficulty: e.target.value })}
-                                            className={`text-xs font-bold px-2 py-1 rounded-full border cursor-pointer appearance-none ${
-                                                word.difficulty === 'easy' ? 'bg-green-100 text-green-700 border-green-300' :
-                                                word.difficulty === 'hard' ? 'bg-red-100 text-red-700 border-red-300' :
-                                                'bg-yellow-100 text-yellow-700 border-yellow-300'
+                                            className={`min-h-11 text-xs font-bold px-2.5 py-1 rounded-full border cursor-pointer appearance-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 ${
+                                                word.difficulty === 'easy' ? 'bg-green-100 text-green-800 border-green-300' :
+                                                word.difficulty === 'hard' ? 'bg-red-100 text-red-800 border-red-300' :
+                                                'bg-yellow-100 text-yellow-900 border-yellow-300'
                                             }`}
                                         >
                                             <option value="easy">🟢 Easy</option>
@@ -1378,6 +1518,10 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     e.preventDefault();
+                                                    if (!_wsAiUsable('text', onRegenerateWord)) {
+                                                        setReviewError({ index: idx, message: t('toasts.ai_available') || 'AI is not available right now.' });
+                                                        return;
+                                                    }
                                                     if (regeneratingIndex !== null) {
                                                         debugLog("⏳ Already regenerating, ignoring click");
                                                         return;
@@ -1392,14 +1536,14 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                         setReviewError({ index: idx, message: t('word_sounds.regenerate_unavailable') || 'Regeneration is unavailable right now. Please close this review and try again.' });
                                                     }
                                                 }}
-                                                disabled={regeneratingIndex === idx}
+                                                disabled={regeneratingIndex === idx || !_wsTextAiReady}
                                                 aria-busy={regeneratingIndex === idx}
                                                 aria-describedby={reviewError?.index === idx ? 'word-sounds-review-error' : undefined}
                                                 aria-label={regeneratingIndex === idx ? (t('common.regenerating_word_aria') || 'Regenerating word') : t('common.regenerate_this_word')}
-                                                className={`w-10 h-10 flex items-center justify-center rounded-full transition-colors motion-reduce:transition-none text-base font-bold border-2
+                                                className={`min-w-11 min-h-11 flex items-center justify-center rounded-full transition-colors motion-reduce:transition-none text-base font-bold border-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-700 disabled:opacity-50 disabled:cursor-not-allowed
                                                     ${regeneratingIndex === idx
                                                         ? 'bg-orange-200 border-orange-400 animate-spin motion-reduce:animate-none text-orange-800'
-                                                        : 'bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100 hover:border-orange-300 hover:scale-110 shadow-sm'
+                                                        : 'bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100 hover:border-orange-300 hover:scale-110 motion-reduce:hover:scale-100 shadow-sm'
                                                     }`}
                                                 data-help-key="word_sounds_review_regen_word" title={t('common.regenerate_this_word')}
                                                 style={{ pointerEvents: 'auto', cursor: 'pointer' }}
@@ -1412,14 +1556,14 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                 aria-label={t('common.move_up')}
                                                 onClick={(e) => { e.stopPropagation(); moveWord(idx, 'up'); }}
                                                 disabled={idx === 0}
-                                                className={`w-6 h-6 flex items-center justify-center rounded text-xs ${idx === 0 ? 'text-slate-200' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-600'}`}
+                                                className={`min-w-11 min-h-11 flex items-center justify-center rounded text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 ${idx === 0 ? 'text-slate-400' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'}`}
                                                 data-help-key="word_sounds_review_move_word" title={t('common.move_up')}
                                             >▲</button>
                                             <button type="button"
                                                 aria-label={t('common.move_down')}
                                                 onClick={(e) => { e.stopPropagation(); moveWord(idx, 'down'); }}
                                                 disabled={idx === preloadedWords.length - 1}
-                                                className={`w-6 h-6 flex items-center justify-center rounded text-xs ${idx === preloadedWords.length - 1 ? 'text-slate-200' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-600'}`}
+                                                className={`min-w-11 min-h-11 flex items-center justify-center rounded text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 ${idx === preloadedWords.length - 1 ? 'text-slate-400' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'}`}
                                                 data-help-key="word_sounds_review_move_word" title={t('common.move_down')}
                                             >▼</button>
                                         </div>
@@ -1428,7 +1572,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                 type="button"
                                                 onClick={(event) => deleteReviewWord(event, word, idx)}
                                                 aria-label={(t('common.delete_word') || 'Delete word') + ': ' + (word.targetWord || word.word || (t('common.word') || 'Word') + ' ' + (idx + 1))}
-                                                className="min-w-10 min-h-10 flex items-center justify-center rounded-full bg-red-50 hover:bg-red-100 text-red-700 hover:text-red-700 transition-colors motion-reduce:transition-none border-2 border-red-200 hover:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                                                className="min-w-11 min-h-11 flex items-center justify-center rounded-full bg-red-50 hover:bg-red-100 text-red-700 hover:text-red-800 transition-colors motion-reduce:transition-none border-2 border-red-200 hover:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                                                 style={{ pointerEvents: 'auto', cursor: 'pointer', position: 'relative', zIndex: 100 }}
                                                 data-word-delete-button="true"
                                                 data-help-key="word_sounds_review_delete_word" title={t('common.delete_word')}
@@ -1454,10 +1598,17 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                     <div className="flex items-center gap-2">
                                                     <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('word_sounds.phonemes')}</label>
                                                     <button type="button"
-                                                        onClick={() => (onCheckPhonemes || onRegenerateWord) && (onCheckPhonemes || onRegenerateWord)(idx)}
-                                                        disabled={regeneratingIndex === idx}
+                                                        onClick={() => {
+                                                            const checkFn = onCheckPhonemes || onRegenerateWord;
+                                                            if (!_wsAiUsable('text', checkFn)) {
+                                                                setReviewError({ index: idx, message: t('toasts.ai_available') || 'AI is not available right now.' });
+                                                                return;
+                                                            }
+                                                            checkFn && checkFn(idx);
+                                                        }}
+                                                        disabled={regeneratingIndex === idx || !_wsTextAiReady}
                                                         aria-busy={regeneratingIndex === idx}
-                                                        className={`text-[11px] px-2 py-0.5 rounded-full flex items-center gap-1 font-bold transition-colors motion-reduce:transition-none ${regeneratingIndex === idx ? 'bg-slate-100 text-slate-600' : 'bg-violet-100 text-violet-800 hover:bg-violet-200'}`}
+                                                        className={`min-h-11 text-[11px] px-3 py-1 rounded-full flex items-center gap-1 font-bold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 disabled:opacity-50 disabled:cursor-not-allowed ${regeneratingIndex === idx ? 'bg-slate-100 text-slate-700' : 'bg-violet-100 text-violet-800 hover:bg-violet-200'}`}
                                                         title={t('word_sounds.recheck_phonemes_tooltip') || 'Re-check phonemes with Gemini'}
                                                     >
                                                         {regeneratingIndex === idx ? <div className="animate-spin motion-reduce:animate-none h-3 w-3 border-2 border-current border-t-transparent rounded-full" aria-hidden="true" /> : <span aria-hidden="true">✨</span>}
@@ -1467,7 +1618,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                 </div>
                                                 <button type="button"
                                                     data-help-key="word_sounds_review_phoneme_bank" onClick={() => setShowPhonemeBank(showPhonemeBank === idx ? null : idx)}
-                                                    className={`text-xs px-2 py-1 rounded-full transition-colors motion-reduce:transition-none ${showPhonemeBank === idx ? 'bg-pink-700 text-white' : 'bg-pink-100 text-pink-800 hover:bg-pink-200'}`}
+                                                    className={`min-h-11 text-xs px-3 py-1 rounded-full transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-700 ${showPhonemeBank === idx ? 'bg-pink-700 text-white' : 'bg-pink-100 text-pink-800 hover:bg-pink-200'}`}
                                                 >
                                                     {showPhonemeBank === idx ? (t('word_sounds.close_bank') || '✕ Close Bank') : (t('word_sounds.add_sound') || '+ Add Sound')}
                                                 </button>
@@ -1490,15 +1641,15 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                         onDrop={(e) => { e.stopPropagation(); handleDrop(e, idx, i); }}
                                                         onDragEnd={handleDragEnd}
                                                     >
-                                                        <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-pink-100 to-violet-100 text-violet-700 font-bold rounded-lg border-2 border-violet-200" title={typeof PHONEME_GUIDE !== 'undefined' && PHONEME_GUIDE[phonemeLabel(p)] ? `${PHONEME_GUIDE[phonemeLabel(p)].label} (${PHONEME_GUIDE[phonemeLabel(p)].ipa}) — ${PHONEME_GUIDE[phonemeLabel(p)].examples}` : phonemeLabel(p)}>
-                                                            <span className="text-slate-600 text-xs mr-1">⠿</span>
+                                                        <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-pink-100 to-violet-100 text-violet-800 font-bold rounded-lg border-2 border-violet-200" title={typeof PHONEME_GUIDE !== 'undefined' && PHONEME_GUIDE[phonemeLabel(p)] ? `${PHONEME_GUIDE[phonemeLabel(p)].label} (${PHONEME_GUIDE[phonemeLabel(p)].ipa}) — ${PHONEME_GUIDE[phonemeLabel(p)].examples}` : phonemeLabel(p)}>
+                                                            <span className="text-slate-600 text-xs mr-1" aria-hidden="true">⠿</span>
                                                             {phonemeLabel(p)}
-                                                            <button type="button" onClick={() => handlePhonemeReorder(idx, i, i - 1)} disabled={i === 0} aria-label={`Move ${phonemeLabel(p) || 'phoneme'} earlier`} className="w-6 h-6 flex items-center justify-center rounded-full bg-violet-100 text-violet-700 hover:bg-violet-200 disabled:opacity-40" title="Move earlier">◀</button>
-                                                            <button type="button" onClick={() => handlePhonemeReorder(idx, i, i + 1)} disabled={i === (word.phonemes || []).length - 1} aria-label={`Move ${phonemeLabel(p) || 'phoneme'} later`} className="w-6 h-6 flex items-center justify-center rounded-full bg-violet-100 text-violet-700 hover:bg-violet-200 disabled:opacity-40" title="Move later">▶</button>
+                                                            <button type="button" onClick={() => handlePhonemeReorder(idx, i, i - 1)} disabled={i === 0} aria-label={`Move ${phonemeLabel(p) || 'phoneme'} earlier`} className="min-w-11 min-h-11 flex items-center justify-center rounded-full bg-violet-100 text-violet-800 hover:bg-violet-200 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700" title="Move earlier">◀</button>
+                                                            <button type="button" onClick={() => handlePhonemeReorder(idx, i, i + 1)} disabled={i === (word.phonemes || []).length - 1} aria-label={`Move ${phonemeLabel(p) || 'phoneme'} later`} className="min-w-11 min-h-11 flex items-center justify-center rounded-full bg-violet-100 text-violet-800 hover:bg-violet-200 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700" title="Move later">▶</button>
                                                             <button type="button"
                                                                 aria-label={t('common.remove')}
                                                                 onClick={() => removePhoneme(idx, i)}
-                                                                className="w-6 h-6 flex items-center justify-center rounded-full bg-red-100 text-red-700 hover:bg-red-200 text-xs opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 transition-opacity motion-reduce:transition-none"
+                                                                className="w-6 h-6 flex items-center justify-center rounded-full bg-red-100 min-w-11 min-h-11 text-red-700 hover:bg-red-200 text-xs opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 transition-opacity motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700"
                                                                 title={t('common.remove')}
                                                             >×</button>
                                                         </span>
@@ -1519,11 +1670,11 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                             <button type="button" onClick={() => setBankLabelModePersist('ipa')}
                                                                 aria-pressed={bankLabelMode === 'ipa'}
                                                                 title={t('word_sounds.bank_show_ipa') || 'Show the sound in IPA (international phonetic symbols) first'}
-                                                                className={`px-2 py-1 transition-colors motion-reduce:transition-none ${bankLabelMode === 'ipa' ? 'bg-pink-600 text-white' : 'bg-white text-slate-500 hover:bg-pink-50'}`}>/ʃ/ IPA</button>
+                                                                className={`min-h-11 px-3 py-1 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-700 ${bankLabelMode === 'ipa' ? 'bg-pink-700 text-white' : 'bg-white text-slate-700 hover:bg-pink-50'}`}>/ʃ/ IPA</button>
                                                             <button type="button" onClick={() => setBankLabelModePersist('letters')}
                                                                 aria-pressed={bankLabelMode === 'letters'}
                                                                 title={t('word_sounds.bank_show_letters') || 'Show the letters (graphemes) first'}
-                                                                className={`px-2 py-1 border-l border-slate-300 transition-colors motion-reduce:transition-none ${bankLabelMode === 'letters' ? 'bg-pink-600 text-white' : 'bg-white text-slate-500 hover:bg-pink-50'}`}>Aa letters</button>
+                                                                className={`min-h-11 px-3 py-1 border-l border-slate-300 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-700 ${bankLabelMode === 'letters' ? 'bg-pink-700 text-white' : 'bg-white text-slate-700 hover:bg-pink-50'}`}>Aa letters</button>
                                                         </div>
                                                     </div>
                                                     {Object.entries(PHONEME_BANK).map(([category, phonemes]) => (
@@ -1559,17 +1710,18 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                                         <div key={p} className="inline-flex flex-col">
                                                                             <div className="inline-flex rounded overflow-hidden border border-slate-400 hover:border-pink-400 transition-colors motion-reduce:transition-none">
                                                                                 <button type="button"
+                                                                                    aria-label={(typeof PHONEME_GUIDE !== 'undefined' && PHONEME_GUIDE[p] ? PHONEME_GUIDE[p].label : _ipaLabel) + ' — ' + (t('common.play_tts') || 'Play sound')}
                                                                                     onClick={() => onPlayAudio && onPlayAudio(p)}
-                                                                                    className="px-1.5 py-1 bg-slate-100 hover:bg-pink-200 text-slate-600 hover:text-pink-600 transition-colors motion-reduce:transition-none border-r border-slate-300"
+                                                                                    className="min-w-11 min-h-11 px-2 py-1 bg-slate-100 hover:bg-pink-200 text-slate-700 hover:text-pink-800 transition-colors motion-reduce:transition-none border-r border-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-700"
                                                                                     title={typeof PHONEME_GUIDE !== 'undefined' && PHONEME_GUIDE[p] ? `🔊 ${PHONEME_GUIDE[p].label} (${PHONEME_GUIDE[p].ipa}) — ${PHONEME_GUIDE[p].examples}` : `Play the ${_ipaLabel} sound`}
-                                                                                >🔊</button>
+                                                                                ><span aria-hidden="true">🔊</span></button>
                                                                                 <button type="button"
                                                                                     onClick={() => addPhoneme(idx, p)}
                                                                                     draggable
                                                                                     onDragStart={(e) => handleDragStart(e, p, 'bank')}
                                                                                     data-keyboard-alternative="Activate this button to add the sound"
                                                                                     onDragEnd={handleDragEnd}
-                                                                                    className="px-2 py-1 bg-white hover:bg-pink-100 transition-colors motion-reduce:transition-none cursor-grab active:cursor-grabbing flex flex-col items-center leading-none"
+                                                                                    className="min-h-11 px-2.5 py-1 bg-white hover:bg-pink-100 transition-colors motion-reduce:transition-none cursor-grab active:cursor-grabbing flex flex-col items-center justify-center leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-700"
                                                                                     title={_addTitle}
                                                                                 >
                                                                                     <span className={bankLabelMode === 'ipa' ? 'text-sm font-bold text-slate-800' : 'text-sm font-mono text-slate-800'}>{_lead}</span>
@@ -1579,14 +1731,15 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                                                     <button type="button"
                                                                                         onClick={() => setExpandedBankKey(_isExp ? null : _bankKey)}
                                                                                         aria-expanded={_isExp}
-                                                                                        className="px-1 py-1 bg-slate-50 hover:bg-pink-100 text-slate-600 hover:text-pink-800 transition-colors motion-reduce:transition-none border-l border-slate-300 text-[10px]"
+                                                                                        aria-label={(t('word_sounds.bank_show_spellings') || 'Show spellings for') + ' ' + _ipaLabel}
+                                                                                        className="min-w-11 min-h-11 px-1.5 py-1 bg-slate-50 hover:bg-pink-100 text-slate-700 hover:text-pink-800 transition-colors motion-reduce:transition-none border-l border-slate-300 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-700"
                                                                                         title={t('word_sounds.bank_show_spellings') || 'Show the letters that spell this sound'}
                                                                                     >{_isExp ? '▴' : '⋯'}</button>
                                                                                 )}
                                                                             </div>
                                                                             {_isExp && (
-                                                                                <div className="mt-1 mb-1 px-2 py-1 bg-white border border-pink-200 rounded-lg text-[11px] text-slate-600 max-w-[220px]">
-                                                                                    <span className="font-bold text-pink-600">{_ipaLabel}</span>
+                                                                                <div className="mt-1 mb-1 px-2 py-1 bg-white border border-pink-200 rounded-lg text-[11px] text-slate-700 max-w-[220px]">
+                                                                                    <span className="font-bold text-pink-800">{_ipaLabel}</span>
                                                                                     {_disp.keyWord ? <span className="text-slate-600"> · as in {_disp.keyWord}</span> : null}
                                                                                     <div className="mt-0.5 flex flex-wrap gap-1">
                                                                                         {_disp.graphemes.map((g, gi) => (
@@ -1611,7 +1764,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                     <input aria-label={t('common.rhyme_time_options')}
                                                         value={word.rhymeWord || ''}
                                                         onChange={(e) => onUpdateWord(idx, { ...word, rhymeWord: e.target.value }, { reviewedRhyme: true })}
-                                                        className="flex-1 min-w-0 px-3 py-1.5 font-bold border-2 border-green-300 bg-green-50 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-400 focus:ring-offset-1 outline-none"
+                                                        className="flex-1 min-w-0 min-h-11 px-3 py-1.5 font-bold border-2 border-green-300 bg-green-50 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-400 focus:ring-offset-1 outline-none"
                                                         data-help-key="word_sounds_review_distractor_input" placeholder={t('common.placeholder_correct_rhyme')}
                                                     />
                                                     <span className="shrink-0 rounded-md bg-green-100 px-2 py-1 text-xs font-bold text-green-800">{t('word_sounds.review_answer_tag') || '✓ Answer'}</span>
@@ -1625,7 +1778,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                                     newDist[i] = e.target.value;
                                                                     onUpdateWord(idx, { ...word, rhymeDistractors: newDist }, { reviewedRhyme: true });
                                                                 }}
-                                                                className="flex-1 px-3 py-1.5 font-medium border-2 border-slate-200 rounded-lg focus:border-orange-400 focus:ring-2 focus:ring-orange-300 focus:ring-offset-1 outline-none"
+                                                                className="flex-1 min-h-11 px-3 py-1.5 font-medium border-2 border-slate-200 rounded-lg focus:border-orange-400 focus:ring-2 focus:ring-orange-300 focus:ring-offset-1 outline-none"
                                                                 data-help-key="word_sounds_review_distractor_input" placeholder={t('common.placeholder_distractor')}
                                                             />
                                                             <button type="button"
@@ -1637,7 +1790,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                                     setPlayingAudioKey(key);
                                                                     try { await onPlayAudio(d); } finally { setPlayingAudioKey(null); }
                                                                 }}
-                                                                className="p-2 rounded-lg bg-slate-100 hover:bg-orange-100 text-slate-600 hover:text-orange-800 transition-colors motion-reduce:transition-none min-w-[32px] flex justify-center"
+                                                                className="p-2 rounded-lg bg-slate-100 hover:bg-orange-100 text-slate-700 hover:text-orange-800 transition-colors motion-reduce:transition-none min-w-11 min-h-11 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-700"
                                                                 data-help-key="word_sounds_review_play_distractor" title={t('common.play_tts')}
                                                             >
                                                                 {playingAudioKey === `${idx}-rhyme-${i}` ? <div className="animate-spin motion-reduce:animate-none h-4 w-4 border-2 border-current border-t-transparent rounded-full" /> : '🔊'}
@@ -1645,6 +1798,10 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                             <button type="button"
                                                                 aria-label={t('word_sounds.refresh_audio') || 'Refresh audio'}
                                                                 onClick={async () => {
+                                                                    if (!_wsAiUsable('audio', onRegenerateOption)) {
+                                                                        setReviewError({ index: idx, message: t('toasts.ai_available') || 'AI is not available right now.' });
+                                                                        return;
+                                                                    }
                                                                     if (!onRegenerateOption) return;
                                                                     const key = `${idx}-rhyme-${i}`;
                                                                     setRegeneratingOptions(prev => ({ ...prev, [key]: true }));
@@ -1654,11 +1811,11 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                                         setRegeneratingOptions(prev => { const n = {...prev}; delete n[key]; return n; });
                                                                     }
                                                                 }}
-                                                                disabled={!!regeneratingOptions[`${idx}-rhyme-${i}`]}
-                                                                className={`${regeneratingOptions[`${idx}-rhyme-${i}`] ? 'w-auto px-2 gap-1 bg-orange-200 text-orange-800' : 'w-8 bg-orange-50 hover:bg-orange-100 text-orange-400 hover:text-orange-800'} h-8 rounded-lg transition-colors motion-reduce:transition-none flex items-center justify-center text-xs font-bold`}
+                                                                disabled={!!regeneratingOptions[`${idx}-rhyme-${i}`] || !_wsAiUsable('audio', onRegenerateOption)}
+                                                                className={`${regeneratingOptions[`${idx}-rhyme-${i}`] ? 'w-auto px-2 gap-1 bg-orange-200 text-orange-800' : 'min-w-11 bg-orange-50 hover:bg-orange-100 text-orange-700 hover:text-orange-900'} min-h-11 rounded-lg transition-colors motion-reduce:transition-none flex items-center justify-center text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-700 disabled:opacity-50 disabled:cursor-not-allowed`}
                                                                 title={t('word_sounds.refresh_audio_tooltip') || 'Refresh audio (re-synthesize TTS for this word)'}
                                                             >
-                                                                {regeneratingOptions[`${idx}-rhyme-${i}`] ? (<><RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /><span>{t('word_sounds.refreshing') || 'Refreshing…'}</span></>) : '🔄'}
+                                                                {regeneratingOptions[`${idx}-rhyme-${i}`] ? (<><RefreshCw size={14} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /><span>{t('word_sounds.refreshing') || 'Refreshing…'}</span></>) : '🔄'}
                                                             </button>
                                                         </div>
                                                     ))}
@@ -1667,12 +1824,12 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                             const newDist = [...(word.rhymeDistractors || []), ''];
                                                             onUpdateWord(idx, { ...word, rhymeDistractors: newDist }, { reviewedRhyme: true });
                                                         }}
-                                                        className="justify-self-start px-3 py-1.5 bg-orange-100 text-orange-800 rounded-lg border-2 border-dashed border-orange-300 hover:bg-orange-200 text-sm font-bold"
+                                                        className="justify-self-start min-h-11 px-3 py-1.5 bg-orange-100 text-orange-900 rounded-lg border-2 border-dashed border-orange-300 hover:bg-orange-200 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-700"
                                                     >{t('word_sounds.add_distractor') || '+ Add'}</button>
                                                 </div>
                                             </div>
                                         <div hidden={!reviewsActivity('blending')} data-ws-review-part="blending">
-                                            <label className="text-xs font-bold text-violet-700 uppercase tracking-wider mb-2 block">{t('word_sounds.blend_options')}</label>
+                                            <label className="text-xs font-bold text-violet-800 uppercase tracking-wider mb-2 block">{t('word_sounds.blend_options')}</label>
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                     <span className="flex items-center justify-between gap-2 px-3 py-1.5 font-bold bg-green-100 text-green-800 rounded-lg border-2 border-green-300">
                                                         <span className="min-w-0 break-words">{word.targetWord || word.word}</span>
@@ -1687,7 +1844,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                                     newDist[i] = e.target.value;
                                                                     onUpdateWord(idx, { ...word, blendingDistractors: newDist });
                                                                 }}
-                                                                className="flex-1 px-3 py-1.5 font-medium border-2 border-slate-200 rounded-lg focus:border-violet-400 focus:ring-2 focus:ring-violet-300 focus:ring-offset-1 outline-none"
+                                                                className="flex-1 min-h-11 px-3 py-1.5 font-medium border-2 border-slate-200 rounded-lg focus:border-violet-400 focus:ring-2 focus:ring-violet-300 focus:ring-offset-1 outline-none"
                                                             />
                                                             <button type="button"
                                                                 aria-label={(t('common.play_tts') || 'Play') + ': ' + d}
@@ -1698,7 +1855,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                                     setPlayingAudioKey(key);
                                                                     try { await onPlayAudio(d); } finally { setPlayingAudioKey(null); }
                                                                 }}
-                                                                className="p-2 rounded-lg bg-slate-100 hover:bg-violet-100 text-slate-600 hover:text-violet-800 transition-colors motion-reduce:transition-none min-w-[32px] flex justify-center"
+                                                                className="p-2 rounded-lg bg-slate-100 hover:bg-violet-100 text-slate-700 hover:text-violet-800 transition-colors motion-reduce:transition-none min-w-11 min-h-11 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700"
                                                                 data-help-key="word_sounds_review_play_distractor" title={t('common.play_tts')}
                                                             >
                                                                 {playingAudioKey === `${idx}-blend-${i}` ? <div className="animate-spin motion-reduce:animate-none h-4 w-4 border-2 border-current border-t-transparent rounded-full" /> : '🔊'}
@@ -1706,6 +1863,10 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                             <button type="button"
                                                                 aria-label={t('word_sounds.refresh_audio') || 'Refresh audio'}
                                                                 onClick={async () => {
+                                                                    if (!_wsAiUsable('audio', onRegenerateOption)) {
+                                                                        setReviewError({ index: idx, message: t('toasts.ai_available') || 'AI is not available right now.' });
+                                                                        return;
+                                                                    }
                                                                     if (!onRegenerateOption) return;
                                                                     const key = `${idx}-blend-${i}`;
                                                                     setRegeneratingOptions(prev => ({ ...prev, [key]: true }));
@@ -1715,11 +1876,11 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                                         setRegeneratingOptions(prev => { const n = {...prev}; delete n[key]; return n; });
                                                                     }
                                                                 }}
-                                                                disabled={!!regeneratingOptions[`${idx}-blend-${i}`]}
-                                                                className={`${regeneratingOptions[`${idx}-blend-${i}`] ? 'w-auto px-2 gap-1 bg-violet-200 text-violet-800' : 'w-8 bg-violet-50 hover:bg-violet-100 text-violet-400 hover:text-violet-800'} h-8 rounded-lg transition-colors motion-reduce:transition-none flex items-center justify-center text-xs font-bold`}
+                                                                disabled={!!regeneratingOptions[`${idx}-blend-${i}`] || !_wsAiUsable('audio', onRegenerateOption)}
+                                                                className={`${regeneratingOptions[`${idx}-blend-${i}`] ? 'w-auto px-2 gap-1 bg-violet-200 text-violet-800' : 'min-w-11 bg-violet-50 hover:bg-violet-100 text-violet-700 hover:text-violet-900'} min-h-11 rounded-lg transition-colors motion-reduce:transition-none flex items-center justify-center text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 disabled:opacity-50 disabled:cursor-not-allowed`}
                                                                 title={t('word_sounds.refresh_audio_tooltip') || 'Refresh audio (re-synthesize TTS for this word)'}
                                                             >
-                                                                {regeneratingOptions[`${idx}-blend-${i}`] ? (<><RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /><span>{t('word_sounds.refreshing') || 'Refreshing…'}</span></>) : '🔄'}
+                                                                {regeneratingOptions[`${idx}-blend-${i}`] ? (<><RefreshCw size={14} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /><span>{t('word_sounds.refreshing') || 'Refreshing…'}</span></>) : '🔄'}
                                                             </button>
                                                         </div>
                                                     ))}
@@ -1728,7 +1889,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                             const newDist = [...(word.blendingDistractors || []), ''];
                                                             onUpdateWord(idx, { ...word, blendingDistractors: newDist });
                                                         }}
-                                                        className="justify-self-start px-3 py-1.5 bg-violet-100 text-violet-800 rounded-lg border-2 border-dashed border-violet-300 hover:bg-violet-200 text-sm font-bold"
+                                                        className="justify-self-start min-h-11 px-3 py-1.5 bg-violet-100 text-violet-800 rounded-lg border-2 border-dashed border-violet-300 hover:bg-violet-200 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700"
                                                     >{t('word_sounds.add_distractor') || '+ Add'}</button>
                                                 </div>
                                             </div>
@@ -1747,7 +1908,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                             if (!_ctLines.length) return null;
                                             return (
                                                 <div>
-                                                    <label className="text-xs font-bold text-sky-600 uppercase tracking-wider mb-2 block">{t('word_sounds.connected_text_label') || 'Connected Text (sentence activities)'}</label>
+                                                    <label className="text-xs font-bold text-sky-800 uppercase tracking-wider mb-2 block">{t('word_sounds.connected_text_label') || 'Connected Text (sentence activities)'}</label>
                                                     <div className="space-y-1.5 p-3 bg-sky-50 border-2 border-sky-200 rounded-lg">
                                                         {_ctLines.map((line) => (
                                                             <div key={line.key} className="flex items-center gap-2 text-sm text-slate-700">
@@ -1763,7 +1924,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                                         setPlayingAudioKey(key);
                                                                         try { await onPlayAudio(line.text); } finally { setPlayingAudioKey(null); }
                                                                     }}
-                                                                    className="p-2 rounded-lg bg-white hover:bg-sky-100 text-slate-600 hover:text-sky-700 transition-colors motion-reduce:transition-none min-w-[32px] flex justify-center"
+                                                                    className="p-2 rounded-lg bg-white hover:bg-sky-100 text-slate-700 hover:text-sky-800 transition-colors motion-reduce:transition-none min-w-11 min-h-11 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700"
                                                                     title={t('common.play_tts') || 'Play'}
                                                                 >
                                                                     {playingAudioKey === `${idx}-ct-${line.key}` ? <div className="animate-spin motion-reduce:animate-none h-4 w-4 border-2 border-current border-t-transparent rounded-full" /> : '🔊'}
@@ -1776,9 +1937,9 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                         })()}
                                         <div hidden={!reviewsActivity('manipulation')} data-ws-review-part="manipulation">
                                             <div className="flex items-center justify-between mb-2">
-                                                <label className="text-xs font-bold text-amber-700 uppercase tracking-wider block">{t('word_sounds.sound_swap_label') || 'Sound Swap (Manipulation Activity)'}</label>
+                                                <label className="text-xs font-bold text-amber-900 uppercase tracking-wider block">{t('word_sounds.sound_swap_label') || 'Sound Swap (Manipulation Activity)'}</label>
                                                 {word.manipulationTask?.type && (
-                                                    <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-300">
+                                                    <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300">
                                                         {word.manipulationTask.type}
                                                     </span>
                                                 )}
@@ -1786,13 +1947,13 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                             {word.manipulationTask ? (
                                                 <div className="space-y-2 p-3 bg-amber-50 border-2 border-amber-200 rounded-lg">
                                                     <div>
-                                                        <label className="text-[10px] font-bold text-amber-700 uppercase tracking-wider block mb-1">{t('word_sounds.instruction_label') || 'Instruction (spoken to student)'}</label>
+                                                        <label className="text-[10px] font-bold text-amber-900 uppercase tracking-wider block mb-1">{t('word_sounds.instruction_label') || 'Instruction (spoken to student)'}</label>
                                                         <div className="flex items-center gap-1">
                                                             <input
                                                                 aria-label={t('word_sounds.sound_swap_instruction_aria') || 'Sound Swap instruction'}
                                                                 value={word.manipulationTask.instruction || ''}
                                                                 onChange={(e) => onUpdateWord(idx, { ...word, manipulationTask: { ...word.manipulationTask, instruction: e.target.value } })}
-                                                                className="flex-1 px-3 py-1.5 text-sm font-medium border-2 border-amber-200 rounded-lg focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-300 bg-white"
+                                                                className="flex-1 min-h-11 px-3 py-1.5 text-sm font-medium border-2 border-amber-200 rounded-lg focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-300 bg-white"
                                                                 placeholder={t('word_sounds.sound_swap_instruction_placeholder') || "Say 'word'. Now say it again, but leave out the /x/ sound."}
                                                             />
                                                             <button type="button"
@@ -1804,7 +1965,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                                     setPlayingAudioKey(key);
                                                                     try { await onPlayAudio(word.manipulationTask.instruction); } finally { setPlayingAudioKey(null); }
                                                                 }}
-                                                                className="p-2 rounded-lg bg-slate-100 hover:bg-amber-100 text-slate-600 hover:text-amber-800 transition-colors motion-reduce:transition-none min-w-[32px] flex justify-center"
+                                                                className="p-2 rounded-lg bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-amber-900 transition-colors motion-reduce:transition-none min-w-11 min-h-11 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700"
                                                                 title={t('word_sounds.preview_instruction_tooltip') || 'Preview instruction'}
                                                             >
                                                                 {playingAudioKey === `${idx}-manip-instruction` ? <div className="animate-spin motion-reduce:animate-none h-4 w-4 border-2 border-current border-t-transparent rounded-full" /> : '🔊'}
@@ -1812,14 +1973,14 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                         </div>
                                                     </div>
                                                     <div>
-                                                        <label className="text-[10px] font-bold text-amber-700 uppercase tracking-wider block mb-1">{t('word_sounds.answer_distractors_label') || 'Answer (correct) + Distractors'}</label>
+                                                        <label className="text-[10px] font-bold text-amber-900 uppercase tracking-wider block mb-1">{t('word_sounds.answer_distractors_label') || 'Answer (correct) + Distractors'}</label>
                                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                             <div className="flex items-center gap-1">
                                                                 <input
                                                                     aria-label={t('word_sounds.correct_answer_aria') || 'Correct answer'}
                                                                     value={word.manipulationTask.answer || ''}
                                                                     onChange={(e) => onUpdateWord(idx, { ...word, manipulationTask: { ...word.manipulationTask, answer: e.target.value } })}
-                                                                    className="flex-1 min-w-0 px-3 py-1.5 font-bold border-2 border-green-300 bg-green-50 rounded-lg focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-300"
+                                                                    className="flex-1 min-w-0 min-h-11 px-3 py-1.5 font-bold border-2 border-green-300 bg-green-50 rounded-lg focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-300"
                                                                     placeholder={t('word_sounds.answer_placeholder') || 'answer'}
                                                                 />
                                                                 <button type="button"
@@ -1831,7 +1992,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                                         setPlayingAudioKey(key);
                                                                         try { await onPlayAudio(word.manipulationTask.answer); } finally { setPlayingAudioKey(null); }
                                                                     }}
-                                                                    className="p-2 rounded-lg bg-slate-100 hover:bg-green-100 text-slate-600 hover:text-green-800 transition-colors motion-reduce:transition-none min-w-[32px] flex justify-center"
+                                                                    className="p-2 rounded-lg bg-slate-100 hover:bg-green-100 text-slate-700 hover:text-green-800 transition-colors motion-reduce:transition-none min-w-11 min-h-11 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700"
                                                                     title={t('word_sounds.preview_answer_tooltip') || 'Preview answer'}
                                                                 >
                                                                     {playingAudioKey === `${idx}-manip-answer` ? <div className="animate-spin motion-reduce:animate-none h-4 w-4 border-2 border-current border-t-transparent rounded-full" /> : '🔊'}
@@ -1847,7 +2008,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                                             newDist[i] = e.target.value;
                                                                             onUpdateWord(idx, { ...word, manipulationTask: { ...word.manipulationTask, distractors: newDist } });
                                                                         }}
-                                                                        className="flex-1 px-3 py-1.5 font-medium border-2 border-slate-200 rounded-lg focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-300 bg-white"
+                                                                        className="flex-1 min-h-11 px-3 py-1.5 font-medium border-2 border-slate-200 rounded-lg focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-300 bg-white"
                                                                         placeholder={t('word_sounds.distractor_placeholder') || 'distractor'}
                                                                     />
                                                                     <button type="button"
@@ -1859,7 +2020,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                                             setPlayingAudioKey(key);
                                                                             try { await onPlayAudio(d); } finally { setPlayingAudioKey(null); }
                                                                         }}
-                                                                        className="p-2 rounded-lg bg-slate-100 hover:bg-amber-100 text-slate-600 hover:text-amber-800 transition-colors motion-reduce:transition-none min-w-[32px] flex justify-center"
+                                                                        className="p-2 rounded-lg bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-amber-900 transition-colors motion-reduce:transition-none min-w-11 min-h-11 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700"
                                                                         title={t('word_sounds.preview_distractor_tooltip') || 'Preview distractor'}
                                                                     >
                                                                         {playingAudioKey === `${idx}-manip-d-${i}` ? <div className="animate-spin motion-reduce:animate-none h-4 w-4 border-2 border-current border-t-transparent rounded-full" /> : '🔊'}
@@ -1869,7 +2030,12 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                         </div>
                                                     </div>
                                                     <button type="button"
+                                                        disabled={Boolean(regeneratingOptions[`${idx}-manip-regen`]) || !_wsTextAiReady}
                                                         onClick={async () => {
+                                                            if (!_wsAiUsable('text', onRegenerateManipulationTask)) {
+                                                                setReviewError({ index: idx, message: t('toasts.ai_available') || 'AI is not available right now.' });
+                                                                return;
+                                                            }
                                                             if (onRegenerateManipulationTask) {
                                                                 const key = `${idx}-manip-regen`;
                                                                 setRegeneratingOptions(prev => ({ ...prev, [key]: true }));
@@ -1878,17 +2044,22 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                                 }
                                                             }
                                                         }}
-                                                        className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-amber-100 text-amber-700 hover:bg-amber-200 border-2 border-amber-300 rounded-lg text-sm font-bold transition-all motion-reduce:transition-none"
+                                                        className="w-full min-h-11 flex items-center justify-center gap-2 px-3 py-2 bg-amber-100 text-amber-900 hover:bg-amber-200 border-2 border-amber-300 rounded-lg text-sm font-bold transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700 disabled:opacity-50 disabled:cursor-not-allowed"
                                                         title={t('word_sounds.regenerate_sound_swap_tooltip') || 'Generate a fresh Sound Swap task for this word'}
                                                     >
-                                                        {regeneratingOptions[`${idx}-manip-regen`] ? <><RefreshCw size={14} className="animate-spin motion-reduce:animate-none"/> {t('word_sounds.regenerating') || 'Regenerating…'}</> : <><RefreshCw size={14}/> {t('word_sounds.regenerate_task') || 'Regenerate Task'}</>}
+                                                        {regeneratingOptions[`${idx}-manip-regen`] ? <><RefreshCw size={14} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> {t('word_sounds.regenerating') || 'Regenerating…'}</> : <><RefreshCw size={14} aria-hidden="true"/> {t('word_sounds.regenerate_task') || 'Regenerate Task'}</>}
                                                     </button>
                                                 </div>
                                             ) : (
                                                 <div className="p-3 bg-slate-50 border-2 border-dashed border-slate-300 rounded-lg flex items-center justify-between gap-3">
                                                     <span className="text-sm text-slate-600 italic">{t('word_sounds.no_sound_swap_yet') || 'No Sound Swap task generated for this word yet.'}</span>
                                                     <button type="button"
+                                                        disabled={Boolean(regeneratingOptions[`${idx}-manip-regen`]) || !_wsTextAiReady}
                                                         onClick={async () => {
+                                                            if (!_wsAiUsable('text', onRegenerateManipulationTask)) {
+                                                                setReviewError({ index: idx, message: t('toasts.ai_available') || 'AI is not available right now.' });
+                                                                return;
+                                                            }
                                                             if (onRegenerateManipulationTask) {
                                                                 const key = `${idx}-manip-regen`;
                                                                 setRegeneratingOptions(prev => ({ ...prev, [key]: true }));
@@ -1897,9 +2068,9 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                                 }
                                                             }
                                                         }}
-                                                        className="flex items-center gap-2 px-3 py-1.5 bg-amber-700 hover:bg-amber-800 text-white rounded-lg text-sm font-bold shadow"
+                                                        className="min-h-11 flex items-center gap-2 px-3 py-1.5 bg-amber-700 hover:bg-amber-800 text-white rounded-lg text-sm font-bold shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700 disabled:opacity-50 disabled:cursor-not-allowed"
                                                     >
-                                                        {regeneratingOptions[`${idx}-manip-regen`] ? <><RefreshCw size={14} className="animate-spin motion-reduce:animate-none"/> {t('word_sounds.generating') || 'Generating…'}</> : <><Sparkles size={14}/> {t('word_sounds.generate') || 'Generate'}</>}
+                                                        {regeneratingOptions[`${idx}-manip-regen`] ? <><RefreshCw size={14} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> {t('word_sounds.generating') || 'Generating…'}</> : <><Sparkles size={14} aria-hidden="true"/> {t('word_sounds.generate') || 'Generate'}</>}
                                                     </button>
                                                 </div>
                                             )}
@@ -1928,77 +2099,110 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                         </div>
                                         <div className="mt-4 pt-4 border-t border-slate-200">
                                             <label className="text-xs font-bold text-indigo-700 uppercase tracking-wider mb-2 block flex items-center gap-2">
-                                                <ImageIcon size={12} /> {t('word_sounds.word_image_label') || 'Word Image'}
+                                                <ImageIcon size={12} aria-hidden="true" /> {t('word_sounds.word_image_label') || 'Word Image'}
                                             </label>
-                                            <div className="flex items-start gap-4">
-                                                <div className="flex-shrink-0">
-                                                    {word.image ? (
-                                                        <img loading="lazy"
-                                                            src={word.image}
-                                                            alt={word.targetWord || word.word}
-                                                            className="w-24 h-24 rounded-xl object-cover border-2 border-indigo-200 shadow-md"
-                                                        />
-                                                    ) : (
-                                                        <div className="w-24 h-24 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center text-slate-600 bg-slate-50">
-                                                            <ImageIcon size={32} />
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <div className="flex-1 space-y-2">
-                                                    <button type="button"
-                                                        onClick={() => onGenerateImage && onGenerateImage(idx, word.targetWord || word.word)}
-                                                        disabled={isGeneratingImage(idx)}
-                                                        className={`w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-bold text-sm transition-all motion-reduce:transition-none ${
-                                                            word.image
-                                                                ? 'bg-indigo-100 text-indigo-600 hover:bg-indigo-200 border border-indigo-200'
-                                                                : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md'
-                                                        }`}
-                                                    >
-                                                        {isGeneratingImage(idx) ? (
-                                                            <><RefreshCw size={14} className="animate-spin motion-reduce:animate-none"/> {t('word_sounds.generating_image') || 'Generating...'}</>
-                                                        ) : word.image ? (
-                                                            <><RefreshCw size={14}/> {t('word_sounds.regenerate_image_button') || 'Regenerate Image'}</>
-                                                        ) : (
-                                                            <><Sparkles size={14}/> {t('word_sounds.generate_image_button') || 'Generate Image'}</>
-                                                        )}
-                                                    </button>
-                                                    {word.image && (
-                                                        <div className="space-y-2">
-                                                            <button type="button"
-                                                                onClick={() => onRefineImage && onRefineImage(idx, "Remove all text, labels, letters, and words from the image. Keep the illustration clean.")}
-                                                                disabled={isGeneratingImage(idx)}
-                                                                className="w-full flex items-center justify-center gap-1 px-2 py-1.5 bg-red-50 text-red-800 hover:bg-red-100 border border-red-200 rounded-lg text-xs font-bold transition-all motion-reduce:transition-none"
-                                                            >
-                                                                <Ban size={12}/> {t('word_sounds.remove_text_from_image') || 'Remove Text from Image'}
-                                                            </button>
-                                                            <div className="flex gap-1">
-                                                                <input aria-label={t('common.e_g_make_it_cuter_add_a_banana')}
-                                                                    type="text"
-                                                                    value={imageRefinementInputs[idx] || ''}
-                                                                    onChange={(e) => setImageRefinementInputs(prev => ({...prev, [idx]: e.target.value}))}
-                                                                    placeholder={t('word_sounds.image_refine_placeholder') || 'e.g., make it cuter, add a banana'}
-                                                                    className="flex-1 text-xs border border-yellow-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                                                                    onKeyDown={(e) => e.key === 'Enter' && onRefineImage && imageRefinementInputs[idx] && onRefineImage(idx, imageRefinementInputs[idx])}
+                                            {(() => {
+                                                const safeFullImg = _safeMiscImageUrl(word.image);
+                                                return (
+                                                    <div className="flex items-start gap-4">
+                                                        <div className="flex-shrink-0">
+                                                            {safeFullImg ? (
+                                                                <img loading="lazy"
+                                                                    src={safeFullImg}
+                                                                    alt={word.targetWord || word.word}
+                                                                    className="w-24 h-24 rounded-xl object-cover border-2 border-indigo-200 shadow-md"
                                                                 />
-                                                                <button type="button"
-                                                                    aria-label={t('common.refresh')}
-                                                                    onClick={() => {
-                                                                        if (onRefineImage && imageRefinementInputs[idx]) {
-                                                                            onRefineImage(idx, imageRefinementInputs[idx]);
-                                                                            setImageRefinementInputs(prev => ({...prev, [idx]: ''}));
-                                                                        }
-                                                                    }}
-                                                                    disabled={!imageRefinementInputs[idx] || isGeneratingImage(idx)}
-                                                                    className="px-3 py-1.5 bg-yellow-400 text-yellow-900 rounded-lg hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed font-bold text-xs transition-colors motion-reduce:transition-none"
-                                                                >
-                                                                    {isGeneratingImage(idx) ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none"/> : <Send size={12}/>}
-                                                                </button>
-                                                            </div>
-                                                            <span className="text-[11px] text-slate-600 italic">{t('word_sounds.nano_mode_hint') || '✨ Nano Mode: Type custom edits like "make it blue" or "add a hat"'}</span>
+                                                            ) : (
+                                                                <div className="w-24 h-24 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center text-slate-600 bg-slate-50">
+                                                                    <ImageIcon size={32} aria-hidden="true" />
+                                                                </div>
+                                                            )}
                                                         </div>
-                                                    )}
-                                                </div>
-                                            </div>
+                                                        <div className="flex-1 space-y-2">
+                                                            <button type="button"
+                                                                onClick={() => {
+                                                                    if (!_wsAiUsable('images', onGenerateImage)) {
+                                                                        setReviewError({ index: idx, message: t('toasts.ai_available') || 'AI is not available right now.' });
+                                                                        return;
+                                                                    }
+                                                                    setImageLoadErrors((prev) => { if (!prev[idx]) return prev; const n = { ...prev }; delete n[idx]; return n; });
+                                                                    onGenerateImage && onGenerateImage(idx, word.targetWord || word.word);
+                                                                }}
+                                                                disabled={isGeneratingImage(idx) || !_wsImageAiReady}
+                                                                className={`w-full min-h-11 flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-bold text-sm transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed ${
+                                                                    safeFullImg
+                                                                        ? 'bg-indigo-100 text-indigo-800 hover:bg-indigo-200 border border-indigo-200'
+                                                                        : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md'
+                                                                }`}
+                                                            >
+                                                                {isGeneratingImage(idx) ? (
+                                                                    <><RefreshCw size={14} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> {t('word_sounds.generating_image') || 'Generating...'}</>
+                                                                ) : safeFullImg ? (
+                                                                    <><RefreshCw size={14} aria-hidden="true"/> {t('word_sounds.regenerate_image_button') || 'Regenerate Image'}</>
+                                                                ) : (
+                                                                    <><Sparkles size={14} aria-hidden="true"/> {t('word_sounds.generate_image_button') || 'Generate Image'}</>
+                                                                )}
+                                                            </button>
+                                                            {safeFullImg && (
+                                                                <div className="space-y-2">
+                                                                    <button type="button"
+                                                                        onClick={() => {
+                                                                            if (!_wsAiUsable('images', onRefineImage)) {
+                                                                                setReviewError({ index: idx, message: t('toasts.ai_available') || 'AI is not available right now.' });
+                                                                                return;
+                                                                            }
+                                                                            setImageLoadErrors((prev) => { if (!prev[idx]) return prev; const n = { ...prev }; delete n[idx]; return n; });
+                                                                            onRefineImage && onRefineImage(idx, "Remove all text, labels, letters, and words from the image. Keep the illustration clean.");
+                                                                        }}
+                                                                        disabled={isGeneratingImage(idx) || !_wsImageAiReady}
+                                                                        className="w-full min-h-11 flex items-center justify-center gap-1 px-2 py-1.5 bg-red-50 text-red-800 hover:bg-red-100 border border-red-200 rounded-lg text-xs font-bold transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                    >
+                                                                        <Ban size={12} aria-hidden="true"/> {t('word_sounds.remove_text_from_image') || 'Remove Text from Image'}
+                                                                    </button>
+                                                                    <div className="flex gap-1">
+                                                                        <input aria-label={t('common.e_g_make_it_cuter_add_a_banana')}
+                                                                            type="text"
+                                                                            maxLength={500}
+                                                                            value={imageRefinementInputs[idx] || ''}
+                                                                            onChange={(e) => setImageRefinementInputs(prev => ({...prev, [idx]: String(e.target.value || '').slice(0, 500)}))}
+                                                                            placeholder={t('word_sounds.image_refine_placeholder') || 'e.g., make it cuter, add a banana'}
+                                                                            className="flex-1 min-h-11 text-xs border border-yellow-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                                                                            onKeyDown={(e) => {
+                                                                                if (e.key === 'Enter' && onRefineImage && imageRefinementInputs[idx]) {
+                                                                                    if (!_wsAiUsable('images', onRefineImage)) {
+                                                                                        setReviewError({ index: idx, message: t('toasts.ai_available') || 'AI is not available right now.' });
+                                                                                        return;
+                                                                                    }
+                                                                                    onRefineImage(idx, imageRefinementInputs[idx]);
+                                                                                }
+                                                                            }}
+                                                                        />
+                                                                        <button type="button"
+                                                                            aria-label={t('common.refresh')}
+                                                                            onClick={() => {
+                                                                                if (!_wsAiUsable('images', onRefineImage)) {
+                                                                                    setReviewError({ index: idx, message: t('toasts.ai_available') || 'AI is not available right now.' });
+                                                                                    return;
+                                                                                }
+                                                                                if (onRefineImage && imageRefinementInputs[idx]) {
+                                                                                    setImageLoadErrors((prev) => { if (!prev[idx]) return prev; const n = { ...prev }; delete n[idx]; return n; });
+                                                                                    onRefineImage(idx, imageRefinementInputs[idx]);
+                                                                                    setImageRefinementInputs(prev => ({...prev, [idx]: ''}));
+                                                                                }
+                                                                            }}
+                                                                            disabled={!imageRefinementInputs[idx] || isGeneratingImage(idx) || !_wsImageAiReady}
+                                                                            className="min-w-11 min-h-11 px-3 py-1.5 bg-yellow-400 text-yellow-900 rounded-lg hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed font-bold text-xs transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-800 flex items-center justify-center"
+                                                                        >
+                                                                            {isGeneratingImage(idx) ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <Send size={12} aria-hidden="true"/>}
+                                                                        </button>
+                                                                    </div>
+                                                                    <span className="text-[11px] text-slate-600 italic">{t('word_sounds.nano_mode_hint') || '✨ Nano Mode: Type custom edits like "make it blue" or "add a hat"'}</span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })()}
                                         </div>
                                     </div>
                                 )}
@@ -2034,8 +2238,8 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                         <h3 id="probe-end-title" className="text-lg font-black text-slate-900">End probe early?</h3>
                         <p id="probe-end-message" className="mt-2 text-sm text-slate-700">Current probe progress will be lost.</p>
                         <div className="mt-5 flex justify-end gap-2">
-                            <button ref={probeCancelRef} type="button" onClick={() => setShowProbeEndConfirm(false)} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">Continue probe</button>
-                            <button type="button" onClick={() => { setShowProbeEndConfirm(false); finishBackToSetup(); }} className="rounded-lg bg-amber-700 px-4 py-2 text-sm font-bold text-white hover:bg-amber-800">End probe</button>
+                            <button ref={probeCancelRef} type="button" onClick={() => setShowProbeEndConfirm(false)} className="min-h-11 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700">Continue probe</button>
+                            <button type="button" onClick={() => { setShowProbeEndConfirm(false); finishBackToSetup(); }} className="min-h-11 rounded-lg bg-amber-700 px-4 py-2 text-sm font-bold text-white hover:bg-amber-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-800">End probe</button>
                         </div>
                     </div>
                 </div>

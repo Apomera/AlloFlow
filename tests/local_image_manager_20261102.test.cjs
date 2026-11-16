@@ -24,6 +24,7 @@ const cases=[];async function check(name,fn){await fn();cases.push(name);}
  await check('Wrong model does not become ready',async()=>{const x=fixture({probe:async()=>({status:'ok',backend:'sana-sprint',model:'wrong',txt2img:true})});await x.manager.start();assert.equal((await x.manager.refresh()).ready,false)});
  await check('Stop invalidates an older pending health response',async()=>{let release;const x=fixture({probe:()=>new Promise(resolve=>release=()=>resolve({status:'ok',backend:'sana-sprint',model:'synthetic/sana',revision:'a'.repeat(40),offline:true,device:'cuda',txt2img:true}))});await x.manager.start();const pending=x.manager.refresh();await new Promise(setImmediate);await x.manager.stop();release();await pending;assert.equal(x.manager.status().phase,'stopped')});
  await check('Repair uses the explicit verified install path',async()=>{const x=fixture();assert.equal((await x.manager.repair()).phase,'installed');assert.ok(x.calls[1].args.includes('--download'))});
+ fs.mkdirSync(OUT,{recursive:true});
  if(process.argv.includes('--selftest')){
   const {spawnSync}=require('node:child_process'), file=path.join(ROOT,'desktop/runtime/local-image-manager.cjs'), original=fs.readFileSync(file,'utf8');
   const changed=original.replace("await command('verify', setup);","await command('provision', setup);");assert.notEqual(changed,original);

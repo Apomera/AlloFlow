@@ -934,7 +934,14 @@
     }
     ensureBadge();
     badge.style.display = 'inline-flex';
-    badge.textContent = '⚠ ' + errCount + ' error' + (errCount === 1 ? '' : 's');
+    var errText = errCount + ' error' + (errCount === 1 ? '' : 's');
+    badge.setAttribute('aria-label', errText + ' — ' + _errT('error_reporter_badge_aria', 'View captured errors and report a bug'));
+    while (badge.firstChild) badge.removeChild(badge.firstChild);
+    var warnSpan = document.createElement('span');
+    warnSpan.setAttribute('aria-hidden', 'true');
+    warnSpan.textContent = '⚠ ';
+    badge.appendChild(warnSpan);
+    badge.appendChild(document.createTextNode(errText));
   }
 
   function escapeHtml(s) {

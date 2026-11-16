@@ -3078,7 +3078,7 @@ var d = labToolData || {};
                         } catch(e) {
                           upd('geoQuizLoading', false);
                           if (addToast) addToast('\u26A0 AI response wasn\'t valid JSON. Try a simpler prompt.', 'error');
-                          console.warn('Quiz Builder parse error:', e, resp);
+                          console.warn('Quiz Builder parse error:', e?.message || String(e), 'length:', String(resp || '').length);
                         }
 
                       }).catch(function(err) {

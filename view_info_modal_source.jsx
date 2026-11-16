@@ -1878,7 +1878,29 @@ function InfoModal({
     if (!dialog) return undefined;
 
     const previousFocus = document.activeElement;
+    const trap = { root: dialog };
+    const trapStack = typeof window !== 'undefined' ? (window.__alloFocusTrapStack = window.__alloFocusTrapStack || []) : null;
+    if (trapStack) trapStack.push(trap);
     const body = document.body;
+    const isolated = [];
+    const seenSiblings = new Set();
+    let cursor = dialog;
+    while (cursor && body && cursor.parentElement) {
+      const parent = cursor.parentElement;
+      Array.from(parent.children).forEach((sibling) => {
+        if (!sibling || sibling === cursor || seenSiblings.has(sibling) || !sibling.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName)) return;
+        seenSiblings.add(sibling);
+        const hadInert = sibling.hasAttribute('inert');
+        const prevInert = sibling.inert;
+        const ariaHidden = sibling.getAttribute('aria-hidden');
+        isolated.push({ sibling, hadInert, prevInert, ariaHidden });
+        try { sibling.inert = true; } catch (_) {}
+        try { sibling.setAttribute('inert', ''); } catch (_) {}
+        try { sibling.setAttribute('aria-hidden', 'true'); } catch (_) {}
+      });
+      if (parent === body) break;
+      cursor = parent;
+    }
     // Ref-counted shared body scroll lock — see window.__alloScrollLockState.
     const scrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: '' });
     if (body && ++scrollLock.count === 1) { scrollLock.prev = body.style.overflow; body.style.overflow = 'hidden'; }
@@ -1895,16 +1917,22 @@ function InfoModal({
         }
         ancestor = ancestor.parentElement;
       }
-      return true;
+      const style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(element) : null;
+      return !style || (style.display !== 'none' && style.visibility !== 'hidden');
     });
 
     (getFocusable()[0] || dialog).focus();
 
     const onKeyDown = (event) => {
+      if (!dialog.isConnected || event.defaultPrevented) return;
+      const topTrap = trapStack && trapStack[trapStack.length - 1];
+      if (topTrap && topTrap !== trap && !(topTrap.root && typeof topTrap.root.contains === 'function' && topTrap.root.contains(dialog))) return;
       if (event.key === 'Escape') {
+        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
         const escapeClearTarget = event.target?.closest?.('[data-info-modal-escape-clears="true"]');
         if (escapeClearTarget?.value) return;
         event.preventDefault();
+        event.stopPropagation();
         closeHandlerRef.current?.();
         return;
       }
@@ -1917,7 +1945,10 @@ function InfoModal({
       }
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
+      if (!dialog.contains(document.activeElement) || document.activeElement === dialog) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus();
+      } else if (event.shiftKey && document.activeElement === first) {
         event.preventDefault();
         last.focus();
       } else if (!event.shiftKey && document.activeElement === last) {
@@ -1926,14 +1957,32 @@ function InfoModal({
       }
     };
 
-    dialog.addEventListener('keydown', onKeyDown);
+    document.addEventListener('keydown', onKeyDown);
     return () => {
-      dialog.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('keydown', onKeyDown);
+      isolated.forEach(({ sibling, hadInert, prevInert, ariaHidden }) => {
+        if (!sibling || !sibling.isConnected) return;
+        if (!hadInert) {
+          try { sibling.inert = false; } catch (_) {}
+          try { sibling.removeAttribute('inert'); } catch (_) {}
+        } else {
+          try { sibling.inert = Boolean(prevInert); } catch (_) {}
+        }
+        if (ariaHidden == null) { try { sibling.removeAttribute('aria-hidden'); } catch (_) {} }
+        else { try { sibling.setAttribute('aria-hidden', ariaHidden); } catch (_) {} }
+      });
+      const wasTopTrap = !trapStack || trapStack[trapStack.length - 1] === trap;
+      if (trapStack) {
+        const idx = trapStack.lastIndexOf(trap);
+        if (idx >= 0) trapStack.splice(idx, 1);
+      }
       if (body) {
         scrollLock.count = Math.max(0, scrollLock.count - 1);
         if (scrollLock.count === 0) body.style.overflow = scrollLock.prev;
       }
-      if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus();
+      if (wasTopTrap && previousFocus !== body && previousFocus !== document.documentElement && previousFocus?.isConnected) {
+        if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus();
+      }
     };
   }, []);
 
@@ -1994,7 +2043,7 @@ function InfoModal({
     : featureCatalogItems;
 
   return (
-    <div role="presentation" className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[300] flex items-stretch sm:items-center justify-center p-0 sm:p-4 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200" onClick={handleSetShowInfoModalToFalse}>
+    <div role="presentation" className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[300] flex items-stretch sm:items-center justify-center p-0 sm:p-4 motion-safe:animate-in motion-reduce:animate-none motion-safe:fade-in motion-safe:duration-200" onClick={handleSetShowInfoModalToFalse}>
       <div ref={dialogRef} tabIndex={-1} className="bg-white rounded-none sm:rounded-2xl shadow-2xl max-w-4xl w-full h-[100dvh] max-h-[100dvh] sm:h-auto sm:max-h-[90vh] overflow-hidden flex flex-col focus:outline-none" role="dialog" aria-modal="true" aria-labelledby="info-modal-title" aria-describedby="info-modal-description" onClick={e => e.stopPropagation()}>
         <p id="info-modal-description" className="sr-only">Explore AlloFlow’s approach, catalog map, guided workflows, privacy data paths, and open-source credits.</p>
         <div className="bg-indigo-700 px-4 py-3 sm:p-4 text-white flex justify-between items-center gap-3 shrink-0">
@@ -2251,7 +2300,7 @@ function InfoModal({
           ) : infoModalTab === 'opensource' ? (
             <OpenSourceTab t={t} />
           ) : selectedFeature ? (
-            <div className="space-y-6 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-left motion-safe:duration-200 text-slate-700">
+            <div className="space-y-6 motion-safe:animate-in motion-reduce:animate-none motion-safe:fade-in motion-safe:slide-in-from-left motion-safe:duration-200 text-slate-700">
               {/* Back Button */}
               <button
                 ref={featureBackRef}
@@ -2319,7 +2368,7 @@ function InfoModal({
                         </div>
 
                         {/* Arrow 1 */}
-                        <div aria-hidden="true" className="flex items-center justify-center text-slate-400 font-extrabold text-xl self-center rotate-90 md:rotate-0 my-1 md:my-0 select-none">
+                        <div aria-hidden="true" className="flex items-center justify-center text-slate-600 font-extrabold text-xl self-center rotate-90 md:rotate-0 my-1 md:my-0 select-none">
                           ➔
                         </div>
 
@@ -2336,7 +2385,7 @@ function InfoModal({
                         </div>
 
                         {/* Arrow 2 */}
-                        <div aria-hidden="true" className="flex items-center justify-center text-slate-400 font-extrabold text-xl self-center rotate-90 md:rotate-0 my-1 md:my-0 select-none">
+                        <div aria-hidden="true" className="flex items-center justify-center text-slate-600 font-extrabold text-xl self-center rotate-90 md:rotate-0 my-1 md:my-0 select-none">
                           ➔
                         </div>
 

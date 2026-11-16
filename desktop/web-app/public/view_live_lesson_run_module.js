@@ -1284,7 +1284,8 @@ function LiveLessonRunPanel(props) {
   const actionAvailable = !!focusItem && !!selectedAudience && (selectedAudience.kind === "class" && typeof onOpenResource === "function" || selectedAudience.kind === "group" && typeof onSendToGroup === "function" || selectedAudience.kind === "student" && typeof onSendToStudent === "function");
   const actionLabel = selectedAudience && selectedAudience.kind === "group" ? t("live_lesson.send_group") || "Send to group" : selectedAudience && selectedAudience.kind === "student" ? t("live_lesson.send_student") || "Send to student" : teacherPaced ? t("live_lesson.present_class") || "Present to class" : t("live_lesson.open_teacher") || "Open on teacher screen";
   const buttonBase = {
-    minHeight: 38,
+    minHeight: 44,
+    minWidth: 44,
     borderRadius: 8,
     border: "1px solid #cbd5e1",
     background: "white",
@@ -1327,7 +1328,8 @@ function LiveLessonRunPanel(props) {
         },
         style: {
           marginLeft: "auto",
-          minHeight: 32,
+          minHeight: 44,
+          minWidth: 44,
           border: "1px solid #818cf8",
           borderRadius: 7,
           background: companionActive ? "#4338ca" : "#eef2ff",
@@ -1393,7 +1395,7 @@ function LiveLessonRunPanel(props) {
           style: {
             display: "block",
             width: "100%",
-            minHeight: 36,
+            minHeight: 44,
             marginTop: 3,
             border: "1px solid #a5b4fc",
             borderRadius: 7,
@@ -1426,7 +1428,7 @@ function LiveLessonRunPanel(props) {
         "summary",
         {
           "aria-label": `Run readiness: ${liveRunReadiness.label}. ${liveRunReadiness.stepCount} steps and ${liveRunReadiness.preparedCount} prepared interactions.`,
-          style: { color: liveRunReadinessTone.text, cursor: "pointer", fontSize: "0.68rem", fontWeight: 900 }
+          style: { minHeight: 44, display: "flex", alignItems: "center", color: liveRunReadinessTone.text, cursor: "pointer", fontSize: "0.68rem", fontWeight: 900 }
         },
         "Run readiness: ",
         liveRunReadiness.label,
@@ -1478,7 +1480,7 @@ function LiveLessonRunPanel(props) {
             type: "button",
             onClick: () => selectAt(issue.stepIndex),
             "aria-label": "Review " + issue.label,
-            style: { border: 0, background: "transparent", color: "inherit", padding: 0, textDecoration: "underline", fontFamily: "inherit", fontSize: "inherit", fontWeight: 700, cursor: "pointer" }
+            style: { minHeight: 44, minWidth: 44, display: "inline-flex", alignItems: "center", border: 0, background: "transparent", color: "inherit", padding: "0.2rem 0.35rem", textDecoration: "underline", fontFamily: "inherit", fontSize: "inherit", fontWeight: 700, cursor: "pointer" }
           },
           issue.label
         ) : issue.label))
@@ -1562,7 +1564,7 @@ function LiveLessonRunPanel(props) {
         },
         t("live_lesson.open_activity_dashboard") || "Open activity dashboard"
       ),
-      /* @__PURE__ */ React.createElement("p", { style: { margin: "0.45rem 0 0", color: "#6366f1", fontSize: "0.59rem", lineHeight: 1.35 } }, t("live_lesson.activity_pulse_privacy") || "Status and counts only; student responses remain in the activity owner.")
+      /* @__PURE__ */ React.createElement("p", { style: { margin: "0.45rem 0 0", color: "#4338ca", fontSize: "0.59rem", lineHeight: 1.35 } }, t("live_lesson.activity_pulse_privacy") || "Status and counts only; student responses remain in the activity owner.")
     ),
     companionActive && companionModel.activity && companionModel.statusCohorts.length > 0 && /* @__PURE__ */ React.createElement(
       "section",
@@ -1589,7 +1591,7 @@ function LiveLessonRunPanel(props) {
             "aria-pressed": selected,
             onClick: () => toggleCompanionStatusCohort(cohort),
             style: {
-              minHeight: 42,
+              minHeight: 44,
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
@@ -1652,7 +1654,7 @@ function LiveLessonRunPanel(props) {
             const allQueueSelected = queueUids.every((uid) => validAttentionSelectedUids.includes(uid));
             setAttentionSelectedUids((current) => allQueueSelected ? current.filter((uid) => !queueUids.includes(uid)) : Array.from(new Set(current.concat(queueUids))).slice(0, companionActive ? 25 : 12));
           },
-          style: { border: "none", background: "transparent", color: "#92400e", padding: 2, fontSize: "0.6rem", fontWeight: 900, cursor: "pointer" }
+          style: { minHeight: 44, minWidth: 44, border: "none", background: "transparent", color: "#92400e", padding: "0.25rem 0.5rem", fontSize: "0.6rem", fontWeight: 900, cursor: "pointer" }
         },
         attentionQueue.every((item) => validAttentionSelectedUids.includes(item.uid)) ? t("common.clear") || "Clear" : t("common.select_all") || "Select all"
       )), focusItem && /* @__PURE__ */ React.createElement(
@@ -1680,7 +1682,7 @@ function LiveLessonRunPanel(props) {
           "data-live-attention-cohorts": "teacher-memory-only",
           style: { marginTop: 5, padding: "0.32rem 0.38rem", border: "1px solid #fcd34d", borderRadius: 7, background: "#fefce8" }
         },
-        /* @__PURE__ */ React.createElement("summary", { style: { minHeight: 36, display: "flex", alignItems: "center", color: "#854d0e", cursor: "pointer", fontSize: "0.62rem", fontWeight: 900 } }, t("live_lesson.group_patterns") || "Group patterns", " (", attentionCohorts.length, ")"),
+        /* @__PURE__ */ React.createElement("summary", { style: { minHeight: 44, display: "flex", alignItems: "center", color: "#854d0e", cursor: "pointer", fontSize: "0.62rem", fontWeight: 900 } }, t("live_lesson.group_patterns") || "Group patterns", " (", attentionCohorts.length, ")"),
         /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 0.35rem", color: "#854d0e", fontSize: "0.57rem", lineHeight: 1.35 } }, t("live_lesson.group_patterns_hint") || "Shared instructional signals only. Selects flagged students; use Audience below for the whole group."),
         /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": t("live_lesson.group_patterns") || "Group patterns", style: { display: "flex", flexDirection: "column", gap: 4 } }, attentionCohorts.map((cohort) => {
           const group = groups[cohort.groupId] || {};
@@ -1745,7 +1747,7 @@ function LiveLessonRunPanel(props) {
               checked: selected,
               onChange: () => toggleAttentionSelection(item.uid),
               "aria-label": "Select " + name + (attentionResourceTitle ? " for " + attentionResourceTitle : " for a resource send"),
-              style: { width: 18, height: 18 }
+              style: { width: 22, height: 22, minWidth: 24, minHeight: 24, margin: 10 }
             }
           ),
           /* @__PURE__ */ React.createElement("div", { style: { minWidth: 0 } }, /* @__PURE__ */ React.createElement("div", { style: { fontWeight: 900, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, name), /* @__PURE__ */ React.createElement("div", { style: { color: "#92400e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, liveAttentionReasonLabel(item.reasons[0]), item.reasons.length > 1 ? ` +${item.reasons.length - 1}` : ""), evidenceSources.length > 0 && /* @__PURE__ */ React.createElement(
@@ -1765,7 +1767,7 @@ function LiveLessonRunPanel(props) {
               disabled: attentionSending || attentionReleasing || !!attentionSendingUid,
               onClick: () => sendAttentionStudent(item.uid),
               "aria-label": "Send " + (attentionResourceTitle || (t("live_lesson.selected_step") || "selected step")) + " to " + name,
-              style: { minHeight: 36, border: "1px solid #f59e0b", borderRadius: 6, background: "#fff7ed", color: "#92400e", padding: "0.2rem 0.35rem", fontFamily: "inherit", fontSize: "0.58rem", fontWeight: 900, cursor: attentionSending || attentionReleasing || attentionSendingUid ? "not-allowed" : "pointer", opacity: attentionSending || attentionReleasing || attentionSendingUid ? 0.65 : 1 }
+              style: { minHeight: 44, minWidth: 44, border: "1px solid #f59e0b", borderRadius: 6, background: "#fff7ed", color: "#92400e", padding: "0.2rem 0.35rem", fontFamily: "inherit", fontSize: "0.58rem", fontWeight: 900, cursor: attentionSending || attentionReleasing || attentionSendingUid ? "not-allowed" : "pointer", opacity: attentionSending || attentionReleasing || attentionSendingUid ? 0.65 : 1 }
             },
             sendingThisStudent ? t("common.sending") || "Sending..." : t("live_lesson.send_selected_step") || "Send step"
           )
@@ -1781,8 +1783,8 @@ function LiveLessonRunPanel(props) {
             ...focusItem && validSelectedUids.length > 0 && !attentionSending && !attentionReleasing && !attentionSendingUid ? buttonBase : disabledButton,
             width: "100%",
             marginTop: 6,
-            borderColor: "#d97706",
-            background: focusItem && validSelectedUids.length > 0 && !attentionSending && !attentionReleasing && !attentionSendingUid ? "#d97706" : "#f8fafc",
+            borderColor: "#b45309",
+            background: focusItem && validSelectedUids.length > 0 && !attentionSending && !attentionReleasing && !attentionSendingUid ? "#b45309" : "#f8fafc",
             color: focusItem && validSelectedUids.length > 0 && !attentionSending && !attentionReleasing && !attentionSendingUid ? "white" : "#94a3b8"
           }
         },
@@ -1802,7 +1804,7 @@ function LiveLessonRunPanel(props) {
             disabled: attentionReleasing || attentionSending || !!attentionSendingUid,
             onClick: releaseAcknowledgedResources,
             "aria-label": "Release " + acknowledgedResourceOverrideUids.length + " opened individual support override" + (acknowledgedResourceOverrideUids.length === 1 ? "" : "s"),
-            style: { ...buttonBase, width: "100%", minHeight: 34, marginTop: 4, borderColor: "#78716c", color: "#44403c", opacity: attentionReleasing || attentionSending || attentionSendingUid ? 0.65 : 1 }
+            style: { ...buttonBase, width: "100%", minHeight: 44, marginTop: 4, borderColor: "#78716c", color: "#44403c", opacity: attentionReleasing || attentionSending || attentionSendingUid ? 0.65 : 1 }
           },
           attentionReleasing ? t("common.releasing") || "Releasing..." : (t("live_lesson.release_opened_supports") || "Release opened supports") + " (" + acknowledgedResourceOverrideUids.length + ")"
         ),
@@ -1817,7 +1819,7 @@ function LiveLessonRunPanel(props) {
         "aria-label": t("live_lesson.class_debrief") || "Class debrief",
         style: { marginTop: 7, padding: "0.5rem", border: "1px solid #a5b4fc", borderRadius: 9, background: "#f5f3ff" }
       },
-      /* @__PURE__ */ React.createElement("summary", { style: { minHeight: 36, display: "flex", alignItems: "center", color: "#4338ca", cursor: "pointer", fontSize: "0.7rem", fontWeight: 900 } }, t("live_lesson.class_debrief") || "Class debrief", " (", classDebrief.length, ")"),
+      /* @__PURE__ */ React.createElement("summary", { style: { minHeight: 44, display: "flex", alignItems: "center", color: "#4338ca", cursor: "pointer", fontSize: "0.7rem", fontWeight: 900 } }, t("live_lesson.class_debrief") || "Class debrief", " (", classDebrief.length, ")"),
       /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 0.4rem", color: "#5b21b6", fontSize: "0.58rem", lineHeight: 1.35 } }, t("live_lesson.class_debrief_hint") || "Derived from participation, moderation, and revision statuses. It does not infer correctness or misconceptions."),
       /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 5 } }, classDebrief.map((finding) => {
         const tone = {
@@ -1828,14 +1830,14 @@ function LiveLessonRunPanel(props) {
         const currentTargetCount = finding.uids.filter((uid) => Object.prototype.hasOwnProperty.call(roster, uid)).length;
         const activityItem = activityTimeline.find((item) => item.activityId === finding.activityId) || finding;
         const canSend = currentTargetCount > 0 && !!focusItem && (typeof onSendToStudents === "function" || typeof onSendToStudent === "function");
-        return /* @__PURE__ */ React.createElement("article", { key: finding.id, "data-live-debrief-kind": finding.kind, style: { border: "1px solid " + tone.border, borderRadius: 8, background: tone.background, padding: "0.42rem" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 5 } }, /* @__PURE__ */ React.createElement("strong", { style: { color: tone.text, fontSize: "0.64rem" } }, finding.label), /* @__PURE__ */ React.createElement("span", { style: { marginLeft: "auto", color: tone.text, fontSize: "0.56rem", fontWeight: 900 } }, liveActivityKindLabel(finding.activityKind))), /* @__PURE__ */ React.createElement("p", { style: { margin: "0.2rem 0 0", color: tone.text, fontSize: "0.58rem", lineHeight: 1.35 } }, finding.detail), (canSend || finding.canOpenActivity && typeof onOpenActivity === "function") && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 4, marginTop: 5 } }, finding.canOpenActivity && typeof onOpenActivity === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => onOpenActivity(activityItem), "aria-label": "Open " + liveActivityKindLabel(finding.activityKind) + " review from class debrief", style: { ...buttonBase, minHeight: 34, borderColor: tone.border, color: tone.text, fontSize: "0.57rem" } }, t("live_lesson.open_review") || "Open review"), canSend && /* @__PURE__ */ React.createElement(
+        return /* @__PURE__ */ React.createElement("article", { key: finding.id, "data-live-debrief-kind": finding.kind, style: { border: "1px solid " + tone.border, borderRadius: 8, background: tone.background, padding: "0.42rem" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 5 } }, /* @__PURE__ */ React.createElement("strong", { style: { color: tone.text, fontSize: "0.64rem" } }, finding.label), /* @__PURE__ */ React.createElement("span", { style: { marginLeft: "auto", color: tone.text, fontSize: "0.56rem", fontWeight: 900 } }, liveActivityKindLabel(finding.activityKind))), /* @__PURE__ */ React.createElement("p", { style: { margin: "0.2rem 0 0", color: tone.text, fontSize: "0.58rem", lineHeight: 1.35 } }, finding.detail), (canSend || finding.canOpenActivity && typeof onOpenActivity === "function") && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 4, marginTop: 5 } }, finding.canOpenActivity && typeof onOpenActivity === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => onOpenActivity(activityItem), "aria-label": "Open " + liveActivityKindLabel(finding.activityKind) + " review from class debrief", style: { ...buttonBase, minHeight: 44, minWidth: 44, borderColor: tone.border, color: tone.text, fontSize: "0.57rem" } }, t("live_lesson.open_review") || "Open review"), canSend && /* @__PURE__ */ React.createElement(
           "button",
           {
             type: "button",
             disabled: !!debriefSendingId,
             onClick: () => sendDebriefFinding(finding),
             "aria-label": "Send " + attentionResourceTitle + " to " + currentTargetCount + " debrief student" + (currentTargetCount === 1 ? "" : "s"),
-            style: { ...buttonBase, minHeight: 34, borderColor: tone.border, background: "white", color: tone.text, fontSize: "0.57rem", opacity: debriefSendingId ? 0.65 : 1 }
+            style: { ...buttonBase, minHeight: 44, minWidth: 44, borderColor: tone.border, background: "white", color: tone.text, fontSize: "0.57rem", opacity: debriefSendingId ? 0.65 : 1 }
           },
           debriefSendingId === finding.id ? t("common.sending") || "Sending..." : (t("live_lesson.send_follow_up") || "Send selected follow-up") + " (" + currentTargetCount + ")"
         )));
@@ -1849,18 +1851,18 @@ function LiveLessonRunPanel(props) {
         "aria-label": t("live_lesson.activity_timeline") || "Activity timeline",
         style: { marginTop: 7, padding: "0.45rem 0.5rem", border: "1px solid #cbd5e1", borderRadius: 9, background: "#f8fafc" }
       },
-      /* @__PURE__ */ React.createElement("summary", { style: { color: "#334155", cursor: "pointer", fontSize: "0.68rem", fontWeight: 900 } }, t("live_lesson.recent_activity") || "Recent activity", " (", activityTimeline.length, ")"),
+      /* @__PURE__ */ React.createElement("summary", { style: { minHeight: 44, display: "flex", alignItems: "center", color: "#334155", cursor: "pointer", fontSize: "0.68rem", fontWeight: 900 } }, t("live_lesson.recent_activity") || "Recent activity", " (", activityTimeline.length, ")"),
       /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 4, marginTop: 5 } }, activityTimeline.map((item) => {
         const duration = formatLiveActivityDuration(
           item.durationMs || (item.startedAt && item.updatedAt ? item.updatedAt - item.startedAt : 0)
         );
-        return /* @__PURE__ */ React.createElement("div", { key: item.activityId, style: { display: "flex", alignItems: "center", gap: 5, padding: "0.3rem 0.38rem", background: "white", border: "1px solid #e2e8f0", borderRadius: 7, fontSize: "0.61rem" } }, /* @__PURE__ */ React.createElement("span", { style: { minWidth: 0, flex: 1, color: "#0f172a", fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, liveActivityKindLabel(item.kind)), /* @__PURE__ */ React.createElement("span", { style: { color: "#64748b", whiteSpace: "nowrap" } }, item.counts.submitted, "/", item.counts.invited, item.counts.votesCast > 0 ? ` / ${item.counts.votesCast} ${t("live_lesson.votes") || "votes"}` : "", duration ? ` \xB7 ${duration}` : ""), /* @__PURE__ */ React.createElement("span", { style: { color: "#475569", fontWeight: 800, whiteSpace: "nowrap" } }, liveActivityPhaseLabel(item.phase)), typeof onOpenActivity === "function" && item.phase !== "closed" && item.phase !== "revealed" && /* @__PURE__ */ React.createElement(
+        return /* @__PURE__ */ React.createElement("div", { key: item.activityId, style: { display: "flex", alignItems: "center", gap: 5, padding: "0.3rem 0.38rem", background: "white", border: "1px solid #e2e8f0", borderRadius: 7, fontSize: "0.61rem" } }, /* @__PURE__ */ React.createElement("span", { style: { minWidth: 0, flex: 1, color: "#0f172a", fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, liveActivityKindLabel(item.kind)), /* @__PURE__ */ React.createElement("span", { style: { color: "#475569", whiteSpace: "nowrap" } }, item.counts.submitted, "/", item.counts.invited, item.counts.votesCast > 0 ? ` / ${item.counts.votesCast} ${t("live_lesson.votes") || "votes"}` : "", duration ? ` \xB7 ${duration}` : ""), /* @__PURE__ */ React.createElement("span", { style: { color: "#475569", fontWeight: 800, whiteSpace: "nowrap" } }, liveActivityPhaseLabel(item.phase)), typeof onOpenActivity === "function" && item.phase !== "closed" && item.phase !== "revealed" && /* @__PURE__ */ React.createElement(
           "button",
           {
             type: "button",
             onClick: () => onOpenActivity(item),
             "aria-label": `Open ${liveActivityKindLabel(item.kind)} dashboard`,
-            style: { border: "1px solid #94a3b8", borderRadius: 5, background: "#f8fafc", color: "#334155", padding: "0.12rem 0.3rem", fontSize: "0.56rem", fontWeight: 900, cursor: "pointer" }
+            style: { minHeight: 44, minWidth: 44, border: "1px solid #94a3b8", borderRadius: 5, background: "#f8fafc", color: "#334155", padding: "0.25rem 0.5rem", fontSize: "0.56rem", fontWeight: 900, cursor: "pointer" }
           },
           t("common.open") || "Open"
         ));
@@ -1869,6 +1871,7 @@ function LiveLessonRunPanel(props) {
     !companionActive && (steps.length === 0 ? /* @__PURE__ */ React.createElement("p", { style: { margin: "0.55rem 0 0", color: "#475569", fontSize: "0.7rem", lineHeight: 1.4 } }, t("live_lesson.empty") || "Add student-facing resources to this unit to build its live lesson path.") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
       "div",
       {
+        role: "status",
         "aria-live": "polite",
         style: {
           display: "flex",
@@ -1902,7 +1905,7 @@ function LiveLessonRunPanel(props) {
           }
         },
         getTitle(focusItem)
-      ), /* @__PURE__ */ React.createElement("div", { style: { color: "#64748b", fontSize: "0.62rem" } }, focusIsCurrent ? `${t("live_lesson.current_step") || "Current step"} ${currentIndex + 1}` : `${t("live_lesson.selected_step") || "Selected step"} ${focusIndex + 1}`))
+      ), /* @__PURE__ */ React.createElement("div", { style: { color: "#475569", fontSize: "0.62rem" } }, focusIsCurrent ? `${t("live_lesson.current_step") || "Current step"} ${currentIndex + 1}` : `${t("live_lesson.selected_step") || "Selected step"} ${focusIndex + 1}`))
     ), nextItem && /* @__PURE__ */ React.createElement(
       "aside",
       {
@@ -1947,7 +1950,7 @@ function LiveLessonRunPanel(props) {
           type: "button",
           onClick: () => selectAt(nextIndex),
           "aria-label": (t("live_lesson.review_next_step") || "Review next step") + ": " + nextItemTitle,
-          style: { ...buttonBase, minHeight: 32, padding: "0.25rem 0.42rem", borderColor: "#7dd3fc", color: "#075985", fontSize: "0.59rem" }
+          style: { ...buttonBase, minHeight: 44, minWidth: 44, padding: "0.25rem 0.42rem", borderColor: "#7dd3fc", color: "#075985", fontSize: "0.59rem" }
         },
         t("common.review") || "Review"
       )
@@ -1963,7 +1966,7 @@ function LiveLessonRunPanel(props) {
           background: "#f5f3ff"
         }
       },
-      /* @__PURE__ */ React.createElement("summary", { style: { color: "#5b21b6", cursor: "pointer", fontSize: "0.68rem", fontWeight: 900 } }, t("live_lesson.presenter_cues") || "Private presenter cues", hasPresenterCue ? " \xB7 " + (t("common.ready") || "ready") : ""),
+      /* @__PURE__ */ React.createElement("summary", { style: { minHeight: 44, display: "flex", alignItems: "center", color: "#5b21b6", cursor: "pointer", fontSize: "0.68rem", fontWeight: 900 } }, t("live_lesson.presenter_cues") || "Private presenter cues", hasPresenterCue ? " \xB7 " + (t("common.ready") || "ready") : ""),
       /* @__PURE__ */ React.createElement("p", { style: { margin: "0.35rem 0", color: "#6d28d9", fontSize: "0.59rem", lineHeight: 1.35 } }, t("live_lesson.presenter_cues_privacy") || "Teacher-only on this browser. These cues are not added to the resource or sent to students."),
       [
         ["sayAsk", t("live_lesson.presenter_say_ask") || "Say / ask", t("live_lesson.presenter_say_ask_placeholder") || "Opening question, explanation, or discussion prompt\u2026"],
@@ -2002,10 +2005,12 @@ function LiveLessonRunPanel(props) {
           disabled: !hasPresenterCue || typeof onChangePresenterCue !== "function",
           onClick: clearPresenterCue,
           style: {
+            minHeight: 44,
+            minWidth: 44,
             border: "none",
             background: "transparent",
-            color: hasPresenterCue ? "#6d28d9" : "#a78bfa",
-            padding: 2,
+            color: hasPresenterCue ? "#6d28d9" : "#64748b",
+            padding: "0.25rem 0.5rem",
             fontSize: "0.58rem",
             fontWeight: 900,
             cursor: hasPresenterCue ? "pointer" : "not-allowed"
@@ -2025,7 +2030,7 @@ function LiveLessonRunPanel(props) {
           background: "#ecfeff"
         }
       },
-      /* @__PURE__ */ React.createElement("summary", { style: { color: "#155e75", cursor: "pointer", fontSize: "0.68rem", fontWeight: 900 } }, t("live_lesson.prepared_checkpoint") || "Prepared checkpoint", preparedCheckpointLaunchBlocked ? " - " + (t("common.needs_attention") || "needs attention") : hasPreparedCheckpoint ? " - " + (t("common.ready") || "ready") : ""),
+      /* @__PURE__ */ React.createElement("summary", { style: { minHeight: 44, display: "flex", alignItems: "center", color: "#155e75", cursor: "pointer", fontSize: "0.68rem", fontWeight: 900 } }, t("live_lesson.prepared_checkpoint") || "Prepared checkpoint", preparedCheckpointLaunchBlocked ? " - " + (t("common.needs_attention") || "needs attention") : hasPreparedCheckpoint ? " - " + (t("common.ready") || "ready") : ""),
       /* @__PURE__ */ React.createElement("p", { style: { margin: "0.35rem 0", color: "#0e7490", fontSize: "0.59rem", lineHeight: 1.35 } }, t("live_lesson.prepared_checkpoint_hint") || "Attach an optional interaction to this step. It reuses the existing Live Polling, Sketch Response, or quiz owner and stays private until you launch it."),
       /* @__PURE__ */ React.createElement("label", { style: { display: "block", color: "#155e75", fontSize: "0.61rem", fontWeight: 800 } }, t("live_lesson.checkpoint_type") || "Checkpoint type", /* @__PURE__ */ React.createElement(
         "select",
@@ -2037,7 +2042,7 @@ function LiveLessonRunPanel(props) {
             updatePreparedCheckpoint(kind ? { kind } : { kind: "", prompt: "", criteria: "" });
           },
           "aria-label": (t("live_lesson.checkpoint_type") || "Checkpoint type") + " for " + getTitle(focusItem),
-          style: { display: "block", width: "100%", minHeight: 36, marginTop: 2, border: "1px solid #67e8f9", borderRadius: 6, background: "white", color: "#0f172a", padding: "0.3rem", fontFamily: "inherit", fontSize: "0.64rem" }
+          style: { display: "block", width: "100%", minHeight: 44, marginTop: 2, border: "1px solid #67e8f9", borderRadius: 6, background: "white", color: "#0f172a", padding: "0.3rem", fontFamily: "inherit", fontSize: "0.64rem" }
         },
         /* @__PURE__ */ React.createElement("option", { value: "" }, t("live_lesson.no_checkpoint") || "No checkpoint"),
         /* @__PURE__ */ React.createElement("option", { value: "quick_check" }, t("live_dock.quick_check") || "Quick check"),
@@ -2077,7 +2082,7 @@ function LiveLessonRunPanel(props) {
           type: "button",
           onClick: clearPreparedCheckpoint,
           disabled: typeof onChangePresenterCue !== "function",
-          style: { border: "none", background: "transparent", color: "#0e7490", padding: 2, fontSize: "0.58rem", fontWeight: 900, cursor: "pointer" }
+          style: { minHeight: 44, minWidth: 44, border: "none", background: "transparent", color: "#0e7490", padding: "0.25rem 0.5rem", fontSize: "0.58rem", fontWeight: 900, cursor: "pointer" }
         },
         t("live_lesson.remove_checkpoint") || "Remove"
       ), preparationOnly ? /* @__PURE__ */ React.createElement("span", { role: "status", style: { color: "#155e75", fontSize: "0.58rem", fontWeight: 800 } }, t("live_lesson.saved_for_session") || "Saved for live session") : /* @__PURE__ */ React.createElement(
@@ -2086,7 +2091,7 @@ function LiveLessonRunPanel(props) {
           type: "button",
           onClick: launchPreparedCheckpoint,
           disabled: preparedCheckpointLaunchBlocked || typeof onLaunchPreparedInteraction !== "function",
-          style: { ...preparedCheckpointLaunchBlocked ? disabledButton : buttonBase, minHeight: 32, borderColor: preparedCheckpointLaunchBlocked ? "#cbd5e1" : "#0891b2", background: preparedCheckpointLaunchBlocked ? "#f8fafc" : "#0891b2", color: preparedCheckpointLaunchBlocked ? "#64748b" : "white", padding: "0.28rem 0.5rem", fontSize: "0.62rem" }
+          style: { ...preparedCheckpointLaunchBlocked ? disabledButton : buttonBase, minHeight: 44, borderColor: preparedCheckpointLaunchBlocked ? "#cbd5e1" : "#0e7490", background: preparedCheckpointLaunchBlocked ? "#f8fafc" : "#0e7490", color: preparedCheckpointLaunchBlocked ? "#64748b" : "white", padding: "0.28rem 0.5rem", fontSize: "0.62rem" }
         },
         preparedCheckpointLaunchBlocked ? t("live_lesson.choose_quiz_resource") || "Choose a quiz resource to launch" : t("live_lesson.review_launch_checkpoint") || "Review and launch"
       )))
@@ -2135,7 +2140,7 @@ function LiveLessonRunPanel(props) {
           style: {
             minWidth: 0,
             width: "100%",
-            minHeight: 36,
+            minHeight: 44,
             border: "1px solid #bfdbfe",
             borderRadius: 7,
             background: "white",
@@ -2166,7 +2171,7 @@ function LiveLessonRunPanel(props) {
           "aria-label": t("live_lesson.audience_aria") || "Choose who receives the selected lesson step",
           style: {
             width: "100%",
-            minHeight: 38,
+            minHeight: 44,
             marginTop: 3,
             border: "1px solid #93c5fd",
             borderRadius: 7,

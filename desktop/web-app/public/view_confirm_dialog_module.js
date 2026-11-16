@@ -14,34 +14,45 @@
   if (!React) { console.error('[ConfirmDialog] React not found on window'); return; }
 
 function ConfirmDialog({ confirmDialog, setConfirmDialog, t }) {
-  const AlertCircle = window.AlertCircle || (() => null);
-  const AlertTriangle = window.AlertTriangle || AlertCircle;
-  const Info = window.Info || AlertCircle;
-  const tone = confirmDialog.tone || "warning";
+  const AlertCircle = window.AlloIcons && window.AlloIcons.AlertCircle || window.AlertCircle || (() => null);
+  const AlertTriangle = window.AlloIcons && window.AlloIcons.AlertTriangle || window.AlertTriangle || AlertCircle;
+  const Info = window.AlloIcons && window.AlloIcons.Info || window.Info || AlertCircle;
+  const dialogConfig = confirmDialog && typeof confirmDialog === "object" ? confirmDialog : {};
+  const tone = dialogConfig.tone || "warning";
   const iconMap = { danger: AlertTriangle, warning: AlertCircle, info: Info };
   const colorMap = {
-    danger: { iconBg: "bg-red-100", iconText: "text-red-600", btn: "bg-red-600 hover:bg-red-700 shadow-red-500/25" },
-    warning: { iconBg: "bg-amber-100", iconText: "text-amber-600", btn: "bg-red-600 hover:bg-red-700 shadow-red-500/25" },
-    info: { iconBg: "bg-indigo-100", iconText: "text-indigo-600", btn: "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-500/25" }
+    danger: { iconBg: "bg-red-100", iconText: "text-red-700", btn: "bg-red-700 hover:bg-red-800 shadow-red-500/25" },
+    warning: { iconBg: "bg-amber-100", iconText: "text-amber-800", btn: "bg-red-700 hover:bg-red-800 shadow-red-500/25" },
+    info: { iconBg: "bg-indigo-100", iconText: "text-indigo-700", btn: "bg-indigo-700 hover:bg-indigo-800 shadow-indigo-500/25" }
   };
   const Icon = iconMap[tone] || AlertCircle;
   const palette = colorMap[tone] || colorMap.warning;
+  const dialogConfigRef = React.useRef(dialogConfig);
+  dialogConfigRef.current = dialogConfig;
+  const setConfirmDialogRef = React.useRef(setConfirmDialog);
+  setConfirmDialogRef.current = setConfirmDialog;
   const handleCancel = React.useCallback(() => {
-    if (typeof confirmDialog.onCancel === "function") {
+    const cfg = dialogConfigRef.current;
+    if (typeof cfg.onCancel === "function") {
       try {
-        confirmDialog.onCancel();
+        cfg.onCancel();
       } catch (_) {
       }
     }
-    setConfirmDialog(null);
-  }, [confirmDialog, setConfirmDialog]);
+    if (typeof setConfirmDialogRef.current === "function") setConfirmDialogRef.current(null);
+  }, []);
   const handleConfirm = React.useCallback(() => {
-    try {
-      confirmDialog.onConfirm();
-    } catch (_) {
+    const cfg = dialogConfigRef.current;
+    if (typeof cfg.onConfirm === "function") {
+      try {
+        cfg.onConfirm();
+      } catch (_) {
+      }
     }
-    setConfirmDialog(null);
-  }, [confirmDialog, setConfirmDialog]);
+    if (typeof setConfirmDialogRef.current === "function") setConfirmDialogRef.current(null);
+  }, []);
+  const handleCancelRef = React.useRef(handleCancel);
+  handleCancelRef.current = handleCancel;
   const backdropRef = React.useRef(null);
   const dialogRef = React.useRef(null);
   const cancelBtnRef = React.useRef(null);
@@ -51,28 +62,53 @@ function ConfirmDialog({ confirmDialog, setConfirmDialog, t }) {
     if (!dialog || !backdrop) return void 0;
     const previousFocus = document.activeElement;
     const backgroundState = [];
-    const backgroundParent = backdrop.parentElement;
-    if (backgroundParent) {
-      Array.from(backgroundParent.children).forEach((node) => {
-        if (node === backdrop) return;
+    const seenNodes = /* @__PURE__ */ new Set();
+    let branch = backdrop;
+    while (branch && branch.parentElement) {
+      const parent = branch.parentElement;
+      Array.from(parent.children).forEach((node) => {
+        if (!node || node === branch || seenNodes.has(node) || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(node.tagName)) return;
+        seenNodes.add(node);
         backgroundState.push({
           node,
           hadInert: node.hasAttribute("inert"),
+          prevInert: node.inert,
           ariaHidden: node.getAttribute("aria-hidden")
         });
+        try {
+          node.inert = true;
+        } catch (_) {
+        }
         node.setAttribute("inert", "");
         node.setAttribute("aria-hidden", "true");
       });
+      if (parent === document.body) break;
+      branch = parent;
     }
+    const prevBodyOverflow = document.body ? document.body.style.overflow : "";
+    if (document.body) document.body.style.overflow = "hidden";
     const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
     const trap = { root: dialog };
     trapStack.push(trap);
+    const isTopTrap = () => trapStack[trapStack.length - 1] === trap;
     (cancelBtnRef.current || dialog).focus();
-    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])')).filter((element) => {
+      if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      const closedDetails = element.closest("details:not([open])");
+      if (closedDetails && !(element.tagName === "SUMMARY" && element.parentElement === closedDetails)) return false;
+      const style = typeof window.getComputedStyle === "function" ? window.getComputedStyle(element) : null;
+      if (style && (style.display === "none" || style.visibility === "hidden")) return false;
+      const hasLayout = typeof dialog.getBoundingClientRect === "function" && (dialog.getBoundingClientRect().width > 0 || dialog.getBoundingClientRect().height > 0);
+      if (hasLayout && typeof element.getClientRects === "function" && element.getClientRects().length === 0) return false;
+      return true;
+    });
     const onKeyDown = (event) => {
+      if (!dialog.isConnected) return;
+      if (event.isComposing || event.keyCode === 229 || !isTopTrap()) return;
       if (event.key === "Escape") {
         event.preventDefault();
-        handleCancel();
+        event.stopPropagation();
+        handleCancelRef.current();
         return;
       }
       if (event.key !== "Tab") return;
@@ -84,7 +120,10 @@ function ConfirmDialog({ confirmDialog, setConfirmDialog, t }) {
       }
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
+      if (!dialog.contains(document.activeElement) || document.activeElement === dialog) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus();
+      } else if (event.shiftKey && document.activeElement === first) {
         event.preventDefault();
         last.focus();
       } else if (!event.shiftKey && document.activeElement === last) {
@@ -92,20 +131,35 @@ function ConfirmDialog({ confirmDialog, setConfirmDialog, t }) {
         first.focus();
       }
     };
-    dialog.addEventListener("keydown", onKeyDown);
+    document.addEventListener("keydown", onKeyDown);
     return () => {
-      dialog.removeEventListener("keydown", onKeyDown);
-      const trapIndex = trapStack.indexOf(trap);
-      if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
-      backgroundState.forEach(({ node, hadInert, ariaHidden }) => {
+      document.removeEventListener("keydown", onKeyDown);
+      if (document.body) document.body.style.overflow = prevBodyOverflow;
+      backgroundState.forEach(({ node, hadInert, prevInert, ariaHidden }) => {
         if (!node || !node.isConnected) return;
-        if (!hadInert) node.removeAttribute("inert");
+        if (!hadInert) {
+          try {
+            node.inert = false;
+          } catch (_) {
+          }
+          node.removeAttribute("inert");
+        } else {
+          try {
+            node.inert = Boolean(prevInert);
+          } catch (_) {
+          }
+        }
         if (ariaHidden == null) node.removeAttribute("aria-hidden");
         else node.setAttribute("aria-hidden", ariaHidden);
       });
-      if (previousFocus && previousFocus.isConnected && typeof previousFocus.focus === "function") previousFocus.focus();
+      const wasTopTrap = isTopTrap();
+      const trapIndex = trapStack.indexOf(trap);
+      if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
+      if (wasTopTrap && previousFocus !== document.body && previousFocus !== document.documentElement) {
+        if (previousFocus && previousFocus.isConnected && typeof previousFocus.focus === "function") previousFocus.focus();
+      }
     };
-  }, [handleCancel]);
+  }, []);
   return /* @__PURE__ */ React.createElement(
     "div",
     {
@@ -124,29 +178,29 @@ function ConfirmDialog({ confirmDialog, setConfirmDialog, t }) {
         role: "alertdialog",
         "aria-modal": "true",
         "aria-labelledby": "alloflow-confirm-title",
-        "aria-describedby": confirmDialog.detail ? "alloflow-confirm-message alloflow-confirm-detail" : "alloflow-confirm-message",
+        "aria-describedby": dialogConfig.detail ? "alloflow-confirm-message alloflow-confirm-detail" : "alloflow-confirm-message",
         className: "bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[calc(100vh-2rem)] overflow-y-auto p-6 animate-in zoom-in-95 duration-200 motion-reduce:animate-none border-2 border-slate-200"
       },
-      /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mb-4" }, /* @__PURE__ */ React.createElement("div", { className: `w-10 h-10 rounded-full ${palette.iconBg} flex items-center justify-center shrink-0` }, /* @__PURE__ */ React.createElement(Icon, { size: 20, className: palette.iconText, "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("h2", { id: "alloflow-confirm-title", className: "text-lg font-bold text-slate-800" }, confirmDialog.title || t("common.confirm") || "Confirm")),
-      /* @__PURE__ */ React.createElement("p", { id: "alloflow-confirm-message", className: "text-sm text-slate-700 leading-relaxed mb-2 whitespace-pre-wrap" }, confirmDialog.message),
-      confirmDialog.detail ? /* @__PURE__ */ React.createElement("p", { id: "alloflow-confirm-detail", className: "text-xs text-slate-600 leading-relaxed mb-6 whitespace-pre-wrap" }, confirmDialog.detail) : /* @__PURE__ */ React.createElement("div", { className: "mb-6" }),
+      /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mb-4" }, /* @__PURE__ */ React.createElement("div", { className: `w-10 h-10 rounded-full ${palette.iconBg} flex items-center justify-center shrink-0` }, /* @__PURE__ */ React.createElement(Icon, { size: 20, className: palette.iconText, "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("h2", { id: "alloflow-confirm-title", className: "text-lg font-bold text-slate-800" }, dialogConfig.title || t("common.confirm") || "Confirm")),
+      /* @__PURE__ */ React.createElement("p", { id: "alloflow-confirm-message", className: "text-sm text-slate-700 leading-relaxed mb-2 whitespace-pre-wrap" }, dialogConfig.message),
+      dialogConfig.detail ? /* @__PURE__ */ React.createElement("p", { id: "alloflow-confirm-detail", className: "text-xs text-slate-600 leading-relaxed mb-6 whitespace-pre-wrap" }, dialogConfig.detail) : /* @__PURE__ */ React.createElement("div", { className: "mb-6" }),
       /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row gap-3 justify-end" }, /* @__PURE__ */ React.createElement(
         "button",
         {
           ref: cancelBtnRef,
           type: "button",
           onClick: handleCancel,
-          className: "px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-slate-600"
+          className: "min-h-11 px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-slate-600"
         },
-        confirmDialog.cancelText || t("common.cancel") || "Cancel"
+        dialogConfig.cancelText || t("common.cancel") || "Cancel"
       ), /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
           onClick: handleConfirm,
-          className: `px-5 py-2.5 ${palette.btn} text-white font-semibold rounded-xl transition-colors shadow-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-offset-2 focus-visible:ring-indigo-700`
+          className: `min-h-11 px-5 py-2.5 ${palette.btn} text-white font-semibold rounded-xl transition-colors motion-reduce:transition-none shadow-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-offset-2 focus-visible:ring-indigo-700`
         },
-        confirmDialog.confirmText || t("common.confirm_action") || "Confirm"
+        dialogConfig.confirmText || t("common.confirm_action") || "Confirm"
       ))
     )
   );

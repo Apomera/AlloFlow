@@ -529,7 +529,7 @@ function attributionReviewButton(link, artifact, onConfirmAttribution) {
   }, atr('teacher_confirmed', 'Teacher confirmed'));
   return /*#__PURE__*/React.createElement("button", {
     type: "button",
-    className: "ml-2 rounded border border-emerald-300 bg-white px-2 py-0.5 text-[10px] font-bold text-emerald-800 hover:bg-emerald-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700",
+    className: "ml-2 min-h-11 inline-flex items-center rounded border border-emerald-300 bg-white px-3 py-1.5 text-[10px] font-bold text-emerald-800 hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700",
     "aria-label": atr('confirm_source', 'Confirm source') + ': ' + (artifact.label || artifact.artifactId),
     onClick: function () {
       onConfirmAttribution(link.edgeId);
@@ -543,7 +543,7 @@ function AlignmentEvidenceSources(item, onConfirmAttribution) {
   return /*#__PURE__*/React.createElement("details", {
     className: "mt-1 rounded border border-emerald-100 bg-emerald-50/50 p-2"
   }, /*#__PURE__*/React.createElement("summary", {
-    className: "cursor-pointer font-semibold text-emerald-900"
+    className: "cursor-pointer min-h-11 flex items-center font-semibold text-emerald-900 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700"
   }, 'Explicit artifact attribution (' + artifacts.length + ')'), /*#__PURE__*/React.createElement("p", {
     className: "mt-1 text-emerald-900"
   }, "These artifacts were explicitly named as evidence sources. This is a declared source link, not an independent verification."), /*#__PURE__*/React.createElement("p", {
@@ -567,7 +567,7 @@ function AlignmentFindingSources(item, onConfirmAttribution) {
   return /*#__PURE__*/React.createElement("details", {
     className: "mt-1 rounded border border-amber-100 bg-amber-50/50 p-2"
   }, /*#__PURE__*/React.createElement("summary", {
-    className: "cursor-pointer font-semibold text-amber-900"
+    className: "cursor-pointer min-h-11 flex items-center font-semibold text-amber-900 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700"
   }, 'Explicit finding attribution (' + artifacts.length + ')'), /*#__PURE__*/React.createElement("p", {
     className: "mt-1 text-amber-900"
   }, "These artifacts were explicitly named as sources of this finding. This is a declared source link, not an independent verification."), /*#__PURE__*/React.createElement("p", {
@@ -608,7 +608,7 @@ function AlignmentMapScopeDetails({
   return /*#__PURE__*/React.createElement("details", {
     className: "mt-2 rounded border border-indigo-200 bg-white/70 p-2 text-xs"
   }, /*#__PURE__*/React.createElement("summary", {
-    className: "cursor-pointer font-semibold text-indigo-900"
+    className: "cursor-pointer min-h-11 flex items-center font-semibold text-indigo-900 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700"
   }, 'Audited artifact scope (' + items.length + (truncated ? '+' : '') + ')'), /*#__PURE__*/React.createElement("p", {
     className: "mt-1 text-indigo-900"
   }, "These artifacts were included in the audit scope. This is scope provenance, not a claim that every artifact supports every standard."), /*#__PURE__*/React.createElement("p", {
@@ -658,7 +658,7 @@ function AlignmentEvidenceMap(p) {
     className: "text-base font-black text-indigo-950"
   }, atr('alignment_map', 'Alignment Map')), exportGraph && /*#__PURE__*/React.createElement("button", {
     type: "button",
-    className: "flex-shrink-0 rounded border border-indigo-300 bg-white px-2 py-1 text-[10px] font-bold text-indigo-800 hover:bg-indigo-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700",
+    className: "flex-shrink-0 min-h-11 rounded border border-indigo-300 bg-white px-3 py-1.5 text-[10px] font-bold text-indigo-800 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700",
     "aria-label": atr('export_graph_aria', 'Export alignment graph JSON'),
     onClick: exportGraph
   }, atr('export_graph', 'Export graph JSON'))), /*#__PURE__*/React.createElement("p", {
@@ -754,10 +754,12 @@ function AlignmentEvidenceMap(p) {
     }, entry.context.related.slice(0, 12).map(function (item) {
       return /*#__PURE__*/React.createElement("li", {
         key: item.id
-      }, /*#__PURE__*/React.createElement("details", null, /*#__PURE__*/React.createElement("summary", null, item.direction === 'incoming' ? 'Parent/group: ' : 'Child/related: ', item.code ? item.code + ' · ' : '', item.label, item.kind && item.kind !== 'standard' ? ' (' + item.kind + ')' : ''), item.text ? /*#__PURE__*/React.createElement("p", {
+      }, /*#__PURE__*/React.createElement("details", null, /*#__PURE__*/React.createElement("summary", {
+        className: "cursor-pointer min-h-11 flex items-center rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700"
+      }, item.direction === 'incoming' ? 'Parent/group: ' : 'Child/related: ', item.code ? item.code + ' · ' : '', item.label, item.kind && item.kind !== 'standard' ? ' (' + item.kind + ')' : ''), item.text ? /*#__PURE__*/React.createElement("p", {
         className: "mt-1 text-indigo-900"
       }, item.text) : null, item.sourceUrl ? /*#__PURE__*/React.createElement("a", {
-        className: "mt-1 inline-block text-indigo-700 underline",
+        className: "mt-1 inline-flex min-h-11 items-center text-indigo-700 underline rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700",
         href: item.sourceUrl,
         target: "_blank",
         rel: "noreferrer"
@@ -778,7 +780,7 @@ function AlignmentEvidenceMap(p) {
       }, alignmentMapStatus(item.status))), /*#__PURE__*/React.createElement("p", {
         className: "mt-1 text-slate-700"
       }, item.evidence || 'No evidence recorded.'), item.notes ? /*#__PURE__*/React.createElement("p", {
-        className: "mt-1 text-slate-500 italic"
+        className: "mt-1 text-slate-600 italic"
       }, "Note: ", item.notes) : null, AlignmentEvidenceSources(item, confirmAttribution));
     })), entry.findings.length > 0 && /*#__PURE__*/React.createElement("div", {
       className: "mt-3 border-t border-rose-100 pt-2"
@@ -831,7 +833,7 @@ function StandardsSection(p) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-bold text-slate-800 leading-tight pt-2"
   }, "Holistic Lesson Plan Audit"), /*#__PURE__*/React.createElement("div", {
-    className: "text-[10px] text-slate-500 mt-1"
+    className: "text-[10px] text-slate-600 mt-1"
   }, "text + activities + assessment"))),
   // Per-standard collapsible cards
   perStandard.length > 0 && /*#__PURE__*/React.createElement("div", {
@@ -844,7 +846,7 @@ function StandardsSection(p) {
       open: !passColor,
       className: 'rounded-lg border ' + (passColor ? 'border-emerald-200 bg-emerald-50' : pendingColor ? 'border-slate-300 bg-slate-50' : 'border-rose-200 bg-rose-50')
     }, /*#__PURE__*/React.createElement("summary", {
-      className: 'px-3 py-2 cursor-pointer font-semibold text-sm select-none flex items-center justify-between gap-2 ' + (passColor ? 'text-emerald-800 hover:bg-emerald-100' : pendingColor ? 'text-slate-800 hover:bg-slate-100' : 'text-rose-800 hover:bg-rose-100')
+      className: 'min-h-11 px-3 py-2 cursor-pointer font-semibold text-sm select-none flex items-center justify-between gap-2 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 ' + (passColor ? 'text-emerald-800 hover:bg-emerald-100' : pendingColor ? 'text-slate-800 hover:bg-slate-100' : 'text-rose-800 hover:bg-rose-100')
     }, /*#__PURE__*/React.createElement("span", {
       className: "flex-1 min-w-0 break-words"
     }, report && report.standard || 'Standard ' + (idx + 1)), /*#__PURE__*/React.createElement("span", {
@@ -886,7 +888,7 @@ function StandardsSection(p) {
       className: "text-slate-800"
     }, report.adminRecommendation))));
   })), s.notes && /*#__PURE__*/React.createElement("div", {
-    className: "mt-3 text-[11px] text-slate-500 italic"
+    className: "mt-3 text-[11px] text-slate-600 italic"
   }, s.notes), AlignmentEvidenceMap({
     standards: s,
     auditScope: p.auditScope,
@@ -917,7 +919,7 @@ function VocabularySection(p) {
   }, sourceWords), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-slate-600"
   }, "Source words"), /*#__PURE__*/React.createElement("div", {
-    className: "text-[10px] text-slate-500 mt-1"
+    className: "text-[10px] text-slate-600 mt-1"
   }, auditedTextWords + ' across bundle')) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "text-2xl font-bold text-slate-800"
   }, auditedTextWords), /*#__PURE__*/React.createElement("div", {
@@ -929,7 +931,7 @@ function VocabularySection(p) {
   }, v.tier2Count), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-blue-700"
   }, "Tier 2 (academic)"), /*#__PURE__*/React.createElement("div", {
-    className: "text-[10px] text-slate-500 mt-1"
+    className: "text-[10px] text-slate-600 mt-1"
   }, 'expected ~' + (v.expected && v.expected.tier2) + ' ' + scaleNote)), /*#__PURE__*/React.createElement("div", {
     className: "p-3 bg-purple-50 rounded text-center"
   }, /*#__PURE__*/React.createElement("div", {
@@ -937,7 +939,7 @@ function VocabularySection(p) {
   }, v.tier3Count), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-purple-700"
   }, "Tier 3 (domain)"), /*#__PURE__*/React.createElement("div", {
-    className: "text-[10px] text-slate-500 mt-1"
+    className: "text-[10px] text-slate-600 mt-1"
   }, 'expected ~' + (v.expected && v.expected.tier3) + ' ' + scaleNote)), /*#__PURE__*/React.createElement("div", {
     className: "p-3 bg-slate-50 rounded text-center"
   }, /*#__PURE__*/React.createElement("div", {
@@ -1037,7 +1039,7 @@ function VocabularySection(p) {
       className: "text-xs px-2 py-0.5 bg-emerald-100 text-emerald-900 rounded font-semibold"
     }, '+ ' + auditText(w));
   })))), /*#__PURE__*/React.createElement("div", {
-    className: "text-[11px] text-slate-500 italic"
+    className: "text-[11px] text-slate-600 italic"
   }, v.notes || ''));
 }
 function EngagementSection(p) {
@@ -1102,7 +1104,7 @@ function EngagementSection(p) {
       className: "text-xs px-2 py-0.5 bg-emerald-100 text-emerald-900 rounded"
     }, auditText(m));
   }) : /*#__PURE__*/React.createElement("span", {
-    className: "text-xs text-slate-500 italic"
+    className: "text-xs text-slate-600 italic"
   }, "(none)"))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-semibold text-rose-800 mb-1"
   }, "Modalities missing:"), /*#__PURE__*/React.createElement("div", {
@@ -1215,13 +1217,35 @@ function EngagementSection(p) {
       key: i
     }, auditText(g));
   })))), /*#__PURE__*/React.createElement("div", {
-    className: "text-[11px] text-slate-500 italic"
+    className: "text-[11px] text-slate-600 italic"
   }, e.notes || ''));
 }
 function AccessibilitySection(p) {
   var a = p.access;
   if (!a) return null;
-  var altPctColor = a.altCoveragePct === null ? 'slate' : a.altCoveragePct >= 80 ? 'emerald' : a.altCoveragePct >= 50 ? 'amber' : 'rose';
+  var ALT_PCT_STYLES = {
+    slate: {
+      box: 'bg-slate-50 border border-slate-200',
+      val: 'text-slate-800',
+      lbl: 'text-slate-700'
+    },
+    emerald: {
+      box: 'bg-emerald-50 border border-emerald-200',
+      val: 'text-emerald-800',
+      lbl: 'text-emerald-700'
+    },
+    amber: {
+      box: 'bg-amber-50 border border-amber-200',
+      val: 'text-amber-800',
+      lbl: 'text-amber-700'
+    },
+    rose: {
+      box: 'bg-rose-50 border border-rose-200',
+      val: 'text-rose-800',
+      lbl: 'text-rose-700'
+    }
+  };
+  var altPctStyle = ALT_PCT_STYLES[a.altCoveragePct === null ? 'slate' : a.altCoveragePct >= 80 ? 'emerald' : a.altCoveragePct >= 50 ? 'amber' : 'rose'];
   return /*#__PURE__*/React.createElement(ComprehensiveSection, {
     id: "audit-accessibility",
     icon: "♿",
@@ -1236,11 +1260,11 @@ function AccessibilitySection(p) {
   }, a.totalImages), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-slate-600"
   }, "Images")), /*#__PURE__*/React.createElement("div", {
-    className: 'p-3 rounded text-center bg-' + altPctColor + '-50 border border-' + altPctColor + '-200'
+    className: 'p-3 rounded text-center ' + altPctStyle.box
   }, /*#__PURE__*/React.createElement("div", {
-    className: 'text-2xl font-bold text-' + altPctColor + '-800'
+    className: 'text-2xl font-bold ' + altPctStyle.val
   }, a.altCoveragePct === null ? 'n/a' : a.altCoveragePct + '%'), /*#__PURE__*/React.createElement("div", {
-    className: 'text-xs text-' + altPctColor + '-700'
+    className: 'text-xs ' + altPctStyle.lbl
   }, "Alt-text coverage")), /*#__PURE__*/React.createElement("div", {
     className: 'p-3 rounded text-center ' + (a.colorOnlyCount > 0 ? 'bg-rose-50 border border-rose-200' : 'bg-emerald-50 border border-emerald-200')
   }, /*#__PURE__*/React.createElement("div", {
@@ -1320,7 +1344,7 @@ function AccessibilitySection(p) {
       key: i
     }, auditText(f));
   })))), /*#__PURE__*/React.createElement("div", {
-    className: "text-[11px] text-slate-500 italic"
+    className: "text-[11px] text-slate-600 italic"
   }, a.notes || ''));
 }
 function UdlPillar(p) {
@@ -1391,7 +1415,7 @@ function UdlSection(p) {
   }, "🤖"), " ", atr('ai_udl_synthesis', 'UDL specialist synthesis (AI)')), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-indigo-900"
   }, u.overallNarrative)), /*#__PURE__*/React.createElement("div", {
-    className: "text-[11px] text-slate-500 italic mt-2"
+    className: "text-[11px] text-slate-600 italic mt-2"
   }, u.notes || ''));
 }
 function AccuracySection(p) {
@@ -1401,6 +1425,11 @@ function AccuracySection(p) {
     high: 0,
     medium: 0,
     low: 0
+  };
+  var RATING_BADGE_CLASSES = {
+    emerald: 'bg-emerald-100 text-emerald-800',
+    rose: 'bg-rose-100 text-rose-800',
+    amber: 'bg-amber-100 text-amber-800'
   };
   return /*#__PURE__*/React.createElement(ComprehensiveSection, {
     id: "audit-accuracy",
@@ -1438,7 +1467,7 @@ function AccuracySection(p) {
   a.sampleVerifications && a.sampleVerifications.length > 0 && /*#__PURE__*/React.createElement("details", {
     className: "mb-3 bg-slate-50 border border-slate-200 rounded p-3"
   }, /*#__PURE__*/React.createElement("summary", {
-    className: "cursor-pointer text-sm font-semibold text-slate-800"
+    className: "cursor-pointer min-h-11 flex items-center text-sm font-semibold text-slate-800 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700"
   }, 'Per-analysis details (' + a.sampleVerifications.length + ')'), /*#__PURE__*/React.createElement("ul", {
     className: "mt-2 space-y-2"
   }, a.sampleVerifications.map(function (s, i) {
@@ -1449,7 +1478,7 @@ function AccuracySection(p) {
     }, /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-2 mb-1"
     }, /*#__PURE__*/React.createElement("span", {
-      className: 'text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-' + ratingColor + '-100 text-' + ratingColor + '-800'
+      className: 'text-[10px] font-bold uppercase px-2 py-0.5 rounded ' + RATING_BADGE_CLASSES[ratingColor]
     }, s.rating || 'Unknown'), /*#__PURE__*/React.createElement("span", {
       className: "text-xs text-slate-600"
     }, s.verifiedFactCount + ' verified, ' + s.discrepancyCount + ' discrepanc' + (s.discrepancyCount === 1 ? 'y' : 'ies'))), s.reason && /*#__PURE__*/React.createElement("p", {
@@ -2106,6 +2135,8 @@ function ExecutiveSummary(p) {
     text: '#991b1b',
     accent: 'rose'
   };
+  var textDoor = typeof window !== 'undefined' && typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway('text', t) : null;
+  var aiBusyOrBlocked = !!p.isProcessing || !!(textDoor && textDoor.disabled);
   return /*#__PURE__*/React.createElement("div", {
     className: "p-5 rounded-2xl border-2 mb-6 shadow-md max-w-4xl mx-auto",
     style: {
@@ -2183,8 +2214,9 @@ function ExecutiveSummary(p) {
   typeof onApplyFixes === 'function' && (topRecs.length > 0 || dimEvaluated > 0) && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: onApplyFixes,
-    className: "flex-shrink-0 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2",
-    title: atr('apply_fixes_tip', 'Open Audit Remediator: review and apply fixes')
+    disabled: aiBusyOrBlocked,
+    className: "flex-shrink-0 min-h-11 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold shadow-md hover:shadow-lg transition-all motion-reduce:transition-none flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2",
+    title: textDoor && textDoor.title || atr('apply_fixes_tip', 'Open Audit Remediator: review and apply fixes')
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
   }, "🛠️"), " ", atr('apply_fixes', 'Apply suggested fixes')),
@@ -2197,8 +2229,9 @@ function ExecutiveSummary(p) {
     onClick: function () {
       p.onGeneratePreCheck(topRecs);
     },
-    className: "flex-shrink-0 px-4 py-2 rounded-lg bg-amber-700 hover:bg-amber-800 text-white text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-700 focus-visible:ring-offset-2",
-    title: atr('precheck_tip', 'Generate a Pre-Check Quiz that probes the prerequisites the audit identified as gaps. Students take the quiz before the lesson; missed concepts get just-in-time AI explainers.')
+    disabled: aiBusyOrBlocked,
+    className: "flex-shrink-0 min-h-11 px-4 py-2 rounded-lg bg-amber-700 hover:bg-amber-800 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold shadow-md hover:shadow-lg transition-all motion-reduce:transition-none flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700 focus-visible:ring-offset-2",
+    title: textDoor && textDoor.title || atr('precheck_tip', 'Generate a Pre-Check Quiz that probes the prerequisites the audit identified as gaps. Students take the quiz before the lesson; missed concepts get just-in-time AI explainers.')
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
   }, "🎯"), " ", atr('precheck_from_gaps', 'Pre-Check from gaps'))),
@@ -2235,7 +2268,7 @@ function ExecutiveSummary(p) {
     }, " ↓") : null];
     var chip = r.dimensionKey ? /*#__PURE__*/React.createElement("a", {
       href: '#audit-' + r.dimensionKey,
-      className: 'flex-shrink-0 inline-flex items-center justify-center text-[10px] font-bold uppercase px-2 py-0.5 rounded border no-underline transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 ' + prClass,
+      className: 'flex-shrink-0 min-h-11 inline-flex items-center justify-center text-[10px] font-bold uppercase px-2.5 py-1 rounded border no-underline transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 ' + prClass,
       style: {
         minWidth: '90px',
         textAlign: 'center'
@@ -2353,7 +2386,7 @@ function FailedDimensionCard(p) {
     id: p.id || undefined,
     "aria-labelledby": headingId,
     tabIndex: -1,
-    className: "bg-amber-50 p-4 rounded-xl border border-amber-300 shadow-sm mb-6 scroll-mt-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+    className: "bg-amber-50 p-4 rounded-xl border border-amber-300 shadow-sm mb-6 scroll-mt-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 mb-2"
   }, /*#__PURE__*/React.createElement("span", {
@@ -2371,7 +2404,7 @@ function FailedDimensionCard(p) {
   }, d.notes), d.error && /*#__PURE__*/React.createElement("details", {
     className: "text-xs text-amber-800"
   }, /*#__PURE__*/React.createElement("summary", {
-    className: "cursor-pointer font-semibold"
+    className: "cursor-pointer min-h-11 flex items-center font-semibold rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
   }, atr('show_error', 'Show error')), /*#__PURE__*/React.createElement("pre", {
     className: "mt-1 p-2 bg-amber-100 rounded overflow-x-auto whitespace-pre-wrap"
   }, d.error)));
@@ -2386,7 +2419,7 @@ function NotEvaluatedCard(p) {
     id: p.id || undefined,
     "aria-labelledby": headingId,
     tabIndex: -1,
-    className: "bg-slate-50 p-4 rounded-xl border border-slate-300 shadow-sm mb-6 scroll-mt-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+    className: "bg-slate-50 p-4 rounded-xl border border-slate-300 shadow-sm mb-6 scroll-mt-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 mb-2"
   }, /*#__PURE__*/React.createElement("span", {
@@ -2431,7 +2464,7 @@ function NotApplicableCard(p) {
     id: p.id || undefined,
     "aria-labelledby": headingId,
     tabIndex: -1,
-    className: "bg-slate-50 p-4 rounded-xl border border-dashed border-slate-300 shadow-sm mb-6 scroll-mt-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+    className: "bg-slate-50 p-4 rounded-xl border border-dashed border-slate-300 shadow-sm mb-6 scroll-mt-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 mb-2"
   }, /*#__PURE__*/React.createElement("span", {
@@ -2487,7 +2520,7 @@ DimensionBoundary.prototype.render = function () {
     "aria-labelledby": headingId,
     tabIndex: -1,
     "data-audit-section-failed": "true",
-    className: "bg-amber-50 p-4 rounded-xl border border-amber-300 shadow-sm mb-6 scroll-mt-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+    className: "bg-amber-50 p-4 rounded-xl border border-amber-300 shadow-sm mb-6 scroll-mt-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 mb-2"
   }, /*#__PURE__*/React.createElement("span", {
@@ -2505,7 +2538,7 @@ DimensionBoundary.prototype.render = function () {
   }, atr('display_error_body', 'The saved data for this section could not be rendered. The other dimensions are unaffected; regenerate the audit to rebuild this one.')), /*#__PURE__*/React.createElement("details", {
     className: "text-xs text-amber-800"
   }, /*#__PURE__*/React.createElement("summary", {
-    className: "cursor-pointer font-semibold"
+    className: "cursor-pointer min-h-11 flex items-center font-semibold rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
   }, atr('show_error', 'Show error')), /*#__PURE__*/React.createElement("pre", {
     className: "mt-1 p-2 bg-amber-100 rounded overflow-x-auto whitespace-pre-wrap"
   }, this.state.message)));
@@ -2841,6 +2874,8 @@ function AuditFreshnessNotice(p) {
   var scopeNote = rerun.kind === 'ids' ? atr('rerun_scope_ids', 'Re-run audits the same {n} resources this audit selected.', {
     n: rerun.count
   }) : rerun.kind === 'curriculum' ? atr('rerun_scope_curriculum', 'Re-run audits the same curriculum this audit selected.') : atr('rerun_scope_rederive', 'Re-run selects resources from the current lesson again, by the same rule this audit used.');
+  var textDoor = typeof window !== 'undefined' && typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway('text', _auditT) : null;
+  var rerunDisabled = !!p.isProcessing || !!(textDoor && textDoor.disabled);
   return /*#__PURE__*/React.createElement("div", {
     role: "status",
     className: "p-3 rounded-lg border border-amber-300 bg-amber-50 flex flex-wrap items-center gap-3 print:hidden"
@@ -2853,9 +2888,10 @@ function AuditFreshnessNotice(p) {
     onClick: function () {
       p.onRerunAudit(rerun.config);
     },
-    disabled: !!p.isProcessing,
+    disabled: rerunDisabled,
+    title: textDoor && textDoor.title || undefined,
     "aria-describedby": "audit-rerun-scope-note",
-    className: "px-3 py-1.5 rounded-md bg-amber-700 text-white text-sm font-semibold hover:bg-amber-800 disabled:opacity-60 disabled:cursor-not-allowed"
+    className: "min-h-11 px-3 py-1.5 rounded-md bg-amber-700 text-white text-sm font-semibold hover:bg-amber-800 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
   }, p.isProcessing ? atr('rerunning', 'Re-running…') : atr('rerun', 'Re-run audit')), /*#__PURE__*/React.createElement("p", {
     id: "audit-rerun-scope-note",
     className: "m-0 max-w-xs text-right text-xs text-amber-950",
@@ -2869,6 +2905,7 @@ function AlignmentReportView(props) {
   var freshness = computeAuditFreshness(generatedContent, props.history);
   var comprehensive = generatedContent && generatedContent.data && generatedContent.data.comprehensive;
   var reports = generatedContent && generatedContent.data && Array.isArray(generatedContent.data.reports) ? generatedContent.data.reports : [];
+  var textDoor = typeof window !== 'undefined' && typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway('text', t) : null;
   // All-chrome empty state: follows the page language when its strings are translated.
   var emptyTranslated = typeof t === 'function' && typeof t('audit_report.unavailable_title') === 'string' && t('audit_report.unavailable_title') !== 'audit_report.unavailable_title';
   if (!comprehensive) return /*#__PURE__*/React.createElement("section", {
@@ -2897,7 +2934,10 @@ function AlignmentReportView(props) {
   }, /*#__PURE__*/React.createElement("h1", {
     id: "curriculum-audit-report-heading",
     className: "sr-only"
-  }, atr('report_title', 'Curriculum audit report')),
+  }, atr('report_title', 'Curriculum audit report')), textDoor && textDoor.disabled && typeof window !== 'undefined' && window.AlloAiSetupNotice ? React.createElement(window.AlloAiSetupNotice, {
+    t: t,
+    kind: 'text'
+  }) : null,
   /*#__PURE__*/
   // Executive summary banner — readiness score + top fixes + Apply button.
   React.createElement(AuditFreshnessNotice, {
@@ -2908,6 +2948,7 @@ function AlignmentReportView(props) {
   }), comprehensive && /*#__PURE__*/React.createElement(ExecutiveSummary, {
     t: t,
     comp: comprehensive,
+    isProcessing: props.isProcessing,
     standardsReportCount: reports.length,
     onApplyFixes: props.onApplyFixes,
     onGeneratePreCheck: props.onGeneratePreCheck

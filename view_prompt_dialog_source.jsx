@@ -26,11 +26,153 @@
  *
  * Icons read from window globals: Edit3, X
  */
-const _promptUseFocusTrap = (typeof window !== 'undefined' && window.__alloHooks && window.__alloHooks.useFocusTrap) || function () {};
+function _promptIsFocusable(dialog, element) {
+  if (!element || element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+  let ancestor = element.parentElement;
+  while (ancestor && ancestor !== dialog) {
+    if (ancestor.matches && ancestor.matches('details:not([open])')) {
+      const directSummary = ancestor.querySelector(':scope > summary');
+      if (element !== directSummary) return false;
+    }
+    ancestor = ancestor.parentElement;
+  }
+  const style = typeof window !== 'undefined' && typeof window.getComputedStyle === 'function' ? window.getComputedStyle(element) : null;
+  return !style || (style.display !== 'none' && style.visibility !== 'hidden');
+}
 
-function PromptDialog({ promptDialog, setPromptDialog, t }) {
-  const Edit3 = window.Edit3 || (() => null);
-  const X     = window.X     || (() => null);
+function _promptIsolateSiblings(dialog) {
+  const saved = [];
+  const seen = new Set();
+  const body = typeof document !== 'undefined' ? document.body : null;
+  let node = dialog;
+  while (node && body && node.parentElement) {
+    const parent = node.parentElement;
+    Array.from(parent.children).forEach((child) => {
+      if (!child || child === node || seen.has(child) || !child.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(child.tagName)) return;
+      seen.add(child);
+      const hadInert = child.hasAttribute('inert');
+      const prevInert = child.inert;
+      const ariaHidden = child.getAttribute('aria-hidden');
+      saved.push({ el: child, hadInert, prevInert, ariaHidden });
+      try { child.inert = true; } catch (_) {}
+      try { child.setAttribute('inert', ''); } catch (_) {}
+      try { child.setAttribute('aria-hidden', 'true'); } catch (_) {}
+    });
+    if (parent === body) break;
+    node = parent;
+  }
+  return () => {
+    saved.forEach(({ el, hadInert, prevInert, ariaHidden }) => {
+      if (!el || !el.isConnected) return;
+      if (!hadInert) {
+        try { el.inert = false; } catch (_) {}
+        try { el.removeAttribute('inert'); } catch (_) {}
+      } else {
+        try { el.inert = Boolean(prevInert); } catch (_) {}
+      }
+      if (ariaHidden == null) { try { el.removeAttribute('aria-hidden'); } catch (_) {} }
+      else { try { el.setAttribute('aria-hidden', ariaHidden); } catch (_) {} }
+    });
+  };
+}
+
+function _promptUseFocusTrap(ref, isOpen, onEscape) {
+  const onEscapeRef = React.useRef(onEscape);
+  onEscapeRef.current = onEscape;
+  React.useEffect(() => {
+    if (!isOpen || !ref || !ref.current || typeof document === 'undefined') return undefined;
+    const dialog = ref.current;
+    const previousFocus = document.activeElement;
+    const trapStack = typeof window !== 'undefined' ? (window.__alloFocusTrapStack || (window.__alloFocusTrapStack = [])) : null;
+    const trap = { root: dialog };
+    if (trapStack) trapStack.push(trap);
+    const isTopTrap = () => !trapStack || trapStack[trapStack.length - 1] === trap;
+    const hadTabIndex = dialog.hasAttribute('tabindex');
+    if (!hadTabIndex) dialog.setAttribute('tabindex', '-1');
+    const restoreSiblings = _promptIsolateSiblings(dialog);
+    const body = document.body;
+    const scrollLock = typeof window !== 'undefined' ? (window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: '' })) : null;
+    let scrollLocked = false;
+    try {
+      if (body && scrollLock) {
+        scrollLocked = true;
+        if (++scrollLock.count === 1) { scrollLock.prev = body.style.overflow; body.style.overflow = 'hidden'; }
+      }
+    } catch (_) {}
+    const focusSelector = 'button:not([disabled]), summary, [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])';
+    const getFocusable = () => Array.from(dialog.querySelectorAll(focusSelector)).filter((el) => _promptIsFocusable(dialog, el));
+    if (!dialog.contains(document.activeElement)) {
+      const first = getFocusable()[0];
+      try { (first || dialog).focus(); } catch (_) {}
+    }
+    const onDocumentKeyDown = (event) => {
+      if (!dialog.isConnected || !isTopTrap()) return;
+      if (event.key === 'Escape') {
+        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+        event.preventDefault();
+        event.stopPropagation();
+        try { onEscapeRef.current && onEscapeRef.current(); } catch (_) {}
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const focusable = getFocusable();
+      if (!focusable.length) {
+        event.preventDefault();
+        try { dialog.focus(); } catch (_) {}
+        return;
+      }
+      const firstItem = focusable[0], lastItem = focusable[focusable.length - 1];
+      if (!dialog.contains(document.activeElement) || document.activeElement === dialog) {
+        event.preventDefault();
+        try { (event.shiftKey ? lastItem : firstItem).focus(); } catch (_) {}
+      } else if (event.shiftKey && document.activeElement === firstItem) {
+        event.preventDefault();
+        try { lastItem.focus(); } catch (_) {}
+      } else if (!event.shiftKey && document.activeElement === lastItem) {
+        event.preventDefault();
+        try { firstItem.focus(); } catch (_) {}
+      }
+    };
+    document.addEventListener('keydown', onDocumentKeyDown);
+    return () => {
+      document.removeEventListener('keydown', onDocumentKeyDown);
+      try {
+        if (scrollLocked && body && scrollLock) {
+          scrollLock.count = Math.max(0, scrollLock.count - 1);
+          if (scrollLock.count === 0) body.style.overflow = scrollLock.prev;
+        }
+      } catch (_) {}
+      restoreSiblings();
+      if (!hadTabIndex) dialog.removeAttribute('tabindex');
+      const wasTopTrap = isTopTrap();
+      if (trapStack) {
+        const trapIndex = trapStack.lastIndexOf(trap);
+        if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
+      }
+      if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus !== document.documentElement && previousFocus.isConnected && typeof previousFocus.focus === 'function') {
+        try { previousFocus.focus(); } catch (_) {}
+      }
+    };
+  }, [isOpen, ref]);
+}
+
+function _promptCopy(t, key, fallback) {
+  try {
+    const value = typeof t === 'function' ? t(key) : '';
+    return value && value !== key ? value : fallback;
+  } catch (_) { return fallback; }
+}
+
+function PromptDialog(props) {
+  if (!props || !props.promptDialog || typeof props.promptDialog !== 'object') return null;
+  return <_PromptDialogInner {...props} />;
+}
+
+function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
+  const t = typeof _rawT === 'function' ? _rawT : (() => '');
+  const closePrompt = typeof setPromptDialog === 'function' ? setPromptDialog : (() => {});
+  const Edit3 = (typeof window !== 'undefined' && ((window.AlloIcons && window.AlloIcons.Edit3) || window.Edit3)) || (() => null);
+  const X     = (typeof window !== 'undefined' && ((window.AlloIcons && window.AlloIcons.X) || window.X))         || (() => null);
 
   const [value, setValue] = React.useState(promptDialog.defaultValue != null ? String(promptDialog.defaultValue) : '');
   const [error, setError] = React.useState(null);
@@ -45,13 +187,13 @@ function PromptDialog({ promptDialog, setPromptDialog, t }) {
     if (settledRef.current) return;
     settledRef.current = true;
     if (typeof promptDialog.onCancel === 'function') { try { promptDialog.onCancel(); } catch (_) {} }
-    setPromptDialog(null);
-  }, [promptDialog, setPromptDialog]);
+    closePrompt(null);
+  }, [promptDialog, closePrompt]);
 
   const handleSubmit = React.useCallback(() => {
     if (settledRef.current) return;
     if (choiceMode && !validChoice) {
-      setError('Choose a source before continuing.');
+      setError(_promptCopy(t, 'prompt_dialog.choose_source', 'Choose a source before continuing.'));
       return;
     }
     if (typeof promptDialog.validate === 'function') {
@@ -60,8 +202,8 @@ function PromptDialog({ promptDialog, setPromptDialog, t }) {
     }
     settledRef.current = true;
     try { promptDialog.onSubmit(value); } catch (_) {}
-    setPromptDialog(null);
-  }, [promptDialog, setPromptDialog, value, choiceMode, validChoice]);
+    closePrompt(null);
+  }, [promptDialog, closePrompt, value, choiceMode, validChoice, t]);
 
   _promptUseFocusTrap(dialogRef, true, handleCancel);
 
@@ -76,6 +218,7 @@ function PromptDialog({ promptDialog, setPromptDialog, t }) {
   }, [promptDialog]);
 
   const handleDialogKeyDown = React.useCallback((e) => {
+    if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229 || e.nativeEvent?.keyCode === 229) return;
     // Choice cards use native button activation: Enter on Cancel or Close must
     // not confirm the selected reading through this dialog-level shortcut.
     if (choiceMode && e.target?.closest?.('button')) return;

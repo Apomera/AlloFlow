@@ -1996,7 +1996,7 @@
     var printBook = function () {
       setGenOpen(false);
       var w;
-      try { w = window.open('', '_blank'); } catch (_) { w = null; }
+      try { w = window.open('', '_blank'); if (w) { try { w.opener = null; } catch (_) {} } } catch (_) { w = null; }
       if (!w || !w.document) {
         props.addToast && props.addToast(tr('readinglib_print_blocked', 'Your browser blocked the print window — allow pop-ups and try again.'), 'error');
         return;

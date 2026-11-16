@@ -234,10 +234,20 @@ function glossaryCurrentDescription(item) {
   return !item.imageDecorative && (!item.imageAltHash || item.imageAltHash === glossaryImageDescriptionHash(item.image)) ? String(item.imageAlt || '') : '';
 }
 // Keep Tab cycling inside the picker, including the last link on its search page.
-function containGlossaryImageDialogFocus(event) {
+function getGlossaryImageFocusable(dialog) {
+  if (!dialog || typeof dialog.querySelectorAll !== 'function') return [];
+  return [...dialog.querySelectorAll('button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), a[href], summary, [tabindex]:not([tabindex="-1"])')].filter(element => {
+    if (element.disabled || element.hidden || element.getAttribute('aria-hidden') === 'true') return false;
+    if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+    const closedDetails = element.closest('details:not([open])');
+    if (closedDetails && !(element.tagName === 'SUMMARY' && element.parentElement === closedDetails)) return false;
+    return true;
+  });
+}
+function containGlossaryImageDialogFocus(event, dialogNode) {
   if (event.key !== 'Tab') return;
-  const dialog = event.currentTarget;
-  const controls = [...dialog.querySelectorAll('button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')].filter(element => !element.hidden && element.getClientRects().length > 0);
+  const dialog = dialogNode || event.currentTarget;
+  const controls = getGlossaryImageFocusable(dialog);
   const first = controls[0],
     last = controls[controls.length - 1];
   if (!first) {
@@ -245,10 +255,16 @@ function containGlossaryImageDialogFocus(event) {
     dialog.focus();
     return;
   }
-  if (event.shiftKey && (document.activeElement === first || document.activeElement === dialog)) {
+  const active = document.activeElement;
+  if (!dialog.contains(active)) {
+    event.preventDefault();
+    (event.shiftKey ? last : first).focus();
+    return;
+  }
+  if (event.shiftKey && (active === first || active === dialog)) {
     event.preventDefault();
     last.focus();
-  } else if (!event.shiftKey && (document.activeElement === last || document.activeElement === dialog)) {
+  } else if (!event.shiftKey && (active === last || active === dialog)) {
     event.preventDefault();
     first.focus();
   }
@@ -332,6 +348,8 @@ function GlossaryImageControls({
   const inputRef = React.useRef(null);
   const dialogRef = React.useRef(null);
   const openerRef = React.useRef(null);
+  const previousFocusRef = React.useRef(null);
+  const trapRef = React.useRef(null);
   const searchInputRef = React.useRef(null);
   const descriptionRef = React.useRef(null);
   const focusDescriptionRef = React.useRef(false);
@@ -371,12 +389,36 @@ function GlossaryImageControls({
   React.useEffect(() => {
     const dialog = dialogRef.current;
     if (!open || !dialog) return;
+    previousFocusRef.current = document.activeElement;
+    const stack = window.__alloFocusTrapStack = window.__alloFocusTrapStack || [];
+    const trap = {
+      root: dialog
+    };
+    trapRef.current = trap;
+    stack.push(trap);
     // Native top-layer dialogs escape the table's overflow and make the app inert.
     if (typeof dialog.showModal === 'function') {
       if (!dialog.open) dialog.showModal();
     } else dialog.setAttribute('open', '');
     dialog.querySelector('button')?.focus();
+    const isTopTrap = () => stack.length > 0 && stack[stack.length - 1] === trap;
+    const onDocumentKeyDown = event => {
+      if (!isTopTrap() || event.defaultPrevented) return;
+      if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        closeDialog();
+        return;
+      }
+      if (event.key === 'Tab') containGlossaryImageDialogFocus(event, dialog);
+    };
+    document.addEventListener('keydown', onDocumentKeyDown);
     return () => {
+      document.removeEventListener('keydown', onDocumentKeyDown);
+      const index = stack.lastIndexOf(trap);
+      if (index !== -1) stack.splice(index, 1);
+      trapRef.current = null;
       if (typeof dialog.close === 'function' && dialog.open) dialog.close();
     };
   }, [open]);
@@ -396,7 +438,10 @@ function GlossaryImageControls({
     if (dialogRef.current?.open && typeof dialogRef.current.close === 'function') dialogRef.current.close();
     setOpen(false);
     setMode('choices');
-    if (restoreFocus) openerRef.current?.focus();
+    if (restoreFocus) {
+      const target = openerRef.current && openerRef.current.isConnected ? openerRef.current : previousFocusRef.current && previousFocusRef.current.isConnected ? previousFocusRef.current : null;
+      if (target && typeof target.focus === 'function') target.focus();
+    }
   }
   function openDialog() {
     setMode('choices');
@@ -486,7 +531,7 @@ function GlossaryImageControls({
     }
   }
   async function generate() {
-    if (!onGenerate || working) return;
+    if (!onGenerate || working || aiDoor?.disabled) return;
     const before = glossaryImageSnapshot(item),
       token = {};
     generationRef.current = token;
@@ -599,7 +644,13 @@ function GlossaryImageControls({
       closeDialog();
     },
     onKeyDown: event => {
-      containGlossaryImageDialogFocus(event);
+      const stack = window.__alloFocusTrapStack;
+      if (Array.isArray(stack) && stack.length > 0 && trapRef.current && stack[stack.length - 1] !== trapRef.current) return;
+      if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229) return;
+      if (event.key === 'Tab') {
+        containGlossaryImageDialogFocus(event, dialogRef.current);
+        return;
+      }
       if (event.key === 'Escape') {
         event.preventDefault();
         event.stopPropagation();
@@ -2565,6 +2616,19 @@ function GlossaryView(props) {
     var ensureIds = typeof window !== 'undefined' ? window.__alloEnsureGlossaryEntryIds : null;
     if (typeof ensureIds === 'function') ensureIds();
   }, [generatedContent?.type, generatedContent?.id, generatedContent?.data]);
+  function isGlossaryFocusableVisible(el) {
+    if (!el || el.disabled || el.hidden || el.getAttribute('aria-hidden') === 'true') return false;
+    if (typeof el.closest === 'function') {
+      if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      var closedDetails = el.closest('details:not([open])');
+      if (closedDetails && !(el.tagName === 'SUMMARY' && el.parentElement === closedDetails)) return false;
+    }
+    if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
+      var style = window.getComputedStyle(el);
+      if (style && (style.display === 'none' || style.visibility === 'hidden')) return false;
+    }
+    return true;
+  }
   function containModalFocus(e, container, onEscape) {
     if (!e) return;
     if (e.key === 'Escape') {
@@ -2573,9 +2637,7 @@ function GlossaryView(props) {
       return;
     }
     if (e.key !== 'Tab' || !container || typeof container.querySelectorAll !== 'function') return;
-    var focusable = Array.prototype.slice.call(container.querySelectorAll('button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter(function (el) {
-      return el && !el.hidden && el.getAttribute('aria-hidden') !== 'true' && el.getClientRects().length > 0;
-    });
+    var focusable = Array.prototype.slice.call(container.querySelectorAll('button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter(isGlossaryFocusableVisible);
     if (!focusable.length) {
       e.preventDefault();
       container.focus();
@@ -3278,9 +3340,7 @@ function GlossaryView(props) {
     if (e.key !== 'Tab') return;
     var drawer = flashcardEditDrawerRef.current;
     if (!drawer || typeof drawer.querySelectorAll !== 'function') return;
-    var focusable = Array.prototype.slice.call(drawer.querySelectorAll('button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter(function (el) {
-      return el && el.getAttribute('aria-hidden') !== 'true' && el.getClientRects().length > 0;
-    });
+    var focusable = Array.prototype.slice.call(drawer.querySelectorAll('button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter(isGlossaryFocusableVisible);
     if (!focusable.length) return;
     var first = focusable[0];
     var last = focusable[focusable.length - 1];
@@ -3737,7 +3797,7 @@ function GlossaryView(props) {
   var glossaryResultCount = Array.isArray(filteredGlossaryData) ? filteredGlossaryData.length : 0;
   var glossaryTotalCount = glossaryAllWords.length;
   var glossarySelectedCount = glossaryAllWords.filter(function (item) {
-    return item && item.isSelected !== false;
+    return item && item.isSelected !== false && item.selected !== false;
   }).length;
   var glossaryAllSelected = glossaryTotalCount > 0 && glossarySelectedCount === glossaryTotalCount;
   var glossarySomeSelected = glossarySelectedCount > 0 && !glossaryAllSelected;
@@ -6018,7 +6078,7 @@ function GlossaryView(props) {
       }),
       type: "checkbox",
       className: "mt-1.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4 cursor-pointer",
-      checked: item.isSelected !== false,
+      checked: item.isSelected !== false && item.selected !== false,
       onChange: () => handleGlossarySelectionChange(idx),
       title: t('glossary.tooltips.select_highlight')
     }), /*#__PURE__*/React.createElement("span", {
@@ -6200,7 +6260,9 @@ function GlossaryView(props) {
       "aria-label": (t('glossary.pronounce_term') || 'Pronounce') + ': ' + item.term,
       title: t('glossary.pronounce_term_title') || 'Show pronunciation, IPA, and syllables',
       "data-help-key": "glossary_pronounce_term"
-    }, "/əˈ/"), /*#__PURE__*/React.createElement("button", {
+    }, /*#__PURE__*/React.createElement("span", {
+      "aria-hidden": "true"
+    }, "/əˈ/")), /*#__PURE__*/React.createElement("button", {
       type: "button",
       "aria-label": glossaryText('glossary.download_term_audio_aria', 'Download audio for term: {term}', {
         term: item.term
@@ -6306,6 +6368,7 @@ function GlossaryView(props) {
       }, /*#__PURE__*/React.createElement("p", _extends({}, glossaryLanguageAttrs(displayLang), {
         className: "text-slate-700 leading-relaxed italic flex-1"
       }), etymologyProse), /*#__PURE__*/React.createElement("button", {
+        type: "button",
         onClick: () => handleUncachedGlossarySpeak(etymologyProse, `etym-${idx}`, displayLang),
         disabled: isGeneratingAudio && playingContentId !== `etym-${idx}`,
         className: `min-h-11 min-w-11 inline-flex items-center justify-center rounded-full transition-colors flex-shrink-0 ${playingContentId === `etym-${idx}` ? 'text-red-700 bg-red-50' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50'}`,
@@ -6369,6 +6432,7 @@ function GlossaryView(props) {
         })());
       })());
     })()) : includeEtymology ? /*#__PURE__*/React.createElement("button", {
+      type: "button",
       hidden: !canEditGlossary,
       style: {
         display: canEditGlossary ? undefined : 'none'
@@ -6860,6 +6924,7 @@ function GlossaryView(props) {
           }, /*#__PURE__*/React.createElement("p", {
             className: "text-slate-700 leading-relaxed italic flex-1 not-italic"
           }, etyLangProse), /*#__PURE__*/React.createElement("button", {
+            type: "button",
             onClick: () => handleUncachedGlossarySpeak(etyLangProse, `etym-${idx}-${lang}`, glossaryHasBaseMetadata(generatedContent, item) ? lang : undefined),
             disabled: isGeneratingAudio && playingContentId !== `etym-${idx}-${lang}`,
             className: `min-h-11 min-w-11 inline-flex items-center justify-center rounded-full transition-colors flex-shrink-0 ${playingContentId === `etym-${idx}-${lang}` ? 'text-red-700 bg-red-50' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50'}`,
@@ -6952,6 +7017,7 @@ function GlossaryView(props) {
               className: "text-slate-600"
             }, "= ", _meaningLoc));
           })), /*#__PURE__*/React.createElement("button", {
+            type: "button",
             hidden: !canEditGlossary,
             style: {
               display: canEditGlossary ? undefined : 'none'
@@ -6968,6 +7034,7 @@ function GlossaryView(props) {
         }
         if (includeEtymology || hasEnglishEty) {
           return /*#__PURE__*/React.createElement("button", {
+            type: "button",
             hidden: !canEditGlossary,
             style: {
               display: canEditGlossary ? undefined : 'none'

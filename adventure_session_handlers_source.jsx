@@ -419,7 +419,7 @@ const handleDiceRollComplete = (deps) => {
                     total: total
                 });
                 if (luckBonus !== 0) {
-                    const luckLabel = t('adventure.results.luck_bonus', { bonus: luckBonus > 0 ? `+${luckBonus}` : String(luckBonus) });
+                    const luckLabel = t('adventure.results.luck_bonus', { bonus: luckBonus > 0 ? `+${luckBonus}` : String(luckBonus) }) || '';
                     feedbackText += (luckLabel && luckLabel !== 'adventure.results.luck_bonus')
                         ? ` ${luckLabel}`
                         : ` (${luckBonus > 0 ? `+${luckBonus}` : luckBonus} Luck)`;

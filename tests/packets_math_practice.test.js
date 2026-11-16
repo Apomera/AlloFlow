@@ -107,7 +107,7 @@ describe('the two practice activities in the engine', () => {
   it('are built into the loader and its three mirrors from their files, beside the check activities the app never lists', () => {
     // 2026-11-12: the three vocabulary activities (packet_vocab_builder.js) joined them; tests/packet_vocab_adapter.test.js covers them.
     // 2026-11-12: and the two picture activities of vocabulary files (tests/packets_vocab_pictures.test.js).
-    expect(Object.keys(TH.CHECK_ADAPTERS).sort()).toEqual(['math_ccc', 'math_computation', 'math_rehearsal', 'missing_number', 'quantity_discrimination', 'vocab_blank', 'vocab_meaning', 'vocab_picture', 'vocab_picture_word', 'vocab_word']);
+    expect(Object.keys(TH.CHECK_ADAPTERS).sort()).toEqual(['math_ccc', 'math_computation', 'math_rehearsal', 'missing_number', 'quantity_discrimination', 'symbol_runner', 'vocab_blank', 'vocab_meaning', 'vocab_picture', 'vocab_picture_word', 'vocab_word']);
     expect(readdirSync('word_sounds_take_home/check_adapters').filter((f) => /^math_(ccc|rehearsal)\.js$/.test(f)).sort()).toEqual(['math_ccc.js', 'math_rehearsal.js']);
     for (const id of ['math_ccc', 'math_rehearsal']) {
       expect(TH.ADAPTERS[id], id).toBeUndefined();
@@ -880,8 +880,8 @@ describe('the front door', () => {
     const card = doc.querySelector('.card-pair');
     expect(card.querySelector('h2').textContent).toBe('Make math fact practice or a math check');
     expect([...card.querySelectorAll('a')].map((a) => [a.getAttribute('href'), a.textContent])).toEqual([[PAGE, 'Math fact practice'], ['packets-check.html', 'A math check']]);
-    // Five cards since 2026-11-12: the vocabulary maker has one of its own.
-    expect(doc.querySelectorAll('.cards > .card')).toHaveLength(5);
+    // Seven cards on the front door (Word Sounds, Math, Vocabulary, Symbol Runner, Present & Export, Add up results, Check).
+    expect(doc.querySelectorAll('.cards > .card')).toHaveLength(7);
     expect(existsSync(PAGE)).toBe(true);
     // Listed with the other builders on the front door and in the guide for school IT.
     for (const file of ['packets.html', 'packets-it.html']) expect(read(file), file).toContain('<code>packet_math_practice_builder.js</code>');

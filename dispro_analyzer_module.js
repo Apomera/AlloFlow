@@ -220,7 +220,7 @@ function disproFmtRatio(v) {
 function disproResultCsv(analysis, result) {
   const esc = (v) => {
     const raw = v == null ? "" : String(v);
-    const s = /^[\t\r\n]/.test(raw) || /^\s*[=+\-@]/.test(raw) ? "'" + raw : raw;
+    const s = /^[\t\r\n]/.test(raw) || /^\s*[=+\-@|]/.test(raw) ? "'" + raw : raw;
     return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
   };
   const head = ["group", "enrollment", "students_with_outcome", "risk_index", "risk_ratio_vs_all_others", "alternate_risk_ratio", "enrollment_share", "outcome_share", "flags"];
@@ -411,25 +411,77 @@ function DisproAnalyzerPanel(props) {
   React.useEffect(() => {
     disproStore(DISPRO_DRAFT_KEY, draft);
   }, [draft]);
+  const onCloseRef = React.useRef(onClose);
+  onCloseRef.current = onClose;
   React.useEffect(() => {
     const dialog = dialogRef.current;
-    if (!dialog) return void 0;
+    if (!dialog || typeof document === "undefined") return void 0;
     const previousFocus = document.activeElement;
     const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
     const trap = { root: dialog };
     trapStack.push(trap);
     const isTopTrap = () => trapStack[trapStack.length - 1] === trap;
+    const isolated = [];
+    const seenSiblings = /* @__PURE__ */ new Set();
+    let cursor = dialog;
+    while (cursor && cursor.parentElement) {
+      const parent = cursor.parentElement;
+      Array.from(parent.children).forEach((sibling) => {
+        if (!sibling || sibling === cursor || seenSiblings.has(sibling) || !sibling.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName)) return;
+        seenSiblings.add(sibling);
+        isolated.push({
+          sibling,
+          hadInert: sibling.hasAttribute("inert"),
+          prevInert: sibling.inert,
+          ariaHidden: sibling.getAttribute("aria-hidden")
+        });
+        try {
+          sibling.inert = true;
+        } catch (_) {
+        }
+        try {
+          sibling.setAttribute("inert", "");
+        } catch (_) {
+        }
+        try {
+          sibling.setAttribute("aria-hidden", "true");
+        } catch (_) {
+        }
+      });
+      if (parent === document.body) break;
+      cursor = parent;
+    }
+    const body = document.body;
+    const scrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: "" });
+    let scrollLocked = false;
+    try {
+      if (body) {
+        scrollLocked = true;
+        if (++scrollLock.count === 1) {
+          scrollLock.prev = body.style.overflow;
+          body.style.overflow = "hidden";
+        }
+      }
+    } catch (_) {
+    }
     const getFocusable = () => Array.from(dialog.querySelectorAll(
-      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-    )).filter((el) => !el.closest('[hidden], [inert], [aria-hidden="true"]'));
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])'
+    )).filter((el) => {
+      if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      const closedDetails = el.closest("details:not([open])");
+      if (closedDetails && !(el.tagName === "SUMMARY" && el.parentElement === closedDetails)) return false;
+      const st = typeof window !== "undefined" && typeof window.getComputedStyle === "function" ? window.getComputedStyle(el) : null;
+      return !st || st.display !== "none" && st.visibility !== "hidden";
+    });
     const first = getFocusable()[0];
-    (first || dialog).focus();
+    if (!dialog.contains(document.activeElement)) (first || dialog).focus();
     const onKeyDown = (event) => {
-      if (!isTopTrap()) return;
+      if (event.defaultPrevented || !dialog.isConnected || !isTopTrap()) return;
+      if (event.nativeEvent && event.nativeEvent.isComposing || event.isComposing || event.keyCode === 229) return;
       if (event.key === "Escape") {
         event.preventDefault();
         event.stopPropagation();
-        onClose();
+        if (typeof onCloseRef.current === "function") onCloseRef.current();
         return;
       }
       if (event.key !== "Tab") return;
@@ -440,7 +492,7 @@ function DisproAnalyzerPanel(props) {
         return;
       }
       const firstItem = focusable[0], lastItem = focusable[focusable.length - 1];
-      if (!dialog.contains(document.activeElement)) {
+      if (!dialog.contains(document.activeElement) || document.activeElement === dialog) {
         event.preventDefault();
         (event.shiftKey ? lastItem : firstItem).focus();
       } else if (event.shiftKey && document.activeElement === firstItem) {
@@ -454,12 +506,48 @@ function DisproAnalyzerPanel(props) {
     document.addEventListener("keydown", onKeyDown);
     return () => {
       document.removeEventListener("keydown", onKeyDown);
+      try {
+        if (scrollLocked && body) {
+          scrollLock.count = Math.max(0, scrollLock.count - 1);
+          if (scrollLock.count === 0) body.style.overflow = scrollLock.prev;
+        }
+      } catch (_) {
+      }
+      isolated.forEach(({ sibling, hadInert, prevInert, ariaHidden }) => {
+        if (!sibling || !sibling.isConnected) return;
+        if (!hadInert) {
+          try {
+            sibling.inert = false;
+          } catch (_) {
+          }
+          try {
+            sibling.removeAttribute("inert");
+          } catch (_) {
+          }
+        } else {
+          try {
+            sibling.inert = Boolean(prevInert);
+          } catch (_) {
+          }
+        }
+        if (ariaHidden == null) {
+          try {
+            sibling.removeAttribute("aria-hidden");
+          } catch (_) {
+          }
+        } else {
+          try {
+            sibling.setAttribute("aria-hidden", ariaHidden);
+          } catch (_) {
+          }
+        }
+      });
       const wasTop = isTopTrap();
-      const idx = trapStack.indexOf(trap);
+      const idx = trapStack.lastIndexOf(trap);
       if (idx !== -1) trapStack.splice(idx, 1);
-      if (wasTop && previousFocus && previousFocus !== document.body && previousFocus.isConnected && typeof previousFocus.focus === "function") previousFocus.focus();
+      if (wasTop && previousFocus && previousFocus !== document.body && previousFocus !== document.documentElement && previousFocus.isConnected && typeof previousFocus.focus === "function") previousFocus.focus();
     };
-  }, [onClose]);
+  }, []);
   const result = disproCompute(draft.groups, draft.altComparison);
   const setGroup = (i, field, value) => {
     setDraft((d) => ({ ...d, groups: d.groups.map((g, gi) => gi === i ? { ...g, [field]: value } : g) }));
@@ -530,6 +618,7 @@ function DisproAnalyzerPanel(props) {
         if (tb.id !== "saved") setViewId(null);
       },
       onKeyDown: (e) => {
+        if (e.nativeEvent && e.nativeEvent.isComposing || e.isComposing || e.keyCode === 229) return;
         let next = null;
         if (e.key === "ArrowRight" || e.key === "ArrowDown") next = (tbIdx + 1) % tabs.length;
         else if (e.key === "ArrowLeft" || e.key === "ArrowUp") next = (tbIdx - 1 + tabs.length) % tabs.length;
@@ -576,7 +665,7 @@ function DisproAnalyzerPanel(props) {
       "aria-label": tt("dispro.row_group_aria", "Group name, row") + " " + (i + 1),
       onChange: (e) => setGroup(i, "name", e.target.value),
       placeholder: tt("dispro.group_placeholder", "e.g. Students with IEPs"),
-      className: "w-full min-h-10 border border-slate-300 rounded-lg px-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      className: "w-full min-h-11 border border-slate-300 rounded-lg px-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
     }
   )), /* @__PURE__ */ React.createElement("td", { className: "p-1 w-28" }, /* @__PURE__ */ React.createElement(
     "input",
@@ -586,7 +675,7 @@ function DisproAnalyzerPanel(props) {
       value: g.enrollment,
       "aria-label": tt("dispro.row_enroll_aria", "Enrollment, row") + " " + (i + 1),
       onChange: (e) => setGroup(i, "enrollment", e.target.value),
-      className: "w-full min-h-10 border border-slate-300 rounded-lg px-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      className: "w-full min-h-11 border border-slate-300 rounded-lg px-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
     }
   )), /* @__PURE__ */ React.createElement("td", { className: "p-1 w-32" }, /* @__PURE__ */ React.createElement(
     "input",
@@ -596,15 +685,15 @@ function DisproAnalyzerPanel(props) {
       value: g.students,
       "aria-label": tt("dispro.row_students_aria", "Students with outcome, row") + " " + (i + 1),
       onChange: (e) => setGroup(i, "students", e.target.value),
-      className: "w-full min-h-10 border border-slate-300 rounded-lg px-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      className: "w-full min-h-11 border border-slate-300 rounded-lg px-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
     }
-  )), /* @__PURE__ */ React.createElement("td", { className: "p-1 w-10" }, /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("td", { className: "p-1 w-11" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
       onClick: () => removeRow(i),
       "aria-label": tt("dispro.remove_row_aria", "Remove row") + " " + (i + 1),
-      className: "min-w-10 min-h-10 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-rose-700 hover:bg-rose-50"
+      className: "min-w-11 min-h-11 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-rose-700 hover:bg-rose-50"
     },
     "✕"
   ))))))), /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addRow, className: "min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-100" }, "+ ", tt("dispro.add_row", "Add group")), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-expanded": pasteOpen, onClick: () => setPasteOpen((v) => !v), className: "min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-100" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "📋"), " ", tt("dispro.paste_toggle", "Paste rows")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setDraft((d) => ({ ...blankDraft(), outcomeLabel: d.outcomeLabel })), className: "min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-600 text-sm font-bold hover:bg-slate-100" }, tt("dispro.clear", "Clear")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: saveAnalysis, className: "min-h-11 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700" }, tt("dispro.save", "Save analysis"))), pasteOpen && /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "dispro-paste", className: "block text-[10px] font-bold text-slate-600 mb-0.5" }, tt("dispro.paste_label", "One line per group: group, enrollment, students with outcome (comma, tab, or semicolon separated — a header row is skipped automatically)")), /* @__PURE__ */ React.createElement(
@@ -617,14 +706,14 @@ function DisproAnalyzerPanel(props) {
       placeholder: "Group,Enrollment,Students\nStudents with IEPs,120,18\nAll other students,880,44",
       className: "w-full text-xs font-mono border border-slate-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
     }
-  ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: applyPaste, className: "mt-1 min-h-11 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700" }, tt("dispro.paste_apply", "Load rows"))), /* @__PURE__ */ React.createElement("details", { className: "mt-2" }, /* @__PURE__ */ React.createElement("summary", { className: "text-[11px] text-slate-600 underline decoration-dotted cursor-pointer min-h-8 inline-flex items-center" }, tt("dispro.alt_toggle", "Alternate comparison (optional — for small comparison groups)")), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex flex-wrap gap-2 items-end" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-40" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "dispro-alt-label", className: "block text-[10px] font-bold text-slate-600 mb-0.5" }, tt("dispro.alt_label", "Comparison population")), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: applyPaste, className: "mt-1 min-h-11 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700" }, tt("dispro.paste_apply", "Load rows"))), /* @__PURE__ */ React.createElement("details", { className: "mt-2" }, /* @__PURE__ */ React.createElement("summary", { className: "text-[11px] text-slate-600 underline decoration-dotted cursor-pointer min-h-11 inline-flex items-center" }, tt("dispro.alt_toggle", "Alternate comparison (optional — for small comparison groups)")), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex flex-wrap gap-2 items-end" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-40" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "dispro-alt-label", className: "block text-[10px] font-bold text-slate-600 mb-0.5" }, tt("dispro.alt_label", "Comparison population")), /* @__PURE__ */ React.createElement(
     "input",
     {
       id: "dispro-alt-label",
       type: "text",
       value: draft.altComparison && draft.altComparison.label || "",
       onChange: (e) => setDraft((d) => ({ ...d, altComparison: { ...d.altComparison || {}, label: e.target.value } })),
-      className: "w-full min-h-10 border border-slate-300 rounded-lg px-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      className: "w-full min-h-11 border border-slate-300 rounded-lg px-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
     }
   )), /* @__PURE__ */ React.createElement("div", { className: "w-28" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "dispro-alt-enroll", className: "block text-[10px] font-bold text-slate-600 mb-0.5" }, tt("dispro.col_enrollment", "Enrollment")), /* @__PURE__ */ React.createElement(
     "input",
@@ -634,7 +723,7 @@ function DisproAnalyzerPanel(props) {
       inputMode: "numeric",
       value: draft.altComparison && draft.altComparison.enrollment || "",
       onChange: (e) => setDraft((d) => ({ ...d, altComparison: { ...d.altComparison || {}, enrollment: e.target.value } })),
-      className: "w-full min-h-10 border border-slate-300 rounded-lg px-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      className: "w-full min-h-11 border border-slate-300 rounded-lg px-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
     }
   )), /* @__PURE__ */ React.createElement("div", { className: "w-32" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "dispro-alt-students", className: "block text-[10px] font-bold text-slate-600 mb-0.5" }, tt("dispro.col_students_short2", "Students w/ outcome")), /* @__PURE__ */ React.createElement(
     "input",
@@ -644,9 +733,9 @@ function DisproAnalyzerPanel(props) {
       inputMode: "numeric",
       value: draft.altComparison && draft.altComparison.students || "",
       onChange: (e) => setDraft((d) => ({ ...d, altComparison: { ...d.altComparison || {}, students: e.target.value } })),
-      className: "w-full min-h-10 border border-slate-300 rounded-lg px-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      className: "w-full min-h-11 border border-slate-300 rounded-lg px-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
     }
-  ))), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, tt("dispro.alt_hint", "When a comparison group inside the building is too small to be reliable, states compare against all other students statewide (the 34 CFR 300.647 alternate risk ratio). Enter those statewide counts here; the alternate ratio appears beneath any flagged standard ratio."))), result.errors.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "mt-2 space-y-0.5 text-[11px] text-rose-800 bg-rose-50 border border-rose-200 rounded-lg p-2 list-disc pl-5", role: "alert" }, result.errors.map((e, i) => /* @__PURE__ */ React.createElement("li", { key: i }, e.message)))), result.rows.length >= 2 && result.errors.length === 0 ? /* @__PURE__ */ React.createElement(DisproResults, { analysis: draft, result, tt }) : /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[11px] text-slate-500" }, tt("dispro.need_rows", "Enter at least two groups (e.g. the group of interest and everyone else, or every demographic group) — results appear automatically.")), result.valid && /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => exportCsvFor({ ...draft }), className: "min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-100" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "⬇️"), " ", tt("dispro.export_csv", "Export results (CSV)")))), tab === "saved" && viewAnalysis && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setViewId(null), className: "min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-50" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "←"), " ", tt("dispro.back_saved", "All analyses")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => exportCsvFor(viewAnalysis), className: "min-h-11 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "⬇️"), " ", tt("dispro.export_csv", "Export results (CSV)")), /* @__PURE__ */ React.createElement(
+  ))), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-600 mt-1" }, tt("dispro.alt_hint", "When a comparison group inside the building is too small to be reliable, states compare against all other students statewide (the 34 CFR 300.647 alternate risk ratio). Enter those statewide counts here; the alternate ratio appears beneath any flagged standard ratio."))), result.errors.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "mt-2 space-y-0.5 text-[11px] text-rose-800 bg-rose-50 border border-rose-200 rounded-lg p-2 list-disc pl-5", role: "alert" }, result.errors.map((e, i) => /* @__PURE__ */ React.createElement("li", { key: i }, e.message)))), result.rows.length >= 2 && result.errors.length === 0 ? /* @__PURE__ */ React.createElement(DisproResults, { analysis: draft, result, tt }) : /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[11px] text-slate-500" }, tt("dispro.need_rows", "Enter at least two groups (e.g. the group of interest and everyone else, or every demographic group) — results appear automatically.")), result.valid && /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => exportCsvFor({ ...draft }), className: "min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-100" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "⬇️"), " ", tt("dispro.export_csv", "Export results (CSV)")))), tab === "saved" && viewAnalysis && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setViewId(null), className: "min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-50" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "←"), " ", tt("dispro.back_saved", "All analyses")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => exportCsvFor(viewAnalysis), className: "min-h-11 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "⬇️"), " ", tt("dispro.export_csv", "Export results (CSV)")), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",

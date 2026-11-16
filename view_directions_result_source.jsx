@@ -262,7 +262,7 @@ function DirectionsResultView({
               type="button"
               onClick={onToggleMap}
               aria-pressed={showMap}
-              className="min-h-11 text-[11px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 hover:border-indigo-400 rounded-lg px-2 py-1 transition-all flex-shrink-0"
+              className="min-h-11 text-[11px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 hover:border-indigo-400 rounded-lg px-2 py-1 transition-all motion-reduce:transition-none flex-shrink-0"
             >
               🗺️ {showMap ? text('mapHide', 'Hide map') : text('mapShow', 'Quest map')}
             </button>
@@ -332,13 +332,14 @@ function DirectionsResultView({
                   strokeWidth: 2.5,
                 };
                 return (
-                  <g key={station.id} role="button" tabIndex={0} className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-700" aria-label={(station.title || station.typeLabel) + (station.visited ? ", " + text('mapVisitedSr', 'already visited') : "")} onClick={() => travelTo(station)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); travelTo(station); } }} style={{ cursor: 'pointer' }}>
+                  <g key={station.id} role="button" tabIndex={0} className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-700" aria-label={(station.title || station.typeLabel) + (station.visited ? ", " + text('mapVisitedSr', 'already visited') : "")} onClick={() => travelTo(station)} onKeyDown={event => { if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229) return; if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); travelTo(station); } }} style={{ cursor: 'pointer' }}>
+                    <circle cx={x} cy={y} r={22} fill="transparent" />
                     <title>{station.title || station.typeLabel}</title>
                     {isNext && <circle cx={x} cy={y} r="20" fill="none" stroke="#f59e0b" strokeWidth="2" strokeDasharray="3 3" opacity="0.9" />}
                     {React.createElement(shape.tag, { ...shape.attrs, ...skin })}
                     <text x={x} y={y + 4} textAnchor="middle" fontSize="11" aria-hidden="true">{station.visited ? '✓' : station.icon}</text>
                     <text x={x} y={y + 26} textAnchor="middle" fontSize="7" fill="#475569">{(station.title || station.typeLabel).slice(0, 14)}</text>
-                    <text x={x} y={y + 34} textAnchor="middle" fontSize="6" fill={isNext ? '#b45309' : '#94a3b8'} fontWeight={isNext ? 'bold' : 'normal'}>{isNext ? text('mapNextPin', 'NEXT') : station.typeLabel.slice(0, 16)}</text>
+                    <text x={x} y={y + 34} textAnchor="middle" fontSize="6" fill={isNext ? '#b45309' : '#475569'} fontWeight={isNext ? 'bold' : 'normal'}>{isNext ? text('mapNextPin', 'NEXT') : station.typeLabel.slice(0, 16)}</text>
                   </g>
                 );
               })}
@@ -359,7 +360,7 @@ function DirectionsResultView({
                 <button
                   type="button"
                   onClick={() => travelTo(nextStation)}
-                  className="min-h-11 flex items-center gap-2 px-3 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-sm shadow-sm transition-all"
+                  className="min-h-11 flex items-center gap-2 px-3 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-sm shadow-sm transition-all motion-reduce:transition-none"
                 >
                   <span aria-hidden="true">{nextStation.icon}</span>
                   <span>{text('mapNextLabel', 'Go here next') + ': ' + (nextStation.title || nextStation.typeLabel).slice(0, 40)}</span>
@@ -375,7 +376,7 @@ function DirectionsResultView({
                     type="button"
                     key={'alt' + station.id}
                     onClick={() => travelTo(station)}
-                    className="min-h-11 flex items-center gap-1 px-2 py-1 bg-white border border-amber-200 hover:border-amber-400 text-amber-800 font-semibold rounded-lg text-[11px] transition-all"
+                    className="min-h-11 flex items-center gap-1 px-2 py-1 bg-white border border-amber-200 hover:border-amber-400 text-amber-800 font-semibold rounded-lg text-[11px] transition-all motion-reduce:transition-none"
                   >
                     <span aria-hidden="true">{station.icon}</span>
                     <span>{text('mapAlsoReady', 'or') + ' ' + (station.title || station.typeLabel).slice(0, 26)}</span>
@@ -386,14 +387,14 @@ function DirectionsResultView({
               <p className="text-xs font-bold text-emerald-700">{visitedCount === stations.length ? text('mapAllVisited', '🎉 You have been to every station on this map.') : text('directions.map_choose_station', 'Choose a station from the map or the list below to continue.')}</p>
             )}
             <details className="mt-2">
-              <summary className="text-[11px] text-indigo-700 font-bold cursor-pointer">{text('mapJumpAny', 'Go to any station')}</summary>
+              <summary className="min-h-11 inline-flex items-center text-[11px] text-indigo-700 font-bold cursor-pointer">{text('mapJumpAny', 'Go to any station')}</summary>
               <ul className="flex flex-wrap gap-1.5 mt-2 list-none p-0 m-0">
                 {stations.map(station => (
                   <li key={'jump' + station.id}>
                     <button
                       type="button"
                       onClick={() => travelTo(station)}
-                      className={'min-h-11 flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold border transition-all ' + (station.visited ? 'bg-emerald-50 border-emerald-200 text-emerald-800 hover:border-emerald-400' : 'bg-white border-slate-200 text-slate-700 hover:border-indigo-400')}
+                      className={'min-h-11 flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold border transition-all motion-reduce:transition-none ' + (station.visited ? 'bg-emerald-50 border-emerald-200 text-emerald-800 hover:border-emerald-400' : 'bg-white border-slate-200 text-slate-700 hover:border-indigo-400')}
                     >
                       <span aria-hidden="true">{station.icon}</span>
                       <span>{(station.title || station.typeLabel).slice(0, 30)}</span>
@@ -441,7 +442,7 @@ function DirectionsResultView({
                   onClick={() => onChoose(item.resourceId)}
                   aria-label={text('chooseActivity', 'Choose activity') + ': ' + item.label}
                   aria-pressed={selectedRef === item.resourceId}
-                  className={'group flex min-h-24 items-start gap-3 rounded-xl border-2 p-3 text-left shadow-sm transition-all motion-safe:hover:-translate-y-0.5 hover:border-indigo-400 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700 ' + (selectedRef === item.resourceId ? 'border-emerald-400 bg-emerald-50 ring-2 ring-emerald-200' : 'border-indigo-100 bg-gradient-to-br from-indigo-50 to-white')}
+                  className={'group flex min-h-24 items-start gap-3 rounded-xl border-2 p-3 text-left shadow-sm transition-all motion-reduce:transition-none motion-safe:hover:-translate-y-0.5 hover:border-indigo-400 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700 ' + (selectedRef === item.resourceId ? 'border-emerald-400 bg-emerald-50 ring-2 ring-emerald-200' : 'border-indigo-100 bg-gradient-to-br from-indigo-50 to-white')}
                 >
                   <span aria-hidden="true" className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-xl text-white shadow-sm">{item.icon || item.typeIcon}</span>
                   <span className="min-w-0 flex-1">
@@ -468,7 +469,7 @@ function DirectionsResultView({
                   <span className="text-[11px] text-slate-600 font-semibold ml-auto flex-shrink-0">{text('goalMissing', 'Not in this pack')}</span>
                 </li>
               ) : (
-                <li key={goal.id} className="flex items-center gap-2">
+                <li key={goal.id} className={goal.kind === 'manual' ? 'min-h-11 flex items-center gap-2' : 'flex items-center gap-2'}>
                   {goal.kind === 'manual' ? (
                     <input
                       type="checkbox"

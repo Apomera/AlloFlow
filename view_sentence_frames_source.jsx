@@ -61,15 +61,31 @@ function SentenceFramesView(props) {
   var DraftFeedbackInterface = props.DraftFeedbackInterface;
   var ErrorBoundary = props.ErrorBoundary;
   const activeFieldRef = React.useRef(null);
+  const gradingTriggerRef = React.useRef(null);
+  const draftOpenerRef = React.useRef(null);
   const scaffoldData = generatedContent?.data;
   const usableItems = Array.isArray(scaffoldData?.items) ? scaffoldData.items : [];
-  const isUsableItem = item => item && typeof item.text === 'string' && item.text.trim();
-  if (!scaffoldData || (scaffoldData.mode === 'list' ? !usableItems.some(isUsableItem) : typeof scaffoldData.text !== 'string' || !scaffoldData.text.trim())) {
-    return <div role="status" className="rounded-xl border border-slate-300 bg-slate-50 p-5 text-slate-700">{label('scaffolds.empty_resource', 'No writing prompts are available. Choose or regenerate a writing scaffold to begin.')}</div>;
-  }
+  const isUsableItem = item => Boolean(
+    item
+    && typeof item.text === 'string'
+    && item.text.trim()
+    && (isTeacherMode || isEditingScaffolds || (item.isSelected !== false && item.selected !== false))
+  );
+  const isAssessmentLockdown = !isTeacherMode && !isIndependentMode && Boolean(
+    props.assessmentMode
+    || props.isAssessmentMode
+    || generatedContent?.config?.assessmentMode
+    || generatedContent?.data?.assessmentMode
+    || (typeof window !== 'undefined' && window.__alloAssessmentMode === true)
+  );
+  const canViewRubric = Boolean(isTeacherMode || (generatedContent?.data.rubric && !isAssessmentLockdown));
+  const textAiDoor = (typeof window !== 'undefined' && typeof window.__alloAiSetupDoorway === 'function')
+    ? window.__alloAiSetupDoorway('text', t)
+    : null;
   const textAiUsable = (() => {
     try {
       if (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)) return false;
+      if (textAiDoor && textAiDoor.disabled) return false;
       if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable('text');
     } catch (_) {}
     return true;
@@ -78,6 +94,27 @@ function SentenceFramesView(props) {
   const sessionResourceId = gradingSession.resourceId;
   const ownsSession = prev => !!prev && String(prev.resourceId) === String(sessionResourceId);
   const isSessionOpen = !!gradingSession.isOpen && (sessionResourceId == null || String(sessionResourceId) === String(generatedContent?.id));
+  const wasSessionOpenRef = React.useRef(isSessionOpen);
+  const restoreDraftOpenerFocus = () => {
+    const candidate = (draftOpenerRef.current && draftOpenerRef.current.isConnected)
+      ? draftOpenerRef.current
+      : gradingTriggerRef.current;
+    draftOpenerRef.current = null;
+    if (candidate && typeof document !== 'undefined' && candidate !== document.body && candidate !== document.documentElement && candidate.isConnected && typeof candidate.focus === 'function') {
+      try { candidate.focus(); } catch (_) {}
+    }
+  };
+  React.useEffect(() => {
+    if (wasSessionOpenRef.current && !isSessionOpen) {
+      if (typeof document !== 'undefined' && (!document.activeElement || document.activeElement === document.body || !document.activeElement.isConnected)) {
+        restoreDraftOpenerFocus();
+      }
+    }
+    wasSessionOpenRef.current = isSessionOpen;
+  }, [isSessionOpen]);
+  if (!scaffoldData || (scaffoldData.mode === 'list' ? !usableItems.some(isUsableItem) : typeof scaffoldData.text !== 'string' || !scaffoldData.text.trim())) {
+    return <div role="status" className="rounded-xl border border-slate-300 bg-slate-50 p-5 text-slate-700">{label('scaffolds.empty_resource', 'No writing prompts are available. Choose or regenerate a writing scaffold to begin.')}</div>;
+  }
   const canGenerateRubric = !!isTeacherMode && !isParentMode;
   // Shown numbers count only the items that render, so a dropped item leaves no gap.
   const visibleItemNumbers = {};
@@ -144,7 +181,7 @@ function SentenceFramesView(props) {
                                 <div role="status" aria-live="polite" aria-atomic="true" className={`flex flex-wrap items-center gap-1.5 text-xs font-bold ${studentWorkStatus === 'error' ? 'text-red-700' : studentWorkStatus === 'saving' ? 'text-rose-700' : 'text-green-700'}`}>
                                     {studentWorkStatus === 'saving' ? <><RefreshCw size={12} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> {t('status.saving')}</>
                                       : studentWorkStatus === 'saved' ? <><CheckCircle2 size={12} aria-hidden="true" /> {t('status.saved')}</>
-                                      : <><span>{label('scaffolds.save_failed', 'Your answers could not be saved on this device.')}</span>{typeof onRetrySave === 'function' && <button type="button" onClick={onRetrySave} className="min-h-11 rounded border border-red-300 px-2 py-1 underline focus-visible:ring-2 focus-visible:ring-red-600">{label('common.retry', 'Try again')}</button>}</>}
+                                      : <><span>{label('scaffolds.save_failed', 'Your answers could not be saved on this device.')}</span>{typeof onRetrySave === 'function' && <button type="button" onClick={onRetrySave} className="min-h-11 rounded border border-red-300 px-2 py-1 underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600">{label('common.retry', 'Try again')}</button>}</>}
                                 </div>
                             )}
                             {!isTeacherMode && (
@@ -153,22 +190,30 @@ function SentenceFramesView(props) {
                                     type="button"
                                     onClick={handleResetScaffolds}
                                     data-help-key="scaffolds_reset"
-                                    className="min-h-11 flex items-center gap-1 text-xs font-bold text-rose-600 hover:text-rose-800 bg-white border border-rose-200 hover:bg-rose-50 px-3 py-1.5 rounded-full transition-colors shadow-sm"
+                                    className="min-h-11 flex items-center gap-1 text-xs font-bold text-rose-700 hover:text-rose-800 bg-white border border-rose-300 hover:bg-rose-50 px-3 py-1.5 rounded-full transition-colors motion-reduce:transition-none shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600"
                                     title={t('scaffolds.clear_all')}
                                     aria-label={t('scaffolds.clear_all')}
                                 >
-                                    <RefreshCw size={12} /> {t('common.reset')}
+                                    <RefreshCw size={12} aria-hidden="true" /> {t('common.reset')}
                                 </button>
                                 {textAiUsable && (
                                 <button
+                                    ref={gradingTriggerRef}
                                     type="button"
-                                    onClick={launchGradingSession}
+                                    onClick={() => {
+                                        if (typeof document !== 'undefined' && document.activeElement && document.activeElement !== document.body && document.activeElement !== document.documentElement) {
+                                            draftOpenerRef.current = document.activeElement;
+                                        } else {
+                                            draftOpenerRef.current = gradingTriggerRef.current;
+                                        }
+                                        launchGradingSession();
+                                    }}
                                     data-help-key="scaffolds_grading"
-                                    className={`min-h-11 flex items-center gap-1 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 px-3 py-1.5 rounded-full transition-all shadow-sm ${isScaffoldComplete ? 'animate-pulse motion-reduce:animate-none ring-4 ring-rose-300 shadow-lg scale-105' : ''}`}
+                                    className={`min-h-11 flex items-center gap-1 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 px-3 py-1.5 rounded-full transition-all motion-reduce:transition-none shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 focus-visible:ring-offset-2 ${isScaffoldComplete ? 'animate-pulse motion-reduce:animate-none ring-4 ring-rose-300 shadow-lg scale-105' : ''}`}
                                     title={label('scaffolds.feedback_purpose', 'Get AI feedback on your draft. This does not submit your work to your teacher.')}
                                     aria-label={label('scaffolds.get_draft_feedback', 'Get feedback on my draft')}
                                 >
-                                    <Sparkles size={12} /> {label('scaffolds.get_draft_feedback', 'Get feedback on my draft')}
+                                    <Sparkles size={12} aria-hidden="true" className="text-amber-200" /> {label('scaffolds.get_draft_feedback', 'Get feedback on my draft')}
                                 </button>
                                 )}
                                 </>
@@ -178,14 +223,17 @@ function SentenceFramesView(props) {
                                 type="button"
                                 onClick={handleToggleIsEditingScaffolds}
                                 data-help-key="scaffolds_edit_toggle"
-                                className={`min-h-11 flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingScaffolds ? 'bg-rose-600 text-white hover:bg-rose-700' : 'bg-white text-rose-700 border border-rose-200 hover:bg-rose-50'}`}
+                                className={`min-h-11 flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all motion-reduce:transition-none shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 ${isEditingScaffolds ? 'bg-rose-600 text-white hover:bg-rose-700' : 'bg-white text-rose-700 border border-rose-300 hover:bg-rose-50'}`}
                             >
-                                {isEditingScaffolds ? <CheckCircle2 size={14}/> : <Pencil size={14}/>}
+                                {isEditingScaffolds ? <CheckCircle2 size={14} aria-hidden="true" /> : <Pencil size={14} aria-hidden="true" />}
                                 {isEditingScaffolds ? t('common.done_editing') : t('scaffolds.edit')}
                             </button>
                             )}
                         </div>
                     </div>
+                    {isTeacherMode && !textAiUsable && typeof window !== 'undefined' && window.AlloAiSetupNotice && (
+                        <window.AlloAiSetupNotice kind="text" t={t} />
+                    )}
                     {!isTeacherMode && textAiUsable && <p data-scaffold-feedback-purpose className="text-sm text-slate-700">{label('scaffolds.feedback_purpose','Get AI feedback on your draft. This does not submit your work to your teacher.')}</p>}
                     {wordBank.length > 0 && (
                         <section data-scaffold-word-bank aria-labelledby={wordBankHeadingId} className="bg-amber-50 border border-amber-200 rounded-xl p-4">
@@ -205,7 +253,7 @@ function SentenceFramesView(props) {
                                                 onMouseDown={(e) => e.preventDefault()}
                                                 onClick={() => insertWordBankTerm(word)}
                                                 aria-label={`${label('scaffolds.insert_word', 'Insert word')}: ${word}`}
-                                                className="min-h-11 px-3 py-1.5 rounded-full bg-white border border-amber-300 text-sm font-semibold text-amber-950 hover:bg-amber-100 hover:border-amber-500 active:scale-95 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 cursor-pointer"
+                                                className="min-h-11 px-3 py-1.5 rounded-full bg-white border border-amber-300 text-sm font-semibold text-amber-950 hover:bg-amber-100 hover:border-amber-500 active:scale-95 transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 cursor-pointer"
                                             >{word}</button>
                                         ) : (
                                             <span dir="auto" className="inline-block px-3 py-1 rounded-full bg-white border border-amber-300 text-sm font-semibold text-amber-950">{word}</span>
@@ -226,15 +274,18 @@ function SentenceFramesView(props) {
                             finalScore={gradingSession.finalScore}
                             xpEarned={gradingSession.xpAwarded}
                             onSubmit={submitGradingSession}
-                            onCancel={() => setGradingSession(prev => ownsSession(prev) ? { ...prev, isOpen: false } : prev)}
+                            onCancel={() => {
+                                setGradingSession(prev => ownsSession(prev) ? { ...prev, isOpen: false } : prev);
+                                restoreDraftOpenerFocus();
+                            }}
                         />
                     </ErrorBoundary>
                     ) : generatedContent?.data.mode === 'list' ? (
                         <div className="grid grid-cols-1 gap-4">
                              {usableItems.map((item, idx) => isUsableItem(item) ? (
-                                 <div key={idx} className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm hover:border-indigo-200 transition-colors" data-help-key="scaffolds_item">
+                                 <div key={idx} className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm hover:border-indigo-200 transition-colors motion-reduce:transition-none" data-help-key="scaffolds_item">
                                      <div className="flex items-start gap-3">
-                                         <div className="bg-rose-100 text-rose-700 font-bold px-2 py-1 rounded text-xs shrink-0 mt-1">{visibleItemNumbers[idx]}</div>
+                                         <div className="bg-rose-100 text-rose-800 font-bold px-2 py-1 rounded text-xs shrink-0 mt-1">{visibleItemNumbers[idx]}</div>
                                          <div className="w-full min-w-0">
                                             {tierOf(item) && <span data-scaffold-tier={tierOf(item)} className={`inline-block mb-1 px-2 py-0.5 rounded-full border text-[11px] font-bold uppercase tracking-wider ${TIER_CLASSES[tierOf(item)]}`}>{label(TIER_LABELS[tierOf(item)][0], TIER_LABELS[tierOf(item)][1])}</span>}
                                             {isEditingScaffolds ? (
@@ -243,7 +294,7 @@ function SentenceFramesView(props) {
                                                         aria-label={t('scaffolds.edit_item') || `Edit scaffold item ${idx + 1}`}
                                                         value={item.text}
                                                         onChange={(e) => handleScaffoldChange(idx, 'text', e.target.value)}
-                                                        className="w-full text-lg font-medium text-slate-800 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all font-serif"
+                                                        className="w-full text-lg font-medium text-slate-800 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-600 focus:bg-white focus:ring-2 focus:ring-indigo-600 rounded px-2 py-1 focus:outline-none resize-none transition-all motion-reduce:transition-none font-serif"
                                                         rows={getRows(item.text)}
                                                     />
                                                     {(item.text_en || leveledTextLanguage !== 'English') && (
@@ -251,7 +302,7 @@ function SentenceFramesView(props) {
                                                             aria-label={t('scaffolds.edit_item_translation') || `Edit scaffold item ${idx + 1} translation`}
                                                             value={item.text_en || ''}
                                                             onChange={(e) => handleScaffoldChange(idx, 'text_en', e.target.value, true)}
-                                                            className="w-full text-sm text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all"
+                                                            className="w-full text-sm text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-600 focus:bg-white focus:ring-2 focus:ring-indigo-600 rounded px-2 py-1 focus:outline-none resize-none transition-all motion-reduce:transition-none"
                                                             rows={getRows(item.text_en || '')}
                                                             placeholder={t('common.placeholder_translation')}
                                                         />
@@ -268,7 +319,7 @@ function SentenceFramesView(props) {
                                                         onFocus={(e) => { activeFieldRef.current = { resourceId: generatedContent.id, key: idx, el: e.currentTarget }; }}
                                                         onChange={(e) => handleStudentInput(generatedContent.id, idx, e.target.value)}
                                                         data-help-key="scaffolds_student_input"
-                                                        className="w-full mt-2 p-3 border border-slate-400 rounded-lg text-sm focus:ring-2 focus:ring-rose-200 focus:border-rose-300 outline-none resize-y bg-slate-50 focus:bg-white transition-all font-sans"
+                                                        className="w-full mt-2 p-3 border border-slate-400 rounded-lg text-sm focus:ring-2 focus:ring-rose-600 focus:border-rose-600 focus:outline-none resize-y bg-slate-50 focus:bg-white transition-all motion-reduce:transition-none font-sans"
                                                         rows={3}
                                                         placeholder={isDiscussionPrompts ? label('scaffolds.discussion_placeholder', 'Write your response to the question...') : t('scaffolds.sentence_placeholder')}
                                                     />
@@ -288,7 +339,7 @@ function SentenceFramesView(props) {
                                     aria-label={t('scaffolds.edit_paragraph_frame') || 'Edit paragraph frame text'}
                                     value={generatedContent?.data.text}
                                     onChange={(e) => handleScaffoldTextChange('text', e.target.value)}
-                                    className="w-full text-lg leading-loose text-slate-800 font-serif bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all"
+                                    className="w-full text-lg leading-loose text-slate-800 font-serif bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-600 focus:bg-white focus:ring-2 focus:ring-indigo-600 rounded px-2 py-1 focus:outline-none resize-none transition-all motion-reduce:transition-none"
                                     rows={getRows(generatedContent?.data.text)}
                                 />
                             ) : (
@@ -301,7 +352,7 @@ function SentenceFramesView(props) {
                                             value={studentResponses[generatedContent.id]?.[responseKey] || ''}
                                             onFocus={(e) => { activeFieldRef.current = { resourceId: generatedContent.id, key: responseKey, el: e.currentTarget }; }}
                                             onChange={(e) => handleStudentInput(generatedContent.id, responseKey, e.target.value)}
-                                            dir="auto" className="placeholder:text-current placeholder:opacity-100 placeholder:font-normal inline-block w-44 max-w-full min-h-11 border-b-2 border-slate-300 mx-1 text-center text-indigo-700 font-bold focus:border-indigo-500 focus:outline-none bg-transparent min-w-[100px] px-1 focus:bg-indigo-50 rounded transition-colors"
+                                            dir="auto" className="placeholder:text-current placeholder:opacity-100 placeholder:font-normal inline-block w-44 max-w-full min-h-11 border-b-2 border-slate-500 mx-1 text-center text-indigo-700 font-bold focus:border-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 bg-transparent min-w-[100px] px-1 focus:bg-indigo-50 rounded transition-colors motion-reduce:transition-none"
                                             placeholder={part.replace(/[\[\]]/g, '')}
                                         /> :
                                         <span key={i}>{part}</span>
@@ -316,7 +367,7 @@ function SentenceFramesView(props) {
                                             aria-label={t('scaffolds.edit_paragraph_translation') || 'Edit paragraph frame translation'}
                                             value={generatedContent?.data.text_en || ''}
                                             onChange={(e) => handleScaffoldTextChange('text_en', e.target.value)}
-                                            className="w-full text-slate-600 italic leading-relaxed bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all"
+                                            className="w-full text-slate-600 italic leading-relaxed bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-600 focus:bg-white focus:ring-2 focus:ring-indigo-600 rounded px-2 py-1 focus:outline-none resize-none transition-all motion-reduce:transition-none"
                                             rows={getRows(generatedContent?.data.text_en || '')}
                                             placeholder={t('common.placeholder_translation')}
                                         />
@@ -327,23 +378,23 @@ function SentenceFramesView(props) {
                             )}
                         </div>
                     )}
-                    {(isTeacherMode || generatedContent?.data.rubric) && (
+                    {canViewRubric && (
                     <div className="mt-1 pt-4 border-t border-rose-100 animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4">
-                        <div className="flex justify-between items-center mb-3">
+                        <div className="flex flex-wrap justify-between items-center gap-2 mb-3">
                                 <h4 className="font-bold text-rose-900 flex items-center gap-2">
-                                <ClipboardList size={18} className="text-rose-500"/> {isIndependentMode ? label('scaffolds.self_checklist', 'Self-Checklist') : label('scaffolds.rubric', 'Grading Rubric')}
+                                <ClipboardList size={18} aria-hidden="true" className="text-rose-600"/> {isIndependentMode ? label('scaffolds.self_checklist', 'Self-Checklist') : label('scaffolds.rubric', 'Grading Rubric')}
                                 </h4>
-                                <div className="flex items-center gap-2">
+                                <div className="flex flex-wrap items-center gap-2">
                                     {canGenerateRubric && (
                                         <button
                                         type="button"
                                         onClick={handleGenerateRubric}
                                         disabled={isGeneratingRubric || !textAiUsable}
-                                        title={!textAiUsable ? label('sidebar.needs_ai_setup', 'Needs AI setup') : undefined}
+                                        title={!textAiUsable ? ((textAiDoor && textAiDoor.title) || label('sidebar.needs_ai_setup', 'Needs AI setup')) : undefined}
                                         aria-busy={!!isGeneratingRubric}
-                                        className="text-xs bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-700 px-3 py-1.5 rounded-full font-bold transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                                        className="min-h-11 text-xs bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-700 px-3 py-1.5 rounded-full font-bold transition-colors motion-reduce:transition-none flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600"
                                         >
-                                        {isGeneratingRubric ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none"/> : <Sparkles size={12}/>}
+                                        {isGeneratingRubric ? <RefreshCw size={12} aria-hidden="true" className="animate-spin motion-reduce:animate-none"/> : <Sparkles size={12} aria-hidden="true"/>}
                                         {generatedContent?.data.rubric
                                             ? (isIndependentMode ? label('scaffolds.regenerate_self_checklist', 'Regenerate Self-Checklist') : label('scaffolds.regenerate_rubric', 'Regenerate Rubric'))
                                             : (isIndependentMode ? label('scaffolds.generate_self_checklist', 'Generate Self-Checklist') : label('scaffolds.generate_rubric', 'Generate Rubric'))}
@@ -354,27 +405,28 @@ function SentenceFramesView(props) {
                                             <button
                                                 type="button"
                                                 onClick={handleToggleRubricZoom}
-                                                className={`text-xs flex items-center gap-1 px-2 py-1 rounded transition-colors border ${rubricZoom ? 'bg-rose-100 text-rose-700 border-rose-200' : 'bg-white text-slate-600 hover:text-indigo-600 border-slate-200'}`}
+                                                aria-pressed={!!rubricZoom}
+                                                className={`min-h-11 text-xs flex items-center gap-1 px-3 py-1.5 rounded transition-colors motion-reduce:transition-none border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${rubricZoom ? 'bg-rose-100 text-rose-800 border-rose-300' : 'bg-white text-slate-700 hover:text-indigo-700 border-slate-400'}`}
                                                 title={t('scaffolds.rubric_toggle_tooltip')}
                                             >
-                                                {rubricZoom ? <Maximize size={12}/> : <Minimize size={12}/>}
+                                                {rubricZoom ? <Maximize size={12} aria-hidden="true"/> : <Minimize size={12} aria-hidden="true"/>}
                                                 {rubricZoom ? t('scaffolds.rubric_normal') : t('scaffolds.rubric_fit')}
                                             </button>
                                             <button
                                                 type="button"
                                                 aria-label={t('common.copy')}
                                                 onClick={() => copyToClipboard(generatedContent?.data.rubric)}
-                                                className="text-xs flex items-center gap-1 bg-white text-slate-600 hover:text-indigo-600 border border-slate-400 hover:border-indigo-200 px-2 py-1 rounded transition-colors"
+                                                className="min-h-11 text-xs flex items-center gap-1 bg-white text-slate-700 hover:text-indigo-700 border border-slate-400 hover:border-indigo-400 px-3 py-1.5 rounded transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                                                 title={t('scaffolds.rubric_copy_tooltip')}
                                             >
-                                                <Copy size={12}/> {t('scaffolds.rubric_copy')}
+                                                <Copy size={12} aria-hidden="true"/> {t('scaffolds.rubric_copy')}
                                             </button>
                                         </>
                                     )}
                                 </div>
                         </div>
                         {generatedContent?.data.rubric && (
-                            <div className={`bg-white p-4 rounded-xl border border-slate-400 relative shadow-sm transition-all ${rubricZoom ? 'text-[11px]' : ''}`}>
+                            <div className={`bg-white p-4 rounded-xl border border-slate-400 relative shadow-sm transition-all motion-reduce:transition-none ${rubricZoom ? 'text-[11px]' : ''}`}>
                                 <style>{rubricZoom ? `
                                     .rubric-container table th, .rubric-container table td { padding: 4px !important; line-height: 1.2 !important; }
                                     .rubric-container h1, .rubric-container h2, .rubric-container h3 { font-size: 1em !important; margin: 0.5em 0 !important; }
@@ -385,7 +437,7 @@ function SentenceFramesView(props) {
                                         aria-label={t('scaffolds.edit_rubric') || 'Edit rubric'}
                                         value={generatedContent?.data.rubric}
                                         onChange={(e) => handleScaffoldTextChange('rubric', e.target.value)}
-                                        className="w-full text-sm bg-transparent border border-slate-400 hover:border-indigo-300 focus:border-indigo-500 focus:bg-slate-50 rounded p-2 outline-none resize-y font-medium text-slate-700 transition-all font-mono"
+                                        className="w-full text-sm bg-transparent border border-slate-400 hover:border-indigo-400 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600 focus:bg-slate-50 rounded p-2 focus:outline-none resize-y font-medium text-slate-700 transition-all motion-reduce:transition-none font-mono"
                                         rows={getRows(generatedContent?.data.rubric)}
                                         placeholder={t('scaffolds.rubric_placeholder')}
                                     />
@@ -397,9 +449,9 @@ function SentenceFramesView(props) {
                             </div>
                         )}
                         {isTeacherMode && generatedContent?.data.rubric && (
-                            <div className="mt-6 bg-indigo-50 border border-indigo-100 rounded-xl p-4 shadow-sm">
+                            <div className="mt-6 bg-indigo-50 border border-indigo-200 rounded-xl p-4 shadow-sm">
                                 <h4 className="font-bold text-indigo-900 mb-3 flex items-center gap-2">
-                                    <CheckCircle2 size={18} className="text-indigo-600"/> {t('scaffolds.auto_grader')}
+                                    <CheckCircle2 size={18} aria-hidden="true" className="text-indigo-600"/> {t('scaffolds.auto_grader')}
                                 </h4>
                                 {!gradingResult ? (
                                     <div className="space-y-3">
@@ -407,24 +459,25 @@ function SentenceFramesView(props) {
                                             aria-label={t('dashboard.grading.student_work_input') || 'Paste student work for grading'}
                                             value={studentWorkInput}
                                             onChange={(e) => setStudentWorkInput(e.target.value)}
-                                            className="w-full p-3 text-sm border border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-200 outline-none resize-y h-32 bg-white"
+                                            className="w-full p-3 text-sm border border-indigo-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 focus:outline-none resize-y h-32 bg-white"
                                             placeholder={t('dashboard.grading.work_placeholder')}
                                         />
                                         <button
                                             type="button"
                                             onClick={handleAutoGrade}
                                             disabled={!studentWorkInput.trim() || isGrading || !textAiUsable}
-                                            title={!textAiUsable ? label('sidebar.needs_ai_setup', 'Needs AI setup') : undefined}
-                                            className="w-full bg-indigo-600 text-white font-bold py-2 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                            title={!textAiUsable ? ((textAiDoor && textAiDoor.title) || label('sidebar.needs_ai_setup', 'Needs AI setup')) : undefined}
+                                            aria-busy={!!isGrading}
+                                            className="min-h-11 w-full bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
                                         >
-                                            {isGrading ? <RefreshCw size={16} className="animate-spin motion-reduce:animate-none"/> : <Sparkles size={16} className="text-yellow-700 fill-current"/>}
+                                            {isGrading ? <RefreshCw size={16} aria-hidden="true" className="animate-spin motion-reduce:animate-none"/> : <Sparkles size={16} aria-hidden="true" className="text-amber-200 fill-current"/>}
                                             {isGrading ? t('dashboard.grading.grade_work_loading') : t('dashboard.grading.grade_work_btn')}
                                         </button>
                                     </div>
                                 ) : (
-                                    <div className="animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-2">
-                                        <div className="bg-white rounded-lg border border-indigo-100 p-4 mb-4">
-                                            <div className="flex justify-between items-center mb-4 border-b border-indigo-50 pb-2">
+                                    <div role="status" aria-live="polite" className="animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-2">
+                                        <div className="bg-white rounded-lg border border-indigo-200 p-4 mb-4">
+                                            <div className="flex justify-between items-center mb-4 border-b border-indigo-100 pb-2">
                                                 <span className="font-bold text-indigo-900 text-lg">{t('dashboard.grading.total_score')}</span>
                                                 <span className="bg-indigo-100 text-indigo-800 font-black px-3 py-1 rounded-full">{gradeText(gradingResult.totalScore)}</span>
                                             </div>
@@ -440,20 +493,20 @@ function SentenceFramesView(props) {
                                                 ))}
                                             </div>
                                             <div className="grid grid-cols-1 gap-3 text-sm">
-                                                <div className="bg-green-50 p-3 rounded border border-green-100">
-                                                    <strong className="text-green-800 block mb-1 flex items-center gap-1"><Sparkles size={12}/> {t('dashboard.grading.glow_label')}</strong>
-                                                    <p className="text-green-700">{gradeText(gradeFeedback.glow)}</p>
+                                                <div className="bg-green-50 p-3 rounded border border-green-200">
+                                                    <strong className="text-green-800 block mb-1 flex items-center gap-1"><Sparkles size={12} aria-hidden="true"/> {t('dashboard.grading.glow_label')}</strong>
+                                                    <p className="text-green-800">{gradeText(gradeFeedback.glow)}</p>
                                                 </div>
-                                                <div className="bg-orange-50 p-3 rounded border border-orange-100">
-                                                    <strong className="text-orange-800 block mb-1 flex items-center gap-1"><ArrowUpRight size={12}/> {t('dashboard.grading.grow_label')}</strong>
-                                                    <p className="text-orange-700">{gradeText(gradeFeedback.grow)}</p>
+                                                <div className="bg-orange-50 p-3 rounded border border-orange-200">
+                                                    <strong className="text-orange-800 block mb-1 flex items-center gap-1"><ArrowUpRight size={12} aria-hidden="true"/> {t('dashboard.grading.grow_label')}</strong>
+                                                    <p className="text-orange-800">{gradeText(gradeFeedback.grow)}</p>
                                                 </div>
                                             </div>
                                         </div>
                                         <button
                                             type="button"
                                             onClick={handleSetGradingResultToNull}
-                                            className="text-xs text-indigo-500 hover:text-indigo-700 underline w-full text-center"
+                                            className="min-h-11 text-xs font-semibold text-indigo-700 hover:text-indigo-900 underline w-full text-center rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                                         >
                                             {t('dashboard.grading.grade_another')}
                                         </button>

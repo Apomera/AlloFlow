@@ -834,8 +834,12 @@
       }
       var priorBodyOverflow = document.body && document.body.style ? document.body.style.overflow : '';
       if (document.body && document.body.style) document.body.style.overflow = 'hidden';
+      if (modalStack[modalStack.length - 1] === token) {
+        var initTarget = (closeRef.current && closeRef.current.focus) ? closeRef.current : root;
+        if (initTarget && initTarget.focus) { try { initTarget.focus({ preventScroll: true }); } catch (_) { initTarget.focus(); } }
+      }
       var focusTimer = setTimeout(function () {
-        if (modalStack[modalStack.length - 1] === token && closeRef.current && closeRef.current.focus) closeRef.current.focus();
+        if (modalStack[modalStack.length - 1] === token && closeRef.current && closeRef.current.focus && !root.contains(document.activeElement)) closeRef.current.focus();
       }, 0);
       function focusable() {
         return Array.prototype.slice.call(root.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'));
@@ -1059,7 +1063,7 @@
     ) : null;
     var visual = graph.nodes.length
       ? h(React.Fragment, null,
-        h('div', { 'data-learning-web-diagram-scroll': 'true', style: { overflowX: 'auto', maxWidth: '100%' } }, svg),
+        h('div', { 'data-learning-web-diagram-scroll': 'true', tabIndex: 0, role: 'region', 'aria-label': tr('learning_web_explorer.diagram_scroll', 'Learning Web diagram'), style: { overflowX: 'auto', maxWidth: '100%' } }, svg),
         visualGraph.edges.length > LIMITS.visualEdges
           ? h('p', { role: 'note' }, tr('learning_web_explorer.diagram.sampled', 'The diagram shows {shown} of {total} relationships for readability. The relationship table below contains the complete displayed set.', { shown: LIMITS.visualEdges, total: visualGraph.edges.length }))
           : null
@@ -1105,7 +1109,7 @@
           h('h2', { id: ids.title }, props.title || normalized.title || tr('learning_web_explorer.title', 'Learning Web Explorer')),
           h('p', { id: ids.description }, props.description || tr('learning_web_explorer.description', 'Explore how standards, concepts, learning experiences, evidence, and findings connect. The diagram and accessible views describe the same read-only graph.'))
         ),
-        isModal ? h('button', { ref: closeRef, type: 'button', onClick: requestClose, 'aria-label': tr('learning_web_explorer.close', 'Close Learning Web Explorer'), style: { minWidth: 44, minHeight: 44 } }, tr('common.close', 'Close')) : null
+        isModal ? h('button', { ref: closeRef, type: 'button', onClick: requestClose, 'aria-label': tr('learning_web_explorer.close', 'Close Learning Web Explorer'), style: { flexShrink: 0, minWidth: 44, minHeight: 44 } }, tr('common.close', 'Close')) : null
       ),
       warnings.map(function (warning, index) { return h('p', { key: index, role: 'status' }, warning); }),
       h('form', { onSubmit: function (event) { event.preventDefault(); }, 'aria-label': tr('learning_web_explorer.filters', 'Learning Web filters'), style: { display: 'flex', flexWrap: 'wrap', alignItems: 'end', gap: 12, margin: '16px 0' } },

@@ -19,6 +19,22 @@ var RefreshCw = _lazyIcon('RefreshCw');
 var Search = _lazyIcon('Search');
 var Sparkles = _lazyIcon('Sparkles');
 var Trash2 = _lazyIcon('Trash2');
+var _personaUiAiUsable = function(kind) {
+    if (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true)) return false;
+    if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return Boolean(window.__alloAiUsable(kind));
+    return true;
+};
+var _usePersonaAiConfigTick = function() {
+    var st = useState(0);
+    var setTick = st[1];
+    useEffect(function() {
+        if (typeof window === 'undefined' || typeof window.addEventListener !== 'function') return undefined;
+        var bump = function() { setTick(function(n) { return (n + 1) % 1000000; }); };
+        var evs = ['alloflow:ai-config-changed', 'alloflow:student-ai-config-changed', 'alloflow:ai-key-lock-changed', 'storage'];
+        evs.forEach(function(ev) { window.addEventListener(ev, bump); });
+        return function() { evs.forEach(function(ev) { window.removeEventListener(ev, bump); }); };
+    }, []);
+};
 
 const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
     const { t } = useContext(LanguageContext);
@@ -64,9 +80,9 @@ const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
     return (
         <div className="mb-4 p-3 rounded-lg bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-200">
             <div className="flex items-center gap-2 mb-2">
-                <Sparkles size={14} className="text-amber-500 fill-current" />
+                <Sparkles size={14} aria-hidden="true" className="text-amber-500 fill-current" />
                 <h5 className="text-xs font-bold text-amber-900 uppercase tracking-wider">{t('blueprint.lesson_focus') || 'Lesson focus'}</h5>
-                {isEditing && <span className="text-[10px] text-amber-700 italic ml-auto">{t('persona.edits_apply_before_generation') || 'Edits apply before generation'}</span>}
+                {isEditing && <span className="text-[10px] text-amber-800 italic ml-auto">{t('persona.edits_apply_before_generation') || 'Edits apply before generation'}</span>}
             </div>
             <div className="mb-2">
                 <p className="text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-0.5">{t('persona.essential_question') || 'Essential Question'}</p>
@@ -78,14 +94,14 @@ const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
                         maxLength={1200}
                         placeholder={t('persona.essential_question_placeholder') || 'The ONE main learning question students will answer...'}
                         rows={2}
-                        className="w-full text-sm text-slate-700 italic bg-white border border-amber-200 rounded p-1.5 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none resize-none"
+                        className="min-h-11 w-full text-sm text-slate-700 italic bg-white border border-amber-200 rounded p-1.5 focus:border-amber-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 resize-none"
                     />
                 ) : (
-                    eq ? <p className="text-sm text-slate-700 italic leading-relaxed">"{eq}"</p> : <p className="text-xs text-slate-500 italic">{t('persona.none_set') || '(none set)'}</p>
+                    eq ? <p className="text-sm text-slate-700 italic leading-relaxed">"{eq}"</p> : <p className="text-xs text-slate-600 italic">{t('persona.none_set') || '(none set)'}</p>
                 )}
             </div>
             <details data-testid="bp-lesson-focus-details" open={isEditing} className="group/focus border-t border-amber-200 pt-1">
-              <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-2 rounded text-xs font-semibold text-amber-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 [&::-webkit-details-marker]:hidden">
+              <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 rounded text-xs font-semibold text-amber-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 [&::-webkit-details-marker]:hidden">
                 {t('blueprint.concepts_and_vocabulary') || 'Concepts and vocabulary'}
                 <ChevronDown size={14} aria-hidden="true" className="shrink-0 transition-transform motion-reduce:transition-none group-open/focus:rotate-180" />
               </summary>
@@ -101,7 +117,7 @@ const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
                                         type="button"
                                         onClick={() => removeConcept(i)}
                                         aria-label={t('persona.remove_concept_aria', { concept: c }) || ('Remove concept ' + c)}
-                                        className="ml-1 text-amber-600 hover:text-red-500 font-bold leading-none"
+                                        className="ml-1 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full text-amber-800 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 font-bold leading-none"
                                     >×</button>
                                 )}
                             </span>
@@ -117,11 +133,11 @@ const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
                                 onChange={(e) => setNewConcept(e.target.value)}
                                 onKeyDown={(e) => { if (e.key === 'Enter' && !e.isComposing && !(e.nativeEvent && e.nativeEvent.isComposing) && e.keyCode !== 229) { e.preventDefault(); addConcept(); } }}
                                 placeholder={t('persona.add_concept_placeholder') || '+ add concept'}
-                                className="text-[11px] px-2 py-0.5 bg-white border border-amber-200 rounded-full focus:border-amber-500 outline-none w-28"
+                                className="min-h-11 text-[11px] px-3 py-1 bg-white border border-amber-300 rounded-full focus:border-amber-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 w-32"
                             />
                         </span>
                     )}
-                    {!isEditing && concepts.length === 0 && <span className="text-xs text-slate-500 italic">{t('persona.none_set') || '(none set)'}</span>}
+                    {!isEditing && concepts.length === 0 && <span className="text-xs text-slate-600 italic">{t('persona.none_set') || '(none set)'}</span>}
                 </div>
             </div>
             <div>
@@ -136,7 +152,7 @@ const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
                                         type="button"
                                         onClick={() => removeTerm(i)}
                                         aria-label={t('persona.remove_term_aria', { term: term }) || ('Remove term ' + term)}
-                                        className="ml-1 text-indigo-600 hover:text-red-500 font-bold leading-none"
+                                        className="ml-1 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full text-indigo-800 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 font-bold leading-none"
                                     >×</button>
                                 )}
                             </span>
@@ -152,11 +168,11 @@ const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
                                 onChange={(e) => setNewTerm(e.target.value)}
                                 onKeyDown={(e) => { if (e.key === 'Enter' && !e.isComposing && !(e.nativeEvent && e.nativeEvent.isComposing) && e.keyCode !== 229) { e.preventDefault(); addTerm(); } }}
                                 placeholder={t('persona.add_term_placeholder') || '+ add term'}
-                                className="text-[11px] px-2 py-0.5 bg-white border border-indigo-200 rounded-full focus:border-indigo-500 outline-none w-28"
+                                className="min-h-11 text-[11px] px-3 py-1 bg-white border border-indigo-300 rounded-full focus:border-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 w-32"
                             />
                         </span>
                     )}
-                    {!isEditing && terms.length === 0 && <span className="text-xs text-slate-500 italic">{t('persona.none_set') || '(none set)'}</span>}
+                    {!isEditing && terms.length === 0 && <span className="text-xs text-slate-600 italic">{t('persona.none_set') || '(none set)'}</span>}
                 </div>
             </div>
             </details>
@@ -166,6 +182,8 @@ const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
 
 const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun, onRebuildStep, onOpenErrorLog, onCopyDiagnostics, onDownloadDiagnostics, summarizeFailureReason, onPreviewStep, onSaveTemplate, onUpdate, onConfirm, onCancel }) => {
   const { t } = useContext(LanguageContext);
+  _usePersonaAiConfigTick();
+  const aiTextUsable = _personaUiAiUsable('text');
   const [items, setItems] = useState([]);
   const [draggedItemIndex, setDraggedItemIndex] = useState(null);
   const [reorderStatus, setReorderStatus] = useState('');
@@ -514,7 +532,7 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
       <div className="flex flex-wrap items-start justify-between gap-3 mb-3 pb-3 border-b border-indigo-50">
         <div className="flex min-w-0 flex-1 basis-56 items-start gap-3">
             <div className="bg-indigo-100 p-2 rounded-lg text-indigo-600">
-                <Sparkles size={18} />
+                <Sparkles size={18} aria-hidden="true" />
             </div>
             <div>
                 <h4 className="font-bold text-indigo-900 text-sm">
@@ -535,7 +553,7 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                 type="button"
                 data-testid="bp-open-error-log"
                 onClick={onOpenErrorLog}
-                className="inline-flex min-h-10 items-center gap-1.5 p-2 rounded-lg text-xs font-bold border border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600"
+                className="inline-flex min-h-11 items-center gap-1.5 p-2 rounded-lg text-xs font-bold border border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600"
                 title={t('blueprint.open_error_log') || 'Open error log'}
                 aria-label={t('blueprint.open_error_log') || 'Open error log'}
             >
@@ -549,9 +567,9 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
             disabled={!!isRunning}
             title={isRunning ? (t('blueprint.wait_for_run') || 'Wait for the run to finish (or stop it) before editing.') : undefined}
             onClick={() => setIsEditing(prev => !prev)}
-            className={`p-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-2 border disabled:opacity-40 disabled:cursor-not-allowed ${isEditing ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+            className={`min-h-11 p-2 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none flex items-center gap-2 border disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${isEditing ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
         >
-            {isEditing ? <CheckCircle2 size={14}/> : <Pencil size={14}/>}
+            {isEditing ? <CheckCircle2 size={14} aria-hidden="true"/> : <Pencil size={14} aria-hidden="true"/>}
             {isEditing ? t('blueprint.done_editing') : t('blueprint.edit_plan')}
         </button>
         </div>
@@ -580,7 +598,7 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
           </div>
       </div>
       <details data-testid="bp-generation-matrix-summary" open={blueprintAdaptedPolicy === 'prohibited'} className="group/plan-details mb-3 rounded-lg border border-slate-200 text-xs leading-relaxed text-slate-700">
-        <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-2 rounded-lg px-2.5 py-2 font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 [&::-webkit-details-marker]:hidden">
+        <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 rounded-lg px-2.5 py-2 font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 [&::-webkit-details-marker]:hidden">
           {t('blueprint.plan_details') || 'Generation and text settings'}
           <ChevronDown size={14} aria-hidden="true" className="shrink-0 transition-transform motion-reduce:transition-none group-open/plan-details:rotate-180" />
         </summary>
@@ -666,7 +684,7 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                           data-testid="bp-stop-run"
                           data-help-key="blueprint_stop_run_btn"
                           onClick={onStopRun}
-                          className="shrink-0 text-[10px] font-bold px-2 py-1 rounded border border-red-300 text-red-700 bg-white hover:bg-red-50"
+                          className="shrink-0 min-h-11 text-[10px] font-bold px-2.5 py-1.5 rounded border border-red-300 text-red-700 bg-white hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600"
                           title={t('blueprint.stop_run_hint') || 'Finishes the step in progress, then stops. Finished resources are kept.'}
                       >
                           {t('blueprint.stop_run') || 'Stop after this step'}
@@ -699,19 +717,19 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                         onDragEnd={handleDragEnd}
                         role="group"
                         aria-label={t('blueprint.step_position_aria', { position: idx + 1, total: items.length }) || `Plan step ${idx + 1} of ${items.length}`}
-                        className={`group flex items-start gap-2 p-3 rounded-lg border-2 transition-all ${draggedItemIndex === idx ? 'opacity-50 border-dashed border-indigo-300 bg-indigo-50' : 'bg-slate-50 border-slate-200 hover:border-indigo-200'}`}
+                        className={`group flex items-start gap-2 p-3 rounded-lg border-2 transition-all motion-reduce:transition-none ${draggedItemIndex === idx ? 'opacity-50 border-dashed border-indigo-300 bg-indigo-50' : 'bg-slate-50 border-slate-200 hover:border-indigo-200'}`}
                     >
                         <div className="mt-1 flex flex-col items-center gap-1 text-slate-600 cursor-grab active:cursor-grabbing hover:text-indigo-500">
                             <GripVertical size={16} aria-hidden="true" />
-                            <button type="button" onClick={() => handleMoveItem(idx, -1)} disabled={idx === 0} className="w-7 h-7 inline-flex items-center justify-center rounded border border-slate-400 bg-white text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 disabled:cursor-not-allowed" aria-label={t('blueprint.move_up_aria', { position: idx + 1 }) || `Move plan step ${idx + 1} up`}><ChevronUp size={16} aria-hidden="true" /></button>
-                            <button type="button" onClick={() => handleMoveItem(idx, 1)} disabled={idx === items.length - 1} className="w-7 h-7 inline-flex items-center justify-center rounded border border-slate-400 bg-white text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 disabled:cursor-not-allowed" aria-label={t('blueprint.move_down_aria', { position: idx + 1 }) || `Move plan step ${idx + 1} down`}><ChevronDown size={16} aria-hidden="true" /></button>
+                            <button type="button" onClick={() => handleMoveItem(idx, -1)} disabled={idx === 0} className="w-7 h-7 min-w-11 min-h-11 inline-flex items-center justify-center rounded border border-slate-400 bg-white text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" aria-label={t('blueprint.move_up_aria', { position: idx + 1 }) || `Move plan step ${idx + 1} up`}><ChevronUp size={16} aria-hidden="true" /></button>
+                            <button type="button" onClick={() => handleMoveItem(idx, 1)} disabled={idx === items.length - 1} className="w-7 h-7 min-w-11 min-h-11 inline-flex items-center justify-center rounded border border-slate-400 bg-white text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" aria-label={t('blueprint.move_down_aria', { position: idx + 1 }) || `Move plan step ${idx + 1} down`}><ChevronDown size={16} aria-hidden="true" /></button>
                         </div>
                         <div className="min-w-0 flex-grow grid grid-cols-1 gap-2">
                             <div className="col-span-1">
                                 <select aria-label={t('common.selection')}
                                     value={item.type}
                                     onChange={(e) => handleTypeChange(idx, e.target.value)}
-                                    className="w-full text-xs font-bold text-slate-700 bg-white border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none"
+                                    className="min-h-11 w-full text-xs font-bold text-slate-700 bg-white border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                                 >
                                     {toolOptions.map(opt => (
                                         <option
@@ -739,7 +757,7 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                                     rows={2}
                                     value={item.directive}
                                     onChange={(e) => handleDirectiveChange(idx, e.target.value)}
-                                    className="w-full resize-y text-xs text-slate-600 bg-white border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none placeholder:italic"
+                                    className="min-h-11 w-full resize-y text-xs text-slate-600 bg-white border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 placeholder:italic"
                                     placeholder={t('blueprint.placeholder_instruction')}
                                 />
                             </div>
@@ -748,19 +766,19 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                             type="button"
                             aria-label={t('common.delete')}
                             onClick={() => handleDelete(idx)}
-                            className="mt-1.5 text-slate-600 hover:text-red-700 hover:bg-red-50 p-1 rounded transition-colors"
+                            className="mt-1.5 min-w-11 min-h-11 inline-flex items-center justify-center text-slate-600 hover:text-red-700 hover:bg-red-50 p-1 rounded transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600"
                             title={t('blueprint.remove_step_tooltip')}
                         >
-                            <Trash2 size={14} />
+                            <Trash2 size={14} aria-hidden="true" />
                         </button>
                     </div>
                 ))}
             </div>
             <button type="button" data-help-key="blueprint_add_step_btn" aria-label={t('blueprint.add_step')}
                 onClick={handleAddStep}
-                className="w-full py-2 border-2 border-dashed border-slate-300 rounded-lg text-slate-600 text-xs font-bold hover:bg-slate-50 hover:text-indigo-600 hover:border-indigo-300 transition-all flex items-center justify-center gap-2 mb-4"
+                className="min-h-11 w-full py-2 border-2 border-dashed border-slate-300 rounded-lg text-slate-600 text-xs font-bold hover:bg-slate-50 hover:text-indigo-600 hover:border-indigo-300 transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 flex items-center justify-center gap-2 mb-4"
             >
-                <Plus size={14} /> {t('blueprint.add_step')}
+                <Plus size={14} aria-hidden="true" /> {t('blueprint.add_step')}
             </button>
           </>
       ) : (
@@ -931,7 +949,7 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                                   aria-controls={`bp-desc-${item.id}`}
                                   data-testid="bp-desc-toggle"
                                   data-help-key="blueprint_resource_desc_toggle"
-                                  className="ml-1 inline-flex min-h-8 items-center rounded border border-slate-300 px-2 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                                  className="ml-1 inline-flex min-h-11 items-center rounded border border-slate-300 px-2.5 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                                   title={t('blueprint.what_is_this') || 'What does this resource do?'}
                                   aria-label={`${t('blueprint.what_is_this') || 'What does this resource do?'}: ${getToolLabel(item.type)}`}
                               >
@@ -964,7 +982,7 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                                   }}
                                   title={t('blueprint.preview_step') || 'Preview this resource'}
                                   aria-label={`${t('blueprint.preview_step') || 'Preview this resource'}: ${getToolLabel(item.type)}`}
-                                  className="ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100 hover:border-slate-400 transition-colors"
+                                  className="ml-1 inline-flex min-h-11 items-center text-[10px] font-bold px-2.5 py-1 rounded border border-slate-300 text-slate-700 hover:bg-slate-100 hover:border-slate-400 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                               >
                                   {t('blueprint.preview_step_short') || 'Preview'}
                               </button>
@@ -973,12 +991,12 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                               <button
                                   type="button"
                                   data-testid="bp-rebuild-btn"
-                                  disabled={!!isRunning}
+                                  disabled={!!isRunning || !aiTextUsable}
                                   data-help-key="blueprint_rebuild_step_btn"
                                   onClick={() => onRebuildStep(item.id)}
                                   title={t('blueprint.rebuild_step') || 'Rebuild just this step'}
                                   aria-label={`${t('blueprint.rebuild_step') || 'Rebuild just this step'}: ${getToolLabel(item.type)}`}
-                                  className="ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100 hover:border-slate-400 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                  className="ml-1 inline-flex min-h-11 items-center text-[10px] font-bold px-2.5 py-1 rounded border border-slate-300 text-slate-700 hover:bg-slate-100 hover:border-slate-400 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-40 disabled:cursor-not-allowed"
                               >
                                   {t('blueprint.rebuild_step_short') || 'Rebuild'}
                               </button>
@@ -1015,7 +1033,7 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                               {t('blueprint.analysis_reused') || 'Already checked, reused'}
                           </p>}
                           <details data-testid="bp-row-details" className="group/row-details mt-1">
-                            <summary className="flex min-h-8 cursor-pointer list-none items-center justify-between gap-2 rounded text-xs font-medium text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 [&::-webkit-details-marker]:hidden">
+                            <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 rounded text-xs font-medium text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 [&::-webkit-details-marker]:hidden">
                               {t('blueprint.row_details') || 'Generation details'}
                               <ChevronDown size={13} aria-hidden="true" className="shrink-0 transition-transform motion-reduce:transition-none group-open/row-details:rotate-180" />
                             </summary>
@@ -1033,7 +1051,7 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                                   ? `${_newVariants.length} ${t('blueprint.new_versions') || 'new'} / ${_reusedVariants.length} ${t('blueprint.reused_versions') || 'reused'}${_variantGrades.length ? `; ${_variantGrades.join(', ')}` : ''}${_variantLanguages.length ? `; ${_variantLanguages.join(', ')}` : ''}${item.type === 'glossary' && embeddedGlossaryLanguages.length ? `; ${t('blueprint.embedded_languages') || 'embedded'}: ${embeddedGlossaryLanguages.join(', ')}` : ''}`
                                   : (t('blueprint.row_matrix_pending') || 'Reuse and audience variants will be checked before generation.')}
                           </p>
-                            {_runtimeVariants.some(variant => variant && (variant.artifactId || variant.resourceId)) && <ul className="mt-1 space-y-1 break-all text-[10px] text-slate-500">
+                            {_runtimeVariants.some(variant => variant && (variant.artifactId || variant.resourceId)) && <ul className="mt-1 space-y-1 break-all text-[10px] text-slate-600">
                               {_runtimeVariants.map((variant, index) => variant && (variant.artifactId || variant.resourceId) ? <li key={variant.generationIdentity || index}>{t('blueprint.artifact_id') || 'Artifact'}: {variant.artifactId || variant.resourceId}</li> : null)}
                             </ul>}
                           </details>
@@ -1084,7 +1102,7 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                                                                   const selection = _previewSelection(variant);
                                                                   onPreviewStep(item.id, selection.resourceId, selection);
                                                               }}
-                                                              className="ml-auto rounded border border-emerald-300 bg-white px-1.5 py-0.5 font-bold text-emerald-800 hover:bg-emerald-100"
+                                                              className="ml-auto inline-flex min-h-11 items-center rounded border border-emerald-300 bg-white px-2.5 py-1 font-bold text-emerald-800 hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700"
                                                           >
                                                               {t('blueprint.preview_step_short') || 'Preview'}
                                                           </button>
@@ -1116,6 +1134,10 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
               )}
           </div>
       )}
+      {!aiTextUsable && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true) && (() => {
+          const Notice = (typeof window !== 'undefined' && ((window.AlloModules && window.AlloModules.AlloAiSetupNotice) || window.AlloAiSetupNotice)) || null;
+          return Notice ? <div className="mb-3"><Notice t={t} /></div> : null;
+      })()}
       <div className="flex gap-3 pt-3 border-t border-slate-100">
           <button
               type="button"
@@ -1123,7 +1145,7 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
               disabled={!!isRunning}
               aria-label={t('common.cancel')}
             onClick={onCancel}
-            className="flex-1 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex-1 min-h-11 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {t('blueprint.cancel')}
           </button>
@@ -1135,11 +1157,11 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
               type="button"
               data-help-key="blueprint_generate_pack_btn"
               aria-label={generateActionLabel}
-            disabled={!!isRunning || items.length === 0}
+            disabled={!!isRunning || items.length === 0 || !aiTextUsable}
             onClick={onConfirm}
-            className="flex-[2] py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed text-white rounded-lg text-xs font-bold shadow-md transition-transform active:scale-95 flex items-center justify-center gap-2"
+            className="flex-[2] min-h-11 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed text-white rounded-lg text-xs font-bold shadow-md transition-transform motion-reduce:transition-none active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 flex items-center justify-center gap-2"
           >
-            <Sparkles size={14} className="text-yellow-700 fill-current"/> {generateActionLabel}
+            <Sparkles size={14} aria-hidden="true" className="text-amber-200 fill-current"/> {generateActionLabel}
           </button>
       </div>
       {/* Save as template + the directive review.
@@ -1162,7 +1184,7 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                 setDirectivePolicy({});
                 setShowTemplateSave(true);
               }}
-              className="text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100 transition-colors"
+              className="min-h-11 text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
             >
               {t('blueprint.save_template') || 'Save as template'}
             </button>
@@ -1179,14 +1201,14 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                 maxLength={80}
                 onChange={(e) => setTemplateName(e.target.value)}
                 placeholder={t('blueprint.template_name_placeholder') || 'e.g. Vocabulary-first informational text'}
-                className="w-full text-sm border border-slate-300 rounded p-1.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none"
+                className="min-h-11 w-full text-sm border border-slate-300 rounded p-1.5 focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
               />
               <p className="text-[11px] text-slate-600">
                 {t('blueprint.template_directive_help') || 'Keep the instructions that would suit any topic. Clear the ones that describe THIS lesson.'}
               </p>
               <ul className="space-y-1 max-h-48 overflow-y-auto">
                 {items.filter((it) => (it.directive || '').trim()).map((it) => {
-                  const keep = directivePolicy[it.id] !== 'blank';
+                  const keep = (Object.prototype.hasOwnProperty.call(directivePolicy, it.id) ? directivePolicy[it.id] : undefined) !== 'blank';
                   return (
                     <li key={it.id} className="flex items-start gap-2 text-xs">
                       <input
@@ -1195,11 +1217,11 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                         data-testid="bp-template-directive"
                         checked={keep}
                         onChange={() => setDirectivePolicy((prev) => Object.assign({}, prev, { [it.id]: keep ? 'blank' : 'keep' }))}
-                        className="mt-0.5 rounded border-slate-400"
+                        className="mt-2 w-5 h-5 rounded border-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                       />
-                      <label htmlFor={`bp-tpl-dir-${it.id}`} className="flex-grow cursor-pointer">
+                      <label htmlFor={`bp-tpl-dir-${it.id}`} className="min-h-11 flex-grow cursor-pointer py-2">
                         <span className="font-bold">{getToolLabel(it.type)}</span>
-                        <span className={keep ? 'text-slate-700' : 'text-slate-500 line-through'}> — "{it.directive}"</span>
+                        <span className={keep ? 'text-slate-700' : 'text-slate-600 line-through'}> — "{it.directive}"</span>
                       </label>
                     </li>
                   );
@@ -1214,7 +1236,7 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                     onSaveTemplate({ name: templateName.trim(), directives: directivePolicy });
                     setShowTemplateSave(false);
                   }}
-                  className="text-xs font-bold px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="min-h-11 text-xs font-bold px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                 >
                   {t('blueprint.template_save_confirm') || 'Save template'}
                 </button>
@@ -1222,7 +1244,7 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                   type="button"
                   data-testid="bp-template-save-cancel"
                   onClick={() => setShowTemplateSave(false)}
-                  className="text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100 transition-colors"
+                  className="min-h-11 text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                 >
                   {t('common.cancel') || 'Cancel'}
                 </button>
@@ -1233,7 +1255,7 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
       )}
       {run && (typeof onCopyDiagnostics === 'function' || typeof onDownloadDiagnostics === 'function') && (
         <details data-testid="bp-troubleshooting" className="group/support mt-3 border-t border-slate-200 text-xs text-slate-600">
-          <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-2 rounded pt-2 font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 [&::-webkit-details-marker]:hidden">
+          <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 rounded pt-2 font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 [&::-webkit-details-marker]:hidden">
             {t('fullpack.troubleshooting') || 'Troubleshooting'}
             <ChevronDown size={14} aria-hidden="true" className="shrink-0 transition-transform motion-reduce:transition-none group-open/support:rotate-180" />
           </summary>
@@ -1244,7 +1266,7 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                 type="button"
                 data-testid="bp-copy-diagnostics"
                 onClick={onCopyDiagnostics}
-                className="inline-flex min-h-10 items-center gap-1.5 p-2 rounded-lg text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                className="inline-flex min-h-11 items-center gap-1.5 p-2 rounded-lg text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                 title={t('blueprint.copy_diagnostics') || 'Copy sanitized Blueprint diagnostics'}
                 aria-label={t('blueprint.copy_diagnostics') || 'Copy sanitized Blueprint diagnostics'}
             >
@@ -1256,7 +1278,7 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                 type="button"
                 data-testid="bp-download-diagnostics"
                 onClick={onDownloadDiagnostics}
-                className="inline-flex min-h-10 items-center gap-1.5 p-2 rounded-lg text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                className="inline-flex min-h-11 items-center gap-1.5 p-2 rounded-lg text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                 title={t('blueprint.download_diagnostics') || 'Download Blueprint diagnostic report'}
                 aria-label={t('blueprint.download_diagnostics') || 'Download Blueprint diagnostic report'}
             >
@@ -1288,7 +1310,7 @@ const HarmonyMeter = ({ score }) => {
             <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-white/50 z-10"></div>
         </div>
         {safeScore >= 80 && (
-            <div className="text-center mt-1 text-[11px] font-bold text-green-600 animate-pulse motion-reduce:animate-none">
+            <div role="status" className="text-center mt-1 text-[11px] font-bold text-emerald-800 animate-pulse motion-reduce:animate-none">
                 {t('persona.common_ground')}
             </div>
         )}
@@ -1298,6 +1320,7 @@ const HarmonyMeter = ({ score }) => {
 
 const CharacterColumn = React.memo(({ character, side, onRetryPortrait }) => {
     const { t } = useContext(LanguageContext);
+    _usePersonaAiConfigTick();
     if (!character) return <div className="flex-1 bg-slate-50/50"></div>;
     const safeNumber = (value, min, max, fallback) => {
         const number = Number(value);
@@ -1353,14 +1376,14 @@ const CharacterColumn = React.memo(({ character, side, onRetryPortrait }) => {
             ) : (
                 <div className="w-full h-full bg-slate-100 flex flex-col items-center justify-center gap-2 p-4">
                     <span className="text-3xl text-slate-600 font-bold">?</span>
-                    {onRetryPortrait && (
+                    {onRetryPortrait && _personaUiAiUsable('images') && (
                         <button
                             type="button"
                             aria-label={t('persona.generate_portrait_for', { name: characterName })}
                             onClick={() => onRetryPortrait(character)}
                             disabled={Boolean(character.isUpdating)}
                             aria-busy={character.isUpdating ? 'true' : 'false'}
-                            className={`px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all motion-reduce:transition-none shadow-sm hover:shadow-md cursor-pointer z-10 relative disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-sm ${
+                            className={`min-h-11 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 shadow-sm hover:shadow-md cursor-pointer z-10 relative disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-sm ${
                                 side === 'left'
                                 ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
                                 : 'bg-rose-600 hover:bg-rose-700 text-white'
@@ -1385,7 +1408,7 @@ const CharacterColumn = React.memo(({ character, side, onRetryPortrait }) => {
         <div className="w-full max-w-[260px] px-2">
             <div className="flex justify-between text-[11px] font-bold text-slate-600 uppercase mb-1">
                 <span>{t('persona.rapport_label')}</span>
-                <span className={`${rapport >= 70 ? 'text-green-600' : 'text-slate-600'}`}>{rapport}%</span>
+                <span className={`${rapport >= 70 ? 'text-emerald-800' : 'text-slate-600'}`}>{rapport}%</span>
             </div>
             <div role="progressbar" aria-label={(t('persona.rapport_label') || 'Rapport') + ': ' + characterName} aria-valuemin={0} aria-valuemax={100} aria-valuenow={rapport} className="w-full h-2 bg-slate-200 rounded-full overflow-hidden border border-slate-400">
                 <div
@@ -1425,12 +1448,12 @@ const CharacterColumn = React.memo(({ character, side, onRetryPortrait }) => {
                                      <div aria-hidden="true" className="w-3 h-3 border-2 border-indigo-200 rounded-full"></div>}
                                  </div>
                                  <div className="flex-grow">
-                                     <span className={`break-words [overflow-wrap:anywhere] font-bold block ${q.isCompleted ? 'line-through opacity-70' : ''}`}>
+                                     <span className={`break-words [overflow-wrap:anywhere] font-bold block ${q.isCompleted ? 'line-through text-emerald-900' : ''}`}>
                                          {q.isCompleted ? <span className="sr-only">{completedLabel}: </span> : isLocked ? <span className="sr-only">{lockedLabel}: </span> : null}
                                          {q.text}
                                      </span>
                                      {!q.isCompleted && isLocked && (
-                                         <span className="text-[11px] uppercase font-bold opacity-70 mt-1 block">
+                                         <span className="text-[11px] uppercase font-bold text-slate-700 mt-1 block">
                                              {(() => { const value = t('persona.inquiry.bonus'); return value && value !== 'persona.inquiry.bonus' ? value : 'Optional story bonus at rapport'; })()} {q.difficulty}
                                          </span>
                                      )}

@@ -13,6 +13,13 @@
 // replaced by a BLOCKED function that only throws, so `typeof === 'function'`
 // alone kept offering buttons that could only fail. Prefer the host's
 // window.__alloAiUsable (capability + policy); the marker check is the fallback.
+function _vrCopy(t, key, fallback) {
+  try {
+    const fn = typeof t === 'function' ? t : (typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : null);
+    const v = fn ? fn(key) : '';
+    return v && v !== key ? v : fallback;
+  } catch (_) { return fallback; }
+}
 const _alloAiUsableKind = (kind, fn) => {
   try {
     if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn);
@@ -1246,7 +1253,7 @@ const renderOutlineContentCore = (deps) => {
     if (!isTeacherMode || interactiveOrganizerSync?.type !== type
         || !['starting', 'live'].includes(interactiveOrganizerSync.status)) return;
     if (typeof deps.addToast === 'function') {
-      deps.addToast('Teacher preview closed. The activity is still live for students; use “Stop for students” to end it.', 'info');
+      deps.addToast(_vrCopy(t, 'organizer.live_preview_closed', 'Teacher preview closed. The activity is still live for students; use “Stop for students” to end it.'), 'info');
     }
   };
   const LiveOrganizerStatus = ({ type }) => {
@@ -1324,7 +1331,7 @@ const renderOutlineContentCore = (deps) => {
         const _startOrganizerGame = async (activityType, startLocal, activityConfig = null) => {
             const readiness = _readinessFor(activityType);
             if (!readiness.ok) {
-                if (typeof deps.addToast === 'function') deps.addToast(readiness.message || 'Finish setting up this organizer before starting the activity.', 'info');
+                if (typeof deps.addToast === 'function') deps.addToast(readiness.message || _vrCopy(t, 'organizer.setup_incomplete', 'Finish setting up this organizer before starting the activity.'), 'info');
                 return false;
             }
             // Keep launch errors visible and only open the teacher preview after delivery succeeds.
@@ -1477,7 +1484,7 @@ const renderOutlineContentCore = (deps) => {
                     {showGameButton && (
                       <div className="mb-4 flex justify-center">
                         <GameButtonHint />
-                        <button
+                        <button type="button"
                           onClick={() => _startOrganizerGame('pipeline', () => setIsPipelinePlaying(true))}
                           disabled={!organizerLaunchReadiness.ok}
                           className="flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 px-5 py-2 text-sm font-bold text-white shadow-md transition-all hover:scale-105 hover:shadow-lg motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
@@ -1605,7 +1612,7 @@ const renderOutlineContentCore = (deps) => {
             }
             if (isInteractiveVenn) {
                 return (
-                    <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4">
+                    <div className="max-w-4xl mx-auto animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4">
                         <div className="text-center mb-8">
                             <h3 className="text-2xl font-black text-indigo-900 flex items-center justify-center gap-2">
                                 <Layout size={24} className="text-purple-500"/> {t('concept_map.venn.setup_title')}
@@ -1684,7 +1691,7 @@ const renderOutlineContentCore = (deps) => {
                             </div>
                         </div>
                         <div className="mb-4 flex justify-center"><LiveOrganizerStatus type="venn" /></div>
-                        <button
+                        <button type="button"
                             aria-label={isTeacherMode && deps.activeSessionCode ? 'Start activity for students' : 'Practice activity'}
                             disabled={!isVennGameReady}
                             aria-describedby={!isVennGameReady ? 'venn-game-readiness' : undefined}
@@ -1707,7 +1714,7 @@ const renderOutlineContentCore = (deps) => {
             return (
                 <div className="max-w-3xl mx-auto py-8">
                     <div className="flex justify-center mb-8 gap-3">
-                         <button
+                         <button type="button"
                             data-venn-interactive-start
                             onClick={handleInitializeVenn}
                             className="flex items-center gap-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-4 py-2 rounded-full font-bold text-sm transition-colors border border-indigo-200 shadow-sm"
@@ -1877,7 +1884,7 @@ const renderOutlineContentCore = (deps) => {
                     {showGameButton && (
                         <div className="flex justify-center mb-4">
                             <GameButtonHint />
-                            <button
+                            <button type="button"
                                 onClick={() => _startOrganizerGame('tchart', () => setIsTChartPlaying(true))}
                                 disabled={!organizerLaunchReadiness.ok}
                                 className="flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-indigo-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
@@ -1950,7 +1957,7 @@ const renderOutlineContentCore = (deps) => {
                     {showGameButton && (
                         <div className="flex justify-center mb-4">
                             <GameButtonHint />
-                            <button
+                            <button type="button"
                                 onClick={() => _startOrganizerGame('fishbone', () => setIsFishboneSortPlaying(true))}
                                 disabled={!organizerLaunchReadiness.ok}
                                 className="flex items-center gap-2 bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
@@ -2130,7 +2137,7 @@ const renderOutlineContentCore = (deps) => {
                         {showGameButton && (
                         <div className="flex justify-center mb-4">
                             <GameButtonHint />
-                            <button
+                            <button type="button"
                                 onClick={() => _startOrganizerGame('cesort', () => setIsCESortPlaying(true))}
                                 disabled={!organizerLaunchReadiness.ok}
                                 className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
@@ -2188,7 +2195,7 @@ const renderOutlineContentCore = (deps) => {
                     {showGameButton && (
                     <div className="flex justify-center mb-6">
                         <GameButtonHint />
-                        <button
+                        <button type="button"
                             onClick={() => _startOrganizerGame('cesort', () => setIsCESortPlaying(true))}
                             disabled={!organizerLaunchReadiness.ok}
                             className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
@@ -2277,7 +2284,7 @@ const renderOutlineContentCore = (deps) => {
                      {showPSGame && (
                          <div className="flex justify-center mb-6">
                              <GameButtonHint />
-                             <button
+                             <button type="button"
                                  onClick={() => _startOrganizerGame('problemsolution', () => setIsProblemSolutionSortPlaying(true))}
                                  disabled={!organizerLaunchReadiness.ok}
                                  className="flex items-center gap-2 bg-gradient-to-r from-rose-500 to-pink-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
@@ -2348,7 +2355,7 @@ const renderOutlineContentCore = (deps) => {
                                          Analyze the results here. Did the proposed solutions effectively address the challenge? What were the trade-offs or final results?
                                      </p>
                                      {isTeacherMode && (
-                                         <button
+                                         <button type="button"
                                             onClick={handleGenerateOutcome}
                                             disabled={isProcessing}
                                             className="mt-4 text-xs font-bold bg-blue-100 text-blue-700 px-4 py-2 rounded-full hover:bg-blue-200 transition-colors flex items-center gap-2 mx-auto disabled:opacity-50 disabled:cursor-not-allowed disabled:cursor-wait"
@@ -2395,7 +2402,7 @@ const renderOutlineContentCore = (deps) => {
                     {showGameButton && (
                         <div className="flex justify-center mb-4">
                             <GameButtonHint />
-                            <button
+                            <button type="button"
                                 onClick={() => _startOrganizerGame('conceptmap', () => setIsConceptMapSortPlaying(true))}
                                 disabled={!organizerLaunchReadiness.ok}
                                 className="flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
@@ -2503,7 +2510,7 @@ const renderOutlineContentCore = (deps) => {
                     {showGameButton && (
                         <div className="flex justify-center mb-4">
                             <GameButtonHint />
-                            <button
+                            <button type="button"
                                 onClick={() => _startOrganizerGame('frayer', () => setIsFrayerSortPlaying(true))}
                                 disabled={!organizerLaunchReadiness.ok}
                                 className="flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-emerald-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
@@ -2535,7 +2542,7 @@ const renderOutlineContentCore = (deps) => {
                         <div className="flex gap-2 justify-center mt-3">
                             {frayerImage ? (
                                 <>
-                                    <button
+                                    <button type="button"
                                         onClick={onRefineFrayerVisual}
                                         disabled={isProcessing}
                                         className="px-3 py-1.5 text-xs font-bold bg-violet-50 text-violet-800 border border-violet-300 rounded-md hover:bg-violet-100 disabled:opacity-50"
@@ -2543,7 +2550,7 @@ const renderOutlineContentCore = (deps) => {
                                     >
                                         {t('outline.frayer_refine_visual_button') || '✨ Refine visual'}
                                     </button>
-                                    <button
+                                    <button type="button"
                                         onClick={onRemoveFrayerVisual}
                                         disabled={isProcessing}
                                         className="px-3 py-1.5 text-xs font-bold bg-white text-slate-700 border border-slate-300 rounded-md hover:bg-slate-100 disabled:opacity-50"
@@ -2553,7 +2560,7 @@ const renderOutlineContentCore = (deps) => {
                                     </button>
                                 </>
                             ) : (
-                                <button
+                                <button type="button"
                                     onClick={onGenerateFrayerVisual}
                                     disabled={isProcessing}
                                     className="px-3 py-1.5 text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300 rounded-md hover:bg-amber-100 disabled:opacity-50"
@@ -2626,7 +2633,7 @@ const renderOutlineContentCore = (deps) => {
                     {showGameButton && (
                         <div className="flex justify-center mb-4">
                             <GameButtonHint />
-                            <button
+                            <button type="button"
                                 onClick={() => _startOrganizerGame('seethinkwonder', () => setIsSeeThinkWonderSortPlaying(true))}
                                 disabled={!organizerLaunchReadiness.ok}
                                 className="flex items-center gap-2 bg-gradient-to-r from-sky-500 to-amber-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
@@ -2830,7 +2837,7 @@ const renderOutlineContentCore = (deps) => {
                     {showGameButton && (
                         <div className="flex justify-center mb-4">
                             <GameButtonHint />
-                            <button
+                            <button type="button"
                                 onClick={() => _startOrganizerGame('storymap', () => setIsStoryMapSortPlaying(true))}
                                 disabled={!organizerLaunchReadiness.ok}
                                 className="flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-rose-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
@@ -2984,7 +2991,7 @@ const renderOutlineContentCore = (deps) => {
                     {showGameButton && (
                         <div className="flex justify-center mb-4">
                             <GameButtonHint />
-                            <button
+                            <button type="button"
                                 onClick={() => _startOrganizerGame('outline', () => setIsOutlineSortPlaying(true))}
                                 disabled={!organizerLaunchReadiness.ok}
                                 className="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
@@ -2999,7 +3006,7 @@ const renderOutlineContentCore = (deps) => {
                     <div className="relative mt-8 space-y-8 ml-4 md:ml-12">
                         <div className="absolute left-[-24px] top-4 bottom-8 w-0.5 bg-indigo-200/50 rounded-full"></div>
                         {branches.map((branch, i) => (
-                            <div key={i} className="relative group animate-in slide-in-from-left-4 duration-500" style={{ animationDelay: `${i * 100}ms` }}>
+                            <div key={i} className="relative group animate-in motion-reduce:animate-none slide-in-from-left-4 duration-500" style={{ animationDelay: `${i * 100}ms` }}>
                                 <div className="absolute left-[-29px] top-6 w-3 h-3 rounded-full bg-white border-2 border-indigo-400 z-10 group-hover:scale-125 transition-transform shadow-sm"></div>
                                 <div className="absolute left-[-24px] top-[29px] w-6 h-px bg-indigo-300"></div>
                                 <div className="bg-white rounded-r-xl rounded-bl-xl border-l-4 border-l-indigo-500 border-y border-r border-indigo-100 p-5 shadow-sm hover:shadow-md transition-all">
@@ -3156,8 +3163,11 @@ function openConceptMap3D(opts) {
   // interactive mode first.
   var generated = (opts.generated && Array.isArray(opts.generated.branches) && opts.generated.branches.length) ? opts.generated : null;
   if (!nodes.length && !generated) { addToast(t('concept_map.view_3d_empty') || 'Add some concepts first.', 'info'); return function () {}; }
+  var existingOverlay = document.getElementById('vo-cg3d-overlay');
+  if (existingOverlay && typeof existingOverlay.__alloDestroy === 'function') existingOverlay.__alloDestroy(false);
   var previouslyFocused = document.activeElement;
   var overlay = document.createElement('div');
+  overlay.id = 'vo-cg3d-overlay';
   overlay.setAttribute('role', 'dialog'); overlay.setAttribute('aria-modal', 'true');
   overlay.setAttribute('aria-labelledby', 'vo-cg3d-title'); overlay.setAttribute('aria-describedby', 'vo-cg3d-hint'); overlay.tabIndex = -1;
   overlay.style.cssText = 'position:fixed;inset:0;z-index:1000;background:rgba(2,6,23,0.94);display:flex;flex-direction:column;';
@@ -3178,23 +3188,49 @@ function openConceptMap3D(opts) {
   body.appendChild(status);
   overlay.appendChild(header); overlay.appendChild(body);
   document.body.appendChild(overlay);
+  var background = Array.prototype.slice.call(document.body.children).filter(function (el) {
+    return el !== overlay && !/^(SCRIPT|STYLE)$/i.test(el.tagName || '');
+  }).map(function (el) {
+    return {
+      el: el,
+      inert: el.hasAttribute('inert'),
+      ariaHidden: el.hasAttribute('aria-hidden') ? el.getAttribute('aria-hidden') : null
+    };
+  });
+  background.forEach(function (item) {
+    item.el.setAttribute('inert', '');
+    item.el.setAttribute('aria-hidden', 'true');
+  });
   closeBtn.focus();
   var handle = null, aiBtn = null;
   var destroyed = false;
-  function destroy() {
+  function destroy(restoreFocus) {
     if (destroyed) return;
     destroyed = true;
     try { if (handle && handle.destroy) handle.destroy(); } catch (e) {}
     try { document.removeEventListener('keydown', onKey, true); } catch (e) {}
+    try {
+      background.forEach(function (item) {
+        if (!item.inert) item.el.removeAttribute('inert');
+        if (item.ariaHidden === null) item.el.removeAttribute('aria-hidden');
+        else item.el.setAttribute('aria-hidden', item.ariaHidden);
+      });
+    } catch (e) {}
     try { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); } catch (e) {}
-    try { if (previouslyFocused && document.contains(previouslyFocused)) previouslyFocused.focus(); } catch (e) {}
+    try { if (restoreFocus !== false && previouslyFocused && document.contains(previouslyFocused)) previouslyFocused.focus(); } catch (e) {}
   }
+  overlay.__alloDestroy = destroy;
   function onKey(e) {
-    if (e.key === 'Escape') { e.preventDefault(); destroy(); return; }
+    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); destroy(); return; }
     if (e.key !== 'Tab') return;
-    var focusable = Array.from(overlay.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')).filter(function (el) { return el.getClientRects().length > 0; });
+    var candidates = Array.from(overlay.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')).filter(function (el) {
+      return !el.hidden && el.getAttribute('aria-hidden') !== 'true' && (!el.style || (el.style.display !== 'none' && el.style.visibility !== 'hidden'));
+    });
+    var rectFocusable = candidates.filter(function (el) { return el.getClientRects().length > 0; });
+    var focusable = rectFocusable.length ? rectFocusable : candidates;
     if (!focusable.length) { e.preventDefault(); overlay.focus(); return; }
     var first = focusable[0], last = focusable[focusable.length - 1];
+    if (focusable.indexOf(document.activeElement) === -1) { e.preventDefault(); (e.shiftKey ? last : first).focus(); return; }
     if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
     else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
   }
@@ -3488,7 +3524,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     };
     const startChallenge = (viaArm) => {
         if (isTeacherMode && viaArm !== true && challengeLiveReadiness?.ok === false) {
-            if (addToast) addToast(challengeLiveReadiness.message || 'Finish setting up this organizer before starting the student activity.', 'info');
+            if (addToast) addToast(challengeLiveReadiness.message || _vrCopy(t, 'concept_space.setup_incomplete', 'Finish setting up this organizer before starting the student activity.'), 'info');
             return;
         }
         const E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
@@ -3962,7 +3998,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
         if (!recallEligible || challenge || furnishing) return;
         const startedFromArm = viaArm === true;
         if (isTeacherMode && !startedFromArm && recallLiveReadiness?.ok === false) {
-            if (addToast) addToast(recallLiveReadiness.message || 'Finish setting up Concept Recall before starting the student activity.', 'info');
+            if (addToast) addToast(recallLiveReadiness.message || _vrCopy(t, 'concept_space.recall_setup_incomplete', 'Finish setting up Concept Recall before starting the student activity.'), 'info');
             return;
         }
         const begin = () => {
@@ -4132,7 +4168,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                 ⏱ {fmtTime(elapsed)} · {(t('concept_space.challenge_progress') || '{placed}/{total} placed')
                                     .replace('{placed}', String(placedCount)).replace('{total}', String(challenge.targets.length))}
                             </span>
-                            <button
+                            <button type="button"
                                 onClick={checkChallenge}
                                 disabled={placedCount === 0}
                                 className="flex items-center gap-1 bg-emerald-700 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:bg-emerald-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -4140,7 +4176,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                 ✔ {t('concept_space.challenge_check') || 'Check placements'}
                             </button>
                             {lastScore && !lastScore.complete && _alloRuntimeAiAvailable() && (
-                                <button
+                                <button type="button"
                                     onClick={requestHint}
                                     disabled={hintLoading}
                                     className="flex items-center gap-1 bg-amber-100 text-amber-800 border border-amber-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-amber-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -4149,13 +4185,13 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                     💡 {hintLoading ? (t('common.loading') || 'Loading…') : (t('concept_space.hint_button') || 'Hint')}
                                 </button>
                             )}
-                            <button
+                            <button type="button"
                                 onClick={retryChallenge}
                                 className="flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
                             >
                                 ↺ {t('concept_space.challenge_retry') || 'Retry'}
                             </button>
-                            <button
+                            <button type="button"
                                 onClick={exitChallenge}
                                 className="flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
                             >
@@ -4170,7 +4206,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                             </span>
                             {!recallScore && (
                                 <div className="flex items-center gap-0.5 bg-slate-100 rounded-full p-0.5" role="group" aria-label={t('concept_space.recall_mode_label') || 'How to answer'}>
-                                    <button
+                                    <button type="button"
                                         onClick={() => { setRecallAnswerMode('bank'); setTypedAnswer(''); }}
                                         aria-pressed={recallAnswerMode === 'bank' ? 'true' : 'false'}
                                         className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors ${recallAnswerMode === 'bank' ? 'bg-sky-700 text-white' : 'text-slate-600 hover:bg-slate-200'}`}
@@ -4178,7 +4214,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                         {t('concept_space.recall_mode_bank') || 'Choose'}
                                     </button>
                                     {isTeacherMode && (
-                                        <button
+                                        <button type="button"
                                             onClick={() => setRecallAnswerMode('typed')}
                                             aria-pressed={recallAnswerMode === 'typed' ? 'true' : 'false'}
                                             title={t('concept_space.recall_mode_typed_tooltip') || 'Expert: type the name instead of choosing it'}
@@ -4190,14 +4226,14 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                 </div>
                             )}
                             {recallScore && (
-                                <button
+                                <button type="button"
                                     onClick={startRecall}
                                     className="flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
                                 >
                                     ↺ {t('concept_space.recall_again') || 'Go again'}
                                 </button>
                             )}
-                            <button
+                            <button type="button"
                                 onClick={exitRecall}
                                 className="flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
                             >
@@ -4207,7 +4243,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                     ) : (
                         <>
                             {hasContent && recallEligible && !failed && (
-                                <button
+                                <button type="button"
                                     onClick={startRecall}
                                     disabled={isTeacherMode && recallLiveReadiness?.ok === false}
                                     className="flex items-center gap-1 bg-gradient-to-r from-sky-500 to-cyan-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
@@ -4217,7 +4253,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                 </button>
                             )}
                             {hasContent && challengeEligible && !failed && (
-                                <button
+                                <button type="button"
                                     onClick={() => startChallenge(false)}
                                     disabled={isTeacherMode && challengeLiveReadiness?.ok === false}
                                     className="flex items-center gap-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
@@ -4237,7 +4273,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                 </span>
                             )}
                             {hasContent && _alloRuntimeAiAvailable() && !failed && (
-                                <button
+                                <button type="button"
                                     onClick={handleArrange}
                                     disabled={arranging}
                                     className="flex items-center gap-1 bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
@@ -4247,7 +4283,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                 </button>
                             )}
                             {hasContent && persist && isTeacherMode && data?.conceptSpace && !failed && (
-                                <button
+                                <button type="button"
                                     onClick={() => { persist(null, 'conceptSpace'); setNonce((n) => n + 1); }}
                                     className="flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
                                     title={t('concept_space.reset_tooltip') || 'Discard the saved arrangement and return to the default layout'}
@@ -4256,7 +4292,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                 </button>
                             )}
                             {hasContent && persist && isTeacherMode && !failed && _alloRuntimeAiAvailable() && (
-                                <button
+                                <button type="button"
                                     onClick={() => setFurnishOpen((o) => !o)}
                                     aria-pressed={furnishOpen ? 'true' : 'false'}
                                     className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${furnishOpen || furnishing ? 'bg-fuchsia-600 text-white border-fuchsia-600' : 'bg-white text-fuchsia-700 border-fuchsia-300 hover:bg-fuchsia-50'}`}
@@ -4269,7 +4305,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                 </button>
                             )}
                             {hasContent && persist && !failed && (
-                                <button
+                                <button type="button"
                                     onClick={() => setConstelOpen((o) => !o)}
                                     aria-pressed={constelOpen ? 'true' : 'false'}
                                     className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${constelOpen ? 'bg-slate-800 text-indigo-200 border-slate-800' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'}`}
@@ -4279,7 +4315,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                 </button>
                             )}
                             {hasContent && !failed && (
-                                <button
+                                <button type="button"
                                     onClick={handleFullscreen}
                                     className="flex items-center gap-1 bg-white text-indigo-600 border border-indigo-200 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-indigo-50 transition-colors"
                                     title={t('concept_space.fullscreen_tooltip') || 'Open this concept space full screen'}
@@ -4343,7 +4379,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                 text — parity, not an advantage. */}
                             {recallDescription && (
                                 <div className="mb-2">
-                                    <button
+                                    <button type="button"
                                         onClick={() => setDescribeOpen((o) => !o)}
                                         aria-expanded={describeOpen ? 'true' : 'false'}
                                         aria-controls="cg3d-recall-desc"
@@ -4390,7 +4426,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                             ) : (
                                 <div className="flex items-center gap-1.5 flex-wrap" role="group" aria-label={t('concept_space.recall_choices_aria') || 'Possible names'}>
                                     {recallChoices.map((c) => (
-                                        <button
+                                        <button type="button"
                                             key={c.id}
                                             onClick={() => submitRecallAnswer(c.label)}
                                             disabled={!!recallFeedback}
@@ -4401,7 +4437,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                     ))}
                                 </div>
                             )}
-                            <button
+                            <button type="button"
                                 onClick={revealRecallAnswer}
                                 disabled={!!recallFeedback}
                                 className="text-[11px] text-slate-500 underline hover:text-slate-700 mt-2 disabled:opacity-50"
@@ -4421,7 +4457,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                         </span>
                     </div>
                     <div className="flex items-center gap-0.5 bg-slate-100 rounded-full p-0.5 w-fit mb-2" role="group" aria-label={t('concept_space.furnish_mode_label') || 'What to generate'}>
-                        <button
+                        <button type="button"
                             onClick={() => setFurnishMode('sculpture')}
                             aria-pressed={furnishMode === 'sculpture' ? 'true' : 'false'}
                             disabled={!!furnishing}
@@ -4429,7 +4465,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                         >
                             🧊 {t('concept_space.furnish_mode_sculpture') || 'Sculptures'}
                         </button>
-                        <button
+                        <button type="button"
                             onClick={() => setFurnishMode('image')}
                             aria-pressed={furnishMode === 'image' ? 'true' : 'false'}
                             disabled={!canImagen || !!furnishing}
@@ -4479,7 +4515,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                     {(t('concept_space.furnishing') || 'Furnishing {done}/{total}…')
                                         .replace('{done}', String(furnishing.done)).replace('{total}', String(furnishing.total))}
                                 </span>
-                                <button
+                                <button type="button"
                                     onClick={stopFurnish}
                                     className="px-3 py-1.5 rounded-full text-xs font-bold bg-white text-rose-800 border border-rose-300 hover:bg-rose-50 transition-colors"
                                 >
@@ -4487,7 +4523,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                 </button>
                             </>
                         ) : (
-                            <button
+                            <button type="button"
                                 onClick={handleFurnishAll}
                                 disabled={!furnishTargets.length}
                                 className="px-3 py-1.5 rounded-full text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -4498,7 +4534,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                             </button>
                         )}
                         {!furnishing && artCount > 0 && (
-                            <button
+                            <button type="button"
                                 onClick={handleClearAllArt}
                                 aria-describedby={clearArmed ? 'cg3d-clear-armed' : undefined}
                                 className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${clearArmed ? 'bg-rose-600 text-white border-rose-600' : 'bg-white text-rose-800 border-rose-300 hover:bg-rose-50'}`}
@@ -4529,7 +4565,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                         <span className="text-xs font-bold text-indigo-300">🌌 {t('cg3d.constel_heading') || 'Constellation — weight the connections yourself'}</span>
                         <div className="flex items-center gap-0.5 bg-slate-800 rounded-full p-0.5 ml-auto" role="group" aria-label={t('cg3d.constel_mode_label') || 'Constellation view mode'}>
                             {['off', 'mine', 'ai', 'diff'].map((m) => (
-                                <button key={m} onClick={() => setConstelMode(m)} aria-pressed={constelMode === m ? 'true' : 'false'}
+                                <button type="button" key={m} onClick={() => setConstelMode(m)} aria-pressed={constelMode === m ? 'true' : 'false'}
                                     className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors ${constelMode === m ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-700'}`}>
                                     {m === 'off' ? (t('cg3d.constel_mode_off') || 'Off') : m === 'mine' ? (t('cg3d.constel_mode_mine') || 'My weights') : m === 'ai' ? (t('cg3d.constel_mode_ai') || 'AI weights') : (t('cg3d.constel_mode_diff') || 'Compare')}
                                 </button>
@@ -4560,12 +4596,12 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                             placeholder={t('cg3d.constel_why_ph') || 'Why? One sentence you could defend from the source…'}
                             aria-label={t('cg3d.constel_why_aria') || 'Justify your weight'}
                             className="flex-1 min-w-[220px] bg-slate-800 border border-slate-600 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 placeholder-slate-500" />
-                        <button onClick={saveConstelLink} disabled={!constelA || !constelB || constelA === constelB}
+                        <button type="button" onClick={saveConstelLink} disabled={!constelA || !constelB || constelA === constelB}
                             className="px-3 py-1.5 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed">
                             ⭐ {t('cg3d.constel_save') || 'Set my weight'}
                         </button>
                         {_alloRuntimeAiAvailable() && (
-                            <button onClick={aiRateConstelLink} disabled={!constelA || !constelB || constelA === constelB || constelBusy}
+                            <button type="button" onClick={aiRateConstelLink} disabled={!constelA || !constelB || constelA === constelB || constelBusy}
                                 className="px-3 py-1.5 rounded-full text-xs font-bold bg-slate-700 text-indigo-200 hover:bg-slate-600 disabled:opacity-40 disabled:cursor-not-allowed"
                                 title={t('cg3d.constel_ai_tooltip') || 'Ask the AI to rate the same link, then Compare shows where you differ'}>
                                 ⚖ {constelBusy ? (t('cg3d.constel_ai_busy') || 'Rating…') : (t('cg3d.constel_ai') || 'AI rating')}
@@ -4589,7 +4625,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                         <span className="font-bold">{(t('concept_space.hint_for') || 'Thinking about “{label}”:').replace('{label}', hint.label)}</span>{' '}
                         {hint.text}
                     </div>
-                    <button
+                    <button type="button"
                         onClick={() => setHint(null)}
                         aria-label={t('common.close') || 'Close'}
                         className="text-amber-700 hover:text-amber-900 font-bold px-1"
@@ -4628,7 +4664,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                     <div className="absolute left-3 bottom-3 z-10 w-72 max-w-[85%] max-h-[80%] overflow-auto rounded-xl bg-white/95 backdrop-blur border border-fuchsia-300 shadow-xl p-3 text-slate-800" role="group" aria-label={t('concept_space.art_panel_aria') || 'Concept art'}>
                         <div className="flex items-center justify-between mb-1.5">
                             <div className="text-xs font-extrabold text-fuchsia-700 truncate pr-2">🎨 {selectedNode.label}</div>
-                            <button onClick={() => { setSelectedNode(null); selectedNodeRef.current = null; }} aria-label={t('common.close') || 'Close'} className="text-slate-600 hover:text-slate-700 font-bold text-sm leading-none">✕</button>
+                            <button type="button" onClick={() => { setSelectedNode(null); selectedNodeRef.current = null; }} aria-label={t('common.close') || 'Close'} className="text-slate-600 hover:text-slate-700 font-bold text-sm leading-none">✕</button>
                         </div>
                         {nodeArtType ? (
                             <div className="space-y-2">
@@ -4636,10 +4672,10 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                 {nodeArtType === 'sculpture' && (
                                     <>
                                         <div className="flex flex-wrap gap-1">
-                                            <button onClick={() => handleArtManualTweak('bigger')} className="px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100">🔍+ {t('memory_palace.refine_bigger') || 'Bigger'}</button>
-                                            <button onClick={() => handleArtManualTweak('smaller')} className="px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100">🔍− {t('memory_palace.refine_smaller') || 'Smaller'}</button>
-                                            <button onClick={() => handleArtManualTweak('rotate')} className="px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100">⟳ {t('memory_palace.refine_rotate') || 'Rotate'}</button>
-                                            <button onClick={() => handleArtManualTweak('recolor')} className="px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100">🎨 {t('memory_palace.refine_recolor') || 'Recolor'}</button>
+                                            <button type="button" onClick={() => handleArtManualTweak('bigger')} className="px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100">🔍+ {t('memory_palace.refine_bigger') || 'Bigger'}</button>
+                                            <button type="button" onClick={() => handleArtManualTweak('smaller')} className="px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100">🔍− {t('memory_palace.refine_smaller') || 'Smaller'}</button>
+                                            <button type="button" onClick={() => handleArtManualTweak('rotate')} className="px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100">⟳ {t('memory_palace.refine_rotate') || 'Rotate'}</button>
+                                            <button type="button" onClick={() => handleArtManualTweak('recolor')} className="px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100">🎨 {t('memory_palace.refine_recolor') || 'Recolor'}</button>
                                         </div>
                                         <form onSubmit={(e) => { e.preventDefault(); handleArtRefine(); }} className="flex gap-1">
                                             <input value={refinePrompt} onChange={(e) => setRefinePrompt(e.target.value)} disabled={refineBusy} placeholder={t('concept_space.refine_placeholder') || 'Tell the AI what to change…'} aria-label={t('concept_space.refine_placeholder') || 'Tell the AI what to change'} className="flex-1 min-w-0 text-xs px-2 py-1.5 rounded-lg border border-fuchsia-200 focus:ring-2 focus:ring-fuchsia-400" />
@@ -4647,7 +4683,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                         </form>
                                     </>
                                 )}
-                                <button onClick={handleArtClear} className="w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-white text-rose-800 border border-rose-200 hover:bg-rose-50">🗑 {t('concept_space.art_remove') || 'Remove art'}</button>
+                                <button type="button" onClick={handleArtClear} className="w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-white text-rose-800 border border-rose-200 hover:bg-rose-50">🗑 {t('concept_space.art_remove') || 'Remove art'}</button>
                             </div>
                         ) : (
                             <div className="space-y-2">
@@ -4655,11 +4691,11 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                     <div className="text-xs text-fuchsia-700 font-bold py-2 text-center" role="status">{directBusy === 'evaluating' ? (t('concept_space.art_checking') || '… Checking your idea') : (t('concept_space.art_creating') || '… Creating')}</div>
                                 ) : (
                                     <>
-                                        <button onClick={doSculptFromLabel} disabled={!_alloRuntimeAiAvailable()} className="w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50">🧊 {t('concept_space.art_sculpt_auto') || 'Sculpt from this concept'}</button>
+                                        <button type="button" onClick={doSculptFromLabel} disabled={!_alloRuntimeAiAvailable()} className="w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50">🧊 {t('concept_space.art_sculpt_auto') || 'Sculpt from this concept'}</button>
                                         <div className="text-[11px] text-slate-500 text-center">{t('concept_space.art_or_direct') || 'or describe your own:'}</div>
                                         <div className="flex gap-1">
-                                            <button onClick={() => setArtType('sculpture')} className={`flex-1 px-2 py-1 rounded-full text-[11px] font-bold border ${artType === 'sculpture' ? 'bg-fuchsia-600 text-white border-fuchsia-600' : 'bg-white text-fuchsia-700 border-fuchsia-300'}`}>🧊 {t('memory_palace.direct_sculpture') || 'Sculpture'}</button>
-                                            <button onClick={() => setArtType('image')} disabled={!canImagen} title={!canImagen ? (t('concept_space.art_no_imagen') || 'Image generation is unavailable here — try a sculpture.') : undefined} className={`flex-1 px-2 py-1 rounded-full text-[11px] font-bold border disabled:opacity-40 ${artType === 'image' ? 'bg-fuchsia-600 text-white border-fuchsia-600' : 'bg-white text-fuchsia-700 border-fuchsia-300'}`}>🖼 {t('memory_palace.direct_image') || 'Image'}</button>
+                                            <button type="button" onClick={() => setArtType('sculpture')} className={`flex-1 px-2 py-1 rounded-full text-[11px] font-bold border ${artType === 'sculpture' ? 'bg-fuchsia-600 text-white border-fuchsia-600' : 'bg-white text-fuchsia-700 border-fuchsia-300'}`}>🧊 {t('memory_palace.direct_sculpture') || 'Sculpture'}</button>
+                                            <button type="button" onClick={() => setArtType('image')} disabled={!canImagen} title={!canImagen ? (t('concept_space.art_no_imagen') || 'Image generation is unavailable here — try a sculpture.') : undefined} className={`flex-1 px-2 py-1 rounded-full text-[11px] font-bold border disabled:opacity-40 ${artType === 'image' ? 'bg-fuchsia-600 text-white border-fuchsia-600' : 'bg-white text-fuchsia-700 border-fuchsia-300'}`}>🖼 {t('memory_palace.direct_image') || 'Image'}</button>
                                         </div>
                                         {directEval && directEval.verdict === 'reject' && (
                                             <div className="text-[11px] bg-amber-50 border border-amber-200 rounded-lg p-1.5 text-amber-900"><span className="font-bold">{t('memory_palace.direct_rejected') || 'Let’s adjust:'}</span> {directEval.reason}</div>
@@ -4669,8 +4705,8 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                                 {directEval.reason && <div className="mb-1 text-fuchsia-900">{directEval.reason}</div>}
                                                 {directEval.enhancedPrompt && <div className="italic text-fuchsia-800 mb-1">“{directEval.enhancedPrompt}”</div>}
                                                 <div className="flex gap-1">
-                                                    <button onClick={() => handleArtGenerate(directEval.enhancedPrompt || directPrompt)} className="flex-1 px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700">✨ {t('memory_palace.direct_use_enhanced') || 'Use the improved version'}</button>
-                                                    <button onClick={() => handleArtGenerate(directPrompt)} className="px-2 py-1 rounded-full text-[11px] font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-50">{t('memory_palace.direct_use_mine') || 'Use mine'}</button>
+                                                    <button type="button" onClick={() => handleArtGenerate(directEval.enhancedPrompt || directPrompt)} className="flex-1 px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700">✨ {t('memory_palace.direct_use_enhanced') || 'Use the improved version'}</button>
+                                                    <button type="button" onClick={() => handleArtGenerate(directPrompt)} className="px-2 py-1 rounded-full text-[11px] font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-50">{t('memory_palace.direct_use_mine') || 'Use mine'}</button>
                                                 </div>
                                             </div>
                                         )}
@@ -5236,7 +5272,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         const MP = window.AlloModules && window.AlloModules.MemoryPalace;
         if (!MP || recall || artJobRef.current || noWalk) return;
         if (isTeacherMode && viaArm !== true && liveRecallReadiness?.ok === false) {
-            if (addToast) addToast(liveRecallReadiness.message || 'Finish setting up this Memory Palace before starting the student activity.', 'info');
+            if (addToast) addToast(liveRecallReadiness.message || _vrCopy(t, 'memory_palace.setup_incomplete', 'Finish setting up this Memory Palace before starting the student activity.'), 'info');
             return;
         }
         const palace = MP.buildPalace(data || {});
@@ -5649,11 +5685,11 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
             + `.method{margin-top:24px;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;font-size:12px;color:#475569;}`
             + `.no-print{text-align:center;margin-bottom:22px;}button{background:#4f46e5;color:#fff;border:none;padding:10px 20px;font-size:15px;font-weight:700;border-radius:6px;cursor:pointer;}`
             + `@media print{.no-print{display:none;}}</style></head><body>`
-            + `<div class="no-print"><button onclick="window.print()">${_mpEsc(t('common.print') || 'Print')}</button></div>`
+            + `<div class="no-print"><button type="button" onclick="window.print()">${_mpEsc(t('common.print') || 'Print')}</button></div>`
             + `<h1>${sheetTitle}</h1><p class="sub">${_mpEsc(t('memory_palace.sheet_subtitle') || 'Memory palace study sheet — walk the route in order and picture each image vividly.')}</p>`
             + roomsHtml
             + `<div class="method">${_mpEsc(t('memory_palace.caption') || '')}</div></body></html>`;
-        const win = window.open('', '_blank');
+        const win = window.open('', '_blank'); if (win) { try { win.opener = null; } catch (_) {} }
         if (win) { win.document.write(html); win.document.close(); }
         else if (addToast) addToast(t('memory_palace.sheet_popup') || 'Allow pop-ups to open the printable study sheet.', 'error');
     };
@@ -6567,14 +6603,14 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                     .replace('{done}', String(answered)).replace('{total}', String(recallOrderRef.current.length || (palaceRef.current?.route?.length || 1) - 1))}
                             </span>
                             {finished && (
-                                <button
+                                <button type="button"
                                     onClick={() => retryRecall()}
                                     className="flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
                                 >
                                     ↺ {t('memory_palace.recall_retry') || 'Walk it again'}
                                 </button>
                             )}
-                            <button
+                            <button type="button"
                                 onClick={(event) => { recallReturnModeRef.current = event.detail === 0 ? (recall.choiceFallback ? 'bank' : recall.mode) : null; exitRecall(); }}
                                 className="flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
                             >
@@ -6612,7 +6648,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                 </button>
                             )}
                             {hasContent && !failed && (
-                                <button
+                                <button type="button"
                                     onClick={handlePrintStudySheet}
                                     className="flex items-center gap-1 bg-white text-slate-700 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
                                     title={t('memory_palace.sheet_tooltip') || 'Open a printable study sheet: the route, loci and mnemonics in walking order'}
@@ -6621,7 +6657,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                 </button>
                             )}
                             {hasContent && !failed && (
-                                <button
+                                <button type="button"
                                     onClick={handlePresentation}
                                     disabled={routeEditing}
                                     className="flex items-center gap-1 bg-slate-900 text-white border border-slate-700 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-800 transition-colors disabled:cursor-not-allowed disabled:opacity-40"
@@ -6631,7 +6667,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                 </button>
                             )}
                             {hasContent && !failed && !noWalk && persist && (
-                                <button
+                                <button type="button"
                                     onClick={() => setCustomizeOpen((o) => !o)}
                                     aria-expanded={customizeOpen ? 'true' : 'false'}
                                     className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${customizeOpen ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-50'}`}
@@ -6646,7 +6682,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                 <div className="mb-2 text-[11px] font-extrabold uppercase tracking-wider text-slate-500">{t('memory_palace.controls_practice') || 'Practice'}</div>
                                 {!recallEligible && <p className="mb-2 text-xs leading-relaxed text-slate-600">{t('memory_palace.practice_minimum') || 'Add a second memory stop to unlock recall practice.'}</p>}
                                 <div className="flex flex-wrap gap-2">                            {hasContent && !failed && !noWalk && recallEligible && (
-                                <button
+                                <button type="button"
                                     data-recall-mode="bank"
                                     onClick={() => startRecall('bank', false)}
                                     disabled={artBusy || routeEditing || (isTeacherMode && liveRecallReadiness?.ok === false)}
@@ -6657,7 +6693,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                 </button>
                             )}
                             {hasContent && !failed && !noWalk && recallEligible && (
-                                <button
+                                <button type="button"
                                     data-recall-mode="self"
                                     onClick={() => startRecall('self', false)}
                                     disabled={artBusy || routeEditing || (isTeacherMode && liveRecallReadiness?.ok === false)}
@@ -6668,7 +6704,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                 </button>
                             )}
                             {hasContent && !failed && recallEligible && isTeacherMode && (
-                                <button
+                                <button type="button"
                                     data-recall-mode="type"
                                     onClick={() => startRecall('type', false)}
                                     disabled={artBusy || routeEditing || (isTeacherMode && liveRecallReadiness?.ok === false)}
@@ -6692,7 +6728,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                 <div className="mb-2 text-[11px] font-extrabold uppercase tracking-wider text-indigo-800">{t('memory_palace.controls_create') || 'Create & personalize'}</div>
                                 <div className="flex flex-wrap gap-2">
                             {hasContent && !failed && !noWalk && persist && _alloRuntimeAiAvailable() && (
-                                <button
+                                <button type="button"
                                     onClick={() => { setDirectMode((d) => !d); setDirectEval(null); }}
                                     aria-pressed={directMode}
                                     className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${directMode ? 'bg-fuchsia-600 text-white border-fuchsia-600' : 'bg-white text-fuchsia-700 border-fuchsia-300 hover:bg-fuchsia-50'}`}
@@ -6702,7 +6738,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                 </button>
                             )}
                             {hasContent && !failed && !noWalk && persist && (
-                                <button
+                                <button type="button"
                                     onClick={() => setDecorMode((d) => !d)}
                                     aria-pressed={decorMode ? 'true' : 'false'}
                                     className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${decorMode ? 'bg-emerald-700 text-white border-emerald-600' : 'bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-50'}`}
@@ -6712,7 +6748,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                 </button>
                             )}
                             {hasContent && !failed && !noWalk && persist && (
-                                <button
+                                <button type="button"
                                     onClick={() => { setBuildMode((b) => !b); setPendingSpot(null); setDecorMode(false); setDirectMode(false); }}
                                     aria-pressed={buildMode ? 'true' : 'false'}
                                     className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${buildMode ? 'bg-sky-700 text-white border-sky-600' : 'bg-white text-sky-700 border-sky-300 hover:bg-sky-50'}`}
@@ -6722,7 +6758,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                 </button>
                             )}
                             {hasContent && !failed && !noWalk && canImagen && persist && (
-                                <button
+                                <button type="button"
                                     onClick={() => setReliefOn((r) => !r)}
                                     disabled={artBusy}
                                     aria-pressed={reliefOn ? 'true' : 'false'}
@@ -6733,7 +6769,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                 </button>
                             )}
                             {hasContent && !failed && !noWalk && canImagen && persist && (
-                                <button
+                                <button type="button"
                                     onClick={handleFurnish}
                                     disabled={artBusy}
                                     className="flex items-center gap-1 bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
@@ -6745,7 +6781,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                 </button>
                             )}
                             {hasContent && !failed && !noWalk && persist && _alloRuntimeAiAvailable() && (
-                                <button
+                                <button type="button"
                                     onClick={handleSculpt}
                                     disabled={artBusy || !window.AlloModules?.Prim3D}
                                     className="flex items-center gap-1 bg-gradient-to-r from-slate-600 to-slate-800 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
@@ -6757,7 +6793,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                 </button>
                             )}
                                                             {(furnishing || sculpting) && (
-                                <button
+                                <button type="button"
                                     onClick={() => { genCancelRef.current = true; setStopRequested(true); }}
                                     disabled={stopRequested}
                                     className="flex items-center gap-1 bg-white text-red-800 border border-red-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-red-50 transition-colors"
@@ -6793,7 +6829,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                         const icon = thm === 'gallery' ? '🏛' : thm === 'pasture' ? '🌿' : '🪐';
                                         const label = thm === 'gallery' ? (t('memory_palace.theme_gallery') || 'Gallery') : thm === 'pasture' ? (t('memory_palace.theme_pasture') || 'Pasture') : (t('memory_palace.theme_space') || 'Space');
                                         return (
-                                            <button key={thm} onClick={() => handleSetTheme(thm)} aria-pressed={on ? 'true' : 'false'} title={label}
+                                            <button type="button" key={thm} onClick={() => handleSetTheme(thm)} aria-pressed={on ? 'true' : 'false'} title={label}
                                                 className={`flex min-w-0 flex-col items-center gap-1 px-1 py-2 text-xs font-bold transition-colors sm:flex-row sm:px-3 ${on ? 'bg-white text-indigo-800 shadow-sm ring-1 ring-slate-200' : 'text-slate-600 hover:bg-white/70'}`}>
                                                 <span aria-hidden="true">{icon}</span><span>{label}</span>
                                             </button>
@@ -6854,7 +6890,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                         {' '}<span className="text-amber-800">{t('memory_palace.review_due_why') || '— walk the palace again to strengthen the ones fading from memory.'}</span>
                     </div>
                     {recallEligible && (
-                        <button
+                        <button type="button"
                             onClick={() => startRecall('bank', false, 'forward', (dueInfo.due || []).concat(dueInfo.newIds || []))}
                             className="min-h-[44px] flex-shrink-0 flex items-center gap-1 bg-amber-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm hover:bg-amber-800 transition-colors"
                         >
@@ -7287,7 +7323,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                     autoFocus
                                     maxLength={80}
                                     placeholder={t('memory_palace.build_name_placeholder') || 'A fact, a word, a step…'}
-                                    className="min-w-[12rem] flex-1 rounded-lg border border-sky-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-sky-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-600"
+                                    className="min-w-[12rem] flex-1 rounded-lg border border-sky-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 placeholder:text-slate-600 focus:border-sky-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-600"
                                 />
                                 <button type="submit" disabled={!spotLabel.trim()} className="rounded-full bg-sky-700 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-sky-800 disabled:cursor-not-allowed disabled:opacity-40">
                                     {t('memory_palace.build_place') || 'Place it'}
@@ -7310,7 +7346,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                     autoFocus
                                     maxLength={40}
                                     placeholder={t('memory_palace.build_room_placeholder') || 'The Attic, Grandma\u2019s kitchen…'}
-                                    className="min-w-[12rem] flex-1 rounded-lg border border-sky-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-sky-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-600"
+                                    className="min-w-[12rem] flex-1 rounded-lg border border-sky-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 placeholder:text-slate-600 focus:border-sky-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-600"
                                 />
                                 <button type="submit" disabled={!roomName.trim()} className="rounded-full bg-sky-700 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-sky-800 disabled:cursor-not-allowed disabled:opacity-40">
                                     {t('memory_palace.build_room_add') || 'Add room'}
@@ -7398,7 +7434,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                 rows={2}
                                 autoFocus
                                 placeholder={t('memory_palace.own_placeholder') || 'Something you can SEE happening right here...'}
-                                className="w-full rounded-lg border border-indigo-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600"
+                                className="w-full rounded-lg border border-indigo-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 placeholder:text-slate-600 focus:border-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600"
                             />
                             {/* Self-rated prompts, not a machine score: whether an image is
                                 vivid is the student's call, and word-list scoring would only
@@ -7463,10 +7499,10 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                 <div className="mb-3 pb-3 border-b border-fuchsia-200">
                                     <div className="text-xs font-bold text-fuchsia-800 mb-1.5">{t('memory_palace.refine_title') || 'Refine this sculpture'}</div>
                                     <div className="flex flex-wrap gap-1.5 mb-2">
-                                        <button onClick={() => handleManualTweak('bigger')} className="px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100">🔍+ {t('memory_palace.refine_bigger') || 'Bigger'}</button>
-                                        <button onClick={() => handleManualTweak('smaller')} className="px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100">🔍− {t('memory_palace.refine_smaller') || 'Smaller'}</button>
-                                        <button onClick={() => handleManualTweak('rotate')} className="px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100">⟳ {t('memory_palace.refine_rotate') || 'Rotate'}</button>
-                                        <button onClick={() => handleManualTweak('recolor')} className="px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100">🎨 {t('memory_palace.refine_recolor') || 'Recolor'}</button>
+                                        <button type="button" onClick={() => handleManualTweak('bigger')} className="px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100">🔍+ {t('memory_palace.refine_bigger') || 'Bigger'}</button>
+                                        <button type="button" onClick={() => handleManualTweak('smaller')} className="px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100">🔍− {t('memory_palace.refine_smaller') || 'Smaller'}</button>
+                                        <button type="button" onClick={() => handleManualTweak('rotate')} className="px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100">⟳ {t('memory_palace.refine_rotate') || 'Rotate'}</button>
+                                        <button type="button" onClick={() => handleManualTweak('recolor')} className="px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100">🎨 {t('memory_palace.refine_recolor') || 'Recolor'}</button>
                                     </div>
                                     {!objects3d[current.id].glbItem && (
                                         <form onSubmit={(e) => { e.preventDefault(); handleAiRefine(); }} className="flex gap-2">
@@ -7486,8 +7522,8 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                             )}
                             <div className="flex items-center gap-2 mb-2">
                                 <span className="text-xs font-bold text-fuchsia-800">{t('memory_palace.direct_make') || 'Make:'}</span>
-                                <button disabled={artBusy || !canImagen} aria-pressed={directType === 'image'} onClick={() => { setDirectType('image'); setDirectEval(null); }} className={`px-2.5 py-1 rounded-full text-xs font-bold border ${directType === 'image' ? 'bg-fuchsia-600 text-white border-fuchsia-600' : 'bg-white text-fuchsia-700 border-fuchsia-300'}`}>🖼 {t('memory_palace.direct_image') || 'Image'}</button>
-                                <button disabled={artBusy || !window.AlloModules?.Prim3D} aria-pressed={directType === 'sculpture'} onClick={() => { setDirectType('sculpture'); setDirectEval(null); }} className={`px-2.5 py-1 rounded-full text-xs font-bold border ${directType === 'sculpture' ? 'bg-fuchsia-600 text-white border-fuchsia-600' : 'bg-white text-fuchsia-700 border-fuchsia-300'}`}>🗿 {t('memory_palace.direct_sculpture') || 'Sculpture'}</button>
+                                <button type="button" disabled={artBusy || !canImagen} aria-pressed={directType === 'image'} onClick={() => { setDirectType('image'); setDirectEval(null); }} className={`px-2.5 py-1 rounded-full text-xs font-bold border ${directType === 'image' ? 'bg-fuchsia-600 text-white border-fuchsia-600' : 'bg-white text-fuchsia-700 border-fuchsia-300'}`}>🖼 {t('memory_palace.direct_image') || 'Image'}</button>
+                                <button type="button" disabled={artBusy || !window.AlloModules?.Prim3D} aria-pressed={directType === 'sculpture'} onClick={() => { setDirectType('sculpture'); setDirectEval(null); }} className={`px-2.5 py-1 rounded-full text-xs font-bold border ${directType === 'sculpture' ? 'bg-fuchsia-600 text-white border-fuchsia-600' : 'bg-white text-fuchsia-700 border-fuchsia-300'}`}>🗿 {t('memory_palace.direct_sculpture') || 'Sculpture'}</button>
                             </div>
                             <p className="mb-3 text-xs leading-relaxed text-fuchsia-800">{t('memory_palace.direct_format_draft') || 'Switch between image and sculpture without losing your prompt.'}</p>
                             {directEval && directEval.verdict === 'reject' && (
@@ -7500,8 +7536,8 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                     {directEval.reason && <div className="mb-1">{directEval.reason}</div>}
                                     {directEval.enhancedPrompt && <div className="italic text-fuchsia-800 mb-2">“{directEval.enhancedPrompt}”</div>}
                                     <div className="flex gap-2 flex-wrap">
-                                        <button onClick={() => handleDirectGenerate(directEval.enhancedPrompt || directPrompt)} disabled={artBusy} className="px-3 py-1.5 rounded-full text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50">✨ {t('memory_palace.direct_use_enhanced') || 'Use the improved version'}</button>
-                                        <button onClick={() => handleDirectGenerate(directPrompt)} disabled={artBusy} className="px-3 py-1.5 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-50 disabled:opacity-50">{t('memory_palace.direct_use_mine') || 'Use mine as-is'}</button>
+                                        <button type="button" onClick={() => handleDirectGenerate(directEval.enhancedPrompt || directPrompt)} disabled={artBusy} className="px-3 py-1.5 rounded-full text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50">✨ {t('memory_palace.direct_use_enhanced') || 'Use the improved version'}</button>
+                                        <button type="button" onClick={() => handleDirectGenerate(directPrompt)} disabled={artBusy} className="px-3 py-1.5 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-50 disabled:opacity-50">{t('memory_palace.direct_use_mine') || 'Use mine as-is'}</button>
                                     </div>
                                 </div>
                             )}
@@ -7554,7 +7590,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                         {window.AlloModules.Prim3D.PRESETS.map((p) => {
                                             const label = t('memory_palace.preset_' + p.id) || p.label;
                                             return (
-                                                <button key={p.id} onClick={() => handlePlacePreset(p.id)} title={label}
+                                                <button type="button" key={p.id} onClick={() => handlePlacePreset(p.id)} title={label}
                                                     className="px-2.5 py-1 rounded-full text-xs font-bold bg-white text-emerald-700 border border-emerald-300 hover:bg-emerald-100 transition-colors">
                                                     {p.emoji} {label}
                                                 </button>
@@ -7571,7 +7607,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                             const emoji = { sprout: '🌱', boulder: '🪨', lantern: '🏮', companion: '🐾', torch: '🔥', chest_gold: '🧰', coin_stack: '🪙', candles: '🕯️', key: '🗝️', banner: '🚩', crates: '📦', barrel: '🛢️', pillar: '🏛️', table: '🪑', potion: '🧪' }[it.id] || '📦';
                                             const label = t('memory_palace.collect_' + it.id) || it.label;
                                             return (
-                                                <button key={it.id} onClick={() => handlePlaceCollectible(it)} title={label}
+                                                <button type="button" key={it.id} onClick={() => handlePlaceCollectible(it)} title={label}
                                                     className="px-2.5 py-1 rounded-full text-xs font-bold bg-white text-emerald-700 border border-emerald-300 hover:bg-emerald-100 transition-colors">
                                                     {emoji} {label}
                                                 </button>
@@ -7587,7 +7623,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                     {_MP_STAMPS.map((s) => {
                                         const label = t('memory_palace.stamp_' + s.id) || s.label;
                                         return (
-                                            <button key={s.id} onClick={() => handlePlaceStamp(s)} title={label} aria-label={label}
+                                            <button type="button" key={s.id} onClick={() => handlePlaceStamp(s)} title={label} aria-label={label}
                                                 className="w-9 h-9 flex items-center justify-center rounded-lg text-xl bg-white border border-emerald-300 hover:bg-emerald-100 transition-colors">
                                                 {s.e}
                                             </button>
@@ -7597,7 +7633,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                             </div>
                             {(images[current.id] || objects3d[current.id]) && (
                                 <div className="mt-2 pt-2 border-t border-emerald-200">
-                                    <button onClick={handleDecorRemove}
+                                    <button type="button" onClick={handleDecorRemove}
                                         title={t('memory_palace.decorate_remove_tooltip') || 'Clear the image and 3D object at this locus'}
                                         className="px-2.5 py-1 rounded-full text-xs font-bold bg-white text-slate-600 border border-slate-300 hover:bg-slate-50 transition-colors">
                                         ✖ {t('memory_palace.decorate_remove') || 'Remove art at this locus'}
@@ -7736,13 +7772,13 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                     </div>
                                     <p className="text-sm leading-relaxed text-slate-700">{t('memory_palace.self_rate_before_reveal') || 'Before revealing the answer, did you remember it? Rate that first recall.'}</p>
                                     <div role="group" className="flex flex-wrap gap-2" aria-label={t('memory_palace.self_check_result') || 'How well did you remember this locus?'}>
-                                        <button
+                                        <button type="button"
                                             onClick={() => markSelfCheck(true)}
                                             className="min-h-11 px-4 py-2 rounded-full text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-800 transition-colors"
                                         >
                                             ✓ {t('memory_palace.remembered') || 'I remembered'}
                                         </button>
-                                        <button
+                                        <button type="button"
                                             onClick={() => markSelfCheck(false)}
                                             className="min-h-11 px-4 py-2 rounded-full text-xs font-bold bg-white text-red-700 border border-red-300 hover:bg-red-50 transition-colors"
                                         >
@@ -7751,7 +7787,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                     </div>
                                 </div>
                             ) : (
-                                <button
+                                <button type="button"
                                     onClick={revealSelfCheck}
                                     className="min-h-11 px-4 py-2 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
                                 >
@@ -7762,7 +7798,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                             <div className="flex flex-wrap gap-2" data-palace-recall-choices="true">
                                 <p className="w-full text-sm leading-relaxed text-slate-700">{t('memory_palace.recall_choice_guidance') || 'Picture the cue at this stop, then choose its answer.'}</p>
                                 {recallChoices.map((chip) => (
-                                    <button
+                                    <button type="button"
                                         key={chip.id}
                                         onClick={() => submitRecallAnswer(chip.label, chip.id)}
                                         className="min-w-0 max-w-full whitespace-normal [overflow-wrap:anywhere] px-3 py-2 rounded-full text-left text-sm leading-relaxed font-bold bg-white text-amber-900 border border-amber-300 hover:bg-amber-100 transition-colors"
@@ -8100,14 +8136,14 @@ const renderInteractiveMap = (deps) => {
               <div className="flex flex-wrap items-center gap-2 bg-slate-50 p-2 rounded-lg border border-slate-400 justify-between min-h-[50px]">
                   {isVenn ? (
                       <div className="flex items-center justify-center w-full gap-4">
-                          <button
+                          <button type="button"
                               onClick={handleVennResetBoard}
                               disabled={isMapLocked}
                               className={`flex items-center gap-2 bg-white text-indigo-600 border border-indigo-200 px-4 py-2 rounded-full text-xs font-bold hover:bg-indigo-50 transition-colors shadow-sm ${isMapLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
                           >
                               <RefreshCw size={14} /> {t('concept_map.venn.reset_board')}
                           </button>
-                          <button
+                          <button type="button"
                               onClick={handleVennScrambleBank}
                               disabled={isMapLocked}
                               className={`flex items-center gap-2 bg-white text-slate-600 border border-slate-400 px-4 py-2 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors shadow-sm ${isMapLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -8115,7 +8151,7 @@ const renderInteractiveMap = (deps) => {
                               <ListOrdered size={14} /> {t('concept_map.venn.scramble_bank')}
                           </button>
                           <div className="w-px h-6 bg-slate-300 mx-2"></div>
-                          <button
+                          <button type="button"
                               onClick={() => {
                                   setIsInteractiveMap(false);
                                   setIsInteractiveVenn(false);
@@ -8125,7 +8161,7 @@ const renderInteractiveMap = (deps) => {
                               <List size={14} /> {t('concept_map.venn.return_list')}
                           </button>
                           <div className="w-px h-6 bg-slate-300 mx-2"></div>
-                          <button
+                          <button type="button"
                               onClick={handleToggleIsMapLocked}
                               className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isMapLocked ? 'bg-green-700 text-white hover:bg-green-700 ring-2 ring-green-200' : 'bg-white text-slate-600 border border-slate-400 hover:text-indigo-600 hover:bg-indigo-50'}`}
                               title={isMapLocked ? t('concept_map.toolbar.unlock_tooltip') : t('concept_map.toolbar.lock_tooltip')}
@@ -8139,7 +8175,7 @@ const renderInteractiveMap = (deps) => {
                           <div className="flex items-center gap-2">
                             {!isChallengeActive && (
                                 <>
-                                    <button
+                                    <button type="button"
                                         onClick={handleSetIsConceptMapReadyToFalse}
                                         disabled={isMapLocked}
                                         className={`flex items-center gap-1 text-slate-600 hover:text-indigo-600 px-3 py-1.5 rounded text-xs font-bold hover:bg-indigo-50 transition-colors border border-transparent hover:border-indigo-200 ${isMapLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -8160,7 +8196,7 @@ const renderInteractiveMap = (deps) => {
                                 className={`text-xs p-2 rounded border border-slate-400 focus:ring-2 focus:ring-indigo-500 w-32 sm:w-48 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-100 ${isMapLocked ? 'cursor-not-allowed' : ''}`}
                                 disabled={isChallengeActive || isMapLocked}
                             />
-                            <button aria-label={t('common.add')}
+                            <button type="button" aria-label={t('common.add')}
                                 onClick={handleAddManualNode}
                                 disabled={!nodeInputText.trim() || isChallengeActive || isMapLocked}
                                 className="bg-indigo-600 text-white px-3 py-1.5 rounded text-xs font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
@@ -8168,7 +8204,7 @@ const renderInteractiveMap = (deps) => {
                                 <Plus size={14} /> <span className="hidden sm:inline">{t('concept_map.toolbar.add_concept')}</span>
                             </button>
                             <div className="w-px h-6 bg-slate-300 mx-1 hidden sm:block"></div>
-                            <button
+                            <button type="button"
                                 onClick={handleResetLayout}
                                 disabled={isMapLocked}
                                 className={`flex items-center gap-1 text-slate-600 hover:text-indigo-600 px-3 py-1.5 rounded text-xs font-bold hover:bg-indigo-50 transition-colors ${isMapLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -8178,7 +8214,7 @@ const renderInteractiveMap = (deps) => {
                                 <RefreshCw size={14} /> <span className="hidden sm:inline">{t('concept_map.toolbar.scramble')}</span>
                             </button>
                             {!isChallengeActive && (
-                                <button
+                                <button type="button"
                                     onClick={() => handleAutoLayout()}
                                     disabled={isProcessing || isMapLocked}
                                     className="flex items-center gap-1 text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-indigo-100"
@@ -8190,7 +8226,7 @@ const renderInteractiveMap = (deps) => {
                                 </button>
                             )}
                             {!isChallengeActive && (
-                                <button
+                                <button type="button"
                                     onClick={handleClearEdges}
                                     disabled={isMapLocked}
                                     className={`flex items-center gap-1 text-slate-600 hover:text-red-500 px-3 py-1.5 rounded text-xs font-bold hover:bg-red-50 transition-colors ${isMapLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -8201,7 +8237,7 @@ const renderInteractiveMap = (deps) => {
                                 </button>
                             )}
                             <div className="w-px h-6 bg-slate-300 mx-2"></div>
-                            <button
+                            <button type="button"
                                 onClick={handleToggleIsMapLocked}
                                 className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isMapLocked ? 'bg-green-700 text-white hover:bg-green-700 ring-2 ring-green-200' : 'bg-white text-slate-600 border border-slate-400 hover:text-indigo-600 hover:bg-indigo-50'}`}
                                 title={isMapLocked ? t('concept_map.toolbar.unlock_tooltip') : t('concept_map.toolbar.lock_tooltip')}
@@ -8210,7 +8246,7 @@ const renderInteractiveMap = (deps) => {
                                 {isMapLocked ? <Lock size={14} /> : <Unlock size={14} />}
                                 {isMapLocked ? t('concept_map.toolbar.locked_label') : t('concept_map.toolbar.unlocked_label')}
                             </button>
-                            <button
+                            <button type="button"
                                 onClick={() => openConceptMap3D({
                                     nodes: conceptMapNodes, edges: conceptMapEdges,
                                     structureType: generatedContent?.data?.structureType,
@@ -8240,7 +8276,7 @@ const renderInteractiveMap = (deps) => {
                                           <option value="strict">{t('concept_map.challenge.strict_mode')}</option>
                                           <option value="ai">{t('concept_map.challenge.ai_mode')}</option>
                                       </select>
-                                      <button
+                                      <button type="button"
                                           onClick={handleCreateChallenge}
                                           disabled={isMapLocked}
                                           className={`flex items-center gap-1 bg-yellow-700 hover:bg-yellow-800 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm ${isMapLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -8264,14 +8300,14 @@ const renderInteractiveMap = (deps) => {
                                                           AI Score: {challengeFeedback.score}%
                                                        </span>
                                                        {challengeFeedback.feedbackText && (
-                                                           <div className="text-[11px] text-slate-600 italic text-right leading-tight bg-white/80 p-1.5 rounded border border-slate-400 shadow-sm animate-in slide-in-from-right-2">
+                                                           <div className="text-[11px] text-slate-600 italic text-right leading-tight bg-white/80 p-1.5 rounded border border-slate-400 shadow-sm animate-in motion-reduce:animate-none slide-in-from-right-2">
                                                                {challengeFeedback.feedbackText}
                                                            </div>
                                                        )}
                                                   </div>
                                               )
                                           )}
-                                          <button
+                                          <button type="button"
                                               onClick={handleRetryChallenge}
                                               className="flex items-center gap-1 bg-white text-slate-600 hover:text-indigo-600 border border-slate-400 hover:border-indigo-600 px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm"
                                               title={t('concept_map.challenge.retry_tooltip')}
@@ -8280,7 +8316,7 @@ const renderInteractiveMap = (deps) => {
                                               <RefreshCw size={14} />
                                               <span className="hidden sm:inline">{t('concept_map.challenge.retry')}</span>
                                           </button>
-                                          <button
+                                          <button type="button"
                                               onClick={handleCheckChallengeRouter}
                                               disabled={isCheckingChallenge}
                                               className="flex items-center gap-1 bg-green-700 hover:bg-green-800 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
@@ -8289,7 +8325,7 @@ const renderInteractiveMap = (deps) => {
                                               {isCheckingChallenge ? t('concept_map.challenge.checking') : t('concept_map.challenge.check')}
                                           </button>
                                           {isTeacherMode && (
-                                              <button
+                                              <button type="button"
                                                   onClick={handleExitChallenge}
                                                   className="flex items-center justify-center bg-slate-100 hover:bg-red-100 text-slate-600 hover:text-red-700 border border-slate-400 hover:border-red-200 w-8 h-8 rounded-full transition-colors"
                                                   title={t('concept_map.challenge.exit')}

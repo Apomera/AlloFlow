@@ -955,7 +955,7 @@ const handleExportAlignmentGraph = (payload) => {
           audit: __d._alloAlignmentAuditSummary(__d.generatedContent, persisted.graph),
       };
       const safeTitle = String(__d.generatedContent?.title || 'alignment')
-          .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80) || 'alignment';
+          .normalize('NFC').replace(/[^\p{L}\p{M}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '').slice(0, 80) || 'alignment';
       __d.safeDownloadBlob(new Blob([JSON.stringify(exportPayload, null, 2)], { type: 'application/json' }), safeTitle + '-learning-web.json');
       __d.addToast('Alignment graph saved and exported.', 'success');
       return true;
@@ -2253,7 +2253,7 @@ const handleTranslateAction = async (requestedScope, options = {}) => {
                 newItems.push(newItem);
                 }
             } catch (itemErr) {
-                __d.warnLog('Translation failed for one resource, continuing:', item.title || item.type, itemErr?.message);
+                __d.warnLog('Translation failed for one resource, continuing:', item.type || 'unknown', itemErr?.message);
                 _translateFailures.push(item.title || item.type);
             }
             await new Promise(r => setTimeout(r, 500));
@@ -4781,7 +4781,7 @@ const handleSubmitAssignment = async (confirmedName, summaryStats) => {
               if (_P && _exported) _P.attachProvenance(submissionData, _exported);
           } catch (_) {}
       }
-      const safeName = submissionData.studentName.replace(/[^a-z0-9]/gi, '_');
+      const safeName = String(submissionData.studentName || 'student').normalize('NFC').replace(/[^\p{L}\p{M}\p{N}_-]+/gu, '_').replace(/^_+|_+$/g, '').slice(0, 60) || 'student';
       const dateStr = new Date().toISOString().split('T')[0];
       const filename = `${safeName}_${__d.t('export.filenames.assignment')}_${dateStr}.json`;
       const mailboxTarget = __d.mbStudent
@@ -8807,9 +8807,30 @@ const pushResourceToMailbox = async (targetItem, opts = {}) => {
       }
       if (!opts.silentTeacher) __d.setMbBusy(false);
   };
-const shareFullPackToMailbox = async () => {
+const _scopePackCandidates = (items, explicitIds = null) => {
+      const list = Array.isArray(items) ? items : [];
+      if (Array.isArray(explicitIds) && explicitIds.length) {
+          const wanted = new Set(explicitIds.map(id => String(id)));
+          return list.filter(item => item && wanted.has(String(item.id)));
+      }
+      const unitId = __d.activeUnitId;
+      if (unitId && unitId !== 'all') {
+          if (typeof __d.getFilteredHistory === 'function') {
+              const filtered = __d.getFilteredHistory();
+              const allowed = new Set((Array.isArray(filtered) ? filtered : []).map(item => item && String(item.id)).filter(Boolean));
+              return list.filter(item => item && allowed.has(String(item.id)));
+          }
+          if (unitId === 'uncategorized') {
+              const known = new Set((Array.isArray(__d.units) ? __d.units : []).map(u => u && u.id).filter(Boolean));
+              return list.filter(item => item && (!item.unitId || !known.has(item.unitId)));
+          }
+          return list.filter(item => item && String(item.unitId || '') === String(unitId));
+      }
+      return list;
+  };
+const shareFullPackToMailbox = async (resourceIds = null) => {
       if (!__d.mbLive || !__d.mbConfig?.url) return;
-      const candidates = __d._alloStudentSafeResources(__d.history);
+      const candidates = _scopePackCandidates(__d._alloStudentSafeResources(__d.history), resourceIds);
       if (!candidates.length) {
           __d.addToast('No student-safe resources to share yet.', 'info');
           return;
@@ -8863,13 +8884,13 @@ const addDirectionsToPack = () => {
       __d.setShowDirectionsComposer(false);
       __d.addToast(__d.t('takehome.directions_added') || 'Directions added to the class pack — they sync to students automatically.', 'success');
    };
-const deriveDirectionsDraft = async () => {
+const deriveDirectionsDraft = async (ids = null) => {
       if (__d.directionsDeriving) return;
       __d.setDirectionsDeriving(true);
       try {
-          const plan = (Array.isArray(__d.history) ? __d.history : []).slice().reverse().find(h => h && h.type === 'lesson-plan');
+          const plan = _scopePackCandidates(__d.history, ids).slice().reverse().find(h => h && h.type === 'lesson-plan');
           const planText = plan ? String(typeof plan.data === 'string' ? plan.data : JSON.stringify(plan.data || '')).slice(0, 8000) : '';
-          const packItems = __d._alloStudentSafeResources(__d.history).filter(h => h.type !== 'directions');
+          const packItems = _scopePackCandidates(__d._alloStudentSafeResources(__d.history).filter(h => h.type !== 'directions'), ids);
           // Context widening (Aaron 2026-07-19): each STUDENT-SAFE resource contributes a short
           // plain-text excerpt (tags stripped, ~250 chars, ~6k total budget) so drafts can say
           // what the activities actually contain — teacher-only items still contribute NOTHING.
@@ -8914,9 +8935,9 @@ const deriveDirectionsDraft = async () => {
       }
       __d.setDirectionsDeriving(false);
   };
-const sendPackHome = async () => {
+const sendPackHome = async (resourceIds = null) => {
       if (!__d.mbLive || !__d.mbConfig?.url) return;
-      const candidates = __d._alloStudentSafeResources(__d.history);
+      const candidates = _scopePackCandidates(__d._alloStudentSafeResources(__d.history), resourceIds);
       if (!candidates.length) { __d.addToast(__d.t('takehome.nothing_to_send') || 'Nothing student-safe to send home yet — create or share a resource first.', 'info'); return; }
       __d.setMbBusy(true);
       try {
@@ -11559,7 +11580,7 @@ const handleWordSoundsPreparedAudioStatus = (report) => {
   };
 const exportAssignmentCenterCsv = () => {
       if (!__d.assignmentCenterRows.length) return;
-      const csv = __d._alloBuildAssignmentCenterCsv(__d.assignmentCenterRows);
+      const csv = '\uFEFF' + __d._alloBuildAssignmentCenterCsv(__d.assignmentCenterRows);
       __d.safeDownloadBlob(new Blob([csv], { type: 'text/csv;charset=utf-8' }), 'alloflow-assignment-summary-' + new Date().toISOString().slice(0, 10) + '.csv');
       __d.addToast('Privacy-safe assignment summary exported.', 'success');
   };
@@ -12230,8 +12251,11 @@ const handleGlossarySelectionChange = (index) => {
     if (!__d.generatedContent || __d.generatedContent.type !== 'glossary') return;
     const newData = [...__d.generatedContent?.data];
     if (!newData[index]) return;
-    const current = newData[index].isSelected !== false;
-    newData[index] = { ...newData[index], isSelected: !current };
+    const current = newData[index].isSelected !== false && newData[index].selected !== false;
+    const next = !current;
+    newData[index] = ('selected' in newData[index])
+      ? { ...newData[index], isSelected: next, selected: next }
+      : { ...newData[index], isSelected: next };
     const updatedContent = { ...__d.generatedContent, data: newData };
     __d.setGeneratedContent(updatedContent);
     __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? updatedContent : item));
@@ -12239,10 +12263,11 @@ const handleGlossarySelectionChange = (index) => {
 const handleGlossarySelectAll = (e) => {
     if (!__d.generatedContent || __d.generatedContent.type !== 'glossary') return;
     const isChecked = e.target.checked;
-    const newData = __d.generatedContent?.data.map(item => ({
-        ...item,
-        isSelected: isChecked
-    }));
+    const newData = __d.generatedContent?.data.map(item => (
+        item && typeof item === 'object' && ('selected' in item)
+          ? { ...item, isSelected: isChecked, selected: isChecked }
+          : { ...item, isSelected: isChecked }
+    ));
     const updatedContent = { ...__d.generatedContent, data: newData };
     __d.setGeneratedContent(updatedContent);
     __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? updatedContent : item));

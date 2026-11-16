@@ -6720,7 +6720,7 @@
           h('div', { style: S.header },
             h('span', { style: { fontSize: '18px' }, 'aria-hidden': true }, '🎨'),
             h('strong', { style: { fontSize: '15px' } }, TT('studio.title', 'Page Designer')),
-            h('span', { style: { fontSize: '11px', color: C.soft } }, TT('studio.tagline', 'Flyers, worksheets & posters — accessible by construction')),
+            h('span', { style: { fontSize: '11px', color: '#cbd5e1' } }, TT('studio.tagline', 'Flyers, worksheets & posters — accessible by construction')),
             h('button', { style: Object.assign({}, S.hBtn, { marginLeft: 'auto' }), onClick: function () { if (loadRef.current) loadRef.current.click(); } }, '📂 ' + TT('studio.open_file', 'Open .allostudio.json')),
             h('button', { style: S.hBtn, onClick: function () { if (pptxRef.current) pptxRef.current.click(); }, title: TT('studio.pptx_import_hint', 'Bring in a PowerPoint or exported lesson deck. Supported text, pictures, alt text, and layout import; proprietary activities, tables, charts, and SmartArt are reported or left for review.') }, '📽️ ' + TT('studio.import_pptx', 'Import lesson deck (.pptx)')),
             h('button', { style: S.hBtn, 'aria-label': TT('studio.close', 'Close Page Designer'), onClick: requestClose }, '✕')),

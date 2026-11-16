@@ -13,7 +13,7 @@ function assignmentCenterText(t, key, fallback, params) {
   if (typeof t === 'function') {
     try {
       const value = t(key, params);
-      if (value) return value;
+      if (value && value !== key) return value;
     } catch (_) {}
   }
   return fallback;
@@ -29,20 +29,61 @@ function useFocusTrap(dialogRef, isOpen, onEscape) {
     if (!dialog) return undefined;
 
     const previousFocus = document.activeElement;
+    const backgroundState = [];
+    const seenNodes = new Set();
+    let branch = dialog;
+    while (branch && branch.parentElement) {
+      const parent = branch.parentElement;
+      Array.from(parent.children).forEach((node) => {
+        if (!node || node === branch || seenNodes.has(node) || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(node.tagName)) return;
+        seenNodes.add(node);
+        backgroundState.push({
+          node,
+          hadInert: node.hasAttribute('inert'),
+          prevInert: node.inert,
+          ariaHidden: node.getAttribute('aria-hidden'),
+        });
+        try { node.inert = true; } catch (_) {}
+        node.setAttribute('inert', '');
+        node.setAttribute('aria-hidden', 'true');
+      });
+      if (parent === document.body) break;
+      branch = parent;
+    }
+    const prevBodyOverflow = document.body ? document.body.style.overflow : '';
+    if (document.body) document.body.style.overflow = 'hidden';
+
+    const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
+    const trap = { root: dialog };
+    trapStack.push(trap);
+    const isTopTrap = () => trapStack[trapStack.length - 1] === trap;
+
     const getFocusable = () => Array.from(dialog.querySelectorAll([
       'button:not([disabled])',
       'input:not([disabled])',
       'select:not([disabled])',
       'textarea:not([disabled])',
       '[href]',
+      'summary',
+      '[contenteditable="true"]',
       '[tabindex]:not([tabindex="-1"])',
-    ].join(',')));
+    ].join(','))).filter((element) => {
+      if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      const closedDetails = element.closest('details:not([open])');
+      if (closedDetails && !(element.tagName === 'SUMMARY' && element.parentElement === closedDetails)) return false;
+      const style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(element) : null;
+      return !style || (style.display !== 'none' && style.visibility !== 'hidden');
+    });
     const focusTimer = setTimeout(() => {
       try { (getFocusable()[0] || dialog).focus(); } catch (_) {}
     }, 0);
     const onKeyDown = event => {
+      if (!dialog.isConnected) return;
+      if (event.isComposing || event.keyCode === 229) return;
+      if (!isTopTrap()) return;
       if (event.key === 'Escape') {
         event.preventDefault();
+        event.stopPropagation();
         if (typeof onEscapeRef.current === 'function') onEscapeRef.current();
         return;
       }
@@ -55,7 +96,10 @@ function useFocusTrap(dialogRef, isOpen, onEscape) {
       }
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
+      if (!dialog.contains(document.activeElement) || document.activeElement === dialog) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus();
+      } else if (event.shiftKey && document.activeElement === first) {
         event.preventDefault();
         last.focus();
       } else if (!event.shiftKey && document.activeElement === last) {
@@ -64,12 +108,27 @@ function useFocusTrap(dialogRef, isOpen, onEscape) {
       }
     };
 
-    dialog.addEventListener('keydown', onKeyDown);
+    document.addEventListener('keydown', onKeyDown);
     return () => {
       clearTimeout(focusTimer);
-      dialog.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('keydown', onKeyDown);
+      if (document.body) document.body.style.overflow = prevBodyOverflow;
+      backgroundState.forEach(({ node, hadInert, prevInert, ariaHidden }) => {
+        if (!node || !node.isConnected) return;
+        if (!hadInert) {
+          try { node.inert = false; } catch (_) {}
+          node.removeAttribute('inert');
+        } else {
+          try { node.inert = Boolean(prevInert); } catch (_) {}
+        }
+        if (ariaHidden == null) node.removeAttribute('aria-hidden');
+        else node.setAttribute('aria-hidden', ariaHidden);
+      });
+      const wasTopTrap = isTopTrap();
+      const trapIndex = trapStack.indexOf(trap);
+      if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
       try {
-        if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus();
+        if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus !== document.documentElement && previousFocus.isConnected && typeof previousFocus.focus === 'function') previousFocus.focus();
       } catch (_) {}
     };
   }, [dialogRef, isOpen]);
@@ -619,9 +678,21 @@ function AssignmentCenterModal({
               ? tx('share_collect.activity_rating', 'Shared rating')
               : view.activityType === 'survey'
                 ? tx('share_collect.activity_survey', 'Shared survey')
-                : view.hasSharedActivity
-                  ? tx('share_collect.activity_wordcloud', 'Shared Word Cloud')
-                  : tx('share_collect.activity_resource', 'Resource assignment');
+                : view.activityType === 'question_board'
+                  ? tx('share_collect.activity_question_board', 'Driving questions board')
+                  : view.activityType === 'availability'
+                    ? tx('share_collect.activity_availability', 'Availability poll')
+                    : view.activityType === 'signup'
+                      ? tx('share_collect.activity_signup', 'Sign-up sheet')
+                      : view.activityType === 'poll'
+                        ? tx('share_collect.activity_poll', 'Shared poll')
+                        : view.activityType === 'discussion'
+                          ? tx('share_collect.activity_discussion', 'Shared discussion')
+                          : view.activityType === 'exit-ticket'
+                            ? tx('share_collect.activity_exit_ticket', 'Exit ticket')
+                            : view.hasSharedActivity
+                              ? tx('share_collect.activity_wordcloud', 'Shared Word Cloud')
+                              : tx('share_collect.activity_resource', 'Resource assignment');
             const lifecycleLabel = view.lifecycle === 'active'
               ? tx('share_collect.stat_active', 'Active')
               : view.lifecycle === 'revoked'

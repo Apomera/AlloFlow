@@ -101,7 +101,7 @@
 
   function _fluencyCsvCell(value) {
       var raw = String(value == null ? '' : value);
-      var safe = /^(?:[\t\r\n ]*[=+\-@]|[\t\r])/.test(raw) ? "'" + raw : raw;
+      var safe = /^(?:[\t\r\n ]*[=+\-@|]|[\t\r\n])/.test(raw) ? "'" + raw : raw;
       return '"' + safe.replace(/"/g, '""') + '"';
   }
 
@@ -135,7 +135,7 @@
       var documentRef = options.documentRef || (typeof document !== 'undefined' ? document : null);
       var urlApi = options.urlApi || (typeof URL !== 'undefined' ? URL : null);
       if (!BlobCtor || !documentRef || !documentRef.body || !urlApi || typeof urlApi.createObjectURL !== 'function' || typeof urlApi.revokeObjectURL !== 'function') return false;
-      var blob = new BlobCtor([csv], { type: 'text/csv;charset=utf-8;' });
+      var blob = new BlobCtor([csv.charCodeAt(0) === 0xFEFF ? csv : '\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
       var link = documentRef.createElement('a');
       var href = urlApi.createObjectURL(blob);
       var now = options.now instanceof Date ? options.now : new Date();

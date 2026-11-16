@@ -14,6 +14,13 @@ window.SelHub = window.SelHub || {
 
 (function() {
   'use strict';
+  function __alloT(key, fallback) {
+    try {
+      var fn = typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : null;
+      if (fn) { var v = fn(key, fallback); if (v != null && v !== key) return v; }
+    } catch (_) {}
+    return fallback != null ? fallback : key;
+  }
 
   // ── Live region (WCAG 4.1.3) ──
   (function() {
@@ -2971,7 +2978,7 @@ window.SelHub = window.SelHub || {
         ),
 
         // ── AI Response ──
-        h('div', { role: 'region', 'aria-label': 'Circle facilitator response', 'aria-live': 'polite', 'aria-busy': aiLoading ? 'true' : 'false' },
+        h('div', { role: 'region', 'aria-label': __alloT('sel.restorativecircle.facilitator_response_aria', 'Circle facilitator response'), 'aria-live': 'polite', 'aria-busy': aiLoading ? 'true' : 'false' },
         // Surface 988 / Crisis Text Line block when last facilitator question
         // was flagged tier-3 (self-harm or harm-to-others keywords).
         (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, gradeBand),

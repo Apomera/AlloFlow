@@ -1166,6 +1166,7 @@
     var seed = opts.seed == null ? 1 : opts.seed;
     // How many choices a board shows (the maker's "Choices"): 'easy', 'medium' or 'all' (anything else: all).
     var choiceLevel = CHOICE_LEVELS.indexOf(opts.choices) >= 0 ? opts.choices : 'all';
+    var directionsOnce = opts.directionsOnce === true || opts.instructionsOnce === true;
     var title = String(opts.title || 'Word Sounds practice').trim().slice(0, 120);
     var exceptions = [];
     var except = function (word, activity, reason) { exceptions.push({ word: word, activity: activity, reason: reason }); };
@@ -1314,8 +1315,11 @@
         } });
       };
       var lessonOptions = function (banks) {
+        var idParts = [VERSION, String(seed), title, words, activities];
+        if (directionsOnce) idParts.push('once');
         var made = { core: choiceCore, banks: banks, isEnglish: true, showLetters: !!opts.showLetters, activities: activities, title: title,
-          lessonId: 'pb-' + hex8(fnv1a(JSON.stringify([VERSION, String(seed), title, words, activities]))) };
+          lessonId: 'pb-' + hex8(fnv1a(JSON.stringify(idParts))) };
+        if (directionsOnce) made.instructionsOnce = true;
         var refused = activities.filter(function (id) { return Object.keys(guarded).some(function (k) { return k.indexOf(id + '|') === 0; }); });
         if (refused.length) made.adapters = refused.reduce(function (acc, id) {
           var base = adapters[id];
@@ -1431,6 +1435,7 @@
         choice: opts.picked && opts.picked.criteria ? opts.picked.criteria : null,
         ai: 'none', attributions: attributions, notices: notices, creditsInFile: false,
       };
+      if (directionsOnce) manifest.directionsOnce = true;
       if (opts.picked && opts.picked.criteria && opts.picked.criteria.stage) manifest.stageNote = STAGE_NOTE;
       if (manifest.learnerLabel) manifest.openWith = '#learner=' + encodeURIComponent(manifest.learnerLabel);
       if (ownManifest) manifest.own = ownManifest;
@@ -1464,6 +1469,7 @@
       var extra = { attributions: attributions, notices: notices,
         // choices: the maker's Choices, so "Open a file I made" can read it back (packets_reopen.js).
         builder: { name: VERSION, seed: seed, ai: 'none', words: usedWords.length, items: manifest.items.total, choices: choiceLevel } };
+      if (directionsOnce) extra.builder.directionsOnce = true;
       // The file itself changes only when it really holds a picture.
       if (pictureFacts && withPicture.length) extra.pictures = pictureFacts;
       // And only when it really holds something of the teacher's.

@@ -10,18 +10,33 @@
 //  3. Languages with no espeak voice resolve to NULL — the caller keeps its
 //     Gemini phonemes. The old code silently ran English G2P for them.
 
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 let P;
-beforeAll(() => {
-  const src = readFileSync(resolve(process.cwd(), 'phonics_g2p_loader.js'), 'utf8');
+const loaderSrc = readFileSync(resolve(process.cwd(), 'phonics_g2p_loader.js'), 'utf8');
+const publicLoaderSrc = readFileSync(resolve(process.cwd(), 'desktop/web-app/public/phonics_g2p_loader.js'), 'utf8');
+function freshLoader() {
   delete window.AlloPhonics;
   // eslint-disable-next-line no-new-func
-  new Function(src)();
-  P = window.AlloPhonics;
+  new Function(loaderSrc)();
+  return window.AlloPhonics;
+}
+beforeAll(() => {
+  P = freshLoader();
   if (!P) throw new Error('loader did not register window.AlloPhonics');
+});
+afterEach(() => {
+  delete window.__ALLO_ESPEAK_FACTORY;
+  delete window.ESpeakNg;
+  delete window._ALLO_ESPEAK_URL;
+  delete window._isDesktopBundledApp;
+  delete window.__ALLO_LOCAL_BOX;
+  delete window.__alloStudentAiDisabled;
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+  P = freshLoader();
 });
 
 describe('voice resolution (verified inventory, honest null)', () => {
@@ -95,6 +110,52 @@ describe('getSpeechLangCode upstream map (source pins)', () => {
     const src = readFileSync(resolve(process.cwd(), 'module_scope_extras_source.jsx'), 'utf8');
     for (const pin of ["'somali': 'so-SO'", "'khmer': 'km-KH'", "'nepali': 'ne-NP'", "'pashto': 'ps-AF'", "'dari': 'prs-AF'", "'marshallese': 'mh-MH'"]) {
       expect(src).toContain(pin);
+    }
+  });
+});
+
+describe('local-first factory, curly apostrophes, and offline/Desktop/Student-AI-off guards', () => {
+  it('keeps phonics_g2p_loader.js and desktop/web-app/public/phonics_g2p_loader.js byte-identical', () => {
+    expect(publicLoaderSrc).toBe(loaderSrc);
+  });
+
+  it('normalizes curly apostrophes in alignGraphemes and toPhonemes', async () => {
+    expect(P.alignGraphemes('don’t', 4)).toEqual(P.alignGraphemes("don't", 4));
+    expect(P.alignGraphemes('don’t', 4).join('')).toContain("'");
+
+    const seenArgs = [];
+    window.__ALLO_ESPEAK_FACTORY = async (opts) => {
+      seenArgs.push(opts.arguments);
+      return {
+        FS: {
+          readFile: () => 'd_oʊ_n_t',
+        },
+      };
+    };
+    const res = await P.toPhonemes('don’t');
+    expect(seenArgs[0][seenArgs[0].length - 1]).toBe("don't");
+    expect(res).toMatchObject({ ipa: ['d', 'oʊ', 'n', 't'], count: 4, voice: 'en-us' });
+    expect(P.ready()).toBe(true);
+  });
+
+  it('blocks external eSpeak CDN imports cleanly on Desktop, LocalBox, Student-AI-off, and offline', async () => {
+    for (const setup of [
+      () => { window._isDesktopBundledApp = true; },
+      () => { window.__ALLO_LOCAL_BOX = true; },
+      () => { window.__alloStudentAiDisabled = true; },
+      () => { vi.stubGlobal('navigator', { onLine: false }); },
+    ]) {
+      vi.restoreAllMocks();
+      vi.unstubAllGlobals();
+      delete window._isDesktopBundledApp;
+      delete window.__ALLO_LOCAL_BOX;
+      delete window.__alloStudentAiDisabled;
+      delete window.__ALLO_ESPEAK_FACTORY;
+      delete window._ALLO_ESPEAK_URL;
+      setup();
+      const loader = freshLoader();
+      expect(await loader.toPhonemes('cat')).toBeNull();
+      expect(loader.ready()).toBe(false);
     }
   });
 });

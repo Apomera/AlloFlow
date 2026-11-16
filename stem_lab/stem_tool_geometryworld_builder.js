@@ -4337,7 +4337,7 @@
             h('label',{className:'gwe-edit-label'},'Rotation',h('select',{'aria-label':__alloT('stem.geometryworld_builder.starter_rotation','Starter rotation'),value:starterOptions.rotation||0,onChange:function(e){setStarterOption('rotation',e.target.value);}},[0,1,2,3].map(function(turn){return h('option',{key:turn,value:turn},turn*90+'°');}))),
             h('p',{role:'status',className:'gwe-builder-note'},configuredStarter.ok?configuredStarter.stamp.blocks.length+' editable blocks ready to preview.':configuredStarter.reason),
             h('button',{type:'button',onClick:function(){setStarterOptions({});cancelSelectionPreview();}},'Reset starter options')),
-          h('form',{className:'gwe-starter-placement',noValidate:true,'aria-label':'Preview architectural starter placement',onSubmit:function(event){
+          h('form',{className:'gwe-starter-placement',noValidate:true,'aria-label':__alloT('stem.gw.previewStarterPlacement','Preview architectural starter placement'),onSubmit:function(event){
             event.preventDefault();if(!configuredStarter.ok)return;
             var result=previewBuildStamp(window[ENGINE_KEY],configuredStarter.stamp,stampCoordinates());
             showEditPreview(result,'gwe-starter-corner-','gwe-starter-field-error');
@@ -4529,7 +4529,7 @@
       function renderToolFinder(){
         var tools=findWorkshopTools(toolQuery,hasRetainedSelection).filter(function(tool){return toolCategory==='all' || tool.group===toolCategory;}).map(function(tool){return Object.assign({},tool,{available:tool.available && (tool.id!=='send' || hasStudentBuild!==false)});}),first=tools.find(function(tool){return tool.available;});
         return h('section',{id:'gwe-tool-finder',className:'gwe-tool-finder','aria-label':__alloT('stem.geometryworld_builder.find_a_free_build_tool','Find a Free Build tool'),onKeyDown:function(event){event.stopPropagation();if(event.key==='Escape'){event.preventDefault();closeToolFinder();}}},
-          h('form',{role:'search',onSubmit:function(event){event.preventDefault();if(first)navigateWorkshopTool(first);}},h('label',{htmlFor:'gwe-tool-query'},'Find a tool'),h('input',{ref:toolFinderInput,id:'gwe-tool-query',type:'search',value:toolQuery,placeholder:'Search tools',autoComplete:'off',onChange:function(event){setToolQuery(event.target.value);}}),h('label',{className:'gwe-tool-category',htmlFor:'gwe-tool-category'},'Category',h('select',{id:'gwe-tool-category',value:toolCategory,onChange:function(event){setToolCategory(event.target.value);}},['all','Build','Edit','Share','Print','Keep','Explore'].map(function(category){return h('option',{key:category,value:category},category==='all'?'All tools':category);})))),
+          h('form',{role:'search',onSubmit:function(event){event.preventDefault();if(first)navigateWorkshopTool(first);}},h('label',{htmlFor:'gwe-tool-query'},'Find a tool'),h('input',{ref:toolFinderInput,id:'gwe-tool-query',type:'search',value:toolQuery,placeholder:__alloT('stem.gw.searchToolsPlaceholder','Search tools'),autoComplete:'off',onChange:function(event){setToolQuery(event.target.value);}}),h('label',{className:'gwe-tool-category',htmlFor:'gwe-tool-category'},'Category',h('select',{id:'gwe-tool-category',value:toolCategory,onChange:function(event){setToolCategory(event.target.value);}},['all','Build','Edit','Share','Print','Keep','Explore'].map(function(category){return h('option',{key:category,value:category},category==='all'?'All tools':category);})))),
           h('p',{className:'gwe-tool-count',role:'status'},tools.length?tools.length+' matching tool'+(tools.length===1?'':'s'):'No matching tools'),
           !tools.length && h('button',{type:'button',className:'gwe-finder-reset',onClick:function(){setToolQuery('');setToolCategory('all');if(toolFinderInput.current)toolFinderInput.current.focus();}},'Clear filters'),
           h('div',{className:'gwe-tool-results'},tools.map(function(tool){return h('button',{type:'button',key:tool.id,className:'gwe-tool-result','data-tool':tool.id,disabled:!tool.available,onClick:function(){navigateWorkshopTool(tool);}},h('span',{className:'gwe-tool-group'},tool.group),h('strong',null,tool.title),h('span',null,tool.available?tool.description:tool.id==='send'?'Place blocks before sending a creation to Print Lab.':'Select a creation first to use this tool.'),h('span',{className:'gwe-tool-arrow','aria-hidden':'true'},'↗'));})),
@@ -4996,7 +4996,7 @@
           h('label',{className:'gwe-edit-label',htmlFor:'gwe-move-step'},'Move distance'),
           h('select',{id:'gwe-move-step',value:moveStep,onChange:function(event){setMoveStep(event.target.value==='5'?'5':'1');cancelSelectionPreview();}},
             h('option',{value:'1'},'1 grid cell'),h('option',{value:'5'},'5 grid cells')),
-          h('div',{className:'gwe-move-directions',role:'group','aria-label':'Preview a directional move'},directions.map(function(direction){
+          h('div',{className:'gwe-move-directions',role:'group','aria-label':__alloT('stem.gw.previewDirectionalMove','Preview a directional move')},directions.map(function(direction){
             return h('button',{key:direction[0],id:'gwe-move-'+direction[0],type:'button','data-gwe-move-direction':direction[0],
               'aria-label':'Preview move '+distance+' grid cell'+(distance===1?'':'s')+' · '+direction[1],
               onClick:function(){previewDirectionalMove({x:direction[2]*distance,y:direction[3]*distance,z:direction[4]*distance});}},direction[1]);
@@ -5035,7 +5035,7 @@
           renderStarterLibrary(),
           hasRetainedSelection && h('details',{className:'gwe-details gwe-creation-editor',onToggle:keepClosedEditorSummaryVisible},
             h('summary',null,'Edit whole creation'),
-            h('form',{className:'gwe-creation-edit-form',noValidate:true,'aria-label':'Preview selected block changes',onSubmit:function(event){event.preventDefault();previewCreationChange();}},
+            h('form',{className:'gwe-creation-edit-form',noValidate:true,'aria-label':__alloT('stem.gw.previewSelectedBlockChanges','Preview selected block changes'),onSubmit:function(event){event.preventDefault();previewCreationChange();}},
             h('p',{className:'gwe-builder-note'},'Change every outlined block together, including separate pieces. Preview each change before applying it.'),
             h('p',{className:'gwe-builder-note'},'Enter previews the change. Escape cancels a pending preview. Apply preview commits it.'),
             h('label',{className:'gwe-edit-label',htmlFor:'gwe-creation-edit-action'},'Action'),
@@ -5080,7 +5080,7 @@
                   h('span',{className:'gwe-stamp-card-facts'},stamp.blocks.length+' blocks',facts && h('span',null,facts.width+' wide · '+facts.depth+' deep · '+facts.height+' high')));
               })),
               h('p',{className:'gwe-builder-note'},'Choose a card, then preview its position in the world.'),
-              h('form',{className:'gwe-stamp-placement',noValidate:true,'aria-label':'Preview saved stamp placement',onSubmit:function(event){event.preventDefault();previewStoredStamp();}},
+              h('form',{className:'gwe-stamp-placement',noValidate:true,'aria-label':__alloT('stem.gw.previewSavedStampPlacement','Preview saved stamp placement'),onSubmit:function(event){event.preventDefault();previewStoredStamp();}},
                 renderCoordinateInputs('gwe-stamp-corner',stampOrigin,setStampOrigin,'Place the nearest grid corner at'),
                 renderEditFieldError('gwe-stamp-field-error'),
                 h('p',{className:'gwe-builder-note'},'Enter previews the position. Escape cancels a pending preview. Apply preview places the blocks.'),
@@ -5208,7 +5208,7 @@
       }
       function renderPackageRevisionActions(inBuilder) {
         if (!revision) return null;
-        return h('section',{className:'gwe-revision-actions','aria-label':'Continue the Print Lab revision'},
+        return h('section',{className:'gwe-revision-actions','aria-label':__alloT('stem.gw.continuePrintLabRevision','Continue the Print Lab revision')},
           h('strong',null,'Print Lab revision'),
           h('p',null,'Review every placed block, including new blocks outside your selection.'),
           !inBuilder && h('button',{type:'button',onClick:openCoordinateBuilder},'Build by coordinates'),
@@ -5382,7 +5382,7 @@
         );
       }
       function renderImportActions() {
-        return h('div', {className:'gwe-recovery-actions',role:'group','aria-label':'Editable file review actions'},
+        return h('div', {className:'gwe-recovery-actions',role:'group','aria-label':__alloT('stem.gw.editableFileReviewActions','Editable file review actions')},
           h('button', {type:'button','data-gwe-cancel-package-edit':packageArrival?true:undefined,onClick:cancelEditableImport}, packageArrival?'Back to Print Lab':'Cancel'),
           (!packageArrival || editablePreview) && h('button', {type:'button','data-gwe-confirm-package-edit':packageArrival?true:undefined,className:'gwe-replace',disabled:!!data.showcaseSaving,onClick:confirmEditableRestore}, packageArrival?'Edit these blocks':'Replace current sandbox'));
       }
@@ -5694,7 +5694,7 @@
           coordinateBuildActive && renderPackageRevisionActions(true),
           h('div',{className:'gwe-build-context'},
             h('p',{'data-gwe-build-selection-summary':true},hasRetainedSelection?retainedMeasured.blocks.length+' block'+(retainedMeasured.blocks.length===1?'':'s')+' currently selected for printing.':'No blocks selected yet. Your first placement will become the selection.'),
-            h('div',{className:'gwe-build-history',role:'group','aria-label':'Building history'},['undo','redo'].map(function(action){var available=engine && engine[action==='undo'?'_undoStack':'_redoStack'] && engine[action==='undo'?'_undoStack':'_redoStack'].length;return h('button',{key:action,type:'button','data-gwe-coordinate-history':action,'aria-disabled':!available?'true':undefined,onClick:function(){coordinateBuildHistory(action);}},action==='undo'?'Undo last action':'Redo last action');}))),
+            h('div',{className:'gwe-build-history',role:'group','aria-label':__alloT('stem.gw.buildingHistory','Building history')},['undo','redo'].map(function(action){var available=engine && engine[action==='undo'?'_undoStack':'_redoStack'] && engine[action==='undo'?'_undoStack':'_redoStack'].length;return h('button',{key:action,type:'button','data-gwe-coordinate-history':action,'aria-disabled':!available?'true':undefined,onClick:function(){coordinateBuildHistory(action);}},action==='undo'?'Undo last action':'Redo last action');}))),
           h('form',{id:'gwe-coordinate-build-form',className:'gwe-coordinate-build-form',noValidate:true,'aria-describedby':'gwe-coordinate-build-help',onSubmit:reviewCoordinateBuild},
             choice('mode','What to build',[['block','One block'],['line','Line'],['floor','Floor'],['wall','Wall']]),
             h('fieldset',{className:'gwe-coordinate-corner'},h('legend',null,'Starting cell'),['x','y','z'].map(function(axis){return number('origin.'+axis,axis.toUpperCase(),coordinateBuild.origin[axis],axis==='y'?1:-64,axis==='y'?128:64);})),
@@ -5777,9 +5777,9 @@
             h('span', { className: 'gwe-builder-icon', 'aria-hidden': 'true' }, studioCubeMark(h)),
             !collapsed && h('div', null, h('div', { className: 'gwe-builder-eyebrow' }, 'Build tools'), h('div', { className: 'gwe-builder-name' }, 'Free Build Studio'))
           ),
-          (stampRemoval || studioEditableReview || printPreparationActive || coordinateActive || coordinateBuildActive || selectionChooserOpen) && !collapsed ? h('button',{type:'button',className:'gwe-collapse','aria-label':'Return to build tools',onClick:function(){if(stampRemoval)cancelStampRemoval();else if(studioEditableReview)cancelEditableImport();else if(coordinateBuildActive)closeCoordinateBuilder();else if(selectionChooserOpen)closeSelectionChooser();else if(coordinateActive)closeCoordinateSelection();else {setPrintPreparationActive(false);focusPrintElement('[data-gwe-prepare="print"]');}}},'Tools') : h('button', { type: 'button', className: 'gwe-collapse', onClick: function () { if (!collapsed) resumeBuilding(); else patchGeometryState(ctx, { sandboxDockCollapsed:false, builderPanel:'build' }); }, 'aria-expanded': collapsed ? 'false' : 'true', 'aria-label': collapsed ? 'Expand Free Build Studio' : 'Collapse Free Build Studio', title: collapsed ? 'Free Build Studio' : 'Collapse Free Build Studio' }, collapsed ? 'Studio' : '\u2212')
+          (stampRemoval || studioEditableReview || printPreparationActive || coordinateActive || coordinateBuildActive || selectionChooserOpen) && !collapsed ? h('button',{type:'button',className:'gwe-collapse','aria-label':__alloT('stem.gw.returnToBuildTools','Return to build tools'),onClick:function(){if(stampRemoval)cancelStampRemoval();else if(studioEditableReview)cancelEditableImport();else if(coordinateBuildActive)closeCoordinateBuilder();else if(selectionChooserOpen)closeSelectionChooser();else if(coordinateActive)closeCoordinateSelection();else {setPrintPreparationActive(false);focusPrintElement('[data-gwe-prepare="print"]');}}},'Tools') : h('button', { type: 'button', className: 'gwe-collapse', onClick: function () { if (!collapsed) resumeBuilding(); else patchGeometryState(ctx, { sandboxDockCollapsed:false, builderPanel:'build' }); }, 'aria-expanded': collapsed ? 'false' : 'true', 'aria-label': collapsed ? __alloT('stem.gw.expandFreeBuildStudio','Expand Free Build Studio') : __alloT('stem.gw.collapseFreeBuildStudio','Collapse Free Build Studio'), title: collapsed ? 'Free Build Studio' : 'Collapse Free Build Studio' }, collapsed ? 'Studio' : '\u2212')
         ),
-        localSaveError && h('section',{'data-gwe-save-status':true,className:'gwe-save-status','aria-label':'Local save status'},
+        localSaveError && h('section',{'data-gwe-save-status':true,className:'gwe-save-status','aria-label':__alloT('stem.gw.localSaveStatus','Local save status')},
           h('p',{role:'alert'},'Local save needs attention. '+localSaveError),
           h('button',{type:'button','data-gwe-backup-current':true,disabled:hasStudentBuild===false,onClick:function(){saveEditableWorld(ctx);}},'Download editable backup')),
         !collapsed && h('div',{className:'gwe-tool-finder-bar'},h('button',{ref:toolFinderButton,type:'button',className:'gwe-tool-finder-toggle','aria-expanded':toolFinderOpen,'aria-controls':'gwe-tool-finder',onClick:function(){if(toolFinderOpen)closeToolFinder();else {setToolQuery('');setToolCategory('all');setToolFinderOpen(true);}}},h('svg',{viewBox:'0 0 24 24',width:18,height:18,fill:'none',stroke:'currentColor',strokeWidth:1.8,'aria-hidden':'true'},h('circle',{cx:10,cy:10,r:6}),h('path',{d:'m15 15 5 5'})),toolFinderOpen?'Close tool finder':'Find a tool',h('span',{'aria-hidden':'true'},toolFinderOpen?'×':'→'))),
@@ -5848,7 +5848,7 @@
             h('h3',{id:'gwe-print-title',tabIndex:-1},'Prepare your 3D print'),
             h('p',{className:'gwe-print-intro'},measured.count+' selected block'+(measured.count===1?'':'s')+'. Review the size and connections, then continue in Print Lab or download the model.'),
             h('button',{type:'button',className:'gwe-print-change-selection',onClick:function(){openSelectionChooser(true);}},'Change included blocks'),
-            h('nav',{className:'gwe-print-jumps','aria-label':'Print preparation steps'},[['gwe-print-size','1. Size'],['gwe-print-connections','2. Connections'],['gwe-print-export','3. Export']].map(function(step){return h('button',{key:step[0],type:'button',onClick:function(){focusPrintElement('#'+step[0]);}},step[1]);})),
+            h('nav',{className:'gwe-print-jumps','aria-label':__alloT('stem.gw.printPreparationSteps','Print preparation steps')},[['gwe-print-size','1. Size'],['gwe-print-connections','2. Connections'],['gwe-print-export','3. Export']].map(function(step){return h('button',{key:step[0],type:'button',onClick:function(){focusPrintElement('#'+step[0]);}},step[1]);})),
             h('div', {className:'gwe-print-ready-heading'},
               h('h4', { id:'gwe-print-size',tabIndex:-1,className: 'gwe-print-ready-label' }, '1. Physical size'),
               h('span', {className:'gwe-fit-badge'}, printEnvelope.tight ? 'Tight fit' : printEnvelope.fits ? 'Fits profile' : 'Review size')

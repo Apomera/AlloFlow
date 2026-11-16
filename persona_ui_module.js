@@ -33,6 +33,32 @@ var RefreshCw = _lazyIcon('RefreshCw');
 var Search = _lazyIcon('Search');
 var Sparkles = _lazyIcon('Sparkles');
 var Trash2 = _lazyIcon('Trash2');
+var _personaUiAiUsable = function (kind) {
+  if (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true)) return false;
+  if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return Boolean(window.__alloAiUsable(kind));
+  return true;
+};
+var _usePersonaAiConfigTick = function () {
+  var st = useState(0);
+  var setTick = st[1];
+  useEffect(function () {
+    if (typeof window === 'undefined' || typeof window.addEventListener !== 'function') return undefined;
+    var bump = function () {
+      setTick(function (n) {
+        return (n + 1) % 1000000;
+      });
+    };
+    var evs = ['alloflow:ai-config-changed', 'alloflow:student-ai-config-changed', 'alloflow:ai-key-lock-changed', 'storage'];
+    evs.forEach(function (ev) {
+      window.addEventListener(ev, bump);
+    });
+    return function () {
+      evs.forEach(function (ev) {
+        window.removeEventListener(ev, bump);
+      });
+    };
+  }, []);
+};
 const GoldenThreadPanel = ({
   config,
   isEditing,
@@ -110,11 +136,12 @@ const GoldenThreadPanel = ({
     className: "flex items-center gap-2 mb-2"
   }, /*#__PURE__*/React.createElement(Sparkles, {
     size: 14,
+    "aria-hidden": "true",
     className: "text-amber-500 fill-current"
   }), /*#__PURE__*/React.createElement("h5", {
     className: "text-xs font-bold text-amber-900 uppercase tracking-wider"
   }, t('blueprint.lesson_focus') || 'Lesson focus'), isEditing && /*#__PURE__*/React.createElement("span", {
-    className: "text-[10px] text-amber-700 italic ml-auto"
+    className: "text-[10px] text-amber-800 italic ml-auto"
   }, t('persona.edits_apply_before_generation') || 'Edits apply before generation')), /*#__PURE__*/React.createElement("div", {
     className: "mb-2"
   }, /*#__PURE__*/React.createElement("p", {
@@ -128,17 +155,17 @@ const GoldenThreadPanel = ({
     maxLength: 1200,
     placeholder: t('persona.essential_question_placeholder') || 'The ONE main learning question students will answer...',
     rows: 2,
-    className: "w-full text-sm text-slate-700 italic bg-white border border-amber-200 rounded p-1.5 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none resize-none"
+    className: "min-h-11 w-full text-sm text-slate-700 italic bg-white border border-amber-200 rounded p-1.5 focus:border-amber-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 resize-none"
   }) : eq ? /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-700 italic leading-relaxed"
   }, "\"", eq, "\"") : /*#__PURE__*/React.createElement("p", {
-    className: "text-xs text-slate-500 italic"
+    className: "text-xs text-slate-600 italic"
   }, t('persona.none_set') || '(none set)')), /*#__PURE__*/React.createElement("details", {
     "data-testid": "bp-lesson-focus-details",
     open: isEditing,
     className: "group/focus border-t border-amber-200 pt-1"
   }, /*#__PURE__*/React.createElement("summary", {
-    className: "flex min-h-10 cursor-pointer list-none items-center justify-between gap-2 rounded text-xs font-semibold text-amber-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 [&::-webkit-details-marker]:hidden"
+    className: "flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 rounded text-xs font-semibold text-amber-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 [&::-webkit-details-marker]:hidden"
   }, t('blueprint.concepts_and_vocabulary') || 'Concepts and vocabulary', /*#__PURE__*/React.createElement(ChevronDown, {
     size: 14,
     "aria-hidden": "true",
@@ -159,7 +186,7 @@ const GoldenThreadPanel = ({
       "aria-label": t('persona.remove_concept_aria', {
         concept: c
       }) || 'Remove concept ' + c,
-      className: "ml-1 text-amber-600 hover:text-red-500 font-bold leading-none"
+      className: "ml-1 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full text-amber-800 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 font-bold leading-none"
     }, "\xD7"));
   }), isEditing && /*#__PURE__*/React.createElement("span", {
     className: "inline-flex items-center gap-1"
@@ -176,9 +203,9 @@ const GoldenThreadPanel = ({
       }
     },
     placeholder: t('persona.add_concept_placeholder') || '+ add concept',
-    className: "text-[11px] px-2 py-0.5 bg-white border border-amber-200 rounded-full focus:border-amber-500 outline-none w-28"
+    className: "min-h-11 text-[11px] px-3 py-1 bg-white border border-amber-300 rounded-full focus:border-amber-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 w-32"
   })), !isEditing && concepts.length === 0 && /*#__PURE__*/React.createElement("span", {
-    className: "text-xs text-slate-500 italic"
+    className: "text-xs text-slate-600 italic"
   }, t('persona.none_set') || '(none set)'))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-1"
   }, t('persona.key_vocabulary') || 'Key Vocabulary'), /*#__PURE__*/React.createElement("div", {
@@ -193,7 +220,7 @@ const GoldenThreadPanel = ({
       "aria-label": t('persona.remove_term_aria', {
         term: term
       }) || 'Remove term ' + term,
-      className: "ml-1 text-indigo-600 hover:text-red-500 font-bold leading-none"
+      className: "ml-1 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full text-indigo-800 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 font-bold leading-none"
     }, "\xD7"));
   }), isEditing && /*#__PURE__*/React.createElement("span", {
     className: "inline-flex items-center gap-1"
@@ -210,9 +237,9 @@ const GoldenThreadPanel = ({
       }
     },
     placeholder: t('persona.add_term_placeholder') || '+ add term',
-    className: "text-[11px] px-2 py-0.5 bg-white border border-indigo-200 rounded-full focus:border-indigo-500 outline-none w-28"
+    className: "min-h-11 text-[11px] px-3 py-1 bg-white border border-indigo-300 rounded-full focus:border-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 w-32"
   })), !isEditing && terms.length === 0 && /*#__PURE__*/React.createElement("span", {
-    className: "text-xs text-slate-500 italic"
+    className: "text-xs text-slate-600 italic"
   }, t('persona.none_set') || '(none set)')))));
 };
 const InteractiveBlueprintCard = React.memo(({
@@ -234,6 +261,8 @@ const InteractiveBlueprintCard = React.memo(({
   const {
     t
   } = useContext(LanguageContext);
+  _usePersonaAiConfigTick();
+  const aiTextUsable = _personaUiAiUsable('text');
   const [items, setItems] = useState([]);
   const [draggedItemIndex, setDraggedItemIndex] = useState(null);
   const [reorderStatus, setReorderStatus] = useState('');
@@ -607,7 +636,8 @@ const InteractiveBlueprintCard = React.memo(({
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-indigo-100 p-2 rounded-lg text-indigo-600"
   }, /*#__PURE__*/React.createElement(Sparkles, {
-    size: 18
+    size: 18,
+    "aria-hidden": "true"
   })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h4", {
     className: "font-bold text-indigo-900 text-sm"
   }, t('blueprint.header'), " ", isEditing ? `(${t('common.edit')})` : ""), /*#__PURE__*/React.createElement("p", {
@@ -618,7 +648,7 @@ const InteractiveBlueprintCard = React.memo(({
     type: "button",
     "data-testid": "bp-open-error-log",
     onClick: onOpenErrorLog,
-    className: "inline-flex min-h-10 items-center gap-1.5 p-2 rounded-lg text-xs font-bold border border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600",
+    className: "inline-flex min-h-11 items-center gap-1.5 p-2 rounded-lg text-xs font-bold border border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600",
     title: t('blueprint.open_error_log') || 'Open error log',
     "aria-label": t('blueprint.open_error_log') || 'Open error log'
   }, /*#__PURE__*/React.createElement(AlertTriangle, {
@@ -631,11 +661,13 @@ const InteractiveBlueprintCard = React.memo(({
     disabled: !!isRunning,
     title: isRunning ? t('blueprint.wait_for_run') || 'Wait for the run to finish (or stop it) before editing.' : undefined,
     onClick: () => setIsEditing(prev => !prev),
-    className: `p-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-2 border disabled:opacity-40 disabled:cursor-not-allowed ${isEditing ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`
+    className: `min-h-11 p-2 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none flex items-center gap-2 border disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${isEditing ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`
   }, isEditing ? /*#__PURE__*/React.createElement(CheckCircle2, {
-    size: 14
+    size: 14,
+    "aria-hidden": "true"
   }) : /*#__PURE__*/React.createElement(Pencil, {
-    size: 14
+    size: 14,
+    "aria-hidden": "true"
   }), isEditing ? t('blueprint.done_editing') : t('blueprint.edit_plan')))), blueprintMatrixUnavailable && /*#__PURE__*/React.createElement("div", {
     "data-testid": "bp-matrix-unavailable-warning",
     role: "alert",
@@ -663,7 +695,7 @@ const InteractiveBlueprintCard = React.memo(({
     open: blueprintAdaptedPolicy === 'prohibited',
     className: "group/plan-details mb-3 rounded-lg border border-slate-200 text-xs leading-relaxed text-slate-700"
   }, /*#__PURE__*/React.createElement("summary", {
-    className: "flex min-h-10 cursor-pointer list-none items-center justify-between gap-2 rounded-lg px-2.5 py-2 font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 [&::-webkit-details-marker]:hidden"
+    className: "flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 rounded-lg px-2.5 py-2 font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 [&::-webkit-details-marker]:hidden"
   }, t('blueprint.plan_details') || 'Generation and text settings', /*#__PURE__*/React.createElement(ChevronDown, {
     size: 14,
     "aria-hidden": "true",
@@ -735,7 +767,7 @@ const InteractiveBlueprintCard = React.memo(({
       "data-testid": "bp-stop-run",
       "data-help-key": "blueprint_stop_run_btn",
       onClick: onStopRun,
-      className: "shrink-0 text-[10px] font-bold px-2 py-1 rounded border border-red-300 text-red-700 bg-white hover:bg-red-50",
+      className: "shrink-0 min-h-11 text-[10px] font-bold px-2.5 py-1.5 rounded border border-red-300 text-red-700 bg-white hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600",
       title: t('blueprint.stop_run_hint') || 'Finishes the step in progress, then stops. Finished resources are kept.'
     }, t('blueprint.stop_run') || 'Stop after this step'));
   })(), showRunOutcome && /*#__PURE__*/React.createElement("div", {
@@ -770,7 +802,7 @@ const InteractiveBlueprintCard = React.memo(({
       position: idx + 1,
       total: items.length
     }) || `Plan step ${idx + 1} of ${items.length}`,
-    className: `group flex items-start gap-2 p-3 rounded-lg border-2 transition-all ${draggedItemIndex === idx ? 'opacity-50 border-dashed border-indigo-300 bg-indigo-50' : 'bg-slate-50 border-slate-200 hover:border-indigo-200'}`
+    className: `group flex items-start gap-2 p-3 rounded-lg border-2 transition-all motion-reduce:transition-none ${draggedItemIndex === idx ? 'opacity-50 border-dashed border-indigo-300 bg-indigo-50' : 'bg-slate-50 border-slate-200 hover:border-indigo-200'}`
   }, /*#__PURE__*/React.createElement("div", {
     className: "mt-1 flex flex-col items-center gap-1 text-slate-600 cursor-grab active:cursor-grabbing hover:text-indigo-500"
   }, /*#__PURE__*/React.createElement(GripVertical, {
@@ -780,7 +812,7 @@ const InteractiveBlueprintCard = React.memo(({
     type: "button",
     onClick: () => handleMoveItem(idx, -1),
     disabled: idx === 0,
-    className: "w-7 h-7 inline-flex items-center justify-center rounded border border-slate-400 bg-white text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 disabled:cursor-not-allowed",
+    className: "w-7 h-7 min-w-11 min-h-11 inline-flex items-center justify-center rounded border border-slate-400 bg-white text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
     "aria-label": t('blueprint.move_up_aria', {
       position: idx + 1
     }) || `Move plan step ${idx + 1} up`
@@ -791,7 +823,7 @@ const InteractiveBlueprintCard = React.memo(({
     type: "button",
     onClick: () => handleMoveItem(idx, 1),
     disabled: idx === items.length - 1,
-    className: "w-7 h-7 inline-flex items-center justify-center rounded border border-slate-400 bg-white text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 disabled:cursor-not-allowed",
+    className: "w-7 h-7 min-w-11 min-h-11 inline-flex items-center justify-center rounded border border-slate-400 bg-white text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
     "aria-label": t('blueprint.move_down_aria', {
       position: idx + 1
     }) || `Move plan step ${idx + 1} down`
@@ -806,7 +838,7 @@ const InteractiveBlueprintCard = React.memo(({
     "aria-label": t('common.selection'),
     value: item.type,
     onChange: e => handleTypeChange(idx, e.target.value),
-    className: "w-full text-xs font-bold text-slate-700 bg-white border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none"
+    className: "min-h-11 w-full text-xs font-bold text-slate-700 bg-white border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
   }, toolOptions.map(opt => /*#__PURE__*/React.createElement("option", {
     key: opt.value,
     value: opt.value,
@@ -821,24 +853,26 @@ const InteractiveBlueprintCard = React.memo(({
     rows: 2,
     value: item.directive,
     onChange: e => handleDirectiveChange(idx, e.target.value),
-    className: "w-full resize-y text-xs text-slate-600 bg-white border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none placeholder:italic",
+    className: "min-h-11 w-full resize-y text-xs text-slate-600 bg-white border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 placeholder:italic",
     placeholder: t('blueprint.placeholder_instruction')
   }))), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('common.delete'),
     onClick: () => handleDelete(idx),
-    className: "mt-1.5 text-slate-600 hover:text-red-700 hover:bg-red-50 p-1 rounded transition-colors",
+    className: "mt-1.5 min-w-11 min-h-11 inline-flex items-center justify-center text-slate-600 hover:text-red-700 hover:bg-red-50 p-1 rounded transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600",
     title: t('blueprint.remove_step_tooltip')
   }, /*#__PURE__*/React.createElement(Trash2, {
-    size: 14
+    size: 14,
+    "aria-hidden": "true"
   }))))), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-help-key": "blueprint_add_step_btn",
     "aria-label": t('blueprint.add_step'),
     onClick: handleAddStep,
-    className: "w-full py-2 border-2 border-dashed border-slate-300 rounded-lg text-slate-600 text-xs font-bold hover:bg-slate-50 hover:text-indigo-600 hover:border-indigo-300 transition-all flex items-center justify-center gap-2 mb-4"
+    className: "min-h-11 w-full py-2 border-2 border-dashed border-slate-300 rounded-lg text-slate-600 text-xs font-bold hover:bg-slate-50 hover:text-indigo-600 hover:border-indigo-300 transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 flex items-center justify-center gap-2 mb-4"
   }, /*#__PURE__*/React.createElement(Plus, {
-    size: 14
+    size: 14,
+    "aria-hidden": "true"
   }), " ", t('blueprint.add_step'))) : /*#__PURE__*/React.createElement("div", {
     "data-help-key": "blueprint_resource_list_review",
     className: "space-y-3 mb-4"
@@ -1018,7 +1052,7 @@ const InteractiveBlueprintCard = React.memo(({
       "aria-controls": `bp-desc-${item.id}`,
       "data-testid": "bp-desc-toggle",
       "data-help-key": "blueprint_resource_desc_toggle",
-      className: "ml-1 inline-flex min-h-8 items-center rounded border border-slate-300 px-2 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500",
+      className: "ml-1 inline-flex min-h-11 items-center rounded border border-slate-300 px-2.5 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
       title: t('blueprint.what_is_this') || 'What does this resource do?',
       "aria-label": `${t('blueprint.what_is_this') || 'What does this resource do?'}: ${getToolLabel(item.type)}`
     }, t('blueprint.about_resource') || 'About'), typeof onPreviewStep === 'function' && (_status === 'landed' || _status === 'partial') && !_missing && _runtimeVariants.length <= 1 && /*#__PURE__*/React.createElement("button", {
@@ -1036,16 +1070,16 @@ const InteractiveBlueprintCard = React.memo(({
       },
       title: t('blueprint.preview_step') || 'Preview this resource',
       "aria-label": `${t('blueprint.preview_step') || 'Preview this resource'}: ${getToolLabel(item.type)}`,
-      className: "ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100 hover:border-slate-400 transition-colors"
+      className: "ml-1 inline-flex min-h-11 items-center text-[10px] font-bold px-2.5 py-1 rounded border border-slate-300 text-slate-700 hover:bg-slate-100 hover:border-slate-400 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
     }, t('blueprint.preview_step_short') || 'Preview'), typeof onRebuildStep === 'function' && _status && _status !== 'running' && /*#__PURE__*/React.createElement("button", {
       type: "button",
       "data-testid": "bp-rebuild-btn",
-      disabled: !!isRunning,
+      disabled: !!isRunning || !aiTextUsable,
       "data-help-key": "blueprint_rebuild_step_btn",
       onClick: () => onRebuildStep(item.id),
       title: t('blueprint.rebuild_step') || 'Rebuild just this step',
       "aria-label": `${t('blueprint.rebuild_step') || 'Rebuild just this step'}: ${getToolLabel(item.type)}`,
-      className: "ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100 hover:border-slate-400 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+      className: "ml-1 inline-flex min-h-11 items-center text-[10px] font-bold px-2.5 py-1 rounded border border-slate-300 text-slate-700 hover:bg-slate-100 hover:border-slate-400 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-40 disabled:cursor-not-allowed"
     }, t('blueprint.rebuild_step_short') || 'Rebuild'), openDescIds.indexOf(item.id) !== -1 && getToolDesc(item.type) && /*#__PURE__*/React.createElement("p", {
       id: `bp-desc-${item.id}`,
       "data-testid": "bp-desc-body",
@@ -1067,7 +1101,7 @@ const InteractiveBlueprintCard = React.memo(({
       "data-testid": "bp-row-details",
       className: "group/row-details mt-1"
     }, /*#__PURE__*/React.createElement("summary", {
-      className: "flex min-h-8 cursor-pointer list-none items-center justify-between gap-2 rounded text-xs font-medium text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 [&::-webkit-details-marker]:hidden"
+      className: "flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 rounded text-xs font-medium text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 [&::-webkit-details-marker]:hidden"
     }, t('blueprint.row_details') || 'Generation details', /*#__PURE__*/React.createElement(ChevronDown, {
       size: 13,
       "aria-hidden": "true",
@@ -1080,7 +1114,7 @@ const InteractiveBlueprintCard = React.memo(({
     }, _rowMatrixUnavailable ? /*#__PURE__*/React.createElement("span", {
       "data-testid": "bp-row-matrix-unavailable"
     }, t('blueprint.row_matrix_unavailable') || 'Waiting for generation planning. This row will not run until exact duplicate and audience-version checks are available.') : item.type === 'analysis' && _reusedVariants.length && !_newVariants.length ? t('blueprint.analysis_reused') || 'Already checked, reused' : _generationVariants.length ? `${_newVariants.length} ${t('blueprint.new_versions') || 'new'} / ${_reusedVariants.length} ${t('blueprint.reused_versions') || 'reused'}${_variantGrades.length ? `; ${_variantGrades.join(', ')}` : ''}${_variantLanguages.length ? `; ${_variantLanguages.join(', ')}` : ''}${item.type === 'glossary' && embeddedGlossaryLanguages.length ? `; ${t('blueprint.embedded_languages') || 'embedded'}: ${embeddedGlossaryLanguages.join(', ')}` : ''}` : t('blueprint.row_matrix_pending') || 'Reuse and audience variants will be checked before generation.'), _runtimeVariants.some(variant => variant && (variant.artifactId || variant.resourceId)) && /*#__PURE__*/React.createElement("ul", {
-      className: "mt-1 space-y-1 break-all text-[10px] text-slate-500"
+      className: "mt-1 space-y-1 break-all text-[10px] text-slate-600"
     }, _runtimeVariants.map((variant, index) => variant && (variant.artifactId || variant.resourceId) ? /*#__PURE__*/React.createElement("li", {
       key: variant.generationIdentity || index
     }, t('blueprint.artifact_id') || 'Artifact', ": ", variant.artifactId || variant.resourceId) : null))), (_runtimeVariants.length > 1 || _failedRuntimeVariants.length > 0 || _missingRuntimeVariants.length > 0) && /*#__PURE__*/React.createElement("div", {
@@ -1120,7 +1154,7 @@ const InteractiveBlueprintCard = React.memo(({
           const selection = _previewSelection(variant);
           onPreviewStep(item.id, selection.resourceId, selection);
         },
-        className: "ml-auto rounded border border-emerald-300 bg-white px-1.5 py-0.5 font-bold text-emerald-800 hover:bg-emerald-100"
+        className: "ml-auto inline-flex min-h-11 items-center rounded border border-emerald-300 bg-white px-2.5 py-1 font-bold text-emerald-800 hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700"
       }, t('blueprint.preview_step_short') || 'Preview')), !isSuccessful && /*#__PURE__*/React.createElement("div", {
         className: "mt-0.5 opacity-85"
       }, isMissingArtifact ? t('blueprint.variant_missing') || 'This successful version is no longer in the workspace. Rebuild the step to create it again.' : safeVariantReason && safeVariantReason.summary || t('blueprint.variant_failure_safe') || 'This variant did not finish; technical details remain in the on-device error log.'));
@@ -1130,7 +1164,14 @@ const InteractiveBlueprintCard = React.memo(({
     className: "text-center text-slate-600 text-sm py-4"
   }, /*#__PURE__*/React.createElement("p", null, t('blueprint.empty_plan')), /*#__PURE__*/React.createElement("p", {
     className: "mt-1 text-xs"
-  }, t('blueprint.empty_plan_help') || 'Choose Edit plan, then Add step to add a resource.'))), /*#__PURE__*/React.createElement("div", {
+  }, t('blueprint.empty_plan_help') || 'Choose Edit plan, then Add step to add a resource.'))), !aiTextUsable && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true) && (() => {
+    const Notice = typeof window !== 'undefined' && (window.AlloModules && window.AlloModules.AlloAiSetupNotice || window.AlloAiSetupNotice) || null;
+    return Notice ? /*#__PURE__*/React.createElement("div", {
+      className: "mb-3"
+    }, /*#__PURE__*/React.createElement(Notice, {
+      t: t
+    })) : null;
+  })(), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-3 pt-3 border-t border-slate-100"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -1138,17 +1179,18 @@ const InteractiveBlueprintCard = React.memo(({
     disabled: !!isRunning,
     "aria-label": t('common.cancel'),
     onClick: onCancel,
-    className: "flex-1 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+    className: "flex-1 min-h-11 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-40 disabled:cursor-not-allowed"
   }, t('blueprint.cancel')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-help-key": "blueprint_generate_pack_btn",
     "aria-label": generateActionLabel,
-    disabled: !!isRunning || items.length === 0,
+    disabled: !!isRunning || items.length === 0 || !aiTextUsable,
     onClick: onConfirm,
-    className: "flex-[2] py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed text-white rounded-lg text-xs font-bold shadow-md transition-transform active:scale-95 flex items-center justify-center gap-2"
+    className: "flex-[2] min-h-11 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed text-white rounded-lg text-xs font-bold shadow-md transition-transform motion-reduce:transition-none active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 flex items-center justify-center gap-2"
   }, /*#__PURE__*/React.createElement(Sparkles, {
     size: 14,
-    className: "text-yellow-700 fill-current"
+    "aria-hidden": "true",
+    className: "text-amber-200 fill-current"
   }), " ", generateActionLabel)), typeof onSaveTemplate === 'function' && items.length > 0 && !isEditing && /*#__PURE__*/React.createElement("div", {
     className: "pt-3 border-t border-slate-100",
     "data-testid": "bp-template-save"
@@ -1161,7 +1203,7 @@ const InteractiveBlueprintCard = React.memo(({
       setDirectivePolicy({});
       setShowTemplateSave(true);
     },
-    className: "text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100 transition-colors"
+    className: "min-h-11 text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
   }, t('blueprint.save_template') || 'Save as template') : /*#__PURE__*/React.createElement("div", {
     className: "space-y-2"
   }, /*#__PURE__*/React.createElement("label", {
@@ -1175,13 +1217,13 @@ const InteractiveBlueprintCard = React.memo(({
     maxLength: 80,
     onChange: e => setTemplateName(e.target.value),
     placeholder: t('blueprint.template_name_placeholder') || 'e.g. Vocabulary-first informational text',
-    className: "w-full text-sm border border-slate-300 rounded p-1.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none"
+    className: "min-h-11 w-full text-sm border border-slate-300 rounded p-1.5 focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
   }), /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] text-slate-600"
   }, t('blueprint.template_directive_help') || 'Keep the instructions that would suit any topic. Clear the ones that describe THIS lesson.'), /*#__PURE__*/React.createElement("ul", {
     className: "space-y-1 max-h-48 overflow-y-auto"
   }, items.filter(it => (it.directive || '').trim()).map(it => {
-    const keep = directivePolicy[it.id] !== 'blank';
+    const keep = (Object.prototype.hasOwnProperty.call(directivePolicy, it.id) ? directivePolicy[it.id] : undefined) !== 'blank';
     return /*#__PURE__*/React.createElement("li", {
       key: it.id,
       className: "flex items-start gap-2 text-xs"
@@ -1193,14 +1235,14 @@ const InteractiveBlueprintCard = React.memo(({
       onChange: () => setDirectivePolicy(prev => Object.assign({}, prev, {
         [it.id]: keep ? 'blank' : 'keep'
       })),
-      className: "mt-0.5 rounded border-slate-400"
+      className: "mt-2 w-5 h-5 rounded border-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
     }), /*#__PURE__*/React.createElement("label", {
       htmlFor: `bp-tpl-dir-${it.id}`,
-      className: "flex-grow cursor-pointer"
+      className: "min-h-11 flex-grow cursor-pointer py-2"
     }, /*#__PURE__*/React.createElement("span", {
       className: "font-bold"
     }, getToolLabel(it.type)), /*#__PURE__*/React.createElement("span", {
-      className: keep ? 'text-slate-700' : 'text-slate-500 line-through'
+      className: keep ? 'text-slate-700' : 'text-slate-600 line-through'
     }, " \u2014 \"", it.directive, "\"")));
   })), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2"
@@ -1215,17 +1257,17 @@ const InteractiveBlueprintCard = React.memo(({
       });
       setShowTemplateSave(false);
     },
-    className: "text-xs font-bold px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+    className: "min-h-11 text-xs font-bold px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
   }, t('blueprint.template_save_confirm') || 'Save template'), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-testid": "bp-template-save-cancel",
     onClick: () => setShowTemplateSave(false),
-    className: "text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100 transition-colors"
+    className: "min-h-11 text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
   }, t('common.cancel') || 'Cancel')))), run && (typeof onCopyDiagnostics === 'function' || typeof onDownloadDiagnostics === 'function') && /*#__PURE__*/React.createElement("details", {
     "data-testid": "bp-troubleshooting",
     className: "group/support mt-3 border-t border-slate-200 text-xs text-slate-600"
   }, /*#__PURE__*/React.createElement("summary", {
-    className: "flex min-h-10 cursor-pointer list-none items-center justify-between gap-2 rounded pt-2 font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 [&::-webkit-details-marker]:hidden"
+    className: "flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 rounded pt-2 font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 [&::-webkit-details-marker]:hidden"
   }, t('fullpack.troubleshooting') || 'Troubleshooting', /*#__PURE__*/React.createElement(ChevronDown, {
     size: 14,
     "aria-hidden": "true",
@@ -1238,7 +1280,7 @@ const InteractiveBlueprintCard = React.memo(({
     type: "button",
     "data-testid": "bp-copy-diagnostics",
     onClick: onCopyDiagnostics,
-    className: "inline-flex min-h-10 items-center gap-1.5 p-2 rounded-lg text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500",
+    className: "inline-flex min-h-11 items-center gap-1.5 p-2 rounded-lg text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
     title: t('blueprint.copy_diagnostics') || 'Copy sanitized Blueprint diagnostics',
     "aria-label": t('blueprint.copy_diagnostics') || 'Copy sanitized Blueprint diagnostics'
   }, /*#__PURE__*/React.createElement(Copy, {
@@ -1248,7 +1290,7 @@ const InteractiveBlueprintCard = React.memo(({
     type: "button",
     "data-testid": "bp-download-diagnostics",
     onClick: onDownloadDiagnostics,
-    className: "inline-flex min-h-10 items-center gap-1.5 p-2 rounded-lg text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500",
+    className: "inline-flex min-h-11 items-center gap-1.5 p-2 rounded-lg text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
     title: t('blueprint.download_diagnostics') || 'Download Blueprint diagnostic report',
     "aria-label": t('blueprint.download_diagnostics') || 'Download Blueprint diagnostic report'
   }, /*#__PURE__*/React.createElement(Download, {
@@ -1289,7 +1331,8 @@ const HarmonyMeter = ({
   }), /*#__PURE__*/React.createElement("div", {
     className: "absolute top-0 bottom-0 left-1/2 w-0.5 bg-white/50 z-10"
   })), safeScore >= 80 && /*#__PURE__*/React.createElement("div", {
-    className: "text-center mt-1 text-[11px] font-bold text-green-600 animate-pulse motion-reduce:animate-none"
+    role: "status",
+    className: "text-center mt-1 text-[11px] font-bold text-emerald-800 animate-pulse motion-reduce:animate-none"
   }, t('persona.common_ground')));
 };
 const CharacterColumn = React.memo(({
@@ -1300,6 +1343,7 @@ const CharacterColumn = React.memo(({
   const {
     t
   } = useContext(LanguageContext);
+  _usePersonaAiConfigTick();
   if (!character) return /*#__PURE__*/React.createElement("div", {
     className: "flex-1 bg-slate-50/50"
   });
@@ -1365,7 +1409,7 @@ const CharacterColumn = React.memo(({
     className: "w-full h-full bg-slate-100 flex flex-col items-center justify-center gap-2 p-4"
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-3xl text-slate-600 font-bold"
-  }, "?"), onRetryPortrait && /*#__PURE__*/React.createElement("button", {
+  }, "?"), onRetryPortrait && _personaUiAiUsable('images') && /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('persona.generate_portrait_for', {
       name: characterName
@@ -1373,7 +1417,7 @@ const CharacterColumn = React.memo(({
     onClick: () => onRetryPortrait(character),
     disabled: Boolean(character.isUpdating),
     "aria-busy": character.isUpdating ? 'true' : 'false',
-    className: `px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all motion-reduce:transition-none shadow-sm hover:shadow-md cursor-pointer z-10 relative disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-sm ${side === 'left' ? 'bg-indigo-600 hover:bg-indigo-700 text-white' : 'bg-rose-600 hover:bg-rose-700 text-white'}`
+    className: `min-h-11 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 shadow-sm hover:shadow-md cursor-pointer z-10 relative disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-sm ${side === 'left' ? 'bg-indigo-600 hover:bg-indigo-700 text-white' : 'bg-rose-600 hover:bg-rose-700 text-white'}`
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12,
     "aria-hidden": "true"
@@ -1399,7 +1443,7 @@ const CharacterColumn = React.memo(({
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex justify-between text-[11px] font-bold text-slate-600 uppercase mb-1"
   }, /*#__PURE__*/React.createElement("span", null, t('persona.rapport_label')), /*#__PURE__*/React.createElement("span", {
-    className: `${rapport >= 70 ? 'text-green-600' : 'text-slate-600'}`
+    className: `${rapport >= 70 ? 'text-emerald-800' : 'text-slate-600'}`
   }, rapport, "%")), /*#__PURE__*/React.createElement("div", {
     role: "progressbar",
     "aria-label": (t('persona.rapport_label') || 'Rapport') + ': ' + characterName,
@@ -1466,13 +1510,13 @@ const CharacterColumn = React.memo(({
     })), /*#__PURE__*/React.createElement("div", {
       className: "flex-grow"
     }, /*#__PURE__*/React.createElement("span", {
-      className: `break-words [overflow-wrap:anywhere] font-bold block ${q.isCompleted ? 'line-through opacity-70' : ''}`
+      className: `break-words [overflow-wrap:anywhere] font-bold block ${q.isCompleted ? 'line-through text-emerald-900' : ''}`
     }, q.isCompleted ? /*#__PURE__*/React.createElement("span", {
       className: "sr-only"
     }, completedLabel, ": ") : isLocked ? /*#__PURE__*/React.createElement("span", {
       className: "sr-only"
     }, lockedLabel, ": ") : null, q.text), !q.isCompleted && isLocked && /*#__PURE__*/React.createElement("span", {
-      className: "text-[11px] uppercase font-bold opacity-70 mt-1 block"
+      className: "text-[11px] uppercase font-bold text-slate-700 mt-1 block"
     }, (() => {
       const value = t('persona.inquiry.bonus');
       return value && value !== 'persona.inquiry.bonus' ? value : 'Optional story bonus at rapport';

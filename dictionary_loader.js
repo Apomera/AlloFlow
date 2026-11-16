@@ -18,6 +18,9 @@
  *      thereafter (progressive offline; the School Box bundle is a follow-up).
  *   2. dictionaryapi.dev (Free Dictionary API, CORS-open, no key) — real
  *      Wiktionary-sourced definitions + synonyms + phonetics. English only.
+ *   3. window.AlloVocabBank (school-curated offline EN bank + lemmatization,
+ *      when loaded via packets_vocab_bank_en.js) — serves desktop, offline, and
+ *      inflected/404 fallback words with 0 external calls when loaded.
  *
  * NOTE (2026-07-06): dictionaryapi.dev CORS `*` + response shape verified; the
  * in-popup render is browser-smoke-pending. Null-on-failure means the Define
@@ -32,7 +35,13 @@
   var CACHE_MAX = 1200; // cap the cached-word count so localStorage can't grow unbounded
 
   function normalizeWord(w) {
-    return String(w == null ? '' : w).toLowerCase().trim().replace(/^[^\p{L}]+|[^\p{L}'-]+$/gu, '');
+    return String(w == null ? '' : w)
+      .toLowerCase()
+      .trim()
+      .replace(/[\u2018\u2019\u02BC]/g, "'")
+      .replace(/[\u2010-\u2015]/g, '-')
+      .replace(/^[^\p{L}]+|[^\p{L}'-]+$/gu, '')
+      .replace(/^['-]+|['-]+$/g, '');
   }
 
   function dictionaryText(value) { return typeof value === 'string' ? value.trim() : ''; }
@@ -176,6 +185,233 @@
   }
 
   // Detailed outcomes are optional; lookup() retains its entry-or-null API.
+  var pendingBankLoad = null;
+  var pendingBankSignal = null;
+  var internalVocabBank = null;
+  var VOCAB_SHARDS = ['en-1.json', 'en-2.json'];
+  var VOCAB_POS = { n: 'noun', v: 'verb', a: 'adjective', r: 'adverb' };
+  function ownKey(obj, key) {
+    return !!obj && Object.prototype.hasOwnProperty.call(obj, key);
+  }
+  function isValidVocabShard(data) {
+    return !!data && typeof data === 'object' && !Array.isArray(data) && data.version === 1 && Array.isArray(data.words);
+  }
+  function buildInternalVocabBank(parts) {
+    var heads = Object.create(null);
+    var forms = Object.create(null);
+    parts.forEach(function (d) {
+      d.words.forEach(function (row) {
+        if (!Array.isArray(row) || typeof row[0] !== 'string' || !Array.isArray(row[1])) return;
+        var w = row[0], list = [];
+        row[1].forEach(function (r) {
+          if (!Array.isArray(r) || typeof r[0] !== 'string' || typeof r[1] !== 'string') return;
+          var p = r[0].charAt(0);
+          list.push({ pos: VOCAB_POS[p] || '', def: r[1], example: typeof r[2] === 'string' ? r[2] : '' });
+        });
+        heads[w] = list;
+      });
+      if (typeof d.forms === 'string' && d.forms) {
+        d.forms.split(',').forEach(function (x) {
+          var q = x.split(' ');
+          if (q[0] && q[1]) forms[q[0]] = q[1];
+        });
+      }
+    });
+    function head(word) {
+      var k = String(word == null ? '' : word).trim().toLowerCase();
+      if (!k) return null;
+      if (ownKey(heads, k)) return k;
+      if (ownKey(forms, k) && ownKey(heads, forms[k])) return forms[k];
+      var c = [];
+      if (/ies$/.test(k)) c.push(k.slice(0, -3) + 'y');
+      if (/(s|x|z|ch|sh|o)es$/.test(k)) c.push(k.slice(0, -2));
+      if (/[^s]s$/.test(k)) c.push(k.slice(0, -1));
+      if (/ied$/.test(k)) c.push(k.slice(0, -3) + 'y');
+      if (/ed$/.test(k)) { c.push(k.slice(0, -2), k.slice(0, -1)); if (/([bdgklmnprt])\1ed$/.test(k)) c.push(k.slice(0, -3)); }
+      if (/ing$/.test(k)) { c.push(k.slice(0, -3), k.slice(0, -3) + 'e'); if (/([bdgklmnprt])\1ing$/.test(k)) c.push(k.slice(0, -4)); }
+      for (var i = 0; i < c.length; i++) if (c[i].length >= 2 && ownKey(heads, c[i])) return c[i];
+      return null;
+    }
+    return {
+      version: 1,
+      ready: function () { return true; },
+      has: function (word) { return head(word) != null; },
+      head: head,
+      senses: function (word) { var h = head(word); return h ? heads[h].slice() : []; }
+    };
+  }
+  function getActiveVocabBank() {
+    if (typeof window !== 'undefined' && window.AlloVocabBank &&
+        typeof window.AlloVocabBank.ready === 'function' && window.AlloVocabBank.ready()) {
+      return window.AlloVocabBank;
+    }
+    return internalVocabBank;
+  }
+  function isVocabBankReady() {
+    return !!getActiveVocabBank();
+  }
+  function withEntryAudio(entry, clip) {
+    if (!entry || !clip || typeof clip !== 'string' || entry.audio) return entry;
+    var existing = Array.isArray(entry.pronunciations) ? entry.pronunciations.slice() : [];
+    var updated = existing.length
+      ? existing.map(function (p, i) { return (i === 0 && p && !p.audio) ? { phonetic: p.phonetic || '', audio: clip } : p; })
+      : [{ phonetic: entry.phonetic || '', audio: clip }];
+    return Object.assign({}, entry, { audio: clip, pronunciations: updated });
+  }
+  async function attachWordShardAudio(entry, word, headword, options) {
+    if (!entry || entry.audio || (options && options.useWordShardAudio === false)) return entry;
+    var shardClips = typeof window !== 'undefined' && window._CACHE_WORD_SHARD_CLIPS;
+    var clip = (ownKey(shardClips, word) && typeof shardClips[word] === 'string' && shardClips[word]) ||
+      (headword && ownKey(shardClips, headword) && typeof shardClips[headword] === 'string' && shardClips[headword]) || '';
+    var allowAsyncShard = !(typeof window !== 'undefined' && window._isDesktopBundledApp === true && (!options || options.autoLoadOfflineBank !== true));
+    if (!clip && allowAsyncShard && typeof window !== 'undefined' && typeof window.getWordShardAudio === 'function') {
+      var target = headword || word;
+      if (target) {
+        try {
+          clip = await window.getWordShardAudio(target, options && options.signal ? { signal: options.signal } : undefined);
+          if (!clip && headword && headword !== word && !(options && options.signal && options.signal.aborted)) {
+            clip = await window.getWordShardAudio(word, options && options.signal ? { signal: options.signal } : undefined);
+          }
+        } catch (err) {
+          if (err && err.name === 'AbortError') throw err;
+          clip = '';
+        }
+      }
+    }
+    return clip && typeof clip === 'string' ? withEntryAudio(entry, clip) : entry;
+  }
+  function lookupFromVocabBankWithHead(word) {
+    var bank = getActiveVocabBank();
+    if (!bank || !word) return null;
+    var headword = typeof bank.head === 'function' ? bank.head(word) : null;
+    var senses = typeof bank.senses === 'function' ? bank.senses(word) : [];
+    if ((!Array.isArray(senses) || !senses.length) && /^[a-z]+'[s]$/i.test(word) && word.length >= 4) {
+      var stem = word.slice(0, -2);
+      headword = typeof bank.head === 'function' ? bank.head(stem) : stem;
+      senses = typeof bank.senses === 'function' ? bank.senses(stem) : [];
+      if (!headword && Array.isArray(senses) && senses.length) headword = stem;
+    }
+    if (!Array.isArray(senses) || !senses.length) return null;
+    var groups = [], byPos = Object.create(null);
+    senses.forEach(function (s) {
+      if (!s || typeof s.def !== 'string' || !s.def.trim()) return;
+      var pos = typeof s.pos === 'string' ? s.pos : '';
+      if (!byPos[pos]) { byPos[pos] = []; groups.push({ partOfSpeech: pos, definitions: byPos[pos], pronunciations: [] }); }
+      byPos[pos].push({ definition: s.def, example: typeof s.example === 'string' ? s.example : '' });
+    });
+    if (!groups.length) return null;
+    var shardClips = typeof window !== 'undefined' && window._CACHE_WORD_SHARD_CLIPS;
+    var clip = (ownKey(shardClips, word) && typeof shardClips[word] === 'string' && shardClips[word]) ||
+      (headword && ownKey(shardClips, headword) && typeof shardClips[headword] === 'string' && shardClips[headword]) || '';
+    var prons = clip ? [{ phonetic: '', audio: clip }] : [];
+    var normalized = normalizeCachedEntry({
+      word: word,
+      audio: clip,
+      pronunciations: prons,
+      meanings: groups,
+      synonyms: [],
+      source: 'AlloFlow School Vocabulary (Wiktionary / WordNet, CC BY-SA 4.0)',
+      sourceUrl: 'https://en.wiktionary.org/wiki/' + encodeURIComponent(headword || word)
+    }, word);
+    return normalized ? { entry: normalized, headword: headword || word } : null;
+  }
+  function lookupFromVocabBank(word) {
+    var hit = lookupFromVocabBankWithHead(word);
+    return hit ? hit.entry : null;
+  }
+  function loadOfflineBank(options) {
+    if (isVocabBankReady()) return Promise.resolve(true);
+    var opts = options || {};
+    var sig = opts.signal;
+    if (sig && sig.aborted) return Promise.resolve(false);
+    var raceWithAbort = function (promise) {
+      if (!sig) return promise;
+      if (sig.aborted) return Promise.resolve(false);
+      return new Promise(function (resolve) {
+        var done = false;
+        var onAbort = function () {
+          if (done) return;
+          done = true;
+          resolve(false);
+        };
+        try { sig.addEventListener('abort', onAbort, { once: true }); } catch (_) {}
+        promise.then(function (val) {
+          if (done) return;
+          done = true;
+          try { sig.removeEventListener('abort', onAbort); } catch (_) {}
+          resolve(!!val);
+        }, function () {
+          if (done) return;
+          done = true;
+          try { sig.removeEventListener('abort', onAbort); } catch (_) {}
+          resolve(false);
+        });
+      });
+    };
+    if (pendingBankLoad && !(pendingBankSignal && pendingBankSignal.aborted) && !opts.fetch && opts.base == null) {
+      return raceWithAbort(pendingBankLoad);
+    }
+    var thisLoad;
+    if (typeof window !== 'undefined' && window.AlloVocabBank && typeof window.AlloVocabBank.load === 'function') {
+      thisLoad = Promise.resolve(window.AlloVocabBank.load(opts)).catch(function (err) {
+        if (opts.base == null && !(sig && sig.aborted)) {
+          return window.AlloVocabBank.load(Object.assign({}, opts, { base: '../' }));
+        }
+        throw err;
+      }).then(function () { return isVocabBankReady(); }).catch(function () { return false; });
+    } else {
+      var f = opts.fetch || (typeof window !== 'undefined' && typeof window.fetch === 'function' ? window.fetch.bind(window) : (typeof fetch === 'function' ? fetch : null));
+      if (typeof f !== 'function') return Promise.resolve(false);
+      var normalizeBase = function (b) {
+        var s = String(b == null ? '' : b);
+        return s && s.charAt(s.length - 1) !== '/' ? s + '/' : s;
+      };
+      var bases = opts.base != null ? [normalizeBase(opts.base)] : ['./packets_vocab/', '../packets_vocab/'];
+      var tryBase = function (idx) {
+        if (sig && sig.aborted) return Promise.resolve(false);
+        if (idx >= bases.length) return Promise.resolve(false);
+        var base = bases[idx];
+        var fetchOpts = sig ? { credentials: 'omit', signal: sig } : { credentials: 'omit' };
+        return Promise.all(VOCAB_SHARDS.map(function (file) {
+          return Promise.resolve(f(base + file, fetchOpts)).then(function (r) {
+            if (!r || !r.ok) throw new Error('AlloVocabBank: ' + file + ' ' + (r ? r.status : 'error'));
+            return r.json();
+          }).then(function (data) {
+            if (!isValidVocabShard(data)) throw new Error('AlloVocabBank: invalid shard ' + file);
+            return data;
+          });
+        })).then(function (parts) {
+          if (sig && sig.aborted) return false;
+          internalVocabBank = buildInternalVocabBank(parts);
+          return isVocabBankReady();
+        }).catch(function (err) {
+          if ((sig && sig.aborted) || (err && err.name === 'AbortError')) return false;
+          return tryBase(idx + 1);
+        });
+      };
+      thisLoad = tryBase(0).catch(function () { return false; });
+    }
+    pendingBankLoad = thisLoad;
+    pendingBankSignal = sig || null;
+    if (sig && typeof sig.addEventListener === 'function') {
+      try {
+        sig.addEventListener('abort', function () {
+          if (pendingBankLoad === thisLoad) {
+            pendingBankLoad = null;
+            pendingBankSignal = null;
+          }
+        }, { once: true });
+      } catch (_) {}
+    }
+    thisLoad.then(function () {
+      if (pendingBankLoad === thisLoad) {
+        pendingBankLoad = null;
+        pendingBankSignal = null;
+      }
+    });
+    return raceWithAbort(thisLoad);
+  }
+
   async function lookupDetailed(word, options = {}) {
     options = options || {};
     const result = (entry, reason = null) => ({ entry, reason });
@@ -183,15 +419,75 @@
     const w = normalizeWord(word);
     if (!w || /\s/.test(w)) return result(null, 'unsupported_word');
     const cached = readCache(w);
-    if (cached !== undefined && !(cached === null && options.bypassMissingCache)) return result(cached, cached ? null : 'not_found');
-    if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) return result(null, 'not_available');
-    if (typeof fetch !== 'function') return result(null, 'not_available');
+    if (cached !== undefined && !(cached === null && options.bypassMissingCache)) {
+      if (!cached) return result(null, 'not_found');
+      try {
+        const enriched = await attachWordShardAudio(cached, w, null, options);
+        if (options.signal?.aborted) return result(null, 'cancelled');
+        return result(enriched, null);
+      } catch (err) {
+        if ((err && err.name === 'AbortError') || options.signal?.aborted) return result(null, 'cancelled');
+        return result(cached, null);
+      }
+    }
+    const bankFallback = () => (options.useOfflineBank === false ? null : lookupFromVocabBankWithHead(w));
+    const ensureAndLookupBank = async () => {
+      let hit = bankFallback();
+      if (!hit && options.autoLoadOfflineBank === true && options.useOfflineBank !== false && !isVocabBankReady()) {
+        await loadOfflineBank({ signal: options.signal });
+        if (options.signal?.aborted) return 'cancelled';
+        hit = bankFallback();
+      }
+      return hit;
+    };
+    const finishBankHit = async (hit) => {
+      try {
+        const enriched = await attachWordShardAudio(hit.entry, w, hit.headword, options);
+        if (options.signal?.aborted) return result(null, 'cancelled');
+        return result(enriched);
+      } catch (err) {
+        if ((err && err.name === 'AbortError') || options.signal?.aborted) return result(null, 'cancelled');
+        return result(hit.entry);
+      }
+    };
+    if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) {
+      const localHit = await ensureAndLookupBank();
+      if (localHit === 'cancelled') return result(null, 'cancelled');
+      if (localHit) return finishBankHit(localHit);
+      return result(null, 'not_available');
+    }
+    if (typeof fetch !== 'function') {
+      const localHit = bankFallback();
+      if (localHit) return finishBankHit(localHit);
+      return result(null, 'not_available');
+    }
+    const isOffline = typeof navigator !== 'undefined' && navigator.onLine === false;
+    const isLocalBox = typeof window !== 'undefined' && window.__ALLO_LOCAL_BOX === true;
+    if (isOffline || isLocalBox) {
+      const localHit = await ensureAndLookupBank();
+      if (localHit === 'cancelled') return result(null, 'cancelled');
+      if (localHit) return finishBankHit(localHit);
+      if (isLocalBox && isOffline) return result(null, 'not_available');
+    }
     // Another request can save useful help while this one is awaiting the provider.
     // Revalidate that same-word entry on failure; cancellation must still win.
-    const recoverFailure = reason => {
+    const recoverFailure = async (reason) => {
       if (options.signal?.aborted) return result(null, 'cancelled');
-      const recovered = readCache(w);
-      return result(recovered || null, recovered ? null : reason);
+      const recoveredCache = readCache(w);
+      if (recoveredCache) {
+        try {
+          const enriched = await attachWordShardAudio(recoveredCache, w, null, options);
+          if (options.signal?.aborted) return result(null, 'cancelled');
+          return result(enriched, null);
+        } catch (err) {
+          if ((err && err.name === 'AbortError') || options.signal?.aborted) return result(null, 'cancelled');
+          return result(recoveredCache, null);
+        }
+      }
+      const bankHit = reason === 'request_failed' ? await ensureAndLookupBank() : bankFallback();
+      if (bankHit === 'cancelled') return result(null, 'cancelled');
+      if (bankHit) return finishBankHit(bankHit);
+      return result(null, reason);
     };
     try {
       const response = await fetch(API + encodeURIComponent(w), { signal: options.signal, credentials: 'omit' });
@@ -199,8 +495,20 @@
       // A concurrent caller may have cached a usable entry while this request waited.
       // readCache validates it; a late miss must not erase successful offline help.
       if (response.status === 404) {
-        const recovered = readCache(w);
-        if (recovered) return result(recovered);
+        const recoveredCache = readCache(w);
+        if (recoveredCache) {
+          try {
+            const enriched = await attachWordShardAudio(recoveredCache, w, null, options);
+            if (options.signal?.aborted) return result(null, 'cancelled');
+            return result(enriched);
+          } catch (err) {
+            if ((err && err.name === 'AbortError') || options.signal?.aborted) return result(null, 'cancelled');
+            return result(recoveredCache);
+          }
+        }
+        const bankHit = await ensureAndLookupBank();
+        if (bankHit === 'cancelled') return result(null, 'cancelled');
+        if (bankHit) return finishBankHit(bankHit);
         writeCache(w, null); return result(null, 'not_found');
       }
       if (!response.ok) return recoverFailure('request_failed');
@@ -212,13 +520,23 @@
       try { entry = normalizeEntry(rows, w); } catch (_) { return recoverFailure('invalid_response'); }
       if (!entry) return recoverFailure('invalid_response');
       writeCache(w, entry);
+      try {
+        entry = await attachWordShardAudio(entry, w, null, options);
+        if (options.signal?.aborted) return result(null, 'cancelled');
+      } catch (err) {
+        if ((err && err.name === 'AbortError') || options.signal?.aborted) return result(null, 'cancelled');
+      }
       return result(entry);
     } catch (_) { return recoverFailure('request_failed'); }
   }
 
   window.AlloDictionary = {
-    /** True if we have a cached (offline) entry for this word. */
-    hasOffline: function (word) { return readCache(normalizeWord(word)) !== undefined; },
+    /** True if we have a cached or loaded offline bank entry for this word. */
+    hasOffline: function (word) { var nw = normalizeWord(word); return readCache(nw) !== undefined || !!lookupFromVocabBank(nw); },
+    /** Synchronous read from the loaded AlloVocabBank (if ready), or null. */
+    lookupOfflineBank: function (word) { var nw = normalizeWord(word); return nw && !/\s/.test(nw) ? lookupFromVocabBank(nw) : null; },
+    /** Lazy-load the curated offline English bank on demand; resolves to boolean. */
+    loadOfflineBank: loadOfflineBank,
     /**
      * Synchronous cache read for render contexts (no Promise): returns the cached
      * entry, null (cached "not found"), or undefined (never looked up). Pairs with

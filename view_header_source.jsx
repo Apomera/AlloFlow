@@ -832,7 +832,7 @@ function HeaderBar(props) {
     }
   };
   // Students get the same reminder in their own words: they are the ones typing.
-  const piiStudentText = (() => { try { const v = t('header.pii_warning_student'); return v && v !== 'header.pii_warning_student' ? v : ''; } catch (_) { return ''; } })();
+  const piiStudentText = (() => { try { const v = t('header.pii_warning_student') || ''; return v && v !== 'header.pii_warning_student' ? v : ''; } catch (_) { return ''; } })();
   const piiWarningText = (!isTeacherMode && !isParentMode && !isIndependentMode)
     ? (piiStudentText || "Don't type your real name or other personal information.")
     : t('header.pii_warning_plain');
@@ -1229,12 +1229,13 @@ function HeaderBar(props) {
                     data-help-key="header_rerun_wizard"
                     className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3 text-xs font-black text-white hover:bg-white/20 transition-colors"
                     title={t('toolbar.start_setup') || 'Start & setup'}
-                    aria-label={t('toolbar.start_setup_aria') || 'Open Start and setup options'}
+                    aria-label={t('toolbar.start_setup') || 'Start & setup'}
                   >
                     <Sparkles size={16} aria-hidden="true" />
                     <span className="hidden sm:inline max-w-[10rem] truncate">{t('toolbar.start_setup') || 'Start & setup'}</span>
                   </button>
                 )}
+                <div className="flex max-w-full flex-wrap md:flex-nowrap items-center justify-end gap-1.5 sm:gap-2">
                 {/* Help stays reachable in the compact bar; the expanded header has its own button. */}
                 {headerCollapsed && (
                   <div className="relative shrink-0">
@@ -1246,10 +1247,10 @@ function HeaderBar(props) {
                     </button>
                     {helpMenu}
                     {showHelpOnboarding && !isHelpMode && (
-                      <button type="button" onClick={dismissHelpOnboarding} aria-label={t('common.dismiss') || 'Dismiss help tip'} data-compact-help-tip=""
-                        className="absolute top-full right-0 mt-3 min-h-6 bg-indigo-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-lg cursor-pointer animate-bounce motion-reduce:animate-none z-[10999] whitespace-nowrap border-2 border-indigo-400" style={{ minWidth: '160px', textAlign: 'center', animationIterationCount: 3 }}>
-                        <span aria-hidden="true" className="absolute -top-2 right-4 w-4 h-4 bg-indigo-600 rotate-45 border-l-2 border-t-2 border-indigo-400"></span>
-                        <span><span aria-hidden="true">&#128161;</span> {t('header.click_for_help') || 'Click'} <strong>?</strong> {t('header.anytime_for_help') || 'anytime for help!'}</span>
+                      <button type="button" onClick={dismissHelpOnboarding} data-compact-help-tip=""
+                        className="absolute top-full right-0 mt-3 min-h-6 bg-indigo-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-lg cursor-pointer animate-bounce motion-reduce:animate-none z-[10999] whitespace-nowrap border-2 border-indigo-400" style={{ minWidth: '160px', textAlign: 'center', animationIterationCount: 3 }}>
+                        <span aria-hidden="true" className="absolute -top-2 right-4 w-4 h-4 bg-indigo-700 rotate-45 border-l-2 border-t-2 border-indigo-400"></span>
+                        <span><span aria-hidden="true">&#128161;</span> {t('header.click_for_help') || 'Click'} <strong>?</strong> {t('header.anytime_for_help') || 'anytime for help!'}<span className="sr-only">{' — ' + (t('common.dismiss') || 'Dismiss help tip')}</span></span>
                       </button>
                     )}
                   </div>
@@ -1264,6 +1265,7 @@ function HeaderBar(props) {
                   <span>{t('header.more_settings') || 'Settings & more'}</span>
                   <ChevronDown size={14} aria-hidden="true" />
                 </button>
+                </div>
               </div>
             )}
             {/* Compact keeps context, primary destinations, session status, and
@@ -1286,7 +1288,7 @@ function HeaderBar(props) {
                              <span className="text-[11px] font-bold uppercase tracking-widest opacity-80 leading-none mb-1">{t('header.next_level')}</span>
                              <div className="w-full flex justify-between text-[11px] font-mono leading-none mb-1 font-bold opacity-90">
                                 <span><AnimatedNumber value={currentLevelXP} /></span>
-                                <span className="opacity-60">/{globalXPNext}</span>
+                                <span className="text-yellow-100">/{globalXPNext}</span>
                              </div>
                              <div className="w-full h-1.5 bg-black/20 rounded-full overflow-hidden border border-white/10">
                                 <div
@@ -1919,12 +1921,11 @@ function HeaderBar(props) {
                             <button
                                 type="button"
                                 onClick={dismissHelpOnboarding}
-                                aria-label={t('common.dismiss') || 'Dismiss help tip'}
-                                className="absolute -bottom-14 right-0 min-h-6 bg-indigo-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-lg cursor-pointer animate-bounce motion-reduce:animate-none z-[10999] whitespace-nowrap border-2 border-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                                className="absolute -bottom-14 right-0 min-h-6 bg-indigo-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-lg cursor-pointer animate-bounce motion-reduce:animate-none z-[10999] whitespace-nowrap border-2 border-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                                 style={{ minWidth: '160px', textAlign: 'center', animationIterationCount: 3 }}
                             >
-                                <span aria-hidden="true" className="absolute -top-2 right-4 w-4 h-4 bg-indigo-600 rotate-45 border-l-2 border-t-2 border-indigo-400"></span>
-                                <span><span aria-hidden="true">&#128161;</span> {t('header.click_for_help') || 'Click'} <strong>?</strong> {t('header.anytime_for_help') || 'anytime for help!'}</span>
+                                <span aria-hidden="true" className="absolute -top-2 right-4 w-4 h-4 bg-indigo-700 rotate-45 border-l-2 border-t-2 border-indigo-400"></span>
+                                <span><span aria-hidden="true">&#128161;</span> {t('header.click_for_help') || 'Click'} <strong>?</strong> {t('header.anytime_for_help') || 'anytime for help!'}<span className="sr-only">{' — ' + (t('common.dismiss') || 'Dismiss help tip')}</span></span>
                             </button>
                         )}
                         </div>
@@ -1967,7 +1968,7 @@ function HeaderBar(props) {
                 <div className="w-full flex flex-wrap items-center gap-2 sm:gap-3 justify-start sm:justify-end relative z-10 mt-2 min-w-0">
                     <div id="tour-header-actions" className={`w-full sm:w-auto sm:ml-auto flex flex-wrap items-center justify-start sm:justify-end gap-2 p-1.5 rounded-xl backdrop-blur-xl border shadow-inner transition-all ${theme === 'contrast' ? 'border-yellow-400 bg-black' : 'bg-white/10 border-white/20'}`}>
                         <div className="w-full sm:w-auto flex flex-col items-start sm:flex-row sm:items-center gap-1.5 px-1 sm:pr-2 sm:border-r sm:border-white/10">
-                            <span className="text-[11px] font-bold text-indigo-100/70 uppercase tracking-wider hidden md:block text-right leading-tight">
+                            <span className="text-[11px] font-bold text-white uppercase tracking-wider hidden md:block text-right leading-tight">
                                 {t('header.app_language')}
                             </span>
                             <div className="max-w-full scale-90 origin-left sm:origin-center" data-help-key="header_language">

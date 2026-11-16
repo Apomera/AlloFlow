@@ -107092,7 +107092,1087 @@
           "reason": "Add K-8 Math & ELA curriculum meaning."
         }
       ]
+    },
+    "osmosis": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "osmosis|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "osmosis|n|x1": {
+          "verdict": "fixed",
+          "def": "The movement of water through a thin cell membrane from more water to less water",
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion.",
+          "example": "Plant roots absorb soil water by osmosis.",
+          "exampleEdited": true,
+          "blanks": [],
+          "distractors": [
+            "addend|n|x1",
+            "adjective|n|x1",
+            "admission|n|3",
+            "adverb|n|x1",
+            "alien|n|3",
+            "alliteration|n|x1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "osmosis|n|x1",
+          "def": "The movement of water through a thin cell membrane from more water to less water",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion."
+        }
+      ]
+    },
+    "biosphere": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "biosphere|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "biosphere|n|x1": {
+          "verdict": "fixed",
+          "def": "All the parts of Earth where living organisms can survive and grow",
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion.",
+          "example": "Oceans, forests, and soil make up our planet's biosphere.",
+          "exampleEdited": true,
+          "blanks": [],
+          "distractors": [
+            "alarm|n|2",
+            "allusion|n|x1",
+            "angle|n|1",
+            "antagonist|n|x1",
+            "antonym|n|x1",
+            "area|n|x1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "biosphere|n|x1",
+          "def": "All the parts of Earth where living organisms can survive and grow",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion."
+        }
+      ]
+    },
+    "hydrosphere": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "hydrosphere|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "hydrosphere|n|x1": {
+          "verdict": "fixed",
+          "def": "All the water on Earth, including oceans, rivers, glaciers, and underground moisture",
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion.",
+          "example": "Lake Michigan and the Atlantic Ocean belong to the hydrosphere.",
+          "exampleEdited": true,
+          "blanks": [],
+          "distractors": [
+            "assembly|n|3",
+            "atmosphere|n|2",
+            "autobiography|n|x1",
+            "backpack|n|x1",
+            "band|n|3",
+            "bank|n|3"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "hydrosphere|n|x1",
+          "def": "All the water on Earth, including oceans, rivers, glaciers, and underground moisture",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion."
+        }
+      ]
+    },
+    "lithosphere": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "lithosphere|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "lithosphere|n|x1": {
+          "verdict": "fixed",
+          "def": "The rigid rocky outer layer of Earth made up of the crust and upper mantle",
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion.",
+          "example": "Tectonic plates are large pieces of the lithosphere.",
+          "exampleEdited": true,
+          "blanks": [],
+          "distractors": [
+            "beam|n|2",
+            "bill|n|2",
+            "bonnet|n|4",
+            "border|n|2",
+            "bracket|n|3",
+            "branch|n|x1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "lithosphere|n|x1",
+          "def": "The rigid rocky outer layer of Earth made up of the crust and upper mantle",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion."
+        }
+      ]
+    },
+    "troposphere": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "troposphere|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "troposphere|n|x1": {
+          "verdict": "fixed",
+          "def": "The lowest layer of the sky surrounding Earth where clouds and weather form",
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion.",
+          "example": "Rain storms and winds happen inside the troposphere.",
+          "exampleEdited": true,
+          "blanks": [],
+          "distractors": [
+            "bed|n|2",
+            "breakdown|n|2",
+            "button|n|2",
+            "call|n|1",
+            "camouflage|n|w2",
+            "capacity|n|1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "troposphere|n|x1",
+          "def": "The lowest layer of the sky surrounding Earth where clouds and weather form",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion."
+        }
+      ]
+    },
+    "aurora": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "aurora|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "aurora|n|x1": {
+          "verdict": "fixed",
+          "def": "Bright colored ribbons of light seen in the night sky near Earth's poles",
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion.",
+          "example": "Travelers in Alaska watched a green aurora dance across the sky.",
+          "exampleEdited": true,
+          "blanks": [],
+          "distractors": [
+            "captain|n|4",
+            "car|n|2",
+            "cause|n|1",
+            "character|n|4",
+            "circuit|n|1",
+            "circumference|n|1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "aurora|n|x1",
+          "def": "Bright colored ribbons of light seen in the night sky near Earth's poles",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion."
+        }
+      ]
+    },
+    "autotroph": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "autotroph|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "autotroph|n|x1": {
+          "verdict": "fixed",
+          "def": "A living thing that can make its own food using sunlight or chemical energy",
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion.",
+          "example": "Every green oak tree is an autotroph.",
+          "exampleEdited": true,
+          "blanks": [],
+          "distractors": [
+            "character|n|5",
+            "citation|n|x1",
+            "citizen|n|1",
+            "claim|n|3",
+            "clause|n|x1",
+            "climax|n|x1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "autotroph|n|x1",
+          "def": "A living thing that can make its own food using sunlight or chemical energy",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion."
+        }
+      ]
+    },
+    "heterotroph": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "heterotroph|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "heterotroph|n|x1": {
+          "verdict": "fixed",
+          "def": "A living thing that must eat plants or other organisms to get energy",
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion.",
+          "example": "A deer is a heterotroph because it feeds on leaves and grass.",
+          "exampleEdited": true,
+          "blanks": [],
+          "distractors": [
+            "club|n|4",
+            "coat|n|3",
+            "collar|n|2",
+            "communist|n|e1",
+            "composite|n|x1",
+            "conflict|n|2"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "heterotroph|n|x1",
+          "def": "A living thing that must eat plants or other organisms to get energy",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion."
+        }
+      ]
+    },
+    "genotype": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "genotype|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "genotype|n|x1": {
+          "verdict": "fixed",
+          "def": "The set of genes inherited from parents that carries an organism's trait code",
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion.",
+          "example": "Scientists studied the pea plant genotype for flower color.",
+          "exampleEdited": true,
+          "blanks": [],
+          "distractors": [
+            "consumption|n|w1",
+            "context|n|1",
+            "cook|n|x1",
+            "coordination|n|2",
+            "counterclaim|n|x1",
+            "cover|n|1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "genotype|n|x1",
+          "def": "The set of genes inherited from parents that carries an organism's trait code",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion."
+        }
+      ]
+    },
+    "phenotype": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "phenotype|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "phenotype|n|x1": {
+          "verdict": "fixed",
+          "def": "The observable physical traits of a living thing, such as eye color or height",
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion.",
+          "example": "Wrinkled or smooth seed coats show a pea phenotype.",
+          "exampleEdited": true,
+          "blanks": [],
+          "distractors": [
+            "crust|n|1",
+            "cup|n|3",
+            "decimal|n|1",
+            "demand|n|2",
+            "diamond|n|3",
+            "difference|n|x1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "phenotype|n|x1",
+          "def": "The observable physical traits of a living thing, such as eye color or height",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion."
+        }
+      ]
+    },
+    "diffraction": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "diffraction|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "diffraction|n|x1": {
+          "verdict": "fixed",
+          "def": "The bending and spreading of waves when they pass through a narrow opening",
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion.",
+          "example": "Light waves show diffraction after passing through a tiny slit.",
+          "exampleEdited": true,
+          "blanks": [],
+          "distractors": [
+            "difference|n|x2",
+            "discourse|n|3",
+            "displacement|n|2",
+            "dividend|n|x1",
+            "divisor|n|x1",
+            "domain|n|2"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "diffraction|n|x1",
+          "def": "The bending and spreading of waves when they pass through a narrow opening",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion."
+        }
+      ]
+    },
+    "hypotenuse": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "hypotenuse|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "hypotenuse|n|x1": {
+          "verdict": "fixed",
+          "def": "The longest side of a right triangle, located opposite the ninety-degree angle",
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion.",
+          "example": "Use the shorter legs to calculate the length of the hypotenuse.",
+          "exampleEdited": true,
+          "blanks": [],
+          "distractors": [
+            "base|n|1",
+            "child|n|2",
+            "couple|n|2",
+            "distribution|n|2",
+            "earth|n|1",
+            "economy|n|2"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "hypotenuse|n|x1",
+          "def": "The longest side of a right triangle, located opposite the ninety-degree angle",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion."
+        }
+      ]
+    },
+    "isosceles": {
+      "batch": 63,
+      "unit": "a",
+      "order": [
+        "isosceles|a|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "isosceles|a|x1": {
+          "verdict": "fixed",
+          "def": "Having at least two sides of equal length and two matching base angles",
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion.",
+          "example": "We folded an isosceles triangle along its line of symmetry.",
+          "exampleEdited": true,
+          "blanks": [],
+          "distractors": [
+            "abdominal|a|1",
+            "audio|a|1",
+            "bacterial|a|x1",
+            "brilliant|a|1",
+            "chronological|a|x1",
+            "credible|a|x1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "isosceles|a|x1",
+          "def": "Having at least two sides of equal length and two matching base angles",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion."
+        }
+      ]
+    },
+    "scalene": {
+      "batch": 63,
+      "unit": "a",
+      "order": [
+        "scalene|a|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "scalene|a|x1": {
+          "verdict": "fixed",
+          "def": "Having three straight sides of different lengths and no equal angles",
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion.",
+          "example": "Measure each edge to check if the triangle is scalene.",
+          "exampleEdited": true,
+          "blanks": [],
+          "distractors": [
+            "crude|a|2",
+            "double|a|4",
+            "dry|a|1",
+            "equivalent|a|1",
+            "faint|a|1",
+            "fit|a|1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "scalene|a|x1",
+          "def": "Having three straight sides of different lengths and no equal angles",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion."
+        }
+      ]
+    },
+    "equilateral": {
+      "batch": 63,
+      "unit": "a",
+      "order": [
+        "equilateral|a|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "equilateral|a|x1": {
+          "verdict": "fixed",
+          "def": "Having all straight sides equal in length and all angles the same measure",
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion.",
+          "example": "Every corner of an equilateral triangle measures sixty degrees.",
+          "exampleEdited": true,
+          "blanks": [],
+          "distractors": [
+            "longitudinal|a|w2",
+            "magnetic|a|e4",
+            "multiple|a|2",
+            "multi|a|x1",
+            "national|a|x1",
+            "negative|a|8"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "equilateral|a|x1",
+          "def": "Having all straight sides equal in length and all angles the same measure",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion."
+        }
+      ]
+    },
+    "tessellation": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "tessellation|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "tessellation|n|x1": {
+          "verdict": "fixed",
+          "def": "A repeating pattern of flat shapes fitted closely together with no gaps or overlaps",
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion.",
+          "example": "Honeycomb hexagons form a natural tessellation.",
+          "exampleEdited": true,
+          "blanks": [],
+          "distractors": [
+            "economy|n|3",
+            "edge|n|x1",
+            "elevation|n|2",
+            "emission|n|2",
+            "equity|n|x2",
+            "executive|n|1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "tessellation|n|x1",
+          "def": "A repeating pattern of flat shapes fitted closely together with no gaps or overlaps",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion."
+        }
+      ]
+    },
+    "congruence": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "congruence|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "congruence|n|x1": {
+          "verdict": "fixed",
+          "def": "The state of two geometric figures having the exact same size and shape",
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion.",
+          "example": "Tracing and sliding one triangle onto another proves congruence.",
+          "exampleEdited": true,
+          "blanks": [],
+          "distractors": [
+            "executive|n|2",
+            "exponent|n|1",
+            "fable|n|1",
+            "facet|n|2",
+            "factor|n|1",
+            "fiber|n|2"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "congruence|n|x1",
+          "def": "The state of two geometric figures having the exact same size and shape",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion."
+        }
+      ]
+    },
+    "histogram": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "histogram|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "histogram|n|x1": {
+          "verdict": "fixed",
+          "def": "A bar chart showing how often measured numbers fall inside equal intervals",
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion.",
+          "example": "The science class drew a histogram of daily rainfall amounts.",
+          "exampleEdited": true,
+          "blanks": [],
+          "distractors": [
+            "evolution|n|2",
+            "exit|n|3",
+            "face|n|3",
+            "feed|n|1",
+            "fine|n|1",
+            "flashback|n|x1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "histogram|n|x1",
+          "def": "A bar chart showing how often measured numbers fall inside equal intervals",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion."
+        }
+      ]
+    },
+    "scatterplot": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "scatterplot|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "scatterplot|n|x1": {
+          "verdict": "fixed",
+          "def": "A coordinate graph of plotted points used to see how two quantities relate",
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion.",
+          "example": "Each dot on the scatterplot compares study minutes and quiz scores.",
+          "exampleEdited": true,
+          "blanks": [],
+          "distractors": [
+            "flexibility|n|w2",
+            "folktale|n|x1",
+            "foreshadowing|n|x1",
+            "fossil|n|2",
+            "fringe|n|4",
+            "generalization|n|e5"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "scatterplot|n|x1",
+          "def": "A coordinate graph of plotted points used to see how two quantities relate",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion."
+        }
+      ]
+    },
+    "polynomial": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "polynomial|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "polynomial|n|x1": {
+          "verdict": "fixed",
+          "def": "A math expression combining variables, numbers, and whole-number powers by addition or subtraction",
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion.",
+          "example": "Combine the matching terms to simplify each polynomial.",
+          "exampleEdited": true,
+          "blanks": [],
+          "distractors": [
+            "gown|n|2",
+            "grid|n|2",
+            "harvest|n|3",
+            "hexagon|n|x1",
+            "hip|n|1",
+            "history|n|2"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "polynomial|n|x1",
+          "def": "A math expression combining variables, numbers, and whole-number powers by addition or subtraction",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion."
+        }
+      ]
+    },
+    "dilation": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "dilation|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "dilation|n|x1": {
+          "verdict": "fixed",
+          "def": "A geometric change that makes a figure larger or smaller while keeping its shape",
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion.",
+          "example": "Doubling every coordinate produces a dilation of the square.",
+          "exampleEdited": true,
+          "blanks": [],
+          "distractors": [
+            "gown|n|3",
+            "homograph|n|x1",
+            "homophone|n|x1",
+            "horn|n|2",
+            "hyperbole|n|x1",
+            "idiom|n|x1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "dilation|n|x1",
+          "def": "A geometric change that makes a figure larger or smaller while keeping its shape",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion."
+        }
+      ]
+    },
+    "bicameral": {
+      "batch": 63,
+      "unit": "a",
+      "order": [
+        "bicameral|a|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "bicameral|a|x1": {
+          "verdict": "fixed",
+          "def": "Having two separate lawmaking chambers or houses inside one legislature",
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion.",
+          "example": "A bicameral congress has both a Senate and a House.",
+          "exampleEdited": true,
+          "blanks": [],
+          "distractors": [
+            "complete|a|1",
+            "current|a|1",
+            "ethical|a|2",
+            "first|a|2",
+            "free|a|2",
+            "friendly|a|x1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "bicameral|a|x1",
+          "def": "Having two separate lawmaking chambers or houses inside one legislature",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion."
+        }
+      ]
+    },
+    "legislative": {
+      "batch": 63,
+      "unit": "a",
+      "order": [
+        "legislative|a|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "legislative|a|x1": {
+          "verdict": "fixed",
+          "def": "Having the power or duty to propose, debate, and pass public laws",
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion.",
+          "example": "Lawmakers voted in the legislative branch building.",
+          "exampleEdited": true,
+          "blanks": [],
+          "distractors": [
+            "hairy|a|x1",
+            "linear|a|3",
+            "multiple|a|x1",
+            "negative|a|x1",
+            "neo|a|x1",
+            "nonrenewable|a|x1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "legislative|a|x1",
+          "def": "Having the power or duty to propose, debate, and pass public laws",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion."
+        }
+      ]
+    },
+    "embargo": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "embargo|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "embargo|n|x1": {
+          "verdict": "fixed",
+          "def": "An official government order that stops trade with another country",
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion.",
+          "example": "Historians studied how the trade embargo affected shipping ports.",
+          "exampleEdited": true,
+          "blanks": [],
+          "distractors": [
+            "bill|n|1",
+            "bit|n|2",
+            "deck|n|6",
+            "flexibility|n|w3",
+            "flight|n|2",
+            "floor|n|2"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "embargo|n|x1",
+          "def": "An official government order that stops trade with another country",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion."
+        }
+      ]
+    },
+    "monologue": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "monologue|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "monologue|n|x1": {
+          "verdict": "fixed",
+          "def": "A long spoken speech delivered by one character in a story or play",
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion.",
+          "example": "The actor memorized the opening monologue for the school play.",
+          "exampleEdited": true,
+          "blanks": [],
+          "distractors": [
+            "imagery|n|x1",
+            "industry|n|2",
+            "integer|n|1",
+            "interjection|n|x1",
+            "invasion|n|2",
+            "irony|n|x1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "monologue|n|x1",
+          "def": "A long spoken speech delivered by one character in a story or play",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion."
+        }
+      ]
+    },
+    "oxymoron": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "oxymoron|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "oxymoron|n|x1": {
+          "verdict": "fixed",
+          "def": "A figure of speech pairing two opposite terms together, such as jumbo shrimp",
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion.",
+          "example": "Writers sometimes use an oxymoron like deafening silence.",
+          "exampleEdited": true,
+          "blanks": [],
+          "distractors": [
+            "iron|n|3",
+            "junior|n|2",
+            "labor|n|2",
+            "landing|n|3",
+            "land|n|3",
+            "leaf|n|2"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "oxymoron|n|x1",
+          "def": "A figure of speech pairing two opposite terms together, such as jumbo shrimp",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion."
+        }
+      ]
+    },
+    "allegory": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "allegory|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "allegory|n|x1": {
+          "verdict": "fixed",
+          "def": "A story in which characters and events stand for deeper moral or civic ideas",
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion.",
+          "example": "That fable works as an allegory about sharing resources fairly.",
+          "exampleEdited": true,
+          "blanks": [],
+          "distractors": [
+            "legend|n|3",
+            "line|n|3",
+            "machinery|n|3",
+            "manipulation|n|2",
+            "match|n|3",
+            "matrix|n|1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "allegory|n|x1",
+          "def": "A story in which characters and events stand for deeper moral or civic ideas",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion."
+        }
+      ]
+    },
+    "sonnet": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "sonnet|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "sonnet|n|x1": {
+          "verdict": "fixed",
+          "def": "A formal poem of fourteen lines written with a steady rhythm and rhyme scheme",
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion.",
+          "example": "Students counted all fourteen lines in the classic sonnet.",
+          "exampleEdited": true,
+          "blanks": [],
+          "distractors": [
+            "mean|n|x1",
+            "median|n|x1",
+            "memoir|n|x1",
+            "meter|n|2",
+            "mode|n|x1",
+            "mood|n|x1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "sonnet|n|x1",
+          "def": "A formal poem of fourteen lines written with a steady rhythm and rhyme scheme",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion."
+        }
+      ]
+    },
+    "haiku": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "haiku|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "haiku|n|x1": {
+          "verdict": "fixed",
+          "def": "A short three-line poem traditionally patterned in five, seven, and five syllables",
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion.",
+          "example": "Maya wrote a winter haiku about footprints in fresh snow.",
+          "exampleEdited": true,
+          "blanks": [],
+          "distractors": [
+            "gift|n|2",
+            "glass|n|2",
+            "indicator|n|5",
+            "minus|n|2",
+            "moral|n|1",
+            "myth|n|3"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "haiku|n|x1",
+          "def": "A short three-line poem traditionally patterned in five, seven, and five syllables",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion."
+        }
+      ]
+    },
+    "soliloquy": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "soliloquy|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "soliloquy|n|x1": {
+          "verdict": "fixed",
+          "def": "A dramatic speech in which a character talks aloud to reveal inner thoughts alone",
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion.",
+          "example": "During the soliloquy, the hero explained her difficult choice.",
+          "exampleEdited": true,
+          "blanks": [],
+          "distractors": [
+            "negative|n|2",
+            "news|n|w3",
+            "nonfiction|n|x1",
+            "noun|n|x1",
+            "nucleus|n|x2",
+            "numerator|n|1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "soliloquy|n|x1",
+          "def": "A dramatic speech in which a character talks aloud to reveal inner thoughts alone",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 curriculum word for Wave 10 offline bank expansion."
+        }
+      ]
     }
   },
-  "updated": "2026-11-14"
+  "updated": "2026-11-15"
 }

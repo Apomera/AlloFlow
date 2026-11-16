@@ -693,7 +693,7 @@
                 style: {
                   minHeight: 44, padding: '10px 20px', borderRadius: 8, cursor: 'pointer',
                   border: '1px solid ' + (shellIsContrast ? '#ffff00' : '#38bdf8'),
-                  background: shellIsContrast ? '#000000' : '#0ea5e9',
+                  background: shellIsContrast ? '#000000' : '#0369a1',
                   color: shellIsContrast ? '#ffff00' : '#ffffff',
                   fontSize: 14, fontWeight: 800
                 }
@@ -801,9 +801,15 @@
             var all = window.__alloflowSelToolData || {};
             var slot = Object.assign({}, all[toolId] || {});
             slot._lsKey = lsKey;
-            // On bind, snapshot the current localStorage value so the next
-            // save picks it up even if the tool hasn't dirtied state yet.
-            try { slot._lsValue = JSON.parse(localStorage.getItem(lsKey) || 'null'); } catch (e) {}
+            // On bind, snapshot the current storage value so the next save picks
+            // it up even if the tool hasn't dirtied state yet. Unauthenticated
+            // Student Mode reads sessionStorage rather than shared localStorage.
+            var _isUnauthStudent = false;
+            try {
+              _isUnauthStudent = (typeof window !== 'undefined' && window.__alloStudentView === true && !(typeof window.__alloActiveLearnerKey === 'string' && window.__alloActiveLearnerKey.trim()));
+            } catch (e) {}
+            var _bindStore = _isUnauthStudent ? (typeof sessionStorage !== 'undefined' ? sessionStorage : null) : (typeof localStorage !== 'undefined' ? localStorage : null);
+            try { slot._lsValue = JSON.parse((_bindStore ? _bindStore.getItem(lsKey) : null) || 'null'); } catch (e) {}
             var patch = {}; patch[toolId] = slot;
             window.__alloflowSelToolData = Object.assign({}, all, patch);
           } catch (e) {}
@@ -2572,9 +2578,29 @@
       var saveHealth = _saveHealth[0], setSaveHealth = _saveHealth[1];
       var _projectSaveNotice = React.useState('');
       var projectSaveNotice = _projectSaveNotice[0], setProjectSaveNotice = _projectSaveNotice[1];
+      var _selLearnerKey = '';
+      try {
+        if (typeof window !== 'undefined' && typeof window.__alloActiveLearnerKey === 'string') {
+          _selLearnerKey = window.__alloActiveLearnerKey.trim();
+        }
+      } catch (e) {}
+      var _selUnauthStudentEphemeral = !selTeacherView && !activeSessionCode && (!studentCodename || studentCodename === 'student') && !_selLearnerKey;
+      function _selTargetStorage(key) {
+        if (_selUnauthStudentEphemeral && (key === 'alloflow_sel_snapshots' || key === 'alloflow_student_artifacts')) {
+          try { if (typeof sessionStorage !== 'undefined' && sessionStorage) return sessionStorage; } catch (e) {}
+          return null;
+        }
+        try { if (typeof localStorage !== 'undefined' && localStorage) return localStorage; } catch (e) {}
+        return null;
+      }
       function writeLocalSel(key, value, remove) {
         var ok = true;
-        try { if (remove) localStorage.removeItem(key); else localStorage.setItem(key, JSON.stringify(value)); } catch (e) { ok = false; }
+        try {
+          var targetStore = _selTargetStorage(key);
+          if (!targetStore) ok = false;
+          else if (remove) targetStore.removeItem(key);
+          else targetStore.setItem(key, JSON.stringify(value));
+        } catch (e) { ok = false; }
         setSaveHealth(function (prev) { if (prev[key] === ok) return prev; var next = Object.assign({}, prev); next[key] = ok; return next; });
         return ok;
       }
@@ -2595,7 +2621,8 @@
           }
         } catch (e) {}
         try {
-          var raw = JSON.parse(localStorage.getItem('alloflow_sel_snapshots') || '[]');
+          var snapStore = _selTargetStorage('alloflow_sel_snapshots');
+          var raw = JSON.parse((snapStore ? snapStore.getItem('alloflow_sel_snapshots') : null) || '[]');
           return Array.isArray(raw) ? raw : [];
         } catch (e) { return []; }
       });
@@ -2609,7 +2636,8 @@
           }
         } catch (e) {}
         try {
-          var rawArtifacts = JSON.parse(localStorage.getItem('alloflow_student_artifacts') || '[]');
+          var artStore = _selTargetStorage('alloflow_student_artifacts');
+          var rawArtifacts = JSON.parse((artStore ? artStore.getItem('alloflow_student_artifacts') : null) || '[]');
           return Array.isArray(rawArtifacts) ? rawArtifacts : [];
         } catch (e) { return []; }
       }
@@ -3734,7 +3762,7 @@
         border:   isContrast ? '#ffff00' : isDark ? '#64748b' : '#94a3b8',
         text:     isContrast ? '#ffff00' : isDark ? '#f1f5f9' : '#0f172a',
         textMuted:isContrast ? '#ffff00' : isDark ? '#94a3b8' : '#64748b',
-        headerBg: isContrast ? '#000000' : isDark ? 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)' : 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+        headerBg: isContrast ? '#000000' : isDark ? 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)' : 'linear-gradient(135deg, #4338ca 0%, #3730a3 100%)',
         headerText: isContrast ? '#ffff00' : '#f1f5f9',
         btnBg:    isContrast ? '#000000' : isDark ? '#334155' : '#e2e8f0',
         btnText:  isContrast ? '#00ff00' : isDark ? '#f1f5f9' : '#334155',
@@ -4712,7 +4740,8 @@
           next = next.slice(0, 80);
           try {
             window.__alloflowStudentArtifacts = next;
-            localStorage.setItem('alloflow_student_artifacts', JSON.stringify(next));
+            var _artWriteStore = _selTargetStorage('alloflow_student_artifacts');
+            if (_artWriteStore) _artWriteStore.setItem('alloflow_student_artifacts', JSON.stringify(next));
             window.dispatchEvent(new CustomEvent('alloflow-student-artifacts-changed', { detail: { source: 'sel_hub' } }));
           } catch (e) {}
           return next;
@@ -4788,7 +4817,7 @@
             '\u2764\uFE0F\u200D\uD83D\uDD25 SEL Hub'
           ),
           h('span', {
-            style: { display: isCompact ? 'none' : 'inline', fontSize: 11, color: 'rgba(255,255,255,0.6)', marginLeft: 8 }
+            style: { display: isCompact ? 'none' : 'inline', fontSize: 11, color: '#ffffff', marginLeft: 8 }
           }, gradeBand(toolGradeLevel) === 'elementary' ? __alloT('sel.hub.ui.band_elementary', 'Elementary') : gradeBand(toolGradeLevel) === 'middle' ? __alloT('sel.hub.ui.band_middle', 'Middle School') : __alloT('sel.hub.ui.band_high', 'High School'))
         ),
         h('div', { style: { display: 'flex', alignItems: 'center', gap: isCompact ? 6 : 8, position: 'relative', flexWrap: 'wrap', justifyContent: isCompact ? 'flex-end' : 'flex-start', marginLeft: 'auto' } },
@@ -4823,7 +4852,7 @@
             'data-sel-focus': 'educators',
             'aria-label': __alloT('sel.hub.ui.educators_aria', 'For Educators: how to use this Hub responsibly'),
             title: __alloT('sel.hub.ui.for_educators', 'For Educators'),
-            style: { background: 'rgba(255,255,255,0.12)', border: 'none', color: _t.headerText, cursor: 'pointer', padding: isCompact ? '6px 8px' : '4px 10px', borderRadius: 8, fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4, minHeight: isCompact ? 36 : 'auto' }
+            style: { background: isContrast ? '#000000' : 'rgba(15,23,42,0.38)', border: isContrast ? '2px solid #00ff00' : '1px solid rgba(255,255,255,0.28)', color: _t.headerText, cursor: 'pointer', padding: isCompact ? '6px 8px' : '4px 10px', borderRadius: 8, fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4, minHeight: isCompact ? 36 : 36 }
           }, '\uD83C\uDF93 ', h('span', { style: { display: isCompact ? 'none' : 'inline' } }, __alloT('sel.hub.ui.for_educators', 'For Educators'))),
           // Theme toggle button
           h('button', {
@@ -4831,7 +4860,7 @@
             'data-sel-focus': 'theme',
             'aria-label': __alloT('sel.hub.ui.theme_aria', 'Toggle theme (light / dark / high contrast)'),
             title: isContrast ? __alloT('sel.hub.ui.theme_contrast', 'High Contrast') : isDark ? __alloT('sel.hub.ui.theme_dark', 'Dark Mode') : __alloT('sel.hub.ui.theme_light', 'Light Mode'),
-            style: { background: 'rgba(255,255,255,0.12)', border: 'none', color: _t.headerText, cursor: 'pointer', padding: isCompact ? '6px 8px' : '4px 10px', borderRadius: 8, fontSize: 14, display: 'flex', alignItems: 'center', gap: 4, minHeight: isCompact ? 36 : 'auto' }
+            style: { background: isContrast ? '#000000' : 'rgba(15,23,42,0.38)', border: isContrast ? '2px solid #00ff00' : '1px solid rgba(255,255,255,0.28)', color: _t.headerText, cursor: 'pointer', padding: isCompact ? '6px 8px' : '4px 10px', borderRadius: 8, fontSize: 14, display: 'flex', alignItems: 'center', gap: 4, minHeight: isCompact ? 36 : 36 }
           }, isContrast ? '\uD83D\uDC41' : isDark ? '\uD83C\uDF19' : '\u2600\uFE0F', h('span', { style: { display: isCompact ? 'none' : 'inline', fontSize: 10, fontWeight: 700 } }, isContrast ? __alloT('sel.hub.ui.theme_contrast_short', 'Hi-Con') : isDark ? __alloT('sel.hub.ui.theme_dark_short', 'Dark') : __alloT('sel.hub.ui.theme_light_short', 'Light'))),
           // XP badge (fixed: removed bogus role=button from display-only element)
           h('div', {
@@ -4844,7 +4873,7 @@
             onClick: function() { setShowSelHub(false); },
             'data-sel-focus': 'close',
             'aria-label': __alloT('sel.hub.ui.close_hub', 'Close SEL Hub'),
-            style: { background: 'none', border: 'none', color: _t.headerText, cursor: 'pointer', padding: 4 }
+            style: { background: 'none', border: 'none', color: _t.headerText, cursor: 'pointer', padding: 4, minWidth: 44, minHeight: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }
           }, X ? h(X, { size: 20 }) : '\u2715')
         )
       );
@@ -4940,7 +4969,10 @@
             window.__alloflowSelProgress = null;
             window.__alloflowSelSnapshots = [];
             window.__alloflowStudentArtifacts = keptArtifacts;
-            try { localStorage.setItem('alloflow_student_artifacts', JSON.stringify(keptArtifacts)); } catch (e2) {}
+            try {
+              var _artClearStore = _selTargetStorage('alloflow_student_artifacts');
+              if (_artClearStore) _artClearStore.setItem('alloflow_student_artifacts', JSON.stringify(keptArtifacts));
+            } catch (e2) {}
             try { window.dispatchEvent(new CustomEvent('alloflow-student-artifacts-changed', { detail: { source: 'sel_hub-clear' } })); } catch (e3) {}
           }
         } catch (e) {}

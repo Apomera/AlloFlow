@@ -19,31 +19,61 @@ function GlobalLevelUpModal({
   handleSetShowGlobalLevelUpToFalse,
   t
 }) {
-  const Trophy = window.Trophy || (() => null);
+  const Trophy = window.AlloIcons && window.AlloIcons.Trophy || window.Trophy || (() => null);
   const dialogRef = React.useRef(null);
   const continueButtonRef = React.useRef(null);
   const closeHandlerRef = React.useRef(handleSetShowGlobalLevelUpToFalse);
   closeHandlerRef.current = handleSetShowGlobalLevelUpToFalse;
-  const xpMax = Math.max(1, Number(adventureState.xpToNextLevel) || 1);
-  const xpValue = Math.max(0, Math.min(xpMax, Number(adventureState.xp) || 0));
+  const safeAdventure = adventureState && typeof adventureState === "object" ? adventureState : {};
+  const safeLevel = safeAdventure.level ?? 1;
+  const xpMax = Math.max(1, Number(safeAdventure.xpToNextLevel) || 1);
+  const xpValue = Math.max(0, Math.min(xpMax, Number(safeAdventure.xp) || 0));
   const xpPercent = Math.max(0, Math.min(100, Math.round(xpValue / xpMax * 100)));
   React.useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return void 0;
     const previousFocus = document.activeElement;
+    const isolatedSiblings = [];
+    let branch = dialog;
+    while (branch && branch.parentElement && branch.parentElement !== document.body) {
+      branch = branch.parentElement;
+    }
+    if (branch && branch.parentElement === document.body) {
+      Array.from(document.body.children).forEach((sibling) => {
+        if (sibling === branch || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName)) return;
+        isolatedSiblings.push({
+          el: sibling,
+          hadInert: sibling.hasAttribute("inert"),
+          prevInert: sibling.inert,
+          prevAriaHidden: sibling.getAttribute("aria-hidden")
+        });
+        sibling.inert = true;
+        sibling.setAttribute("inert", "");
+        sibling.setAttribute("aria-hidden", "true");
+      });
+    }
+    const prevBodyOverflow = document.body ? document.body.style.overflow : "";
+    if (document.body) document.body.style.overflow = "hidden";
     const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
     const trap = { root: dialog };
     trapStack.push(trap);
     const isTopTrap = () => trapStack[trapStack.length - 1] === trap;
     const getFocusable = () => Array.from(dialog.querySelectorAll(
-      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
     )).filter((element) => {
       if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      const closedDetails = element.closest("details:not([open])");
+      if (closedDetails && !(element.tagName === "SUMMARY" && element.parentElement === closedDetails)) return false;
       const style = typeof window.getComputedStyle === "function" ? window.getComputedStyle(element) : null;
-      return !style || style.display !== "none" && style.visibility !== "hidden";
+      if (style && (style.display === "none" || style.visibility === "hidden")) return false;
+      const hasLayout = typeof dialog.getBoundingClientRect === "function" && (dialog.getBoundingClientRect().width > 0 || dialog.getBoundingClientRect().height > 0);
+      if (hasLayout && typeof element.getClientRects === "function" && element.getClientRects().length === 0) return false;
+      return true;
     });
     (continueButtonRef.current || dialog).focus();
     const handleKeyDown = (event) => {
+      if (!dialog.isConnected) return;
+      if (event.isComposing || event.keyCode === 229) return;
       if (!isTopTrap()) return;
       if (event.key === "Escape") {
         event.preventDefault();
@@ -60,7 +90,7 @@ function GlobalLevelUpModal({
       }
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
-      if (!dialog.contains(document.activeElement)) {
+      if (!dialog.contains(document.activeElement) || document.activeElement === dialog) {
         event.preventDefault();
         (event.shiftKey ? last : first).focus();
       } else if (event.shiftKey && document.activeElement === first) {
@@ -74,10 +104,21 @@ function GlobalLevelUpModal({
     document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
+      if (document.body) document.body.style.overflow = prevBodyOverflow;
+      isolatedSiblings.forEach(({ el, hadInert, prevInert, prevAriaHidden }) => {
+        if (!hadInert) {
+          el.inert = false;
+          el.removeAttribute("inert");
+        } else {
+          el.inert = prevInert;
+        }
+        if (prevAriaHidden === null) el.removeAttribute("aria-hidden");
+        else el.setAttribute("aria-hidden", prevAriaHidden);
+      });
       const wasTopTrap = isTopTrap();
       const trapIndex = trapStack.indexOf(trap);
       if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
-      if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus.isConnected && typeof previousFocus.focus === "function") previousFocus.focus();
+      if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus !== document.documentElement && previousFocus.isConnected && typeof previousFocus.focus === "function") previousFocus.focus();
     };
   }, []);
   return /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-2 sm:p-4 animate-in fade-in duration-500 motion-reduce:animate-none", onClick: handleSetShowGlobalLevelUpToFalse }, /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "motion-reduce:hidden" }, /* @__PURE__ */ React.createElement(ConfettiExplosion, null)), /* @__PURE__ */ React.createElement(
@@ -93,7 +134,7 @@ function GlobalLevelUpModal({
       onClick: (event) => event.stopPropagation()
     },
     /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "absolute inset-0 opacity-20 bg-[radial-gradient(circle,rgba(250,204,21,1)0%,rgba(255,255,255,0)70%)] animate-pulse motion-reduce:animate-none" }),
-    /* @__PURE__ */ React.createElement("div", { className: "relative z-10" }, /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "w-24 h-24 bg-yellow-400 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg border-4 border-white relative" }, /* @__PURE__ */ React.createElement(Trophy, { size: 48, className: "text-indigo-900 fill-current animate-bounce motion-reduce:animate-none" }), /* @__PURE__ */ React.createElement("div", { className: "absolute -top-2 -right-2 bg-indigo-900 text-yellow-300 text-xs font-black px-2 py-1 rounded-full border-2 border-white transform rotate-12 motion-reduce:transform-none" }, t("common.new_badge"))), /* @__PURE__ */ React.createElement("h2", { id: "global-level-up-title", className: "text-3xl sm:text-4xl font-black text-indigo-900 mb-2 uppercase tracking-tight drop-shadow-sm" }, t("feedback.level_up_title")), /* @__PURE__ */ React.createElement("p", { id: "global-level-up-description", className: "text-indigo-800 font-bold text-lg mb-6" }, t("feedback.level_reached", { level: adventureState.level })), /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 rounded-xl p-4 mb-8 border border-indigo-200 shadow-inner" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-indigo-800 font-bold uppercase tracking-wider mb-1 flex justify-between gap-2" }, /* @__PURE__ */ React.createElement("span", null, t("feedback.next_milestone")), /* @__PURE__ */ React.createElement("span", null, xpPercent, "%")), /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { className: "relative z-10" }, /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "w-24 h-24 bg-yellow-400 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg border-4 border-white relative" }, /* @__PURE__ */ React.createElement(Trophy, { size: 48, className: "text-indigo-900 fill-current animate-bounce motion-reduce:animate-none" }), /* @__PURE__ */ React.createElement("div", { className: "absolute -top-2 -right-2 bg-indigo-900 text-yellow-300 text-xs font-black px-2 py-1 rounded-full border-2 border-white transform rotate-12 motion-reduce:transform-none" }, t("common.new_badge"))), /* @__PURE__ */ React.createElement("h2", { id: "global-level-up-title", className: "text-3xl sm:text-4xl font-black text-indigo-900 mb-2 uppercase tracking-tight drop-shadow-sm" }, t("feedback.level_up_title")), /* @__PURE__ */ React.createElement("p", { id: "global-level-up-description", className: "text-indigo-800 font-bold text-lg mb-6" }, t("feedback.level_reached", { level: safeLevel })), /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 rounded-xl p-4 mb-8 border border-indigo-200 shadow-inner" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-indigo-800 font-bold uppercase tracking-wider mb-1 flex justify-between gap-2" }, /* @__PURE__ */ React.createElement("span", null, t("feedback.next_milestone")), /* @__PURE__ */ React.createElement("span", null, xpPercent, "%")), /* @__PURE__ */ React.createElement(
       "div",
       {
         className: "w-full bg-indigo-200 rounded-full h-3 overflow-hidden border border-indigo-300",
@@ -119,10 +160,10 @@ function GlobalLevelUpModal({
         type: "button",
         "aria-label": t("feedback.continue_learning"),
         onClick: handleSetShowGlobalLevelUpToFalse,
-        className: "min-h-11 w-full py-3 rounded-xl bg-indigo-600 text-white font-bold text-lg shadow-lg hover:bg-indigo-700 hover:scale-[1.02] hover:shadow-indigo-500/30 transition-all active:scale-95 motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
+        className: "min-h-11 w-full py-3 rounded-xl bg-indigo-700 text-white font-bold text-lg shadow-lg hover:bg-indigo-800 hover:scale-[1.02] hover:shadow-indigo-500/30 transition-all motion-reduce:transition-none active:scale-95 motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
       },
       t("feedback.continue_learning")
-    ), /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, t("feedback.level_reached", { level: adventureState.level })))
+    ), /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, t("feedback.level_reached", { level: safeLevel })))
   ));
 }
 

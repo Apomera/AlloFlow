@@ -85,8 +85,13 @@ ${compiled}
       buildBatchFeedbackHtml: siBuildBatchFeedbackHtml,
       lookupTrustedHistoryPrompt: siLookupTrustedHistoryPrompt,
       calibrationSamplesForKey: siCalibrationSamplesForKey,
+      responseResourcePrefix: siResponseResourcePrefix,
+      normQuizType: siNormQuizType,
+      formatAssessmentSnapshotText: siFormatAssessmentSnapshotText,
       workEvidence: siWorkEvidence,
-      buildLmsGradebookCsv: siBuildLmsGradebookCsv
+      buildLmsGradebookCsv: siBuildLmsGradebookCsv,
+      resolveVennConfig: siResolveVennConfig,
+      extractGlossaryPairs: siExtractGlossaryPairs
     }
   };
   console.log('[CDN] SubmissionInbox loaded');
@@ -98,8 +103,15 @@ fs.writeFileSync(DEPLOY_OUT, outputCode, 'utf-8');
 if (fs.existsSync(path.dirname(DESKTOP_PACKAGE_OUT))) {
     fs.writeFileSync(DESKTOP_PACKAGE_OUT, outputCode, 'utf-8');
 }
+const DESKTOP_BUILD_OUT = path.join(ROOT, 'desktop', 'web-app', 'build', 'view_submission_inbox_module.js');
+if (fs.existsSync(path.dirname(DESKTOP_BUILD_OUT))) {
+    fs.writeFileSync(DESKTOP_BUILD_OUT, outputCode, 'utf-8');
+}
 console.log(`Built ${OUTPUT} (${outputCode.split('\n').length} lines)`);
 console.log(`Synced to ${DEPLOY_OUT}`);
 if (fs.existsSync(path.dirname(DESKTOP_PACKAGE_OUT))) {
     console.log(`Synced to ${DESKTOP_PACKAGE_OUT}`);
+}
+if (fs.existsSync(path.dirname(DESKTOP_BUILD_OUT))) {
+    console.log(`Synced to ${DESKTOP_BUILD_OUT}`);
 }

@@ -24,39 +24,78 @@ function KokoroOfferModal({ setShowKokoroOfferModal, setSelectedVoice, addToast 
     const dialog = dialogRef.current;
     if (!dialog) return undefined;
     const previousFocus = document.activeElement;
+    const isolatedSiblings = [];
+    let branch = dialog;
+    while (branch && branch.parentElement && branch.parentElement !== document.body) {
+      branch = branch.parentElement;
+    }
+    if (branch && branch.parentElement === document.body) {
+      Array.from(document.body.children).forEach(function (sibling) {
+        if (sibling === branch || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName)) return;
+        isolatedSiblings.push({
+          el: sibling,
+          hadInert: sibling.hasAttribute('inert'),
+          prevInert: sibling.inert,
+          prevAriaHidden: sibling.getAttribute('aria-hidden'),
+        });
+        sibling.inert = true;
+        sibling.setAttribute('inert', '');
+        sibling.setAttribute('aria-hidden', 'true');
+      });
+    }
+    const prevBodyOverflow = document.body ? document.body.style.overflow : '';
+    if (document.body) document.body.style.overflow = 'hidden';
     const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
     const trap = { root: dialog };
     trapStack.push(trap);
     const isTopTrap = function () { return trapStack[trapStack.length - 1] === trap; };
     const getFocusable = function () {
       return Array.from(dialog.querySelectorAll(
-        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
       )).filter(function (element) {
         if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+        const closedDetails = element.closest('details:not([open])');
+        if (closedDetails && !(element.tagName === 'SUMMARY' && element.parentElement === closedDetails)) return false;
         const style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(element) : null;
-        return !style || (style.display !== 'none' && style.visibility !== 'hidden');
+        if (style && (style.display === 'none' || style.visibility === 'hidden')) return false;
+        const hasLayout = typeof dialog.getBoundingClientRect === 'function' && (dialog.getBoundingClientRect().width > 0 || dialog.getBoundingClientRect().height > 0);
+        if (hasLayout && typeof element.getClientRects === 'function' && element.getClientRects().length === 0) return false;
+        return true;
       });
     };
     const first = getFocusable()[0];
     (first || dialog).focus();
     const onKeyDown = function (event) {
+      if (!dialog.isConnected) return;
+      if (event.isComposing || event.keyCode === 229) return;
       if (!isTopTrap()) return;
       if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); setShowKokoroOfferModal(false); return; }
       if (event.key !== 'Tab') return;
       const focusable = getFocusable();
       if (!focusable.length) { event.preventDefault(); dialog.focus(); return; }
       const firstItem = focusable[0], lastItem = focusable[focusable.length - 1];
-      if (!dialog.contains(document.activeElement)) { event.preventDefault(); (event.shiftKey ? lastItem : firstItem).focus(); }
+      if (!dialog.contains(document.activeElement) || document.activeElement === dialog) { event.preventDefault(); (event.shiftKey ? lastItem : firstItem).focus(); }
       else if (event.shiftKey && document.activeElement === firstItem) { event.preventDefault(); lastItem.focus(); }
       else if (!event.shiftKey && document.activeElement === lastItem) { event.preventDefault(); firstItem.focus(); }
     };
     document.addEventListener('keydown', onKeyDown);
     return function () {
       document.removeEventListener('keydown', onKeyDown);
+      if (document.body) document.body.style.overflow = prevBodyOverflow;
+      isolatedSiblings.forEach(function (entry) {
+        if (!entry.hadInert) {
+          entry.el.inert = false;
+          entry.el.removeAttribute('inert');
+        } else {
+          entry.el.inert = entry.prevInert;
+        }
+        if (entry.prevAriaHidden === null) entry.el.removeAttribute('aria-hidden');
+        else entry.el.setAttribute('aria-hidden', entry.prevAriaHidden);
+      });
       const wasTopTrap = isTopTrap();
       const trapIndex = trapStack.indexOf(trap);
       if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
-      if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus.isConnected && typeof previousFocus.focus === 'function') previousFocus.focus();
+      if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus !== document.documentElement && previousFocus.isConnected && typeof previousFocus.focus === 'function') previousFocus.focus();
     };
   }, [setShowKokoroOfferModal]);
   return (
@@ -76,7 +115,7 @@ function KokoroOfferModal({ setShowKokoroOfferModal, setSelectedVoice, addToast 
           This download prepares the voice model. Preparing and saving sentence clips for offline playback are separate steps. Model retention depends on this browser's storage; clearing it may require another download.
         </p>
         <div className="flex flex-col sm:flex-row gap-3">
-          <button type="button" onClick={() => { setShowKokoroOfferModal(false); window.__kokoroOfferDeclined = true; }} className="flex-1 min-h-11 py-2.5 px-4 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-600 transition-colors text-sm">
+          <button type="button" onClick={() => { setShowKokoroOfferModal(false); window.__kokoroOfferDeclined = true; }} className="flex-1 min-h-11 py-2.5 px-4 rounded-xl font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-600 transition-colors motion-reduce:transition-none text-sm">
             No Thanks
           </button>
           <button type="button" onClick={() => {
@@ -99,7 +138,7 @@ function KokoroOfferModal({ setShowKokoroOfferModal, setSelectedVoice, addToast 
               window.__kokoroTTSDownloading = false;
               addToast(tr('voice_engine.kokoro_prep_failed', 'Voice model preparation did not finish. Check network access or browser storage, then try again.'), 'error');
             });
-          }} className="flex-1 min-h-11 py-2.5 px-4 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-600 transition-colors text-sm">
+          }} className="flex-1 min-h-11 py-2.5 px-4 rounded-xl font-bold text-white bg-indigo-700 hover:bg-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-700 transition-colors motion-reduce:transition-none text-sm">
             Download Voice
           </button>
         </div>

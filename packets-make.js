@@ -133,17 +133,21 @@
       // tracing: Letter Trace traces the capital, then the lowercase ('both'), or one of them.
       tracing: 'both',
       // choices: fewer answers to choose from ('easy'), 'medium' (the default) or 'all', as Word Sounds does by level.
-      choices: 'medium' };
+      choices: 'medium',
+      directionsOnce: false };
   }
   function wordCount(value) { var n = Number(value); return n >= 1 && n <= MAX_WORDS && Math.floor(n) === n ? n : 0; }
 
   // ---------------------------------------------------------------------------
   // What this page keeps: the last choices, in this browser only
   // ---------------------------------------------------------------------------
+  function wordsForHandoff() {
+    try { return typeof fileWords === 'function' ? fileWords() : []; } catch (_) { return []; }
+  }
   function remember() {
     try {
       window.localStorage.setItem(STORE_KEY, JSON.stringify({ v: 1, activities: state.activities, mode: state.mode, sound: state.sound, position: state.position,
-        shape: state.shape, stage: state.stage, own: state.own, version: state.version, length: state.length, count: state.count, hand: state.hand, chosen: state.chosen, choices: state.choices, tracing: state.tracing }));
+        shape: state.shape, stage: state.stage, own: state.own, version: state.version, length: state.length, count: state.count, hand: state.hand, chosen: state.chosen, choices: state.choices, tracing: state.tracing, directionsOnce: !!state.directionsOnce, words: wordsForHandoff() }));
     } catch (_) { /* a browser that cannot keep them still works */ }
   }
   function recall() {
@@ -163,6 +167,7 @@
     if (saved.hand === true) fresh.hand = true;
     if (TRACE_CASES.indexOf(saved.tracing) >= 0) fresh.tracing = saved.tracing;
     if (CHOICE_LEVELS.indexOf(saved.choices) >= 0) fresh.choices = saved.choices;
+    if (saved.directionsOnce === true) fresh.directionsOnce = true;
     if (Array.isArray(saved.chosen)) fresh.chosen = saved.chosen.filter(function (word, i, all) { return typeof word === 'string' && /^[a-z]{2,10}$/.test(word) && all.indexOf(word) === i; }).slice(0, MAX_WORDS);
     return fresh;
   }
@@ -431,6 +436,7 @@
     if (state.mode === 'pick' && (state.hand ? handWords().length > 0 : fit > 0)) setText('step-2-problem', '');
     if (step === 2) soundsNote();
     drawWordList();
+    remember();
     if (fit < wanted && !state.hand) suggestLoosening(run, fit);
   }
   // The row of chips: the picker's list, or, once the teacher chose words in the list, those words in the file's order.
@@ -601,6 +607,7 @@
       : ready + ' of ' + count(ownRows.length, 'word') + ' can be used.' + (extra ? ' Only the first ' + MAX_TYPED + ' words are checked.' : ''));
     if (ready && state.mode === 'own') setText('step-2-problem', '');
     if (step === 2) soundsNote();
+    remember();
   }
   function chosenWords() {
     if (state.mode === 'own') return ownRows.filter(function (row) { return row.ok; }).map(function (row) { return row.word; });
@@ -1400,6 +1407,8 @@
     if (!state.titleEdited) $('f-title').value = autoTitle();
     else if (doc.activeElement !== $('f-title') && $('f-title').value !== titleNow()) $('f-title').value = state.title = titleNow();
     syncCodeName();
+    var dirBox = $('f-directions-once');
+    if (dirBox) { dirBox.checked = !!state.directionsOnce; dirBox.parentNode.classList.toggle('is-on', dirBox.checked); }
   }
   // Step 3's code name: the field shows what was typed; the line under it, what the file will carry when that differs.
   function syncCodeName() {
@@ -1481,6 +1490,7 @@
     if (learner) options.learnerLabel = learner;
     if (state.tracing !== 'both' && plan.activities.indexOf('letter_tracing') >= 0) options.tracingCases = state.tracing;
     options.choices = CHOICE_LEVELS.indexOf(state.choices) >= 0 ? state.choices : 'medium';
+    if (state.directionsOnce) options.directionsOnce = true;
     if (!plan.clean) {
       if (Object.keys(previewOmit).length) options.omitItems = previewOmit;
       if (Object.keys(previewSeeds).length) options.itemSeeds = previewSeeds;
@@ -1983,6 +1993,7 @@
     fresh.learner = result.learner || '';
     if (TRACE_CASES.indexOf(result.tracing) >= 0) fresh.tracing = result.tracing;
     if (CHOICE_LEVELS.indexOf(result.choices) >= 0) fresh.choices = result.choices;
+    if (result.directionsOnce === true) fresh.directionsOnce = true;
     state = fresh;
     picked = null;
     fromFile = result.own && typeof result.own === 'object' ? result.own : {};
@@ -1998,6 +2009,7 @@
     items.push(result.activities.length ? count(result.activities.length, 'activity', 'activities') + ': ' + listed(result.activities.map(core.activityLabel)) + '.' : 'No activity of the file is offered here. Choose one in step 1.');
     items.push(n ? count(n, 'word') + ': ' + result.words.join(', ') + '. They are in step 2, under Type my own words, in the order of the file.' : 'No word could be read from the file. Choose the words in step 2.');
     items.push('Version ' + state.version + '. Length: ' + (preset ? LENGTH_NAMES[preset] : 'Custom, ' + count(state.count, 'word')) + '. Pictures: ' + (result.pictures ? 'on' : 'off') + '.');
+    if (state.directionsOnce) items.push('Spoken directions: first question only.');
     if (state.titleEdited) items.push('Title: ' + state.title + (/[.!?]$/.test(state.title) ? '' : '.'));
     if (state.learner) items.push('Student\'s code name: ' + state.learner + '. It is in step 3. Clear it there to make a file anyone can use.');
     var theirs = Object.keys(fromFile);
@@ -2171,7 +2183,9 @@
     });
     wireBatch();
     $('f-pictures').addEventListener('change', function () { picturesChoice = this.checked ? 'on' : 'off'; picturesNote = ''; makeSoon(0); });
+    if ($('f-directions-once')) $('f-directions-once').addEventListener('change', function () { state.directionsOnce = this.checked; this.parentNode.classList.toggle('is-on', this.checked); remember(); makeSoon(0); });
     $('save').addEventListener('click', saveFile);
+    if ($('open-present-export')) $('open-present-export').addEventListener('click', remember);
     // Print word cards (packets-print-cards.js): this file's words, title and picture choice, read when pressed.
     // The drawings come through loadPictures, so they are fetched once for both.
     var cards = window.AlloPacketPrintCards;
@@ -2297,6 +2311,31 @@
     }, function () { return []; });
   }
 
+  function applyRehearseHash() {
+    var hash = String(window.location && window.location.hash ? window.location.hash : '');
+    var match = /^#rehearse=(.+)$/i.exec(hash);
+    if (!match) return false;
+    var parsed = '';
+    try { parsed = decodeURIComponent(match[1]); } catch (_) { parsed = match[1]; }
+    var unique = [];
+    parsed.split(/[\s,;]+/).forEach(function (raw) {
+      var word = String(raw || '').trim();
+      if (!word) return;
+      var low = word.toLowerCase();
+      if (unique.every(function (x) { return x.toLowerCase() !== low; }) && unique.length < 40) unique.push(word);
+    });
+    if (unique.length) {
+      state.mode = 'own';
+      state.own = unique.join(', ').slice(0, 4000);
+      if ($('f-own')) $('f-own').value = state.own;
+      syncMode();
+      drawOwn();
+      remember();
+    }
+    try { window.history.replaceState(null, '', window.location.href.split('#')[0]); } catch (_) {}
+    return unique.length > 0;
+  }
+
   function openPage(buildable, held) {
     heldBack = held;
     var offered = buildable.filter(function (id) { return held.indexOf(id) < 0; });
@@ -2311,6 +2350,7 @@
       soundGroups: SOUND_GROUPS, soundName: soundName, bankClip: bankClip, bankNote: bankNote, playable: toWav, picturesPage: PICTURES_PAGE }) : null;
     drawPickControls();
     state = recall();
+    applyRehearseHash();
     if (loader.DEFAULT_LABELS && loader.DEFAULT_LABELS.save_csv) setText('csv-label', loader.DEFAULT_LABELS.save_csv);
     drawStrands();
     listFiles();

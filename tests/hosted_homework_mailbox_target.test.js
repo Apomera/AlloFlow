@@ -123,7 +123,7 @@ describe('saved homework mailbox target', () => {
     if (from < 0 || to < from) throw Error('Missing local Google-service fixture boundaries');
     const makeSandbox = new Function('gsSource', fixture.slice(from, to) + '; return makeGsSandbox;')(readFileSync('apps_script/session_mailbox/Code.gs', 'utf8'));
     const owner = makeSandbox(), other = makeSandbox();
-    const ownerAdmin = owner.call({ a: 'claim' }).admin, otherAdmin = other.call({ a: 'claim' }).admin;
+    const ownerAdmin = owner.call.setupOwner().admin, otherAdmin = other.call.setupOwner().admin;
     const share = savedShare();
     expect(owner.call({ a: 'putpack', admin: ownerAdmin, id: PACK_ID, k: SECRET, part: 1, of: 1, data: 'original-content', expiresAt: share.expiresAt }).ok).toBe(true);
     // Idempotent deletion is legitimate on the server, but cannot prove that a

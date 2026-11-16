@@ -797,7 +797,7 @@ function HeaderBar(props) {
   };
   const piiStudentText = (() => {
     try {
-      const v = t("header.pii_warning_student");
+      const v = t("header.pii_warning_student") || "";
       return v && v !== "header.pii_warning_student" ? v : "";
     } catch (_) {
       return "";
@@ -1065,11 +1065,11 @@ function HeaderBar(props) {
       "data-help-key": "header_rerun_wizard",
       className: "inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3 text-xs font-black text-white hover:bg-white/20 transition-colors",
       title: t("toolbar.start_setup") || "Start & setup",
-      "aria-label": t("toolbar.start_setup_aria") || "Open Start and setup options"
+      "aria-label": t("toolbar.start_setup") || "Start & setup"
     },
     /* @__PURE__ */ React.createElement(Sparkles, { size: 16, "aria-hidden": "true" }),
     /* @__PURE__ */ React.createElement("span", { className: "hidden sm:inline max-w-[10rem] truncate" }, t("toolbar.start_setup") || "Start & setup")
-  ), headerCollapsed && /* @__PURE__ */ React.createElement("div", { className: "relative shrink-0" }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("div", { className: "flex max-w-full flex-wrap md:flex-nowrap items-center justify-end gap-1.5 sm:gap-2" }, headerCollapsed && /* @__PURE__ */ React.createElement("div", { className: "relative shrink-0" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -1091,13 +1091,12 @@ function HeaderBar(props) {
     {
       type: "button",
       onClick: dismissHelpOnboarding,
-      "aria-label": t("common.dismiss") || "Dismiss help tip",
       "data-compact-help-tip": "",
-      className: "absolute top-full right-0 mt-3 min-h-6 bg-indigo-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-lg cursor-pointer animate-bounce motion-reduce:animate-none z-[10999] whitespace-nowrap border-2 border-indigo-400",
+      className: "absolute top-full right-0 mt-3 min-h-6 bg-indigo-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-lg cursor-pointer animate-bounce motion-reduce:animate-none z-[10999] whitespace-nowrap border-2 border-indigo-400",
       style: { minWidth: "160px", textAlign: "center", animationIterationCount: 3 }
     },
-    /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "absolute -top-2 right-4 w-4 h-4 bg-indigo-600 rotate-45 border-l-2 border-t-2 border-indigo-400" }),
-    /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4A1}"), " ", t("header.click_for_help") || "Click", " ", /* @__PURE__ */ React.createElement("strong", null, "?"), " ", t("header.anytime_for_help") || "anytime for help!")
+    /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "absolute -top-2 right-4 w-4 h-4 bg-indigo-700 rotate-45 border-l-2 border-t-2 border-indigo-400" }),
+    /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4A1}"), " ", t("header.click_for_help") || "Click", " ", /* @__PURE__ */ React.createElement("strong", null, "?"), " ", t("header.anytime_for_help") || "anytime for help!", /* @__PURE__ */ React.createElement("span", { className: "sr-only" }, " \u2014 " + (t("common.dismiss") || "Dismiss help tip")))
   )), guidedResumeChip, /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -1108,7 +1107,7 @@ function HeaderBar(props) {
     },
     /* @__PURE__ */ React.createElement("span", null, t("header.more_settings") || "Settings & more"),
     /* @__PURE__ */ React.createElement(ChevronDown, { size: 14, "aria-hidden": "true" })
-  )), !headerCollapsed && /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-stretch sm:items-end gap-4 w-full lg:w-auto min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "w-full flex items-center gap-2 sm:gap-4 flex-wrap justify-start sm:justify-end relative min-w-0" }, /* @__PURE__ */ React.createElement(
+  ))), !headerCollapsed && /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-stretch sm:items-end gap-4 w-full lg:w-auto min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "w-full flex items-center gap-2 sm:gap-4 flex-wrap justify-start sm:justify-end relative min-w-0" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -1118,7 +1117,7 @@ function HeaderBar(props) {
       title: t("header.xp_badge_tooltip")
     },
     /* @__PURE__ */ React.createElement("div", { className: "bg-yellow-400 rounded-full w-8 h-8 flex items-center justify-center text-indigo-900 font-black text-xs border-2 border-indigo-900/20 shadow-sm" }, globalLevel),
-    /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-start min-w-[70px]" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold uppercase tracking-widest opacity-80 leading-none mb-1" }, t("header.next_level")), /* @__PURE__ */ React.createElement("div", { className: "w-full flex justify-between text-[11px] font-mono leading-none mb-1 font-bold opacity-90" }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement(AnimatedNumber, { value: currentLevelXP })), /* @__PURE__ */ React.createElement("span", { className: "opacity-60" }, "/", globalXPNext)), /* @__PURE__ */ React.createElement("div", { className: "w-full h-1.5 bg-black/20 rounded-full overflow-hidden border border-white/10" }, /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-start min-w-[70px]" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold uppercase tracking-widest opacity-80 leading-none mb-1" }, t("header.next_level")), /* @__PURE__ */ React.createElement("div", { className: "w-full flex justify-between text-[11px] font-mono leading-none mb-1 font-bold opacity-90" }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement(AnimatedNumber, { value: currentLevelXP })), /* @__PURE__ */ React.createElement("span", { className: "text-yellow-100" }, "/", globalXPNext)), /* @__PURE__ */ React.createElement("div", { className: "w-full h-1.5 bg-black/20 rounded-full overflow-hidden border border-white/10" }, /* @__PURE__ */ React.createElement(
       "div",
       {
         className: "h-full bg-gradient-to-r from-yellow-300 to-yellow-500 transition-all duration-1000 ease-out",
@@ -1582,12 +1581,11 @@ function HeaderBar(props) {
     {
       type: "button",
       onClick: dismissHelpOnboarding,
-      "aria-label": t("common.dismiss") || "Dismiss help tip",
-      className: "absolute -bottom-14 right-0 min-h-6 bg-indigo-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-lg cursor-pointer animate-bounce motion-reduce:animate-none z-[10999] whitespace-nowrap border-2 border-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
+      className: "absolute -bottom-14 right-0 min-h-6 bg-indigo-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-lg cursor-pointer animate-bounce motion-reduce:animate-none z-[10999] whitespace-nowrap border-2 border-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
       style: { minWidth: "160px", textAlign: "center", animationIterationCount: 3 }
     },
-    /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "absolute -top-2 right-4 w-4 h-4 bg-indigo-600 rotate-45 border-l-2 border-t-2 border-indigo-400" }),
-    /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4A1}"), " ", t("header.click_for_help") || "Click", " ", /* @__PURE__ */ React.createElement("strong", null, "?"), " ", t("header.anytime_for_help") || "anytime for help!")
+    /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "absolute -top-2 right-4 w-4 h-4 bg-indigo-700 rotate-45 border-l-2 border-t-2 border-indigo-400" }),
+    /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4A1}"), " ", t("header.click_for_help") || "Click", " ", /* @__PURE__ */ React.createElement("strong", null, "?"), " ", t("header.anytime_for_help") || "anytime for help!", /* @__PURE__ */ React.createElement("span", { className: "sr-only" }, " \u2014 " + (t("common.dismiss") || "Dismiss help tip")))
   )), isTeacherMode && /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -1621,7 +1619,7 @@ function HeaderBar(props) {
       "aria-label": t("toolbar.about_aria")
     },
     /* @__PURE__ */ React.createElement(Info, { size: 20 })
-  ))), /* @__PURE__ */ React.createElement("div", { className: "w-full flex flex-wrap items-center gap-2 sm:gap-3 justify-start sm:justify-end relative z-10 mt-2 min-w-0" }, /* @__PURE__ */ React.createElement("div", { id: "tour-header-actions", className: `w-full sm:w-auto sm:ml-auto flex flex-wrap items-center justify-start sm:justify-end gap-2 p-1.5 rounded-xl backdrop-blur-xl border shadow-inner transition-all ${theme === "contrast" ? "border-yellow-400 bg-black" : "bg-white/10 border-white/20"}` }, /* @__PURE__ */ React.createElement("div", { className: "w-full sm:w-auto flex flex-col items-start sm:flex-row sm:items-center gap-1.5 px-1 sm:pr-2 sm:border-r sm:border-white/10" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-indigo-100/70 uppercase tracking-wider hidden md:block text-right leading-tight" }, t("header.app_language")), /* @__PURE__ */ React.createElement("div", { className: "max-w-full scale-90 origin-left sm:origin-center", "data-help-key": "header_language" }, /* @__PURE__ */ React.createElement(UiLanguageSelector, { setConfirmDialog }))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0 w-full sm:w-auto sm:flex-none flex flex-col items-stretch sm:items-end gap-1.5" }, isTeacherMode && /* @__PURE__ */ React.createElement(
+  ))), /* @__PURE__ */ React.createElement("div", { className: "w-full flex flex-wrap items-center gap-2 sm:gap-3 justify-start sm:justify-end relative z-10 mt-2 min-w-0" }, /* @__PURE__ */ React.createElement("div", { id: "tour-header-actions", className: `w-full sm:w-auto sm:ml-auto flex flex-wrap items-center justify-start sm:justify-end gap-2 p-1.5 rounded-xl backdrop-blur-xl border shadow-inner transition-all ${theme === "contrast" ? "border-yellow-400 bg-black" : "bg-white/10 border-white/20"}` }, /* @__PURE__ */ React.createElement("div", { className: "w-full sm:w-auto flex flex-col items-start sm:flex-row sm:items-center gap-1.5 px-1 sm:pr-2 sm:border-r sm:border-white/10" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-white uppercase tracking-wider hidden md:block text-right leading-tight" }, t("header.app_language")), /* @__PURE__ */ React.createElement("div", { className: "max-w-full scale-90 origin-left sm:origin-center", "data-help-key": "header_language" }, /* @__PURE__ */ React.createElement(UiLanguageSelector, { setConfirmDialog }))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0 w-full sm:w-auto sm:flex-none flex flex-col items-stretch sm:items-end gap-1.5" }, isTeacherMode && /* @__PURE__ */ React.createElement(
     "div",
     {
       "data-header-utility-cluster": "teacher",

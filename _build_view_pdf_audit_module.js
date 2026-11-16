@@ -134,6 +134,16 @@ try {
 } catch (e) {
     console.warn('[ViewPdfAudit] Could not sync to desktop/web-app/public/:', e.message);
 }
+for (const extraOut of [
+    path.join(ROOT, 'desktop', 'app-build', 'view_pdf_audit_module.js'),
+    path.join(ROOT, 'desktop', 'web-app', 'build', 'view_pdf_audit_module.js')
+]) {
+    try {
+        if (fs.existsSync(path.dirname(extraOut))) writeBuildFile(extraOut, outputCode, 'utf-8');
+    } catch (e) {
+        console.warn('[ViewPdfAudit] Could not sync to ' + path.relative(ROOT, extraOut) + ':', e.message);
+    }
+}
 
 try {
     execSync('node -c "' + OUTPUT + '"', { stdio: 'pipe' });
@@ -163,8 +173,16 @@ try {
     const helperSource=[...needed].sort((a,b)=>a.start-b.start).map(node=>source.slice(node.start,node.end)).join('\n');
     writeBuildFile(textEntry, helperSource + '\nexport { _audioReadyText as naturalText, _srStyleTextFromHtml as accessibleText, _viewSanitizeMarkupForExport as sanitize };\n');
     require('esbuild').buildSync({entryPoints:[textEntry],outfile:textOutput,bundle:true,format:'iife',globalName:'AlloNarrationText',treeShaking:true,jsxFactory:'React.createElement',jsxFragment:'React.Fragment',target:'es2020'});
-    const deployed = path.join(ROOT, 'desktop/web-app/public/document_narration_text_module.js');
-    fs.copyFileSync(textOutput,deployed+'.edit-tmp');fs.renameSync(deployed+'.edit-tmp',deployed);
+    for (const narOut of [
+        path.join(ROOT, 'desktop', 'web-app', 'public', 'document_narration_text_module.js'),
+        path.join(ROOT, 'desktop', 'app-build', 'document_narration_text_module.js'),
+        path.join(ROOT, 'desktop', 'web-app', 'build', 'document_narration_text_module.js')
+    ]) {
+        if (fs.existsSync(path.dirname(narOut))) {
+            fs.copyFileSync(textOutput, narOut + '.edit-tmp');
+            fs.renameSync(narOut + '.edit-tmp', narOut);
+        }
+    }
     console.log('[ViewPdfAudit] Built offline narration helpers');
 } finally {try{fs.unlinkSync(textEntry);}catch(_){}}
 

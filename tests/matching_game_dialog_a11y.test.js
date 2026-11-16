@@ -26,7 +26,7 @@ describe('Matching Game full-screen dialog accessibility', () => {
   });
 
   it('keeps reduced-motion entry behavior', () => {
-    expect(files[0][1]).toContain("useReducedMotion() ? '' : ' animate-in fade-in duration-300'");
+    expect(files[0][1]).toMatch(/useReducedMotion\(\) \? '' : ' animate-in (?:motion-reduce:animate-none )?fade-in duration-300'/);
   });
 
   it.each(files)('%s uses one accessible audio-hints control instead of repeated card speakers', (_path, source) => {

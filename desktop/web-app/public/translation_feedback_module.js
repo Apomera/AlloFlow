@@ -97,7 +97,7 @@
       if (cached) { EN = flatten(JSON.parse(cached)); return; }
     } catch (_) {}
     try {
-      fetch('https://raw.githubusercontent.com/Apomera/AlloFlow/main/ui_strings.js', { credentials: 'omit', referrerPolicy: 'no-referrer' })
+      fetch('./ui_strings.js', { credentials: 'omit', cache: 'no-store' })
         .then(function (r) { return r.text(); })
         .then(function (txt) {
           var j = txt.replace(/^[^{]*/, '').replace(/;?\s*$/, '');
@@ -112,22 +112,41 @@
   }
 
   // ── The "✎ Suggest a better translation" pill (shown by offerFor during help-mode) ──
+  var openerBeforePill = null;
+  var modalOpener = null;
+  var activeTrapEntry = null;
+  var activeModalCleanup = null;
+  function validOpenerEl(el) {
+    return !!(el && el !== document.body && el !== document.documentElement
+      && (el.isConnected === true || (el.isConnected === undefined && typeof document.contains === 'function' && document.contains(el)))
+      && typeof el.focus === 'function');
+  }
+  function ensureA11yStyle() {
+    if (document.getElementById('allo-tfb-a11y-style')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-tfb-a11y-style';
+    st.textContent = '#allo-tfb-pill:focus-visible,[data-allo-tfb-modal] :is(button,input,textarea):focus-visible{outline:2px solid #0f766e;outline-offset:2px;}';
+    (document.head || document.body || document.documentElement).appendChild(st);
+  }
   function ensurePill() {
+    ensureA11yStyle();
     if (pill) return;
     pill = document.createElement('button');
     pill.type = 'button';
     pill.id = 'allo-tfb-pill';
-    pill.setAttribute('aria-label', 'Suggest a better translation for the item you just opened');
     pill.style.cssText = [
       'position:fixed', 'bottom:64px', 'left:50%', 'transform:translateX(-50%)',
-      'z-index:2147483646', 'padding:8px 16px', 'border-radius:999px',
+      'z-index:2147483646', 'padding:10px 16px', 'min-height:44px', 'border-radius:999px',
       'background:#0f766e', 'color:#fff', 'border:2px solid #fff',
       'font:600 13px/1.2 system-ui,-apple-system,Segoe UI,Roboto,sans-serif',
       'cursor:pointer', 'box-shadow:0 4px 14px rgba(0,0,0,0.3)',
-      'display:none', 'align-items:center', 'gap:6px'
+      'display:none', 'align-items:center', 'gap:6px', 'outline-offset:2px'
     ].join(';');
     pill.onclick = function () { hidePill(); openModal(lastContext); };
-    pill.onkeydown = function (ev) { if (ev.key === 'Escape') hidePill(); };
+    pill.onkeydown = function (ev) {
+      if (ev.isComposing || ev.keyCode === 229) return;
+      if (ev.key === 'Escape') { ev.preventDefault(); ev.stopPropagation(); hidePill(); }
+    };
     document.body.appendChild(pill);
   }
   function hidePill() { if (pill) pill.style.display = 'none'; if (pillHideTimer) { clearTimeout(pillHideTimer); pillHideTimer = null; } }
@@ -135,10 +154,14 @@
   // Public: called from the host's help-mode click handler.
   function offerFor(ctx) {
     if (!ctx || !document.body || window._isDesktopBundledApp === true || window.__alloStudentView === true) return;
+    if (validOpenerEl(document.activeElement) && document.activeElement !== pill) {
+      openerBeforePill = document.activeElement;
+    }
     lastContext = { key: ctx.key || '', current: ctx.current || '', language: currentLanguage(ctx) };
     if (!communityFeedbackBlocked()) loadEnglish();
     ensurePill();
-    pill.textContent = '✎ Suggest a better ' + lastContext.language + ' translation';
+    pill.innerHTML = '<span aria-hidden="true">✎</span><span></span>';
+    pill.lastChild.textContent = ' Suggest a better ' + lastContext.language + ' translation';
     pill.style.display = 'inline-flex';
     if (pillHideTimer) clearTimeout(pillHideTimer);
     pillHideTimer = setTimeout(hidePill, 15000); // auto-dismiss; non-nagging
@@ -147,14 +170,19 @@
   // ── The modal ──
   function openModal(ctx) {
     ctx = ctx || lastContext || { key: '', current: '', language: currentLanguage(null) };
+    var activeNow = document.activeElement;
+    var nextOpener = (validOpenerEl(activeNow) && activeNow !== pill) ? activeNow : openerBeforePill;
     closeModal();
+    ensureA11yStyle();
+    modalOpener = nextOpener;
     var lang = currentLanguage(ctx);
     var english = englishFor(ctx.key);
     overlay = document.createElement('div');
     overlay.id = 'allo-tfb-overlay';
+    overlay.setAttribute('data-allo-tfb-modal', 'true');
     overlay.setAttribute('role', 'dialog');
     overlay.setAttribute('aria-modal', 'true');
-    overlay.setAttribute('aria-label', 'Suggest a translation correction');
+    overlay.setAttribute('aria-labelledby', 'allo-tfb-title');
     overlay.style.cssText = [
       'position:fixed', 'inset:0', 'z-index:2147483647', 'background:rgba(0,0,0,0.5)',
       'display:flex', 'align-items:center', 'justify-content:center', 'padding:16px'
@@ -172,7 +200,7 @@
     var curRow = ctx.current
       ? '<div style="font:600 12px system-ui;color:#475569;margin-bottom:2px">Current ' + esc(lang) + '</div>' +
         '<div style="font:13px system-ui;color:#334155;background:#f8fafc;border-radius:6px;padding:8px;margin-bottom:10px">' + esc(ctx.current) + '</div>'
-      : '<div style="font:600 12px system-ui;color:#475569;margin-bottom:2px">The text you want corrected</div>' +
+      : '<label for="allo-tfb-current" style="display:block;font:600 12px system-ui;color:#475569;margin-bottom:2px">The text you want corrected</label>' +
         '<textarea id="allo-tfb-current" rows="2" placeholder="Paste the exact text as it appears in the app" style="width:100%;box-sizing:border-box;font:13px system-ui;border:1px solid #cbd5e1;border-radius:6px;padding:8px;margin-bottom:10px"></textarea>';
 
     var panel = document.createElement('div');
@@ -182,29 +210,78 @@
     ].join(';');
     panel.innerHTML =
       '<div style="display:flex;justify-content:space-between;align-items:start;gap:12px;margin-bottom:12px">' +
-        '<h2 style="margin:0;font:700 17px system-ui;color:#0f172a">✎ Suggest a translation fix</h2>' +
-        '<button id="allo-tfb-x" type="button" aria-label="Close" style="border:none;background:none;font-size:22px;line-height:1;cursor:pointer;color:#64748b">×</button>' +
+        '<h2 id="allo-tfb-title" style="margin:0;font:700 17px system-ui;color:#0f172a"><span aria-hidden="true">✎</span> Suggest a translation fix</h2>' +
+        '<button id="allo-tfb-x" type="button" aria-label="Close" style="min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;border:none;background:none;font-size:22px;line-height:1;cursor:pointer;color:#475569">×</button>' +
       '</div>' +
       '<p style="margin:0 0 14px;font:13px/1.5 system-ui;color:#475569">Suggest a better translation. Your suggestion is stored privately for up to 30 days for maintainer review. Only reviewed corrections may be published. Do not include personal student details.</p>' +
-      '<div style="font:600 12px system-ui;color:#475569;margin-bottom:2px">Language</div>' +
+      '<label for="allo-tfb-lang" style="display:block;font:600 12px system-ui;color:#475569;margin-bottom:2px">Language</label>' +
       '<input id="allo-tfb-lang" type="text" value="' + esc(lang) + '" style="width:100%;box-sizing:border-box;font:13px system-ui;border:1px solid #cbd5e1;border-radius:6px;padding:8px;margin-bottom:10px" />' +
       keyRow + enRow + curRow +
-      '<div style="font:600 12px system-ui;color:#475569;margin-bottom:2px">Your suggested ' + esc(lang) + ' translation <span style="color:#dc2626">*</span></div>' +
-      '<textarea id="allo-tfb-suggest" rows="3" placeholder="Type the corrected text" style="width:100%;box-sizing:border-box;font:13px system-ui;border:1px solid #cbd5e1;border-radius:6px;padding:8px;margin-bottom:10px"></textarea>' +
-      '<div style="font:600 12px system-ui;color:#475569;margin-bottom:2px">Why / notes (optional)</div>' +
+      '<label for="allo-tfb-suggest" style="display:block;font:600 12px system-ui;color:#475569;margin-bottom:2px">Your suggested ' + esc(lang) + ' translation <span style="color:#b91c1c" aria-hidden="true">*</span></label>' +
+      '<textarea id="allo-tfb-suggest" rows="3" required aria-required="true" aria-describedby="allo-tfb-err" placeholder="Type the corrected text" style="width:100%;box-sizing:border-box;font:13px system-ui;border:1px solid #cbd5e1;border-radius:6px;padding:8px;margin-bottom:10px"></textarea>' +
+      '<label for="allo-tfb-note" style="display:block;font:600 12px system-ui;color:#475569;margin-bottom:2px">Why / notes (optional)</label>' +
       '<textarea id="allo-tfb-note" rows="2" placeholder="e.g. wrong register, regional word, sounds robotic" style="width:100%;box-sizing:border-box;font:13px system-ui;border:1px solid #cbd5e1;border-radius:6px;padding:8px;margin-bottom:14px"></textarea>' +
-      '<div id="allo-tfb-err" role="alert" style="display:' + (communityFeedbackBlocked() ? 'block' : 'none') + ';color:#dc2626;font:13px system-ui;margin-bottom:10px">' + (communityFeedbackBlocked() ? esc(COMMUNITY_BLOCK_MESSAGE) : '') + '</div>' +
+      '<div id="allo-tfb-err" role="alert" aria-live="polite" style="display:' + (communityFeedbackBlocked() ? 'block' : 'none') + ';color:#b91c1c;font:13px system-ui;margin-bottom:10px">' + (communityFeedbackBlocked() ? esc(COMMUNITY_BLOCK_MESSAGE) : '') + '</div>' +
       '<div style="display:flex;gap:10px;justify-content:flex-end">' +
-        '<button id="allo-tfb-cancel" type="button" style="padding:9px 16px;border-radius:8px;border:1px solid #cbd5e1;background:#fff;color:#334155;font:600 13px system-ui;cursor:pointer">Cancel</button>' +
-        '<button id="allo-tfb-send" type="button"' + (communityFeedbackBlocked() ? ' disabled' : '') + ' style="padding:9px 16px;border-radius:8px;border:none;background:#0f766e;color:#fff;font:700 13px system-ui;cursor:pointer">Send for private review →</button>' +
+        '<button id="allo-tfb-cancel" type="button" style="min-height:44px;padding:9px 16px;border-radius:8px;border:1px solid #cbd5e1;background:#fff;color:#334155;font:600 13px system-ui;cursor:pointer">Cancel</button>' +
+        '<button id="allo-tfb-send" type="button"' + (communityFeedbackBlocked() ? ' disabled' : '') + ' style="min-height:44px;padding:9px 16px;border-radius:8px;border:none;background:#0f766e;color:#fff;font:700 13px system-ui;cursor:pointer">Send for private review →</button>' +
       '</div>';
     overlay.appendChild(panel);
     document.body.appendChild(overlay);
 
+    var trapStack = (window.__alloFocusTrapStack = Array.isArray(window.__alloFocusTrapStack) ? window.__alloFocusTrapStack : []);
+    var trapEntry = { id: 'allo-tfb-modal', root: panel, container: overlay };
+    activeTrapEntry = trapEntry;
+    trapStack.push(trapEntry);
+
+    function isTopTrap() {
+      var s = window.__alloFocusTrapStack;
+      return !Array.isArray(s) || !s.length || s[s.length - 1] === trapEntry;
+    }
+    function focusablesInPanel() {
+      var list = panel.querySelectorAll('button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])');
+      var out = [];
+      for (var i = 0; i < list.length; i++) {
+        var el = list[i];
+        if (el.closest('[hidden]')) continue;
+        try {
+          var cs = window.getComputedStyle(el);
+          if (cs && (cs.display === 'none' || cs.visibility === 'hidden')) continue;
+        } catch (_) {}
+        out.push(el);
+      }
+      return out;
+    }
+    function onDocKeydown(e) {
+      if (e.isComposing || e.keyCode === 229) return;
+      if (!isTopTrap()) return;
+      if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeModal(); return; }
+      if (e.key === 'Tab') {
+        var items = focusablesInPanel();
+        if (!items.length) return;
+        e.preventDefault(); e.stopPropagation();
+        var idx = items.indexOf(document.activeElement);
+        if (idx < 0) items[0].focus();
+        else items[(idx + (e.shiftKey ? items.length - 1 : 1)) % items.length].focus();
+      }
+    }
+    function onDocFocusin(e) {
+      if (!isTopTrap()) return;
+      if (!panel.contains(e.target)) {
+        var items = focusablesInPanel();
+        if (items.length) items[0].focus();
+      }
+    }
+    document.addEventListener('keydown', onDocKeydown, true);
+    document.addEventListener('focusin', onDocFocusin, true);
+    activeModalCleanup = function () {
+      document.removeEventListener('keydown', onDocKeydown, true);
+      document.removeEventListener('focusin', onDocFocusin, true);
+    };
+
     var $ = function (id) { return panel.querySelector('#' + id); };
     $('allo-tfb-x').onclick = closeModal;
     $('allo-tfb-cancel').onclick = closeModal;
-    overlay.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
 
     function showManagedBlock() {
       var error = $('allo-tfb-err');
@@ -217,11 +294,11 @@
       panel.innerHTML =
         '<div style="text-align:center;padding:12px">' +
           '<div style="font-size:34px" aria-hidden="true">🌍</div>' +
-          '<h2 style="margin:8px 0;font:700 17px system-ui;color:#0f172a">Thank you!</h2>' +
+          '<h2 id="allo-tfb-title" style="margin:8px 0;font:700 17px system-ui;color:#0f172a">Thank you!</h2>' +
           '<p style="margin:0 0 16px;font:13px/1.5 system-ui;color:#475569">' +
             'Your ' + esc(lang) + ' suggestion was sent for review. Maintainers apply accepted fixes to the language pack.' +
           '</p>' +
-          '<button id="allo-tfb-done" type="button" style="padding:9px 16px;border-radius:8px;border:none;background:#0f766e;color:#fff;font:700 13px system-ui;cursor:pointer">Done</button>' +
+          '<button id="allo-tfb-done" type="button" style="min-height:44px;padding:9px 16px;border-radius:8px;border:none;background:#0f766e;color:#fff;font:700 13px system-ui;cursor:pointer">Done</button>' +
         '</div>';
       var done = panel.querySelector('#allo-tfb-done');
       done.onclick = closeModal; done.focus();
@@ -260,7 +337,22 @@
     var first = $('allo-tfb-suggest'); if (first) first.focus();
   }
 
-  function closeModal() { if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay); overlay = null; }
+  function closeModal() {
+    if (activeModalCleanup) { try { activeModalCleanup(); } catch (_) {} activeModalCleanup = null; }
+    var wasTop = true;
+    if (activeTrapEntry && Array.isArray(window.__alloFocusTrapStack)) {
+      var s = window.__alloFocusTrapStack;
+      wasTop = !s.length || s[s.length - 1] === activeTrapEntry;
+      var idx = s.lastIndexOf(activeTrapEntry);
+      if (idx >= 0) s.splice(idx, 1);
+    }
+    activeTrapEntry = null;
+    if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    overlay = null;
+    var opener = modalOpener;
+    modalOpener = null;
+    if (wasTop && validOpenerEl(opener)) opener.focus();
+  }
 
   window.AlloModules.TranslationFeedback = {
     offerFor: offerFor,         // host help-mode hook calls this

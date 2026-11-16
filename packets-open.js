@@ -33,6 +33,7 @@
   var MAKERS = {
     words: { href: 'packets-make.html', name: 'Make Word Sounds practice', reopens: true },
     vocab: { href: 'packets-vocab.html', name: 'Make vocabulary practice', reopens: true },
+    symbol: { href: 'packets-symbol-runner.html', name: 'Make Symbol Runner practice', reopens: true },
     math: { href: 'packets-math-practice.html', name: 'Make math fact practice', reopens: true },
     check: { href: 'packets-check.html', name: 'Make a math check', reopens: true },
   };
@@ -121,8 +122,8 @@
     var blocks = (Array.isArray(lesson.blocks) ? lesson.blocks : []).filter(function (block) { return isObject(block) && typeof block.activity === 'string' && Array.isArray(block.items); });
     var every = function (pattern) { return blocks.length > 0 && blocks.every(function (block) { return pattern.test(block.activity); }); };
     var check = packet.mode === 'check' || packet.mode === 'probe' || lesson.mode === 'probe';
-    var kind = every(/^vocab_/) ? 'vocab' : check ? 'check' : every(/^math_/) ? 'math' : 'words';
-    var label = kind === 'vocab' ? (check ? 'Vocabulary check' : 'Vocabulary practice') : kind === 'check' ? 'A check' : kind === 'math' ? 'Math fact practice' : 'Word Sounds practice';
+    var kind = every(/^vocab_/) ? 'vocab' : every(/^symbol_runner$/) ? 'symbol' : check ? 'check' : every(/^math_/) ? 'math' : 'words';
+    var label = kind === 'vocab' ? (check ? 'Vocabulary check' : 'Vocabulary practice') : kind === 'symbol' ? (check ? 'Symbol naming check' : 'Symbol Runner practice') : kind === 'check' ? 'A check' : kind === 'math' ? 'Math fact practice' : 'Word Sounds practice';
     var all = blocks.reduce(function (list, block) { return list.concat(block.items); }, []);
     var items = isObject(m.check) && Number(m.check.items) > 0 ? Number(m.check.items) : all.filter(function (item) { return !(isObject(item) && item.practice); }).length;
     var title = String(m.title || lesson.title || '').replace(/\s+/g, ' ').trim().slice(0, 120);

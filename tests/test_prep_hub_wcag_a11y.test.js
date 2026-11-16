@@ -19,7 +19,10 @@ describe('Test Prep Hub WCAG focus and timing safeguards', () => {
 
   it('contains keyboard focus across all modal form controls', () => {
     expect(source).toContain("select:not([disabled]), textarea:not([disabled])");
-    expect(source).toContain('.filter((element) => element.getClientRects().length > 0)');
+    expect(source).toContain('filter(isVisibleFocusable)');
+    expect(source).toContain("element.closest('details:not([open])')");
+    expect(source).toContain('window.__alloFocusTrapStack');
+    expect(source).not.toContain('.getClientRects()');
     expect(source).toContain('document.activeElement === dialogRef.current');
     expect(source).toContain('(event.shiftKey ? last : first).focus()');
     expect(source).toContain("if (event.key === 'Escape')");

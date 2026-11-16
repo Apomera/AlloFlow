@@ -1,0 +1,154 @@
+/* Symbol Runner Maker (packets-symbol-runner.html). Inherits core layout & colors from packets.css / packets-make.css. */
+
+.sr-field {
+  margin: 0 0 0.9rem;
+}
+
+.sr-field > label {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+
+.sr-field input[type="text"],
+.sr-field input[type="password"],
+.sr-field select,
+.sr-field textarea {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  font: inherit;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.sr-reopen-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 0.5rem 0 0.25rem;
+}
+
+.sr-check-options {
+  padding: 0.6rem 0.9rem;
+  border-left: 3px solid var(--line-strong);
+  background: var(--surface);
+  border-radius: 0 10px 10px 0;
+}
+
+.sr-check-options input[type="password"] {
+  max-width: 20rem;
+}
+
+.sr-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+  margin: 0 0 1rem;
+}
+
+@media (max-width: 44rem) {
+  .sr-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sr-fieldset {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+  margin: 0;
+}
+
+.sr-fieldset legend {
+  font-weight: 700;
+  padding: 0 0.35rem;
+}
+
+.sr-choice {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.25rem;
+  font-size: 0.95rem;
+}
+
+.sr-pics-panel {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.65rem 0.9rem;
+  background: var(--surface);
+}
+
+.sr-pics-panel summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.sr-pic-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.75rem 0;
+}
+
+.sr-pic-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.6rem;
+}
+
+.sr-pic-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
+  text-align: center;
+}
+
+.sr-pic-thumb {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid var(--line);
+}
+
+.sr-pic-sym {
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.sr-pic-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  justify-content: center;
+}
+
+.sr-live-bar,
+.sr-export-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.sr-live-host {
+  min-height: 240px;
+}
+
+.sr-status {
+  margin: 0.5rem 0 0;
+  min-height: 1.3em;
+  font-size: 0.95rem;
+  color: var(--ink);
+}

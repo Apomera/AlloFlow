@@ -43,6 +43,11 @@ var Pencil = _lazyIcon('Pencil');
 var ChevronDown = _lazyIcon('ChevronDown');
 var RefreshCw = _lazyIcon('RefreshCw');
 var Volume2 = _lazyIcon('Volume2');
+var Plus = _lazyIcon('Plus');
+var Trash2 = _lazyIcon('Trash2');
+var ArrowUp = _lazyIcon('ArrowUp');
+var ArrowDown = _lazyIcon('ArrowDown');
+var Undo2 = _lazyIcon('Undo2');
 function FaqView(props) {
   // Accordion state — which FAQ items are currently expanded.
   // Editing mode + TTS playback force expansion separately (see isExpanded).
@@ -51,6 +56,9 @@ function FaqView(props) {
   });
   var expandedSet = expandedSet_state[0];
   var setExpandedSet = expandedSet_state[1];
+  var lastRemovedFaq_state = React.useState(null);
+  var lastRemovedFaq = lastRemovedFaq_state[0];
+  var setLastRemovedFaq = lastRemovedFaq_state[1];
   var toggleFaq = function (idx) {
     setExpandedSet(function (prev) {
       var next = new Set(prev);
@@ -60,7 +68,11 @@ function FaqView(props) {
   };
   var expandAll = function () {
     if (!props.generatedContent) return;
-    var all = (props.generatedContent.data || []).map(function (_, i) {
+    var raw = Array.isArray(props.generatedContent.data) ? props.generatedContent.data : [];
+    var visible = props.isTeacherMode || props.isEditingFaq ? raw : raw.filter(function (item) {
+      return item && item.isSelected !== false && item.selected !== false;
+    });
+    var all = visible.map(function (_, i) {
       return i;
     });
     setExpandedSet(new Set(all));
@@ -131,6 +143,7 @@ function FaqView(props) {
   audioContextRef.current = audioContext;
   React.useEffect(function () {
     setExpandedSet(new Set());
+    setLastRemovedFaq(null);
   }, [generatedContent && generatedContent.id]);
   React.useEffect(function () {
     setPrepState({
@@ -414,7 +427,62 @@ function FaqView(props) {
       className: "w-full text-xs text-slate-600"
     }, label('faq.audio_identity_loading', 'Sentence audio tools are not ready. Try again after they finish loading.')));
   };
-  var faqItems = Array.isArray(generatedContent?.data) ? generatedContent.data : [];
+  var rawFaqItems = Array.isArray(generatedContent?.data) ? generatedContent.data : [];
+  var faqItems = isTeacherMode || isEditingFaq ? rawFaqItems : rawFaqItems.filter(function (item) {
+    return item && item.isSelected !== false && item.selected !== false;
+  });
+  var faqSignature = JSON.stringify(faqItems);
+  var canMutateFaqList = typeof handleFaqChange === 'function' && !!handleFaqChange.supportsList;
+  React.useEffect(function () {
+    if (lastRemovedFaq && lastRemovedFaq.after !== faqSignature) setLastRemovedFaq(null);
+  }, [faqSignature, lastRemovedFaq]);
+  var replaceFaqList = function (nextList, removedMeta) {
+    if (!canMutateFaqList) return;
+    handleFaqChange('__list__', null, nextList);
+    setLastRemovedFaq(removedMeta || null);
+  };
+  var handleAddFaqItem = function () {
+    if (!canMutateFaqList) return;
+    var blank = leveledTextLanguage !== 'English' ? {
+      question: '',
+      answer: '',
+      question_en: '',
+      answer_en: ''
+    } : {
+      question: '',
+      answer: ''
+    };
+    replaceFaqList(faqItems.concat([blank]), null);
+  };
+  var handleRemoveFaqItem = function (idx) {
+    if (!canMutateFaqList || idx < 0 || idx >= faqItems.length) return;
+    var item = faqItems[idx];
+    var nextList = faqItems.filter(function (_, i) {
+      return i !== idx;
+    });
+    replaceFaqList(nextList, {
+      item: item,
+      index: idx,
+      after: JSON.stringify(nextList)
+    });
+  };
+  var handleMoveFaqItem = function (idx, delta) {
+    if (!canMutateFaqList) return;
+    var target = idx + delta;
+    if (idx < 0 || idx >= faqItems.length || target < 0 || target >= faqItems.length) return;
+    var nextList = faqItems.slice();
+    var moved = nextList[idx];
+    nextList[idx] = nextList[target];
+    nextList[target] = moved;
+    replaceFaqList(nextList, null);
+  };
+  var handleUndoRemoveFaq = function () {
+    if (!canMutateFaqList || !lastRemovedFaq || lastRemovedFaq.after !== faqSignature) return;
+    var nextList = faqItems.slice();
+    var insertAt = Math.min(Math.max(0, lastRemovedFaq.index), nextList.length);
+    nextList.splice(insertAt, 0, lastRemovedFaq.item);
+    replaceFaqList(nextList, null);
+  };
   // PASS 1: precompute sentence index ranges per FAQ so we can derive
   // which FAQ contains the currently-playing TTS sentence (used to
   // auto-expand the matching item).
@@ -501,6 +569,7 @@ function FaqView(props) {
     onChange: e => setVoiceSpeed(parseFloat(e.target.value)),
     className: "w-16 h-1 bg-slate-300 rounded-lg appearance-none cursor-pointer accent-cyan-500"
   })), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('common.stop'),
     onClick: e => {
       e.stopPropagation();
@@ -510,7 +579,7 @@ function FaqView(props) {
       setIsPlaying(false);
       setPlayingContentId(null);
     },
-    className: "p-1.5 hover:bg-rose-100 text-rose-800 rounded-md transition-colors",
+    className: "min-h-11 min-w-11 inline-flex items-center justify-center p-1.5 hover:bg-rose-100 text-rose-800 rounded-md transition-colors",
     title: t('common.stop')
   }, /*#__PURE__*/React.createElement("span", {
     className: "font-bold text-xs uppercase px-1"
@@ -542,7 +611,24 @@ function FaqView(props) {
     className: "animate-spin motion-reduce:animate-none"
   }) : /*#__PURE__*/React.createElement(Volume2, {
     size: 14
-  }), prepState.busy ? `${prepState.done}/${prepState.total || '...'} ✕` : label('faq.save_audio', 'Save audio')), /*#__PURE__*/React.createElement("button", {
+  }), prepState.busy ? `${prepState.done}/${prepState.total || '...'} ✕` : label('faq.save_audio', 'Save audio')), isEditingFaq && canMutateFaqList && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-faq-add": true,
+    onClick: handleAddFaqItem,
+    className: "min-h-11 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-cyan-800 border border-cyan-300 hover:bg-cyan-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600 transition-colors shadow-sm"
+  }, /*#__PURE__*/React.createElement(Plus, {
+    size: 14,
+    "aria-hidden": "true"
+  }), t('faq.add_question') || 'Add question'), isEditingFaq && canMutateFaqList && lastRemovedFaq && lastRemovedFaq.after === faqSignature && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-faq-undo": true,
+    onClick: handleUndoRemoveFaq,
+    className: "min-h-11 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 transition-colors shadow-sm"
+  }, /*#__PURE__*/React.createElement(Undo2, {
+    size: 14,
+    "aria-hidden": "true"
+  }), t('faq.undo_remove') || 'Undo remove'), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: handleToggleIsEditingFaq,
     "data-help-key": "faq_edit_toggle",
     className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingFaq ? 'bg-cyan-700 text-white hover:bg-cyan-700' : 'bg-white text-cyan-700 border border-cyan-200 hover:bg-cyan-50'}`
@@ -560,18 +646,18 @@ function FaqView(props) {
     type: "button",
     "data-faq-toggle-all": true,
     onClick: collapseAll,
-    className: "px-3 py-1 text-xs font-semibold bg-white text-slate-600 border border-slate-300 rounded-full hover:bg-slate-50 transition-colors"
+    className: "min-h-11 px-3 py-1 text-xs font-semibold bg-white text-slate-600 border border-slate-300 rounded-full hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600 transition-colors"
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
   }, "▸ "), label('faq.hide_all', 'Hide all')) : /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-faq-toggle-all": true,
     onClick: expandAll,
-    className: "px-3 py-1 text-xs font-semibold bg-cyan-50 text-cyan-700 border border-cyan-200 rounded-full hover:bg-cyan-100 transition-colors"
+    className: "min-h-11 px-3 py-1 text-xs font-semibold bg-cyan-50 text-cyan-700 border border-cyan-200 rounded-full hover:bg-cyan-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600 transition-colors"
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
   }, "▾ "), label('faq.show_all', 'Show all')), /*#__PURE__*/React.createElement("span", {
-    className: "text-[11px] text-slate-500 italic ml-1"
+    className: "text-[11px] text-slate-600 italic ml-1"
   }, label('faq.disclosure_tip', 'Choose Show answer to reveal it. Use Listen to hear a question; select an answer sentence to hear it.'))), faqItems.length === 0 && /*#__PURE__*/React.createElement("div", {
     role: "status",
     "data-faq-empty": true,
@@ -683,7 +769,41 @@ function FaqView(props) {
         });
       })(), isExpanded && faq.answer_en && /*#__PURE__*/React.createElement("p", _extends({}, _faqTranslationAttributes(generatedContent), {
         className: "text-xs text-slate-600 mt-2 pt-2 border-t border-slate-200 italic"
-      }), "(", faq.answer_en, ")")))), !isEditingFaq && /*#__PURE__*/React.createElement("button", {
+      }), "(", faq.answer_en, ")")))), isEditingFaq && canMutateFaqList && /*#__PURE__*/React.createElement("div", {
+        className: "shrink-0 flex flex-row sm:flex-col items-center gap-1"
+      }, /*#__PURE__*/React.createElement("button", {
+        type: "button",
+        "data-faq-move-up": true,
+        onClick: () => handleMoveFaqItem(idx, -1),
+        disabled: idx === 0,
+        "aria-label": `${t('faq.move_up') || 'Move question up'} ${idx + 1}`,
+        title: t('faq.move_up') || 'Move question up',
+        className: "min-w-11 min-h-11 inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600"
+      }, /*#__PURE__*/React.createElement(ArrowUp, {
+        size: 16,
+        "aria-hidden": "true"
+      })), /*#__PURE__*/React.createElement("button", {
+        type: "button",
+        "data-faq-move-down": true,
+        onClick: () => handleMoveFaqItem(idx, 1),
+        disabled: idx === faqItems.length - 1,
+        "aria-label": `${t('faq.move_down') || 'Move question down'} ${idx + 1}`,
+        title: t('faq.move_down') || 'Move question down',
+        className: "min-w-11 min-h-11 inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600"
+      }, /*#__PURE__*/React.createElement(ArrowDown, {
+        size: 16,
+        "aria-hidden": "true"
+      })), /*#__PURE__*/React.createElement("button", {
+        type: "button",
+        "data-faq-remove": true,
+        onClick: () => handleRemoveFaqItem(idx),
+        "aria-label": `${t('faq.remove_question') || 'Remove question'} ${idx + 1}`,
+        title: t('faq.remove_question') || 'Remove question',
+        className: "min-w-11 min-h-11 inline-flex items-center justify-center rounded-lg border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600"
+      }, /*#__PURE__*/React.createElement(Trash2, {
+        size: 16,
+        "aria-hidden": "true"
+      }))), !isEditingFaq && /*#__PURE__*/React.createElement("button", {
         type: "button",
         onClick: () => toggleFaq(idx),
         "aria-expanded": isExpanded,
@@ -695,7 +815,7 @@ function FaqView(props) {
       }, isExpanded ? label('faq.hide_answer_action', 'Hide answer') : label('faq.show_answer_action', 'Show answer')), /*#__PURE__*/React.createElement(ChevronDown, {
         size: 20,
         "aria-hidden": "true",
-        className: "transition-transform duration-200",
+        className: "transition-transform motion-reduce:transition-none duration-200",
         style: {
           transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)'
         }

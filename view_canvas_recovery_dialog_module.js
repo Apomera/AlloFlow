@@ -68,11 +68,208 @@ function CanvasRecoveryDialogView(props) {
   } = props;
   // A Deny is remembered for the visit, so a plain retry can no longer ask; offer the approval window.
   const needsStorageApproval = canvasRecoveryErrorCode === 'allo/approval-required' || canvasRecoveryErrorCode === 'allo/approval-denied' || canvasRecoveryErrorCode === 'allo/consent-timeout';
+  const _crCopy = (key, fallback) => {
+    try {
+      const value = typeof t === 'function' ? t(key) : '';
+      return value && value !== key ? value : fallback;
+    } catch (_) {
+      return fallback;
+    }
+  };
+  const fallbackRecoveryRef = React.useRef(null);
+  const activeRecoveryDialogRef = canvasRecoveryDialogRef || fallbackRecoveryRef;
+  const recoveryStateRef = React.useRef({
+    canvasRecoveryDecisionMade,
+    vaultMode: canvasRecoveryVaultForm?.mode,
+    canvasRecoveryBusyId,
+    closeCanvasRecoveryDialog
+  });
+  recoveryStateRef.current = {
+    canvasRecoveryDecisionMade,
+    vaultMode: canvasRecoveryVaultForm?.mode,
+    canvasRecoveryBusyId,
+    closeCanvasRecoveryDialog
+  };
+  React.useEffect(() => {
+    const dialog = activeRecoveryDialogRef && activeRecoveryDialogRef.current;
+    if (!dialog || typeof document === 'undefined') return undefined;
+    const trap = {
+      root: dialog
+    };
+    const stack = typeof window !== 'undefined' ? window.__alloFocusTrapStack = window.__alloFocusTrapStack || [] : null;
+    const prevFocus = document.activeElement;
+    if (stack) stack.push(trap);
+    const isTopTrap = () => !stack || stack[stack.length - 1] === trap;
+    const isolated = [];
+    const seenSiblings = new Set();
+    let cursor = dialog;
+    while (cursor && cursor.parentElement) {
+      const parent = cursor.parentElement;
+      Array.from(parent.children).forEach(sibling => {
+        if (!sibling || sibling === cursor || seenSiblings.has(sibling) || !sibling.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName)) return;
+        seenSiblings.add(sibling);
+        isolated.push({
+          sibling,
+          hadInert: sibling.hasAttribute('inert'),
+          prevInert: sibling.inert,
+          ariaHidden: sibling.getAttribute('aria-hidden')
+        });
+        try {
+          sibling.inert = true;
+        } catch (_) {}
+        try {
+          sibling.setAttribute('inert', '');
+        } catch (_) {}
+        try {
+          sibling.setAttribute('aria-hidden', 'true');
+        } catch (_) {}
+      });
+      if (parent === document.body) break;
+      cursor = parent;
+    }
+    const body = document.body;
+    const scrollLock = typeof window !== 'undefined' ? window.__alloScrollLockState || (window.__alloScrollLockState = {
+      count: 0,
+      prev: ''
+    }) : null;
+    let scrollLocked = false;
+    try {
+      if (body && scrollLock) {
+        scrollLocked = true;
+        if (++scrollLock.count === 1) {
+          scrollLock.prev = body.style.overflow;
+          body.style.overflow = 'hidden';
+        }
+      }
+    } catch (_) {}
+    const hadTabIndex = dialog.hasAttribute('tabindex');
+    if (!hadTabIndex) dialog.setAttribute('tabindex', '-1');
+    const getFocusable = () => Array.from(dialog.querySelectorAll('a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), summary, [tabindex]:not([tabindex="-1"])')).filter(el => {
+      if (el.disabled || el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      let ancestor = el.parentElement;
+      while (ancestor && ancestor !== dialog) {
+        if (ancestor.matches && ancestor.matches('details:not([open])')) {
+          const directSummary = ancestor.querySelector(':scope > summary');
+          if (el !== directSummary) return false;
+        }
+        ancestor = ancestor.parentElement;
+      }
+      const st = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(el) : null;
+      return !st || st.display !== 'none' && st.visibility !== 'hidden';
+    });
+    if (!dialog.contains(document.activeElement)) {
+      try {
+        (getFocusable()[0] || dialog).focus({
+          preventScroll: true
+        });
+      } catch (_) {}
+    }
+    const onKeyDown = event => {
+      if (event.defaultPrevented) return;
+      if (!dialog.isConnected || !isTopTrap()) return;
+      if (event.key === 'Escape') {
+        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+        const latest = recoveryStateRef.current;
+        if (latest.canvasRecoveryDecisionMade && latest.vaultMode !== 'confirm-recovery-code' && !latest.canvasRecoveryBusyId && typeof latest.closeCanvasRecoveryDialog === 'function') {
+          event.preventDefault();
+          latest.closeCanvasRecoveryDialog();
+        }
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const items = getFocusable();
+      if (!items.length) {
+        event.preventDefault();
+        try {
+          dialog.focus({
+            preventScroll: true
+          });
+        } catch (_) {}
+        return;
+      }
+      const first = items[0],
+        last = items[items.length - 1];
+      if (!dialog.contains(document.activeElement) || document.activeElement === dialog) {
+        event.preventDefault();
+        try {
+          (event.shiftKey ? last : first).focus({
+            preventScroll: true
+          });
+        } catch (_) {}
+      } else if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        try {
+          last.focus({
+            preventScroll: true
+          });
+        } catch (_) {}
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        try {
+          first.focus({
+            preventScroll: true
+          });
+        } catch (_) {}
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      try {
+        if (scrollLocked && body && scrollLock) {
+          scrollLock.count = Math.max(0, scrollLock.count - 1);
+          if (scrollLock.count === 0) body.style.overflow = scrollLock.prev;
+        }
+      } catch (_) {}
+      isolated.forEach(({
+        sibling,
+        hadInert,
+        prevInert,
+        ariaHidden
+      }) => {
+        if (!sibling || !sibling.isConnected) return;
+        if (!hadInert) {
+          try {
+            sibling.inert = false;
+          } catch (_) {}
+          try {
+            sibling.removeAttribute('inert');
+          } catch (_) {}
+        } else {
+          try {
+            sibling.inert = Boolean(prevInert);
+          } catch (_) {}
+        }
+        if (ariaHidden == null) {
+          try {
+            sibling.removeAttribute('aria-hidden');
+          } catch (_) {}
+        } else {
+          try {
+            sibling.setAttribute('aria-hidden', ariaHidden);
+          } catch (_) {}
+        }
+      });
+      if (!hadTabIndex) dialog.removeAttribute('tabindex');
+      const wasTopTrap = isTopTrap();
+      if (stack) {
+        const idx = stack.lastIndexOf(trap);
+        if (idx >= 0) stack.splice(idx, 1);
+      }
+      if (wasTopTrap && prevFocus && prevFocus !== document.body && prevFocus !== document.documentElement && prevFocus.isConnected && typeof prevFocus.focus === 'function') {
+        try {
+          prevFocus.focus({
+            preventScroll: true
+          });
+        } catch (_) {}
+      }
+    };
+  }, [activeRecoveryDialogRef]);
   return /*#__PURE__*/React.createElement("div", {
     className: "fixed inset-0 z-[10000] flex items-center justify-center bg-slate-950/75 p-4",
     role: "presentation"
   }, /*#__PURE__*/React.createElement("div", {
-    ref: canvasRecoveryDialogRef,
+    ref: activeRecoveryDialogRef,
     role: "dialog",
     "aria-modal": "true",
     "aria-labelledby": "canvas-recovery-title",
@@ -85,10 +282,10 @@ function CanvasRecoveryDialogView(props) {
   }, t('storage.panel_eyebrow') || 'Storage and recovery'), /*#__PURE__*/React.createElement("h2", {
     id: "canvas-recovery-title",
     className: "text-2xl font-black text-slate-900"
-  }, canvasRecoveryDialogMode === 'checking' ? 'Checking this device…' : canvasRecoveryDialogMode === 'vault-locked' ? 'Unlock protected saved work' : canvasRecoveryDialogMode === 'error' ? 'Device recovery needs attention' : canvasRecoveryDialogMode === 'manage' ? 'Storage and recovery manager' : 'Continue where you left off?'), /*#__PURE__*/React.createElement("p", {
+  }, canvasRecoveryDialogMode === 'checking' ? _crCopy('canvas_recovery.title_checking', 'Checking this device…') : canvasRecoveryDialogMode === 'vault-locked' ? _crCopy('canvas_recovery.title_vault_locked', 'Unlock protected saved work') : canvasRecoveryDialogMode === 'error' ? _crCopy('canvas_recovery.title_error', 'Device recovery needs attention') : canvasRecoveryDialogMode === 'manage' ? _crCopy('canvas_recovery.title_manage', 'Storage and recovery manager') : _crCopy('canvas_recovery.title_default', 'Continue where you left off?')), /*#__PURE__*/React.createElement("p", {
     id: "canvas-recovery-description",
     className: "mt-2 text-sm leading-relaxed text-slate-600"
-  }, canvasRecoveryDialogMode === 'checking' ? 'AlloFlow is securely checking this browser for earlier resource-pack work.' : canvasRecoveryDialogMode === 'vault-locked' ? 'Recovery-workspace contents are encrypted on this device. Unlock to restore or save protected work.' : canvasRecoveryDialogMode === 'error' ? 'No saved work will be overwritten unless AlloFlow can first read the device store.' : canvasRecoveryDialogMode === 'manage' ? 'Review approximate usage, choose a retention policy, and manage recoverable work kept by this browser.' : 'AlloFlow found saved resource history and authoring state from an earlier Gemini Canvas session.')), canvasRecoveryDecisionMade && canvasRecoveryVaultForm.mode !== 'confirm-recovery-code' && /*#__PURE__*/React.createElement("button", {
+  }, canvasRecoveryDialogMode === 'checking' ? _crCopy('canvas_recovery.desc_checking', 'AlloFlow is securely checking this browser for earlier resource-pack work.') : canvasRecoveryDialogMode === 'vault-locked' ? _crCopy('canvas_recovery.desc_vault_locked', 'Recovery-workspace contents are encrypted on this device. Unlock to restore or save protected work.') : canvasRecoveryDialogMode === 'error' ? _crCopy('canvas_recovery.desc_error', 'No saved work will be overwritten unless AlloFlow can first read the device store.') : canvasRecoveryDialogMode === 'manage' ? _crCopy('canvas_recovery.desc_manage', 'Review approximate usage, choose a retention policy, and manage recoverable work kept by this browser.') : _crCopy('canvas_recovery.desc_default', 'AlloFlow found saved resource history and authoring state from an earlier Gemini Canvas session.'))), canvasRecoveryDecisionMade && canvasRecoveryVaultForm.mode !== 'confirm-recovery-code' && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => closeCanvasRecoveryDialog(null),
     className: "min-h-11 min-w-11 rounded-xl border border-slate-200 text-xl text-slate-600 hover:bg-slate-100",
@@ -98,7 +295,7 @@ function CanvasRecoveryDialogView(props) {
     role: "status",
     "aria-live": "polite"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
-    className: "mx-auto mb-3 animate-spin text-indigo-700",
+    className: "mx-auto mb-3 animate-spin motion-reduce:animate-none text-indigo-700",
     size: 30,
     "aria-hidden": "true"
   }), /*#__PURE__*/React.createElement("p", {

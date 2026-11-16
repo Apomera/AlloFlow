@@ -2117,7 +2117,9 @@
       var w = null;
       try { w = window.open('', '_blank'); } catch (e) { w = null; }
       if (!w || !w.document) { announce(t('stem.cellular.sr_png_blocked', 'The new window was blocked. Save the picture shown under the buttons instead (right-click or long-press it).')); return; }
-      try { w.document.open(); w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>' + escHtml(t('stem.cellular.png_window_title', 'Cellular Automaton Lab picture')) + '</title></head><body style="margin:0;background:#020617;display:flex;justify-content:center"><img alt="' + escHtml(pngAlt(pngShot)) + '" src="' + pngShot.url + '" style="max-width:100%;height:auto"></body></html>'); w.document.close(); } catch (e2) {}
+      var pageLang = escHtml(((typeof document !== 'undefined' && document.documentElement && document.documentElement.lang) || 'en').trim() || 'en');
+      var pageDir = (typeof document !== 'undefined' && document.documentElement && document.documentElement.dir === 'rtl') ? ' dir="rtl"' : '';
+      try { w.document.open(); w.document.write('<!doctype html><html lang="' + pageLang + '"' + pageDir + '><head><meta charset="utf-8"><title>' + escHtml(t('stem.cellular.png_window_title', 'Cellular Automaton Lab picture')) + '</title></head><body style="margin:0;background:#020617;display:flex;justify-content:center"><img alt="' + escHtml(pngAlt(pngShot)) + '" src="' + pngShot.url + '" style="max-width:100%;height:auto"></body></html>'); w.document.close(); } catch (e2) {}
       announce(t('stem.cellular.sr_png_window', 'The picture opened in a new window.'));
     }
     function renderPngShot() {

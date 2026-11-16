@@ -201,8 +201,19 @@ function LessonPlanAddedPhase(props) {
     <LessonPlanAddedList items={props.items} onOpen={props.onOpen} tl={props.tl} />
   </div>;
 }
+function _lessonPlanAiDoor(t) {
+  try {
+    if (typeof window !== 'undefined' && typeof window.__alloAiSetupDoorway === 'function') {
+      return window.__alloAiSetupDoorway('text', t);
+    }
+  } catch (_) {}
+  return { disabled: false };
+}
 function LessonPlanAddedNotice(props) {
   const { items, tl } = props;
+  const aiDoor = props.aiDoor || _lessonPlanAiDoor(props.t);
+  const aiOff = !!(aiDoor && (aiDoor.disabled || aiDoor.available === false));
+  const aiTitle = aiOff ? (aiDoor.title || (typeof props.t === 'function' && props.t('ai.setup_required')) || 'Set up AI to use this feature') : undefined;
   const other = items.filter(item => item.phase === 'other');
   const titles = items.map(item => item.title || tl('lesson_plan.added_untitled', 'Untitled resource')).join(', ');
   return <section data-plan-added-resources aria-label={tl('lesson_plan.added_heading', 'Added after this plan')} className="mb-4 rounded-xl border border-amber-400 bg-amber-50 p-3 text-sm text-amber-950 no-print">
@@ -210,8 +221,9 @@ function LessonPlanAddedNotice(props) {
     <p className="mt-1">{tl('lesson_plan.added_note', 'They are listed under the matching parts of the plan below. The plan text has not changed.')}</p>
     {other.length > 0 && <div className="mt-2"><p className="font-semibold">{tl('lesson_plan.added_other', 'Other resources')}</p><LessonPlanAddedList items={other} onOpen={props.onOpen} tl={tl} /></div>}
     {props.canUpdate ? <div className="mt-2 flex flex-wrap items-center gap-2">
-      <button type="button" data-plan-update onClick={props.onUpdate} disabled={!!props.isProcessing} className="min-h-11 rounded-lg bg-indigo-700 px-3 py-2 text-sm font-bold text-white hover:bg-indigo-800 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2">{tl('lesson_plan.update_plan', 'Make an updated plan')}</button>
+      <button type="button" data-plan-update onClick={props.onUpdate} disabled={!!props.isProcessing || aiOff} title={aiTitle} className="min-h-11 rounded-lg bg-indigo-700 px-3 py-2 text-sm font-bold text-white hover:bg-indigo-800 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2">{tl('lesson_plan.update_plan', 'Make an updated plan')}</button>
       <span>{tl('lesson_plan.update_plan_note', 'Writes a new plan that includes these resources. This plan stays in your history.')}</span>
+      {aiOff && typeof window !== 'undefined' && typeof window.AlloAiSetupNotice === 'function' ? React.createElement(window.AlloAiSetupNotice, { t: props.t, className: 'inline-flex min-h-11 items-center gap-2 rounded-lg border border-amber-300 bg-white px-3 py-2 text-left text-xs font-semibold text-amber-900' }) : null}
     </div> : props.otherUnit ? <p className="mt-2">{tl('lesson_plan.update_plan_other_unit', 'To make an updated plan, open this plan’s unit first.')}</p> : null}
   </section>;
 }
@@ -448,6 +460,7 @@ function LessonPlanView(props) {
     const html = _lessonPlanSummaryHtml(generatedContent, { t, normalizeMaterialItem, title: _lessonPlanText(generatedContent.title) || sourceTopic || '', gradeLevel });
     const popup = window.open('', '_blank');
     if (popup) {
+      try { popup.opener = null; } catch (_) {}
       popup.document.write(html); popup.document.close();
       try { popup.focus(); } catch (_) {}
       try { popup.print(); } catch (_) {}
@@ -491,6 +504,9 @@ function LessonPlanView(props) {
     return items.length ? <LessonPlanAddedPhase phase={phase} items={items} onOpen={openAdded} tl={tl} /> : null;
   };
   var BilingualFieldRenderer = fieldProps =>props.BilingualFieldRenderer ? React.createElement(props.BilingualFieldRenderer, { ...fieldProps, artifact: generatedContent, text: _lessonPlanText(fieldProps.text) }) : <div className={fieldProps.className}>{_lessonPlanText(fieldProps.text)}</div>;
+  var lessonPlanAiDoor = _lessonPlanAiDoor(t);
+  var lessonPlanAiOff = !!(lessonPlanAiDoor && (lessonPlanAiDoor.disabled || lessonPlanAiDoor.available === false));
+  var lessonPlanAiTitle = lessonPlanAiOff ? (lessonPlanAiDoor.title || t('ai.setup_required') || 'Set up AI to use this feature') : undefined;
   return (
                     <div className="min-w-0 space-y-6 max-w-4xl mx-auto h-full overflow-y-auto pr-0 sm:pr-2 pb-10">
                         {audienceView && !['study', 'family'].includes(generatedContent.config?.generationInputs?.mode) && <p role="status" className="rounded-lg border border-slate-300 p-3 text-sm">This learner view includes structured tasks and learning goals. Teacher narrative sections are omitted because this saved plan does not identify separate learner text.</p>}
@@ -514,6 +530,7 @@ function LessonPlanView(props) {
                                  <div className="flex flex-wrap gap-2 no-print">
                                     {!audienceView && (
                                         <button
+                                            type="button"
                                             aria-pressed={!!isEditingLessonPlan}
                                             onClick={toggleLessonPlanEditing}
                                             className={`flex min-h-11 items-center gap-1 text-sm font-bold px-3 py-1.5 rounded-full transition-colors shadow-sm ${isEditingLessonPlan ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-white text-indigo-600 hover:bg-indigo-100 border border-indigo-200'}`}
@@ -524,6 +541,7 @@ function LessonPlanView(props) {
                                         </button>
                                     )}
                                     <button
+                                        type="button"
                                         onClick={handleCopyToClipboard}
                                         data-help-key="export_copy_button"
                                         className="flex min-h-11 items-center gap-1 text-sm font-bold bg-white text-indigo-600 hover:bg-indigo-100 border border-indigo-200 px-3 py-1.5 rounded-full transition-colors shadow-sm"
@@ -533,6 +551,7 @@ function LessonPlanView(props) {
                                         <Copy size={14} /> {t('common.copy')}
                                     </button>
                                     <button
+                                        type="button"
                                         onClick={handleExportPDF}
                                         data-help-key="export_pdf_button"
                                         className="flex min-h-11 items-center gap-1 text-sm font-bold bg-indigo-600 text-white hover:bg-indigo-700 border border-indigo-600 px-3 py-1.5 rounded-full transition-colors shadow-sm"
@@ -556,7 +575,7 @@ function LessonPlanView(props) {
                              {!audienceView && <LessonPlanOverview plan={generatedContent} t={t} BilingualFieldRenderer={BilingualFieldRenderer} normalizeMaterialItem={normalizeMaterialItem} />}
                              {!audienceView && added && added.length > 0 && <LessonPlanAddedNotice items={added} onOpen={openAdded} tl={tl}
                                  canUpdate={sameUnit && typeof props.onUpdateLessonPlan === 'function'} otherUnit={!sameUnit}
-                                 onUpdate={props.onUpdateLessonPlan} isProcessing={props.isProcessing} />}
+                                 onUpdate={props.onUpdateLessonPlan} isProcessing={props.isProcessing} aiDoor={lessonPlanAiDoor} t={t} />}
                              {woven && !isEditingLessonPlan && (
                                  <div className="mb-4 rounded-xl border border-indigo-200 bg-white p-3 text-sm text-slate-800 no-print" data-plan-script-woven>
                                      <div className="flex flex-wrap items-center justify-between gap-2">
@@ -576,19 +595,9 @@ function LessonPlanView(props) {
                                          {isEditingLessonPlan ? <LessonPlanListEditor key={String(generatedContent.id) + ":materials"} field="materialsNeeded" value={generatedContent.data.materialsNeeded} onChange={handleLessonPlanChange} t={t} /> : (<ul className="list-disc list-inside text-sm text-slate-700 space-y-1">
                                              {materialsNeeded.map((mat, i) => mat == null ? null : (
                                                  <li key={i} className="flex items-start gap-2">
-                                                     {isEditingLessonPlan ? (
-                                                         <textarea
-                                                             aria-label={t('lesson_plan.edit_material') || `Edit material ${i + 1}`}
-                                                             value={_lessonPlanText(mat)}
-                                                             onChange={(e) => handleLessonPlanChange('materialsNeeded', e.target.value, i)}
-                                                             className="w-full text-sm bg-transparent border-b border-indigo-200 focus:border-indigo-500 focus:bg-indigo-50 focus:ring-2 focus:ring-indigo-200 rounded-none outline-none resize-none overflow-hidden h-auto"
-                                                             rows={Math.max(1, Math.ceil(_lessonPlanText(mat).length / 50))}
-                                                         />
-                                                     ) : (
-                                                         <div className="w-full">
-                                                             <BilingualFieldRenderer text={normalizeMaterialItem(mat)} />
-                                                         </div>
-                                                     )}
+                                                     <div className="w-full">
+                                                         <BilingualFieldRenderer text={normalizeMaterialItem(mat)} />
+                                                     </div>
                                                  </li>
                                              ))}
                                          </ul>)}
@@ -617,19 +626,9 @@ function LessonPlanView(props) {
                                          {isEditingLessonPlan ? <LessonPlanListEditor key={String(generatedContent.id) + ":objectives"} field="objectives" value={generatedContent.data.objectives} onChange={handleLessonPlanChange} t={t} /> : (<ul className="list-disc list-inside text-sm text-slate-700 space-y-2">
                                              {objectives.map((obj, i) => obj == null ? null : (
                                                  <li key={i} className="flex items-start gap-2">
-                                                     {isEditingLessonPlan ? (
-                                                         <textarea
-                                                            aria-label={t('lesson_plan.edit_objective') || `Edit objective ${i + 1}`}
-                                                            value={_lessonPlanText(obj)}
-                                                            onChange={(e) => handleLessonPlanChange('objectives', e.target.value, i)}
-                                                            className="w-full text-sm bg-transparent border-b border-indigo-200 focus:border-indigo-500 focus:bg-indigo-50 focus:ring-2 focus:ring-indigo-200 rounded-none outline-none resize-none overflow-hidden h-auto"
-                                                            rows={Math.max(1, Math.ceil(_lessonPlanText(obj).length / 40))}
-                                                         />
-                                                     ) : (
-                                                         <div className="w-full">
-                                                             <BilingualFieldRenderer text={obj} />
-                                                         </div>
-                                                     )}
+                                                     <div className="w-full">
+                                                         <BilingualFieldRenderer text={obj} />
+                                                     </div>
                                                  </li>
                                              ))}
                                          </ul>)}
@@ -790,7 +789,7 @@ function LessonPlanView(props) {
                                                      <div key={idx} className="bg-slate-50 p-4 rounded-xl border border-slate-400">
                                                          <h5 className="font-bold text-indigo-900 mb-2 text-sm">
                                                              {isEditingLessonPlan && typeof ext !== 'string' ? (
-                                                                <input aria-label={t('common.enter_typeof')}
+                                                                <input aria-label={(t('lesson_plan.edit_extension_title') || 'Edit extension title') + ' ' + (idx + 1)}
                                                                     value={_lessonPlanText(ext.title)}
                                                                     onChange={(e) => { const title = e.target.value; handleLessonPlanChange('extensions', previous => ({ ...previous, title: _lessonPlanEditedText(previous?.title, title) }), idx); }}
                                                                     className="w-full bg-white border border-indigo-600 rounded px-2 py-1 text-sm font-bold text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -839,9 +838,11 @@ function LessonPlanView(props) {
                                                                  </div>
                                                              ) : (
                                                                  <button
+                                                                     type="button"
                                                                      aria-busy={!!isGeneratingExtensionGuide[idx]}
                                                                     onClick={() => handleGenerateExtensionGuide(idx)}
-                                                                    disabled={isGeneratingExtensionGuide[idx]}
+                                                                    disabled={isGeneratingExtensionGuide[idx] || lessonPlanAiOff}
+                                                                    title={lessonPlanAiTitle}
                                                                     className="flex items-center gap-2 text-xs font-bold text-indigo-600 hover:bg-indigo-100 px-3 py-2 rounded-lg transition-colors border border-indigo-200 bg-white disabled:opacity-50 disabled:cursor-not-allowed"
                                                                  >
                                                                      {isGeneratingExtensionGuide[idx] ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none"/> : <ListChecks size={14}/>}
@@ -903,12 +904,13 @@ function LessonPlanView(props) {
                         </div>
                         {/* ── STEM Station Recommendations ── */}
                         {recommendedStemTools.length > 0 && (
-                            <div className="mt-6 mb-4 border-2 border-emerald-200 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 p-5 animate-in fade-in duration-300">
+                            <div className="mt-6 mb-4 border-2 border-emerald-200 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 p-5 animate-in motion-reduce:animate-none fade-in duration-300">
                                 <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
                                     <h3 className="text-base font-black text-emerald-900 flex items-center gap-2">
                                         <span aria-hidden="true">🔬</span> {tl('lesson_plan.stem_tools_header', 'Recommended STEAM Lab Tools')}
                                     </h3>
                                     {!audienceView && <button
+                                        type="button"
                                         onClick={() => {
                                             const tools = recommendedStemTools.map(t => t.id);
                                             const station = {
@@ -973,7 +975,7 @@ function LessonPlanView(props) {
                         )}
 
                         <div className="flex justify-center pb-8">
-                             <button onClick={handleExportPDF} data-lesson-plan-print-bottom className="flex items-center gap-2 bg-indigo-600 text-white px-8 py-3 rounded-full font-bold hover:bg-indigo-700 transition-colors shadow-lg">
+                             <button type="button" onClick={handleExportPDF} data-lesson-plan-print-bottom className="flex items-center gap-2 bg-indigo-600 text-white px-8 py-3 rounded-full font-bold hover:bg-indigo-700 transition-colors shadow-lg">
                                 <Printer size={18}/> {t('lesson_plan.print')}
                              </button>
                         </div>
@@ -982,10 +984,11 @@ function LessonPlanView(props) {
                                 {t('progression.title')}
                             </h4>
                             {!progressionData ? (
-                                <button aria-busy={!!isGeneratingProgression}
+                                <button type="button" aria-busy={!!isGeneratingProgression}
                                     onClick={handleGenerateProgression}
-                                    disabled={isGeneratingProgression}
-                                    className="w-full py-6 rounded-2xl border-2 border-dashed border-indigo-600 hover:border-indigo-400 hover:bg-indigo-50 transition-all group flex flex-col items-center justify-center gap-2 text-indigo-600 hover:text-indigo-600"
+                                    disabled={isGeneratingProgression || lessonPlanAiOff}
+                                    title={lessonPlanAiTitle}
+                                    className="w-full py-6 rounded-2xl border-2 border-dashed border-indigo-600 hover:border-indigo-400 hover:bg-indigo-50 transition-all group flex flex-col items-center justify-center gap-2 text-indigo-600 hover:text-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
                                 >
                                     {isGeneratingProgression ? (
                                         <RefreshCw size={24} className="animate-spin motion-reduce:animate-none"/>
@@ -1000,10 +1003,11 @@ function LessonPlanView(props) {
                                     </span>
                                 </button>
                             ) : (
-                                <div className="animate-in slide-in-from-bottom-4 space-y-4">
+                                <div className="animate-in motion-reduce:animate-none slide-in-from-bottom-4 space-y-4">
                                     <div className="flex justify-between items-center mb-2 px-2">
                                          <h4 className="text-xs font-bold text-indigo-900 uppercase tracking-wider">{t('progression.recommended_header')}</h4>
                                          <button
+                                             type="button"
                                              aria-label={t('common.close')}
                                             onClick={handleSetProgressionDataToNull}
                                             className="text-slate-600 hover:text-indigo-600 p-1 rounded-full transition-colors"
@@ -1031,11 +1035,14 @@ function LessonPlanView(props) {
                                                     "{option.rationale}"
                                                 </p>
                                                 <button
+                                                    type="button"
                                                     aria-label={`${t('progression.build_btn')}: ${option.nextTopic || t('progression.recommended_header')}`}
                                                     onClick={() => handleActivateNextLesson(option)}
-                                                    className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg transition-colors flex items-center justify-center gap-2 mt-auto active:scale-95 shadow-sm"
+                                                    disabled={lessonPlanAiOff}
+                                                    title={lessonPlanAiTitle}
+                                                    className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg transition-colors flex items-center justify-center gap-2 mt-auto active:scale-95 motion-reduce:transform-none shadow-sm disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
                                                 >
-                                                    <Sparkles size={14} className="text-yellow-700 fill-current"/>
+                                                    <Sparkles size={14} className="text-yellow-300 fill-current" aria-hidden="true"/>
                                                     {t('progression.build_btn')}
                                                 </button>
                                             </div>

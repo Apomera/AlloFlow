@@ -29,7 +29,7 @@ function FullPackRunView(props) {
   };
   return (
 <PackContainer style={{display: (!guidedMode || guidedActiveSteps[guidedStep]?.id === 'package-deliver' || (guidedActiveSteps[guidedStep]?.id === '_final' && isRunActive)) ? undefined : 'none'}} id="tour-tool-fullpack" data-help-key="tool_fullpack" className="relative z-10 bg-gradient-to-r from-indigo-600 to-purple-600 p-1 rounded-3xl shadow-sm">
-                {foldGenerator && <summary className="min-h-11 cursor-pointer rounded-xl px-3 py-2 text-sm font-semibold text-white">{t('fullpack.additional_resources') || 'Create more resources'}</summary>}
+                {foldGenerator && <summary className="min-h-11 cursor-pointer rounded-xl px-3 py-2 text-sm font-semibold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white">{t('fullpack.additional_resources') || 'Create more resources'}</summary>}
                 {showDeliveryRoutes && (
                   <div role="region" aria-labelledby="guided-delivery-panel-title" data-testid="full-pack-delivery-routes" className="m-1 mb-2 rounded-2xl bg-white p-3 text-slate-800">
                     <div id="guided-delivery-panel-title" className="text-sm font-black text-indigo-900">{t('fullpack.delivery_title') || 'Preview, Package & Deliver'}</div>
@@ -42,17 +42,17 @@ function FullPackRunView(props) {
                         </div>
                       ))}
                     </div>}
-                    <p className="mt-2 text-[10px] leading-relaxed text-slate-500">{t('fullpack.delivery_notes') || 'QTI requires a quiz. H5P appears for compatible quiz or study-card content and needs matching H5P libraries at the destination. Storybook and Persona exports live inside those resource views. Homework sharing method and expiry depend on deployment.'}</p>
+                    <p className="mt-2 text-[10px] leading-relaxed text-slate-600">{t('fullpack.delivery_notes') || 'QTI requires a quiz. H5P appears for compatible quiz or study-card content and needs matching H5P libraries at the destination. Storybook and Persona exports live inside those resource views. Homework sharing method and expiry depend on deployment.'}</p>
                     {isRunActive && <p role="status" data-testid="full-pack-delivery-locked" className="mt-2 text-[11px] font-semibold text-slate-700">{t('fullpack.delivery_wait_run') || 'Delivery opens when the Full Pack run finishes.'}</p>}
                     <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                      <button type="button" disabled={isRunActive} onClick={() => openExportPreview('print')} className="min-h-10 rounded-lg bg-indigo-700 px-3 py-2 text-[11px] font-bold text-white hover:bg-indigo-600 disabled:cursor-not-allowed disabled:opacity-50">{t('fullpack.delivery_document_builder') || 'Open Document Builder'}</button>
+                      <button type="button" disabled={isRunActive} onClick={() => openExportPreview('print')} className="min-h-11 rounded-lg bg-indigo-700 px-3 py-2 text-[11px] font-bold text-white hover:bg-indigo-600 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1">{t('fullpack.delivery_document_builder') || 'Open Document Builder'}</button>
                       {typeof openExportPreview === 'function' && (
                         <>
-                          <button type="button" data-testid="full-pack-export-html" disabled={isRunActive} onClick={() => openExportPreview('html')} className="min-h-10 rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-2 text-[11px] font-bold text-indigo-900 hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-50">{t('fullpack.delivery_interactive_html') || 'Export Interactive HTML'}</button>
-                          <button type="button" data-testid="full-pack-export-worksheet" disabled={isRunActive} onClick={() => openExportPreview('worksheet')} className="min-h-10 rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px] font-bold text-slate-800 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50">{t('fullpack.delivery_printable_worksheet') || 'Export Printable Worksheet'}</button>
+                          <button type="button" data-testid="full-pack-export-html" disabled={isRunActive} onClick={() => openExportPreview('html')} className="min-h-11 rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-2 text-[11px] font-bold text-indigo-900 hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1">{t('fullpack.delivery_interactive_html') || 'Export Interactive HTML'}</button>
+                          <button type="button" data-testid="full-pack-export-worksheet" disabled={isRunActive} onClick={() => openExportPreview('worksheet')} className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px] font-bold text-slate-800 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1">{t('fullpack.delivery_printable_worksheet') || 'Export Printable Worksheet'}</button>
                         </>
                       )}
-                      <button type="button" disabled={isRunActive} onClick={createGuidedHomeworkShare} className="min-h-10 rounded-lg border border-indigo-300 bg-white px-3 py-2 text-[11px] font-bold text-indigo-800 hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-50">{t('fullpack.delivery_homework_qr') || 'Create Homework QR'}</button>
+                      <button type="button" disabled={isRunActive} onClick={createGuidedHomeworkShare} className="min-h-11 rounded-lg border border-indigo-300 bg-white px-3 py-2 text-[11px] font-bold text-indigo-800 hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1">{t('fullpack.delivery_homework_qr') || 'Create Homework QR'}</button>
                       {/* W3 2026-08-16 (N8): the second door to a live CLASS session.
                           MODE_AUDIT_2026-08-03.md F1 excluded parents and independent
                           learners from starting one, and gated both header entries
@@ -61,14 +61,14 @@ function FullPackRunView(props) {
                           independent mode could still start a class session from the
                           Preview, Package & Deliver step. Same exclusion as the header. */}
                       {!isIndependentMode && !isParentMode && (
-                      <button type="button" disabled={isRunActive} onClick={() => setShowSessionStartOptions(true)} className="min-h-10 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-[11px] font-bold text-emerald-900 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50">{t('fullpack.delivery_teach_live') || 'Teach live'}</button>
+                      <button type="button" disabled={isRunActive} onClick={() => setShowSessionStartOptions(true)} className="min-h-11 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-[11px] font-bold text-emerald-900 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-1">{t('fullpack.delivery_teach_live') || 'Teach live'}</button>
                       )}
-                      <button type="button" disabled={isRunActive || !latestStudentShare} onClick={testLatestStudentLink} className="min-h-10 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-[11px] font-bold text-amber-900 hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50">{t('fullpack.delivery_test_link') || 'Test latest student link'}</button>
+                      <button type="button" disabled={isRunActive || !latestStudentShare} onClick={testLatestStudentLink} className="min-h-11 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-[11px] font-bold text-amber-900 hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700 focus-visible:ring-offset-1">{t('fullpack.delivery_test_link') || 'Test latest student link'}</button>
                     </div>
                   </div>
                 )}
                 <details data-testid="full-pack-options" className="group/options mb-1 rounded-2xl text-white">
-                  <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-2 rounded-xl px-3 py-2 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white [&::-webkit-details-marker]:hidden">
+                  <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 rounded-xl px-3 py-2 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white [&::-webkit-details-marker]:hidden">
                     <span className="min-w-0 break-words"><span className="font-bold">{t('fullpack.pack_options') || 'Pack options'}</span><span className="ms-2">{packSizeLabel}</span>{isTeacherMode && !isParentMode && rosterKey?.groups && Object.keys(rosterKey.groups).length > 0 && fullPackTargetGroup !== 'none' && <span className="mt-0.5 block">{fullPackTargetGroup === 'all' ? (t('fullpack.group_all') || 'All Groups') : rosterKey.groups[fullPackTargetGroup]?.name}</span>}</span>
                     <ChevronDown size={14} aria-hidden="true" className="shrink-0 transition-transform motion-reduce:transition-none group-open/options:rotate-180" />
                   </summary>
@@ -82,10 +82,10 @@ function FullPackRunView(props) {
                             id="autoConfigToggle"
                             checked={isAutoConfigEnabled}
                             onChange={(e) => setIsAutoConfigEnabled(e.target.checked)}
-                            className="w-4 h-4 text-indigo-600 rounded cursor-pointer border-slate-300 focus:ring-offset-white focus:ring-indigo-500"
+                            className="w-4 h-4 text-indigo-600 rounded cursor-pointer border-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-white focus-visible:ring-indigo-600"
                         />
-                        <label htmlFor="autoConfigToggle" className="text-[11px] font-bold uppercase tracking-wider cursor-pointer select-none flex items-center gap-1">
-                            <Sparkles size={10} className="text-yellow-700 fill-current"/> {t('fullpack.auto_configure')}
+                        <label htmlFor="autoConfigToggle" className="min-h-11 text-[11px] font-bold uppercase tracking-wider cursor-pointer select-none inline-flex items-center gap-1">
+                            <Sparkles size={10} aria-hidden="true" className="text-yellow-700 fill-current"/> {t('fullpack.auto_configure')}
                         </label>
                     </div>
                     {isAutoConfigEnabled && (
@@ -93,7 +93,7 @@ function FullPackRunView(props) {
                             data-help-key="fullpack_resource_count"
                             value={resourceCount}
                             onChange={(e) => setResourceCount(e.target.value)}
-                            className="min-h-10 max-w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs font-semibold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 cursor-pointer"
+                            className="min-h-11 max-w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs font-semibold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 cursor-pointer"
                             title={t('fullpack.limit_tooltip')}
                         >
                             <option value="Auto">{t('fullpack.option_auto')}</option>
@@ -108,7 +108,7 @@ function FullPackRunView(props) {
                             value={fullPackTargetGroup}
                             onChange={(e) => setFullPackTargetGroup(e.target.value)}
                             aria-label={t('fullpack.group_tooltip') || 'Target group for generation'}
-                            className="min-h-10 min-w-0 max-w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs font-semibold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 cursor-pointer"
+                            className="min-h-11 min-w-0 max-w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs font-semibold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 cursor-pointer"
                             title={t('fullpack.group_tooltip') || 'Generate for a specific group or all groups'}
                         >
                             <option value="none">{t('fullpack.group_current') || 'Current Settings'}</option>
@@ -123,28 +123,29 @@ function FullPackRunView(props) {
                 </details>
                 {/* X6 (2026-08-17): keyless-shell doorway — same disable-with-doorway
                     contract as the sidebar generate buttons (AiSetupNotice). */}
-                {!aiCapability.text && (
+                {!aiCapability.text && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled) && (
                   <button type="button" data-help-key="sidebar_ai_setup_notice"
                     onClick={() => { try { setShowAIBackendModal(true); } catch (_) {} }}
-                    className="w-full flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-2 text-left text-xs font-semibold text-amber-900 hover:bg-amber-100">
+                    className="min-h-11 w-full flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-2 text-left text-xs font-semibold text-amber-900 hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700">
                     <span aria-hidden="true">{'✨'}</span>
                     <span>{t('sidebar.needs_ai_setup') || 'Needs AI setup'}{' · '}{t('sidebar.needs_ai_setup_cta') || 'Tap to connect an AI, or use AlloFlow inside Gemini Canvas'}</span>
                   </button>
                 )}
                 <button
                     type="button"
-                    aria-label={isRunActive ? activeActionLabel : fullPackRun?.status === 'ready' ? (t('fullpack.action_generate_pack_aria') || 'Generate full pack from the reviewed plan') : (t('fullpack.action_plan_aria') || 'Plan Full Pack')}
+                    aria-label={isRunActive ? activeActionLabel : fullPackRun?.status === 'ready' ? (t('fullpack.action_generate_pack_aria') || 'Generate full pack from the reviewed plan') : [t('fullpack.action_plan') || 'Plan full pack', t('fullpack.plan_first_help') || 'Start with a resource list you can review and edit before generation.'].join(' ')}
                     data-help-key="fullpack_generate"
                     data-testid="full-pack-primary-action"
                     onClick={() => { selectToolFromCatalog('package-deliver'); return fullPackRun?.status === 'ready' ? handleApproveFullPack() : handlePlanFullPack(); }}
                     disabled={!hasSourceOrAnalysis || isProcessing || isRunActive || !aiCapability.text} aria-busy={isProcessing || isRunActive}
-                    className={`group w-full p-3 bg-white rounded-2xl text-start flex justify-between items-center disabled:opacity-80 disabled:cursor-not-allowed transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${fullPackRun?.status === 'ready' ? 'ring-2 ring-indigo-300/80 shadow-md shadow-indigo-200/70' : ''}`}
+                    className={`group min-h-11 w-full p-3 bg-white rounded-2xl text-start flex justify-between items-center disabled:opacity-80 disabled:cursor-not-allowed transition-shadow motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${fullPackRun?.status === 'ready' ? 'ring-2 ring-indigo-300/80 shadow-md shadow-indigo-200/70' : ''}`}
                 >
                     <div>
                         <span className="text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-700 to-purple-700 group-hover:from-indigo-600 group-hover:to-purple-600 flex items-center gap-2">
-                            {isProcessing ? <RefreshCw className="animate-spin text-indigo-600" size={18} /> : <Sparkles size={18} className="text-yellow-600 fill-yellow-600" />}
+                            {isProcessing ? <RefreshCw aria-hidden="true" className="animate-spin motion-reduce:animate-none text-indigo-600" size={18} /> : <Sparkles size={18} aria-hidden="true" className="text-yellow-600 fill-yellow-600" />}
                             {isRunActive ? activeActionLabel : fullPackRun?.status === 'ready' ? (t('fullpack.action_generate_pack') || 'Generate full pack') : (t('fullpack.action_plan') || 'Plan full pack')}
                         </span>
+                        {' '}
                         <span className="text-xs leading-relaxed text-slate-600 block mt-0.5">{isRunActive ? (t('fullpack.running_help') || 'Follow progress below. Keep this page open while resources are created.') : fullPackRun?.status === 'ready' ? (t('fullpack.generate_reviewed_help') || 'Create the resources listed below. You can edit them first.') : (t('fullpack.plan_first_help') || 'Start with a resource list you can review and edit before generation.')}</span>
                     </div>
                     <span
@@ -160,10 +161,10 @@ function FullPackRunView(props) {
                         type="button"
                         data-testid="full-pack-stop"
                         onClick={handleStopFullPack}
-                        className="mt-2 w-full rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100 flex items-center justify-center gap-2"
+                        className="mt-2 min-h-11 w-full rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 flex items-center justify-center gap-2"
                         title={t('fullpack.stop_generation') || 'Stop generation'}
                     >
-                        <StopCircle size={15} />
+                        <StopCircle size={15} aria-hidden="true" />
                         {t('fullpack.stop_generation') || 'Stop generation'}
                     </button>
                 )}
@@ -292,7 +293,7 @@ function FullPackRunView(props) {
                                     <div className="mt-0.5 break-words">{planChanges.map(key => changeLabels[key]).join(', ')}.</div>
                                     <div className="mt-1 font-semibold">{t('fullpack.reviewed_settings_help') || 'Generate full pack keeps the reviewed settings. Refresh plan uses your current settings.'}</div>
                                     <details className="mt-2 rounded-lg border border-amber-300 bg-white/70">
-                                        <summary className="cursor-pointer px-2 py-1 font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">{t('fullpack.review_values') || 'Review original and current values'}</summary>
+                                        <summary className="min-h-11 inline-flex w-full items-center cursor-pointer px-2 py-1 font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">{t('fullpack.review_values') || 'Review original and current values'}</summary>
                                         <div className="space-y-1 border-t border-amber-200 px-2 py-1.5">
                                             {planChanges.map(key => (
                                                 <div key={key} className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-1">
@@ -308,7 +309,7 @@ function FullPackRunView(props) {
                             {fullPackRun.status === 'ready' && planSummaries.length > 0 && (
                                 <div className="mx-3 mt-2">
                                 <details data-testid="full-pack-capacity" className="group/capacity rounded-xl border border-slate-200 text-xs leading-relaxed text-slate-700">
-                                  <summary className="flex min-h-10 cursor-pointer list-none flex-wrap items-center justify-between gap-2 rounded-xl px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 [&::-webkit-details-marker]:hidden">
+                                  <summary className="flex min-h-11 cursor-pointer list-none flex-wrap items-center justify-between gap-2 rounded-xl px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 [&::-webkit-details-marker]:hidden">
                                     <span className="font-bold">{t('fullpack.time_and_usage') || 'Time and AI usage'}</span>
                                     <span className="flex items-center gap-1.5"><Clock size={13} aria-hidden="true" />~{Math.max(1, planMinutes)} {t('fullpack.minutes') || 'minutes'}<ChevronDown size={14} aria-hidden="true" className="transition-transform motion-reduce:transition-none group-open/capacity:rotate-180" /></span>
                                   </summary>
@@ -324,7 +325,7 @@ function FullPackRunView(props) {
                                         <div className="flex min-w-0 items-center gap-1 rounded-lg border border-current/15 bg-white/70 px-2 py-1.5"><ImageIcon size={12} aria-hidden="true" className="shrink-0" /><span className="font-black">{planImageCalls}</span><span className="min-w-0 truncate">{t('fullpack.image_calls') || 'image calls'}</span></div>
                                         <div className="flex min-w-0 items-center gap-1 rounded-lg border border-current/15 bg-white/70 px-2 py-1.5"><Clock size={12} aria-hidden="true" className="shrink-0" /><span className="font-black">~{Math.max(1, planMinutes)}</span><span className="min-w-0 truncate">{t('fullpack.minutes') || 'minutes'}</span></div>
                                     </div>
-                                    <div className="mt-1 text-[9px] opacity-80">{usesObservedEstimate ? (t('fullpack.estimate_observed') || 'Estimate uses recent timings from this device') : (t('fullpack.estimate_defaults') || 'Estimate uses provider defaults')}</div>
+                                    <div className="mt-1 text-[10px] text-slate-600">{usesObservedEstimate ? (t('fullpack.estimate_observed') || 'Estimate uses recent timings from this device') : (t('fullpack.estimate_defaults') || 'Estimate uses provider defaults')}</div>
                                     </div>
                                 </details>
                                     {localizedCapacityWarnings.length > 0 && <div data-testid="full-pack-capacity-warnings" role="status" className="mt-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-950">{localizedCapacityWarnings.map((warning, index) => <p key={index} className={index ? 'mt-1' : ''}>{warning}</p>)}</div>}
@@ -368,7 +369,7 @@ function FullPackRunView(props) {
                                         <div key={section.groupId || section.runId || sectionIndex}>
                                             {groupRuns.length > 0 && <div className="mb-1.5 text-[10px] font-black uppercase tracking-wide text-indigo-800">{section.groupName || `Group ${sectionIndex + 1}`}</div>}
                                             <div className="space-y-1.5">
-                                                {rows.length === 0 && <div className="rounded-lg border border-dashed border-slate-200 px-2.5 py-2 text-[10px] text-slate-500">{t('fullpack.waiting_group') || 'Waiting to plan this group…'}</div>}
+                                                {rows.length === 0 && <div className="rounded-lg border border-dashed border-slate-200 px-2.5 py-2 text-[10px] text-slate-600">{t('fullpack.waiting_group') || 'Waiting to plan this group…'}</div>}
                                                 {rows.length > 0 && visibleRows.length === 0 && <div className="rounded-lg border border-dashed border-emerald-200 bg-emerald-50/60 px-2.5 py-2 text-[10px] text-emerald-800">{t('fullpack.completed_hidden') || 'Completed resources are hidden.'}</div>}
                                                 {visibleRows.map((row, index) => {
                                                     const rowKey = row.key || `${row.type}-${index}`;
@@ -401,10 +402,10 @@ function FullPackRunView(props) {
                                                         const rowTypeOptions = fullPackEditableTypes.includes(row.type) ? fullPackEditableTypes : [row.type, ...fullPackEditableTypes];
                                                         return (
                                                             <details key={rowKey} className="group/plan overflow-hidden rounded-lg border border-slate-200 bg-slate-50/70">
-                                                                <summary className="flex min-h-10 min-w-0 cursor-pointer list-none items-center justify-between gap-2 px-2.5 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 [&::-webkit-details-marker]:hidden">
+                                                                <summary className="flex min-h-11 min-w-0 cursor-pointer list-none items-center justify-between gap-2 px-2.5 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 [&::-webkit-details-marker]:hidden">
                                                                     {/* No `capitalize`: rowTitle is now a real, localized resource name, and forcing title case mangles languages that do not capitalize every word. */}
                                                                     <span className="min-w-0 break-words text-xs font-bold text-slate-800">{rowTitle}</span>
-                                                                    <span className="flex shrink-0 items-center gap-1.5">{row.status === 'queued' ? <span className="text-[11px] font-semibold text-indigo-700">{t('fullpack.edit_resource') || 'Edit'}</span> : row.status === 'reuse' ? <span className="text-[11px] font-semibold text-emerald-800">{t('fullpack.already_available') || 'Already available'}</span> : rowStatus}<ChevronDown size={13} aria-hidden="true" className="text-slate-500 transition-transform motion-reduce:transition-none group-open/plan:rotate-180" /></span>
+                                                                    <span className="flex shrink-0 items-center gap-1.5">{row.status === 'queued' ? <span className="text-[11px] font-semibold text-indigo-700">{t('fullpack.edit_resource') || 'Edit'}</span> : row.status === 'reuse' ? <span className="text-[11px] font-semibold text-emerald-800">{t('fullpack.already_available') || 'Already available'}</span> : rowStatus}<ChevronDown size={13} aria-hidden="true" className="text-slate-600 transition-transform motion-reduce:transition-none group-open/plan:rotate-180" /></span>
                                                                 </summary>
                                                                 <div className="space-y-2 border-t border-slate-200 bg-white px-2.5 py-2 text-[10px] leading-relaxed text-slate-700">
                                                                     <label className="block font-bold text-slate-900">
@@ -415,7 +416,7 @@ function FullPackRunView(props) {
                                                                             data-group-id={sectionGroupId || ''}
                                                                             value={row.type}
                                                                             onChange={event => handleChangeFullPackPlanResourceType(planResourceKey, event.target.value, sectionGroupId)}
-                                                                            className="w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-[10px] font-semibold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                                                                            className="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-[10px] font-semibold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                                                                             aria-label={(t('fullpack.resource_type') || 'Resource type') + ': ' + rowTitle}
                                                                         >
                                                                             {rowTypeOptions.map(type => {
@@ -496,7 +497,7 @@ function FullPackRunView(props) {
                                                                             data-group-id={sectionGroupId || ''}
                                                                             disabled={index <= 0}
                                                                             onClick={() => handleMoveFullPackPlanResource(planResourceKey, index - 1, sectionGroupId)}
-                                                                            className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-2 py-1 text-[9px] font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                                                                            className="inline-flex min-h-11 items-center gap-1 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-[10px] font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                                                                             aria-label={(t('fullpack.move_up') || 'Move up') + ': ' + rowTitle}
                                                                         >
                                                                             <ArrowUp size={11} aria-hidden="true" />
@@ -509,7 +510,7 @@ function FullPackRunView(props) {
                                                                             data-group-id={sectionGroupId || ''}
                                                                             disabled={index >= rows.length - 1}
                                                                             onClick={() => handleMoveFullPackPlanResource(planResourceKey, index + 1, sectionGroupId)}
-                                                                            className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-2 py-1 text-[9px] font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                                                                            className="inline-flex min-h-11 items-center gap-1 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-[10px] font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                                                                             aria-label={(t('fullpack.move_down') || 'Move down') + ': ' + rowTitle}
                                                                         >
                                                                             <ArrowDown size={11} aria-hidden="true" />
@@ -522,7 +523,7 @@ function FullPackRunView(props) {
                                                                             data-group-id={sectionGroupId || ''}
                                                                             disabled={rows.length <= 1}
                                                                             onClick={() => handleRemoveFullPackPlanResource(planResourceKey, sectionGroupId)}
-                                                                            className="inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-white px-2 py-1 text-[9px] font-bold text-rose-700 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
+                                                                            className="inline-flex min-h-11 items-center gap-1 rounded-lg border border-rose-200 bg-white px-2.5 py-1.5 text-[10px] font-bold text-rose-700 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600"
                                                                             aria-label={(t('fullpack.remove_resource_aria') || 'Remove resource from plan') + ': ' + rowTitle}
                                                                             title={rows.length <= 1 ? (t('fullpack.keep_one_resource') || 'Keep at least one resource in the plan') : (t('fullpack.remove_resource') || 'Remove from plan')}
                                                                         >
@@ -547,7 +548,7 @@ function FullPackRunView(props) {
                                             </div>
                                             {fullPackRun.status === 'ready' && (
                                                 <details data-testid="full-pack-text-access-summary" data-group-id={sectionGroupId || ''} open={!sectionHasPrimary || sectionAdaptedTextPolicy === 'prohibited' || sectionPrimaryTextAccess === 'required'} className="group/text-access mt-2 rounded-xl border border-slate-200 text-xs leading-relaxed text-slate-700">
-                                                  <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-2 rounded-xl px-2.5 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 [&::-webkit-details-marker]:hidden">
+                                                  <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 rounded-xl px-2.5 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 [&::-webkit-details-marker]:hidden">
                                                     <span className="min-w-0"><span className="block font-bold">{t('fullpack.source_and_adaptations') || 'Source text and adaptations'}</span><span className="mt-0.5 block text-slate-600">{sectionAdaptedCount > 0 ? (t('fullpack.adapted_companions_short') || 'Adapted text companions') + ': ' + sectionAdaptedCount : (t('fullpack.no_adapted_companion') || 'No Adapted Text companion is included.')}</span></span>
                                                     <ChevronDown size={14} aria-hidden="true" className="shrink-0 transition-transform motion-reduce:transition-none group-open/text-access:rotate-180" />
                                                   </summary>
@@ -579,7 +580,7 @@ function FullPackRunView(props) {
                                                                 value={sectionAdaptedTextPolicy}
                                                                 onChange={event => handleSetFullPackPlanAdaptedTextPolicy(event.target.value, sectionGroupId)}
                                                                 disabled={sectionAdaptedTextPolicy === 'prohibited'}
-                                                                className="w-full rounded-lg border border-indigo-300 bg-white px-2 py-1.5 text-[10px] font-bold normal-case tracking-normal text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                                                                className="min-h-11 w-full rounded-lg border border-indigo-300 bg-white px-2 py-1.5 text-[10px] font-bold normal-case tracking-normal text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                                                                 aria-label={(t('fullpack.adapted_policy') || 'Adapted-text plan policy') + (section.groupName ? `: ${section.groupName}` : '')}
                                                             >
                                                                 <option value="include">{sectionPrimaryTextAccess === 'required' ? (t('fullpack.include_companion_for_preview') || 'Include an adapted companion for background and preview') : (t('fullpack.policy_include_adapted') || 'Include supplemental Adapted Text (recommended)')}</option>
@@ -598,18 +599,18 @@ function FullPackRunView(props) {
                                               <div data-testid="full-pack-grade-level-reading" data-group-id={sectionGroupId || ''} className="mt-2 rounded-xl border border-emerald-300 bg-emerald-50 px-2.5 py-2 text-xs leading-relaxed text-emerald-950">
                                                 <p className="font-bold">{t('fullpack.grade_level_main_reading') || 'Main reading: the original with word supports'}</p>
                                                 <p className="mt-0.5">{t('fullpack.grade_level_main_reading_help') || 'This standard asks students to read grade-level text, so the original stays the main reading. Word supports explain hard words beside the original words and do not change them.'}</p>
-                                                {typeof handleReadOriginal === 'function' && <button type="button" data-testid="full-pack-open-supported-original" onClick={() => handleReadOriginal()} disabled={isProcessing || !hasSourceOrAnalysis} className="mt-2 min-h-10 rounded-lg border border-emerald-700 bg-white px-3 py-1.5 text-xs font-bold text-emerald-900 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600">{t('fullpack.open_supported_original') || 'Open the original with supports'}</button>}
+                                                {typeof handleReadOriginal === 'function' && <button type="button" data-testid="full-pack-open-supported-original" onClick={() => handleReadOriginal()} disabled={isProcessing || !hasSourceOrAnalysis} className="mt-2 min-h-11 rounded-lg border border-emerald-700 bg-white px-3 py-1.5 text-xs font-bold text-emerald-900 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">{t('fullpack.open_supported_original') || 'Open the original with supports'}</button>}
                                                 {fullPackRun.status === 'ready' && sectionAdaptedTextPolicy === 'omit' && (
                                                   <div className="mt-2 border-t border-emerald-200 pt-2">
                                                     <p>{t('fullpack.no_companion_for_grade_level') || 'No adapted text is planned. You can add a companion to activate background knowledge, build context, and preview key concepts before students read the original.'}</p>
-                                                    <button type="button" data-testid="full-pack-include-companion" data-group-id={sectionGroupId || ''} onClick={() => handleSetFullPackPlanAdaptedTextPolicy('include', sectionGroupId)} className="mt-2 min-h-10 rounded-lg border border-indigo-400 bg-white px-3 py-1.5 text-xs font-bold text-indigo-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{t('fullpack.include_companion_for_preview') || 'Include an adapted companion for background and preview'}</button>
+                                                    <button type="button" data-testid="full-pack-include-companion" data-group-id={sectionGroupId || ''} onClick={() => handleSetFullPackPlanAdaptedTextPolicy('include', sectionGroupId)} className="mt-2 min-h-11 rounded-lg border border-indigo-400 bg-white px-3 py-1.5 text-xs font-bold text-indigo-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{t('fullpack.include_companion_for_preview') || 'Include an adapted companion for background and preview'}</button>
                                                   </div>
                                                 )}
                                               </div>
                                             )}
                                             {fullPackRun.status === 'ready' && (
                                               <details data-testid="full-pack-add-options" className="group/add mt-2 rounded-xl border border-slate-200 text-slate-700">
-                                                <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-2 rounded-xl px-2.5 py-2 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 [&::-webkit-details-marker]:hidden">
+                                                <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 rounded-xl px-2.5 py-2 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 [&::-webkit-details-marker]:hidden">
                                                   <span className="flex items-center gap-1.5"><Plus size={14} aria-hidden="true" />{t('fullpack.add_another_resource') || 'Add another resource'}</span>
                                                   <ChevronDown size={14} aria-hidden="true" className="shrink-0 transition-transform motion-reduce:transition-none group-open/add:rotate-180" />
                                                 </summary>
@@ -621,7 +622,7 @@ function FullPackRunView(props) {
                                                             data-group-id={sectionGroupId || ''}
                                                             value={fullPackAddType}
                                                             onChange={event => setFullPackAddType(event.target.value)}
-                                                            className="w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-[10px] font-semibold normal-case tracking-normal text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                                                            className="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-[10px] font-semibold normal-case tracking-normal text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                                                         >
                                                             {fullPackEditableTypes.map(type => {
                                                                 const disabled = (type === 'alignment-report' && !sectionHasStandards)
@@ -637,7 +638,7 @@ function FullPackRunView(props) {
                                                         data-group-id={sectionGroupId || ''}
                                                         onClick={() => handleAddFullPackPlanResource({ type: fullPackAddType, directive: '' }, sectionGroupId)}
                                                         disabled={!fullPackAddType || (fullPackAddType === 'alignment-report' && !sectionHasStandards)}
-                                                        className="inline-flex items-center gap-1 rounded-lg bg-indigo-700 px-2.5 py-1.5 text-[10px] font-bold text-white hover:bg-indigo-800 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+                                                        className="inline-flex min-h-11 items-center gap-1 rounded-lg bg-indigo-700 px-3 py-1.5 text-[10px] font-bold text-white hover:bg-indigo-800 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
                                                     >
                                                         <Plus size={12} aria-hidden="true" />
                                                         {t('fullpack.add_resource_action') || 'Add to plan'}
@@ -650,25 +651,25 @@ function FullPackRunView(props) {
                                 })}
                             </div>
                             <details data-testid="full-pack-troubleshooting" className="group/support border-t border-slate-200 text-xs text-slate-600">
-                              <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-2 px-3 py-2 font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 [&::-webkit-details-marker]:hidden">
+                              <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 px-3 py-2 font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 [&::-webkit-details-marker]:hidden">
                                 {t('fullpack.troubleshooting') || 'Troubleshooting'}
                                 <ChevronDown size={14} aria-hidden="true" className="shrink-0 transition-transform motion-reduce:transition-none group-open/support:rotate-180" />
                               </summary>
                               <div className="space-y-2 border-t border-slate-100 px-3 py-2">
                                 <p>{t('fullpack.troubleshooting_help') || 'Technical details for investigating a problem. These reports describe the generation process, not your teaching materials.'}</p>
                                 <div className="flex flex-wrap items-center gap-2">
-                                {elapsedSeconds > 0 && <span className="me-auto text-[9px] font-semibold text-slate-500">{t('fullpack.run') || 'Run'} {fullPackRun.runId?.slice(-8)} · {elapsedSeconds}s</span>}
-                                <button type="button" data-testid="full-pack-copy-diagnostics" onClick={handleCopyFullPackDiagnostics} className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-[10px] font-bold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"><Copy size={12} aria-hidden="true" />{t('fullpack.copy_diagnostics') || 'Copy diagnostics'}</button>
-                                <button type="button" data-testid="full-pack-download-diagnostics" onClick={handleDownloadFullPackDiagnostics} className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-[10px] font-bold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"><Download size={12} aria-hidden="true" />{t('fullpack.download_report') || 'Download report'}</button>
+                                {elapsedSeconds > 0 && <span className="me-auto text-[10px] font-semibold text-slate-600">{t('fullpack.run') || 'Run'} {fullPackRun.runId?.slice(-8)} · {elapsedSeconds}s</span>}
+                                <button type="button" data-testid="full-pack-copy-diagnostics" onClick={handleCopyFullPackDiagnostics} className="inline-flex min-h-11 items-center gap-1 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-[10px] font-bold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"><Copy size={12} aria-hidden="true" />{t('fullpack.copy_diagnostics') || 'Copy diagnostics'}</button>
+                                <button type="button" data-testid="full-pack-download-diagnostics" onClick={handleDownloadFullPackDiagnostics} className="inline-flex min-h-11 items-center gap-1 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-[10px] font-bold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"><Download size={12} aria-hidden="true" />{t('fullpack.download_report') || 'Download report'}</button>
                                 </div>
                               </div>
                             </details>
                             <div data-testid="full-pack-sticky-actions" className="sticky bottom-0 z-10 flex flex-wrap items-center gap-2 border-t border-slate-200 bg-white/95 px-3 py-2 shadow-[0_-4px_12px_rgba(15,23,42,0.06)] backdrop-blur motion-reduce:backdrop-blur-none">
-                                {completedRows > 0 && <button type="button" data-testid="full-pack-toggle-completed" aria-pressed={!showCompletedFullPackRows} onClick={() => setShowCompletedFullPackRows(value => !value)} className="inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-white px-2.5 py-1.5 text-[10px] font-bold text-emerald-800 hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2">{showCompletedFullPackRows ? <EyeOff size={12} aria-hidden="true" /> : <Eye size={12} aria-hidden="true" />}{showCompletedFullPackRows ? (t('fullpack.hide_completed') || 'Hide completed') : (t('fullpack.show_completed') || 'Show completed')}</button>}
-                                {fullPackRun.status === 'ready' && <button type="button" data-testid="full-pack-refresh-plan" onClick={handlePlanFullPack} className="inline-flex items-center gap-1 rounded-lg border border-indigo-200 bg-white px-2.5 py-1.5 text-[10px] font-bold text-indigo-700 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"><RefreshCw size={12} aria-hidden="true" />{t('fullpack.refresh_plan') || 'Refresh plan'}</button>}
-                                {retryable && !['running', 'retrying', 'planning'].includes(fullPackRun.status) && <button type="button" data-testid="full-pack-retry" onClick={handleRetryFailedFullPack} className="inline-flex items-center gap-1 rounded-lg bg-indigo-700 px-2.5 py-1.5 text-[10px] font-bold text-white hover:bg-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"><RefreshCw size={12} aria-hidden="true" />{t('fullpack.retry_failures') || 'Retry failures'}</button>}
-                                {hasFailureDiagnostics && <button type="button" data-testid="full-pack-open-error-log" onClick={handleOpenGenerationErrorLog} className="inline-flex items-center gap-1 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-[10px] font-bold text-amber-900 hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 focus-visible:ring-offset-2"><AlertTriangle size={12} aria-hidden="true" />{t('fullpack.open_error_log') || 'Open error log'}</button>}
-                                {!['running', 'retrying', 'planning'].includes(fullPackRun.status) && <button type="button" onClick={handleDismissFullPackRun} className="rounded-lg px-2 py-1.5 text-[10px] font-bold text-slate-600 hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">{t('fullpack.dismiss') || 'Dismiss'}</button>}
+                                {completedRows > 0 && <button type="button" data-testid="full-pack-toggle-completed" aria-pressed={!showCompletedFullPackRows} onClick={() => setShowCompletedFullPackRows(value => !value)} className="inline-flex min-h-11 items-center gap-1 rounded-lg border border-emerald-200 bg-white px-2.5 py-1.5 text-[10px] font-bold text-emerald-800 hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2">{showCompletedFullPackRows ? <EyeOff size={12} aria-hidden="true" /> : <Eye size={12} aria-hidden="true" />}{showCompletedFullPackRows ? (t('fullpack.hide_completed') || 'Hide completed') : (t('fullpack.show_completed') || 'Show completed')}</button>}
+                                {fullPackRun.status === 'ready' && <button type="button" data-testid="full-pack-refresh-plan" disabled={!aiCapability.text} onClick={handlePlanFullPack} className="inline-flex min-h-11 items-center gap-1 rounded-lg border border-indigo-200 bg-white px-2.5 py-1.5 text-[10px] font-bold text-indigo-700 hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"><RefreshCw size={12} aria-hidden="true" />{t('fullpack.refresh_plan') || 'Refresh plan'}</button>}
+                                {retryable && !['running', 'retrying', 'planning'].includes(fullPackRun.status) && <button type="button" data-testid="full-pack-retry" disabled={!aiCapability.text} onClick={handleRetryFailedFullPack} className="inline-flex min-h-11 items-center gap-1 rounded-lg bg-indigo-700 px-2.5 py-1.5 text-[10px] font-bold text-white hover:bg-indigo-800 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"><RefreshCw size={12} aria-hidden="true" />{t('fullpack.retry_failures') || 'Retry failures'}</button>}
+                                {hasFailureDiagnostics && <button type="button" data-testid="full-pack-open-error-log" onClick={handleOpenGenerationErrorLog} className="inline-flex min-h-11 items-center gap-1 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-[10px] font-bold text-amber-900 hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700 focus-visible:ring-offset-2"><AlertTriangle size={12} aria-hidden="true" />{t('fullpack.open_error_log') || 'Open error log'}</button>}
+                                {!['running', 'retrying', 'planning'].includes(fullPackRun.status) && <button type="button" onClick={handleDismissFullPackRun} className="min-h-11 rounded-lg px-2.5 py-1.5 text-[10px] font-bold text-slate-600 hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2">{t('fullpack.dismiss') || 'Dismiss'}</button>}
                             </div>
                         </div>
                     );

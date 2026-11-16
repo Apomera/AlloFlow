@@ -82,22 +82,40 @@
 
   function resolveCorrectIdx(q) {
     if (!q || !Array.isArray(q.options) || isAnswerKeyDisputed(q)) return -1;
-    var ca = q.correctAnswer;
-    if (typeof ca === 'number' && ca >= 0 && ca < q.options.length) return ca;
+    var candidates = [q.correctAnswer, q.correctIndex, q.answer, q.correct];
+    var ca;
+    for (var i = 0; i < candidates.length; i++) {
+      var cand = candidates[i];
+      if (cand == null) continue;
+      if (typeof cand === 'string' && !cand.trim()) continue;
+      ca = cand;
+      break;
+    }
+    if (ca === undefined) return -1;
+    var norm = function (s) { return String(s == null ? '' : s).trim().toLowerCase(); };
+    if (typeof ca === 'boolean') {
+      var boolTargets = ca ? ['true', 't', 'yes'] : ['false', 'f', 'no'];
+      for (var b = 0; b < boolTargets.length; b++) {
+        var bIdx = q.options.findIndex(function (opt) { return norm(opt) === boolTargets[b]; });
+        if (bIdx !== -1) return bIdx;
+      }
+      return -1;
+    }
+    if (typeof ca === 'number' && Number.isInteger(ca) && ca >= 0 && ca < q.options.length) return ca;
     if (typeof ca === 'string') {
       var trimmed = ca.trim();
+      var exactFirst = q.options.findIndex(function (opt) { return norm(opt) === norm(trimmed); });
       if (/^[A-Za-z]$/.test(trimmed)) {
+        if (exactFirst !== -1) return exactFirst;
         var letterIdx = trimmed.toUpperCase().charCodeAt(0) - 65;
         if (letterIdx >= 0 && letterIdx < q.options.length) return letterIdx;
       }
       if (/^\d+$/.test(trimmed)) {
+        if (exactFirst !== -1) return exactFirst;
         var numIdx = parseInt(trimmed, 10);
         if (numIdx >= 0 && numIdx < q.options.length) return numIdx;
       }
-      var norm = function (s) { return String(s == null ? '' : s).trim().toLowerCase(); };
-      var target = norm(trimmed);
-      var found = q.options.findIndex(function (opt) { return norm(opt) === target; });
-      if (found !== -1) return found;
+      if (exactFirst !== -1) return exactFirst;
     }
     return -1;
   }
@@ -113,12 +131,17 @@
     var raw = question && (question.itemType || question.type);
     if (!raw && response && typeof response === 'object' && !Array.isArray(response)) raw = response.itemType;
     var type = String(raw || 'mcq').trim().toLowerCase();
-    if (type === 'multiple-choice' || type === 'true-false' || type === 'tf') return 'mcq';
-    if (type === 'shortanswer' || type === 'short_answer') return 'short-answer';
-    if (type === 'fill-in-blank' || type === 'text') return 'fill-blank';
-    if (type === 'numeric') return 'numeric-response';
-    if (type === 'sequence' || type === 'order') return 'order';
-    if (type === 'match') return 'matching';
+    var compact = type.replace(/[\s_-]+/g, '');
+    if (compact === 'mcq' || compact === 'multiplechoice' || compact === 'truefalse' || compact === 'tf') return 'mcq';
+    if (compact === 'shortanswer') return 'short-answer';
+    if (compact === 'fillinblank' || compact === 'fillblank' || compact === 'fillintheblank' || type === 'text') return 'fill-blank';
+    if (compact === 'numeric' || compact === 'numericresponse' || compact === 'number') return 'numeric-response';
+    if (compact === 'multiselect' || compact === 'multipleselect' || compact === 'checkbox' || compact === 'checkboxes') return 'multi-select';
+    if (compact === 'sequence' || compact === 'order' || compact === 'ordering' || compact === 'sequencing') return 'order';
+    if (compact === 'sequencesense') return 'sequence-sense';
+    if (compact === 'relationmismatch') return 'relation-mismatch';
+    if (compact === 'answerevidence') return 'answer-evidence';
+    if (compact === 'match' || compact === 'matching') return 'matching';
     return type;
   }
 
@@ -238,7 +261,14 @@
     else if (type === 'order') reviewed = extractOrderAnswer(response);
     else if (type === 'fill-blank' || type === 'short-answer' || type === 'self-explanation') reviewed = { text: extractTextAnswer(response) };
     else reviewed = answer;
-    if ((type === 'relation-mismatch' || type === 'answer-evidence') && typeof a.explanation === 'string') reviewed.explanation = a.explanation;
+    var reasoningText = typeof a.explanation === 'string' && a.explanation.trim()
+      ? a.explanation
+      : (typeof a.reasoning === 'string' && a.reasoning.trim() ? a.reasoning : (typeof a.explanation === 'string' ? a.explanation : ''));
+    if (type === 'relation-mismatch' || type === 'answer-evidence') {
+      if (typeof a.explanation === 'string' || typeof a.reasoning === 'string') reviewed.explanation = reasoningText;
+    } else if (question && question.requireReasoning === true && (typeof a.explanation === 'string' || typeof a.reasoning === 'string')) {
+      reviewed.explanation = reasoningText;
+    }
     var keys = {};
     ['correctAnswer', 'correctIndex', 'correctAnswers', 'correctEvidence', 'correctValue', 'tolerance', 'acceptableUnits', 'expectedFill', 'acceptableAlternatives', 'intentionallyWrongIndex', 'orderingPrinciple', 'wrongPairIndex', 'correctPartnerForWrong', 'correctOrder', 'correctSequence', 'expectedAnswer', 'referenceAnswer', 'modelAnswer', 'sampleAnswer', 'rubric', 'fillBlankPolicy', 'numericSettings', 'sequenceMode', 'requireReasoning', 'explanationPrompt', 'studentCriteria'].forEach(function (key) {
       if (question[key] != null) keys[key] = question[key];
@@ -365,22 +395,72 @@
     return value.trim();
   }
 
+  function parseFlexibleNumericInput(raw) {
+    if (typeof raw === 'number') {
+      return Number.isFinite(raw) ? { value: raw, unit: '' } : { value: null, unit: '' };
+    }
+    if (typeof raw !== 'string') return { value: null, unit: '' };
+    var normalized = raw.replace(/[\u2212\u2013\u2014]/g, '-').replace(/\u2044/g, '/').trim();
+    if (!normalized) return { value: null, unit: '' };
+    function stripThousands(s) {
+      if (/^[+-]?\d{1,3}(?:,\d{3})+(?:\.\d+)?$/.test(s)) return s.replace(/,/g, '');
+      if (/^[+-]?\d+,\d+$/.test(s)) return s.replace(',', '.');
+      return s;
+    }
+    function validTrailingUnit(rem) {
+      var u = String(rem || '').trim();
+      if (!u) return '';
+      if (/^[0-9.,/+\-]/.test(u)) return null;
+      return u.slice(0, 80);
+    }
+    // Mixed fraction e.g. "-1 1/2 kg" or "2 3/4"
+    var mixed = normalized.match(/^([+-]?(?:\d{1,3}(?:,\d{3})+|\d+))\s+(\d+)\s*\/\s*(\d+)(.*)$/);
+    if (mixed) {
+      var uMixed = validTrailingUnit(mixed[4]);
+      if (uMixed === null) return { value: null, unit: '' };
+      var wholeNum = Number(stripThousands(mixed[1]));
+      var fracNum = Number(mixed[2]);
+      var fracDen = Number(mixed[3]);
+      if (!Number.isFinite(wholeNum) || !Number.isFinite(fracNum) || !Number.isFinite(fracDen) || fracDen === 0) {
+        return { value: null, unit: '' };
+      }
+      var sign = mixed[1].trim().charAt(0) === '-' ? -1 : 1;
+      var combined = sign * (Math.abs(wholeNum) + (fracNum / fracDen));
+      return Number.isFinite(combined) ? { value: combined, unit: uMixed } : { value: null, unit: '' };
+    }
+    // Simple fraction e.g. "-3/4" or "1/2 cup"
+    var frac = normalized.match(/^([+-]?(?:\d{1,3}(?:,\d{3})+|\d+))\s*\/\s*([+-]?\d+)(.*)$/);
+    if (frac) {
+      var uFrac = validTrailingUnit(frac[3]);
+      if (uFrac === null) return { value: null, unit: '' };
+      var n = Number(stripThousands(frac[1]));
+      var d = Number(frac[2]);
+      if (!Number.isFinite(n) || !Number.isFinite(d) || d === 0) return { value: null, unit: '' };
+      var q = n / d;
+      return Number.isFinite(q) ? { value: q, unit: uFrac } : { value: null, unit: '' };
+    }
+    // Plain number with optional commas, decimals, scientific notation, and optional unit
+    var plain = normalized.match(/^([+-]?(?:\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:[.,]\d+)?|\.\d+)(?:[eE][+-]?\d+)?)(.*)$/);
+    if (plain) {
+      var uPlain = validTrailingUnit(plain[2]);
+      if (uPlain === null) return { value: null, unit: '' };
+      var num = Number(stripThousands(plain[1]));
+      return Number.isFinite(num) ? { value: num, unit: uPlain } : { value: null, unit: '' };
+    }
+    return { value: null, unit: '' };
+  }
+
   function extractNumericAnswer(response) {
     var answer = unwrapPresentationAnswer(response).answer;
     if (typeof answer === 'number' && Number.isFinite(answer)) return answer;
     if (!answer || typeof answer !== 'object' || Array.isArray(answer)) {
-      var primitive = typeof answer === 'string' && answer.trim() !== '' ? Number(answer.trim()) : NaN;
-      return Number.isFinite(primitive) ? primitive : null;
+      return parseFlexibleNumericInput(answer).value;
     }
-    var candidates = [answer.numericValue, answer.value, answer.number];
+    var candidates = [answer.numericValue, answer.value, answer.number, answer.text];
     for (var i = 0; i < candidates.length; i++) {
       if (candidates[i] == null || String(candidates[i]).trim() === '') continue;
-      var numeric = typeof candidates[i] === 'number' ? candidates[i] : Number(String(candidates[i]).trim());
-      if (Number.isFinite(numeric)) return numeric;
-    }
-    if (typeof answer.text === 'string' && answer.text.trim() !== '') {
-      var parsed = Number(answer.text.trim());
-      if (Number.isFinite(parsed)) return parsed;
+      var parsed = parseFlexibleNumericInput(candidates[i]);
+      if (parsed.value != null && Number.isFinite(parsed.value)) return parsed.value;
     }
     return null;
   }
@@ -478,7 +558,8 @@
     if (!parsed || typeof parsed.value !== 'number' || !Number.isFinite(parsed.value)) return { status: 'invalid', evaluable: false, score: 0 };
     if (!hasNumericAnswerKey(q)) return { status: 'invalid', evaluable: false, invalidKey: true, score: 0 };
     var settings = q.numericSettings && typeof q.numericSettings === 'object' ? q.numericSettings : {};
-    var expected = Number(q.correctValue), tolerance = Math.max(0, Number(q.tolerance) || 0);
+    var expected = parseFlexibleNumericInput(q.correctValue).value, tolerance = Math.max(0, Number(q.tolerance) || 0);
+    if (expected == null) return { status: 'invalid', evaluable: false, invalidKey: true, score: 0 };
     var expectedUnits = [q.unit || ''].concat(Array.isArray(q.acceptableUnits) ? q.acceptableUnits : []).map(normalizePresentationUnit).filter(Boolean);
     var submittedUnit = normalizePresentationUnit(parsed.unit);
     var comparableValue = parsed.value;
@@ -507,19 +588,31 @@
 
   function hasNumericAnswerKey(question) {
     var value = question && question.correctValue;
-    return (typeof value === 'number' || typeof value === 'string')
-      && String(value).trim() !== '' && Number.isFinite(Number(value));
+    var parsed = parseFlexibleNumericInput(value).value;
+    return parsed != null && Number.isFinite(parsed);
   }
 
   function extractNumericUnit(response) {
     var answer = unwrapPresentationAnswer(response).answer;
+    if (typeof answer === 'string') return parseFlexibleNumericInput(answer).unit;
     if (!answer || typeof answer !== 'object' || Array.isArray(answer)) return '';
-    return String(answer.unit == null ? '' : answer.unit).trim().slice(0, 80);
+    if (answer.unit != null && String(answer.unit).trim() !== '') {
+      return String(answer.unit).trim().slice(0, 80);
+    }
+    var candidates = [answer.numericValue, answer.value, answer.number, answer.text];
+    for (var i = 0; i < candidates.length; i++) {
+      if (typeof candidates[i] !== 'string' || !candidates[i].trim()) continue;
+      var parsed = parseFlexibleNumericInput(candidates[i]);
+      if (parsed.value != null && parsed.unit) return parsed.unit;
+    }
+    return '';
   }
 
   function resolvePresentationCorrectIndices(question) {
     var options = question && Array.isArray(question.options) ? question.options : [];
-    var correctAnswers = question && Array.isArray(question.correctAnswers) ? question.correctAnswers : [];
+    var correctAnswers = question && Array.isArray(question.correctAnswers) && question.correctAnswers.length
+      ? question.correctAnswers
+      : (question && Array.isArray(question.correctIndices) ? question.correctIndices : []);
     if (!options.length || !correctAnswers.length) return [];
     var indices = [];
     for (var i = 0; i < correctAnswers.length; i++) {
@@ -587,12 +680,44 @@
     return 'items ' + numbers.slice(0, -1).join(', ') + ' and ' + numbers[numbers.length - 1] + ' were out of place';
   }
 
+  function resolveAnswerEvidenceKeys(question) {
+    var answers = question && Array.isArray(question.answerOptions) ? question.answerOptions : [];
+    var evidence = question && Array.isArray(question.evidenceOptions) ? question.evidenceOptions : [];
+    var rawAnswer = question && question.correctAnswer != null && String(question.correctAnswer).trim() !== ''
+      ? question.correctAnswer
+      : (question ? question.expectedAnswer : null);
+    var rawEvidence = question && question.correctEvidence != null && String(question.correctEvidence).trim() !== ''
+      ? question.correctEvidence
+      : (question ? question.expectedEvidence : null);
+    if (typeof rawAnswer === 'number' && Number.isInteger(rawAnswer) && rawAnswer >= 0 && rawAnswer < answers.length) {
+      rawAnswer = answers[rawAnswer];
+    }
+    if (typeof rawEvidence === 'number' && Number.isInteger(rawEvidence) && rawEvidence >= 0 && rawEvidence < evidence.length) {
+      rawEvidence = evidence[rawEvidence];
+    }
+    var correctAnswer = normalizePresentationComparable(rawAnswer);
+    var correctEvidence = normalizePresentationComparable(rawEvidence);
+    var answerMatched = !!correctAnswer && answers.some(function (value) { return normalizePresentationComparable(value) === correctAnswer; });
+    var evidenceMatched = !!correctEvidence && evidence.some(function (value) { return normalizePresentationComparable(value) === correctEvidence; });
+    return {
+      correctAnswer: answerMatched ? correctAnswer : '',
+      correctEvidence: evidenceMatched ? correctEvidence : '',
+    };
+  }
+
+  function hasRequiredReasoning(answerObject) {
+    if (!answerObject || typeof answerObject !== 'object') return false;
+    return !!(String(answerObject.explanation || '').trim() || String(answerObject.reasoning || '').trim());
+  }
+
   function presentationQuestionIsGameScorable(question) {
     var type = normalizeItemType(question, null);
     if (isUnscoredPollQuestion(question, null)) return false;
     if (type === 'mcq') return resolveCorrectIdx(question) >= 0;
     if (type === 'multi-select') {
-      var multiKeys = question && Array.isArray(question.correctAnswers) ? question.correctAnswers : [];
+      var multiKeys = question && Array.isArray(question.correctAnswers) && question.correctAnswers.length
+        ? question.correctAnswers
+        : (question && Array.isArray(question.correctIndices) ? question.correctIndices : []);
       return multiKeys.length > 0 && resolvePresentationCorrectIndices(question).length === multiKeys.length;
     }
     if (type === 'fill-blank') return !!(question && (question.expectedFill || (Array.isArray(question.acceptableAlternatives) && question.acceptableAlternatives.length)));
@@ -626,13 +751,8 @@
         && !!String(question && question.correctPartnerForWrong || '').trim();
     }
     if (type === 'answer-evidence') {
-      var answers = question && Array.isArray(question.answerOptions) ? question.answerOptions : [];
-      var evidence = question && Array.isArray(question.evidenceOptions) ? question.evidenceOptions : [];
-      var correctAnswer = normalizePresentationComparable(question && question.correctAnswer);
-      var correctEvidence = normalizePresentationComparable(question && question.correctEvidence);
-      return !!correctAnswer && !!correctEvidence
-        && answers.some(function (value) { return normalizePresentationComparable(value) === correctAnswer; })
-        && evidence.some(function (value) { return normalizePresentationComparable(value) === correctEvidence; });
+      var resolvedAE = resolveAnswerEvidenceKeys(question);
+      return !!resolvedAE.correctAnswer && !!resolvedAE.correctEvidence;
     }
     // No live response owner currently supplies a canonical key for generic
     // matching. Keep it review-only instead of trusting a client status flag.
@@ -664,11 +784,13 @@
     // "I don't know" is explicit student intent. A generic client status
     // string is never authoritative, including status: "idk".
     if (answerObject.idk === true) return result('idk', true, null);
+    var reasoningMissing = !!(question && question.requireReasoning === true && !hasRequiredReasoning(answerObject));
 
     if (type === 'mcq') {
       var optionIdx = extractOptionIndex(question, response);
       var correctIdx = resolveCorrectIdx(question);
       if (optionIdx < 0 || correctIdx < 0) return result('submitted', false, null);
+      if (reasoningMissing) return result('submitted', false, null, { needsReasoning: true });
       return result(optionIdx === correctIdx ? 'correct' : 'incorrect', true, optionIdx === correctIdx ? 100 : 0);
     }
     if (type === 'multi-select') {
@@ -678,6 +800,7 @@
       if (!selected.length || !correct.length || !presentationQuestionIsGameScorable(question)) {
         return result('submitted', false, null);
       }
+      if (reasoningMissing) return result('submitted', false, null, { needsReasoning: true });
       var selectedCorrect = selected.filter(function (idx) { return correct.indexOf(idx) >= 0; }).length;
       var selectedWrong = selected.length - selectedCorrect;
       var multiPartialScore = Math.round(100 * Math.max(0, selectedCorrect - selectedWrong) / Math.max(1, correct.length));
@@ -695,13 +818,17 @@
       });
     }
     if (type === 'fill-blank') {
-      var fill = gradeFillBlankAnswer(extractTextAnswer(response), question, answerObject.aiVerdict);
+      var fillText = extractTextAnswer(response);
+      var fill = gradeFillBlankAnswer(fillText, question, answerObject.aiVerdict);
+      if (String(fillText || '').trim() && reasoningMissing) return result('submitted', false, null, { needsReasoning: true });
       if (!fill.evaluable) return result('submitted', false, null, fill.needsReview ? { needsReview: true, studentAiVerdict: fill.studentAiVerdict } : null);
+      if (reasoningMissing) return result('submitted', false, null, { needsReasoning: true });
       return result(fill.status, true, fill.status === 'correct' ? 100 : 0);
     }
     if (type === 'numeric-response') {
       var value = extractNumericAnswer(response);
       if (value == null || !hasNumericAnswerKey(question)) return result('submitted', false, null);
+      if (reasoningMissing) return result('submitted', false, null, { needsReasoning: true });
       var numericGrade = gradeNumericAnswer({ value: value, unit: extractNumericUnit(response) }, question, policy);
       return result(numericGrade.status, numericGrade.evaluable, numericGrade.score, numericGrade);
     }
@@ -711,6 +838,7 @@
       if (!submittedOrder.length || !expectedOrder.length || submittedOrder.length !== expectedOrder.length) {
         return result('submitted', false, null);
       }
+      if (reasoningMissing) return result('submitted', false, null, { needsReasoning: true });
       var orderCorrect = samePrimitiveArray(submittedOrder, expectedOrder);
       return result(orderCorrect ? 'correct' : 'incorrect', true, orderCorrect ? 100 : 0);
     }
@@ -736,6 +864,7 @@
       var step3Correct = principleAnswer === normalizeComparable(question.orderingPrinciple);
       if (compactSequence && (!orderAnswer || orderAnswer.length !== sequenceItemCount || new Set(orderAnswer).size !== sequenceItemCount
           || orderAnswer.some(function (value) { return !Number.isInteger(value) || value < 0 || value >= sequenceItemCount; }))) return result('submitted', false, null);
+      if (reasoningMissing) return result('submitted', false, null, { needsReasoning: true });
       var sequenceMax = compactSequence ? 2 : orderAnswer ? 4 : 3;
       var sequenceRawScore = (compactSequence ? 0 : (step1Correct ? 1 : 0) + (step2Correct ? 1 : 0)) + (arrangeCorrect ? 1 : 0) + (step3Correct ? 1 : 0);
       var sequenceScore = policy.partialCredit ? sequenceRawScore : (sequenceRawScore === sequenceMax ? sequenceMax : 0);
@@ -749,7 +878,7 @@
     }
     if (type === 'relation-mismatch') {
       if (!presentationQuestionIsGameScorable(question)) return result('submitted', false, null);
-      if (question.requireReasoning === true && !String(answerObject.explanation || '').trim()) return result('submitted', false, null, { needsReasoning: true });
+      if (reasoningMissing) return result('submitted', false, null, { needsReasoning: true });
       if (!Number.isInteger(answerObject.clickedPairIdx) || !normalizeComparable(answerObject.partnerAnswer)) {
         return result('submitted', false, null);
       }
@@ -765,7 +894,7 @@
     }
     if (type === 'answer-evidence') {
       if (!presentationQuestionIsGameScorable(question)) return result('submitted', false, null);
-      if (question.requireReasoning === true && !String(answerObject.explanation || '').trim()) return result('submitted', false, null, { needsReasoning: true });
+      if (reasoningMissing) return result('submitted', false, null, { needsReasoning: true });
       var answerOptions = question.answerOptions;
       var evidenceOptions = question.evidenceOptions;
       var answerIdx = Number.isInteger(answerObject.answerIdx)
@@ -777,8 +906,9 @@
       if (answerIdx < 0 || answerIdx >= answerOptions.length || evidenceIdx < 0 || evidenceIdx >= evidenceOptions.length) {
         return result('submitted', false, null);
       }
-      var answerCorrect = normalizeComparable(answerOptions[answerIdx]) === normalizeComparable(question.correctAnswer);
-      var evidenceCorrect = normalizeComparable(evidenceOptions[evidenceIdx]) === normalizeComparable(question.correctEvidence);
+      var aeKeys = resolveAnswerEvidenceKeys(question);
+      var answerCorrect = normalizeComparable(answerOptions[answerIdx]) === aeKeys.correctAnswer;
+      var evidenceCorrect = normalizeComparable(evidenceOptions[evidenceIdx]) === aeKeys.correctEvidence;
       var evidenceRawScore = (answerCorrect ? 1 : 0) + (evidenceCorrect ? 1 : 0);
       var evidenceScore = policy.partialCredit ? evidenceRawScore : (evidenceRawScore === 2 ? 2 : 0);
       return result(evidenceScore === 2 ? 'correct' : evidenceScore > 0 ? 'partially-correct' : 'incorrect', true, evidenceScore, {
@@ -1179,7 +1309,9 @@
       hasResponse = index(a.clickedPairIdx) || text(a.partnerAnswer);
       answered = index(a.clickedPairIdx) && text(a.partnerAnswer);
     } else if (type === 'numeric-response') {
-      hasResponse = text(a.text) || typeof a.numericValue === 'number' && Number.isFinite(a.numericValue) || typeof answer === 'number' && Number.isFinite(answer);
+      hasResponse = text(a.text) || text(a.value) || text(a.number) || typeof a.numericValue === 'number' && Number.isFinite(a.numericValue)
+        || typeof a.value === 'number' && Number.isFinite(a.value) || typeof a.number === 'number' && Number.isFinite(a.number)
+        || typeof answer === 'string' && text(answer) || typeof answer === 'number' && Number.isFinite(answer);
       answered = hasResponse && extractNumericAnswer(response) != null;
     } else if (type === 'order') {
       hasResponse = answered = extractOrderAnswer(response).length > 0;
@@ -1191,16 +1323,17 @@
     } else {
       hasResponse = answered = text(extractTextAnswer(response)) || typeof answer === 'number' && Number.isFinite(answer);
     }
-    if (type === 'relation-mismatch' || type === 'answer-evidence') {
-      hasResponse = hasResponse || text(a.explanation);
-      if (question && question.requireReasoning === true) answered = answered && text(a.explanation);
+    var hasReasoning = text(a.explanation) || text(a.reasoning);
+    if (type === 'relation-mismatch' || type === 'answer-evidence' || (question && question.requireReasoning === true)) {
+      hasResponse = hasResponse || hasReasoning;
+      if (question && question.requireReasoning === true) answered = answered && hasReasoning;
     }
     // Final packets carry the same completion decision as the learner review.
     // Preserve useful partial work without promoting it to a completed answer.
     if (response && typeof response.answered === 'boolean') answered = response.answered && hasResponse;
     else if (response && typeof response.submitted === 'boolean') answered = response.submitted && hasResponse;
     // A completion flag cannot replace the authored required explanation.
-    if ((type === 'relation-mismatch' || type === 'answer-evidence') && question && question.requireReasoning === true && !text(a.explanation)) answered = false;
+    if (question && question.requireReasoning === true && !hasReasoning) answered = false;
     return { answered: !!answered, hasResponse: !!hasResponse };
   }
 
@@ -1301,28 +1434,48 @@
       return 'Choice ' + String.fromCharCode(65 + index) + ' (original text unavailable)';
     }
     if (a.idk === true) return '🤔 I don\'t know';
+    var reasonText = String(a.explanation || a.reasoning || '').trim();
+    function withReasoning(base) {
+      if (!reasonText) return base;
+      return base ? base + ' · Reasoning: ' + reasonText : 'Reasoning: ' + reasonText;
+    }
     if (type === 'mcq' || type === 'opinion-mcq' || type === 'likert') {
       var index = extractOptionIndex(question, response);
       var choiceText = originalChoice(index, a.optionText, question && question.options);
-      return choiceText ? (index >= 0 && (compatible || a.optionText) ? String.fromCharCode(65 + index) + '. ' : '') + choiceText : '';
+      var mcqBase = choiceText ? (index >= 0 && (compatible || a.optionText) ? String.fromCharCode(65 + index) + '. ' : '') + choiceText : '';
+      return withReasoning(mcqBase);
     }
     if (type === 'multi-select') {
       var saved = Array.isArray(a.selectedTexts) ? a.selectedTexts : Array.isArray(a.selectedOptions) ? a.selectedOptions : null;
-      if (saved) return saved.map(label).filter(Boolean).join('; ');
-      var indices = compatible ? extractSelectedIndices(question, response) : a.selectedIndices || a.selectedOptionIndices || a.optionIndices || a.indices || a.selected || [];
-      return Array.isArray(indices) ? indices.map(function (index) { return originalChoice(index, '', question && question.options); }).filter(Boolean).join('; ') : '';
+      var multiBase = saved
+        ? saved.map(label).filter(Boolean).join('; ')
+        : (function () {
+          var indices = compatible ? extractSelectedIndices(question, response) : a.selectedIndices || a.selectedOptionIndices || a.optionIndices || a.indices || a.selected || [];
+          return Array.isArray(indices) ? indices.map(function (index) { return originalChoice(index, '', question && question.options); }).filter(Boolean).join('; ') : '';
+        })();
+      return withReasoning(multiBase);
     }
-    if (typeof a.text === 'string') return a.text;
-    if (type === 'sequence-sense') return (a.principleAnswer ? 'Principle: ' + a.principleAnswer : '') + (a.verifyAnswer ? ' · Verify: ' + a.verifyAnswer : '') + (Array.isArray(a.orderAnswer) ? ' · Order: ' + canonicalOrderAnswer(question, a).map(function (index) { return compatible && question && Array.isArray(question.items) ? question.items[index] || String(index + 1) : String(index + 1); }).join(' → ') : '');
-    if (type === 'relation-mismatch') return (typeof a.clickedPairIdx === 'number' ? 'Clicked pair ' + (a.clickedPairIdx + 1) : '') + (a.partnerAnswer ? ' · Partner: ' + a.partnerAnswer : '') + (a.explanation ? ' · Reasoning: ' + a.explanation : '');
+    if (type === 'numeric-response') {
+      var numVal = extractNumericAnswer(response);
+      var numUnit = extractNumericUnit(response);
+      var numBase = numVal != null
+        ? String(numVal) + (numUnit ? ' ' + numUnit : '')
+        : (typeof a.text === 'string' && a.text.trim() ? a.text.trim() : (typeof answer === 'string' ? answer.trim() : ''));
+      return withReasoning(numBase);
+    }
+    if (typeof a.text === 'string') return withReasoning(a.text);
+    if (type === 'sequence-sense') {
+      var seqBase = (a.principleAnswer ? 'Principle: ' + a.principleAnswer : '') + (a.verifyAnswer ? ' · Verify: ' + a.verifyAnswer : '') + (Array.isArray(a.orderAnswer) ? ' · Order: ' + canonicalOrderAnswer(question, a).map(function (index) { return compatible && question && Array.isArray(question.items) ? question.items[index] || String(index + 1) : String(index + 1); }).join(' → ') : '');
+      return withReasoning(seqBase);
+    }
+    if (type === 'relation-mismatch') return (typeof a.clickedPairIdx === 'number' ? 'Clicked pair ' + (a.clickedPairIdx + 1) : '') + (a.partnerAnswer ? ' · Partner: ' + a.partnerAnswer : '') + (reasonText ? ' · Reasoning: ' + reasonText : '');
     if (type === 'answer-evidence') {
       var answerText = originalChoice(a.answerIdx, a.answerText, question && (question.answerOptions || question.options));
       var evidenceText = originalChoice(a.evidenceIdx, a.evidenceText, question && question.evidenceOptions);
-      return (answerText ? 'Answer: ' + answerText : '') + (evidenceText ? ' · Evidence: ' + evidenceText : '') + (a.explanation ? ' · Reasoning: ' + a.explanation : '');
+      return (answerText ? 'Answer: ' + answerText : '') + (evidenceText ? ' · Evidence: ' + evidenceText : '') + (reasonText ? ' · Reasoning: ' + reasonText : '');
     }
-    if (type === 'numeric-response') return typeof a.numericValue === 'number' ? String(a.numericValue) + (a.unit ? ' ' + a.unit : '') : '';
-    if (typeof answer === 'string' || typeof answer === 'number') return String(answer);
-    try { return JSON.stringify(answer) || ''; } catch (e) { return ''; }
+    if (typeof answer === 'string' || typeof answer === 'number') return withReasoning(String(answer));
+    try { return withReasoning(JSON.stringify(answer) || ''); } catch (e) { return reasonText ? 'Reasoning: ' + reasonText : ''; }
   }
 
   // ─── Aggregator: gradebook (exit-ticket) ──────────────────────────────
@@ -2353,10 +2506,12 @@
   // exactly when the item analysis would count the answer correct. The label
   // comes from the response (stamped at submit time) or the question. Returns
   // counts only: no names, no uids, nothing a plan strip should not show.
-  function aggregateSuccessCriteria(quizState, generatedContent, roster) {
+  function aggregateSuccessCriteria(quizState, generatedContent, roster, aiGradedCache, teacherOverrides, scoringPolicy) {
     var allResponses = (quizState && quizState.allResponses) || {};
     var questions = (generatedContent && generatedContent.data && generatedContent.data.questions) || [];
     var rosterObj = roster && typeof roster === 'object' ? roster : null;
+    var aiCache = aiGradedCache && typeof aiGradedCache === 'object' ? aiGradedCache : null;
+    var overrides = teacherOverrides && typeof teacherOverrides === 'object' ? teacherOverrides : null;
     var byConcept = {};
     var respondents = {};
     Object.keys(allResponses).forEach(function (uid) {
@@ -2372,7 +2527,26 @@
         var stamped = response.conceptLabel != null ? String(response.conceptLabel) : '';
         var label = (stamped.trim() || String(question.conceptLabel || '')).replace(/\s+/g, ' ').trim();
         if (!label) return;
-        var grade = gradeResponseForItem(response, question);
+        var grade = gradeResponseForItem(response, question, scoringPolicy);
+        var responseState = assessmentResponseState(response, question);
+        if (!responseState.hasResponse) grade = Object.assign({}, grade, { status: 'no-response' });
+        else if (!responseState.answered && !grade.unscored && !grade.keyUnderReview) {
+          grade = Object.assign({}, grade, { status: 'submitted', evaluable: false, incomplete: true });
+        }
+        if (aiCache && responseState.answered && grade.status === 'submitted' && !grade.unscored && !grade.keyUnderReview && !grade.versionMismatch && !grade.versionUnverified
+            && (!scoringPolicy || scoringPolicy.writtenResponseMode !== 'teacher-review')) {
+          var cached = aiCache[uid + ':' + idx];
+          if (cached && cached.status && cached.status !== 'error' && cached.status !== 'unclear') {
+            grade = Object.assign({}, grade, { status: cached.status, aiGraded: true });
+          }
+        }
+        if (!grade.unscored && !grade.versionMismatch && !grade.versionUnverified && overrides && overrides[uid]) {
+          var ov = overrides[uid][key] !== undefined ? overrides[uid][key] : overrides[uid][String(idx)];
+          var fpOk = ov && (!ov.responseFingerprint || ov.responseFingerprint === assessmentResponseFingerprint(question, response));
+          if (fpOk && (ov.status === 'correct' || ov.status === 'incorrect' || ov.status === 'partially-correct' || ov.status === 'idk')) {
+            grade = Object.assign({}, grade, { status: ov.status, teacherOverridden: true });
+          }
+        }
         var status = grade && grade.status;
         if (status !== 'correct' && status !== 'incorrect' && status !== 'partially-correct') return;
         var bucket = byConcept[label] || (byConcept[label] = { met: 0, partial: 0, total: 0, questionIdxs: [] });

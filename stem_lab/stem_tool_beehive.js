@@ -77,7 +77,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     if (typeof document === 'undefined' || !document.head || document.getElementById('allo-beehive-hc-extra-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-beehive-hc-extra-css';
-    st.textContent = ".theme-contrast [data-stem-tool-shell=\"beehive\"] .bee-3d-frame-positions>span[data-selected=\"true\"]{color:#000!important}.theme-contrast [data-stem-tool-shell=\"beehive\"] .bee-flight-launch-cta{color:#000!important}.theme-contrast [data-stem-tool-shell=\"beehive\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"beehive\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"beehive\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}";
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"beehive\"] .bee-3d-frame-positions>span[data-selected=\"true\"]{color:#000!important}.theme-contrast [data-stem-tool-shell=\"beehive\"] .bee-flight-launch-cta{color:#000!important}.theme-contrast [data-stem-tool-shell=\"beehive\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"beehive\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"beehive\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}.theme-contrast [data-stem-tool-shell=\"beehive\"] .bee-command .bee-command-go{background:#000000!important;background-image:none!important;color:#00ff00!important;-webkit-text-fill-color:#00ff00!important;border-color:#00ff00!important}";
     document.head.appendChild(st);
   })();
   // end contrast theme fixes
@@ -146,6 +146,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-brood-calendar details { margin-top:12px; border-top:1px solid var(--bb-line); }
       [data-beehive-root] .bee-brood-calendar summary { min-height:44px; padding:10px 0; cursor:pointer; font-weight:750; }
       .bee-brood-calendar table { width:100%; table-layout:fixed; border-collapse:collapse; font-size:.875rem; }
+      .bee-brood-calendar tbody tr[data-brood-table-row] { cursor:pointer; }
+      .bee-brood-calendar tbody tr[data-selected="true"] { background:var(--bb-tint); }
+      .bee-brood-calendar tbody tr[data-selected="true"] th[scope="row"] { text-decoration:underline; text-underline-offset:3px; }
       .bee-brood-calendar th,.bee-brood-calendar td { padding:8px 3px; text-align:right; border-bottom:1px solid var(--bb-line); font-variant-numeric:tabular-nums; }
       .bee-brood-calendar th:first-child { text-align:left; }
       .bee-brood-calendar caption { text-align:left; margin-bottom:8px; color:var(--bb-muted); }
@@ -178,7 +181,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-balance-total-track[data-after="true"] > span { background:repeating-linear-gradient(135deg,var(--bb-worker) 0 4px,var(--bb-paper) 4px 8px); border-right:2px dashed var(--bb-worker); }
       .bee-worker-balance textarea { display:block; width:100%; max-width:100%; min-height:90px; margin:6px 0; padding:10px; border:1px solid var(--bb-muted); border-radius:8px; background:var(--bb-paper); color:var(--bb-ink); font:inherit; line-height:1.5; resize:vertical; }
       .bee-balance-reason { display:block; margin-top:16px; }
-      @media (forced-colors:active) { .bee-balance-total-track > span { background:CanvasText; forced-color-adjust:none; } .bee-balance-total-track[data-after="true"] > span { background:Canvas; border:2px dashed CanvasText; } .bee-worker-balance .bee-balance-preset[aria-pressed="true"] { border:3px double Highlight !important; } }
+      .bee-balance-schematic-wrap { margin:12px 0; padding:8px; border:1px solid var(--bb-line); border-radius:10px; background:var(--bb-tint); }
+      .bee-balance-schematic { display:block; width:100%; max-width:100%; height:auto; }
+      @media (forced-colors:active) { .bee-balance-total-track > span { background:CanvasText; forced-color-adjust:none; } .bee-balance-total-track[data-after="true"] > span { background:Canvas; border:2px dashed CanvasText; } .bee-worker-balance .bee-balance-preset[aria-pressed="true"] { border:3px double Highlight !important; } .bee-balance-schematic rect,.bee-balance-schematic line,.bee-balance-schematic polygon { stroke:CanvasText !important; } [data-flight-horizon-svg="true"] line,[data-flight-horizon-svg="true"] path,[data-flight-horizon-svg="true"] circle { stroke:CanvasText !important; } [data-experiment-bar-fill],[data-experiment-delta-fill] { background:CanvasText !important; forced-color-adjust:none; } [data-experiment-bar-fill="current"] { background:Highlight !important; } [data-year-trajectory-svg="true"] line,[data-year-trajectory-svg="true"] polyline,[data-year-trajectory-svg="true"] circle { stroke:CanvasText !important; } [data-year-score-bar="true"] { border-color:CanvasText !important; background:Canvas !important; } [data-year-score-fill="true"] { background:Highlight !important; forced-color-adjust:none; } }
       @container bee-brood (max-width:26rem) {
         .bee-brood-bars[data-large-counts="true"] { display:block; }
         .bee-brood-bars[data-large-counts="true"] li { display:grid; grid-template-columns:2em minmax(0,1fr) 5.4em; align-items:center; gap:6px; padding:4px 0; }
@@ -195,7 +200,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         .bee-brood-calendar td { display:flex; justify-content:space-between; gap:8px; padding:4px 0; border:0; white-space:nowrap; }
         .bee-brood-cell-label { display:inline; color:var(--bb-muted); }
       }
-      @media (forced-colors:active) { .bee-brood-worker { background:CanvasText; forced-color-adjust:none; } .bee-brood-drone { background:Canvas; border:2px dashed CanvasText; } .bee-brood-bars li[data-selected="true"] { outline:2px solid Highlight; } .bee-brood-calendar :focus-visible { outline:3px solid Highlight; } }
+      @media (forced-colors:active) { .bee-brood-worker { background:CanvasText; forced-color-adjust:none; } .bee-brood-drone { background:Canvas; border:2px dashed CanvasText; } .bee-brood-bars li[data-selected="true"],.bee-brood-calendar tbody tr[data-selected="true"] { outline:2px solid Highlight; outline-offset:-2px; } .bee-brood-calendar :focus-visible { outline:3px solid Highlight; } }
       .bee-discovery-scene [data-beehive-stage] { box-shadow:0 9px 26px #182d2620 !important; border:1px solid var(--bd-line) !important; }
       .bee-discovery-scene [data-beehive-stage]::after { animation:none !important; opacity:.24; }
       [data-beehive-discovery-shell] [data-beehive-beekeeper-paused-overlay] { inset:auto auto 14px 14px; display:block; max-width:calc(100% - 28px); background:none; backdrop-filter:none; }
@@ -314,7 +319,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-colony-score-total { margin-top:12px; padding:12px; border-left:3px solid var(--bc-focus); border-radius:6px; background:var(--bc-tint); }
       .bee-colony-score-total strong { font-size:1rem; }
       .bee-colony-score-total p { margin:6px 0 0; font-size:.875rem; color:var(--bc-muted); }
-      @media(forced-colors:active) { .bee-colony-score-meter > span { background:Highlight; forced-color-adjust:none; } }
+      .bee-stat-threshold-ruler { display:block; width:100%; max-width:100%; height:auto; margin:8px 0; }
+      .bee-stat-threshold-ruler [data-ruler-segment="healthy"] { fill:rgba(22,163,74,.25); }
+      .bee-stat-threshold-ruler [data-ruler-segment="healthy"][data-ruler-segment-active="true"] { fill:#16a34a; }
+      .bee-stat-threshold-ruler [data-ruler-segment="watch"] { fill:rgba(217,119,6,.26); }
+      .bee-stat-threshold-ruler [data-ruler-segment="watch"][data-ruler-segment-active="true"] { fill:#d97706; }
+      .bee-stat-threshold-ruler [data-ruler-segment="danger"] { fill:rgba(220,38,38,.25); }
+      .bee-stat-threshold-ruler [data-ruler-segment="danger"][data-ruler-segment-active="true"] { fill:#dc2626; }
+      .bee-ruler-frame { fill:none; stroke:var(--bc-line,#94a3b8); stroke-width:1; }
+      .bee-ruler-tick { stroke:var(--bc-ink,#0f172a); stroke-width:1.4; }
+      .bee-ruler-needle { stroke:var(--bc-ink,#0f172a); stroke-width:1.8; }
+      .bee-stat-threshold-ruler [data-ruler-marker="true"] { fill:var(--bc-focus,#1d4ed8); stroke:var(--bc-paper,#ffffff); stroke-width:.9; }
+      .bee-stat-threshold-ruler [data-ruler-direction-arrow] { fill:none; stroke:var(--bc-ink,#0f172a); stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }
+      .bee-score-contribution-stack { display:block; width:100%; max-width:100%; height:18px; margin:8px 0 4px; }
+      .bee-score-stack-track { fill:var(--bc-paper,#ffffff); stroke:var(--bc-line,#94a3b8); stroke-width:1; }
+      .bee-score-stack-slot { fill:rgba(100,116,139,.14); }
+      .bee-score-stack-fill[data-tone="healthy"] { fill:#15803d; }
+      .bee-score-stack-fill[data-tone="watch"] { fill:#d97706; }
+      .bee-score-stack-fill[data-tone="danger"] { fill:#dc2626; }
+      .bee-score-stack-divider { stroke:var(--bc-paper,#ffffff); stroke-width:1.2; }
+      [data-beehive-theme="dark"] .bee-score-stack-fill[data-tone="healthy"] { fill:#4ade80; }
+      [data-beehive-theme="dark"] .bee-score-stack-fill[data-tone="watch"] { fill:#fbbf24; }
+      [data-beehive-theme="dark"] .bee-score-stack-fill[data-tone="danger"] { fill:#f87171; }
+      @media(forced-colors:active) {
+        .bee-colony-score-meter > span { background:Highlight; forced-color-adjust:none; }
+        .bee-stat-threshold-ruler, .bee-stat-threshold-ruler *, .bee-score-contribution-stack, .bee-score-contribution-stack * { forced-color-adjust:auto; }
+        .bee-stat-threshold-ruler [data-ruler-segment] { fill:Canvas; stroke:CanvasText; }
+        .bee-stat-threshold-ruler [data-ruler-segment][data-ruler-segment-active="true"] { fill:Highlight; }
+        .bee-ruler-frame, .bee-ruler-tick, .bee-ruler-needle, .bee-stat-threshold-ruler [data-ruler-direction-arrow] { stroke:CanvasText; }
+        .bee-stat-threshold-ruler [data-ruler-marker="true"] { fill:Highlight; stroke:CanvasText; }
+        .bee-score-stack-track, .bee-score-stack-slot { fill:Canvas; stroke:CanvasText; }
+        .bee-score-stack-fill { fill:Highlight; }
+        .bee-score-stack-fill[data-tone="watch"] { fill:GrayText; }
+        .bee-score-stack-divider { stroke:CanvasText; }
+      }
       .bee-colony-reserve-guide { margin-top:12px; }
       .bee-colony-reserve-guide > summary { font-size:1rem; }
       .bee-colony-reserve-guide .bee-colony-note { font-size:.875rem; }
@@ -329,6 +367,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-colony-reserve-scale { display:flex; justify-content:space-between; gap:12px; color:var(--bc-muted); font-size:.875rem; }
       .bee-colony-reserve-guide [data-reserve-guide-rounding] { margin-top:12px; }
       @media(forced-colors:active) { .bee-colony-reserve-meter [data-reserve-fill] { background:Highlight; forced-color-adjust:none; } }
+      .bee-food-partition { margin-top:10px; padding:10px; border:1px solid var(--bc-line); border-radius:10px; background:var(--bc-tint); min-width:0; }
+      .bee-food-partition-svg { display:block; width:100%; max-width:100%; height:auto; }
+      .bee-food-partition-legend { display:flex; flex-wrap:wrap; gap:6px 12px; margin-top:6px; font-size:.8125rem; color:var(--bc-ink); }
+      .bee-food-partition-legend > span { display:inline-flex; align-items:center; gap:5px; min-width:0; overflow-wrap:anywhere; }
+      .bee-food-swatch { display:inline-block; width:10px; height:10px; border-radius:2px; border:1px solid var(--bc-ink); flex-shrink:0; }
+      @media(forced-colors:active) { .bee-food-partition-svg rect,.bee-food-partition-svg line { stroke:CanvasText !important; } .bee-food-swatch { background:Highlight !important; border-color:CanvasText !important; forced-color-adjust:none; } }
       .bee-colony [data-colony-role-estimates] > h4 { font-size:1rem; }
       .bee-colony [data-colony-role-estimates] > .bee-colony-note,.bee-colony [data-colony-role-estimates] .bee-colony-role-chips { font-size:.875rem; }
       .bee-colony-workforce-guide { margin-top:12px; }
@@ -378,8 +422,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-colony-queen-meter { height:.75rem; margin-top:12px; border:1px solid var(--bc-focus); border-radius:3px; background:var(--bc-paper); overflow:hidden; }
       .bee-colony-queen-meter > span { display:block; height:100%; background:var(--bc-focus); }
       .bee-colony-queen-scale { display:flex; justify-content:space-between; color:var(--bc-muted); font-size:.875rem; }
+      .bee-population-share-bar { display:block; width:100%; max-width:100%; height:12px; margin:6px 0 2px; }
+      .bee-pop-share-track { fill:rgba(100,116,139,.18); stroke:var(--bc-line); stroke-width:.75; }
+      .bee-pop-share-fill[data-caste="workers"] { fill:#b45309; }
+      .bee-pop-share-fill[data-caste="brood"] { fill:#0f766e; }
+      .bee-pop-share-fill[data-caste="drones"] { fill:#4338ca; }
+      [data-beehive-theme="dark"] .bee-pop-share-track { fill:rgba(148,163,184,.22); }
+      [data-beehive-theme="dark"] .bee-pop-share-fill[data-caste="workers"] { fill:#fbbf24; }
+      [data-beehive-theme="dark"] .bee-pop-share-fill[data-caste="brood"] { fill:#2dd4bf; }
+      [data-beehive-theme="dark"] .bee-pop-share-fill[data-caste="drones"] { fill:#a5b4fc; }
+      .bee-queen-condition-scale { display:block; width:100%; max-width:100%; height:16px; margin:4px 0 2px; }
+      .bee-queen-zone[data-zone="danger"] { fill:rgba(220,38,38,.18); stroke:rgba(220,38,38,.45); stroke-width:.75; }
+      .bee-queen-zone[data-zone="watch"] { fill:rgba(217,119,6,.18); stroke:rgba(217,119,6,.45); stroke-width:.75; }
+      .bee-queen-zone[data-zone="healthy"] { fill:rgba(21,128,61,.18); stroke:rgba(21,128,61,.45); stroke-width:.75; }
+      .bee-queen-zone[data-zone-active="true"] { stroke-width:1.4; }
+      .bee-queen-zone[data-zone="danger"][data-zone-active="true"] { fill:rgba(220,38,38,.42); stroke:#dc2626; }
+      .bee-queen-zone[data-zone="watch"][data-zone-active="true"] { fill:rgba(217,119,6,.42); stroke:#d97706; }
+      .bee-queen-zone[data-zone="healthy"][data-zone-active="true"] { fill:rgba(21,128,61,.42); stroke:#15803d; }
+      .bee-queen-scale-tick { stroke:var(--bc-ink); stroke-width:1.2; }
+      .bee-queen-scale-marker { fill:var(--bc-focus,#1d4ed8); stroke:var(--bc-paper,#ffffff); stroke-width:1; }
       @container(max-width:380px) { .bee-colony [data-population-value] { font-size:1.125rem; } }
-      @media(forced-colors:active) { .bee-colony-queen-meter > span { background:Highlight; forced-color-adjust:none; } }
+      @media(forced-colors:active) {
+        .bee-colony-queen-meter > span { background:Highlight; forced-color-adjust:none; }
+        .bee-population-share-bar, .bee-population-share-bar *, .bee-queen-condition-scale, .bee-queen-condition-scale * { forced-color-adjust:auto; }
+        .bee-pop-share-track, .bee-queen-zone { fill:Canvas; stroke:CanvasText; }
+        .bee-pop-share-fill, .bee-queen-zone[data-zone-active="true"], .bee-queen-scale-marker { fill:Highlight; stroke:CanvasText; }
+        .bee-queen-scale-tick { stroke:CanvasText; }
+      }
       .bee-colony :focus-visible { outline:3px solid var(--bc-focus); outline-offset:3px; }
       @container(min-width:560px) { .bee-colony-grid { grid-template-columns:repeat(4,minmax(0,1fr)); } }
       @container(max-width:380px) { .bee-colony-bands { grid-template-columns:minmax(0,1fr); } }
@@ -412,6 +481,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-event-metric dl { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin:0 0 10px; }
       .bee-event-metric dt { font-size:.8125rem; color:var(--bf-muted); }
       .bee-event-metric dd { margin:3px 0 0; font-size:1rem; font-weight:800; font-variant-numeric:tabular-nums; }
+      .bee-delta-bars { display:grid; gap:4px; margin:6px 0 8px; min-width:0; width:100%; }
+      .bee-delta-bar-track { display:block; height:7px; width:100%; border-radius:999px; border:1px solid var(--bf-line, var(--bd-line, #cbd5e1)); background:var(--bf-paper, var(--bd-paper, #ffffff)); overflow:hidden; }
+      .bee-delta-bar-fill { display:block; height:100%; border-radius:999px; }
+      .bee-delta-bar-before { background:#64748b; }
+      .bee-delta-bar-after { background:#475569; background-image:repeating-linear-gradient(135deg,transparent 0 4px,rgba(255,255,255,.32) 4px 7px); }
+      [data-delta-tone="beneficial"] .bee-delta-bar-after,[data-change-tone="good"] .bee-delta-bar-after { background-color:#047857; }
+      [data-delta-tone="adverse"] .bee-delta-bar-after,[data-change-tone="cost"] .bee-delta-bar-after { background-color:#be123c; }
+      [data-beehive-theme="dark"] .bee-delta-bar-track { border-color:var(--bf-line, var(--bd-line, #475569)); background:var(--bf-paper, var(--bd-paper, #0f172a)); }
+      [data-beehive-theme="dark"] .bee-delta-bar-before { background:#94a3b8; }
+      [data-beehive-theme="dark"] .bee-delta-bar-after { background:#cbd5e1; background-image:repeating-linear-gradient(135deg,transparent 0 4px,rgba(15,23,42,.38) 4px 7px); }
+      [data-beehive-theme="dark"] [data-delta-tone="beneficial"] .bee-delta-bar-after,[data-beehive-theme="dark"] [data-change-tone="good"] .bee-delta-bar-after { background-color:#34d399; }
+      [data-beehive-theme="dark"] [data-delta-tone="adverse"] .bee-delta-bar-after,[data-beehive-theme="dark"] [data-change-tone="cost"] .bee-delta-bar-after { background-color:#fb7185; }
+      @media(forced-colors:active) { .bee-delta-bar-track { border-color:CanvasText!important; background:Canvas!important; } .bee-delta-bar-before { background:CanvasText!important; forced-color-adjust:none; } .bee-delta-bar-after { background:Highlight!important; background-image:none!important; forced-color-adjust:none; } .bee-rts-debrief-fill,.bee-rts-caste-seg,.bee-rts-order-bar { forced-color-adjust:none; } }
       .bee-event-settings,.bee-event-record { border:1px solid var(--bf-line); border-radius:10px; overflow-wrap:anywhere; }
       [data-beehive-root] :is(.bee-event-settings,.bee-event-record) > summary { min-height:48px; padding:12px; cursor:pointer; font-weight:750; font-size:.875rem; }
       .bee-event-settings > :not(summary) { margin:0 12px 12px; }
@@ -517,6 +599,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       @container bee-comparison (min-width:30rem) { .bee-comparison-timeline { grid-template-columns:repeat(2,minmax(0,1fr)); } }
       @container bee-comparison (min-width:44rem) { .bee-comparison-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); } }
       @media(forced-colors:active) { .bee-comparison-record > summary:focus-visible { outline-color:Highlight!important; } .bee-comparison-direction { border-color:CanvasText; } [data-beehive-root] .bee-observations-comparison button { color:ButtonText!important; background:ButtonFace!important; border-color:ButtonText!important; forced-color-adjust:auto; } }
+      .bee-observation-bars { display:grid; gap:6px; margin-top:10px; min-width:0; }
+      .bee-observation-bar-row { display:grid; gap:3px; min-width:0; }
+      .bee-observation-bar-label { font-size:.75rem; line-height:1.35; color:var(--bf-muted); font-variant-numeric:tabular-nums; min-width:0; overflow-wrap:anywhere; }
+      .bee-observation-bar-track { height:10px; border:1px solid var(--bf-line); border-radius:4px; background:var(--bf-tint); overflow:hidden; }
+      .bee-observation-bar-fill { display:block; height:100%; background:var(--bf-muted); }
+      .bee-observation-bar-fill[data-which="after"] { background:repeating-linear-gradient(135deg,var(--bf-button) 0 4px,var(--bf-paper) 4px 8px); border-right:2px solid var(--bf-button); }
+      @media(forced-colors:active) { .bee-observation-bar-track { border-color:CanvasText; background:Canvas; } .bee-observation-bar-fill { background:CanvasText !important; forced-color-adjust:none; } .bee-observation-bar-fill[data-which="after"] { background:Highlight !important; border-right:2px dashed CanvasText; } }
 
       .bee-interior,.bee-interior-entry { --hi-paper:#fffdf5; --hi-ink:#253c32; --hi-muted:#4d6256; --hi-line:#c9d5c2; --hi-tint:#f0f3e7; --hi-accent:#285740; --hi-on:#fff; color:var(--hi-ink); background:var(--hi-paper); border:1px solid var(--hi-line); border-radius:1rem; font-size:.875rem; line-height:1.6; overflow-wrap:anywhere; }
       [data-beehive-theme="dark"] :is(.bee-interior,.bee-interior-entry) { --hi-paper:#182b24; --hi-ink:#f0f5e8; --hi-muted:#bbd0c2; --hi-line:#496253; --hi-tint:#243c30; --hi-accent:#bce6b9; --hi-on:#173022; }
@@ -628,7 +717,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-inspection-result dl { display:grid; gap:.75rem; }
       .bee-inspection-result dt { color:var(--ir-muted); }
       .bee-inspection-result dd { font-size:1rem; font-weight:700; }
-      @media(forced-colors:active) { [data-beehive-root] .bee-inspection-review { --ir-ink:CanvasText; --ir-muted:CanvasText; --ir-paper:Canvas; --ir-card:Canvas; --ir-line:CanvasText; --ir-match:CanvasText; --ir-review:CanvasText; } [data-beehive-root] .bee-guided-inspection button[role="radio"][aria-checked="true"] { color:ButtonText; background:ButtonFace; border-color:ButtonText; } }
+      @media(forced-colors:active) { .bee-guided-inspection svg,.bee-guided-inspection svg *,.bee-inspection-review svg,.bee-inspection-review svg * { forced-color-adjust:auto; } [data-beehive-root] .bee-inspection-review { --ir-ink:CanvasText; --ir-muted:CanvasText; --ir-paper:Canvas; --ir-card:Canvas; --ir-line:CanvasText; --ir-match:CanvasText; --ir-review:CanvasText; } [data-beehive-root] .bee-guided-inspection button[role="radio"][aria-checked="true"] { color:ButtonText; background:ButtonFace; border-color:ButtonText; } .bee-inspection-box-rim,.bee-inspection-comb-bar,.bee-inspection-comb-focus,.bee-inspection-comb-check { stroke:CanvasText; } [data-comb-visited="true"] > .bee-inspection-comb-bar { fill:Canvas; stroke:CanvasText; } .bee-inspection-verdict-icon { color:CanvasText; } }
+      .bee-inspection-comb-map { display:block; width:100%; max-width:22rem; height:auto; }
+      .bee-inspection-box-rim { fill:none; stroke:#78350f; stroke-width:2; }
+      .bee-inspection-comb-bar { fill:transparent; stroke:#64748b; stroke-width:1.5; stroke-dasharray:3 2; }
+      [data-comb-visited="true"] > .bee-inspection-comb-bar { fill:#fef3c7; stroke:#b45309; stroke-width:2; stroke-dasharray:none; }
+      .bee-inspection-comb-focus { fill:none; stroke:#92400e; stroke-width:2.5; }
+      .bee-inspection-comb-check { fill:none; stroke:#92400e; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+      [data-beehive-theme="dark"] .bee-inspection-box-rim { stroke:#fcd34d; }
+      [data-beehive-theme="dark"] .bee-inspection-comb-bar { stroke:#94a3b8; }
+      [data-beehive-theme="dark"] [data-comb-visited="true"] > .bee-inspection-comb-bar { fill:#451a03; stroke:#fbbf24; }
+      [data-beehive-theme="dark"] .bee-inspection-comb-focus { stroke:#fde68a; }
+      [data-beehive-theme="dark"] .bee-inspection-comb-check { stroke:#fde68a; }
+      .bee-inspection-verdict-row { display:flex; flex-wrap:wrap; align-items:center; gap:.4rem; min-width:0; }
+      .bee-inspection-verdict-icon { flex:none; width:1.15rem; height:1.15rem; display:block; color:var(--ir-ink); }
+      .bee-inspection-result[data-result="match"] .bee-inspection-verdict-icon { color:var(--ir-match); }
+      .bee-inspection-result[data-result="review"] .bee-inspection-verdict-icon { color:var(--ir-review); }
       .bee-interior { container:bee-interior / inline-size; display:grid; gap:1rem; padding:1rem; }
       .bee-interior :is(p,h3,h4,figure,dl) { margin:0; }
       .bee-interior > *,.bee-interior-study > * { min-width:0; }
@@ -683,6 +787,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-interior-reference-days [data-reference-day] { font-size:1.25rem; line-height:1.4; font-weight:800; font-variant-numeric:tabular-nums; }
       .bee-interior-reference[data-reference-state="unavailable"] { border-style:dashed; }
       @container bee-reference (min-width:28rem) { .bee-interior-reference-days { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+      .bee-interior-ref-timeline { display:block; width:100%; max-width:100%; height:14px; }
+      .bee-ref-tl-track { stroke:var(--hi-line); stroke-width:2; stroke-linecap:round; }
+      .bee-ref-tl-bridge { stroke:var(--hi-accent); stroke-width:2.6; stroke-linecap:round; }
+      .bee-ref-tl-bridge[data-bridge-state="unavailable"] { stroke:var(--hi-muted); stroke-dasharray:4 3; }
+      .bee-ref-tl-held { fill:var(--hi-paper); stroke:var(--hi-ink); stroke-width:1.6; }
+      .bee-ref-tl-current { fill:var(--hi-accent); stroke:var(--hi-paper); stroke-width:1.4; }
       .bee-interior-footer { display:flex; flex-wrap:wrap; gap:.75rem; align-items:center; justify-content:space-between; padding-top:1rem; border-top:1px solid var(--hi-line); }
       .bee-interior-footer p { flex:1 1 22rem; }
       .bee-interior-season-note { padding:.75rem; border:1px dashed var(--hi-accent); border-radius:.5rem; }
@@ -806,6 +916,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         [data-beehive-root] .bee-interior .bee-interior-inquiry button { padding:.5rem 6px; }
       }
       @container bee-interior (min-width:46rem) { .bee-interior-inquiry { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+      .bee-interior-inquiry-icon { display:inline-block; width:15px; height:15px; margin-right:6px; vertical-align:-2px; color:var(--hi-accent); flex:none; }
       .bee-notebook-hive-context { container:bee-notebook-hive / inline-size; display:grid; gap:.75rem; min-width:0; margin-top:1.5rem; padding:min(1rem,16px); border:1px solid var(--bn-line); border-left:4px solid var(--bn-accent); border-radius:.75rem; background:var(--bn-tint); color:var(--bn-ink); overflow-wrap:anywhere; }
       .bee-notebook-hive-context :is(h4,h5,p,dl) { margin:0; min-width:0; font-size:1rem; line-height:1.6; }
       .bee-notebook-hive-context h4 { font-size:1.125rem; font-weight:800; }
@@ -834,6 +945,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-interior-lens-verdict[data-interior-lens-verdict="changed"] > strong { border:3px double currentColor; }
       .bee-interior-lens-verdict[data-interior-lens-verdict="unavailable"] > strong { border-style:dashed; }
       @container bee-interior (max-width:20rem) { .bee-interior-lens-verdict { padding:6px; } .bee-interior-lens-verdict > strong { padding-inline:4px; } }
+      .bee-lens-verdict-glyph { display:block; width:5.75rem; max-width:100%; height:2rem; }
+      .bee-lens-glyph-hex { fill:var(--hi-tint); stroke:#6f502e; stroke-width:1.4; }
+      .bee-lens-verdict-glyph[data-lens-verdict-glyph="unavailable"] .bee-lens-glyph-hex { stroke:var(--hi-muted); stroke-dasharray:3 2; }
+      .bee-lens-glyph-change-ring { fill:none; stroke:var(--hi-accent); stroke-width:1.8; }
+      .bee-lens-glyph-connector { fill:none; stroke:var(--hi-ink); stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+      .bee-lens-glyph-mark :is(path,circle) { stroke:#372619; stroke-width:1.5; }
+      .bee-lens-glyph-mark circle { fill:#372619; }
+      .bee-lens-glyph-mark .bee-interior-open-mark { fill:none; }
+      .bee-lens-glyph-mark .bee-interior-cap-mark { stroke:#fff9eb; stroke-width:1; }
+      @media(forced-colors:active) {
+        .bee-lens-verdict-glyph, .bee-lens-verdict-glyph * { forced-color-adjust:auto; }
+        .bee-lens-glyph-hex { fill:Canvas!important; stroke:CanvasText; }
+        .bee-lens-glyph-change-ring { stroke:Highlight; }
+        .bee-lens-glyph-connector, .bee-lens-glyph-mark :is(path,circle) { stroke:CanvasText; }
+        .bee-lens-glyph-mark circle { fill:CanvasText; }
+        .bee-lens-glyph-mark .bee-interior-open-mark { fill:none; }
+        .bee-lens-glyph-mark .bee-interior-cap-mark { stroke:Canvas; }
+      }
       .bee-interior-lens-results h5 { margin:0; font-size:1rem; line-height:1.5; font-weight:800; }
       .bee-interior-lens-navigation { display:grid; grid-template-columns:minmax(0,1fr); gap:.85rem; min-width:0; align-items:start; }
       .bee-interior-lens-map { display:grid; gap:.5rem; min-width:0; margin:0; padding:min(.75rem,12px); border:1px solid var(--hi-line); border-radius:.6rem; background:var(--hi-paper); }
@@ -848,7 +977,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-interior-map-position { fill:var(--hi-paper); stroke:var(--hi-ink); stroke-width:3; stroke-dasharray:5 3; }
       @container bee-interior (min-width:46rem) { .bee-interior-study[data-comparing="true"] .bee-interior-lens-navigation { grid-template-columns:minmax(0,1fr) minmax(0,1.6fr); } }
       @container bee-interior (max-width:20rem) { .bee-interior-lens-map { padding:8px; } }
-      @media(forced-colors:active) { .bee-interior-map-frame,.bee-interior-map-comb,.bee-interior-map-window,.bee-interior-map-position { fill:Canvas; stroke:CanvasText; } .bee-interior-map-window { stroke:Highlight; } .bee-interior-map-crosshair { stroke:CanvasText; } }
+      @media(forced-colors:active) { .bee-interior-map-frame,.bee-interior-map-comb,.bee-interior-map-window,.bee-interior-map-position { fill:Canvas; stroke:CanvasText; } .bee-interior-map-window { stroke:Highlight; } .bee-interior-map-crosshair { stroke:CanvasText; } .bee-interior-ref-timeline,.bee-interior-ref-timeline *,.bee-interior-inquiry-icon,.bee-interior-inquiry-icon * { forced-color-adjust:auto; } .bee-ref-tl-track { stroke:CanvasText; } .bee-ref-tl-bridge { stroke:Highlight; } .bee-ref-tl-bridge[data-bridge-state="unavailable"] { stroke:GrayText; } .bee-ref-tl-held { fill:Canvas; stroke:CanvasText; } .bee-ref-tl-current { fill:Highlight; stroke:Canvas; } .bee-interior-inquiry-icon { color:Highlight; } }
       .bee-interior-lens-controls { display:grid; grid-template-columns:minmax(0,1fr); gap:.75rem; min-width:0; }
       .bee-interior-lens-controls label { display:grid; gap:.35rem; min-width:0; font-weight:750; }
       [data-beehive-root] .bee-interior-lens-controls select { width:100%; min-width:0; min-height:44px; padding:.5rem; border:1px solid var(--hi-line); border-radius:.5rem; color:var(--hi-ink); background:var(--hi-paper); font:inherit; }
@@ -930,8 +1059,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       [data-beehive-root] .bee-interior-reading-heading > button { flex:0 1 auto; font-weight:700; }
       .bee-interior-change-row[data-selected="true"] { border-color:var(--hi-accent); box-shadow:inset 4px 0 0 var(--hi-accent); }
       .bee-interior-reading-rail { display:block; width:100%; height:.75rem; margin-block:.3rem .15rem; overflow:visible; }
-      .bee-interior-reading-axis { fill:none; stroke:var(--hi-line); stroke-width:1; vector-effect:non-scaling-stroke; }
-      .bee-interior-reading-held,.bee-interior-reading-current { stroke:var(--hi-accent); stroke-width:8; stroke-linecap:butt; }
+      .bee-interior-reading-axis { fill:none; stroke:var(--hi-line,var(--bn-line,var(--bf-line,#64748b))); stroke-width:1; vector-effect:non-scaling-stroke; }
+      .bee-interior-reading-held,.bee-interior-reading-current { stroke:var(--hi-accent,var(--bn-accent,var(--bf-button,#0f766e))); stroke-width:8; stroke-linecap:butt; }
       .bee-interior-reading-held { stroke-dasharray:4 2; }
       .bee-interior-scale-caption { grid-column:1/-1; color:var(--hi-muted); padding-top:.5rem; border-top:1px solid var(--hi-line); }
       @media(forced-colors:active) { .bee-interior-change-row[data-selected="true"] { border-color:Highlight; border-width:2px; box-shadow:none; } .bee-interior-reading-axis { stroke:CanvasText; } .bee-interior-reading-held,.bee-interior-reading-current { stroke:CanvasText; } }
@@ -1046,6 +1175,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-brief .bee-brief-inquiry [aria-current="step"] { border:2px solid var(--brief-accent); background:var(--brief-tint); }
       .bee-brief-inquiry [data-inquiry-suggestion] { margin-inline-start:auto; border:1px solid currentColor; border-radius:.4rem; padding:.1rem .4rem; color:var(--brief-accent); font-size:.8125rem; line-height:1.5; font-weight:700; }
       .bee-brief .bee-brief-inquiry-note { margin-top:.35rem; color:var(--brief-muted); }
+      .bee-brief-metric-bar { display:block; width:100%; max-width:100%; height:10px; margin-top:.35rem; }
+      .bee-brief-bar-track { fill:rgba(100,116,139,.18); stroke:var(--brief-line); stroke-width:.75; }
+      .bee-brief-bar-fill { fill:var(--brief-accent); }
+      .bee-brief-metric-bar[data-tone="healthy"] .bee-brief-bar-fill { fill:#15803d; }
+      .bee-brief-metric-bar[data-tone="watch"] .bee-brief-bar-fill { fill:#d97706; }
+      .bee-brief-metric-bar[data-tone="danger"] .bee-brief-bar-fill { fill:#dc2626; }
+      .bee-brief-bar-threshold { stroke:var(--brief-ink); stroke-width:1.4; stroke-dasharray:2 1.5; }
+      .bee-inquiry-step-icon { flex:0 0 1rem; width:1rem; height:1rem; fill:none; stroke:var(--brief-accent); stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+      [data-beehive-theme="dark"] .bee-brief-bar-track { fill:rgba(148,163,184,.22); }
+      [data-beehive-theme="dark"] .bee-brief-metric-bar[data-tone="healthy"] .bee-brief-bar-fill { fill:#4ade80; }
+      [data-beehive-theme="dark"] .bee-brief-metric-bar[data-tone="watch"] .bee-brief-bar-fill { fill:#fbbf24; }
+      [data-beehive-theme="dark"] .bee-brief-metric-bar[data-tone="danger"] .bee-brief-bar-fill { fill:#f87171; }
       @container bee-brief-shell (min-width:40rem) { [data-beehive-root] .bee-brief-shell > .bee-brief-summary { grid-template-columns:auto minmax(0,1fr) auto; } .bee-brief-summary-toggle { grid-column:3; grid-row:1; } }
       @container bee-brief (min-width:40rem) { .bee-brief .bee-brief-inquiry ol { grid-template-columns:repeat(2,minmax(0,1fr)); } }
       @container bee-brief (min-width:72rem) { .bee-brief .bee-brief-inquiry ol { grid-template-columns:repeat(4,minmax(0,1fr)); } }
@@ -1054,6 +1195,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         [data-beehive-root] .bee-brief-shell > .bee-brief-summary:focus-visible { outline:3px solid Highlight!important; }
         .bee-brief .bee-brief-inquiry [aria-current="step"] { border-width:3px; text-decoration:none; }
         .bee-brief-inquiry [data-inquiry-suggestion] { text-decoration:underline; text-underline-offset:.2em; }
+        .bee-brief-metric-bar, .bee-brief-metric-bar *, .bee-inquiry-step-icon, .bee-inquiry-step-icon * { forced-color-adjust:auto; }
+        .bee-brief-bar-track { fill:Canvas; stroke:CanvasText; }
+        .bee-brief-bar-fill { fill:Highlight; }
+        .bee-brief-bar-threshold, .bee-inquiry-step-icon { stroke:CanvasText; }
       }
       .bee-topics { --topic-ink:#172033; --topic-muted:#475569; --topic-paper:#fff; --topic-card:#f8fafc; --topic-line:#94a3b8; --topic-accent:#92400e; --topic-tint:#fffbeb; container:bee-topics / inline-size; color:var(--topic-ink); background:var(--topic-paper); border:1px solid var(--topic-line); border-radius:1rem; padding:1rem; overflow-wrap:anywhere; }
       [data-beehive-theme="dark"] .bee-topics { --topic-ink:#f1f5f9; --topic-muted:#cbd5e1; --topic-paper:#0f172a; --topic-card:#172033; --topic-line:#64748b; --topic-accent:#fcd34d; --topic-tint:#292418; }
@@ -1076,6 +1221,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-topic-card-top strong { font-size:1rem; line-height:1.5; font-weight:800; }
       .bee-topics :is([data-topic-path-description],[data-topic-description]) { color:var(--topic-muted); font-size:.875rem; line-height:1.6; }
       .bee-topics :is([data-topic-path-count],[data-topic-visit]) { margin-top:auto; color:var(--topic-muted); font-size:.8125rem; line-height:1.5; }
+      .bee-topic-path-pips { display:grid; grid-auto-flow:column; grid-auto-columns:minmax(0,1fr); gap:4px; margin-top:.15rem; }
+      .bee-topic-path-pip { display:block; height:6px; border:1px solid var(--topic-line); border-radius:999px; background:var(--topic-paper); }
+      .bee-topic-path-pip[data-pip-opened="true"] { border-color:var(--topic-accent); background:var(--topic-accent); }
       .bee-topics :is([data-topic-path-selected],[data-topic-viewing]) { margin-inline-start:auto; border:1px solid currentColor; border-radius:.4rem; padding:.1rem .4rem; color:var(--topic-accent); font-size:.8125rem; line-height:1.5; font-weight:700; }
       .bee-topics button:hover strong { text-decoration:underline; text-underline-offset:.2em; }
       .bee-topics-selection { margin-top:1rem; padding:1rem; border:1px solid var(--topic-line); border-inline-start:4px solid var(--topic-accent); border-radius:.75rem; }
@@ -1093,7 +1241,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       @container bee-topics (min-width:64rem) { .bee-topic-paths { grid-template-columns:repeat(4,minmax(0,1fr)); } }
       @media(forced-colors:active) {
         [data-beehive-root] .bee-topics { --topic-ink:CanvasText!important; --topic-muted:CanvasText!important; --topic-paper:Canvas!important; --topic-card:Canvas!important; --topic-line:CanvasText!important; --topic-accent:CanvasText!important; --topic-tint:Canvas!important; }
-        .bee-topics [data-topic-progress] > span { background:Highlight; forced-color-adjust:none; }
+        .bee-topics [data-topic-progress] > span,.bee-topic-path-pip[data-pip-opened="true"] { background:Highlight; border-color:CanvasText; forced-color-adjust:none; }
         .bee-topics :is([data-topic-path-selected],[data-topic-viewing]) { text-decoration:underline; text-underline-offset:.2em; }
       }
       .bee-journey { --journey-ink:#172033; --journey-muted:#475569; --journey-paper:#fff; --journey-card:#f8fafc; --journey-line:#cbd5e1; --journey-accent:#075985; --journey-tint:#f0f9ff; container:bee-journey / inline-size; border:1px solid var(--journey-line); border-radius:1rem; background:var(--journey-paper); color:var(--journey-ink); overflow-wrap:anywhere; }
@@ -1139,12 +1287,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-journey-evidence-card .bee-journey-state { margin-top:.5rem; }
       .bee-journey-evidence-card p { margin-top:.6rem; }
       .bee-journey-evidence-card .bee-journey-connection { border-top:1px solid var(--journey-line); margin-top:.75rem; padding-top:.75rem; color:var(--journey-muted); }
+      .bee-journey-count-group { flex:0 1 auto; display:inline-flex; flex-wrap:wrap; align-items:center; justify-content:flex-end; gap:.35rem .5rem; max-width:100%; min-width:0; }
+      .bee-journey-pips { display:inline-flex; align-items:center; gap:4px; }
+      .bee-journey-pip { display:block; width:10px; height:6px; border:1px solid var(--journey-line); border-radius:999px; background:transparent; }
+      .bee-journey-pip[data-pip-current="true"] { border-style:dashed; border-color:var(--journey-accent); }
+      .bee-journey-pip[data-pip-reached="true"] { border-style:solid; border-color:var(--journey-accent); background:var(--journey-accent); }
+      .bee-journey-role-label { display:inline-flex; align-items:center; gap:.4rem; min-width:0; }
+      .bee-journey-icon { flex:none; width:1.125rem; height:1.125rem; display:block; color:var(--journey-accent); }
+      .bee-journey-evidence-head { display:flex; align-items:center; gap:.45rem; min-width:0; }
       @container bee-journey (min-width:58rem) { .bee-journey-role-grid,.bee-journey-evidence-grid { grid-template-columns:repeat(3,minmax(0,1fr)); } }
       @media(forced-colors:active) {
         [data-beehive-root] .bee-journey { --journey-ink:CanvasText!important; --journey-muted:CanvasText!important; --journey-paper:Canvas!important; --journey-card:Canvas!important; --journey-line:CanvasText!important; --journey-accent:CanvasText!important; --journey-tint:Canvas!important; }
         .bee-journey .bee-journey-action { color:ButtonText; background:ButtonFace; border-color:ButtonText; }
         .bee-journey-role[aria-current="step"] { outline:2px solid CanvasText; outline-offset:-4px; }
+        .bee-journey-pip { border-color:CanvasText; background:Canvas; }
+        .bee-journey-pip[data-pip-reached="true"] { background:Highlight; border-color:CanvasText; }
+        .bee-journey-icon { color:CanvasText; }
       }
+      [data-beehive-root] [data-experiment-action-schedule] :is(button,summary) { min-height:44px; }
       .bee-coach { --coach-ink:#172033; --coach-muted:#475569; --coach-paper:#fff; --coach-card:#fffbeb; --coach-line:#cbd5e1; --coach-accent:#92400e; container:bee-coach / inline-size; display:block; padding:1rem; border:1px solid var(--coach-line); border-radius:1rem; color:var(--coach-ink); background:var(--coach-paper); overflow-wrap:anywhere; }
       .bee-coach[data-coach-role="queen"] { --coach-card:#faf5ff; --coach-accent:#6b21a8; }
       .bee-coach[data-coach-role="drone"] { --coach-card:#eef2ff; --coach-accent:#3730a3; }
@@ -1155,7 +1315,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-coach-layout { display:grid; grid-template-columns:minmax(0,1fr); gap:1rem; }
       .bee-coach-layout > * { min-width:0; }
       .bee-coach-kicker { display:flex; flex-wrap:wrap; align-items:baseline; gap:.4rem .75rem; color:var(--coach-accent); font-size:.8125rem; line-height:1.5; font-weight:750; }
-      .bee-coach-phase { border:1px solid currentColor; border-radius:999px; padding:.15rem .55rem; font-weight:600; }
+      .bee-coach-phase { display:inline-flex; align-items:center; gap:.35rem; max-width:100%; border:1px solid currentColor; border-radius:999px; padding:.15rem .55rem; font-weight:600; }
+      .bee-coach-phase-icon { flex:none; width:14px; height:14px; }
       .bee-coach h2 { margin-top:.55rem; font-size:1.25rem; line-height:1.4; font-weight:800; }
       .bee-coach p { font-size:.875rem; line-height:1.65; }
       .bee-coach-main > p { margin-top:.5rem; color:var(--coach-muted); max-width:75ch; }
@@ -1175,11 +1336,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-coach .bee-coach-context { margin-top:1rem; padding-top:.75rem; border-top:1px solid var(--coach-line); }
       .bee-coach-context strong { font-size:.875rem; line-height:1.5; }
       .bee-coach-context p { margin-top:.3rem; color:var(--coach-muted); }
+      .bee-coach-reading-bar { display:block; width:100%; max-width:100%; height:6px; margin-top:.35rem; }
+      .bee-coach-bar-track { fill:rgba(100,116,139,.22); stroke:rgba(100,116,139,.42); stroke-width:.6; }
+      .bee-coach-bar-fill[data-tone="healthy"] { fill:#15803d; }
+      .bee-coach-bar-fill[data-tone="watch"] { fill:#b45309; }
+      .bee-coach-bar-fill[data-tone="danger"] { fill:#b91c1c; }
+      .bee-coach-bar-fill[data-tone="neutral"] { fill:var(--coach-accent); }
+      [data-beehive-theme="dark"] .bee-coach-bar-track { fill:rgba(148,163,184,.24); stroke:rgba(148,163,184,.5); }
+      [data-beehive-theme="dark"] .bee-coach-bar-fill[data-tone="healthy"] { fill:#4ade80; }
+      [data-beehive-theme="dark"] .bee-coach-bar-fill[data-tone="watch"] { fill:#fbbf24; }
+      [data-beehive-theme="dark"] .bee-coach-bar-fill[data-tone="danger"] { fill:#f87171; }
       @container bee-coach (min-width:48rem) { .bee-coach-layout { grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); } }
       @media(forced-colors:active) {
         [data-beehive-root] .bee-coach { --coach-ink:CanvasText!important; --coach-muted:CanvasText!important; --coach-paper:Canvas!important; --coach-card:Canvas!important; --coach-line:CanvasText!important; --coach-accent:CanvasText!important; }
         .bee-coach-action button { color:ButtonText; background:ButtonFace; border-color:ButtonText; }
         .bee-coach-action button:disabled { color:GrayText; background:Canvas; border-color:GrayText; }
+        .bee-coach-phase-icon,.bee-coach-reading-bar,.bee-coach-reading-bar * { forced-color-adjust:auto; }
+        .bee-coach-bar-track { fill:Canvas; stroke:CanvasText; }
+        .bee-coach-bar-fill { fill:Highlight; }
       }
       [data-beehive-root] .bee-pulse[data-beehive-pulse] { --pulse-ink:#172033; --pulse-muted:#475569; --pulse-paper:#fff; --pulse-line:#cbd5e1; display:block; color:var(--pulse-ink); overflow-wrap:anywhere; }
       [data-beehive-theme="dark"] .bee-pulse[data-beehive-pulse] { --pulse-ink:#f1f5f9; --pulse-muted:#cbd5e1; --pulse-paper:#0f172a; --pulse-line:#64748b; }
@@ -1269,6 +1443,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-flow-destination strong { font-size:.9375rem; line-height:1.5; font-weight:800; }
       .bee-flow-number { display:grid; place-items:center; min-width:1.5rem; min-height:1.5rem; padding:.1rem .3rem; border:1px solid var(--flow-accent); border-radius:.35rem; color:var(--flow-accent); font-size:.8125rem; line-height:1.4; font-weight:700; }
       .bee-flow-hint { display:block; font-size:.8125rem; line-height:1.6; color:var(--flow-muted); }
+      .bee-flow-step-icon { width:1.05rem; height:1.05rem; flex:none; color:var(--flow-accent); }
+      .bee-flow-step-meter { display:block; width:100%; max-width:100%; height:5px; flex:none; margin-top:auto; }
+      .bee-flow-meter-track { fill:rgba(100,116,139,.2); }
+      .bee-flow-meter-fill[data-flow-state="ready"] { fill:#64748b; }
+      .bee-flow-meter-fill[data-flow-state="open"] { fill:var(--flow-accent); }
+      .bee-flow-meter-fill[data-flow-state="recorded"] { fill:#15803d; }
+      [data-beehive-theme="dark"] .bee-flow-meter-fill[data-flow-state="ready"] { fill:#94a3b8; }
+      [data-beehive-theme="dark"] .bee-flow-meter-fill[data-flow-state="recorded"] { fill:#4ade80; }
       .bee-flow a:hover strong,.bee-flow button:hover { text-decoration:underline; text-underline-offset:.2em; }
       .bee-flow :is(a,button):focus-visible { outline:3px solid var(--flow-accent); outline-offset:3px; }
       @container bee-flow (min-width:16.6rem) { .bee-flow .bee-flow-links { grid-template-columns:repeat(2,minmax(0,1fr)); } .bee-flow-links li:last-child { grid-column:1 / -1; } }
@@ -1278,6 +1460,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         .bee-flow a { color:LinkText; }
         .bee-flow button { color:ButtonText; background:ButtonFace; border-color:ButtonText; }
         .bee-flow-layout button[aria-pressed="true"] { outline:2px solid Highlight; outline-offset:-4px; }
+        .bee-flow-step-icon,.bee-flow-step-icon *,.bee-flow-step-meter,.bee-flow-step-meter * { forced-color-adjust:auto; }
+        .bee-flow-step-icon { color:LinkText; }
+        .bee-flow-meter-track { fill:Canvas; stroke:CanvasText; stroke-width:.8; }
+        .bee-flow-meter-fill { fill:LinkText; }
+        .bee-flow-meter-fill[data-flow-state="open"],.bee-flow-meter-fill[data-flow-state="recorded"] { fill:Highlight; }
       }
       [data-beehive-root] .bee-perspectives[data-beehive-mode-switcher] { --perspective-ink:#172033; --perspective-muted:#475569; --perspective-paper:#fff; --perspective-line:#94a3b8; container:bee-perspectives / inline-size; display:block; padding:0; border:0!important; border-radius:0; color:var(--perspective-ink); background:transparent!important; box-shadow:none!important; backdrop-filter:none; overflow:visible; }
       [data-beehive-theme="dark"] .bee-perspectives[data-beehive-mode-switcher] { --perspective-ink:#f1f5f9; --perspective-muted:#cbd5e1; --perspective-paper:#0f172a; --perspective-line:#64748b; }
@@ -1303,12 +1490,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-perspective-help { margin:.65rem 0 0; color:var(--perspective-muted); font-size:.8125rem; line-height:1.6; }
       .bee-perspectives [data-beehive-mode-tab]:hover [data-perspective-label] { text-decoration:underline; text-underline-offset:.2em; }
       [data-beehive-root] .bee-perspectives [data-beehive-mode-tab]:focus-visible { outline:3px solid var(--perspective-accent); outline-offset:3px; }
+      .bee-perspective-emblem { display:block; width:1.375rem; height:1.375rem; }
+      .bee-perspective-meter { display:block; width:100%; max-width:100%; height:6px; margin-top:.25rem; }
+      .bee-perspective-meter-track { fill:rgba(100,116,139,.22); stroke:rgba(100,116,139,.42); stroke-width:.6; }
+      .bee-perspective-meter-fill[data-tone="healthy"] { fill:#15803d; }
+      .bee-perspective-meter-fill[data-tone="watch"] { fill:#b45309; }
+      .bee-perspective-meter-fill[data-tone="danger"] { fill:#b91c1c; }
+      .bee-perspective-meter-fill[data-tone="neutral"] { fill:var(--perspective-accent); }
+      [data-beehive-theme="dark"] .bee-perspective-meter-track { fill:rgba(148,163,184,.24); stroke:rgba(148,163,184,.5); }
+      [data-beehive-theme="dark"] .bee-perspective-meter-fill[data-tone="healthy"] { fill:#4ade80; }
+      [data-beehive-theme="dark"] .bee-perspective-meter-fill[data-tone="watch"] { fill:#fbbf24; }
+      [data-beehive-theme="dark"] .bee-perspective-meter-fill[data-tone="danger"] { fill:#f87171; }
       @container bee-perspectives (min-width:48rem) { .bee-perspectives .bee-perspective-options { grid-template-columns:repeat(3,minmax(0,1fr)); } }
       @media(forced-colors:active) {
         [data-beehive-root] .bee-perspectives[data-beehive-mode-switcher] { --perspective-ink:CanvasText!important; --perspective-muted:CanvasText!important; --perspective-paper:Canvas!important; --perspective-line:CanvasText!important; }
         [data-beehive-root] .bee-perspectives [data-beehive-mode-tab] { --perspective-accent:Highlight!important; --perspective-selected:Canvas!important; color:ButtonText; background:ButtonFace; border-color:ButtonText; }
         [data-beehive-root] .bee-perspectives [data-beehive-mode-tab][aria-checked="true"] { outline:2px solid Highlight; outline-offset:-5px; }
         [data-beehive-root] .bee-perspectives [data-beehive-mode-tab]:focus-visible { outline:3px solid Highlight!important; outline-offset:3px; }
+        .bee-perspective-emblem,.bee-perspective-meter,.bee-perspective-meter * { forced-color-adjust:auto; }
+        .bee-perspective-meter-track { fill:Canvas; stroke:CanvasText; }
+        .bee-perspective-meter-fill { fill:Highlight; }
       }
       .bee-notebook-shell { --bn-ink:#17263a; --bn-muted:#4c5f75; --bn-line:#b8c8da; --bn-paper:#fff; --bn-tint:#f2f7fc; --bn-accent:#075985; --bn-focus:#1d4ed8; color:var(--bn-ink); background:var(--bn-paper); border:1px solid var(--bn-line); border-radius:1rem; overflow:hidden; }
       [data-beehive-theme="dark"] .bee-notebook-shell { --bn-ink:#f1f5f9; --bn-muted:#c1d0e3; --bn-line:#52647c; --bn-paper:#0f172a; --bn-tint:#19263a; --bn-accent:#7dd3fc; --bn-focus:#fcd34d; }
@@ -1342,6 +1543,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-portfolio-role-status > div { display:flex; flex-wrap:wrap; gap:.2rem .5rem; justify-content:space-between; align-items:baseline; }
       .bee-portfolio-role-status dt { font-size:.8125rem; color:var(--bn-muted); }
       .bee-portfolio-role-status dd { font-size:.875rem; line-height:1.5; font-weight:650; font-variant-numeric:tabular-nums; }
+      .bee-portfolio-role-pips { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:4px; }
+      .bee-portfolio-role-pip { display:block; height:7px; border:1px solid var(--bn-line); border-radius:999px; background:transparent; }
+      .bee-portfolio-role-pip[data-written="true"] { border-style:dashed; border-color:var(--bn-accent); background:var(--bn-tint); }
+      .bee-portfolio-role-pip[data-written="true"][data-reviewed="true"] { border-style:solid; border-color:var(--bn-accent); background:var(--bn-accent); }
       [data-beehive-root] .bee-portfolio-button { min-height:44px; padding:.6rem .75rem; border:1px solid var(--bn-accent); border-radius:.5rem; background:var(--bn-paper); color:var(--bn-accent); font-size:.875rem; line-height:1.5; font-weight:750; text-align:center; cursor:pointer; overflow-wrap:anywhere; }
       .bee-portfolio-button:hover { background:var(--bn-tint); text-decoration:underline; }
       .bee-portfolio-records { min-width:0; border-top:1px solid var(--bn-line); }
@@ -1367,7 +1572,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         [data-beehive-root] .bee-portfolio-role[data-current="true"] { outline:2px solid Highlight; outline-offset:-5px; }
         [data-beehive-root] .bee-portfolio-button { color:ButtonText; background:ButtonFace; border-color:ButtonText; }
         [data-beehive-root] .bee-portfolio-synthesis textarea { color:FieldText; background:Field; border-color:FieldText; }
-        [data-beehive-root] .bee-portfolio-progress [role="progressbar"] > span { background:Highlight; forced-color-adjust:none; }
+        [data-beehive-root] .bee-portfolio-progress [role="progressbar"] > span,.bee-portfolio-role-pip[data-written="true"][data-reviewed="true"] { background:Highlight; border-color:CanvasText; forced-color-adjust:none; }
       }
       .bee-evidence-capture { container:bee-evidence-capture / inline-size; min-width:0; margin-top:1.25rem; padding:1rem; border:1px solid var(--bn-line); border-top:4px solid var(--bn-accent); border-radius:.875rem; background:var(--bn-tint); color:var(--bn-ink); overflow-wrap:anywhere; }
       .bee-evidence-capture :is(h3,p,dl,dd,pre) { margin:0; }
@@ -1391,6 +1596,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       [data-beehive-root] .bee-evidence-capture-actions button:disabled { cursor:not-allowed; opacity:.7; }
       .bee-evidence-capture-actions button:not(:disabled):hover { text-decoration:underline; }
       .bee-evidence-capture .bee-evidence-capture-save-hint { margin-top:.75rem; color:var(--bn-muted); }
+      .bee-capture-reading-bar { display:block; width:100%; max-width:100%; height:6px; margin-top:6px; }
+      .bee-capture-bar-track { fill:rgba(100,116,139,.22); stroke:rgba(100,116,139,.4); stroke-width:.6; }
+      .bee-capture-bar-fill[data-tone="healthy"] { fill:#15803d; }
+      .bee-capture-bar-fill[data-tone="watch"] { fill:#b45309; }
+      .bee-capture-bar-fill[data-tone="danger"] { fill:#b91c1c; }
+      .bee-capture-bar-fill[data-tone="neutral"] { fill:#475569; }
+      .bee-capture-capacity-rail { display:block; width:100%; max-width:100%; height:8px; margin-top:10px; }
+      .bee-capture-capacity-track { fill:rgba(100,116,139,.2); stroke:var(--bn-line,#94a3b8); stroke-width:.8; }
+      .bee-capture-capacity-used { fill:var(--bn-muted,#475569); }
+      .bee-capture-capacity-incoming { fill:var(--bn-accent,#1d4ed8); }
+      .bee-capture-capacity-rail[data-capacity-status="full"] .bee-capture-capacity-incoming { fill:#dc2626; }
+      .bee-capture-capacity-rail[data-capacity-status="full"] .bee-capture-capacity-used { fill:#b91c1c; }
+      [data-beehive-theme="dark"] .bee-capture-bar-track,
+      [data-beehive-theme="dark"] .bee-capture-capacity-track { fill:rgba(148,163,184,.24); stroke:rgba(148,163,184,.5); }
+      [data-beehive-theme="dark"] .bee-capture-bar-fill[data-tone="healthy"] { fill:#4ade80; }
+      [data-beehive-theme="dark"] .bee-capture-bar-fill[data-tone="watch"] { fill:#fbbf24; }
+      [data-beehive-theme="dark"] .bee-capture-bar-fill[data-tone="danger"] { fill:#f87171; }
+      [data-beehive-theme="dark"] .bee-capture-bar-fill[data-tone="neutral"] { fill:#94a3b8; }
+      [data-beehive-theme="dark"] .bee-capture-capacity-rail[data-capacity-status="full"] .bee-capture-capacity-incoming { fill:#f87171; }
       [data-beehive-root] .bee-evidence-capture :is(button,summary):focus-visible { outline:3px solid var(--bn-focus); outline-offset:3px; }
       @container bee-evidence-capture (min-width:30rem) { .bee-evidence-capture .bee-evidence-capture-readings { grid-template-columns:repeat(2,minmax(0,1fr)); } }
       @container bee-evidence-capture (min-width:52rem) { .bee-evidence-capture .bee-evidence-capture-readings { grid-template-columns:repeat(3,minmax(0,1fr)); } }
@@ -1398,6 +1622,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         [data-beehive-root] .bee-evidence-capture-actions button { color:ButtonText; background:ButtonFace; border-color:ButtonText; }
         [data-beehive-root] .bee-evidence-capture-actions button:disabled { color:GrayText; opacity:1; border-color:GrayText; }
         [data-beehive-root] .bee-evidence-capture [data-primary="true"] { color:ButtonText; background:ButtonFace; border:2px solid Highlight; }
+        .bee-evidence-capture svg, .bee-evidence-capture svg * { forced-color-adjust:auto; }
+        .bee-capture-bar-track, .bee-capture-capacity-track { fill:Canvas; stroke:CanvasText; }
+        .bee-capture-bar-fill, .bee-capture-capacity-incoming { fill:Highlight; }
+        .bee-capture-capacity-used { fill:GrayText; }
       }
       .bee-evidence-capture[data-capture-role="queen"] { --bn-accent:#6d28d9; }
       [data-beehive-theme="dark"] .bee-evidence-capture[data-capture-role="queen"] { --bn-accent:#c4b5fd; }
@@ -1475,6 +1703,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-timing-landmark-card dt,.bee-timing-landmark-note { color:var(--bf-muted); }
       .bee-timing-landmark-card dd { margin:0; font-size:1.125rem; font-weight:800; font-variant-numeric:tabular-nums; }
       .bee-timing-landmark-button { min-width:44px; width:100%; white-space:normal; overflow-wrap:anywhere; }
+      .bee-landmark-horizon-bar { display:block; width:100%; max-width:100%; height:22px; }
+      .bee-landmark-rail-track,.bee-landmark-gap-track { fill:rgba(100,116,139,.2); stroke:rgba(100,116,139,.4); stroke-width:.6; }
+      .bee-landmark-rail-span,.bee-landmark-pin { fill:var(--bf-button,#0369a1); }
+      .bee-landmark-zero-tick { stroke:var(--bf-ink,#1e293b); stroke-width:1.1; }
+      .bee-landmark-gap-fill[data-direction="positive"] { fill:#15803d; }
+      .bee-landmark-gap-fill[data-direction="negative"] { fill:#b45309; }
+      .bee-landmark-gap-fill[data-direction="zero"] { fill:#64748b; }
+      [data-beehive-theme="dark"] .bee-landmark-gap-fill[data-direction="positive"] { fill:#4ade80; }
+      [data-beehive-theme="dark"] .bee-landmark-gap-fill[data-direction="negative"] { fill:#fbbf24; }
+      @media(forced-colors:active) { .bee-landmark-horizon-bar,.bee-landmark-horizon-bar * { forced-color-adjust:auto; } .bee-landmark-rail-track,.bee-landmark-gap-track { fill:Canvas; stroke:CanvasText; } .bee-landmark-rail-span,.bee-landmark-pin,.bee-landmark-gap-fill { fill:Highlight; } .bee-landmark-zero-tick { stroke:CanvasText; } }
       .bee-management-timing-chart :is(.bee-timing-baseline,.bee-timing-action,.bee-timing-cursor,.bee-timing-point) { vector-effect:non-scaling-stroke; }
       @container(min-width:30rem) { .bee-timing-landmark-cards { grid-template-columns:repeat(2,minmax(0,1fr)); } }
       @container(max-width:20rem) { .bee-timing-landmarks,.bee-timing-landmark-card { padding:.5rem; } }
@@ -1744,6 +1982,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-thermo-ticks { display:flex; justify-content:space-between; gap:.25rem; font-size:.75rem; color:var(--bd-muted); font-variant-numeric:tabular-nums; }
       .bee-thermo-scale figcaption { margin-top:.75rem; font-size:.875rem; line-height:1.55; }
       .bee-thermo-scale figcaption span { display:block; }
+      .bee-thermo-mechanism { margin:12px 0 0; padding:8px; border:1px solid var(--bd-line); border-radius:12px; background:var(--bd-tint); min-width:0; max-width:100%; box-sizing:border-box; }
+      .bee-thermo-mechanism svg { display:block; width:100%; max-width:100%; height:auto; color:var(--bd-ink); }
+      .bee-thermo-mechanism p.bee-thermo-mechanism-note { margin:6px 0 0; font-size:.8125rem; line-height:1.45; color:var(--bd-muted); overflow-wrap:anywhere; }
+      @media(forced-colors:active) { [data-thermo-mechanism-svg="true"] rect,[data-thermo-mechanism-svg="true"] line,[data-thermo-mechanism-svg="true"] path,[data-thermo-mechanism-svg="true"] circle,[data-thermo-mechanism-svg="true"] polygon { stroke:CanvasText !important; } }
       .bee-thermo-condition label { display:block; font-weight:800; }
       .bee-thermo-condition label span { display:block; font-size:1.5rem; font-weight:800; font-variant-numeric:tabular-nums; }
       .bee-thermo-condition p { margin:.25rem 0 0; color:var(--bd-muted); }
@@ -1921,7 +2163,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       [data-flower-visit-study] details[open] summary::before { content:'▾'; }
       [data-flower-visit-study] a { display:flex; align-items:center; color:var(--fv-accent); text-decoration:underline; overflow-wrap:anywhere; }
       @container bee-visits (min-width:38rem) { .bee-visits-path,.bee-visits-values { grid-template-columns:repeat(3,minmax(0,1fr)); } }
-      @media(forced-colors:active) { [data-beehive-theme] [data-flower-visit-study] { --fv-ink:CanvasText; --fv-muted:CanvasText; --fv-paper:Canvas; --fv-line:CanvasText; --fv-tint:Canvas; --fv-accent:CanvasText; --fv-on-accent:Canvas; } [data-beehive-root] [data-flower-visit-study] button { background:ButtonFace !important; color:ButtonText !important; border-color:ButtonText !important; forced-color-adjust:none; } .bee-visits-track > span { background:CanvasText; forced-color-adjust:none; } .bee-visits-track[data-after="true"] > span { background:Canvas; border:2px dashed CanvasText; } }
+      .bee-visits-step-svg { display:block; width:100%; height:28px; margin-bottom:.4rem; color:var(--fv-accent); overflow:visible; }
+      .bee-visits-step-measured { stroke:var(--fv-accent); fill:var(--fv-paper); stroke-width:2; }
+      .bee-visits-step-unmeasured { stroke:var(--fv-muted); fill:var(--fv-paper); stroke-width:2; stroke-dasharray:4 3; }
+      .bee-visits-step-line { fill:none; stroke:var(--fv-accent); stroke-width:2.2; stroke-linecap:round; }
+      .bee-visits-step-dot { fill:var(--fv-accent); }
+      .bee-visits-step-muted-dot { fill:none; stroke:var(--fv-muted); stroke-width:1.8; stroke-dasharray:3 2; }
+      .bee-visits-live-preview { margin-top:.5rem; }
+      .bee-visits-live-rail { display:flex; width:100%; height:10px; border:1px solid var(--fv-line); border-radius:999px; background:var(--fv-paper); overflow:hidden; }
+      .bee-visits-live-segment { display:block; height:100%; }
+      .bee-visits-live-segment[data-live-segment="baseline"] { background:var(--fv-muted); opacity:.55; }
+      .bee-visits-live-segment[data-live-segment="added"] { background:var(--fv-accent); background-image:repeating-linear-gradient(135deg,transparent 0 4px,rgba(255,255,255,.3) 4px 7px); }
+      .bee-visits-live-segment[data-zero="true"] { display:none; }
+      @media(forced-colors:active) { [data-beehive-theme] [data-flower-visit-study] { --fv-ink:CanvasText; --fv-muted:CanvasText; --fv-paper:Canvas; --fv-line:CanvasText; --fv-tint:Canvas; --fv-accent:CanvasText; --fv-on-accent:Canvas; } [data-beehive-root] [data-flower-visit-study] button { background:ButtonFace !important; color:ButtonText !important; border-color:ButtonText !important; forced-color-adjust:none; } .bee-visits-track > span { background:CanvasText; forced-color-adjust:none; } .bee-visits-track[data-after="true"] > span { background:Canvas; border:2px dashed CanvasText; } .bee-visits-step-svg { forced-color-adjust:none; } .bee-visits-live-rail { border-color:CanvasText; background:Canvas; } .bee-visits-live-segment[data-live-segment="baseline"] { background:CanvasText; opacity:1; forced-color-adjust:none; } .bee-visits-live-segment[data-live-segment="added"] { background:Highlight; background-image:none; forced-color-adjust:none; } }
 
       [data-pollination-lab] details { font-size:.875rem; }
       [data-pollination-lab] summary { display:flex; align-items:center; cursor:pointer; font-weight:800; }
@@ -2000,6 +2254,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-rts-route-views button[aria-pressed="true"] { background:var(--bd-button); color:var(--bd-on-button); border-color:var(--bd-button); }
       .bee-rts-inspection-readout { font-size:12px; line-height:1.5; margin-top:8px; color:var(--bd-ink); }
       .bee-rts-explorer-hint { font-size:11px; line-height:1.5; margin-top:4px; color:var(--bd-muted); }
+      .bee-rts-patch-schematic { display:block; width:100%; max-width:22rem; height:48px; margin-top:8px; }
+      .bee-rts-schem-bg { fill:var(--bd-paper); stroke:var(--bd-line); stroke-width:1; }
+      .bee-rts-schem-home-route { fill:none; stroke:#7e22ce; stroke-width:1.6; stroke-linecap:round; opacity:.85; }
+      .bee-rts-schem-neighbor-route { fill:none; stroke:#be123c; stroke-width:1.6; stroke-linecap:round; stroke-dasharray:4 3; opacity:.85; }
+      .bee-rts-schem-ring { fill:none; stroke:#0284c7; stroke-width:1.5; stroke-dasharray:3 2; }
+      .bee-rts-schem-patch { fill:#b45309; stroke:var(--bd-paper); stroke-width:1; }
+      .bee-rts-schem-patch[data-patch-selected="true"] { fill:#d97706; stroke:var(--bd-ink); stroke-width:1.2; }
+      .bee-rts-schem-home-nest { fill:var(--bd-paper); stroke:#7e22ce; stroke-width:1.8; }
+      .bee-rts-schem-neighbor-nest { fill:var(--bd-paper); stroke:#be123c; stroke-width:1.8; }
+      [data-beehive-theme="dark"] .bee-rts-schem-home-route,[data-beehive-theme="dark"] .bee-rts-schem-home-nest { stroke:#c084fc; }
+      [data-beehive-theme="dark"] .bee-rts-schem-neighbor-route,[data-beehive-theme="dark"] .bee-rts-schem-neighbor-nest { stroke:#fb7185; }
+      [data-beehive-theme="dark"] .bee-rts-schem-ring { stroke:#38bdf8; }
+      [data-beehive-theme="dark"] .bee-rts-schem-patch { fill:#fbbf24; }
       [data-beehive-3d-bay="queen"]:fullscreen { overflow:auto; padding:18px; border-radius:0; background:var(--bd-paper); }
       [data-beehive-3d-bay="queen"]:fullscreen [data-bay-canvas-frame="queen"] { height:clamp(440px,64vh,820px) !important; }
       [data-beehive-3d-bay="queen"]:fullscreen .bee-rts-toolbar { position:sticky; top:0; z-index:4; background:var(--bd-paper); padding:8px 0; }
@@ -2029,6 +2296,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-map-study-path i { flex:1; min-width:24px; border-top:3px solid #8861c9; position:relative; }
       .bee-map-study-path i[data-colony="neighbor"] { border-top:3px dashed #c94d69; }
       .bee-map-study-path i:after { content:'›'; position:absolute; right:-2px; top:-15px; font-style:normal; font-size:22px; }
+      .bee-map-study-schematic { margin:0 0 12px; padding:8px 10px; border:1px solid var(--bd-line); border-radius:10px; background:var(--bd-tint); }
+      .bee-map-study-schematic svg { display:block; width:100%; max-width:260px; height:auto; margin:0 auto; overflow:visible; }
+      .bee-map-schem-home-nest { fill:var(--bd-paper); stroke:#7e22ce; stroke-width:2.5; }
+      .bee-map-schem-neighbor-nest { fill:var(--bd-paper); stroke:#be123c; stroke-width:2.5; }
+      .bee-map-schem-home-route { fill:none; stroke:#7e22ce; stroke-width:2.5; stroke-linecap:round; }
+      .bee-map-schem-neighbor-route { fill:none; stroke:#be123c; stroke-width:2.5; stroke-linecap:round; stroke-dasharray:5 4; }
+      .bee-map-schem-ring { fill:none; stroke:#0284c7; stroke-width:1.8; stroke-dasharray:3 3; }
+      .bee-map-schem-flower { fill:#d97706; stroke:var(--bd-ink); stroke-width:1.2; }
+      [data-beehive-theme="dark"] .bee-map-schem-home-nest,[data-beehive-theme="dark"] .bee-map-schem-home-route { stroke:#c084fc; }
+      [data-beehive-theme="dark"] .bee-map-schem-neighbor-nest,[data-beehive-theme="dark"] .bee-map-schem-neighbor-route { stroke:#fb7185; }
+      [data-beehive-theme="dark"] .bee-map-schem-ring { stroke:#38bdf8; }
+      [data-beehive-theme="dark"] .bee-map-schem-flower { fill:#fbbf24; }
+      @media(forced-colors:active) { .bee-map-study-schematic svg { forced-color-adjust:none; } .bee-map-schem-home-nest,.bee-map-schem-neighbor-nest { fill:Canvas; stroke:CanvasText; } .bee-map-schem-home-route,.bee-map-schem-neighbor-route { stroke:CanvasText; } .bee-map-schem-ring { stroke:Highlight; } .bee-map-schem-flower { fill:Highlight; stroke:CanvasText; } }
       .bee-map-study-feedback { border-left:3px solid var(--bd-button); padding:12px; margin:12px 0; background:var(--bd-tint); border-radius:0 8px 8px 0; font-size:13px; }
       .bee-map-study-note { display:grid; gap:6px; margin-top:12px; font-size:12px; font-weight:700; }
       .bee-map-study-note textarea { width:100%; min-height:90px; resize:vertical; border:1px solid var(--bd-line); border-radius:8px; padding:10px; background:var(--bd-paper); color:var(--bd-ink); font:inherit; font-weight:400; }
@@ -2059,10 +2339,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-rts-map-impact { border-left:3px solid var(--bd-button); padding:10px 12px; background:var(--bd-tint); border-radius:0 10px 10px 0; }
       .bee-rts-map-impact > strong { font-size:13px; }
       .bee-rts-map-impact > div { display:flex; flex-wrap:wrap; gap:6px; }
-      .bee-rts-map-impact span { font-size:11px; padding:4px 7px; border:1px solid var(--bd-line); background:var(--bd-paper); border-radius:6px; }
+      .bee-rts-map-impact > div > span { font-size:11px; padding:4px 7px; border:1px solid var(--bd-line); background:var(--bd-paper); border-radius:6px; display:inline-flex; flex-direction:column; gap:3px; min-width:6.25rem; }
       [data-beehive-3d-bay="queen"] :focus-visible { outline:3px solid var(--bd-button); outline-offset:3px; }
       @media(max-width:639px) { [data-beehive-3d-bay="queen"] { padding:10px; } .bee-rts-clock { flex-basis:100%; } .bee-rts-objective { padding:10px; } .bee-rts-objective-head select { width:100%; } .bee-rts-targets { gap:6px; } .bee-rts-targets > div { padding:8px; } }
-      @media(forced-colors:active) { [data-beehive-theme] [data-beehive-3d-bay="queen"] { --bd-ink:CanvasText; --bd-muted:CanvasText; --bd-paper:Canvas; --bd-line:CanvasText; --bd-tint:Canvas; --bd-button:ButtonText; --bd-on-button:ButtonFace; } .bee-rts-pressure[data-raid-level="high"] { color:CanvasText; background:Canvas; border-color:CanvasText; } }
+      @media(forced-colors:active) { [data-beehive-theme] [data-beehive-3d-bay="queen"] { --bd-ink:CanvasText; --bd-muted:CanvasText; --bd-paper:Canvas; --bd-line:CanvasText; --bd-tint:Canvas; --bd-button:ButtonText; --bd-on-button:ButtonFace; } .bee-rts-pressure[data-raid-level="high"] { color:CanvasText; background:Canvas; border-color:CanvasText; } .bee-rts-patch-schematic,.bee-rts-patch-schematic * { forced-color-adjust:auto; } .bee-rts-schem-bg,.bee-rts-schem-home-nest,.bee-rts-schem-neighbor-nest { fill:Canvas; stroke:CanvasText; } .bee-rts-schem-home-route,.bee-rts-schem-neighbor-route { stroke:CanvasText; } .bee-rts-schem-ring { stroke:Highlight; } .bee-rts-schem-patch { fill:CanvasText; stroke:Canvas; } .bee-rts-schem-patch[data-patch-selected="true"] { fill:Highlight; stroke:CanvasText; } }
 
       .bee-discovery-evidence { margin:12px 0; padding:10px; border:1px dashed var(--bd-line); border-radius:9px; }
       .bee-discovery-evidence p { margin-top:5px; font-variant-numeric:tabular-nums; }
@@ -2147,6 +2427,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       '[data-plan-registration-node][data-sequence-state="complete"] { border-color:rgba(5,150,105,.42); box-shadow:inset 0 0 0 1px rgba(5,150,105,.08); } [data-plan-registration-node][data-sequence-state="attention"] { border-color:rgba(217,119,6,.48); box-shadow:inset 0 0 0 1px rgba(217,119,6,.08); }' +
       '[data-plan-registration-step] { display:grid; width:1.55rem; height:1.55rem; flex:0 0 auto; place-items:center; border-radius:999px; background:#64748b; color:#fff; font-size:.68rem; font-weight:900; box-shadow:0 0 0 .2rem rgba(100,116,139,.12); }' +
       '[data-sequence-state="complete"] [data-plan-registration-step] { background:#047857; box-shadow:0 0 0 .2rem rgba(5,150,105,.14); } [data-sequence-state="attention"] [data-plan-registration-step] { background:#b45309; box-shadow:0 0 0 .2rem rgba(217,119,6,.14); }' +
+      '.bee-plan-integrity-bar { display:block; width:100%; max-width:100%; height:10px; margin-top:.55rem; }' +
+      '.bee-plan-field-slot[data-slot-state="matched"] { fill:#059669; } .bee-plan-field-slot[data-slot-state="changed"] { fill:#d97706; } .bee-plan-field-slot[data-slot-state="ready"] { fill:#4f46e5; } .bee-plan-field-slot[data-slot-state="missing"] { fill:rgba(217,119,6,.22); stroke:#d97706; stroke-width:.8; } .bee-plan-field-slot[data-slot-state="pending"] { fill:rgba(100,116,139,.22); stroke:#64748b; stroke-width:.8; }' +
+      '[data-beehive-theme="dark"] .bee-plan-field-slot[data-slot-state="matched"] { fill:#34d399; } [data-beehive-theme="dark"] .bee-plan-field-slot[data-slot-state="changed"] { fill:#fbbf24; } [data-beehive-theme="dark"] .bee-plan-field-slot[data-slot-state="ready"] { fill:#818cf8; } [data-beehive-theme="dark"] .bee-plan-field-slot[data-slot-state="missing"] { fill:rgba(251,191,36,.20); stroke:#fbbf24; }' +
+      '.bee-plan-stage-icon { width:14px; height:14px; flex:none; color:#64748b; } .bee-plan-stage-icon[data-stage-state="complete"] { color:#047857; } .bee-plan-stage-icon[data-stage-state="attention"] { color:#b45309; } .bee-plan-stage-icon[data-stage-state="waiting"] { color:#4f46e5; }' +
+      '[data-beehive-theme="dark"] .bee-plan-stage-icon { color:#94a3b8; } [data-beehive-theme="dark"] .bee-plan-stage-icon[data-stage-state="complete"] { color:#34d399; } [data-beehive-theme="dark"] .bee-plan-stage-icon[data-stage-state="attention"] { color:#fbbf24; } [data-beehive-theme="dark"] .bee-plan-stage-icon[data-stage-state="waiting"] { color:#a5b4fc; }' +
+      '.bee-protocol-stepper { display:block; width:100%; max-width:100%; height:14px; margin-top:.45rem; } .bee-protocol-rail { stroke:rgba(100,116,139,.32); stroke-width:2; stroke-linecap:round; } .bee-protocol-rail[data-rail-done="true"] { stroke:#059669; } .bee-protocol-node { fill:#fff; stroke:#64748b; stroke-width:1.6; } .bee-protocol-node[data-node-state="complete"] { fill:#059669; stroke:#047857; } .bee-protocol-node[data-node-state="current"] { fill:#e0e7ff; stroke:#4338ca; stroke-width:2; } .bee-protocol-node-core { fill:transparent; } .bee-protocol-node-core[data-node-state="complete"] { fill:#fff; } .bee-protocol-node-core[data-node-state="current"] { fill:#4338ca; }' +
+      '[data-beehive-theme="dark"] .bee-protocol-node { fill:#0f172a; stroke:#94a3b8; } [data-beehive-theme="dark"] .bee-protocol-node[data-node-state="complete"] { fill:#10b981; stroke:#34d399; } [data-beehive-theme="dark"] .bee-protocol-node[data-node-state="current"] { fill:#312e81; stroke:#a5b4fc; } [data-beehive-theme="dark"] .bee-protocol-node-core[data-node-state="current"] { fill:#e0e7ff; } [data-beehive-theme="dark"] .bee-protocol-rail[data-rail-done="true"] { stroke:#34d399; }' +
+      '.bee-protocol-step-icon { width:13px; height:13px; flex:none; margin-left:auto; color:#64748b; } .bee-protocol-step-icon[data-step-state="complete"] { color:#047857; } .bee-protocol-step-icon[data-step-state="current"] { color:#4338ca; } [data-beehive-theme="dark"] .bee-protocol-step-icon { color:#94a3b8; } [data-beehive-theme="dark"] .bee-protocol-step-icon[data-step-state="complete"] { color:#34d399; } [data-beehive-theme="dark"] .bee-protocol-step-icon[data-step-state="current"] { color:#a5b4fc; }' +
+      '.bee-stock-trait-bar { display:block; width:100%; max-width:100%; height:8px; margin-top:2px; } .bee-stock-trait-track { fill:rgba(148,163,184,.28); } .bee-stock-trait-fill[data-trait-color="amber"] { fill:#d97706; } .bee-stock-trait-fill[data-trait-color="green"] { fill:#16a34a; } .bee-stock-trait-fill[data-trait-color="sky"] { fill:#0284c7; } .bee-stock-trait-fill[data-trait-color="red"] { fill:#dc2626; } .bee-stock-trait-fill[data-trait-color="violet"] { fill:#7c3aed; } .bee-stock-baseline-tick { stroke:#0f172a; stroke-width:1.4; } [data-beehive-theme="dark"] .bee-stock-baseline-tick { stroke:#e2e8f0; }' +
+      '.bee-site-profile-bars { display:block; width:100%; max-width:260px; height:18px; margin-top:6px; } .bee-site-emblem { fill:none; stroke:#15803d; stroke-width:1.4; stroke-linecap:round; stroke-linejoin:round; } .bee-site-bar-track { fill:rgba(148,163,184,.28); } .bee-site-bar-fill[data-bar-tone="favorable"] { fill:#16a34a; } .bee-site-bar-fill[data-bar-tone="adverse"] { fill:#d97706; } .bee-site-bar-fill[data-bar-tone="neutral"] { fill:#64748b; } .bee-site-baseline-tick { stroke:#0f172a; stroke-width:1.4; } [data-beehive-theme="dark"] .bee-site-emblem { stroke:#4ade80; } [data-beehive-theme="dark"] .bee-site-bar-fill[data-bar-tone="favorable"] { fill:#4ade80; } [data-beehive-theme="dark"] .bee-site-bar-fill[data-bar-tone="adverse"] { fill:#fbbf24; } [data-beehive-theme="dark"] .bee-site-baseline-tick { stroke:#e2e8f0; }' +
+      '.bee-rts-intel-meter { display:block; width:100%; max-width:240px; height:14px; margin-top:8px; } .bee-rts-intel-emblem { fill:none; stroke:#be123c; stroke-width:1.4; stroke-linecap:round; stroke-linejoin:round; } .bee-rts-intel-emblem-dashed { stroke-dasharray:2 1.5; } .bee-rts-intel-track { fill:rgba(148,163,184,.28); } .bee-rts-intel-fill[data-intel-band="unscouted"] { fill:#64748b; } .bee-rts-intel-fill[data-intel-band="partial"] { fill:#d97706; } .bee-rts-intel-fill[data-intel-band="confirmed"] { fill:#059669; } .bee-rts-intel-tick { stroke:#0f172a; stroke-width:1.5; } [data-beehive-theme="dark"] .bee-rts-intel-emblem { stroke:#fda4af; } [data-beehive-theme="dark"] .bee-rts-intel-tick { stroke:#e2e8f0; } [data-beehive-theme="dark"] .bee-rts-intel-fill[data-intel-band="confirmed"] { fill:#34d399; }' +
+      '.bee-rts-forecast-rail { display:block; width:100%; max-width:100%; height:8px; margin-top:6px; } .bee-rts-forecast-track { fill:rgba(148,163,184,.24); } .bee-rts-forecast-fill[data-forecast-tone="live"],.bee-rts-forecast-fill[data-forecast-tone="imminent"] { fill:#c026d3; } .bee-rts-forecast-fill[data-forecast-tone="soon"] { fill:#d97706; } .bee-rts-forecast-fill[data-forecast-tone="scheduled"] { fill:#64748b; } .bee-rts-forecast-fill[data-forecast-tone="truce"],.bee-rts-forecast-fill[data-forecast-tone="census"] { fill:#0284c7; } .bee-rts-forecast-fill[data-forecast-tone="paused"] { fill:#94a3b8; } .bee-rts-forecast-tick { stroke:rgba(255,255,255,.7); stroke-width:1; }' +
+      '.bee-science-card-diagram { display:block; width:100%; max-width:100%; height:32px; margin-bottom:8px; } .bee-sci-diag-bg { fill:rgba(245,158,11,.08); stroke:rgba(217,119,6,.25); stroke-width:1; } .bee-science-card-diagram[data-card-active="true"] .bee-sci-diag-bg { stroke:#d97706; stroke-width:1.4; } .bee-sci-diag-accent { fill:#f59e0b; stroke:#92400e; stroke-width:1; } .bee-sci-diag-node { fill:#059669; stroke:#065f46; stroke-width:1; } .bee-sci-diag-band { fill:rgba(100,116,139,.18); stroke:#64748b; stroke-width:1; } .bee-sci-diag-sweet { fill:rgba(16,185,129,.35); } .bee-sci-diag-warn { fill:#e11d48; stroke:#881337; stroke-width:1; } .bee-sci-diag-stroke,.bee-sci-diag-guide,.bee-sci-diag-loop,.bee-sci-diag-primary { fill:none; stroke-linecap:round; stroke-linejoin:round; } .bee-sci-diag-stroke { stroke:#92400e; stroke-width:1.4; } .bee-sci-diag-guide { stroke:#64748b; stroke-width:1.2; stroke-dasharray:2.5 2; } .bee-sci-diag-loop { stroke:#0284c7; stroke-width:1.4; } .bee-sci-diag-primary { stroke:#b45309; stroke-width:1.8; } [data-beehive-theme="dark"] .bee-sci-diag-bg { fill:rgba(251,191,36,.08); stroke:rgba(251,191,36,.30); } [data-beehive-theme="dark"] .bee-sci-diag-stroke { stroke:#fde68a; } [data-beehive-theme="dark"] .bee-sci-diag-primary { stroke:#fbbf24; } [data-beehive-theme="dark"] .bee-sci-diag-loop { stroke:#38bdf8; }' +
+      '.bee-env-threshold-bar { display:block; width:100%; max-width:100%; height:10px; margin-top:4px; } .bee-env-bar-track { fill:rgba(148,163,184,.25); } .bee-env-bar-fill[data-env-kind="habitat"][data-env-band="healthy"] { fill:#16a34a; } .bee-env-bar-fill[data-env-kind="habitat"][data-env-band="watch"] { fill:#d97706; } .bee-env-bar-fill[data-env-kind="habitat"][data-env-band="low"] { fill:#dc2626; } .bee-env-bar-fill[data-env-kind="pesticide"][data-env-band="clear"] { fill:#16a34a; } .bee-env-bar-fill[data-env-kind="pesticide"][data-env-band="trace"] { fill:#d97706; } .bee-env-bar-fill[data-env-kind="pesticide"][data-env-band="chronic"] { fill:#dc2626; } .bee-env-bar-tick { stroke:#0f172a; stroke-width:1.4; } [data-beehive-theme="dark"] .bee-env-bar-tick { stroke:#e2e8f0; }' +
+      '.bee-rts-objective-title-row { display:flex; align-items:center; gap:.5rem; } .bee-rts-objective-emblem { flex:none; width:28px; height:28px; } .bee-rts-emblem-stroke { fill:none; stroke:#6d28d9; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; } .bee-rts-emblem-accent { fill:none; stroke:#059669; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; } .bee-rts-emblem-core { fill:#6d28d9; } [data-beehive-theme="dark"] .bee-rts-emblem-stroke { stroke:#c4b5fd; } [data-beehive-theme="dark"] .bee-rts-emblem-accent { stroke:#34d399; } [data-beehive-theme="dark"] .bee-rts-emblem-core { fill:#c4b5fd; }' +
+      '.bee-rts-target-bar { display:block; width:100%; max-width:100%; height:10px; margin-top:4px; } .bee-rts-target-track,.bee-rts-raid-track { fill:rgba(148,163,184,.28); } .bee-rts-target-fill { fill:#d97706; } .bee-rts-target-fill[data-target-met="true"] { fill:#059669; } .bee-rts-target-tick,.bee-rts-raid-tick { stroke:#0f172a; stroke-width:1.4; } [data-beehive-theme="dark"] .bee-rts-target-fill[data-target-met="true"] { fill:#34d399; } [data-beehive-theme="dark"] .bee-rts-target-tick,[data-beehive-theme="dark"] .bee-rts-raid-tick { stroke:#e2e8f0; }' +
+      '.bee-rts-pressure { display:inline-flex; align-items:center; flex-wrap:wrap; gap:.4rem; } .bee-rts-toolbar-pressure-bar { width:64px; max-width:100%; height:10px; flex:none; } .bee-rts-raid-fill[data-raid-band="calm"] { fill:#059669; } .bee-rts-raid-fill[data-raid-band="watch"] { fill:#d97706; } .bee-rts-raid-fill[data-raid-band="high"] { fill:#e11d48; }' +
+      '.bee-result-distance-scale { margin-top:6px; width:100%; } .bee-result-distance-svg { display:block; width:100%; max-width:100%; height:12px; } .bee-result-distance-track,.bee-result-extra-track { fill:rgba(148,163,184,.28); } .bee-result-distance-fill { fill:#0284c7; } .bee-result-distance-tick { stroke:#0f172a; stroke-width:1.5; } .bee-result-extra-bar { display:block; width:100%; max-width:100%; height:10px; margin:5px 0 3px; } .bee-result-extra-fill { fill:#0284c7; } .bee-result-extra-fill[data-extra-kind="markers"] { fill:#059669; } .bee-result-extra-fill[data-extra-kind="facts"] { fill:#7c3aed; } .bee-result-extra-fill[data-extra-kind="obstacle"] { fill:#d97706; } .bee-result-extra-fill[data-extra-kind="traffic"] { fill:#e11d48; } [data-beehive-theme="dark"] .bee-result-distance-fill { fill:#38bdf8; } [data-beehive-theme="dark"] .bee-result-distance-tick { stroke:#e2e8f0; } [data-beehive-theme="dark"] .bee-result-extra-fill[data-extra-kind="markers"] { fill:#34d399; } [data-beehive-theme="dark"] .bee-result-extra-fill[data-extra-kind="facts"] { fill:#c4b5fd; }' +
+      '.bee-event-comparison-summary { display:block; width:100%; max-width:220px; height:14px; margin:6px 0 8px; } .bee-event-settings li { flex-wrap:wrap; } .bee-event-impact-bar { display:block; flex:1 0 100%; width:100%; max-width:100%; height:10px; margin-top:4px; } .bee-event-impact-track { fill:rgba(148,163,184,.24); } .bee-event-axis { stroke:#475569; stroke-width:1.3; } .bee-event-summary-bar[data-impact-tone="beneficial"],.bee-event-impact-fill[data-impact-tone="beneficial"] { fill:#059669; } .bee-event-summary-bar[data-impact-tone="adverse"],.bee-event-impact-fill[data-impact-tone="adverse"] { fill:#e11d48; } .bee-event-summary-bar[data-impact-tone="neutral"],.bee-event-impact-fill[data-impact-tone="neutral"] { fill:#64748b; } [data-beehive-theme="dark"] .bee-event-axis { stroke:#cbd5e1; } [data-beehive-theme="dark"] .bee-event-summary-bar[data-impact-tone="beneficial"],[data-beehive-theme="dark"] .bee-event-impact-fill[data-impact-tone="beneficial"] { fill:#34d399; } [data-beehive-theme="dark"] .bee-event-summary-bar[data-impact-tone="adverse"],[data-beehive-theme="dark"] .bee-event-impact-fill[data-impact-tone="adverse"] { fill:#fb7185; }' +
+      '.bee-outlook-stability-strip { display:block; width:100%; max-width:260px; height:20px; margin:0 0 8px; } .bee-outlook-channel-track,.bee-outlook-risk-track { fill:rgba(148,163,184,.26); } .bee-outlook-channel-fill[data-channel-band="healthy"] { fill:#059669; } .bee-outlook-channel-fill[data-channel-band="watch"],.bee-outlook-risk-fill[data-risk-level="watch"] { fill:#d97706; } .bee-outlook-channel-fill[data-channel-band="critical"],.bee-outlook-risk-fill[data-risk-level="critical"] { fill:#e11d48; } .bee-outlook-channel-tick,.bee-outlook-risk-tick { stroke:#0f172a; stroke-width:1.4; } .bee-outlook-risk-gauge { display:block; width:100%; max-width:220px; height:10px; margin:4px 0 6px; } [data-beehive-theme="dark"] .bee-outlook-channel-fill[data-channel-band="healthy"] { fill:#34d399; } [data-beehive-theme="dark"] .bee-outlook-channel-fill[data-channel-band="watch"],[data-beehive-theme="dark"] .bee-outlook-risk-fill[data-risk-level="watch"] { fill:#fbbf24; } [data-beehive-theme="dark"] .bee-outlook-channel-fill[data-channel-band="critical"],[data-beehive-theme="dark"] .bee-outlook-risk-fill[data-risk-level="critical"] { fill:#fb7185; } [data-beehive-theme="dark"] .bee-outlook-channel-tick,[data-beehive-theme="dark"] .bee-outlook-risk-tick { stroke:#e2e8f0; }' +
+      '.bhh-stepper-rail { display:block; width:100%; max-width:260px; height:16px; margin:6px 0 8px; } .bhh-stepper-line { stroke:rgba(148,163,184,.45); stroke-width:2; stroke-linecap:round; } .bhh-stepper-line[data-rail-done="true"] { stroke:#047857; } .bhh-stepper-node { fill:#fff; stroke:rgba(100,116,139,.6); stroke-width:1.6; } .bhh-stepper-node[data-node-state="complete"] { fill:#ecfdf5; stroke:#047857; } .bhh-stepper-node[data-node-state="current"] { fill:#fffbeb; stroke:#b45309; stroke-width:2; } .bhh-stepper-core[data-node-state="complete"] { fill:#047857; } .bhh-stepper-core[data-node-state="current"] { fill:#b45309; } .bhh-metric-bar { display:block; width:100%; height:10px; margin-top:4px; } .bhh-comparison-bars { display:block; width:100%; max-width:240px; height:18px; margin:6px 0; } .bhh-metric-track,.bhh-comp-track,.bee-dock-vital-track,.bee-envelope-gauge-track { fill:rgba(148,163,184,.26); } .bhh-metric-fill[data-bar-tone="surplus"],.bhh-metric-fill[data-bar-tone="balanced"],.bhh-metric-fill[data-bar-tone="healthy"],.bhh-comp-run-b[data-comparison-tone="higher"],.bee-dock-vital-fill[data-channel-band="healthy"],.bee-dock-vital-fill[data-channel-band="calm"],.bee-envelope-gauge-fill[data-gauge-tone="good"] { fill:#059669; } .bhh-metric-fill[data-bar-tone="scarce"],.bhh-metric-fill[data-bar-tone="falling"],.bee-dock-vital-fill[data-channel-band="watch"],.bee-dock-vital-fill[data-channel-band="active"],.bee-envelope-gauge-fill[data-gauge-tone="caution"] { fill:#d97706; } .bhh-metric-fill[data-bar-tone="deficit"],.bhh-metric-fill[data-bar-tone="low"],.bhh-comp-run-b[data-comparison-tone="lower"],.bee-dock-vital-fill[data-channel-band="critical"],.bee-dock-vital-fill[data-channel-band="high"],.bee-envelope-gauge-fill[data-gauge-tone="danger"] { fill:#e11d48; } .bhh-comp-run-a { fill:#92400e; } .bhh-comp-run-b[data-comparison-tone="neutral"] { fill:#075985; } .bee-envelope-gauge-fill[data-gauge-tone="paused"] { fill:#64748b; } .bhh-metric-tick,.bee-dock-vital-tick,.bee-envelope-gauge-tick { stroke:#0f172a; stroke-width:1.3; } .bee-schedule-timeline-rail { display:block; width:100%; max-width:280px; height:20px; margin:6px 0 4px; } .bee-schedule-rail-track { stroke:rgba(148,163,184,.45); stroke-width:2.4; stroke-linecap:round; } .bee-schedule-rail-progress { stroke:#4f46e5; stroke-width:2.6; stroke-linecap:round; } .bee-schedule-checkpoint-tick { stroke:#475569; stroke-width:1.4; stroke-dasharray:2 2; } .bee-schedule-cursor-tick { stroke:#0f172a; stroke-width:1.8; } .bee-schedule-pin { fill:#64748b; stroke:#fff; stroke-width:1.1; } .bee-schedule-pin[data-pin-status="matched"] { fill:#059669; } .bee-schedule-pin[data-pin-status="planned-exception"] { fill:#4f46e5; } .bee-schedule-pin[data-pin-status="missed"],.bee-schedule-pin[data-pin-status="due"] { fill:#d97706; } .bee-dock-vital-strip { display:block; width:100%; max-width:200px; height:14px; margin:6px 0 2px; } .bee-dock-command-glyph { width:14px; height:14px; flex-shrink:0; } .bee-dock-glyph-stroke { fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; } .bee-dock-glyph-accent { fill:none; stroke:#d97706; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; } .bee-dock-glyph-fill { fill:currentColor; } .bee-envelope-item-gauge { display:block; width:100%; height:10px; margin:4px 0 2px; } .bee-envelope-gauge-band { fill:rgba(16,185,129,.18); stroke:rgba(5,150,105,.45); stroke-width:0.6; } [data-beehive-theme="dark"] .bhh-stepper-line[data-rail-done="true"] { stroke:#34d399; } [data-beehive-theme="dark"] .bhh-stepper-node { fill:#0f172a; stroke:rgba(148,163,184,.55); } [data-beehive-theme="dark"] .bhh-stepper-node[data-node-state="complete"] { fill:#064e3b; stroke:#34d399; } [data-beehive-theme="dark"] .bhh-stepper-node[data-node-state="current"] { fill:#451a03; stroke:#fbbf24; } [data-beehive-theme="dark"] .bhh-stepper-core[data-node-state="complete"] { fill:#34d399; } [data-beehive-theme="dark"] .bhh-stepper-core[data-node-state="current"] { fill:#fbbf24; } [data-beehive-theme="dark"] .bhh-metric-fill[data-bar-tone="surplus"],[data-beehive-theme="dark"] .bhh-metric-fill[data-bar-tone="balanced"],[data-beehive-theme="dark"] .bhh-metric-fill[data-bar-tone="healthy"],[data-beehive-theme="dark"] .bhh-comp-run-b[data-comparison-tone="higher"],[data-beehive-theme="dark"] .bee-dock-vital-fill[data-channel-band="healthy"],[data-beehive-theme="dark"] .bee-dock-vital-fill[data-channel-band="calm"],[data-beehive-theme="dark"] .bee-envelope-gauge-fill[data-gauge-tone="good"] { fill:#34d399; } [data-beehive-theme="dark"] .bhh-metric-fill[data-bar-tone="scarce"],[data-beehive-theme="dark"] .bhh-metric-fill[data-bar-tone="falling"],[data-beehive-theme="dark"] .bee-dock-vital-fill[data-channel-band="watch"],[data-beehive-theme="dark"] .bee-dock-vital-fill[data-channel-band="active"],[data-beehive-theme="dark"] .bee-envelope-gauge-fill[data-gauge-tone="caution"] { fill:#fbbf24; } [data-beehive-theme="dark"] .bhh-metric-fill[data-bar-tone="deficit"],[data-beehive-theme="dark"] .bhh-metric-fill[data-bar-tone="low"],[data-beehive-theme="dark"] .bhh-comp-run-b[data-comparison-tone="lower"],[data-beehive-theme="dark"] .bee-dock-vital-fill[data-channel-band="critical"],[data-beehive-theme="dark"] .bee-dock-vital-fill[data-channel-band="high"],[data-beehive-theme="dark"] .bee-envelope-gauge-fill[data-gauge-tone="danger"] { fill:#fb7185; } [data-beehive-theme="dark"] .bhh-comp-run-a { fill:#fbbf24; } [data-beehive-theme="dark"] .bhh-comp-run-b[data-comparison-tone="neutral"] { fill:#38bdf8; } [data-beehive-theme="dark"] .bee-envelope-gauge-fill[data-gauge-tone="paused"] { fill:#94a3b8; } [data-beehive-theme="dark"] .bhh-metric-tick,[data-beehive-theme="dark"] .bee-dock-vital-tick,[data-beehive-theme="dark"] .bee-envelope-gauge-tick { stroke:#e2e8f0; } [data-beehive-theme="dark"] .bee-schedule-rail-progress { stroke:#818cf8; } [data-beehive-theme="dark"] .bee-schedule-checkpoint-tick { stroke:#cbd5e1; } [data-beehive-theme="dark"] .bee-schedule-cursor-tick { stroke:#f8fafc; } [data-beehive-theme="dark"] .bee-schedule-pin { fill:#94a3b8; stroke:#0f172a; } [data-beehive-theme="dark"] .bee-schedule-pin[data-pin-status="matched"] { fill:#34d399; } [data-beehive-theme="dark"] .bee-schedule-pin[data-pin-status="planned-exception"] { fill:#818cf8; } [data-beehive-theme="dark"] .bee-schedule-pin[data-pin-status="missed"],[data-beehive-theme="dark"] .bee-schedule-pin[data-pin-status="due"] { fill:#fbbf24; } [data-beehive-theme="dark"] .bee-dock-glyph-accent { stroke:#fbbf24; } [data-beehive-theme="dark"] .bee-envelope-gauge-band { fill:rgba(52,211,153,.16); stroke:rgba(52,211,153,.45); }' +
       '[data-beehive-stage] { isolation:isolate; border-color:rgba(var(--bee-accent-rgb),.58) !important; box-shadow:0 26px 62px rgba(15,23,42,.22),0 0 0 1px rgba(var(--bee-accent-rgb),.20),inset 0 1px 0 rgba(255,255,255,.18) !important; }' +
       '[data-beehive-stage]:focus-within { box-shadow:0 28px 68px rgba(15,23,42,.26),0 0 0 3px rgba(var(--bee-accent-rgb),.34),inset 0 1px 0 rgba(255,255,255,.18) !important; }' +
       '[data-beehive-stage]::after { content:""; position:absolute; inset:0; z-index:2; pointer-events:none; border-radius:inherit; opacity:.62; }' +
@@ -2163,6 +2464,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       '[data-beehive-build-zone] > span { color:#a7f3d0; } [data-beehive-rival-zone] > span { color:#fecdd3; }' +
       '[data-structure-selected="true"] { border-color:#f59e0b !important; transform:translateY(-2px); box-shadow:0 0 0 2px rgba(245,158,11,.28),0 16px 32px rgba(146,64,14,.18) !important; }' +
       '[data-beehive-build-selection="true"] { animation:bee-panel-arrive .22s ease-out both; box-shadow:0 14px 34px rgba(146,64,14,.12),inset 0 1px 0 rgba(255,255,255,.62); }' +
+      '.bee-queen-placement-schematic { display:block; width:100%; max-width:20rem; height:52px; margin:0 0 .5rem; }' +
+      '.bee-place-schem-bg { fill:rgba(255,255,255,.78); stroke:rgba(217,119,6,.38); stroke-width:1; } .bee-place-schem-entrance { fill:none; stroke:#b45309; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; } .bee-place-schem-core { fill:rgba(245,158,11,.08); stroke:rgba(217,119,6,.28); stroke-width:1; stroke-dasharray:3 2; }' +
+      '.bee-place-hex { fill:#fef3c7; stroke:#d97706; stroke-width:1.3; } [data-cell-occupied="true"] > .bee-place-hex { fill:rgba(100,116,139,.25); stroke:#64748b; } .bee-place-cell-rec { fill:none; stroke:#059669; stroke-width:1.4; stroke-dasharray:2.5 2; } .bee-place-occ-mark { fill:none; stroke:#475569; stroke-width:1.5; stroke-linecap:round; }' +
+      '[data-beehive-theme="dark"] .bee-place-schem-bg { fill:rgba(15,23,42,.75); stroke:rgba(251,191,36,.38); } [data-beehive-theme="dark"] .bee-place-schem-entrance { stroke:#fbbf24; } [data-beehive-theme="dark"] .bee-place-hex { fill:rgba(120,53,15,.45); stroke:#fbbf24; } [data-beehive-theme="dark"] [data-cell-occupied="true"] > .bee-place-hex { fill:rgba(51,65,85,.55); stroke:#94a3b8; } [data-beehive-theme="dark"] .bee-place-cell-rec { stroke:#34d399; } [data-beehive-theme="dark"] .bee-place-occ-mark { stroke:#cbd5e1; }' +
       '[data-beehive-stage="beekeeper"][data-motion-state="paused"] canvas { filter:saturate(.72) brightness(.72); }' +
       '[data-beehive-beekeeper-paused-overlay] { pointer-events:none; position:absolute; inset:0; z-index:15; display:grid; place-items:center; background:rgba(15,23,42,.16); backdrop-filter:blur(1px); }' +
       '[data-beehive-beekeeper-paused-overlay] > div { max-width:min(82%,22rem); border:1px solid rgba(251,191,36,.38); border-radius:1.15rem; padding:.85rem 1.1rem; background:rgba(28,19,6,.88); color:#fff; text-align:center; box-shadow:0 22px 52px rgba(2,6,23,.46); backdrop-filter:blur(12px); }' +
@@ -2183,6 +2488,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       '[data-flight-envelope-item][data-envelope-state="caution"] { box-shadow:inset 3px 0 0 #d97706; }' +
       '[data-flight-envelope-item][data-envelope-state="danger"] { box-shadow:inset 3px 0 0 #dc2626; }' +
       '[data-flight-envelope-item][data-envelope-state="paused"] { box-shadow:inset 3px 0 0 #64748b; }' +
+      '.bee-archive-whisker { display:block; width:120px; max-width:100%; height:22px; margin-top:4px; overflow:visible; }' +
+      '.bee-archive-whisker-rail { stroke:#94a3b8; stroke-width:2; stroke-linecap:round; }' +
+      '.bee-archive-whisker-zero { stroke:#475569; stroke-width:1.5; stroke-dasharray:2 2; }' +
+      '.bee-archive-whisker-span { fill:#94a3b8; fill-opacity:.55; stroke:#475569; stroke-width:1; }' +
+      '.bee-archive-whisker-mean { fill:#334155; stroke:#ffffff; stroke-width:1.4; }' +
+      '[data-whisker-tone="beneficial"] .bee-archive-whisker-span { fill:#10b981; fill-opacity:.42; stroke:#047857; }' +
+      '[data-whisker-tone="beneficial"] .bee-archive-whisker-mean { fill:#047857; }' +
+      '[data-whisker-tone="adverse"] .bee-archive-whisker-span { fill:#f43f5e; fill-opacity:.42; stroke:#be123c; }' +
+      '[data-whisker-tone="adverse"] .bee-archive-whisker-mean { fill:#be123c; }' +
+      '[data-beehive-theme="dark"] .bee-archive-whisker-rail { stroke:#64748b; }' +
+      '[data-beehive-theme="dark"] .bee-archive-whisker-zero { stroke:#cbd5e1; }' +
+      '[data-beehive-theme="dark"] .bee-archive-whisker-span { fill:#64748b; stroke:#cbd5e1; }' +
+      '[data-beehive-theme="dark"] .bee-archive-whisker-mean { fill:#e2e8f0; stroke:#0f172a; }' +
+      '[data-beehive-theme="dark"] [data-whisker-tone="beneficial"] .bee-archive-whisker-span { fill:#34d399; fill-opacity:.38; stroke:#34d399; }' +
+      '[data-beehive-theme="dark"] [data-whisker-tone="beneficial"] .bee-archive-whisker-mean { fill:#34d399; }' +
+      '[data-beehive-theme="dark"] [data-whisker-tone="adverse"] .bee-archive-whisker-span { fill:#fb7185; fill-opacity:.38; stroke:#fb7185; }' +
+      '[data-beehive-theme="dark"] [data-whisker-tone="adverse"] .bee-archive-whisker-mean { fill:#fb7185; }' +
+      '.bee-forecast-result-visual { margin-top:8px; width:100%; max-width:220px; }' +
+      '.bee-forecast-result-visual svg { display:block; width:100%; height:28px; overflow:visible; }' +
+      '.bee-fcv-track { fill:var(--bf-tint,#eef2e7); stroke:var(--bf-line,#cbd5e1); stroke-width:1; }' +
+      '.bee-fcv-pending { stroke-dasharray:3 2; }' +
+      '.bee-fcv-projected { fill:var(--bf-forecast,#0369a1); opacity:.72; }' +
+      '.bee-fcv-actual { fill:var(--bf-observed,#b45309); }' +
+      '[data-forecast-visual-tone="aligned"] .bee-fcv-actual,[data-forecast-visual-tone="exact"] .bee-fcv-actual { fill:#047857; }' +
+      '[data-beehive-theme="dark"] [data-forecast-visual-tone="aligned"] .bee-fcv-actual,[data-beehive-theme="dark"] [data-forecast-visual-tone="exact"] .bee-fcv-actual { fill:#34d399; }' +
+      '.bee-fcv-start { stroke:var(--bf-ink,#0f172a); stroke-width:2; stroke-linecap:round; }' +
+      '.bee-fcv-residual { stroke:var(--bf-ink,#0f172a); stroke-width:2; stroke-linecap:round; }' +
       '[data-command-preview] { display:block; min-height:1.9em; }' +
       '[data-beehive-root="true"] :is([data-beehive-canvas],[data-beehive-queen-canvas],[data-beehive-drone-canvas]) { filter:saturate(1.07) contrast(1.025); }' +
       '[data-beehive-root="true"] :is([data-beehive-scene-hud],[data-beehive-battlefield-overlay]) > * { box-shadow:0 10px 28px rgba(2,6,23,.34) !important; }' +
@@ -2195,7 +2527,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       '[data-beehive-focus-panel] { animation:bee-panel-arrive .22s ease-out both; }' +
       '@keyframes bee-cycle-clock { from{transform:scaleX(0)} to{transform:scaleX(1)} } @keyframes bee-stage-breathe { 0%,100%{opacity:.48} 50%{opacity:.74} } @keyframes bee-live-pulse { 0%,100%{opacity:.66;transform:scale(.86)} 50%{opacity:1;transform:scale(1.08)} } @keyframes bee-progress-sheen { 0%,55%{transform:translateX(-120%)} 85%,100%{transform:translateX(120%)} } @keyframes bee-panel-arrive { from{opacity:0;transform:translateY(-6px) scale(.992)} to{opacity:1;transform:none} } @keyframes bee-build-zone-pulse { 0%,100%{box-shadow:inset 0 0 38px rgba(16,185,129,.10),0 0 18px rgba(16,185,129,.10)} 50%{box-shadow:inset 0 0 48px rgba(16,185,129,.18),0 0 30px rgba(16,185,129,.22)} }' +
       '@media (prefers-reduced-motion:reduce) { [data-beehive-cycle-fill],[data-beehive-rts-live-dot],[data-beehive-stage]::after,[data-beehive-build-zone],[data-beehive-build-selection="true"],[data-beehive-focus-panel],[data-beehive-root="true"] [role="progressbar"] > *::after { animation:none !important; } [data-beehive-mode-tab],[data-structure-selected="true"],[data-beehive-root="true"] :is([data-command-ready="true"],[data-structure-ready="true"],[data-action-ready="true"]):hover,[data-mobile-rail="drone-difficulty"] button,[data-flight-control],[data-placement-zone],[data-beehive-start-strategy="true"],#beehive-next-day:hover,[data-management-action]:hover { transform:none !important; } }' +
-      '@media (forced-colors:active) { [data-beehive-root="true"],[data-beehive-hero="true"],[data-beehive-mode-switcher="true"],[data-beehive-stage],[data-beehive-stage-chip],[data-beehive-build-zone],[data-beehive-rival-zone],[data-beehive-build-selection],[data-beehive-cycle-track],[data-beehive-beekeeper-paused-overlay],[data-beehive-flight-paused-overlay],[data-flight-envelope-item],[data-beehive-vital],[data-experiment-audit-deck="true"],[data-plan-registration-node],[data-beehive-root="true"] :is([data-beehive-command],[data-beehive-hud-command],[data-beehive-learning-brief],[data-beehive-journey-disclosure],[data-beehive-focus-panel]) { background:Canvas !important; border-color:CanvasText !important; box-shadow:none !important; backdrop-filter:none !important; } [data-beehive-root] .bee-command .bee-command-alert { background:Canvas !important; color:ButtonText !important; border-color:ButtonText !important; box-shadow:none !important; } [data-beehive-root="true"]::before,[data-beehive-hero="true"]::after,[data-beehive-stage]::after,[data-plan-registration-node]::after,[data-beehive-root="true"] [role="progressbar"] > *::after { display:none !important; } [data-beehive-cycle-fill] { background:Highlight !important; } [data-beehive-mode-tab][aria-checked="true"] { outline:2px solid Highlight !important; transform:none; } }' +
+      '@media (forced-colors:active) { [data-beehive-root="true"],[data-beehive-hero="true"],[data-beehive-mode-switcher="true"],[data-beehive-stage],[data-beehive-stage-chip],[data-beehive-build-zone],[data-beehive-rival-zone],[data-beehive-build-selection],[data-beehive-cycle-track],[data-beehive-beekeeper-paused-overlay],[data-beehive-flight-paused-overlay],[data-flight-envelope-item],[data-beehive-vital],[data-experiment-audit-deck="true"],[data-plan-registration-node],[data-beehive-root="true"] :is([data-beehive-command],[data-beehive-hud-command],[data-beehive-learning-brief],[data-beehive-journey-disclosure],[data-beehive-focus-panel]) { background:Canvas !important; border-color:CanvasText !important; box-shadow:none !important; backdrop-filter:none !important; } .bee-archive-whisker svg,.bee-archive-whisker,.bee-forecast-result-visual svg { forced-color-adjust:none; } .bee-plan-integrity-bar,.bee-plan-integrity-bar *,.bee-plan-stage-icon,.bee-plan-stage-icon * { forced-color-adjust:auto; } .bee-protocol-stepper,.bee-protocol-stepper *,.bee-protocol-step-icon,.bee-protocol-step-icon * { forced-color-adjust:auto; } .bee-queen-placement-schematic,.bee-queen-placement-schematic * { forced-color-adjust:auto; } .bee-stock-trait-bar,.bee-stock-trait-bar *,.bee-site-profile-bars,.bee-site-profile-bars *,.bee-rts-intel-meter,.bee-rts-intel-meter *,.bee-rts-forecast-rail,.bee-rts-forecast-rail *,.bee-science-card-diagram,.bee-science-card-diagram *,.bee-env-threshold-bar,.bee-env-threshold-bar * { forced-color-adjust:auto; } .bee-stock-trait-track,.bee-site-bar-track,.bee-rts-intel-track,.bee-rts-forecast-track,.bee-env-bar-track,.bee-sci-diag-bg,.bee-sci-diag-band { fill:Canvas !important; stroke:CanvasText !important; } .bee-stock-trait-fill,.bee-site-bar-fill,.bee-rts-intel-fill,.bee-rts-forecast-fill,.bee-env-bar-fill,.bee-sci-diag-accent,.bee-sci-diag-sweet { fill:Highlight !important; stroke:CanvasText !important; } .bee-site-bar-fill[data-bar-tone="neutral"],.bee-rts-forecast-fill[data-forecast-tone="scheduled"] { fill:GrayText !important; } .bee-stock-baseline-tick,.bee-site-baseline-tick,.bee-rts-intel-tick,.bee-rts-forecast-tick,.bee-env-bar-tick,.bee-site-emblem,.bee-rts-intel-emblem,.bee-sci-diag-stroke,.bee-sci-diag-guide,.bee-sci-diag-loop,.bee-sci-diag-primary { stroke:CanvasText !important; } .bee-sci-diag-node,.bee-sci-diag-warn { fill:CanvasText !important; stroke:CanvasText !important; } .bee-plan-field-slot { fill:Canvas !important; stroke:CanvasText !important; } .bee-plan-field-slot[data-slot-state="matched"],.bee-plan-field-slot[data-slot-state="ready"] { fill:Highlight !important; stroke:Highlight !important; } .bee-plan-stage-icon { color:CanvasText !important; } .bee-plan-stage-icon[data-stage-state="complete"] { color:Highlight !important; } .bee-protocol-rail,.bee-place-schem-entrance,.bee-place-occ-mark,.bee-place-schem-core { stroke:CanvasText !important; } .bee-protocol-rail[data-rail-done="true"],.bee-place-cell-rec { stroke:Highlight !important; } .bee-protocol-node,.bee-place-schem-bg,.bee-place-hex { fill:Canvas !important; stroke:CanvasText !important; } [data-cell-occupied="true"] > .bee-place-hex { stroke:GrayText !important; } .bee-protocol-node[data-node-state="complete"],.bee-protocol-node[data-node-state="current"] { stroke:Highlight !important; } .bee-protocol-node[data-node-state="complete"] { fill:Highlight !important; } .bee-protocol-node-core[data-node-state="complete"] { fill:HighlightText !important; } .bee-protocol-node-core[data-node-state="current"] { fill:Highlight !important; } .bee-protocol-step-icon { color:CanvasText !important; } .bee-protocol-step-icon[data-step-state="complete"],.bee-protocol-step-icon[data-step-state="current"] { color:Highlight !important; } .bee-archive-whisker-rail,.bee-archive-whisker-zero,.bee-fcv-start,.bee-fcv-residual { stroke:CanvasText !important; } .bee-archive-whisker-span { fill:Canvas !important; stroke:CanvasText !important; } .bee-archive-whisker-mean,.bee-fcv-actual { fill:Highlight !important; } .bee-fcv-projected { fill:CanvasText !important; } .bee-rts-objective-emblem,.bee-rts-objective-emblem *,.bee-rts-target-bar,.bee-rts-target-bar *,.bee-rts-toolbar-pressure-bar,.bee-rts-toolbar-pressure-bar *,.bee-result-distance-svg,.bee-result-distance-svg *,.bee-result-extra-bar,.bee-result-extra-bar *,.bee-event-comparison-summary,.bee-event-comparison-summary *,.bee-event-impact-bar,.bee-event-impact-bar *,.bee-outlook-stability-strip,.bee-outlook-stability-strip *,.bee-outlook-risk-gauge,.bee-outlook-risk-gauge * { forced-color-adjust:auto; } .bee-rts-target-track,.bee-rts-raid-track,.bee-result-distance-track,.bee-result-extra-track,.bee-event-impact-track,.bee-outlook-channel-track,.bee-outlook-risk-track { fill:Canvas !important; stroke:CanvasText !important; } .bee-rts-target-fill,.bee-rts-raid-fill,.bee-result-distance-fill,.bee-result-extra-fill,.bee-event-summary-bar,.bee-event-impact-fill,.bee-outlook-channel-fill,.bee-outlook-risk-fill { fill:Highlight !important; stroke:CanvasText !important; } .bee-rts-target-tick,.bee-rts-raid-tick,.bee-result-distance-tick,.bee-event-axis,.bee-outlook-channel-tick,.bee-outlook-risk-tick,.bee-rts-emblem-stroke,.bee-rts-emblem-accent,.bhh-metric-tick,.bee-schedule-checkpoint-tick,.bee-schedule-cursor-tick,.bee-dock-vital-tick,.bee-envelope-gauge-tick,.bee-dock-glyph-stroke,.bee-dock-glyph-accent { stroke:CanvasText !important; } .bee-rts-emblem-core,.bee-dock-glyph-fill { fill:CanvasText !important; } .bhh-stepper-rail,.bhh-stepper-rail *,.bhh-metric-bar,.bhh-metric-bar *,.bhh-comparison-bars,.bhh-comparison-bars *,.bee-schedule-timeline-rail,.bee-schedule-timeline-rail *,.bee-dock-vital-strip,.bee-dock-vital-strip *,.bee-dock-command-glyph,.bee-dock-command-glyph *,.bee-envelope-item-gauge,.bee-envelope-item-gauge * { forced-color-adjust:auto !important; } .bhh-metric-track,.bhh-comp-track,.bee-dock-vital-track,.bee-envelope-gauge-track,.bee-envelope-gauge-band { fill:Canvas !important; stroke:CanvasText !important; stroke-width:0.8 !important; } .bhh-metric-fill,.bhh-comp-run-a,.bhh-comp-run-b,.bee-dock-vital-fill,.bee-envelope-gauge-fill { fill:Highlight !important; } .bhh-stepper-line,.bee-schedule-rail-track { stroke:CanvasText !important; } .bhh-stepper-line[data-rail-done="true"],.bee-schedule-rail-progress { stroke:Highlight !important; } .bhh-stepper-node { fill:Canvas !important; stroke:CanvasText !important; } .bhh-stepper-node[data-node-state="current"] { stroke:Highlight !important; } .bhh-stepper-core { fill:Highlight !important; } .bee-schedule-pin { fill:Highlight !important; stroke:CanvasText !important; } .bee-schedule-pin[data-pin-status="planned-exception"] { fill:Canvas !important; stroke:Highlight !important; } [data-beehive-root] .bee-command .bee-command-alert { background:Canvas !important; color:ButtonText !important; border-color:ButtonText !important; box-shadow:none !important; } [data-beehive-root="true"]::before,[data-beehive-hero="true"]::after,[data-beehive-stage]::after,[data-plan-registration-node]::after,[data-beehive-root="true"] [role="progressbar"] > *::after { display:none !important; } [data-beehive-cycle-fill] { background:Highlight !important; } [data-beehive-mode-tab][aria-checked="true"] { outline:2px solid Highlight !important; transform:none; } }' +
       '@media (max-width:639px) { [data-beehive-root="true"] { border-radius:1.25rem; padding:.5rem; } [data-beehive-hero="true"] { min-height:0; } [data-beehive-hero="true"]::after { width:10rem; right:-3rem; top:-7rem; } [data-beehive-mode-tab] { min-height:6.5rem; } [data-beehive-pulse="true"] { grid-template-columns:1fr; gap:.4rem; } [data-beehive-vital] { min-height:0; padding:.65rem .75rem .6rem .9rem; } [data-plan-registration-sequence="true"] { grid-template-columns:1fr; } [data-plan-registration-node]:not(:last-child)::after { left:1.25rem; top:100%; width:.14rem; height:.55rem; } [data-beehive-stage-chip] { min-height:1.65rem; padding:.25rem .5rem; font-size:.65rem; } [data-beehive-build-zone] > span,[data-beehive-rival-zone] > span { padding:.3rem .45rem; font-size:.6rem; } [data-beehive-stage] { border-radius:1rem !important; } }';
     document.head.appendChild(st);
   })();
@@ -2220,6 +2552,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       [data-beehive-discovery-shell] .bee-perspectives .bee-perspective-top { flex:1 1 100%; }
       [data-beehive-discovery-shell] .bee-perspectives [data-perspective-purpose] { flex:1 1 12rem; }
       [data-beehive-discovery-shell] .bee-perspectives [data-perspective-status] { flex:1 1 100%; margin-top:0; padding-top:0; border-top:0; }
+      [data-beehive-discovery-shell] .bee-perspectives .bee-perspective-meter { flex:1 1 100%; width:100%; margin-top:.35rem; }
       [data-beehive-discovery-shell] .bee-perspective-help { margin:.35rem 0 0; }
       [data-beehive-discovery-shell] .bee-pulse[data-beehive-pulse] { display:grid; grid-template-columns:minmax(0,1fr); gap:8px 14px; padding:10px 12px; border:1px solid var(--bd-line); border-radius:16px; background:var(--bd-paper); }
       [data-beehive-discovery-shell] .bee-pulse-heading { margin:0; }
@@ -2353,6 +2686,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-sign-card h4 { margin:0 0 6px; font-size:1rem; font-weight:900; }
       .bee-sign-card h4:focus { outline:none; }
       .bee-sign-card p { margin:0 0 6px; }
+      .bee-sign-meter { margin:4px 0 8px; }
+      .bee-sign-meter svg { display:block; width:100%; height:auto; max-height:24px; }
       .bee-sign-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
       [data-beehive-root] .bee-sign-card button { min-height:44px; padding:8px 14px; border-radius:10px; font:inherit; font-weight:800; cursor:pointer; }
       [data-beehive-root] .bee-sign-card .bee-sign-do { border:1px solid #78350f; background:linear-gradient(180deg,#b45309,#8a3b0c); color:#fff; }
@@ -2360,7 +2695,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       @keyframes bee-recap-card-in { from { opacity:0; transform:translate(-50%,10px); } to { opacity:1; transform:translate(-50%,0); } }
       @media (max-width:639px) { [data-beehive-root] .bee-sign { max-width:60%; font-size:.75rem; } }
       @media (prefers-reduced-motion:reduce) { .bee-sign::after,.bee-sign-card { animation:none !important; } }
-      @media (forced-colors:active) { [data-beehive-root] .bee-sign { forced-color-adjust:auto; border:2px solid ButtonText; } .bee-sign-card { border:2px solid CanvasText; } }
+      @media (forced-colors:active) { [data-beehive-root] .bee-sign { forced-color-adjust:auto; border:2px solid ButtonText; } .bee-sign-card { border:2px solid CanvasText; } .bee-sign-meter svg { forced-color-adjust:none; } }
       @keyframes bee-recap-in { from { opacity:0; transform:translate(-50%,-14px) scale(.9); } to { opacity:1; transform:translate(-50%,0) scale(1); } }
       @keyframes bee-recap-out { to { opacity:0; transform:translate(-50%,-10px); } }
       @media (prefers-reduced-motion:reduce) { .bee-vital-delta,.bee-day-recap,.bee-day-recap-chips > span { animation:none !important; } .bee-day-flash { display:none; } }
@@ -4983,18 +5318,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-flight-condition-list p {margin:8px 0 0;}
       .bee-flight-condition-evidence {font-weight:700;font-variant-numeric:tabular-nums;}
       .bee-flight-condition-model-note {display:block;margin-top:8px;font-size:.875rem;line-height:1.5;}
-      @media(forced-colors:active) {.bee-flight-condition-list [data-flight-condition],[data-beehive-theme="dark"] .bee-flight-condition-list [data-flight-condition] {border-color:CanvasText;background:Canvas;color:CanvasText;forced-color-adjust:none;}}
+      .bee-flight-condition-icon {flex:none;}
+      .bee-flight-condition-gauge {display:block;width:100%;max-width:14rem;height:10px;margin:8px 0 0;}
+      .bee-condition-gauge-track {fill:rgba(100,116,139,.24);stroke:rgba(100,116,139,.45);stroke-width:.75;}
+      .bee-condition-gauge-fill {fill:#d97706;}
+      .bee-flight-condition-gauge[data-tone="danger"] .bee-condition-gauge-fill {fill:#dc2626;}
+      .bee-flight-condition-gauge[data-tone="healthy"] .bee-condition-gauge-fill {fill:#16a34a;}
+      [data-beehive-theme="dark"] .bee-condition-gauge-track {fill:rgba(148,163,184,.25);stroke:rgba(148,163,184,.5);}
+      [data-beehive-theme="dark"] .bee-condition-gauge-fill {fill:#fbbf24;}
+      [data-beehive-theme="dark"] .bee-flight-condition-gauge[data-tone="danger"] .bee-condition-gauge-fill {fill:#f87171;}
+      [data-beehive-theme="dark"] .bee-flight-condition-gauge[data-tone="healthy"] .bee-condition-gauge-fill {fill:#4ade80;}
+      .bee-condition-gauge-threshold {stroke:currentColor;stroke-width:1.6;}
+      @media(forced-colors:active) {.bee-flight-condition-list [data-flight-condition],[data-beehive-theme="dark"] .bee-flight-condition-list [data-flight-condition] {border-color:CanvasText;background:Canvas;color:CanvasText;forced-color-adjust:none;} .bee-flight-condition-list [data-flight-condition] svg,.bee-flight-condition-list [data-flight-condition] svg *{forced-color-adjust:auto;} .bee-flight-condition-list .bee-condition-gauge-track{fill:Canvas;stroke:CanvasText;} .bee-flight-condition-list .bee-condition-gauge-fill{fill:Highlight;} .bee-flight-condition-list .bee-condition-gauge-threshold{stroke:CanvasText;}}
       .bee-flight-command-header [data-flight-training] {padding:12px;border:1px solid var(--fc-line);border-left:4px solid var(--fc-action);border-radius:8px;background:var(--fc-tint);color:var(--fc-ink);}
       .bee-flight-training-heading {display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;}
       .bee-flight-training-heading [data-flight-training-step] {font-size:.875rem;color:var(--fc-muted);}
       .bee-flight-training-heading [data-flight-training-label] {font-size:1rem;font-weight:750;}
+      .bee-flight-training-stepper {display:block;width:100%;max-width:14rem;height:14px;margin:6px 0 0;}
+      .bee-training-rail {stroke:var(--fc-line,#94a3b8);stroke-width:2;stroke-linecap:round;}
+      .bee-training-rail[data-rail-done="true"] {stroke:var(--fc-action,#0284c7);}
+      .bee-training-pip {fill:var(--fc-paper,#fff);stroke:var(--fc-line,#64748b);stroke-width:1.8;}
+      .bee-training-pip[data-pip-state="done"],.bee-training-pip[data-pip-state="current"] {stroke:var(--fc-action,#0284c7);}
+      .bee-training-pip[data-pip-state="done"] {fill:var(--fc-action,#0284c7);}
+      .bee-training-pip-core {fill:var(--fc-action,#0284c7);}
+      .bee-training-pip-core[data-pip-state="done"] {fill:var(--fc-paper,#fff);}
+      .bee-training-pip-core[data-pip-state="upcoming"] {opacity:0;}
       .bee-flight-command-header [data-flight-training-instruction] {margin:6px 0 0;font-size:.875rem;font-weight:650;}
       .bee-flight-command-header [data-flight-training-hint] {margin:6px 0 0;font-size:.875rem;color:var(--fc-muted);}
       .bee-flight-command-diagnostics {display:flex;flex-wrap:wrap;gap:8px;font-size:.875rem;}
       .bee-flight-command-diagnostics>span {padding:4px 8px;border:1px solid var(--fc-line);border-radius:6px;}
       @media(min-width:640px) {.bee-flight-command-header {grid-template-columns:minmax(0,1fr) minmax(240px,.7fr);align-items:center;}.bee-flight-command-header>.bee-flight-conditions,.bee-flight-command-header>[data-flight-training],.bee-flight-command-diagnostics {grid-column:1/-1;}}
       [data-flight-pacing="steps"] .bee-flight-command-header {grid-template-columns:minmax(0,1fr);}
-      @media(forced-colors:active) {.bee-flight-command-header,[data-beehive-theme="dark"] .bee-flight-command-header {--fc-paper:Canvas;--fc-ink:CanvasText;--fc-muted:CanvasText;--fc-line:CanvasText;--fc-tint:Canvas;--fc-action:ButtonText;--fc-on-action:ButtonFace;--fc-danger:ButtonText;--fc-warning:CanvasText;--fc-warning-bg:Canvas;}#beehive-drone-playfield .bee-flight-command-actions button,#beehive-drone-playfield .bee-flight-command-actions [data-flight-end] {background:ButtonFace;color:ButtonText;border-color:ButtonText;forced-color-adjust:none;}#beehive-drone-playfield .bee-flight-command-diagnostics>span {background:Canvas;color:CanvasText;border-color:CanvasText;}.bee-flight-command-actions button:focus-visible {outline-color:Highlight;}}
+      @media(forced-colors:active) {.bee-flight-command-header,[data-beehive-theme="dark"] .bee-flight-command-header {--fc-paper:Canvas;--fc-ink:CanvasText;--fc-muted:CanvasText;--fc-line:CanvasText;--fc-tint:Canvas;--fc-action:ButtonText;--fc-on-action:ButtonFace;--fc-danger:ButtonText;--fc-warning:CanvasText;--fc-warning-bg:Canvas;}#beehive-drone-playfield .bee-flight-command-actions button,#beehive-drone-playfield .bee-flight-command-actions [data-flight-end] {background:ButtonFace;color:ButtonText;border-color:ButtonText;forced-color-adjust:none;}#beehive-drone-playfield .bee-flight-command-diagnostics>span {background:Canvas;color:CanvasText;border-color:CanvasText;}.bee-flight-command-actions button:focus-visible {outline-color:Highlight;}.bee-flight-training-stepper,.bee-flight-training-stepper *{forced-color-adjust:auto;}.bee-training-rail{stroke:GrayText;}.bee-training-rail[data-rail-done="true"]{stroke:Highlight;}.bee-training-pip{fill:Canvas;stroke:CanvasText;}.bee-training-pip[data-pip-state="done"]{fill:Highlight;stroke:Highlight;}.bee-training-pip[data-pip-state="current"]{stroke:Highlight;}.bee-training-pip-core{fill:Highlight;}.bee-training-pip-core[data-pip-state="done"]{fill:Canvas;}}
       .bee-flight-viewport {position:relative;height:clamp(440px,56vw,620px);overflow:hidden;isolation:isolate;}
       [data-beehive-stage="drone"]::after {display:none;}
       .bee-flight-director {--fd-paper:#f3f9fc;--fd-ink:#172b3a;--fd-muted:#425c6d;--fd-line:#9ab3c2;--fd-tint:#fff;--fd-accent:#075985;--fd-caution:#9f1239;position:relative;display:block;border-top:2px solid var(--fd-line);background:var(--fd-paper);color:var(--fd-ink);font:400 1rem/1.5 system-ui,sans-serif;overflow-wrap:anywhere;min-width:0;}
@@ -5026,6 +5381,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-flight-director [data-director-energy-fill] {height:100%;background:var(--fd-accent);}
       .bee-flight-director[data-reserve-low="true"] [data-director-value="energy"],.bee-flight-director[data-reserve-low="true"] [data-director-reserve] {color:var(--fd-caution);font-weight:750;}
       .bee-flight-director[data-reserve-low="true"] [data-director-energy-fill] {background:var(--fd-caution);}
+      .bee-director-metric-gauge {display:block;width:100%;max-width:100%;height:10px;margin-top:8px;}
+      .bee-director-gauge-track {fill:rgba(100,116,139,.22);stroke:var(--fd-line);stroke-width:.75;}
+      .bee-director-gauge-gate {fill:rgba(217,119,6,.32);stroke:#d97706;stroke-width:.75;}
+      .bee-director-gauge-band {fill:rgba(217,119,6,.38);stroke:#b45309;stroke-width:.75;}
+      .bee-director-gauge-fill {fill:var(--fd-accent);}
+      .bee-director-metric-gauge[data-gauge-tone="in-gate"] .bee-director-gauge-fill {fill:#047857;}
+      .bee-director-metric-gauge[data-gauge-tone="low"] .bee-director-gauge-fill {fill:var(--fd-caution);}
+      .bee-director-gauge-marker {fill:var(--fd-ink);stroke:var(--fd-tint);stroke-width:1;}
+      .bee-director-metric-gauge[data-gauge-tone="in-band"] .bee-director-gauge-marker {fill:#047857;}
+      .bee-director-gauge-tick {stroke:var(--fd-caution);stroke-width:1.4;}
+      [data-beehive-theme="dark"] .bee-director-metric-gauge[data-gauge-tone="in-gate"] .bee-director-gauge-fill,[data-beehive-theme="dark"] .bee-director-metric-gauge[data-gauge-tone="in-band"] .bee-director-gauge-marker {fill:#34d399;}
+      [data-beehive-theme="dark"] .bee-director-gauge-band {fill:rgba(251,191,36,.32);stroke:#fbbf24;}
       .bee-flight-director p {margin:0;font-size:.875rem;color:var(--fd-muted);}
       [data-beehive-stage="drone"][data-flight-hud="clear"] [data-beehive-stage-chip], [data-beehive-stage="drone"][data-flight-hud="detailed"] .bee-flight-director, [data-flight-pacing="steps"] .bee-flight-director {display:none;}
       .bee-flight-approach {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,14rem),1fr));align-items:center;gap:16px;border-top:1px solid var(--fd-line);padding-top:16px;}
@@ -5042,7 +5409,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-flight-entry-conditions [data-met="true"] {border-style:solid;font-weight:700;}
       .bee-flight-approach-note {display:block;margin-top:6px;color:var(--fd-muted);font-size:.875rem;}
       .bee-flight-approach[data-approach-recorded="true"] {grid-template-columns:1fr;}
-      @media(forced-colors:active) {.bee-flight-director,[data-beehive-theme="dark"] .bee-flight-director {--fd-paper:Canvas;--fd-ink:CanvasText;--fd-muted:CanvasText;--fd-line:CanvasText;--fd-tint:Canvas;--fd-accent:Highlight;--fd-caution:CanvasText;}.bee-flight-altitude-track {border-color:CanvasText;background:Canvas;}.bee-flight-altitude-band {background:Highlight;border-color:CanvasText;forced-color-adjust:none;}.bee-flight-altitude-pointer {background:CanvasText;box-shadow:0 0 0 1px Canvas;}.bee-flight-altitude-pointer:before {border-top-color:CanvasText;}.bee-flight-director [data-director-energy-fill] {background:Highlight;forced-color-adjust:none;}}
+      .bee-flight-range-meter {margin-top:8px;width:100%;box-sizing:border-box;}
+      .bee-flight-range-track {position:relative;height:10px;width:100%;box-sizing:border-box;border:1px solid #81a1b5;border-radius:999px;background:#102633;overflow:hidden;}
+      .bee-flight-range-zone {position:absolute;top:0;bottom:0;background:rgba(200,145,25,.42);border-left:1px solid #fef3c7;}
+      .bee-flight-range-fill {display:block;height:100%;background:#38bdf8;border-radius:999px;}
+      .bee-flight-range-meter[data-met="true"] .bee-flight-range-fill {background:#34d399;}
+      @media(forced-colors:active) {.bee-flight-director,[data-beehive-theme="dark"] .bee-flight-director {--fd-paper:Canvas;--fd-ink:CanvasText;--fd-muted:CanvasText;--fd-line:CanvasText;--fd-tint:Canvas;--fd-accent:Highlight;--fd-caution:CanvasText;}.bee-flight-altitude-track {border-color:CanvasText;background:Canvas;}.bee-flight-altitude-band {background:Highlight;border-color:CanvasText;forced-color-adjust:none;}.bee-flight-altitude-pointer {background:CanvasText;box-shadow:0 0 0 1px Canvas;}.bee-flight-altitude-pointer:before {border-top-color:CanvasText;}.bee-flight-range-track {border-color:CanvasText;background:Canvas;}.bee-flight-range-zone {background:Canvas;border-color:CanvasText;}.bee-flight-range-fill {background:Highlight;forced-color-adjust:none;}.bee-flight-director [data-director-energy-fill] {background:Highlight;forced-color-adjust:none;}.bee-director-metric-gauge,.bee-director-metric-gauge * {forced-color-adjust:auto;}.bee-director-gauge-track {fill:Canvas;stroke:CanvasText;}.bee-director-gauge-gate,.bee-director-gauge-band,.bee-director-gauge-fill,.bee-director-gauge-marker {fill:Highlight;stroke:CanvasText;}.bee-director-gauge-tick {stroke:CanvasText;}}
 
       [data-beehive-touch-controls] { --bf-ink:#173443; --bf-paper:#f5fbff; background:var(--bf-paper)!important; color:var(--bf-ink); }
       [data-beehive-theme="dark"] [data-beehive-touch-controls] { --bf-ink:#e0f2fe; --bf-paper:#122c3a; }
@@ -5099,13 +5471,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-flight-ecology a:focus-visible { outline:3px solid currentColor; outline-offset:3px; }
       @media(max-width:639px) { .bee-ecology-cards { grid-template-columns:1fr; } }
       .bee-flight-motion-body { padding:0 12px 12px; }
-      .bee-flight-motion-body > strong,.bee-flight-motion-body > span { display:block; }
+      .bee-flight-motion-body > strong,.bee-flight-motion-body > span,.bee-flight-motion-readouts > strong,.bee-flight-motion-readouts > span { display:block; }
+      .bee-flight-motion-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:6px; }
+      .bee-flight-motion-readouts { flex:1 1 160px; min-width:0; }
+      .bee-flight-motion-dial { width:88px; height:88px; flex:0 0 88px; color:#173443; --motion-ring:#5b7888; --motion-head:#0f172a; --motion-track:#0369a1; --motion-wind:#92400e; --motion-vert:#155e75; }
+      [data-beehive-theme="dark"] .bee-flight-motion-dial { color:#e0f2fe; --motion-ring:#7fa6ba; --motion-head:#f8fafc; --motion-track:#38bdf8; --motion-wind:#fbbf24; --motion-vert:#67e8f9; }
       .bee-flight-motion-body p { margin:8px 0 0; font-size:11px; }
       .bee-flight-motion-legend { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px; }
       .bee-flight-motion-legend span { border:1px solid #688b9e; border-radius:6px; padding:3px 8px; background:#102c3c; color:#fff; font-weight:700; }
-      .bee-flight-motion-legend span:last-child { color:#a5f3fc; }
+      .bee-flight-motion-legend span.bee-motion-track-chip { color:#a5f3fc; }
+      .bee-flight-motion-legend span.bee-motion-wind-chip { color:#fde68a; }
       [data-beehive-theme="dark"] .bee-flight-motion { background:#152e3b; color:#e0f2fe; }
-      @media(forced-colors:active) { .bee-flight-motion,[data-beehive-theme="dark"] .bee-flight-motion,.bee-flight-motion-legend span { color:CanvasText; background:Canvas; border-color:CanvasText; } }
+      .bee-flight-ecology [hidden] { display:none!important; }
+      .bee-predator-gauge { margin-top:8px; width:100%; box-sizing:border-box; }
+      .bee-predator-gauge-track { position:relative; height:10px; width:100%; box-sizing:border-box; border:1px solid #8198a5; border-radius:999px; background:var(--bf-paper,#ffffff); overflow:hidden; }
+      .bee-predator-zone-nearby { position:absolute; top:0; bottom:0; background:rgba(217,119,6,.24); border-left:1px dashed #b45309; }
+      .bee-predator-zone-contact { position:absolute; top:0; bottom:0; background:rgba(225,29,72,.30); border-left:1px solid #be123c; }
+      .bee-predator-gauge-fill { position:relative; display:block; height:100%; border-radius:999px; background:#0f766e; }
+      .bee-predator-gauge[data-predator-status="nearby"] .bee-predator-gauge-fill { background:#d97706; }
+      .bee-predator-gauge[data-predator-status="contact"] .bee-predator-gauge-fill { background:#be123c; }
+      [data-beehive-theme="dark"] .bee-predator-gauge-fill { background:#34d399; }
+      [data-beehive-theme="dark"] .bee-predator-gauge[data-predator-status="nearby"] .bee-predator-gauge-fill { background:#fbbf24; }
+      [data-beehive-theme="dark"] .bee-predator-gauge[data-predator-status="contact"] .bee-predator-gauge-fill { background:#fb7185; }
+      @media(forced-colors:active) { .bee-flight-motion,[data-beehive-theme="dark"] .bee-flight-motion,.bee-flight-motion-legend span,.bee-flight-motion-legend span.bee-motion-track-chip,.bee-flight-motion-legend span.bee-motion-wind-chip { color:CanvasText; background:Canvas; border-color:CanvasText; } .bee-flight-motion-dial { color:CanvasText; --motion-ring:CanvasText; --motion-head:CanvasText; --motion-track:Highlight; --motion-wind:CanvasText; --motion-vert:Highlight; forced-color-adjust:none; } .bee-predator-gauge-track { border-color:CanvasText; background:Canvas; } .bee-predator-gauge-fill { background:Highlight; forced-color-adjust:none; } }
 
       .bee-flight-trail-control { margin-top:8px; padding-top:12px; border-top:1px solid #8198a5; display:grid; gap:8px; }
       .bee-flight-trail-control button { min-height:44px; padding:9px 12px; border:1px solid currentColor; border-radius:8px; text-align:left; font:700 12px/1.45 system-ui,sans-serif; color:inherit; background:transparent; }
@@ -5183,13 +5571,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-flight-briefing .bee-flight-budget > span {display:block;}
       .bee-flight-briefing .bee-flight-budget b {display:block;font-size:1.2rem;color:var(--bf-accent);font-variant-numeric:tabular-nums;}
       .bee-flight-briefing .bee-flight-launch-cta {display:block;padding:8px 10px;border-radius:6px;background:var(--bf-accent);color:var(--bf-paper);font-weight:750;text-align:center;}
+      .bee-launch-budget-bars {display:block;width:100%;max-width:100%;height:22px;}
+      .bee-launch-bar-track {fill:rgba(100,116,139,.18);stroke:var(--bf-line);stroke-width:.75;}
+      .bee-launch-bar-time {fill:#0284c7;}
+      .bee-launch-bar-cap {fill:rgba(217,119,6,.22);}
+      .bee-launch-bar-energy {fill:#d97706;}
+      .bee-launch-bar-cap-tick {stroke:var(--bf-ink);stroke-width:1.4;}
+      [data-beehive-theme="dark"] .bee-launch-bar-track {fill:rgba(148,163,184,.22);}
+      [data-beehive-theme="dark"] .bee-launch-bar-time {fill:#38bdf8;}
+      [data-beehive-theme="dark"] .bee-launch-bar-cap {fill:rgba(251,191,36,.24);}
+      [data-beehive-theme="dark"] .bee-launch-bar-energy {fill:#fbbf24;}
+      .bee-drone-choice-glyph {display:block;width:18px;height:18px;margin-bottom:4px;color:var(--bf-accent);flex:none;}
+      .bee-carryover-condition-meter {display:block;width:100%;max-width:22rem;height:14px;margin:6px 0 2px;}
+      .bee-carryover-track {fill:rgba(100,116,139,.18);stroke:var(--bf-line);stroke-width:.75;}
+      .bee-carryover-fill {fill:#059669;}
+      .bee-carryover-condition-meter[data-carryover-band="watch"] .bee-carryover-fill {fill:#0284c7;}
+      .bee-carryover-condition-meter[data-carryover-band="stressed"] .bee-carryover-fill {fill:#d97706;}
+      .bee-carryover-tick {stroke:var(--bf-ink);stroke-width:1.2;stroke-dasharray:2 1.5;}
+      [data-beehive-theme="dark"] .bee-carryover-track {fill:rgba(148,163,184,.22);}
+      [data-beehive-theme="dark"] .bee-carryover-fill {fill:#34d399;}
+      [data-beehive-theme="dark"] .bee-carryover-condition-meter[data-carryover-band="watch"] .bee-carryover-fill {fill:#38bdf8;}
+      [data-beehive-theme="dark"] .bee-carryover-condition-meter[data-carryover-band="stressed"] .bee-carryover-fill {fill:#fbbf24;}
       .bee-flight-briefing [data-flight-colony-context] {margin-top:20px;}
       .bee-flight-briefing .bee-flight-context-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,13rem),1fr));gap:12px;}
       .bee-flight-briefing .bee-flight-context-grid > div {padding:12px;border:1px solid var(--bf-line);border-radius:8px;}
       .bee-flight-briefing .bee-flight-record {display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:12px;font-size:.875rem;color:var(--bf-muted);}
       .bee-flight-briefing kbd {font:inherit;font-weight:700;border:1px solid var(--bf-line);border-bottom-width:3px;border-radius:4px;padding:1px 5px;}
       @media(min-width:850px) {.bee-flight-briefing .bee-flight-hero {grid-template-columns:minmax(0,1.3fr) minmax(240px,1fr);}}
-      @media(forced-colors:active) {.bee-flight-briefing .bee-flight-launch-cta {background:ButtonFace;color:ButtonText;border:1px solid ButtonText;}.bee-flight-briefing .bee-flight-choice[aria-checked="true"] {outline:2px solid Highlight;outline-offset:-4px;}}
+      @media(forced-colors:active) {.bee-flight-briefing .bee-flight-launch-cta {background:ButtonFace;color:ButtonText;border:1px solid ButtonText;}.bee-flight-briefing .bee-flight-choice[aria-checked="true"] {outline:2px solid Highlight;outline-offset:-4px;}.bee-launch-budget-bars,.bee-launch-budget-bars *{forced-color-adjust:auto;}.bee-launch-bar-track{fill:Canvas;stroke:CanvasText;}.bee-launch-bar-cap{fill:Canvas;stroke:GrayText;}.bee-launch-bar-time,.bee-launch-bar-energy{fill:Highlight;}.bee-launch-bar-cap-tick{stroke:CanvasText;}.bee-drone-choice-glyph,.bee-drone-choice-glyph *,.bee-carryover-condition-meter,.bee-carryover-condition-meter *{forced-color-adjust:auto;}.bee-drone-choice-glyph{color:ButtonText;}.bee-flight-briefing .bee-flight-choice[aria-checked="true"] .bee-drone-choice-glyph{color:Highlight;}.bee-carryover-track{fill:Canvas;stroke:CanvasText;}.bee-carryover-fill{fill:Highlight;}.bee-carryover-tick{stroke:CanvasText;}}
 
       .bfd {--bf-paper:#fff;--bf-ink:#172b3a;--bf-muted:#425466;--bf-line:#b7c7cf;--bf-tint:#eef7fa;--bf-accent:#075985;background:var(--bf-paper);color:var(--bf-ink);border:1px solid var(--bf-line);border-radius:18px;padding:clamp(16px,2.4vw,26px);font:400 1rem/1.55 system-ui,sans-serif;text-align:left;min-width:0;overflow-wrap:anywhere;}
       [data-beehive-theme="dark"] .bfd {--bf-paper:#10222d;--bf-ink:#f1f5f9;--bf-muted:#cbd5e1;--bf-line:#647b88;--bf-tint:#173443;--bf-accent:#7dd3fc;}
@@ -5243,9 +5652,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bfd .bee-plan-reading-value {font-size:1.625rem;font-weight:750;line-height:1.4;font-variant-numeric:tabular-nums;margin:8px 0;}
       .bfd .bee-plan-reading-reference {font-size:.875rem;line-height:1.55;font-weight:700;margin:4px 0;}
       .bfd .bee-plan-reading-detail {font-size:.875rem;line-height:1.6;color:var(--bf-muted);margin:8px 0 0;}
-      .bee-plan-altitude-scale {display:block;width:100%;height:auto;margin-top:8px;}
-      .bee-plan-altitude-ticks {display:flex;justify-content:space-between;gap:8px;font-size:.875rem;font-variant-numeric:tabular-nums;color:var(--bf-muted);}
-      .bfd .bee-plan-altitude-key {font-size:.875rem;line-height:1.5;color:var(--bf-muted);margin:8px 0;}
+      .bee-plan-altitude-scale,.bee-plan-range-scale {display:block;width:100%;height:auto;margin-top:8px;}
+      .bee-plan-altitude-ticks,.bee-plan-range-ticks {display:flex;justify-content:space-between;gap:8px;font-size:.875rem;font-variant-numeric:tabular-nums;color:var(--bf-muted);}
+      .bfd .bee-plan-altitude-key,.bfd .bee-plan-range-key {font-size:.875rem;line-height:1.5;color:var(--bf-muted);margin:8px 0;}
       .bee-plan-energy-meter {height:14px;border:1px solid var(--bf-line);border-radius:4px;overflow:hidden;background:var(--bf-tint);margin-top:12px;}
       .bee-plan-energy-meter>span {display:block;height:100%;background:var(--bf-accent);}
       .bee-plan-energy-status {display:inline-block;font-size:.875rem;font-weight:700;line-height:1.5;border:1px solid var(--bf-line);border-radius:6px;padding:4px 8px;margin-top:10px;background:var(--bf-tint);}
@@ -5268,9 +5677,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-maneuver-choice-selected {font-size:.875rem;line-height:1.5;font-weight:750;color:var(--bf-accent);border-bottom:2px solid currentColor;visibility:hidden;}
       .bee-maneuver-option[data-selected="true"] .bee-maneuver-choice-selected {visibility:visible;}
       .bee-maneuver-choice-detail {font-size:.875rem;line-height:1.6;color:var(--bf-muted);}
+      .bee-maneuver-duration-bar {display:block;width:100%;max-width:100%;height:10px;margin-top:8px;color:var(--bf-accent);}
+      .bee-maneuver-bar-track {fill:rgba(100,116,139,.2);stroke:rgba(100,116,139,.42);stroke-width:.6;}
+      .bee-maneuver-bar-tick {stroke:rgba(100,116,139,.45);stroke-width:.7;}
+      .bee-maneuver-bar-fill {fill:var(--bf-accent,#1d4ed8);}
+      .bee-maneuver-bar-fill[data-mode="glide"] {fill:#0d9488;}
+      [data-beehive-theme="dark"] .bee-maneuver-bar-fill[data-mode="glide"] {fill:#2dd4bf;}
+      .bee-maneuver-chan-active {fill:currentColor;stroke:currentColor;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;}
+      .bee-maneuver-chan-idle {fill:none;stroke:rgba(100,116,139,.48);stroke-width:1;}
+      @media(forced-colors:active) { .bee-maneuver-duration-bar,.bee-maneuver-duration-bar * {forced-color-adjust:auto;} .bee-maneuver-bar-track {fill:Canvas;stroke:CanvasText;} .bee-maneuver-bar-fill {fill:Highlight;} .bee-maneuver-chan-active {fill:Highlight;stroke:CanvasText;} .bee-maneuver-chan-idle,.bee-maneuver-bar-tick {stroke:GrayText;} }
       .bfd .bee-maneuver-prediction {border-top:1px solid var(--bf-line);padding-top:10px;margin-top:10px;}
-      .bee-planning-surroundings {--bs-target:#926000;}
-      [data-beehive-theme="dark"] .bee-planning-surroundings {--bs-target:#fcd34d;}
+      .bee-planning-surroundings {--bs-target:#926000;--bs-close:#be123c;}
+      [data-beehive-theme="dark"] .bee-planning-surroundings {--bs-target:#fcd34d;--bs-close:#fda4af;}
       .bfd .bee-surroundings-intro {font-size:.875rem;line-height:1.6;color:var(--bf-muted);margin:8px 0 14px;}
       .bee-surroundings-grid {display:flex;flex-wrap:wrap;gap:10px;}
       .bee-surroundings-card {flex:1 1 14rem;min-width:0;padding:14px;border:1px solid var(--bf-line);border-radius:12px;background:var(--bf-paper);}
@@ -5287,7 +5705,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-surroundings-weather {border-left:3px solid var(--bf-line);padding:10px 12px;background:var(--bf-tint);margin:14px 0 0;}
       .bee-surroundings-weather h4 {font-size:.875rem;font-weight:750;margin:0;}
       .bfd .bee-surroundings-weather p {font-size:.875rem;line-height:1.6;margin:6px 0 0;color:var(--bf-muted);}
-      @media(forced-colors:active) {.bee-planning-surroundings,[data-beehive-theme="dark"] .bee-planning-surroundings {--bs-target:CanvasText;}}
+      @media(forced-colors:active) {.bee-planning-surroundings,[data-beehive-theme="dark"] .bee-planning-surroundings {--bs-target:CanvasText;--bs-close:CanvasText;}}
       .bfd.bee-recorded-snapshot {margin:18px 0;padding:16px;border-radius:12px;}
       .bee-recorded-snapshot .bee-result-heading {margin:0;font-size:1.125rem;font-weight:750;line-height:1.5;}
       .bee-recorded-snapshot .bee-result-intro,.bee-recorded-snapshot .bee-result-note {margin:8px 0 14px;font-size:.875rem;line-height:1.6;color:var(--bf-muted);}
@@ -5304,8 +5722,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-result-card h5 svg {flex:none;color:var(--bf-accent);}
       .bee-recorded-snapshot .bee-result-value {font-size:1.5rem;font-weight:750;line-height:1.5;margin:8px 0;font-variant-numeric:tabular-nums;}
       .bee-recorded-snapshot .bee-result-detail {font-size:.875rem;line-height:1.6;margin:8px 0 0;color:var(--bf-muted);}
-      .bee-result-energy-scale svg {display:block;width:100%;height:auto;max-height:36px;}
+      .bee-result-energy-scale svg,.bee-result-peak-scale svg {display:block;width:100%;height:auto;max-height:36px;}
       .bee-result-scale-labels {display:flex;justify-content:space-between;gap:12px;font-size:.875rem;line-height:1.5;color:var(--bf-muted);}
+      @media(forced-colors:active) { [data-result-peak-scale="true"],[data-surroundings-proximity],[data-lift-svg="true"] { forced-color-adjust:none; } [data-result-peak-dca-band="true"] { fill:Highlight; fill-opacity:.35; stroke:Highlight; } [data-result-peak-fill="true"] { fill:CanvasText; fill-opacity:.55; } [data-result-peak-marker="true"] { fill:Canvas; stroke:CanvasText; } }
       .bee-result-extra-grid {display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;}
       .bee-result-extra {flex:1 1 13rem;min-width:0;padding:12px;border:1px solid var(--bf-line);border-radius:8px;background:var(--bf-tint);}
       .bee-result-extra h5 {font-size:.875rem;font-weight:750;line-height:1.5;margin:0;}
@@ -5379,6 +5798,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       .bee-flight-history .bee-maneuver-evidence {margin:12px 0;}
       .bee-flight-history .bee-history-note {margin:12px 0;font-size:.875rem;line-height:1.6;color:var(--bf-muted);max-width:80ch;}
       .bee-flight-history .bee-history-notice {padding:12px;border-inline-start:4px solid var(--bf-accent);background:var(--bf-tint);font-size:.9375rem;line-height:1.6;}
+      .bee-history-sparkline {display:block;width:100%;max-width:100%;height:44px;margin:12px 0 8px;border:1px solid var(--bf-line,#cbd5e1);border-radius:8px;background:var(--bf-tint,#f8fafc);}
+      [data-beehive-theme="dark"] .bee-history-sparkline {background:rgba(15,23,42,.55);border-color:rgba(148,163,184,.35);}
+      .bee-sparkline-divider {stroke:var(--bf-line,#cbd5e1);stroke-width:1;}
+      .bee-sparkline-energy {fill:var(--bf-muted,#64748b);opacity:.55;}
+      .bee-sparkline-energy[data-selected="true"] {fill:var(--bf-accent,#1d4ed8);opacity:1;}
+      .bee-sparkline-cursor {stroke:var(--bf-accent,#1d4ed8);stroke-width:1.4;stroke-dasharray:2 2;}
+      .bee-sparkline-alt-segment {fill:none;stroke:var(--bf-accent,#1d4ed8);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+      .bee-sparkline-point {fill:var(--bf-paper,#ffffff);stroke:var(--bf-accent,#1d4ed8);stroke-width:1.6;}
+      .bee-sparkline-point[data-selected="true"] {fill:var(--bf-accent,#1d4ed8);stroke:var(--bf-paper,#ffffff);stroke-width:1.4;}
       .bee-history-announcement {position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
       .bee-maneuver-evidence {margin:18px 0;padding:16px;border:1px solid var(--bf-line);border-radius:12px;background:var(--bf-tint);color:var(--bf-ink);min-width:0;}
       .bee-maneuver-heading {display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px 12px;}
@@ -5403,7 +5831,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       [data-flight-pacing="steps"] [data-beehive-stage-chip], [data-flight-pacing="steps"] [data-flight-quality-badge] {display:none!important;}
       @media(min-width:1000px) {[data-flight-workspace="steps"] {display:grid;grid-template-columns:minmax(0,1.2fr) minmax(360px,1fr);gap:16px;align-items:start;} [data-flight-workspace="steps"]>* {grid-column:1/-1;margin-top:0!important;} [data-flight-workspace="steps"]>[data-beehive-stage="drone"] {grid-column:1;grid-row:1;position:sticky;top:16px;} [data-flight-workspace="steps"]>[data-flight-decision-panel] {grid-column:2;grid-row:1;} [data-flight-workspace="steps"] .bfd-options {grid-template-columns:1fr;}}
       .bfd-map svg text {font-size:20px;} @media(max-width:480px) {.bfd-map svg text {font-size:26px;}}
-      @media(forced-colors:active) {.bfd,[data-beehive-theme="dark"] .bfd {--bf-paper:Canvas;--bf-ink:CanvasText;--bf-muted:CanvasText;--bf-line:CanvasText;--bf-tint:Canvas;--bf-accent:Highlight;} .bfd button.bfd-primary {background:ButtonFace;color:ButtonText;border-color:ButtonText;}}
+      @media(forced-colors:active) {.bfd,[data-beehive-theme="dark"] .bfd {--bf-paper:Canvas;--bf-ink:CanvasText;--bf-muted:CanvasText;--bf-line:CanvasText;--bf-tint:Canvas;--bf-accent:Highlight;} .bfd button.bfd-primary {background:ButtonFace;color:ButtonText;border-color:ButtonText;} .bee-history-sparkline,.bee-history-sparkline *{forced-color-adjust:auto;} .bee-history-sparkline{background:Canvas;border-color:CanvasText;} .bee-sparkline-divider{stroke:GrayText;} .bee-sparkline-energy{fill:GrayText;opacity:1;} .bee-sparkline-energy[data-selected="true"]{fill:Highlight;opacity:1;} .bee-sparkline-cursor,.bee-sparkline-alt-segment{stroke:Highlight;} .bee-sparkline-point{fill:Canvas;stroke:CanvasText;} .bee-sparkline-point[data-selected="true"]{fill:Highlight;stroke:HighlightText;}}
     `; document.head.appendChild(style);
   })();
 
@@ -5534,6 +5962,1208 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     return { index: index, entry: entries[index], count: entries.length, reason: '', followingLatest: false };
   }
 
+  // Sparkline geometry across retained maneuver records (breaks segments on missing altitude).
+  function bhDroneHistorySparkline(log, selectedIndex) {
+    var entries = Array.isArray(log) ? log : [];
+    var count = entries.length;
+    if (!count) return { count: 0, selectedIndex: -1, cursorX: 160, barW: 4, points: [], altSegments: [], energyBars: [] };
+    var selIdx = Math.max(0, Math.min(count - 1, Number.isInteger(selectedIndex) ? selectedIndex : count - 1));
+    function xFor(i) { return count === 1 ? 160 : +(12 + (i / (count - 1)) * 296).toFixed(2); }
+    var minAlt = Infinity, maxAlt = -Infinity;
+    for (var ai = 0; ai < count; ai++) {
+      var e = entries[ai];
+      if (e && Number.isFinite(e.altitude)) {
+        if (e.altitude < minAlt) minAlt = e.altitude;
+        if (e.altitude > maxAlt) maxAlt = e.altitude;
+      }
+    }
+    function yForAlt(alt) {
+      if (maxAlt <= minAlt) return 15;
+      return +(26 - ((alt - minAlt) / (maxAlt - minAlt)) * 22).toFixed(2);
+    }
+    var barW = Math.max(2, Math.min(8, Math.floor(240 / Math.max(1, count))));
+    var points = [];
+    var altSegments = [];
+    var energyBars = [];
+    var currentRun = [];
+    for (var i = 0; i < count; i++) {
+      var entry = entries[i];
+      var ptX = xFor(i);
+      if (entry && Number.isFinite(entry.altitude)) {
+        var ptY = yForAlt(entry.altitude);
+        points.push({ index: i, x: ptX, y: ptY, selected: i === selIdx });
+        currentRun.push(ptX + ',' + ptY);
+      } else {
+        if (currentRun.length >= 2) altSegments.push(currentRun.join(' '));
+        currentRun = [];
+      }
+      if (entry && Number.isFinite(entry.energy)) {
+        var pct = Math.max(0, Math.min(100, entry.energy));
+        var barH = Math.max(1, +((pct / 100) * 10).toFixed(2));
+        var barY = +(41 - barH).toFixed(2);
+        var barX = +(ptX - barW / 2).toFixed(2);
+        energyBars.push({ index: i, x: barX, y: barY, w: barW, h: barH, pct: Math.round(pct * 10) / 10, selected: i === selIdx });
+      }
+    }
+    if (currentRun.length >= 2) altSegments.push(currentRun.join(' '));
+    return {
+      count: count,
+      selectedIndex: selIdx,
+      cursorX: xFor(selIdx),
+      barW: barW,
+      points: points,
+      altSegments: altSegments,
+      energyBars: energyBars
+    };
+  }
+
+  /**
+   * Compute normalized colony caste shares and queen-condition marker coordinates.
+   */
+  function bhPopulationShareVisual(workers, brood, drones, queenHealth) {
+    var w = Number.isFinite(workers) && workers > 0 ? workers : 0;
+    var b = Number.isFinite(brood) && brood > 0 ? brood : 0;
+    var dCount = Number.isFinite(drones) && drones > 0 ? drones : 0;
+    var total = w + b + dCount;
+    function pct(val) {
+      return total > 0 ? Math.round((val / total) * 1000) / 10 : 0;
+    }
+    function width(val) {
+      return total > 0 ? +((val / total) * 192).toFixed(2) : 0;
+    }
+    var q = Number.isFinite(queenHealth) ? Math.max(0, Math.min(100, queenHealth)) : 0;
+    return {
+      total: total,
+      shares: { workers: pct(w), brood: pct(b), drones: pct(dCount) },
+      widths: { workers: width(w), brood: width(b), drones: width(dCount) },
+      queenHealth: q,
+      queenMarkerX: +(6 + (q / 100) * 228).toFixed(2),
+      queenBand: q >= 70 ? 'healthy' : q >= 35 ? 'watch' : 'danger'
+    };
+  }
+
+  /**
+   * Compute bounded metric bars and inquiry-step icon paths for the cross-role learning brief.
+   */
+  function bhMissionBriefVisuals(viewMode, metrics, inquiryStep, opts) {
+    var list = Array.isArray(metrics) ? metrics : [];
+    var reserve = opts && Number.isFinite(opts.currentReserve) && opts.currentReserve > 0 ? opts.currentReserve : null;
+    function clampPct(v) { return Math.max(0, Math.min(100, v)); }
+    var parsedMetrics = list.map(function(item) {
+      var raw = item && item[0] != null ? String(item[0]).trim() : '';
+      var label = item && item[1] != null ? String(item[1]) : '';
+      var pct = 0, thresholdX = null, tone = 'neutral', available = false, match;
+      if (label === 'Combined food' && reserve && (match = raw.match(/^(-?\d+(?:\.\d+)?)\s*lb$/))) {
+        var lb = Number(match[1]);
+        var maxLb = Math.max(20, reserve * 2);
+        pct = clampPct((lb / maxLb) * 100);
+        thresholdX = +(2 + (reserve / maxLb) * 196).toFixed(2);
+        tone = lb >= reserve ? 'healthy' : lb >= reserve * 0.5 ? 'watch' : 'danger';
+        available = true;
+      } else if (label === 'Mite pressure' && (match = raw.match(/^(-?\d+(?:\.\d+)?)\s*\/\s*100$/))) {
+        var mite = Number(match[1]);
+        pct = clampPct(mite);
+        thresholdX = +(2 + 0.20 * 196).toFixed(2);
+        tone = mite < 20 ? 'healthy' : mite < 45 ? 'watch' : 'danger';
+        available = true;
+      } else if (label === 'Raid pressure' && (match = raw.match(/^(-?\d+(?:\.\d+)?)%$/))) {
+        var raid = Number(match[1]);
+        pct = clampPct(raid);
+        thresholdX = +(2 + 0.60 * 196).toFixed(2);
+        tone = raid < 35 ? 'healthy' : raid < 60 ? 'watch' : 'danger';
+        available = true;
+      } else if ((label === 'Flight energy' || label === 'Energy left') && (match = raw.match(/^(-?\d+(?:\.\d+)?)%$/))) {
+        var energy = Number(match[1]);
+        pct = clampPct(energy);
+        thresholdX = +(2 + 0.30 * 196).toFixed(2);
+        tone = energy >= 50 ? 'healthy' : energy >= 30 ? 'watch' : 'danger';
+        available = true;
+      } else if ((match = raw.match(/^(-?\d+(?:\.\d+)?)\s*(?:\/\s*100|%)$/))) {
+        var bounded = Number(match[1]);
+        pct = clampPct(bounded);
+        thresholdX = null;
+        tone = bounded >= 60 ? 'healthy' : bounded >= 35 ? 'watch' : 'danger';
+        available = true;
+      }
+      return {
+        label: label,
+        available: available,
+        pct: Math.round(pct * 10) / 10,
+        fillWidth: available ? +((pct / 100) * 196).toFixed(2) : 0,
+        thresholdX: thresholdX,
+        tone: tone
+      };
+    });
+    var stepDefs = [
+      { id: 'observe', iconPath: 'M7 2.5a4.5 4.5 0 1 0 0 9a4.5 4.5 0 0 0 0-9z M10.4 10.4L13.8 13.8' },
+      { id: 'decide', iconPath: 'M8 13.5V7.5 M8 7.5L4 3.5 M8 7.5L12 3.5 M4 6V3.5H6.5 M12 6V3.5H9.5' },
+      { id: 'act', iconPath: 'M4.5 3L12.5 8L4.5 13Z' },
+      { id: 'explain', iconPath: 'M3 3.5H13 M3 8H13 M3 12.5H9.5 M11 11.5L12.3 12.8L14.5 10.2' }
+    ];
+    var activeStep = Number.isInteger(inquiryStep) ? inquiryStep : 0;
+    var steps = stepDefs.map(function(s, idx) {
+      return { id: s.id, iconPath: s.iconPath, active: idx === activeStep };
+    });
+    return { viewMode: viewMode || 'beekeeper', metrics: parsedMetrics, steps: steps };
+  }
+
+  /**
+   * Compute paired hex cell comparison glyph geometry for the Cell Lens verdict card.
+   */
+  function bhLensVerdictVisual(changesKnown, changedHere, heldLens, currentLens) {
+    function hexPoints(cx, cy, r) {
+      var pts = [];
+      for (var i = 0; i < 6; i++) {
+        var angle = (i * 60 + 30) * Math.PI / 180;
+        pts.push((cx + r * Math.cos(angle)).toFixed(1) + ',' + (cy + r * Math.sin(angle)).toFixed(1));
+      }
+      return pts.join(' ');
+    }
+    var available = !!(changesKnown && heldLens && heldLens.available && currentLens && currentLens.available);
+    var status = !available ? 'unavailable' : changedHere ? 'changed' : 'same';
+    var hRole = available ? (heldLens.roleId || 'empty') : null;
+    var cRole = available ? (currentLens.roleId || 'empty') : null;
+    var hu = heldLens && heldLens.selected && Number.isFinite(heldLens.selected.u) ? heldLens.selected.u : 0.5;
+    var hv = heldLens && heldLens.selected && Number.isFinite(heldLens.selected.v) ? heldLens.selected.v : 0.5;
+    var cu = currentLens && currentLens.selected && Number.isFinite(currentLens.selected.u) ? currentLens.selected.u : 0.5;
+    var cvPos = currentLens && currentLens.selected && Number.isFinite(currentLens.selected.v) ? currentLens.selected.v : 0.5;
+    return {
+      status: status,
+      available: available,
+      heldRole: hRole,
+      currentRole: cRole,
+      heldFill: available ? bhCombCellColor(hRole, hu, hv, false) : '',
+      currentFill: available ? bhCombCellColor(cRole, cu, cvPos, false) : '',
+      leftHex: hexPoints(18, 16, 12),
+      rightHex: hexPoints(74, 16, 12),
+      rightInnerHex: hexPoints(74, 16, 9.2),
+      connectorPath: status === 'changed' ? 'M36 16H54 M48 10.5L54.5 16L48 21.5' : status === 'same' ? 'M38 13.5H54 M38 18.5H54' : 'M40 21L52 11'
+    };
+  }
+
+  /**
+   * Compute dual-scale bar geometry comparing difficulty timer and conditioned energy budgets.
+   */
+  function bhDroneLaunchBudgetVisual(budget) {
+    function clampPct(v) { return Math.max(0, Math.min(100, v)); }
+    var timer = Math.max(0, Number(budget && budget.timer) || 0);
+    var energy = Math.max(0, Number(budget && budget.energy) || 0);
+    var maxEnergy = Math.max(1, Number(budget && budget.maxEnergy) || 125);
+    var timerPct = clampPct((timer / 150) * 100);
+    var capPct = clampPct((maxEnergy / 125) * 100);
+    var energyPct = Math.max(0, Math.min(capPct, (energy / 125) * 100));
+    return {
+      timerPct: Math.round(timerPct * 10) / 10,
+      capPct: Math.round(capPct * 10) / 10,
+      energyPct: Math.round(energyPct * 10) / 10,
+      timerWidth: +((timerPct / 100) * 172).toFixed(2),
+      capacityWidth: +((capPct / 100) * 172).toFixed(2),
+      energyWidth: +((energyPct / 100) * 172).toFixed(2),
+      penalized: energy < maxEnergy
+    };
+  }
+
+  /**
+   * Compute decorative phase emblem path and bounded reading meter geometry for Play Coach cards.
+   * Leaves unbounded or unitless values unbarred so missing-unit cautions stay unmistakable.
+   */
+  function bhPlayCoachVisuals(role, coachState, readings) {
+    var PHASE_ICONS = {
+      colony: 'M8 2L13 5V11L8 14L3 11V5Z',
+      setup: 'M3 3H13M4.5 7H11.5M6 11H10',
+      live: 'M5 3.5L12.5 8L5 12.5Z',
+      paused: 'M5.5 3.5V12.5M10.5 3.5V12.5',
+      review: 'M3 12.5L6.5 8.5L9.5 10.5L13 4.5'
+    };
+    var rows = Array.isArray(readings) ? readings : [];
+    var mapped = rows.map(function(item) {
+      var label = String(item && item[0] != null ? item[0] : '');
+      var valueText = String(item && item[1] != null ? item[1] : '');
+      var mAp = label === 'Action points' ? valueText.match(/^(\d+)\s*\/\s*3$/) : null;
+      if (mAp) {
+        var activePips = Math.max(0, Math.min(3, Number(mAp[1])));
+        var apPct = Math.round((activePips / 3) * 100);
+        return {
+          label: label,
+          valueText: valueText,
+          bounded: true,
+          kind: 'pips',
+          totalPips: 3,
+          activePips: activePips,
+          pct: apPct,
+          fillWidth: +((apPct / 100) * 116).toFixed(2),
+          tone: activePips >= 2 ? 'healthy' : activePips === 1 ? 'watch' : 'danger'
+        };
+      }
+      var m100 = valueText.match(/^(-?\d+(?:\.\d+)?)\s*\/\s*100$/);
+      if (m100) {
+        var pct100 = Math.round(Math.max(0, Math.min(100, Number(m100[1]))) * 10) / 10;
+        var tone100 = label === 'RTS advantage'
+          ? (pct100 >= 55 ? 'healthy' : pct100 >= 40 ? 'watch' : 'danger')
+          : (pct100 >= 65 ? 'healthy' : pct100 >= 40 ? 'watch' : 'danger');
+        return {
+          label: label,
+          valueText: valueText,
+          bounded: true,
+          kind: 'bar',
+          pct: pct100,
+          fillWidth: +((pct100 / 100) * 116).toFixed(2),
+          tone: tone100
+        };
+      }
+      var mPct = valueText.match(/^(-?\d+(?:\.\d+)?)%(?:\s+of\s+reserve)?$/);
+      if (mPct) {
+        var pctVal = Math.round(Math.max(0, Math.min(100, Number(mPct[1]))) * 10) / 10;
+        var tonePct = label === 'Rival health'
+          ? (pctVal >= 60 ? 'danger' : pctVal >= 25 ? 'watch' : 'healthy')
+          : (pctVal >= 55 ? 'healthy' : pctVal >= 25 ? 'watch' : 'danger');
+        return {
+          label: label,
+          valueText: valueText,
+          bounded: true,
+          kind: 'bar',
+          pct: pctVal,
+          fillWidth: +((pctVal / 100) * 116).toFixed(2),
+          tone: tonePct
+        };
+      }
+      return { label: label, valueText: valueText, bounded: false, kind: null, pct: null, fillWidth: 0, tone: 'neutral' };
+    });
+    return {
+      role: role,
+      coachState: coachState,
+      phaseIcon: PHASE_ICONS[coachState] || PHASE_ICONS.colony,
+      readings: mapped
+    };
+  }
+
+  /**
+   * Derive crisp vector role emblem strokes and bounded readiness fill for perspective cards.
+   */
+  function bhPerspectiveCardVisual(roleId, state) {
+    var EMBLEMS = {
+      beekeeper: ['M5 8H23L25 11H3Z', 'M6 11H22V17H6Z', 'M6 17H22V24H6Z', 'M11 21H17V24H11Z'],
+      queen: ['M14 8L19.5 11.2V17.6L14 20.8L8.5 17.6V11.2Z', 'M14 8V4', 'M8.5 17.6L5 21', 'M19.5 17.6L23 21', 'M12.5 14A1.5 1.5 0 1 1 15.5 14A1.5 1.5 0 1 1 12.5 14'],
+      drone: ['M4 22Q13 10 22 7', 'M17 6.5L22.5 6.8L20.5 12', 'M20 20A3 3 0 1 1 19.99 20']
+    };
+    var s = state || {};
+    var pct = 100, tone = 'neutral';
+    if (roleId === 'beekeeper') {
+      pct = Math.max(0, Math.min(100, Number(s.colonyHealth) || 0));
+      if (!s.colonySurvived) tone = 'danger';
+      else if (s.activeEvent || (Number(s.varroaLevel) || 0) >= 20 || (Number(s.honey) || 0) < (Number(s.currentReserve) || 0)) tone = 'watch';
+      else tone = pct >= 65 ? 'healthy' : pct >= 40 ? 'watch' : 'danger';
+    } else if (roleId === 'queen') {
+      if (s.queenResult) {
+        pct = s.queenResult === 'victory' ? 100 : 25;
+        tone = s.queenResult === 'victory' ? 'healthy' : 'danger';
+      } else if (s.queenGameActive) {
+        var ter = Number(s.queenTerritory);
+        pct = Math.max(0, Math.min(100, Number.isFinite(ter) ? ter : 50));
+        tone = s.queenPaused ? 'watch' : pct >= 55 ? 'healthy' : pct >= 35 ? 'neutral' : 'danger';
+      } else {
+        pct = (Number(s.queenWins) || 0) > 0 ? 100 : 50;
+        tone = 'neutral';
+      }
+    } else {
+      var maxE = Math.max(1, Number(s.droneMaxEnergy) || 125);
+      if (s.droneFlightActive) {
+        var curE = Number(s.droneEnergy);
+        pct = Number.isFinite(curE) ? Math.max(0, Math.min(100, (curE / maxE) * 100)) : 50;
+        tone = s.dronePhase === 'end' ? (pct >= 30 ? 'healthy' : 'watch') : pct >= 50 ? 'healthy' : pct >= 25 ? 'watch' : 'danger';
+      } else if (s.droneLastRun) {
+        pct = s.droneLastRun.success ? 100 : 45;
+        tone = s.droneLastRun.success ? 'healthy' : 'watch';
+      } else {
+        pct = 100;
+        tone = 'neutral';
+      }
+    }
+    pct = Math.round(pct * 10) / 10;
+    return {
+      roleId: roleId,
+      pct: pct,
+      fillWidth: +((pct / 100) * 118).toFixed(2),
+      tone: tone,
+      emblemPaths: EMBLEMS[roleId] || EMBLEMS.beekeeper
+    };
+  }
+
+  /**
+   * Encode stated model-second step duration and control-channel activations (no path prediction).
+   */
+  function bhDroneManeuverChoiceVisual(optionId, seconds) {
+    var MODES = {
+      navigate: { mode: 'assist', thrust: true, vertical: 'assist', yaw: 'assist' },
+      forward: { mode: 'thrust', thrust: true, vertical: 'none', yaw: 'none' },
+      climb: { mode: 'thrust', thrust: true, vertical: 'up', yaw: 'none' },
+      coast: { mode: 'glide', thrust: false, vertical: 'none', yaw: 'none' },
+      left: { mode: 'turn', thrust: false, vertical: 'none', yaw: 'left' },
+      right: { mode: 'turn', thrust: false, vertical: 'none', yaw: 'right' },
+      descend: { mode: 'vertical', thrust: false, vertical: 'down', yaw: 'none' }
+    };
+    var sec = Math.max(0, Number(seconds) || 0);
+    var durationPct = Math.round(Math.max(0, Math.min(100, (sec / 2) * 100)) * 10) / 10;
+    var cfg = MODES[optionId] || { mode: 'thrust', thrust: false, vertical: 'none', yaw: 'none' };
+    return {
+      id: optionId,
+      seconds: sec,
+      durationPct: durationPct,
+      durationWidth: +Math.max(4, (durationPct / 100) * 108).toFixed(2),
+      mode: cfg.mode,
+      thrust: cfg.thrust,
+      vertical: cfg.vertical,
+      yaw: cfg.yaw
+    };
+  }
+
+  /**
+   * Compute projected horizon pin coordinate and signed gap bar relative to the largest milestone.
+   */
+  function bhTimingLandmarkVisual(point, totalDays, largestDelta) {
+    var offset = Math.max(1, Number(point && point.offset) || 1);
+    var day = Number(point && point.day) || offset;
+    var total = Math.max(1, Number(totalDays) || 1);
+    var delta = Number(point && point.delta) || 0;
+    var maxAbs = Math.max(1e-9, Math.abs(Number(largestDelta) || 0));
+    var horizonPct = total <= 1 ? 100 : Math.round(Math.max(0, Math.min(100, ((offset - 1) / (total - 1)) * 100)) * 10) / 10;
+    var pinX = total <= 1 ? 80 : +(8 + (horizonPct / 100) * 144).toFixed(2);
+    var gapRatio = Math.max(0, Math.min(1, Math.abs(delta) / maxAbs));
+    var direction = delta > 0 ? 'positive' : delta < 0 ? 'negative' : 'zero';
+    var gapWidth, gapX;
+    if (direction === 'zero') {
+      gapWidth = 2;
+      gapX = 79;
+    } else if (direction === 'positive') {
+      gapWidth = +Math.max(3, gapRatio * 68).toFixed(2);
+      gapX = 80;
+    } else {
+      gapWidth = +Math.max(3, gapRatio * 68).toFixed(2);
+      gapX = +(80 - gapWidth).toFixed(2);
+    }
+    return {
+      day: day,
+      offset: offset,
+      delta: delta,
+      horizonPct: horizonPct,
+      pinX: pinX,
+      gapRatio: +gapRatio.toFixed(3),
+      gapX: gapX,
+      gapWidth: gapWidth,
+      direction: direction
+    };
+  }
+
+  /**
+   * Summarize inquiry readiness and evidence progress for the five learning-flow cards.
+   */
+  function bhFlowNavVisuals(stateValue) {
+    var s = stateValue && typeof stateValue === 'object' ? stateValue : {};
+    var mode = s.viewMode === 'queen' ? 'queen' : s.viewMode === 'drone' ? 'drone' : 'beekeeper';
+    var day = Math.max(0, Number(s.day) || 0);
+    var q = s.queen && typeof s.queen === 'object' ? s.queen : {};
+    var qDay = Math.max(0, Number(q.day) || 0);
+    var dr = s.drone && typeof s.drone === 'object' ? s.drone : {};
+    var nb = s.notebook && typeof s.notebook === 'object' ? s.notebook : {};
+    var roleNb = nb[mode] && typeof nb[mode] === 'object' ? nb[mode] : {};
+    var noteCount = 0;
+    [roleNb.prediction, roleNb.evidence, roleNb.explanation, nb.synthesis].forEach(function(val) {
+      if (typeof val === 'string' && val.trim().length > 0) noteCount++;
+    });
+    var triedBeekeeper = day > 0;
+    var triedQueen = !!(q.active || qDay > 0 || q.result);
+    var triedDrone = !!(dr.active || dr.lastRun);
+    var perspCount = (triedBeekeeper ? 1 : 0) + (triedQueen ? 1 : 0) + (triedDrone ? 1 : 0);
+    var playRecorded = mode === 'queen' ? !!q.result : mode === 'drone' ? !!dr.lastRun : day >= 7;
+    var playOpen = playRecorded || (mode === 'queen' ? !!(q.active || qDay > 0) : mode === 'drone' ? !!dr.active : day > 0);
+    var hasFocusSignal = !!(s.activeEvent || s.colonySurvived === false || (mode === 'queen' && q.result) || (mode === 'drone' && dr.lastRun));
+    var steps = [
+      {
+        id: 'focus',
+        state: hasFocusSignal ? 'recorded' : playOpen ? 'open' : 'ready',
+        fillWidth: hasFocusSignal ? 88 : playOpen ? 62 : 34
+      },
+      {
+        id: 'play',
+        state: playRecorded ? 'recorded' : playOpen ? 'open' : 'ready',
+        fillWidth: playRecorded ? 96 : playOpen ? 66 : 34
+      },
+      {
+        id: 'learn',
+        state: s.missionBriefOpen === true ? 'open' : playRecorded ? 'open' : 'ready',
+        fillWidth: s.missionBriefOpen === true ? 76 : playRecorded ? 56 : playOpen ? 42 : 30
+      },
+      {
+        id: 'explain',
+        state: noteCount >= 2 ? 'recorded' : (noteCount === 1 || s.notebookOpen === true) ? 'open' : 'ready',
+        fillWidth: noteCount >= 2 ? Math.min(99, 36 + noteCount * 16) : (noteCount === 1 || s.notebookOpen === true) ? 54 : 26
+      },
+      {
+        id: 'mastery',
+        state: perspCount >= 3 ? 'recorded' : (perspCount >= 1 || s.journeyOpen === true) ? 'open' : 'ready',
+        fillWidth: perspCount >= 3 ? 99 : perspCount === 2 ? 72 : perspCount === 1 ? 48 : s.journeyOpen === true ? 38 : 24
+      }
+    ];
+    var byId = {};
+    steps.forEach(function(step) { byId[step.id] = step; });
+    return { mode: mode, noteCount: noteCount, perspCount: perspCount, steps: steps, byId: byId };
+  }
+
+  /**
+   * Compute 5-step flight-school stepper node and rail geometry for the Drone header.
+   */
+  function bhDroneTrainingVisual(cue) {
+    var c = cue && typeof cue === 'object' ? cue : {};
+    var total = Math.max(1, Math.round(Number(c.total) || 5));
+    var complete = !!c.complete;
+    var active = !!c.active;
+    var rawIndex = Number(c.index);
+    var completedCount = complete ? total : (active && Number.isFinite(rawIndex) && rawIndex >= 0 ? Math.max(0, Math.min(total, Math.floor(rawIndex))) : 0);
+    var state = complete ? 'complete' : active ? 'active' : 'inactive';
+    var activeStep = !complete && active && completedCount < total ? completedCount + 1 : (complete ? total : 0);
+    var gap = total > 1 ? 156 / (total - 1) : 0;
+    var pips = [];
+    for (var i = 0; i < total; i++) {
+      var pipState = complete || i < completedCount ? 'done' : (active && i === completedCount ? 'current' : 'upcoming');
+      pips.push({
+        step: i + 1,
+        cx: +(12 + i * gap).toFixed(2),
+        r: pipState === 'current' ? 4.5 : 3.5,
+        state: pipState
+      });
+    }
+    var rails = [];
+    for (var j = 0; j < total - 1; j++) {
+      rails.push({
+        index: j,
+        x1: pips[j].cx,
+        x2: pips[j + 1].cx,
+        done: complete || j < completedCount
+      });
+    }
+    return {
+      state: state,
+      total: total,
+      completedCount: completedCount,
+      activeStep: activeStep,
+      pips: pips,
+      rails: rails
+    };
+  }
+
+  /**
+   * Project both colonies and all 6 flower patches onto the Patch Explorer SVG schematic.
+   */
+  function bhQueenPatchExplorerVisual(patchId, colonyView, routesOn, winter) {
+    var inspection = bhQueenMapInspection(patchId, colonyView);
+    var routesActive = routesOn !== false && !winter;
+    var homeActive = routesActive && (inspection.colony === 'both' || inspection.colony === 'home');
+    var neighborActive = routesActive && (inspection.colony === 'both' || inspection.colony === 'neighbor');
+    var patchList = Array.isArray(QUEEN_LANDSCAPE_PATCHES) ? QUEEN_LANDSCAPE_PATCHES : [];
+    var patches = patchList.map(function(p) {
+      return {
+        id: p.id,
+        label: p.label,
+        x: +(120 + p.x * 58).toFixed(1),
+        y: +(30 + p.z * 20).toFixed(1),
+        selected: !!(inspection.patch && inspection.patch.id === p.id)
+      };
+    });
+    var visiblePatches = inspection.patch ? 1 : patches.length;
+    var colonyCount = (homeActive ? 1 : 0) + (neighborActive ? 1 : 0);
+    return {
+      selectedPatch: inspection.patch ? inspection.patch.id : 'all',
+      colony: inspection.colony,
+      routesActive: routesActive,
+      homeActive: homeActive,
+      neighborActive: neighborActive,
+      homeNest: { x: 18, y: 28 },
+      neighborNest: { x: 222, y: 28 },
+      patches: patches,
+      activeRouteCount: visiblePatches * colonyCount
+    };
+  }
+
+  /**
+   * Compute segmented field-integrity bar slots for fair-test plan pre-registration.
+   */
+  function bhPlanRegistrationVisual(audit, comparisonStatus, missingCount, totalFields) {
+    var a = audit && typeof audit === 'object' ? audit : {};
+    var status = typeof a.status === 'string' ? a.status : 'unregistered';
+    var total = Math.max(1, Math.round(Number(totalFields) || 7));
+    var missing = Math.max(0, Math.min(total, Math.round(Number(missingCount) || 0)));
+    var readyCount = total - missing;
+    var diffCount = Array.isArray(a.differences) ? Math.min(total, Math.max(1, a.differences.length)) : 0;
+    var regMissing = Array.isArray(a.missing) ? Math.min(total, Math.max(1, a.missing.length)) : 0;
+    var verdictState = status === 'matched'
+      ? 'prospective'
+      : status === 'changed'
+        ? 'edited'
+        : status === 'incomplete'
+          ? 'incomplete'
+          : comparisonStatus === 'same-run'
+            ? 'pending'
+            : 'unregistered';
+    var gap = 3;
+    var segWidth = +((176 - gap * (total - 1)) / total).toFixed(2);
+    var segments = [];
+    for (var i = 0; i < total; i++) {
+      var segState;
+      if (verdictState === 'prospective') segState = 'matched';
+      else if (verdictState === 'edited') segState = i < (total - diffCount) ? 'matched' : 'changed';
+      else if (verdictState === 'incomplete') segState = i < (total - regMissing) ? 'ready' : 'missing';
+      else if (verdictState === 'pending') segState = i < readyCount ? 'ready' : 'pending';
+      else segState = i < readyCount ? 'changed' : 'missing';
+      segments.push({
+        index: i,
+        x: +(2 + i * (segWidth + gap)).toFixed(2),
+        width: segWidth,
+        state: segState
+      });
+    }
+    return {
+      verdictState: verdictState,
+      total: total,
+      readyCount: readyCount,
+      segments: segments
+    };
+  }
+
+  /**
+   * Compute 8-step stepper nodes & rails for the Fair-Test Experiment Protocol.
+   */
+  function bhExperimentProtocolVisual(protocolSteps) {
+    var fallbackIds = ['plan', 'baseline', 'repeat', 'registration', 'checkpoint', 'choice', 'prediction', 'explain'];
+    var raw = Array.isArray(protocolSteps) && protocolSteps.length
+      ? protocolSteps
+      : fallbackIds.map(function(id) { return { id: id, complete: false }; });
+    var total = raw.length;
+    var currentIndex = raw.findIndex(function(s) { return !(s && s.complete); });
+    var completedCount = raw.filter(function(s) { return !!(s && s.complete); }).length;
+    var state = completedCount === total ? 'complete' : completedCount > 0 ? 'in-progress' : 'starting';
+    var activeStep = currentIndex < 0 ? total : currentIndex + 1;
+    var stepX = total > 1 ? 200 / (total - 1) : 0;
+    var nodes = raw.map(function(step, i) {
+      var st = step && step.complete ? 'complete' : i === currentIndex ? 'current' : 'upcoming';
+      return {
+        step: i + 1,
+        id: String((step && step.id) || fallbackIds[i] || ('step-' + (i + 1))),
+        state: st,
+        cx: +(10 + i * stepX).toFixed(2),
+        r: st === 'complete' ? 3.8 : st === 'current' ? 4.4 : 3.1
+      };
+    });
+    var rails = [];
+    for (var i = 0; i < total - 1; i++) {
+      rails.push({
+        index: i,
+        x1: +(10 + i * stepX + 4.4).toFixed(2),
+        x2: +(10 + (i + 1) * stepX - 4.4).toFixed(2),
+        done: !!(raw[i] && raw[i].complete)
+      });
+    }
+    return {
+      state: state,
+      total: total,
+      completedCount: completedCount,
+      activeStep: activeStep,
+      nodes: nodes,
+      rails: rails
+    };
+  }
+
+  /**
+   * Compute Held-vs-Current interval timeline geometry for Hive Interior Comparison Reference.
+   */
+  function bhHiveReferenceVisual(snapshot, comparison) {
+    var curValid = snapshot && snapshot.data && Number.isSafeInteger(snapshot.data.day) && snapshot.data.day >= 0 && snapshot.data.day <= 10000000;
+    var currentDay = curValid ? snapshot.data.day : null;
+    if (!comparison) {
+      return {
+        state: 'empty',
+        hasHeld: false,
+        heldDay: null,
+        currentDay: currentDay,
+        elapsedDays: null,
+        heldPinX: null,
+        currentPinX: currentDay != null ? 90 : null,
+        spanX: 0,
+        spanWidth: 0,
+        inquiryIcons: ['predict', 'try', 'explain']
+      };
+    }
+    if (!comparison.available) {
+      var badHeld = comparison.held && comparison.held.data && Number.isSafeInteger(comparison.held.data.day) && comparison.held.data.day >= 0 ? comparison.held.data.day : null;
+      return {
+        state: 'unavailable',
+        hasHeld: true,
+        heldDay: badHeld,
+        currentDay: currentDay,
+        elapsedDays: null,
+        heldPinX: 42,
+        currentPinX: 138,
+        spanX: 42,
+        spanWidth: 96,
+        inquiryIcons: ['predict', 'try', 'explain']
+      };
+    }
+    var hDay = comparison.held.data.day;
+    var cDay = comparison.current.data.day;
+    var elapsed = cDay - hDay;
+    var state = elapsed === 0 ? 'held-same-day' : elapsed > 0 ? 'held-elapsed' : 'held-rewound';
+    var heldPinX = 24;
+    var currentPinX = 24;
+    var spanX = 24;
+    var spanWidth = 0;
+    if (elapsed !== 0) {
+      var frac = Math.min(1, Math.max(0.14, Math.abs(elapsed) / 30));
+      var offset = +(frac * 132).toFixed(1);
+      if (elapsed > 0) {
+        currentPinX = +(24 + offset).toFixed(1);
+        spanX = 24;
+        spanWidth = offset;
+      } else {
+        heldPinX = +(24 + offset).toFixed(1);
+        currentPinX = 24;
+        spanX = 24;
+        spanWidth = offset;
+      }
+    }
+    return {
+      state: state,
+      hasHeld: true,
+      heldDay: hDay,
+      currentDay: cDay,
+      elapsedDays: elapsed,
+      heldPinX: heldPinX,
+      currentPinX: currentPinX,
+      spanX: spanX,
+      spanWidth: spanWidth,
+      inquiryIcons: ['predict', 'try', 'explain']
+    };
+  }
+
+  /**
+   * Compute 3x3 comb cell occupancy & ecological zone schematic for Colony Network structure placement.
+   */
+  function bhQueenPlacementVisual(buildMode, structures) {
+    var mode = typeof buildMode === 'string' ? buildMode : '';
+    var list = Array.isArray(structures) ? structures : [];
+    var recommendedZone = (mode === 'guard' || mode === 'fan')
+      ? 'front'
+      : (mode === 'honey' || mode === 'pollen')
+        ? 'arch'
+        : 'core';
+    var gridSpec = [
+      { id: 'front-top', col: 0, row: 0, x: 0.14, y: 0.24 },
+      { id: 'front-mid', col: 0, row: 1, x: 0.14, y: 0.50 },
+      { id: 'front-bot', col: 0, row: 2, x: 0.14, y: 0.76 },
+      { id: 'mid-top', col: 1, row: 0, x: 0.28, y: 0.24 },
+      { id: 'mid-mid', col: 1, row: 1, x: 0.28, y: 0.50 },
+      { id: 'mid-bot', col: 1, row: 2, x: 0.28, y: 0.76 },
+      { id: 'back-top', col: 2, row: 0, x: 0.42, y: 0.24 },
+      { id: 'back-mid', col: 2, row: 1, x: 0.42, y: 0.50 },
+      { id: 'back-bot', col: 2, row: 2, x: 0.42, y: 0.76 }
+    ];
+    var colX = [54, 102, 150];
+    var rowY = [13, 28, 43];
+    var occupiedCount = 0;
+    var cells = gridSpec.map(function(spec) {
+      var occ = null;
+      for (var i = 0; i < list.length; i++) {
+        var st = list[i];
+        if (st && Math.abs((Number(st.x) || 0) - spec.x) < 0.06 && Math.abs((Number(st.y) || 0) - spec.y) < 0.12) {
+          occ = st;
+          break;
+        }
+      }
+      if (occ) occupiedCount++;
+      var zoneMatch = recommendedZone === 'front'
+        ? spec.col === 0
+        : recommendedZone === 'arch'
+          ? (spec.row === 0 || spec.col === 2)
+          : spec.col === 1;
+      return {
+        id: spec.id,
+        colIndex: spec.col,
+        rowIndex: spec.row,
+        cx: colX[spec.col],
+        cy: rowY[spec.row],
+        occupied: !!occ,
+        occupantType: occ ? String(occ.type || 'structure') : null,
+        recommended: !occ && zoneMatch
+      };
+    });
+    return {
+      buildMode: mode,
+      recommendedZone: recommendedZone,
+      totalCells: 9,
+      occupiedCount: occupiedCount,
+      openCount: 9 - occupiedCount,
+      cells: cells
+    };
+  }
+
+  /**
+   * Compute Drone Flight preflight colony-carryover conditioning bar and choice glyph metadata.
+   */
+  function bhDronePreflightVisuals(carryoverEnergyScale, scenarioId, routePlanId) {
+    var raw = Number(carryoverEnergyScale);
+    var scale = Math.max(0.5, Math.min(1, Number.isFinite(raw) ? raw : 1));
+    var band = scale >= 0.99 ? 'prepared' : scale >= 0.9 ? 'watch' : 'stressed';
+    var trackW = 172;
+    return {
+      band: band,
+      scale: scale,
+      pct: Math.round(scale * 100),
+      fillWidth: +(scale * trackW).toFixed(2),
+      stressedTickX: +(4 + 0.86 * trackW).toFixed(2),
+      watchTickX: +(4 + 0.94 * trackW).toFixed(2),
+      fullTickX: 176,
+      scenario: typeof scenarioId === 'string' && scenarioId ? scenarioId : 'clear',
+      routePlan: typeof routePlanId === 'string' && routePlanId ? routePlanId : 'balanced',
+      scenarios: ['clear', 'crosswind', 'rescue'],
+      routePlans: ['balanced', 'boost-first', 'thermal-first']
+    };
+  }
+
+  /**
+   * Compute Beekeeper Day-0 apiary site glyph and baseline-centered trait bars (1.00x at 50%).
+   */
+  function bhApiarySiteVisual(siteId, mods) {
+    var known = ['meadow', 'forest_edge', 'urban', 'coastal', 'mountain'];
+    var siteGlyph = known.indexOf(siteId) >= 0 ? siteId : 'meadow';
+    var m = mods && typeof mods === 'object' ? mods : {};
+    var forageMult = Number.isFinite(m.forage) ? m.forage : 1;
+    var diseaseMult = Number.isFinite(m.disease) ? m.disease : 1;
+    var varroaMult = Number.isFinite(m.varroa) ? m.varroa : 1;
+    var specs = [
+      { id: 'forage', mult: forageMult, score: forageMult },
+      { id: 'disease', mult: diseaseMult, score: 2 - diseaseMult },
+      { id: 'mites', mult: varroaMult, score: 2 - varroaMult }
+    ];
+    var bars = specs.map(function(item, idx) {
+      var x = 26 + idx * 74;
+      var pct = Math.max(4, Math.min(100, Math.round((item.score - 0.5) * 100)));
+      return {
+        id: item.id,
+        x: x,
+        pct: pct,
+        fillW: +((pct / 100) * 68).toFixed(2),
+        baselineX: +(x + 34).toFixed(2),
+        tone: item.score > 1.001 ? 'favorable' : item.score < 0.999 ? 'adverse' : 'neutral',
+        mult: +item.mult.toFixed(2)
+      };
+    });
+    var specialTag = m.summerFlow ? 'summer-flow' : m.shortSeason ? 'short-season' : m.bear ? 'bear-risk' : 'balanced';
+    return {
+      siteId: siteGlyph,
+      siteGlyph: siteGlyph,
+      specialTag: specialTag,
+      bars: bars
+    };
+  }
+
+  /**
+   * Compute Colony Network rival-intelligence confidence bar and forecast cadence urgency rails.
+   */
+  function bhQueenTimelineVisuals(rival, day, nextSeason, raidIn, buildIn, structureEvery, paused, speed) {
+    var r = rival && typeof rival === 'object' ? rival : {};
+    var intelPct = Math.max(0, Math.min(100, Math.round(Number(r.intel) || 0)));
+    var intelKnown = intelPct > 0;
+    var intelBand = !intelKnown ? 'unscouted' : intelPct >= 85 ? 'confirmed' : 'partial';
+    var intelFillW = +((intelPct / 100) * 160).toFixed(2);
+    var confirmTickX = 136;
+    var postureKind = !intelKnown ? 'unknown' : (typeof r.posture === 'string' && r.posture ? r.posture : 'forage');
+    var isWinter = Number(nextSeason) === 3;
+    var d = Math.max(0, Math.round(Number(day) || 0));
+    var winterLeft = Math.max(0, BH_QUEEN_YEAR_CYCLES - d);
+    var winterPct = Math.max(12, Math.min(100, Math.round((1 - Math.min(30, winterLeft) / 30) * 100)));
+    var rIn = Math.max(1, Math.min(4, Math.round(Number(raidIn) || 4)));
+    var raidPct = isWinter ? winterPct : Math.round(((5 - rIn) / 4) * 100);
+    var raidTone = isWinter ? 'truce' : (rIn <= 1 ? 'imminent' : rIn <= 2 ? 'soon' : 'scheduled');
+    var cadence = Math.max(2, Math.round(Number(structureEvery) || 5));
+    var bIn = Math.max(1, Math.min(cadence, Math.round(Number(buildIn) || cadence)));
+    var buildPct = isWinter ? winterPct : Math.round(((cadence + 1 - bIn) / cadence) * 100);
+    var buildTone = isWinter ? 'census' : (bIn <= 1 ? 'imminent' : bIn <= 2 ? 'soon' : 'scheduled');
+    var nextPct = paused ? 0 : (Number(speed) === 2 ? 100 : 62);
+    var nextTone = paused ? 'paused' : 'live';
+    return {
+      intelPct: intelPct,
+      intelKnown: intelKnown,
+      intelBand: intelBand,
+      intelFillW: intelFillW,
+      confirmTickX: confirmTickX,
+      postureKind: postureKind,
+      forecasts: [
+        { id: 'next-cycle', urgencyPct: nextPct, fillW: +((nextPct / 100) * 96).toFixed(2), tone: nextTone },
+        { id: 'raid', urgencyPct: raidPct, fillW: +((raidPct / 100) * 96).toFixed(2), tone: raidTone },
+        { id: 'rival-build', urgencyPct: buildPct, fillW: +((buildPct / 100) * 96).toFixed(2), tone: buildTone }
+      ]
+    };
+  }
+
+  /**
+   * Compute Drone Flight Direction Guide SVG gauge geometry for horizontal range, DCA altitude band, and countdown timer.
+   */
+  function bhDroneDirectorVisuals(state) {
+    var s = state || {}, r = bhDroneFlightDirector(s), p = DRONE_FLIGHT_PARAMS;
+    var isQueen = r.target !== 'DCA';
+    var gateM = isQueen ? 18 : p.dcaRadiusM;
+    var scaleMaxM = isQueen ? 320 : (p.dcaDistanceM + 100);
+    var closurePct = Math.max(0, Math.min(100, Math.round((1 - Math.min(scaleMaxM, Math.max(0, r.range)) / scaleMaxM) * 100)));
+    var gateStartX = +(4 + Math.max(0, Math.min(100, (1 - gateM / scaleMaxM) * 100))).toFixed(2);
+    var gateW = +(104 - gateStartX).toFixed(2);
+    var inGate = r.range <= gateM;
+    var scaleMaxFt = 300;
+    var altClamped = Math.max(0, Math.min(scaleMaxFt, r.altitude));
+    var bandX = +(4 + (p.dcaMinFt / scaleMaxFt) * 100).toFixed(2);
+    var bandW = +(((p.dcaMaxFt - p.dcaMinFt) / scaleMaxFt) * 100).toFixed(2);
+    var markerX = +(4 + (altClamped / scaleMaxFt) * 100).toFixed(2);
+    var inBand = r.altitude >= p.dcaMinFt && r.altitude <= p.dcaMaxFt;
+    var maxTimer = (p.timerByDifficulty && p.timerByDifficulty[s.difficulty]) || 110;
+    var secPct = Math.max(0, Math.min(100, Math.round((Math.max(0, r.seconds) / maxTimer) * 100)));
+    var secLow = secPct < 25 || r.seconds <= 20;
+    return {
+      range: {
+        closurePct: closurePct,
+        fillW: +closurePct.toFixed(2),
+        gateStartX: gateStartX,
+        gateW: gateW,
+        inGate: inGate,
+        tone: inGate ? 'in-gate' : 'approaching'
+      },
+      altitude: {
+        markerX: markerX,
+        bandX: bandX,
+        bandW: bandW,
+        inBand: inBand,
+        tone: inBand ? 'in-band' : r.altitude < p.dcaMinFt ? 'low' : 'high'
+      },
+      seconds: {
+        pct: secPct,
+        fillW: +secPct.toFixed(2),
+        warnTickX: 29,
+        low: secLow,
+        tone: secLow ? 'low' : 'ok'
+      }
+    };
+  }
+
+  /**
+   * Compute Bee Science Quick Reference schematic key and Habitat / Pesticide threshold bar metrics.
+   */
+  function bhScienceCardVisual(viewId, isActive, colonyEnv) {
+    var kinds = {
+      waggle: 'waggle-figure8',
+      castes: 'superorganism-castes',
+      honey: 'nectar-ripening',
+      threats: 'multi-stressor-web'
+    };
+    var id = typeof viewId === 'string' && viewId ? viewId : 'waggle';
+    var diagramKind = kinds[id] || (id === 'env' ? 'environment-thresholds' : 'waggle-figure8');
+    var env = colonyEnv && typeof colonyEnv === 'object' ? colonyEnv : {};
+    var habPct = Math.max(0, Math.min(100, Math.round(Number.isFinite(env.habitat) ? env.habitat : 50)));
+    var pestPct = Math.max(0, Math.min(100, Math.round(Number.isFinite(env.pesticideExposure) ? env.pesticideExposure : 0)));
+    var habitatBand = habPct > 60 ? 'healthy' : habPct > 30 ? 'watch' : 'low';
+    var pesticideBand = pestPct > 20 ? 'chronic' : pestPct > 0 ? 'trace' : 'clear';
+    return {
+      viewId: id,
+      diagramKind: diagramKind,
+      active: !!isActive,
+      habitatPct: habPct,
+      habitatBand: habitatBand,
+      habitatFillW: +((habPct / 100) * 116).toFixed(2),
+      habitatWatchTickX: +(2 + 0.30 * 116).toFixed(2),
+      habitatSafeTickX: +(2 + 0.60 * 116).toFixed(2),
+      pesticidePct: pestPct,
+      pesticideBand: pesticideBand,
+      pesticideFillW: +((pestPct / 100) * 116).toFixed(2),
+      pesticideThresholdX: +(2 + 0.20 * 116).toFixed(2)
+    };
+  }
+
+  // Pure visual descriptors for Colony Network objectives and toolbar raid pressure.
+  function bhQueenFieldObjectiveVisual(goal, raidPressure) {
+    var g = goal && typeof goal === 'object' ? goal : {};
+    var id = g.id === 'defend' || g.id === 'build' || g.id === 'explore' ? g.id : 'explore';
+    var emblemKind = id === 'defend' ? 'shield' : id === 'build' ? 'hex-comb' : 'compass';
+    var rawRaid = Number(raidPressure);
+    var raid = Number.isFinite(rawRaid) ? Math.max(0, Math.min(1, rawRaid)) : 0;
+    var raidPct = Math.round(raid * 100);
+    var raidBand = raid >= 0.6 ? 'high' : raid >= 0.3 ? 'watch' : 'calm';
+    var raidFillW = +(raid * 84).toFixed(2);
+    var raidThresholdX = +(2 + 0.60 * 84).toFixed(2);
+    var metCount = 0;
+    var metrics = (Array.isArray(g.metrics) ? g.metrics : []).map(function(m) {
+      var val = Number.isFinite(Number(m && m.value)) ? Math.max(0, Number(m.value)) : 0;
+      var tgt = Number.isFinite(Number(m && m.target)) && Number(m.target) > 0 ? Number(m.target) : 1;
+      var met = val >= tgt;
+      if (met) metCount++;
+      var scaleMax = Math.max(tgt * 1.25, val, 1);
+      var fillW = +(Math.max(0, Math.min(1, val / scaleMax)) * 116).toFixed(2);
+      var targetX = +(2 + Math.max(0, Math.min(1, tgt / scaleMax)) * 116).toFixed(2);
+      var pct = Math.max(0, Math.min(100, Math.round((val / tgt) * 100)));
+      return { label: String((m && m.label) || ''), met: met, pct: pct, fillW: fillW, targetX: targetX };
+    });
+    return { objectiveId: id, emblemKind: emblemKind, raidPct: raidPct, raidBand: raidBand, raidFillW: raidFillW, raidThresholdX: raidThresholdX, metCount: metCount, totalCount: metrics.length, metrics: metrics };
+  }
+
+  // Pure visual descriptors for recorded drone snapshot distance and expandable measurement bars.
+  function bhDroneSnapshotExtrasVisual(run) {
+    var r = run && typeof run === 'object' && !Array.isArray(run) ? run : {};
+    var dcaM = DRONE_FLIGHT_PARAMS.dcaDistanceM || 600;
+    var distanceKnown = Number.isFinite(r.distance) && r.distance >= 0;
+    var distance = distanceKnown ? r.distance : 0;
+    var scaleMaxM = Math.max(dcaM + 300, distanceKnown ? Math.max(0, distance) : 0);
+    var distanceFillW = distanceKnown ? +(Math.max(0, Math.min(1, distance / scaleMaxM)) * 116).toFixed(2) : 0;
+    var dcaMarkerX = +(2 + Math.max(0, Math.min(1, dcaM / scaleMaxM)) * 116).toFixed(2);
+    var markers = Number.isFinite(r.routeMarkers) ? r.routeMarkers : Number.isFinite(r.nectar) ? r.nectar : null;
+    var markerGoal = Number.isFinite(r.routeMarkerGoal) ? r.routeMarkerGoal : Number.isFinite(r.nectarGoal) ? r.nectarGoal : null;
+    var markersKnown = Number.isFinite(markers) && markers >= 0 && Number.isFinite(markerGoal) && markerGoal > 0;
+    var markerRatio = markersKnown ? Math.max(0, Math.min(1, markers / markerGoal)) : 0;
+    var markerFillW = +(markerRatio * 96).toFixed(2);
+    var factsKnown = Number.isFinite(r.facts) && r.facts >= 0;
+    var facts = factsKnown ? r.facts : 0;
+    var factsScale = Math.max(4, facts);
+    var factsFillW = factsKnown ? +(Math.max(0, Math.min(1, facts / factsScale)) * 96).toFixed(2) : 0;
+    var obs = Number.isFinite(r.obstacleHits) && r.obstacleHits >= 0 ? r.obstacleHits : null;
+    var traf = Number.isFinite(r.trafficHits) && r.trafficHits >= 0 ? r.trafficHits : null;
+    var conflictsKnown = obs !== null && traf !== null;
+    var conflictsTotal = conflictsKnown ? obs + traf : null;
+    var conflictCap = conflictsKnown ? Math.max(6, conflictsTotal) : 6;
+    var obstacleFillW = conflictsKnown && conflictsTotal > 0 ? +((obs / conflictCap) * 96).toFixed(2) : 0;
+    var trafficFillW = conflictsKnown && conflictsTotal > 0 ? +((traf / conflictCap) * 96).toFixed(2) : 0;
+    var conflictTone = !conflictsKnown ? 'unknown' : conflictsTotal === 0 ? 'clean' : conflictsTotal <= 2 ? 'watch' : 'high';
+    return { distanceKnown: distanceKnown, distanceFillW: distanceFillW, dcaMarkerX: dcaMarkerX, scaleMaxM: scaleMaxM, markersKnown: markersKnown, markerRatio: markerRatio, markerFillW: markerFillW, factsKnown: factsKnown, factsFillW: factsFillW, conflictsKnown: conflictsKnown, conflictsTotal: conflictsTotal, conflictTone: conflictTone, obstacleFillW: obstacleFillW, trafficFillW: trafficFillW };
+  }
+
+  // Pure diverging magnitude descriptors for colony event preset effects.
+  function bhColonyEventVisual(event) {
+    var view = bhColonyEventView(event || {});
+    var settings = Array.isArray(view && view.settings) ? view.settings : [];
+    function classifyImpact(metric) {
+      var id = String((metric && metric.id) || '');
+      var unit = String((metric && metric.unit) || '').trim();
+      var amt = Number(metric && metric.amount);
+      if (!Number.isFinite(amt)) amt = 0;
+      var lowerId = id.toLowerCase();
+      var lowerCosts = lowerId.indexOf('varroa') >= 0 || lowerId.indexOf('mite') >= 0 || lowerId.indexOf('disease') >= 0 || lowerId.indexOf('pesticide') >= 0;
+      var tone = amt === 0 ? 'neutral' : ((amt > 0 && !lowerCosts) || (amt < 0 && lowerCosts)) ? 'beneficial' : 'adverse';
+      var domainScale = unit === 'lb' ? 12 : (lowerId.indexOf('worker') >= 0 || lowerId.indexOf('brood') >= 0 || lowerId.indexOf('bee') >= 0) ? 4000 : (unit === '%' || unit === '/100' || unit === 'pt') ? 40 : Math.max(10, Math.abs(amt));
+      var normMag = amt === 0 ? 0 : Math.max(0.08, Math.min(1, Math.abs(amt) / domainScale));
+      var barW = +(normMag * 54).toFixed(2);
+      var direction = amt > 0 ? 'positive' : amt < 0 ? 'negative' : 'zero';
+      var barX = direction === 'negative' ? +(60 - barW).toFixed(2) : 60;
+      return { id: id, amount: amt, unit: unit, tone: tone, direction: direction, barW: barW, barX: barX, normMag: +normMag.toFixed(3) };
+    }
+    var impacts = settings.map(classifyImpact);
+    var byId = {};
+    impacts.forEach(function(item) { byId[item.id] = item; });
+    var top = impacts.slice(0, 4);
+    var summaryBars = top.map(function(item, idx) {
+      var step = 12 / Math.max(1, top.length);
+      return { id: item.id, x: item.barX, y: +(1 + idx * step).toFixed(2), w: item.barW, h: +(Math.max(1.8, step - 0.8)).toFixed(2), tone: item.tone };
+    });
+    return { impacts: impacts, byId: byId, summaryBars: summaryBars, fallbackImpact: classifyImpact, beneficialCount: impacts.filter(function(x) { return x.tone === 'beneficial'; }).length, adverseCount: impacts.filter(function(x) { return x.tone === 'adverse'; }).length };
+  }
+
+  // Pure 4-channel stability strip and per-risk threshold gauge descriptors for colony outlook.
+  function bhColonyOutlookVisual(forecast, reserveLb) {
+    var f = forecast && typeof forecast === 'object' ? forecast : {};
+    var end = f.end && typeof f.end === 'object' ? f.end : {};
+    var start = f.start && typeof f.start === 'object' ? f.start : {};
+    var reserve = Number.isFinite(Number(reserveLb)) && Number(reserveLb) > 0 ? Number(reserveLb) : 25;
+    function clamp01(v) { return Math.max(0, Math.min(1, Number.isFinite(v) ? v : 0)); }
+    var wVal = Math.max(0, Number(end.workers) || 0), wBand = wVal >= 12000 ? 'healthy' : wVal >= 6000 ? 'watch' : 'critical';
+    var hVal = Math.max(0, Number(end.honey) || 0), hScale = Math.max(reserve * 1.5, hVal, 60), hBand = hVal >= reserve ? 'healthy' : hVal >= reserve * 0.65 ? 'watch' : 'critical';
+    var vVal = Math.max(0, Number(end.varroaLevel) || 0), vBand = vVal >= 35 ? 'critical' : vVal >= 20 ? 'watch' : 'healthy';
+    var dVal = Math.max(0, Number(end.diseaseRisk) || 0), dBand = dVal >= 55 ? 'critical' : dVal >= 35 ? 'watch' : 'healthy';
+    var chSpecs = [
+      { id: 'workers', ratio: clamp01(wVal / 30000), thresholdRatio: clamp01(6000 / 30000), band: wBand },
+      { id: 'food', ratio: clamp01(hVal / hScale), thresholdRatio: clamp01(reserve / hScale), band: hBand },
+      { id: 'varroa', ratio: clamp01(vVal / 100), thresholdRatio: 0.20, band: vBand },
+      { id: 'disease', ratio: clamp01(dVal / 100), thresholdRatio: 0.35, band: dBand }
+    ];
+    var channels = chSpecs.map(function(spec, idx) {
+      var x = 2 + idx * 40, trackW = 34;
+      return { id: spec.id, band: spec.band, x: x, trackW: trackW, fillW: +(spec.ratio * trackW).toFixed(2), thresholdX: +(x + spec.thresholdRatio * trackW).toFixed(2) };
+    });
+    function makeRiskVisual(risk) {
+      var r = risk && typeof risk === 'object' ? risk : {};
+      var id = String(r.id || 'risk');
+      var band = r.level === 'critical' ? 'critical' : 'watch';
+      var ratio = band === 'critical' ? 0.88 : 0.64, thRatio = 0.55;
+      if (id === 'varroa') { ratio = clamp01(vVal / 100); thRatio = 0.20; }
+      else if (id === 'disease') { ratio = clamp01(dVal / 100); thRatio = 0.35; }
+      else if (id === 'pesticide') { var pv = Math.max(0, Number(start.pesticideExposure) || 0); ratio = clamp01(pv / 60); thRatio = clamp01(20 / 60); }
+      else if (id === 'honey' || id === 'dearth' || id === 'stores') { ratio = clamp01(hVal / hScale); thRatio = clamp01(reserve / hScale); }
+      return { id: id, band: band, fillW: +(ratio * 96).toFixed(2), thresholdX: +(2 + thRatio * 96).toFixed(2) };
+    }
+    var risks = (Array.isArray(f.risks) ? f.risks : []).map(makeRiskVisual);
+    var riskMap = {};
+    risks.forEach(function(rv) { riskMap[rv.id] = rv; });
+    var status = f.status || (channels.some(function(c) { return c.band === 'critical'; }) || risks.some(function(r) { return r.band === 'critical'; }) ? 'critical' : (channels.some(function(c) { return c.band === 'watch'; }) || risks.length) ? 'watch' : 'healthy');
+    return { status: status, channels: channels, risks: risks, riskMap: riskMap, fallbackRisk: makeRiskVisual };
+  }
+
+  // Pure visual descriptors for the honey-stores investigation stepper, daily budget bars, and Run A/B comparison.
+  function bhHoneyLabVisuals(lab, runA, runB, comparison) {
+    var l = lab && typeof lab === 'object' ? lab : {};
+    var step = Number.isInteger(l.step) ? Math.max(0, Math.min(6, l.step)) : 0;
+    var nodes = [];
+    var rails = [];
+    for (var ni = 0; ni < 7; ni++) {
+      var nState = ni < step ? 'complete' : ni === step ? 'current' : 'upcoming';
+      nodes.push({ index: ni, cx: 12 + ni * 36, r: ni === step ? 4.4 : 3.4, state: nState });
+      if (ni < 6) rails.push({ index: ni, x1: +(12 + ni * 36 + 4.5).toFixed(1), x2: +(12 + (ni + 1) * 36 - 4.5).toFixed(1), done: ni < step });
+    }
+    var aRows = runA && Array.isArray(runA.rows) ? runA.rows : [];
+    var bRows = runB && Array.isArray(runB.rows) ? runB.rows : [];
+    var activeRows = step >= 3 && bRows.length ? bRows : aRows;
+    var last = activeRows.length ? activeRows[activeRows.length - 1] : null;
+    var inc = last && Number.isFinite(Number(last.incoming)) ? Math.max(0, Number(last.incoming)) : 0;
+    var cons = last && Number.isFinite(Number(last.consumed)) ? Math.max(0, Number(last.consumed)) : 0;
+    var sto = last && Number.isFinite(Number(last.stores)) ? Math.max(0, Number(last.stores)) : 0;
+    var flowScale = Math.max(inc, cons, 0.8);
+    var startStores = runA && runA.start && Number.isFinite(Number(runA.start.honey)) ? Math.max(1, Number(runA.start.honey)) : 35;
+    var storeScale = Math.max(startStores * 1.15, sto, 1);
+    var dailyBars = {
+      forage: { fillW: +((inc / flowScale) * 96).toFixed(2), tone: inc >= cons ? 'surplus' : 'scarce', tickX: null },
+      consumed: { fillW: +((cons / flowScale) * 96).toFixed(2), tone: cons > inc ? 'deficit' : 'balanced', tickX: inc > 0 ? +(2 + Math.min(1, inc / flowScale) * 96).toFixed(2) : null },
+      stores: { fillW: +(Math.min(1, sto / storeScale) * 96).toFixed(2), tone: sto >= startStores ? 'healthy' : sto >= startStores * 0.65 ? 'falling' : 'low', tickX: +(2 + Math.min(1, startStores / storeScale) * 96).toFixed(2) }
+    };
+    var pairComparison = null;
+    if (step >= 3 && comparison && runA && runA.state && runB && runB.state) {
+      var aEnd = Math.max(0, Number(runA.state.honey) || 0);
+      var bEnd = Math.max(0, Number(runB.state.honey) || 0);
+      var cmpMax = Math.max(aEnd, bEnd, 1);
+      var delta = +(bEnd - aEnd).toFixed(2);
+      var cmpTone = Math.abs(delta) < 0.05 ? 'neutral' : delta > 0 ? 'higher' : 'lower';
+      pairComparison = { runAFillW: +((aEnd / cmpMax) * 152).toFixed(2), runBFillW: +((bEnd / cmpMax) * 152).toFixed(2), delta: delta, tone: cmpTone };
+    }
+    return { stepper: { completedCount: step, nodes: nodes, rails: rails }, dailyBars: dailyBars, pairComparison: pairComparison };
+  }
+
+  // Pure timeline rail and pin descriptors for the Run B experiment action schedule.
+  function bhExperimentScheduleVisual(schedule) {
+    var s = schedule && typeof schedule === 'object' ? schedule : null;
+    if (!s) {
+      return { available: false, distinctRuns: false, runState: 'preview', checkpointDay: 1, currentDay: 0, cursorX: 10, progressW: 0, matchedCount: 0, exceptionCount: 0, pendingCount: 0, pins: [] };
+    }
+    var distinctRuns = !!s.distinctRuns;
+    var rows = Array.isArray(s.rows) ? s.rows : [];
+    var checkpointDay = Math.max(1, Number.isFinite(Number(s.checkpointDay)) ? Number(s.checkpointDay) : 1);
+    var currentDay = Math.max(0, Math.min(checkpointDay, Number.isFinite(Number(s.currentDay)) ? Number(s.currentDay) : 0));
+    var ratio = distinctRuns ? Math.max(0, Math.min(1, currentDay / checkpointDay)) : 0;
+    var progressW = +(ratio * 200).toFixed(2);
+    var cursorX = +(10 + progressW).toFixed(2);
+    var matchedCount = 0, exceptionCount = 0, pendingCount = 0;
+    var seenDayCounts = {};
+    var pins = rows.map(function(row, idx) {
+      var r = row && typeof row === 'object' ? row : {};
+      var day = Math.max(0, Math.min(checkpointDay, Number.isFinite(Number(r.day)) ? Number(r.day) : 0));
+      var x = +(10 + (day / checkpointDay) * 200).toFixed(2);
+      var seen = seenDayCounts[day] || 0;
+      seenDayCounts[day] = seen + 1;
+      var y = seen === 0 ? 10 : (seen % 2 === 1 ? 6.5 : 13.5);
+      var status = String(r.status || 'preview');
+      if (status === 'matched') matchedCount++;
+      else if (status === 'planned-exception') exceptionCount++;
+      else pendingCount++;
+      var shape = (status === 'planned-exception' || r.plannedCategory) ? 'diamond' : (status === 'missed' || status === 'due') ? 'alert' : 'circle';
+      return { id: String(r.id || ('pin-' + idx)), day: day, x: x, y: y, status: status, shape: shape };
+    });
+    return { available: true, distinctRuns: distinctRuns, runState: distinctRuns ? 'run-b' : 'preview', checkpointDay: checkpointDay, currentDay: currentDay, cursorX: cursorX, progressW: progressW, matchedCount: matchedCount, exceptionCount: exceptionCount, pendingCount: pendingCount, pins: pins };
+  }
+
+  // Pure vital-strip and command-glyph descriptors for the Colony Network quick-response dock.
+  function bhQueenDockVisuals(pheromones, population, resources) {
+    var ph = pheromones && typeof pheromones === 'object' ? pheromones : {};
+    var pop = population && typeof population === 'object' ? population : {};
+    var res = resources && typeof resources === 'object' ? resources : {};
+    var qmp = Math.max(0, Math.min(100, Number.isFinite(Number(ph.qmp)) ? Number(ph.qmp) : 0));
+    var alarm = Math.max(0, Math.min(100, Number.isFinite(Number(ph.alarm)) ? Number(ph.alarm) : 0));
+    var guards = Math.max(0, Number.isFinite(Number(pop.guards)) ? Number(pop.guards) : 0);
+    var guardScale = Math.max(32, guards);
+    var minRes = Math.min(
+      Math.max(0, Number.isFinite(Number(res.nectar)) ? Number(res.nectar) : 0),
+      Math.max(0, Number.isFinite(Number(res.pollen)) ? Number(res.pollen) : 0),
+      Math.max(0, Number.isFinite(Number(res.wax)) ? Number(res.wax) : 0)
+    );
+    var specs = [
+      { id: 'qmp', ratio: qmp / 100, threshRatio: 0.40, band: qmp < 40 ? 'critical' : qmp < 65 ? 'watch' : 'healthy' },
+      { id: 'alarm', ratio: alarm / 100, threshRatio: 0.50, band: alarm >= 65 ? 'high' : alarm >= 25 ? 'active' : 'calm' },
+      { id: 'guards', ratio: Math.min(1, guards / guardScale), threshRatio: 16 / guardScale, band: guards >= 16 ? 'healthy' : guards >= 8 ? 'watch' : 'critical' },
+      { id: 'reserves', ratio: Math.min(1, minRes / 50), threshRatio: 0.50, band: minRes >= 25 ? 'healthy' : minRes >= 10 ? 'watch' : 'critical' }
+    ];
+    var channels = specs.map(function(sp, idx) {
+      var x = 2 + idx * 40, trackW = 34;
+      return { id: sp.id, band: sp.band, x: x, trackW: trackW, fillW: +(Math.max(0, Math.min(1, sp.ratio)) * trackW).toFixed(2), thresholdX: +(x + Math.max(0, Math.min(1, sp.threshRatio)) * trackW).toFixed(2) };
+    });
+    return {
+      channels: channels,
+      glyphByCommand: { scout_rival: 'radar', alarm_signal: 'wave-shield', raid_rival: 'converge-lance' }
+    };
+  }
+
+  // Pure threshold-gauge descriptors for the 5 live Drone Flight envelope items.
+  function bhDroneEnvelopeVisuals(state) {
+    var s = state && typeof state === 'object' ? state : {};
+    var p = DRONE_FLIGHT_PARAMS;
+    var maxEnergy = s.difficulty === 'easy' ? 125 : s.difficulty === 'hard' ? 82 : 105;
+    var energyVal = Number.isFinite(Number(s.energy)) ? Math.max(0, Number(s.energy)) : 0;
+    var energyRatio = Math.max(0, Math.min(1, energyVal / maxEnergy));
+    var energyPct = Math.round(energyRatio * 100);
+    var speedVal = Number.isFinite(Number(s.speed)) ? Math.max(0, Number(s.speed)) : 0;
+    var speedRatio = Math.max(0, Math.min(1, speedVal / 12));
+    var altVal = Number.isFinite(Number(s.y)) ? Math.max(0, Number(s.y)) : 0;
+    var altRatio = Math.max(0, Math.min(1, altVal / 200));
+    var target = null;
+    if (s.phase === 'congregation' && Array.isArray(s.nearQueens)) {
+      s.nearQueens.some(function(queen) { if (queen && !queen.caught) { target = queen; return true; } return false; });
+    }
+    if (!target) target = { x: s.x || 0, z: (s.z || 0) - 600 };
+    var targetAngle = Math.atan2((target.x || 0) - (s.x || 0), -((target.z || 0) - (s.z || 0)));
+    var bearingDelta = targetAngle - (Number(s.yaw) || 0);
+    while (bearingDelta > Math.PI) bearingDelta -= Math.PI * 2;
+    while (bearingDelta < -Math.PI) bearingDelta += Math.PI * 2;
+    var bearingErr = Math.abs(bearingDelta);
+    var bearingAlignRatio = Math.max(0, Math.min(1, 1 - Math.min(Math.PI, bearingErr) / Math.PI));
+    var nearestBird = Infinity;
+    if (Array.isArray(s.birds)) {
+      s.birds.forEach(function(bird) {
+        if (!bird) return;
+        var dx = (s.x || 0) - (bird.x || 0), dy = (s.y || 0) - (bird.y || 0), dz = (s.z || 0) - (bird.z || 0);
+        nearestBird = Math.min(nearestBird, Math.sqrt(dx * dx + dy * dy + dz * dz));
+      });
+    }
+    var hazardProximityRatio = isFinite(nearestBird) ? Math.max(0, Math.min(1, 1 - Math.min(180, nearestBird) / 180)) : 0;
+    function mk(id, tone, ratio, bandMin, bandMax, tickR, tick2R) {
+      var bx = bandMin != null ? +(2 + bandMin * 96).toFixed(2) : 0;
+      var bw = bandMin != null && bandMax != null ? +((bandMax - bandMin) * 96).toFixed(2) : 0;
+      return {
+        id: id,
+        tone: tone,
+        fillW: +(Math.max(0, Math.min(1, ratio)) * 96).toFixed(2),
+        bandX: bx,
+        bandW: bw,
+        tickX: tickR != null ? +(2 + tickR * 96).toFixed(2) : null,
+        tick2X: tick2R != null ? +(2 + tick2R * 96).toFixed(2) : null
+      };
+    }
+    return {
+      paused: !!s.paused,
+      items: {
+        energy: mk('energy', energyPct < 22 ? 'danger' : energyPct < 45 ? 'caution' : 'good', energyRatio, null, null, 0.22, 0.45),
+        speed: mk('speed', speedVal < 1.5 || speedVal > 9 ? 'caution' : 'good', speedRatio, 1.5 / 12, 9 / 12, 1.5 / 12, 9 / 12),
+        altitude: mk('altitude', altVal > p.dcaMaxFt ? 'caution' : 'good', altRatio, p.dcaMinFt / 200, p.dcaMaxFt / 200, p.dcaMinFt / 200, p.dcaMaxFt / 200),
+        bearing: mk('bearing', bearingErr > 0.8 ? 'danger' : bearingErr > 0.28 ? 'caution' : 'good', bearingAlignRatio, 1 - 0.28 / Math.PI, 1, 1 - 0.8 / Math.PI, 1 - 0.28 / Math.PI),
+        hazard: mk('hazard', nearestBird < 45 ? 'danger' : nearestBird < 100 ? 'caution' : 'good', hazardProximityRatio, null, null, 1 - 100 / 180, 1 - 45 / 180)
+      }
+    };
+  }
+
   // A stable component keeps history navigation local and never writes flight data.
   function BeeDroneHistoryInspector(props) {
     var React = props.React, h = React.createElement;
@@ -5551,6 +7181,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       setSelection({ source: props.source, log: log, index: index, entry: index === log.length - 1 ? null : log[index], announcement: announcement });
     }
     var announced = selection && selection.source === props.source && !current.reason;
+    var spark = bhDroneHistorySparkline(log, current.index);
     return h('section', { className: 'bee-flight-history', 'data-flight-history': 'true', role: 'region', 'aria-label': 'Recorded maneuver history' },
       h('p', { className: 'bee-history-intro' }, 'Look back at one maneuver at a time. Reviewing a record does not move the bee or replay the flight.'),
       h('div', { className: 'bee-history-toolbar' },
@@ -5568,6 +7199,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       current.reason && h('p', { className: 'bee-history-notice', 'data-history-notice': 'true' }, current.reason === 'removed'
         ? 'The selected record is no longer retained. Showing the latest retained record.'
         : 'The selected record cannot be uniquely identified in this history. Showing the latest retained record.'),
+      h('svg', {
+        viewBox: '0 0 320 44', width: 320, height: 44,
+        className: 'bee-history-sparkline',
+        'data-history-sparkline': 'true',
+        'data-sparkline-count': String(spark.count),
+        'data-sparkline-selected': String(spark.selectedIndex),
+        'aria-hidden': 'true', focusable: 'false'
+      },
+      h('line', { x1: 8, y1: 29, x2: 312, y2: 29, className: 'bee-sparkline-divider' }),
+      spark.energyBars.map(function(bar) {
+        return h('rect', { key: 'e-' + bar.index, x: bar.x, y: bar.y, width: bar.w, height: bar.h, rx: 1, className: 'bee-sparkline-energy', 'data-sparkline-energy': String(bar.index), 'data-selected': bar.selected ? 'true' : 'false' });
+      }),
+      h('line', { x1: spark.cursorX, y1: 2, x2: spark.cursorX, y2: 42, className: 'bee-sparkline-cursor', 'data-sparkline-cursor': 'true' }),
+      spark.altSegments.map(function(seg, si) {
+        return h('polyline', { key: 's-' + si, points: seg, fill: 'none', className: 'bee-sparkline-alt-segment', 'data-sparkline-alt-segment': String(si) });
+      }),
+      spark.points.map(function(pt) {
+        return h('circle', { key: 'p-' + pt.index, cx: pt.x, cy: pt.y, r: pt.selected ? 3.2 : 2.1, className: 'bee-sparkline-point', 'data-sparkline-point': String(pt.index), 'data-selected': pt.selected ? 'true' : 'false' });
+      })),
       h('div', { id: id + '-comparison' }, props.renderEvidence([current.entry], false, true) || h('p', null, 'Maneuver readings not recorded.')),
       h('p', { className: 'bee-history-note' }, 'Up to 100 maneuvers are kept, oldest first. A record’s position in this list can differ from its maneuver number.'),
       h('details', { 'data-history-table': 'true' }, h('summary', null, 'Full evidence table'), props.renderTable(log)));
@@ -5905,6 +7555,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     return { context: context, ground: ground, climb: climb, energy: energy, items: items, announcement: announcement };
   }
 
+  // Visual gauge and icon metadata for drone flight condition warnings (read-only).
+  function bhDroneConditionVisual(id, state) {
+    var s = state || {};
+    var reserve = s.difficulty === 'easy' ? 125 : s.difficulty === 'hard' ? 82 : 105;
+    var kind = id === 'ground' ? 'ground' : id === 'climb' ? 'climb' : 'energy';
+    var iconKind = kind === 'ground' ? 'ground-descent' : kind === 'climb' ? 'slow-climb' : 'low-energy';
+    var thresholdPct = kind === 'ground' ? 50 : kind === 'climb' ? 35 : 25;
+    var raw = 0;
+    var tone = 'healthy';
+    if (kind === 'ground') {
+      raw = Number.isFinite(s.y) ? (s.y / 60) * 100 : 0;
+      if (Number.isFinite(s.y) && s.y < 30 && Number.isFinite(s.vy) && s.vy < -0.5) tone = 'danger';
+    } else if (kind === 'climb') {
+      raw = Number.isFinite(s.speed) ? (s.speed / 24) * 100 : 0;
+      if (s.stallWarning === true) tone = 'warning';
+    } else {
+      raw = Number.isFinite(s.energy) && reserve > 0 ? (s.energy / reserve) * 100 : 0;
+      if (raw < 25) tone = 'warning';
+    }
+    var pct = Math.max(0, Math.min(100, Math.round(raw * 10) / 10));
+    return {
+      id: kind,
+      iconKind: iconKind,
+      tone: tone,
+      pct: pct,
+      thresholdPct: thresholdPct,
+      fillW: +((pct / 100) * 160).toFixed(2),
+      thresholdX: +((thresholdPct / 100) * 160).toFixed(2)
+    };
+  }
+
   function bhDroneFlightDirector(state) {
     var s = state || {}, target = bhDroneNavigationTarget(s);
     function number(v) { return Number.isFinite(v) ? v : 0; }
@@ -5946,6 +7627,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       bandStartPct: p.dcaMinFt / 3, bandWidthPct: (p.dcaMaxFt - p.dcaMinFt) / 3,
       bandLabel: p.dcaMinFt + '–' + p.dcaMaxFt + ' model ft',
       text: status + '. ' + (recorded || complete ? note : rangeText + '. ' + heightText + '. ' + note) };
+  }
+
+  function bhDroneApproachRangeVisual(state) {
+    var s = state || {}, p = DRONE_FLIGHT_PARAMS, scaleMaxM = p.dcaDistanceM + 100;
+    var known = Number.isFinite(s.x) && Number.isFinite(s.y) && Number.isFinite(s.z);
+    var range = known ? Math.hypot(s.x, s.z + p.dcaDistanceM) : scaleMaxM;
+    var inRange = known && range <= p.dcaRadiusM;
+    var zoneWidthPct = Math.round((p.dcaRadiusM / scaleMaxM) * 1000) / 10;
+    var zoneStartPct = Math.round((100 - zoneWidthPct) * 10) / 10;
+    var progressPct = known ? Math.max(0, Math.min(100, Math.round((1 - Math.min(scaleMaxM, range) / scaleMaxM) * 1000) / 10)) : 0;
+    return { known: known, inRange: inRange, scaleMaxM: scaleMaxM, progressPct: progressPct, zoneStartPct: zoneStartPct, zoneWidthPct: zoneWidthPct };
   }
 
   // Equal-length direction pointers from the bee, not future trajectory points.
@@ -6098,6 +7790,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       heading: { x: x + Math.sin(yaw) * Math.cos(pitch) * length, y: y + Math.sin(pitch) * length, z: z - Math.cos(yaw) * Math.cos(pitch) * length },
       motion: moving ? { x: x + vx / speed * length, y: y + vy / speed * length, z: z + vz / speed * length } : null,
       explanation: 'The white diamond shows heading; the cyan ring shows motion. Steering and wind can separate them. These short direction pointers do not predict a safe route.' };
+  }
+
+  function bhDroneMotionDialData(state, readout) {
+    var s = state || {}, r = readout || bhDroneMotionReadout(s);
+    var yaw = Number.isFinite(s.yaw) ? s.yaw : 0;
+    var horiz = Number.isFinite(s.vx) && Number.isFinite(s.vz) ? Math.hypot(s.vx, s.vz) : 0;
+    var hasTrack = Boolean(r.known && r.moving && horiz >= 0.06);
+    var wind = s.windNow || s.wind;
+    var windKnown = Boolean(wind && Number.isFinite(wind.x) && Number.isFinite(wind.z));
+    var hasWind = windKnown && Math.hypot(wind.x, wind.z) >= 0.04;
+    var windSide = hasWind ? (wind.x * Math.cos(yaw) + wind.z * Math.sin(yaw)) : 0;
+    var windFwd = hasWind ? (wind.x * Math.sin(yaw) - wind.z * Math.cos(yaw)) : 1;
+    var vertKey = r.vertical === 'Rising' ? 'rising' : r.vertical === 'Descending' ? 'descending' : 'level';
+    return {
+      hasTrack: hasTrack,
+      trackDeg: hasTrack ? r.degrees : 0,
+      hasWind: hasWind,
+      windDeg: hasWind ? Math.round(Math.atan2(windSide, windFwd) * 180 / Math.PI) : 0,
+      vertKey: vertKey,
+      vertPath: vertKey === 'rising' ? 'M96 42l5-8 5 8M101 35v36' : vertKey === 'descending' ? 'M96 70l5 8 5-8M101 41v36' : 'M96 56h10'
+    };
   }
 
   // Recent recorded positions only. Break the line across missing or stale samples.
@@ -6259,6 +7972,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       (status === 'contact' ? 'Inside the practice encounter zone.' : status === 'nearby' ? 'Watch the red bird warning.' : 'Outside the nearby warning zone.') };
   }
 
+  function bhDronePredatorGauge(state) {
+    var r = bhDronePredatorReadout(state), maxDist = 240, avail = Number.isFinite(r.distance);
+    var proximityPct = !avail ? 0 : Math.max(0, Math.min(100, Math.round((1 - Math.min(maxDist, Math.max(0, r.distance)) / maxDist) * 100)));
+    return { available: avail, status: r.status, proximityPct: proximityPct, nearbyStartPct: 50, contactStartPct: 92 };
+  }
+
   // A measurement overlay uses the model's y=0 datum, never a nearby roof or tree.
   function bhDroneHeightGuide(state) {
     var s = state || {};
@@ -6400,6 +8119,97 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       : 'Updraft information appears when a valid lift column is available.';
     return { state: kind, title: title, detail: detail, lift: totalLift,
       caption: 'Orange = modeled rising air below ' + ceiling + ' model ft · lift never refills energy.' };
+  }
+
+  function bhHasManagementChoice(trail, choiceId) {
+    if (!Array.isArray(trail) || !choiceId) return false;
+    for (var i = 0; i < trail.length; i++) {
+      if (trail[i] && trail[i].choiceId === choiceId) return true;
+    }
+    return false;
+  }
+
+  // Read-only horizontal proximity indicator matching bhDronePlanningSurroundings
+  // nearest-neighbor selection without altering bhDronePlanningSurroundings output.
+  function bhDroneSurroundingsProximityVisual(state, kind) {
+    function record(value) { return value && typeof value === 'object' && !Array.isArray(value); }
+    var s = record(state) ? state : {};
+    if (kind !== 'obstacle' && kind !== 'traffic') return { available: false };
+    var items = kind === 'traffic' ? s.drones : s.obstacles;
+    if (!Array.isArray(items) || !items.length || !Number.isFinite(s.x) || !Number.isFinite(s.z)) return { available: false };
+    var chosen = null, closest = Infinity;
+    items.forEach(function(item) {
+      if (!record(item) || !Number.isFinite(item.x) || !Number.isFinite(item.z)) return;
+      var dx = item.x - s.x, dz = item.z - s.z;
+      var dist = Math.hypot(dx, dz);
+      if (!Number.isFinite(dist)) return;
+      if (dist < closest) { closest = dist; chosen = item; }
+    });
+    if (!chosen || !Number.isFinite(closest)) return { available: false };
+    var degrees = null;
+    if (closest > 0 && Number.isFinite(s.yaw)) {
+      var angle = Math.atan2(chosen.x - s.x, -(chosen.z - s.z)) - s.yaw;
+      degrees = Math.atan2(Math.sin(angle), Math.cos(angle)) * 180 / Math.PI;
+    }
+    var radiusFraction = Math.max(0.14, Math.min(1, closest / 150));
+    var band = closest < 25 ? 'close' : closest < 65 ? 'moderate' : 'clear';
+    return {
+      available: true,
+      kind: kind,
+      distance: closest,
+      degrees: degrees,
+      radiusFraction: radiusFraction,
+      radiusPx: +(radiusFraction * 54).toFixed(1),
+      band: band
+    };
+  }
+
+  function bhColonySignMeter(signId, readings) {
+    var r = readings && typeof readings === 'object' ? readings : {};
+    function pct(val, max) { return +Math.max(0, Math.min(100, (val / Math.max(1, max)) * 100)).toFixed(1); }
+    if (signId === 'stores') {
+      var honeyVal = Math.max(0, Number.isFinite(r.honey) ? r.honey : 0);
+      var reserveVal = Math.max(1, Number.isFinite(r.currentReserve) ? r.currentReserve : 20);
+      var lowLine = Math.max(1, Number.isFinite(r.lowLine) ? r.lowLine : 8);
+      var sMax = Math.max(40, reserveVal * 1.5, honeyVal, 1);
+      var lowEnd = Math.min(reserveVal, lowLine);
+      return {
+        scaleMax: sMax,
+        value: honeyVal,
+        thresholdPct: pct(reserveVal, sMax),
+        badStartPct: 0,
+        badWidthPct: pct(lowEnd, sMax),
+        warnStartPct: pct(lowEnd, sMax),
+        warnWidthPct: Math.max(0, pct(reserveVal, sMax) - pct(lowEnd, sMax)),
+        markerPct: pct(honeyVal, sMax)
+      };
+    }
+    if (signId === 'mites') {
+      var mitesVal = Math.max(0, Math.min(100, Number.isFinite(r.varroaLevel) ? r.varroaLevel : 0));
+      return { scaleMax: 100, value: mitesVal, thresholdPct: 20, warnStartPct: 20, warnWidthPct: 15, badStartPct: 35, badWidthPct: 65, markerPct: pct(mitesVal, 100) };
+    }
+    if (signId === 'disease') {
+      var disVal = Math.max(0, Math.min(100, Number.isFinite(r.diseaseRisk) ? r.diseaseRisk : 0));
+      return { scaleMax: 100, value: disVal, thresholdPct: 35, warnStartPct: 0, warnWidthPct: 0, badStartPct: 35, badWidthPct: 65, markerPct: pct(disVal, 100) };
+    }
+    if (signId === 'queen') {
+      var qVal = Math.max(0, Math.min(100, Number.isFinite(r.queenHealth) ? r.queenHealth : 100));
+      return { scaleMax: 100, value: qVal, thresholdPct: 50, warnStartPct: 0, warnWidthPct: 0, badStartPct: 0, badWidthPct: 50, markerPct: pct(qVal, 100) };
+    }
+    if (signId === 'crowded') {
+      var crowdPct = Math.max(0, Math.min(150, Math.round((Number.isFinite(r.crowd) ? r.crowd : 0) * 100)));
+      return {
+        scaleMax: 150,
+        value: crowdPct,
+        thresholdPct: pct(100, 150),
+        warnStartPct: pct(100, 150),
+        warnWidthPct: +(pct(120, 150) - pct(100, 150)).toFixed(1),
+        badStartPct: pct(120, 150),
+        badWidthPct: +(100 - pct(120, 150)).toFixed(1),
+        markerPct: pct(crowdPct, 150)
+      };
+    }
+    return null;
   }
 
   // A read-only teaching map: one scale for both horizontal axes, actual samples,
@@ -6817,6 +8627,87 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       readings: readings,
       text: title + ' | ' + context + ' | ' + readings.map(function(item) { return item.label + ': ' + item.value; }).join(' | '),
       guide: guide
+    };
+  }
+
+  // Read-only visual summary for notebook evidence captures (bounded meters + capacity rail).
+  function bhNotebookCaptureVisuals(capture, entryValue, role) {
+    var cap = capture && typeof capture === 'object' ? capture : {};
+    var entry = entryValue && typeof entryValue === 'object' && !Array.isArray(entryValue) ? entryValue : {};
+    var current = typeof entry.evidence === 'string' ? entry.evidence : '';
+    var text = typeof cap.text === 'string' ? cap.text.trim() : '';
+    var append = bhAppendNotebookEvidence(entry, text);
+    var maxChars = 1200;
+    var usedChars = current.length;
+    var incomingChars = (!cap.available || !text || append.status === 'duplicate' || append.status === 'empty')
+      ? 0 : (current ? 1 : 0) + text.length;
+    var usedPct = Math.max(0, Math.min(100, Math.round((usedChars / maxChars) * 1000) / 10));
+    var usedW = +((usedPct / 100) * 240).toFixed(2);
+    var rawIncomingW = incomingChars > 0 ? Math.min(240 - usedW, (incomingChars / maxChars) * 240) : 0;
+    var incomingW = rawIncomingW > 0 ? +rawIncomingW.toFixed(2) : 0;
+    var incomingPct = incomingW > 0 ? Math.max(0, Math.min(100 - usedPct, Math.round((incomingChars / maxChars) * 1000) / 10)) : 0;
+    var capStatus = cap.available ? append.status : 'unavailable';
+
+    var readingBars = {};
+    var boundedIds = {
+      health: 'higher',
+      mites: 'lower',
+      stability: 'higher',
+      'brood-core': 'higher',
+      advantage: 'higher',
+      qmp: 'higher',
+      'rival-core': 'neutral',
+      pressure: 'lower',
+      energy: 'higher'
+    };
+    var readings = Array.isArray(cap.readings) ? cap.readings : [];
+    for (var ri = 0; ri < readings.length; ri++) {
+      var item = readings[ri];
+      if (!item || !item.id) continue;
+      var dir = boundedIds[item.id] || null;
+      var rawVal = typeof item.value === 'string' ? item.value.trim() : '';
+      if (!dir || !rawVal || /not recorded/i.test(rawVal)) {
+        readingBars[item.id] = null;
+        continue;
+      }
+      if (item.id === 'energy' && rawVal.indexOf('%') < 0) {
+        readingBars[item.id] = null;
+        continue;
+      }
+      var m = /^(-?\d+(?:\.\d+)?)/.exec(rawVal);
+      if (!m) {
+        readingBars[item.id] = null;
+        continue;
+      }
+      var num = Number(m[1]);
+      if (!isFinite(num)) {
+        readingBars[item.id] = null;
+        continue;
+      }
+      var pct = Math.max(0, Math.min(100, Math.round(num * 10) / 10));
+      var tone = 'neutral';
+      if (item.id === 'mites') tone = pct >= 20 ? 'danger' : pct >= 10 ? 'watch' : 'healthy';
+      else if (item.id === 'pressure') tone = pct >= 50 ? 'danger' : pct >= 25 ? 'watch' : 'healthy';
+      else if (dir === 'higher') tone = pct >= 65 ? 'healthy' : pct >= 35 ? 'watch' : 'danger';
+      readingBars[item.id] = { pct: pct, tone: tone };
+    }
+
+    return {
+      role: role || '',
+      readingBars: readingBars,
+      capacity: {
+        status: capStatus,
+        needed: append.needed || 0,
+        usedChars: usedChars,
+        incomingChars: incomingChars,
+        maxChars: maxChars,
+        usedPct: usedPct,
+        incomingPct: incomingPct,
+        usedW: usedW,
+        incomingX: usedW,
+        incomingW: incomingW,
+        showIncoming: incomingW > 0
+      }
     };
   }
 
@@ -7275,6 +9166,92 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     grains.forEach(function(point) { var x = point[0], y = point[1]; shapes.push({ d: 'M' + (x - 4) + ' ' + y + 'a4 4 0 1 0 8 0a4 4 0 1 0-8 0', stroke: 'pollen', width: 2.5, grain: true }); });
     if (kind === 'flower') shapes.push({ d: reading.contact ? 'M38 31L98 55M88 44L98 55L83 56' : 'M38 31L77 43M68 32L77 43L63 45', stroke: 'accent', width: 2.5, dash: reading.contact ? undefined : '4 4' });
     return shapes;
+  }
+  function bhTraceSvgPathOnCanvas(ctx, d) {
+    if (!ctx || typeof d !== 'string' || !d) return 0;
+    var tokens = d.match(/[MmLlHhVvCcQqAaZz]|[-+]?(?:\d+\.?\d*|\.\d+)(?:e[-+]?\d+)?/g);
+    if (!tokens || !tokens.length) return 0;
+    ctx.beginPath();
+    var i = 0, cmd = '', cx = 0, cy = 0, sx = 0, sy = 0, ops = 0;
+    function isCmd(tok) { return typeof tok === 'string' && /^[A-Za-z]$/.test(tok); }
+    function nextNum() { return i < tokens.length && !isCmd(tokens[i]) ? Number(tokens[i++]) : NaN; }
+    function vecAng(ux, uy, vx, vy) {
+      var dot = ux * vx + uy * vy, len = Math.hypot(ux, uy) * Math.hypot(vx, vy);
+      var c = Math.max(-1, Math.min(1, len ? dot / len : 1));
+      return (ux * vy - uy * vx < 0 ? -1 : 1) * Math.acos(c);
+    }
+    while (i < tokens.length) {
+      if (isCmd(tokens[i])) {
+        cmd = tokens[i++];
+        if (cmd === 'Z' || cmd === 'z') { ctx.closePath(); cx = sx; cy = sy; ops += 1; continue; }
+      }
+      var rel = cmd === cmd.toLowerCase(), op = cmd.toUpperCase();
+      if (op === 'M') {
+        var mx = nextNum(), my = nextNum();
+        if (!Number.isFinite(mx) || !Number.isFinite(my)) break;
+        cx = rel ? cx + mx : mx; cy = rel ? cy + my : my; sx = cx; sy = cy;
+        ctx.moveTo(cx, cy); ops += 1;
+        cmd = rel ? 'l' : 'L';
+      } else if (op === 'L') {
+        var lx = nextNum(), ly = nextNum();
+        if (!Number.isFinite(lx) || !Number.isFinite(ly)) break;
+        cx = rel ? cx + lx : lx; cy = rel ? cy + ly : ly;
+        ctx.lineTo(cx, cy); ops += 1;
+      } else if (op === 'H') {
+        var hx = nextNum();
+        if (!Number.isFinite(hx)) break;
+        cx = rel ? cx + hx : hx; ctx.lineTo(cx, cy); ops += 1;
+      } else if (op === 'V') {
+        var vy = nextNum();
+        if (!Number.isFinite(vy)) break;
+        cy = rel ? cy + vy : vy; ctx.lineTo(cx, cy); ops += 1;
+      } else if (op === 'Q') {
+        var qx1 = nextNum(), qy1 = nextNum(), qx = nextNum(), qy = nextNum();
+        if (![qx1, qy1, qx, qy].every(Number.isFinite)) break;
+        var aqx1 = rel ? cx + qx1 : qx1, aqy1 = rel ? cy + qy1 : qy1, aqx = rel ? cx + qx : qx, aqy = rel ? cy + qy : qy;
+        ctx.quadraticCurveTo(aqx1, aqy1, aqx, aqy); cx = aqx; cy = aqy; ops += 1;
+      } else if (op === 'C') {
+        var cx1 = nextNum(), cy1 = nextNum(), cx2 = nextNum(), cy2 = nextNum(), ex = nextNum(), ey = nextNum();
+        if (![cx1, cy1, cx2, cy2, ex, ey].every(Number.isFinite)) break;
+        var acx1 = rel ? cx + cx1 : cx1, acy1 = rel ? cy + cy1 : cy1, acx2 = rel ? cx + cx2 : cx2, acy2 = rel ? cy + cy2 : cy2;
+        cx = rel ? cx + ex : ex; cy = rel ? cy + ey : ey;
+        ctx.bezierCurveTo(acx1, acy1, acx2, acy2, cx, cy); ops += 1;
+      } else if (op === 'A') {
+        var rx = Math.abs(nextNum()), ry = Math.abs(nextNum()), rot = nextNum(), fa = nextNum(), fs = nextNum(), ax = nextNum(), ay = nextNum();
+        if (![rx, ry, rot, fa, fs, ax, ay].every(Number.isFinite)) break;
+        var nx = rel ? cx + ax : ax, ny = rel ? cy + ay : ay;
+        if (nx === cx && ny === cy) continue;
+        if (rx < 1e-6 || ry < 1e-6) { ctx.lineTo(nx, ny); cx = nx; cy = ny; ops += 1; continue; }
+        var phi = rot * Math.PI / 180, cosP = Math.cos(phi), sinP = Math.sin(phi);
+        var dx2 = (cx - nx) / 2, dy2 = (cy - ny) / 2;
+        var x1p = cosP * dx2 + sinP * dy2, y1p = -sinP * dx2 + cosP * dy2;
+        var lam = (x1p * x1p) / (rx * rx) + (y1p * y1p) / (ry * ry);
+        if (lam > 1) { var sLam = Math.sqrt(lam); rx *= sLam; ry *= sLam; }
+        var rx2 = rx * rx, ry2 = ry * ry, x1p2 = x1p * x1p, y1p2 = y1p * y1p;
+        var den = rx2 * y1p2 + ry2 * x1p2, num = Math.max(0, rx2 * ry2 - den);
+        var coef = (!!fa === !!fs ? -1 : 1) * (den > 0 ? Math.sqrt(num / den) : 0);
+        var cxp = coef * ((rx * y1p) / ry), cyp = coef * (-(ry * x1p) / rx);
+        var cxArc = cosP * cxp - sinP * cyp + (cx + nx) / 2, cyArc = sinP * cxp + cosP * cyp + (cy + ny) / 2;
+        var t1 = vecAng(1, 0, (x1p - cxp) / rx, (y1p - cyp) / ry);
+        var dt = vecAng((x1p - cxp) / rx, (y1p - cyp) / ry, (-x1p - cxp) / rx, (-y1p - cyp) / ry);
+        if (!fs && dt > 0) dt -= Math.PI * 2;
+        else if (fs && dt < 0) dt += Math.PI * 2;
+        var segs = Math.max(1, Math.ceil(Math.abs(dt) / (Math.PI / 2))), delta = dt / segs, alpha = (4 / 3) * Math.tan(delta / 4);
+        for (var si = 0; si < segs; si++) {
+          var a1 = t1 + si * delta, a2 = a1 + delta;
+          var c1 = Math.cos(a1), s1 = Math.sin(a1), c2 = Math.cos(a2), s2 = Math.sin(a2);
+          var ux1 = c1 - alpha * s1, uy1 = s1 + alpha * c1;
+          var ux2 = c2 + alpha * s2, uy2 = s2 - alpha * c2;
+          ctx.bezierCurveTo(
+            cxArc + cosP * rx * ux1 - sinP * ry * uy1, cyArc + sinP * rx * ux1 + cosP * ry * uy1,
+            cxArc + cosP * rx * ux2 - sinP * ry * uy2, cyArc + sinP * rx * ux2 + cosP * ry * uy2,
+            cxArc + cosP * rx * c2 - sinP * ry * s2, cyArc + sinP * rx * c2 + cosP * ry * s2
+          );
+        }
+        cx = nx; cy = ny; ops += 1;
+      } else break;
+    }
+    return ops;
   }
   function bhPollinationLesson(gradeBand) {
     if (gradeBand === 'K–2') return { question: 'Can you show a visit with pollen, but no pollen on the stigma?', reasoning: 'Find the pollen dots and the round stigma. Change contact with the stigma. Tell what you see change.' };
@@ -8518,6 +10495,134 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       group.maxDelta = Math.max.apply(null, group.deltas);
     });
     return { recordCount: archive.records.length, discardedCount: archive.discardedCount, groups: groups };
+  }
+
+  function bhExperimentArchiveWhisker(group) {
+    if (!group || !Number.isFinite(group.minDelta) || !Number.isFinite(group.maxDelta) || !Number.isFinite(group.meanDelta)) return null;
+    var lo = Math.min(0, group.minDelta), hi = Math.max(0, group.maxDelta);
+    if (hi - lo < 1e-9) { lo = -1; hi = 1; }
+    function pos(v) { return Math.round((8 + ((v - lo) / (hi - lo)) * 104) * 10) / 10; }
+    var zeroX = pos(0), minX = pos(group.minDelta), maxX = pos(group.maxDelta), meanX = pos(group.meanDelta);
+    var lowerBetter = group.metricId === 'varroa' || group.metricId === 'diseaseRisk';
+    var tone = group.meanDelta === 0 ? 'neutral' : ((lowerBetter ? group.meanDelta < 0 : group.meanDelta > 0) ? 'beneficial' : 'adverse');
+    return { zeroX: zeroX, minX: minX, maxX: maxX, meanX: meanX, spanWidth: Math.max(2, Math.round((maxX - minX) * 10) / 10), tone: tone };
+  }
+
+  function bhProjectedPairScale(baselineVal, actionVal, metricId) {
+    if (typeof baselineVal !== 'number' || typeof actionVal !== 'number' || !Number.isFinite(baselineVal) || !Number.isFinite(actionVal) || baselineVal < 0 || actionVal < 0) {
+      return { available: false, baseline: null, action: null, maximum: null, baselinePercent: null, actionPercent: null };
+    }
+    var a = Number(baselineVal.toLocaleString('en-US', { maximumFractionDigits: 3, useGrouping: false })) || 0;
+    var b = Number(actionVal.toLocaleString('en-US', { maximumFractionDigits: 3, useGrouping: false })) || 0;
+    var fixed100 = metricId === 'queenHealth' || metricId === 'morale' || metricId === 'varroaLevel' || metricId === 'diseaseRisk' || metricId === 'varroa';
+    var maximum = fixed100 ? Math.max(100, a, b) : Math.max(a, b);
+    return {
+      available: true,
+      baseline: a,
+      action: b,
+      maximum: maximum,
+      baselinePercent: maximum === 0 ? 0 : Math.min(100, Math.round((a / maximum) * 1000) / 10),
+      actionPercent: maximum === 0 ? 0 : Math.min(100, Math.round((b / maximum) * 1000) / 10),
+    };
+  }
+
+  function bhExperimentPredictionVisual(audit) {
+    var status = audit && audit.status ? audit.status : 'unplanned';
+    var rawExp = audit ? (audit.directionId || audit.direction || '') : '';
+    var expectedDir = (!audit || status === 'unplanned' || !rawExp) ? 'unset' : (rawExp === 'higher' ? 'up' : rawExp === 'lower' ? 'down' : 'same');
+    var rawObs = audit && audit.observedDirectionId ? audit.observedDirectionId : '';
+    var observedDir = (!audit || (status !== 'aligned' && status !== 'not-aligned'))
+      ? 'pending'
+      : rawObs
+        ? (rawObs === 'higher' ? 'up' : rawObs === 'lower' ? 'down' : 'same')
+        : (Number.isFinite(audit.delta) && audit.delta > 0 ? 'up' : Number.isFinite(audit.delta) && audit.delta < 0 ? 'down' : 'same');
+    return { status: status, expectedDir: expectedDir, observedDir: observedDir, matched: status === 'aligned' };
+  }
+
+  // Visual geometry for Dashboard metric threshold rulers (mirrors explainer thresholds; read-only).
+  function bhStatThresholdRuler(id, rawValue) {
+    var num = typeof rawValue === 'number' && isFinite(rawValue) ? rawValue : 0;
+    var clampedPct = Math.max(0, Math.min(100, Math.round(num * 10) / 10));
+    if (id === 'varroa') {
+      return {
+        id: id,
+        clampedPct: clampedPct,
+        direction: 'lower',
+        activeBand: clampedPct >= 20 ? 'danger' : clampedPct >= 10 ? 'watch' : 'healthy',
+        ticksPct: [10, 20],
+        segments: [
+          { band: 'healthy', startPct: 0, widthPct: 10 },
+          { band: 'watch', startPct: 10, widthPct: 10 },
+          { band: 'danger', startPct: 20, widthPct: 80 }
+        ]
+      };
+    }
+    if (id === 'disease') {
+      return {
+        id: id,
+        clampedPct: clampedPct,
+        direction: 'lower',
+        activeBand: clampedPct > 45 ? 'danger' : clampedPct >= 25 ? 'watch' : 'healthy',
+        ticksPct: [25, 45],
+        segments: [
+          { band: 'healthy', startPct: 0, widthPct: 25 },
+          { band: 'watch', startPct: 25, widthPct: 20 },
+          { band: 'danger', startPct: 45, widthPct: 55 }
+        ]
+      };
+    }
+    return {
+      id: id || 'morale',
+      clampedPct: clampedPct,
+      direction: 'higher',
+      activeBand: clampedPct < 40 ? 'danger' : clampedPct < 70 ? 'watch' : 'healthy',
+      ticksPct: [40, 70],
+      segments: [
+        { band: 'danger', startPct: 0, widthPct: 40 },
+        { band: 'watch', startPct: 40, widthPct: 30 },
+        { band: 'healthy', startPct: 70, widthPct: 30 }
+      ]
+    };
+  }
+
+  // Stacked weight-slot geometry for the 5-input colony health breakdown (read-only).
+  function bhScoreContributionStack(dims) {
+    var list = Array.isArray(dims) ? dims : [];
+    var totalWeight = 0;
+    for (var wi = 0; wi < list.length; wi++) {
+      var w = Number(list[wi] && list[wi].weight);
+      if (isFinite(w) && w > 0) totalWeight += w;
+    }
+    if (totalWeight <= 0) totalWeight = 100;
+    var cursorPct = 0;
+    var rawTotalPts = 0;
+    var segments = list.map(function(input, idx) {
+      var rawScore = Number(input && input.score);
+      var score = isFinite(rawScore) ? Math.max(0, Math.min(100, rawScore)) : 0;
+      var rawW = Number(input && input.weight);
+      var weight = isFinite(rawW) && rawW > 0 ? rawW : 0;
+      var slotWidthPct = +((weight / totalWeight) * 100).toFixed(2);
+      var slotStartPct = +cursorPct.toFixed(2);
+      cursorPct = Math.min(100, +(cursorPct + slotWidthPct).toFixed(2));
+      var weighted = score * (weight / totalWeight);
+      rawTotalPts += weighted;
+      var fillWidthPct = +((slotWidthPct * (score / 100))).toFixed(2);
+      return {
+        id: String((input && input.id) || ('dim-' + idx)),
+        label: String((input && input.label) || ''),
+        score: Math.round(score * 10) / 10,
+        weight: weight,
+        slotStartPct: slotStartPct,
+        slotWidthPct: slotWidthPct,
+        fillWidthPct: fillWidthPct,
+        pts: Math.round(weighted * 10) / 10,
+        tone: score >= 70 ? 'healthy' : score >= 40 ? 'watch' : 'danger'
+      };
+    });
+    return {
+      totalPts: Math.round(rawTotalPts * 10) / 10,
+      segments: segments
+    };
   }
 
   function bhBuildExperimentArchiveEvidence(value) {
@@ -10506,6 +12611,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       alignment: direction ? direction === study.direction ? 'aligned' : 'not-aligned' : 'unavailable',
       error: Number.isFinite(actual) && Number.isFinite(projected) ? round(actual - projected) : null };
   }
+  function bhForecastComparisonVisual(result) {
+    if (!result || (!Number.isFinite(result.start) && !Number.isFinite(result.projected))) return null;
+    var hasActual = Number.isFinite(result.actual);
+    var scaleMax = Math.max(1, Math.abs(result.start || 0), Math.abs(result.projected || 0), hasActual ? Math.abs(result.actual) : 0);
+    function toX(v) { return Math.round((8 + Math.max(0, Math.min(1, Math.max(0, v) / scaleMax)) * 144) * 10) / 10; }
+    var startX = Number.isFinite(result.start) ? toX(result.start) : 8;
+    var projectedX = Number.isFinite(result.projected) ? toX(result.projected) : 8;
+    var actualX = hasActual ? toX(result.actual) : null;
+    var residualX = hasActual ? Math.min(projectedX, actualX) : null;
+    var residualW = hasActual ? Math.max(1.5, Math.round(Math.abs(actualX - projectedX) * 10) / 10) : 0;
+    var tone = !hasActual ? 'pending' : result.error === 0 ? 'exact' : result.alignment === 'aligned' ? 'aligned' : 'diverged';
+    return { startX: startX, projectedX: projectedX, projectedW: Math.max(2, Math.round((projectedX - 8) * 10) / 10), hasActual: hasActual, actualX: actualX, actualW: hasActual ? Math.max(2, Math.round((actualX - 8) * 10) / 10) : 0, residualX: residualX, residualW: residualW, tone: tone };
+  }
   function bhBuildForecastStudyRecord(value) {
     var study = bhNormalizeForecastStudy(value), result = bhForecastStudyResult(study);
     if (!study || !result) return '';
@@ -11311,6 +13429,317 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     }
     smokePlumeGroup.visible = false;
     anchor.add(smokePlumeGroup);
+    // Winter insulation wrap + metal entrance mouse guard (raycast-safe: added to anchor, never picks)
+    var winterWrapGroup = new THREE.Group();
+    winterWrapGroup.name = 'winter-insulation-wrap';
+    var wrapMat = new THREE.MeshPhongMaterial({ color: contrast ? 0xffffff : 0x1f2937, shininess: 8 });
+    var battenMat = new THREE.MeshPhongMaterial({ color: contrast ? 0x000000 : 0xd97706, shininess: 16 });
+    var wrapBack = new THREE.Mesh(new THREE.BoxGeometry(BW + 0.036, broodH + 0.02, 0.018), wrapMat);
+    wrapBack.position.set(0, broodY, -BD / 2 - 0.012);
+    winterWrapGroup.add(wrapBack);
+    [-1, 1].forEach(function (wSide) {
+      var wrapWall = new THREE.Mesh(new THREE.BoxGeometry(0.018, broodH + 0.02, BD + 0.024), wrapMat);
+      wrapWall.position.set(wSide * (BW / 2 + 0.012), broodY, 0);
+      winterWrapGroup.add(wrapWall);
+      var wrapFrontStub = new THREE.Mesh(new THREE.BoxGeometry(0.18, broodH + 0.02, 0.016), wrapMat);
+      wrapFrontStub.position.set(wSide * (BW / 2 - 0.08), broodY, BD / 2 + 0.010);
+      winterWrapGroup.add(wrapFrontStub);
+    });
+    [-0.17, 0.17].forEach(function (bandOff) {
+      var bandBack = new THREE.Mesh(new THREE.BoxGeometry(BW + 0.052, 0.024, 0.014), battenMat);
+      bandBack.position.set(0, broodY + bandOff, -BD / 2 - 0.022);
+      winterWrapGroup.add(bandBack);
+      [-1, 1].forEach(function (bSide) {
+        var bandSide = new THREE.Mesh(new THREE.BoxGeometry(0.014, 0.024, BD + 0.036), battenMat);
+        bandSide.position.set(bSide * (BW / 2 + 0.022), broodY + bandOff, 0);
+        winterWrapGroup.add(bandSide);
+      });
+    });
+    var mouseGuardGroup = new THREE.Group();
+    mouseGuardGroup.name = 'entrance-mouse-guard';
+    var guardPlate = new THREE.Mesh(
+      new THREE.BoxGeometry(BW - 0.36, 0.044, 0.014),
+      new THREE.MeshPhongMaterial({ color: contrast ? 0xffffff : 0xcbd5e1, shininess: 42 })
+    );
+    guardPlate.position.set(0, -0.845, BD / 2 + 0.014);
+    mouseGuardGroup.add(guardPlate);
+    var guardHoleGeo = new THREE.CylinderGeometry(0.013, 0.013, 0.018, 10);
+    var guardHoleMat = new THREE.MeshPhongMaterial({ color: contrast ? 0x000000 : 0x1e293b, shininess: 4 });
+    for (var mgi = 0; mgi < 5; mgi++) {
+      var guardHole = new THREE.Mesh(guardHoleGeo, guardHoleMat);
+      guardHole.rotation.x = Math.PI / 2;
+      guardHole.position.set(-0.28 + mgi * 0.14, -0.845, BD / 2 + 0.015);
+      mouseGuardGroup.add(guardHole);
+    }
+    winterWrapGroup.add(mouseGuardGroup);
+    winterWrapGroup.visible = false;
+    anchor.add(winterWrapGroup);
+
+    // Warm-season crowding beard along landing board lip (raycast-safe: added to anchor, never picks)
+    var entranceBeardGroup = new THREE.Group();
+    entranceBeardGroup.name = 'entrance-bearding-cluster';
+    var beardGeo = new THREE.SphereGeometry(0.026, 8, 6);
+    var beardMatA = new THREE.MeshPhongMaterial({ color: contrast ? 0xffffff : 0xb45309, shininess: 20 });
+    var beardMatB = new THREE.MeshPhongMaterial({ color: contrast ? 0x000000 : 0x78350f, shininess: 14 });
+    var beardBees = [];
+    for (var bbi = 0; bbi < 18; bbi++) {
+      var bRow = bbi < 7 ? 0 : bbi < 13 ? 1 : 2;
+      var rowSpan = bRow === 0 ? 7 : bRow === 1 ? 6 : 5;
+      var rowIdx = bRow === 0 ? bbi : bRow === 1 ? bbi - 7 : bbi - 13;
+      var rowNorm = rowSpan > 1 ? (rowIdx / (rowSpan - 1) - 0.5) * 2 : 0;
+      var beardBee = new THREE.Mesh(beardGeo, bbi % 2 === 0 ? beardMatA : beardMatB);
+      beardBee.position.set(rowNorm * (0.28 - bRow * 0.055), -0.885 - bRow * 0.036 - (bbi % 2) * 0.008, BD / 2 + 0.285 + (bbi % 3) * 0.022);
+      beardBee.userData.phase = bbi * 0.72;
+      entranceBeardGroup.add(beardBee);
+      beardBees.push(beardBee);
+    }
+    entranceBeardGroup.visible = false;
+    anchor.add(entranceBeardGroup);
+
+    // Entrance ventilation fanners + evaporative airflow arcs (raycast-safe: added to anchor, never picks)
+    var fannerLineGroup = new THREE.Group();
+    fannerLineGroup.name = 'entrance-fanner-line';
+    var fannerBees = [];
+    var fannerArcs = [];
+    var fannerArcGeo = new THREE.TorusGeometry(0.034, 0.0045, 6, 14, Math.PI * 0.85);
+    var fannerArcMat = new THREE.MeshPhongMaterial({ color: contrast ? 0xffffff : 0x38bdf8, transparent: !contrast, opacity: contrast ? 1 : 0.44, shininess: 18, depthWrite: false });
+    for (var fni = 0; fni < 5; fni++) {
+      var fx = -0.22 + fni * 0.11;
+      var fannerBee = build3dMiniBee(THREE, { body: contrast ? 0xffffff : 0xf5c542, dark: contrast ? 0x000000 : 0x241d16, scale: 0.50 });
+      fannerBee.position.set(fx, -0.858, BD / 2 + 0.185);
+      fannerBee.rotation.y = Math.PI;
+      fannerBee.rotation.x = -0.14;
+      fannerLineGroup.add(fannerBee);
+      fannerBees.push(fannerBee);
+      var airflowArc = new THREE.Mesh(fannerArcGeo, fannerArcMat);
+      airflowArc.name = 'fanner-airflow-arc';
+      airflowArc.position.set(fx, -0.848, BD / 2 + 0.255);
+      airflowArc.rotation.x = Math.PI / 2;
+      airflowArc.rotation.z = -Math.PI * 0.42;
+      airflowArc.userData.baseX = fx;
+      airflowArc.userData.phase = fni * 0.2;
+      fannerLineGroup.add(airflowArc);
+      fannerArcs.push(airflowArc);
+    }
+    fannerLineGroup.visible = false;
+    anchor.add(fannerLineGroup);
+
+    // Entrance guard patrol bees + returning pollen-pellet specks (raycast-safe: added to anchor, never picks)
+    var entranceGuardGroup = new THREE.Group();
+    entranceGuardGroup.name = 'entrance-guard-patrol';
+    var guardBees = [];
+    [-1, 1].forEach(function (gSide) {
+      var gBee = build3dMiniBee(THREE, { body: contrast ? 0xffffff : 0xf59e0b, dark: contrast ? 0x000000 : 0x241d16, scale: 0.52 });
+      gBee.position.set(gSide * 0.275, -0.858, BD / 2 + 0.148);
+      gBee.rotation.y = gSide * -0.45;
+      gBee.rotation.x = 0.15;
+      gBee.userData.guardSide = gSide;
+      entranceGuardGroup.add(gBee);
+      guardBees.push(gBee);
+    });
+    var pollenLandingGroup = new THREE.Group();
+    pollenLandingGroup.name = 'pollen-landing-specks';
+    var pollenSpeckGeo = new THREE.SphereGeometry(0.012, 6, 5);
+    var pollenSpeckMat = new THREE.MeshPhongMaterial({ color: contrast ? 0xffffff : 0xf59e0b, shininess: 14 });
+    var pollenLandingSpecks = [];
+    for (var psi = 0; psi < 4; psi++) {
+      var pSpeck = new THREE.Mesh(pollenSpeckGeo, pollenSpeckMat);
+      pSpeck.position.set(-0.18 + psi * 0.12, -0.869, BD / 2 + 0.215);
+      pSpeck.visible = false;
+      pollenLandingGroup.add(pSpeck);
+      pollenLandingSpecks.push(pSpeck);
+    }
+    entranceGuardGroup.add(pollenLandingGroup);
+    entranceGuardGroup.visible = false;
+    anchor.add(entranceGuardGroup);
+
+    // Selected brood-frame brass/high-contrast lug markers when inspected (raycast-safe: added to anchor, never picks)
+    var frameLugMarkerGroup = new THREE.Group();
+    frameLugMarkerGroup.name = 'selected-frame-lug-tabs';
+    var lugGeo = new THREE.BoxGeometry(0.036, 0.022, 0.056);
+    var lugMat = new THREE.MeshPhongMaterial({ color: contrast ? 0xffffff : 0xfbbf24, shininess: 32 });
+    [-1, 1].forEach(function (lSide) {
+      var lug = new THREE.Mesh(lugGeo, lugMat);
+      lug.position.set(lSide * (BW / 2 - 0.032), 0, 0);
+      frameLugMarkerGroup.add(lug);
+    });
+    frameLugMarkerGroup.visible = false;
+    anchor.add(frameLugMarkerGroup);
+
+    // Waggle dancer figure-eight trace and attentive follower bees on the active comb face (raycast-safe: added to anchor, never picks)
+    var combWaggleDanceGroup = new THREE.Group();
+    combWaggleDanceGroup.name = 'comb-waggle-dance';
+    var waggleDanceFloor = new THREE.Group();
+    waggleDanceFloor.name = 'waggle-dance-floor';
+    waggleDanceFloor.position.set(0.19, broodY - 0.11, patternZ + 0.031);
+    combWaggleDanceGroup.add(waggleDanceFloor);
+    var waggleTraceGroup = new THREE.Group();
+    waggleTraceGroup.name = 'waggle-figure-eight-trace';
+    var waggleTraceMat = new THREE.MeshPhongMaterial({ color: contrast ? 0xffffff : 0xfbbf24, transparent: !contrast, opacity: contrast ? 1 : 0.48, shininess: 22, depthWrite: false });
+    var waggleLoopGeo = new THREE.TorusGeometry(0.032, 0.0035, 6, 18);
+    [-1, 1].forEach(function (wtSide) {
+      var wLoop = new THREE.Mesh(waggleLoopGeo, waggleTraceMat);
+      wLoop.position.set(wtSide * 0.028, 0, 0);
+      waggleTraceGroup.add(wLoop);
+    });
+    var waggleRunAxis = new THREE.Mesh(new THREE.BoxGeometry(0.052, 0.0055, 0.0035), waggleTraceMat);
+    waggleRunAxis.position.set(0, 0, 0.001);
+    waggleTraceGroup.add(waggleRunAxis);
+    waggleDanceFloor.add(waggleTraceGroup);
+    var waggleScoutBee = build3dMiniBee(THREE, { body: contrast ? 0xffffff : 0xf59e0b, dark: contrast ? 0x000000 : 0x241d16, scale: 0.56 });
+    waggleScoutBee.name = 'waggle-scout-bee';
+    waggleScoutBee.rotation.x = -Math.PI / 2;
+    var wagglePelletGeo = new THREE.SphereGeometry(0.013, 6, 5);
+    var wagglePelletMat = new THREE.MeshPhongMaterial({ color: contrast ? 0xffffff : 0xfacc15, shininess: 16 });
+    var waggleScoutPellets = [];
+    [-1, 1].forEach(function (psSide) {
+      var wp = new THREE.Mesh(wagglePelletGeo, wagglePelletMat);
+      wp.position.set(psSide * 0.018, 0.010, 0.014);
+      wp.visible = false;
+      waggleScoutBee.add(wp);
+      waggleScoutPellets.push(wp);
+    });
+    waggleDanceFloor.add(waggleScoutBee);
+    var waggleFollowers = [];
+    var followerCoords = [[-0.058, -0.046], [0.058, 0.046]];
+    for (var wfl = 0; wfl < followerCoords.length; wfl++) {
+      var wFollower = build3dMiniBee(THREE, { body: contrast ? 0xffffff : 0xdca933, dark: contrast ? 0x000000 : 0x241d16, scale: 0.45 });
+      wFollower.name = 'waggle-follower-' + wfl;
+      wFollower.rotation.x = -Math.PI / 2;
+      wFollower.position.set(followerCoords[wfl][0], followerCoords[wfl][1], 0.003);
+      waggleDanceFloor.add(wFollower);
+      waggleFollowers.push(wFollower);
+    }
+    combWaggleDanceGroup.visible = false;
+    anchor.add(combWaggleDanceGroup);
+
+    // Antimicrobial propolis resin seals along brood box frame rests (raycast-safe: added to anchor, never picks)
+    var propolisSealGroup = new THREE.Group();
+    propolisSealGroup.name = 'propolis-envelope-seals';
+    propolisSealGroup.position.set(0, broodY + broodH / 2 - 0.008, 0);
+    var propolisMat = new THREE.MeshPhongMaterial({ color: contrast ? 0xffffff : 0x92400e, shininess: 28 });
+    var propolisRailGeo = new THREE.BoxGeometry(0.022, 0.018, BD - 0.08);
+    var propolisDabGeo = new THREE.SphereGeometry(0.022, 7, 5);
+    [-1, 1].forEach(function (psx) {
+      var pRail = new THREE.Mesh(propolisRailGeo, propolisMat);
+      pRail.position.set(psx * (BW / 2 - 0.046), 0, 0);
+      propolisSealGroup.add(pRail);
+      [-1, 1].forEach(function (psz) {
+        var pDab = new THREE.Mesh(propolisDabGeo, propolisMat);
+        pDab.scale.set(1.2, 0.65, 1.2);
+        pDab.position.set(psx * (BW / 2 - 0.048), 0.003, psz * (BD / 2 - 0.048));
+        propolisSealGroup.add(pDab);
+      });
+    });
+    propolisSealGroup.visible = false;
+    anchor.add(propolisSealGroup);
+
+    // Apiary conservation props on ground pad rim: pebble bee waterer & solitary mason-bee hotel
+    var conservationPropsGroup = new THREE.Group();
+    conservationPropsGroup.name = 'apiary-conservation-props';
+    var watererDishGroup = new THREE.Group();
+    watererDishGroup.name = 'pebble-bee-waterer';
+    watererDishGroup.position.set(-1.22, -1.242, 0.44);
+    var saucerMesh = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.17, 0.14, 0.036, 16),
+      new THREE.MeshPhongMaterial({ color: contrast ? 0xffffff : 0xb45309, shininess: 14 })
+    );
+    watererDishGroup.add(saucerMesh);
+    var waterDiscMat = new THREE.MeshPhongMaterial({ color: contrast ? 0x000000 : 0x38bdf8, shininess: 48 });
+    var waterDisc = new THREE.Mesh(new THREE.CylinderGeometry(0.145, 0.145, 0.010, 16), waterDiscMat);
+    waterDisc.position.y = 0.015;
+    watererDishGroup.add(waterDisc);
+    var pebbleGeo = new THREE.SphereGeometry(0.026, 7, 5);
+    var pebbleMat = new THREE.MeshPhongMaterial({ color: contrast ? 0xffffff : 0x78716c, shininess: 8 });
+    [[-0.06, -0.03], [0.05, -0.05], [0.0, 0.02], [-0.04, 0.07], [0.07, 0.04]].forEach(function (po) {
+      var peb = new THREE.Mesh(pebbleGeo, pebbleMat);
+      peb.scale.set(1.15, 0.58, 0.95);
+      peb.position.set(po[0], 0.021, po[1]);
+      watererDishGroup.add(peb);
+    });
+    watererDishGroup.visible = false;
+    conservationPropsGroup.add(watererDishGroup);
+
+    var beeHotelGroup = new THREE.Group();
+    beeHotelGroup.name = 'solitary-bee-hotel';
+    beeHotelGroup.position.set(1.24, -1.25, -0.38);
+    beeHotelGroup.rotation.y = -0.35;
+    var woodMat = new THREE.MeshPhongMaterial({ color: contrast ? 0xffffff : 0x9a6534, shininess: 10 });
+    var hotelPost = new THREE.Mesh(new THREE.CylinderGeometry(0.026, 0.030, 0.36, 8), woodMat);
+    hotelPost.position.y = 0.18;
+    beeHotelGroup.add(hotelPost);
+    var hotelBox = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.16, 0.13), woodMat);
+    hotelBox.position.y = 0.38;
+    beeHotelGroup.add(hotelBox);
+    var hotelRoof = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.118, 0.118, 0.15, 3),
+      new THREE.MeshPhongMaterial({ color: contrast ? 0x000000 : 0x475569, shininess: 14 })
+    );
+    hotelRoof.rotation.x = Math.PI / 2;
+    hotelRoof.position.y = 0.49;
+    beeHotelGroup.add(hotelRoof);
+    var reedGeo = new THREE.CylinderGeometry(0.013, 0.013, 0.135, 8);
+    var reedMat = new THREE.MeshPhongMaterial({ color: contrast ? 0x000000 : 0xfde68a, shininess: 12 });
+    for (var hri = 0; hri < 6; hri++) {
+      var reed = new THREE.Mesh(reedGeo, reedMat);
+      reed.rotation.x = Math.PI / 2;
+      reed.position.set(-0.05 + (hri % 3) * 0.05, 0.34 + Math.floor(hri / 3) * 0.06, 0.01);
+      beeHotelGroup.add(reed);
+    }
+    beeHotelGroup.visible = false;
+    conservationPropsGroup.add(beeHotelGroup);
+    anchor.add(conservationPropsGroup);
+
+    var superRipenersGroup = new THREE.Group();
+    superRipenersGroup.name = 'super-honey-ripeners';
+    var capGlintGeo = new THREE.CylinderGeometry(0.022, 0.022, 0.005, 6);
+    var capGlintMat = new THREE.MeshPhongMaterial({ color: contrast ? 0xffffff : 0xfef9c3, shininess: 36, transparent: true, opacity: 0.88 });
+    var superCapGlints = [];
+    for (var cgi = 0; cgi < 3; cgi++) {
+      var glint = new THREE.Mesh(capGlintGeo, capGlintMat);
+      glint.name = 'super-wax-cap-glint-' + cgi;
+      glint.rotation.x = Math.PI / 2;
+      glint.position.set((cgi - 1) * 0.14, 0.05 + (cgi % 2) * 0.04, 0);
+      superRipenersGroup.add(glint);
+      superCapGlints.push(glint);
+    }
+    var superRipenerBees = [];
+    for (var srb = 0; srb < 4; srb++) {
+      var ripBee = build3dMiniBee(THREE, { body: contrast ? 0xffffff : 0xf59e0b, dark: contrast ? 0x000000 : 0x27201a, scale: 0.46 });
+      ripBee.name = 'super-ripener-bee-' + srb;
+      ripBee.rotation.x = -Math.PI / 2;
+      ripBee.userData.ripenerSlot = srb;
+      superRipenersGroup.add(ripBee);
+      superRipenerBees.push(ripBee);
+    }
+    superRipenersGroup.visible = false;
+    anchor.add(superRipenersGroup);
+
+    var broodNurseGroup = new THREE.Group();
+    broodNurseGroup.name = 'brood-nurse-tenders';
+    var broodJellyGeo = new THREE.CylinderGeometry(0.016, 0.016, 0.004, 6);
+    var broodJellyMat = new THREE.MeshPhongMaterial({ color: contrast ? 0xffffff : 0xfefce8, shininess: 42, transparent: !contrast, opacity: contrast ? 1 : 0.86 });
+    var broodJellyCells = [];
+    var jellyCoords = [[-0.075, 0.032], [0.075, -0.028], [-0.042, -0.068], [0.056, 0.048]];
+    for (var jci = 0; jci < jellyCoords.length; jci++) {
+      var jelly = new THREE.Mesh(broodJellyGeo, broodJellyMat);
+      jelly.name = 'brood-jelly-cell-' + jci;
+      jelly.rotation.x = Math.PI / 2;
+      jelly.position.set(jellyCoords[jci][0], broodY - 0.04 + jellyCoords[jci][1], patternZ + 0.009);
+      broodNurseGroup.add(jelly);
+      broodJellyCells.push(jelly);
+    }
+    var nurseTenderBees = [];
+    for (var nbi = 0; nbi < 4; nbi++) {
+      var nBee = build3dMiniBee(THREE, { body: contrast ? 0xffffff : 0xeab308, dark: contrast ? 0x000000 : 0x292018, scale: 0.44 });
+      nBee.name = 'nurse-tender-bee-' + nbi;
+      nBee.rotation.x = -Math.PI / 2;
+      nBee.userData.nurseSlot = nbi;
+      broodNurseGroup.add(nBee);
+      nurseTenderBees.push(nBee);
+    }
+    broodNurseGroup.visible = false;
+    anchor.add(broodNurseGroup);
     // Season palettes for the ground. Autumn is not just "browner": the forage
     // is over, which is the point the colour is there to make.
     var SEASON_PAD_COLORS = ['#4e8a3f', '#3f6b3a', '#7a6b2e', '#5c6b58'];
@@ -11351,6 +13780,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       var syrupFill = Math.max(0, Math.min(1, sp.syrupFill == null ? 0 : sp.syrupFill));
       var clusterWarmth = Math.max(0, Math.min(1, sp.clusterWarmth == null ? 0.75 : sp.clusterWarmth));
       var smokeActive = !!sp.smokeActive;
+      var winterized = !!sp.winterized && seasonIndex >= 2;
       var queenTransitionKind = sp.queenTransitionKind === 'requeen' || sp.queenTransitionKind === 'supersedure' || sp.queenTransitionKind === 'split' ? sp.queenTransitionKind : null;
       feederJarGroup.visible = syrupFill > 0.02;
       if (feederJarGroup.visible) {
@@ -11367,6 +13797,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           sPuff.scale.setScalar(0.65 + sProg * 1.15);
         }
       }
+      winterWrapGroup.visible = winterized;
+      entranceBeardGroup.visible = !wintering && swarmPressure >= 0.95;
+      if (entranceBeardGroup.visible) {
+        var beardSeverity = Math.min(1.25, 0.78 + (swarmPressure - 0.95) * 0.85);
+        for (var bfj = 0; bfj < beardBees.length; bfj++) {
+          var bMesh = beardBees[bfj];
+          bMesh.scale.setScalar(beardSeverity * (reduced ? 1 : (1 + 0.055 * Math.sin(clock * 0.0021 + bMesh.userData.phase))));
+        }
+      }
+      fannerLineGroup.visible = !wintering && !smokeActive && ((seasonIndex === 1 && traffic >= 0.22) || swarmPressure >= 0.65);
+      if (fannerLineGroup.visible) {
+        for (var fnj = 0; fnj < fannerBees.length; fnj++) {
+          beatBeeWings(fannerBees[fnj], clock * 1.35 + fnj * 11, 0.95, reduced);
+          var arcMesh = fannerArcs[fnj];
+          var arcProg = reduced ? 0.45 : ((clock * 0.00055 + arcMesh.userData.phase) % 1);
+          arcMesh.position.z = BD / 2 + 0.235 + arcProg * 0.095;
+          arcMesh.scale.setScalar(reduced ? 1 : (0.85 + 0.35 * arcProg));
+        }
+      }
+      entranceGuardGroup.visible = !wintering && !smokeActive && traffic >= 0.08;
+      if (entranceGuardGroup.visible) {
+        for (var gi = 0; gi < guardBees.length; gi++) {
+          var gBee = guardBees[gi];
+          var gSide = gBee.userData.guardSide || 1;
+          gBee.rotation.y = gSide * -0.45 + (reduced ? 0 : 0.06 * Math.sin(clock * 0.0024 + gi * 1.7));
+          beatBeeWings(gBee, clock * 0.9 + gi * 7, 0.35, reduced);
+        }
+        for (var psl = 0; psl < pollenLandingSpecks.length; psl++) {
+          pollenLandingSpecks[psl].visible = pollenLevel >= 0.12 && psl < Math.ceil(pollenLevel * 4);
+        }
+      }
+      var hygieneBoost = !!sp.hygieneSeal;
+      propolisSealGroup.visible = !wintering || hygieneBoost || honeyFill > 0.15;
+      if (propolisSealGroup.visible) {
+        var propScale = hygieneBoost ? 1.35 : 0.9;
+        propolisSealGroup.scale.set(1, propScale, 1);
+      }
+      watererDishGroup.visible = !!sp.waterStation;
+      if (watererDishGroup.visible && !contrast && waterDisc.material.userData._season !== seasonIndex) {
+        waterDisc.material.userData._season = seasonIndex;
+        waterDisc.material.color.set(seasonIndex === 3 ? '#e0f2fe' : '#38bdf8');
+      }
+      beeHotelGroup.visible = !!sp.beeHotel;
       var exploded = sp.exploded ? 1 : 0;
       var pulled = sp.pulled ? 1 : 0;
       var frameIndex = Math.max(0, Math.min(broodFrameSlots.length - 1, Math.round(sp.frameIndex == null ? 0 : sp.frameIndex)));
@@ -11442,6 +13915,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         var wantY = exploded * entry.lift + (entry.group.userData.stackTop || 0);
         entry.group.position.y += (wantY - entry.group.position.y) * (reduced ? 1 : 0.14);
       }
+      var showSuperRipeners = Boolean(exploded) && !wintering && !smokeActive && honeyFill > 0.08 && traffic >= 0.10;
+      superRipenersGroup.visible = showSuperRipeners;
+      if (showSuperRipeners) {
+        var activeSuperIdx = Math.max(0, Math.min(superCount - 1, Math.floor(Math.max(0, honeyBoxes - 0.001))));
+        var activeSuperCenterY = superGroup.position.y + superBoxes[activeSuperIdx].group.position.y + (superY - 0.015);
+        superRipenersGroup.position.set(0, activeSuperCenterY, superFills[0].z + 0.032);
+        var activeRipenerCount = Math.max(1, Math.min(superRipenerBees.length, Math.ceil(traffic * superRipenerBees.length)));
+        var activeGlintCount = Math.max(1, Math.min(superCapGlints.length, Math.ceil(honeyFill * superCapGlints.length)));
+        for (var gci = 0; gci < superCapGlints.length; gci++) {
+          var cgMesh = superCapGlints[gci];
+          cgMesh.visible = gci < activeGlintCount;
+          if (cgMesh.visible) {
+            cgMesh.scale.setScalar(reduced ? 1 : (0.92 + 0.12 * Math.sin(clock * 0.0028 + gci * 1.4)));
+          }
+        }
+        for (var rbi = 0; rbi < superRipenerBees.length; rbi++) {
+          var rBee = superRipenerBees[rbi];
+          rBee.visible = rbi < activeRipenerCount;
+          if (!rBee.visible) continue;
+          var rPhase = rbi * 1.57 + (reduced ? 0.4 : clock * 0.00038 * (1 + (rbi % 2) * 0.22));
+          var rx = (rbi - 1.5) * 0.13 + Math.cos(rPhase) * 0.045;
+          var ry = -0.02 + Math.sin(rPhase * 1.3) * 0.055;
+          rBee.position.set(rx, ry, 0.006);
+          rBee.rotation.y = Math.sin(rPhase) * 0.55;
+          beatBeeWings(rBee, clock * 1.25 + rbi * 8, 0.55, reduced);
+        }
+      }
 
       // Queen cells appear once crowding pushes the colony toward swarming.
       // This is the same crowdRatio the simulation itself uses to fire a swarm
@@ -11508,6 +14008,82 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       broodFrontGroup.position.z = slotOffset + broodFrontGroup.userData.pullZ;
       broodFrontGroup.position.y += (wantPullY - broodFrontGroup.position.y) * (reduced ? 1 : 0.13);
       broodFrontGroup.rotation.y += ((pulled ? -0.16 : 0) - broodFrontGroup.rotation.y) * (reduced ? 1 : 0.13);
+      frameLugMarkerGroup.visible = !!(exploded || pulled);
+      if (frameLugMarkerGroup.visible) {
+        frameLugMarkerGroup.position.set(
+          0,
+          broodFrameGroup.position.y + broodY - 0.02 + (broodH - 0.13) / 2 + 0.022 + broodFrameSlots[frameIndex].group.position.y,
+          broodFrameSlots[frameIndex].z + broodFrameSlots[frameIndex].group.position.z
+        );
+        frameLugMarkerGroup.rotation.y = broodFrameSlots[frameIndex].group.rotation.y;
+      }
+      combWaggleDanceGroup.visible = !!(exploded || pulled) && !wintering && !smokeActive && traffic >= 0.12;
+      if (combWaggleDanceGroup.visible) {
+        combWaggleDanceGroup.position.set(0, broodFrameGroup.position.y + broodFrontGroup.position.y, broodFrontGroup.position.z);
+        combWaggleDanceGroup.rotation.y = broodFrontGroup.rotation.y;
+        var waggleAzimuth = 0.42 + seasonIndex * 0.58;
+        waggleTraceGroup.rotation.z = waggleAzimuth;
+        var wt = reduced ? 0 : clock * 0.0026;
+        var wLocalX = Math.sin(wt) * 0.054;
+        var wLocalY = Math.sin(wt * 2) * 0.027;
+        var cosA = Math.cos(waggleAzimuth), sinA = Math.sin(waggleAzimuth);
+        var wx = wLocalX * cosA - wLocalY * sinA;
+        var wy = wLocalX * sinA + wLocalY * cosA;
+        waggleScoutBee.position.set(wx, wy, 0.004);
+        var dLocalX = Math.cos(wt) * 0.054;
+        var dLocalY = Math.cos(wt * 2) * 0.054;
+        var dxW = dLocalX * cosA - dLocalY * sinA;
+        var dyW = dLocalX * sinA + dLocalY * cosA;
+        var headingW = Math.atan2(dyW, dxW);
+        var inWaggleRun = !reduced && Math.abs(Math.cos(wt)) > 0.55;
+        var waggleShimmer = inWaggleRun ? Math.sin(clock * 0.048) * 0.24 : 0;
+        waggleScoutBee.rotation.y = headingW - Math.PI / 2 + waggleShimmer;
+        beatBeeWings(waggleScoutBee, clock * 1.35, inWaggleRun ? 0.52 : 0.20, reduced);
+        var showWagglePollen = pollenLevel > 0.06;
+        var wpScale = 0.6 + 0.55 * pollenLevel;
+        for (var wpi = 0; wpi < waggleScoutPellets.length; wpi++) {
+          waggleScoutPellets[wpi].visible = showWagglePollen;
+          if (showWagglePollen) waggleScoutPellets[wpi].scale.setScalar(wpScale);
+        }
+        for (var wfi = 0; wfi < waggleFollowers.length; wfi++) {
+          var wf = waggleFollowers[wfi];
+          var fAng = Math.atan2(waggleScoutBee.position.y - wf.position.y, waggleScoutBee.position.x - wf.position.x);
+          wf.rotation.y = fAng - Math.PI / 2;
+          beatBeeWings(wf, clock * 0.8 + wfi * 9, 0.16, reduced);
+        }
+      }
+      var showBroodNurses = !!(exploded || pulled) && !wintering && !smokeActive && broodFill >= 0.08 && pollenLevel >= 0.05 && frameDepth < 0.85;
+      broodNurseGroup.visible = showBroodNurses;
+      if (showBroodNurses) {
+        broodNurseGroup.position.set(0, broodFrameGroup.position.y + broodFrontGroup.position.y, broodFrontGroup.position.z);
+        broodNurseGroup.rotation.y = broodFrontGroup.rotation.y;
+        var broodCareStrength = Math.max(0, Math.min(1, Math.min(broodFill, pollenLevel * 1.25) * (1 - frameDepth * 0.55)));
+        var activeNurses = Math.max(1, Math.min(nurseTenderBees.length, Math.ceil(broodCareStrength * nurseTenderBees.length)));
+        var activeJelly = Math.max(1, Math.min(broodJellyCells.length, Math.ceil(broodCareStrength * broodJellyCells.length)));
+        var nurseRx = 0.095 + broodFill * 0.075;
+        var nurseRy = 0.068 + broodFill * 0.055;
+        for (var jci = 0; jci < broodJellyCells.length; jci++) {
+          var jCell = broodJellyCells[jci];
+          jCell.visible = jci < activeJelly;
+          if (jCell.visible) {
+            jCell.scale.setScalar(reduced ? 1 : (0.90 + 0.14 * Math.sin(clock * 0.0024 + jci * 1.6)));
+          }
+        }
+        for (var nbi = 0; nbi < nurseTenderBees.length; nbi++) {
+          var nBee = nurseTenderBees[nbi];
+          nBee.visible = nbi < activeNurses;
+          if (!nBee.visible) continue;
+          var nDir = nbi % 2 === 0 ? 1 : -1;
+          var baseAng = nbi * Math.PI * 0.5 + 0.35;
+          var nAng = baseAng + (reduced ? 0 : clock * 0.00028 * nDir);
+          var nx = Math.cos(nAng) * nurseRx;
+          var ny = broodY - 0.04 + Math.sin(nAng) * nurseRy;
+          nBee.position.set(nx, ny, patternZ + 0.020);
+          nBee.rotation.z = reduced ? 0 : 0.10 * Math.sin(clock * 0.0032 + nbi * 1.5);
+          nBee.rotation.y = Math.atan2(-Math.cos(nAng) * 0.4, 1);
+          beatBeeWings(nBee, reduced ? 0 : clock * 0.9 + nbi * 6, 0.14, reduced);
+        }
+      }
 
       // Winter: the colony balls up over the nest instead of working the comb.
       clusterGroup.visible = wintering;
@@ -11985,6 +14561,350 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     guardPatrolGroup.visible = false;
     anchor.add(guardPatrolGroup);
 
+    // Streamside water collectors shuttling from home hive to stream bank (raycast-safe).
+    var waterForagerGroup = new THREE.Group();
+    waterForagerGroup.name = 'water-bank-foragers';
+    var waterForagerBees = [];
+    var waterDropGeo = new THREE.SphereGeometry(0.017, 6, 5);
+    var waterDropMat = new THREE.MeshPhongMaterial({
+      color: new THREE.Color(contrast ? '#ffffff' : '#38bdf8'),
+      shininess: 65,
+      transparent: true,
+      opacity: 0.88
+    });
+    for (var wi = 0; wi < 8; wi++) {
+      var wBee = build3dMiniBee(THREE, { body: contrast ? 0xffffff : 0xeab308, dark: contrast ? 0x000000 : 0x1e293b, scale: 0.76 });
+      var wDrop = new THREE.Mesh(waterDropGeo, waterDropMat);
+      wDrop.name = 'water-crop-glint';
+      wDrop.position.set(0, -0.015, 0.032);
+      wDrop.visible = false;
+      wBee.add(wDrop);
+      wBee.userData.waterDrop = wDrop;
+      wBee.userData.waterRoute = { bankX: -1.65 + wi * 0.42, bankZ: 0.84 + (wi % 2) * 0.035, phase: wi * 0.25, speed: 0.36 + (wi % 4) * 0.08, lift: 0.05 + (wi % 3) * 0.02 };
+      wBee.visible = false;
+      waterForagerGroup.add(wBee);
+      waterForagerBees.push(wBee);
+    }
+    waterForagerGroup.visible = false;
+    anchor.add(waterForagerGroup);
+
+    // Evaporative cooling airflow plumes hovering over active fan structures (raycast-safe).
+    var fanAirflowGroup = new THREE.Group();
+    fanAirflowGroup.name = 'fan-cooling-plumes';
+    var fanPlumeSets = [];
+    var fanRingGeo = new THREE.RingGeometry(0.055, 0.082, 24);
+    var fanRingMat = new THREE.MeshPhongMaterial({
+      color: new THREE.Color(contrast ? '#ffffff' : '#38bdf8'),
+      shininess: 0,
+      transparent: true,
+      opacity: 0.36,
+      side: THREE.DoubleSide,
+      depthWrite: false
+    });
+    for (var fpi = 0; fpi < 6; fpi++) {
+      var plumeSet = new THREE.Group();
+      plumeSet.name = 'fan-plume-' + fpi;
+      for (var pri = 0; pri < 2; pri++) {
+        var fRing = new THREE.Mesh(fanRingGeo, fanRingMat);
+        fRing.rotation.x = -Math.PI / 2;
+        plumeSet.add(fRing);
+      }
+      plumeSet.visible = false;
+      fanAirflowGroup.add(plumeSet);
+      fanPlumeSets.push(plumeSet);
+    }
+    fanAirflowGroup.visible = false;
+    anchor.add(fanAirflowGroup);
+
+    // Winter cluster thermal glow at both nests (illustrative seasonal cues, raycast-safe).
+    var winterClusterGroup = new THREE.Group();
+    winterClusterGroup.name = 'winter-cluster-glow';
+    var winterGlowGeo = new THREE.SphereGeometry(0.115, 14, 10);
+    var homeClusterGlow = new THREE.Mesh(winterGlowGeo, new THREE.MeshPhongMaterial({
+      color: new THREE.Color(contrast ? '#ffffff' : '#fbbf24'),
+      emissive: new THREE.Color(contrast ? '#000000' : '#d97706'),
+      shininess: 0,
+      transparent: true,
+      opacity: 0.35,
+      depthWrite: false
+    }));
+    homeClusterGlow.name = 'winter-glow-home';
+    homeClusterGlow.position.set(-NEST_X, GROUND_Y + 0.19, NEST_Z + 0.11);
+    winterClusterGroup.add(homeClusterGlow);
+    var rivalClusterGlow = new THREE.Mesh(winterGlowGeo, new THREE.MeshPhongMaterial({
+      color: new THREE.Color(contrast ? '#ffffff' : '#fbbf24'),
+      emissive: new THREE.Color(contrast ? '#000000' : '#d97706'),
+      shininess: 0,
+      transparent: true,
+      opacity: 0.35,
+      depthWrite: false
+    }));
+    rivalClusterGlow.name = 'winter-glow-rival';
+    rivalClusterGlow.position.set(NEST_X, GROUND_Y + 0.12, NEST_Z + 0.15);
+    winterClusterGroup.add(rivalClusterGlow);
+    winterClusterGroup.visible = false;
+    anchor.add(winterClusterGroup);
+
+    // Rival raid staging ring and directional chevrons (game-piece overlay only, raycast-safe).
+    var raidStagingGroup = new THREE.Group();
+    raidStagingGroup.name = 'rival-raid-staging';
+    var raidBeaconRing = new THREE.Mesh(new THREE.RingGeometry(0.30, 0.335, 40), new THREE.MeshPhongMaterial({
+      color: new THREE.Color(contrast ? '#ffffff' : '#ef4444'),
+      shininess: 0,
+      transparent: true,
+      opacity: 0.45,
+      side: THREE.DoubleSide,
+      depthWrite: false
+    }));
+    raidBeaconRing.name = 'raid-staging-ring';
+    raidBeaconRing.rotation.x = -Math.PI / 2;
+    raidBeaconRing.position.set(NEST_X, GROUND_Y + 0.052, NEST_Z);
+    raidStagingGroup.add(raidBeaconRing);
+    var raidChevronGeo = new THREE.CircleGeometry(0.055, 3);
+    var raidChevronMat = new THREE.MeshPhongMaterial({
+      color: new THREE.Color(contrast ? '#ffffff' : '#f87171'),
+      shininess: 0,
+      transparent: true,
+      opacity: 0.55,
+      side: THREE.DoubleSide,
+      depthWrite: false
+    });
+    var raidChevrons = [];
+    for (var rci = 0; rci < 3; rci++) {
+      var chevMesh = new THREE.Mesh(raidChevronGeo, raidChevronMat);
+      chevMesh.name = 'raid-chevron-' + rci;
+      chevMesh.rotation.x = -Math.PI / 2;
+      chevMesh.rotation.z = Math.PI;
+      chevMesh.visible = false;
+      raidStagingGroup.add(chevMesh);
+      raidChevrons.push(chevMesh);
+    }
+    raidStagingGroup.visible = false;
+    anchor.add(raidStagingGroup);
+
+    // Nasonov orientation scent-fanning waves around the home nest entrance (signals overlay only, raycast-safe).
+    var nasonovWaveGroup = new THREE.Group();
+    nasonovWaveGroup.name = 'nasonov-orientation-waves';
+    var nasonovWaveGeo = new THREE.RingGeometry(0.16, 0.19, 28);
+    var nasonovWaveRings = [];
+    for (var nwi = 0; nwi < 3; nwi++) {
+      var nWaveMat = new THREE.MeshPhongMaterial({
+        color: new THREE.Color(contrast ? '#ffffff' : '#38bdf8'),
+        emissive: new THREE.Color(contrast ? '#444444' : '#0ea5e9'),
+        emissiveIntensity: 0.35,
+        shininess: 0,
+        transparent: true,
+        opacity: 0.42,
+        side: THREE.DoubleSide,
+        depthWrite: false
+      });
+      var nWaveMesh = new THREE.Mesh(nasonovWaveGeo, nWaveMat);
+      nWaveMesh.name = 'nasonov-wave-' + nwi;
+      nWaveMesh.rotation.x = -Math.PI / 2;
+      nWaveMesh.position.set(-NEST_X, GROUND_Y + 0.058 + nwi * 0.012, NEST_Z);
+      nasonovWaveGroup.add(nWaveMesh);
+      nasonovWaveRings.push(nWaveMesh);
+    }
+    nasonovWaveGroup.visible = false;
+    anchor.add(nasonovWaveGroup);
+
+    // Comb-nursery thermoregulation warmth halo + rising shimmer orbs above placed brood/nursery structures (raycast-safe).
+    var nurseryWarmthGroup = new THREE.Group();
+    nurseryWarmthGroup.name = 'comb-nursery-warmth';
+    var nurseryHaloGeo = new THREE.RingGeometry(0.085, 0.14, 24);
+    var nurseryOrbGeo = new THREE.SphereGeometry(0.028, 10, 8);
+    var nurseryWarmthSlots = [];
+    for (var nsi = 0; nsi < 4; nsi++) {
+      var nwSlot = new THREE.Group();
+      nwSlot.name = 'nursery-warmth-slot-' + nsi;
+      var nwHaloMat = new THREE.MeshPhongMaterial({
+        color: new THREE.Color(contrast ? '#ffffff' : '#fb923c'),
+        emissive: new THREE.Color(contrast ? '#333333' : '#f97316'),
+        emissiveIntensity: 0.3,
+        shininess: 0,
+        transparent: true,
+        opacity: 0.44,
+        side: THREE.DoubleSide,
+        depthWrite: false
+      });
+      var nwHalo = new THREE.Mesh(nurseryHaloGeo, nwHaloMat);
+      nwHalo.name = 'nursery-warmth-halo-' + nsi;
+      nwHalo.rotation.x = -Math.PI / 2;
+      nwHalo.position.y = GROUND_Y + 0.064;
+      nwSlot.add(nwHalo);
+      var nwOrbMat = new THREE.MeshPhongMaterial({
+        color: new THREE.Color(contrast ? '#ffffff' : '#fde68a'),
+        emissive: new THREE.Color(contrast ? '#333333' : '#f59e0b'),
+        emissiveIntensity: 0.4,
+        shininess: 18,
+        transparent: true,
+        opacity: 0.65,
+        depthWrite: false
+      });
+      var nwOrb = new THREE.Mesh(nurseryOrbGeo, nwOrbMat);
+      nwOrb.name = 'nursery-warmth-orb-' + nsi;
+      nwOrb.position.y = GROUND_Y + 0.24;
+      nwSlot.add(nwOrb);
+      nwSlot.visible = false;
+      nurseryWarmthGroup.add(nwSlot);
+      nurseryWarmthSlots.push({ group: nwSlot, halo: nwHalo, orb: nwOrb });
+    }
+    nurseryWarmthGroup.visible = false;
+    anchor.add(nurseryWarmthGroup);
+    var broodMatched = [];
+
+    // Comb-store nectar ripening gleam + tending hive bee + pollen/nectar load bead above placed honey/pollen structures (raycast-safe).
+    var foodStoreGroup = new THREE.Group();
+    foodStoreGroup.name = 'food-store-activity';
+    var storeGleamGeo = new THREE.RingGeometry(0.088, 0.145, 6);
+    var storeLoadGeo = new THREE.SphereGeometry(0.022, 8, 6);
+    var foodStoreSlots = [];
+    for (var fsi = 0; fsi < 6; fsi++) {
+      var fsSlot = new THREE.Group();
+      fsSlot.name = 'food-store-slot-' + fsi;
+      var fsGleamMat = new THREE.MeshPhongMaterial({
+        color: new THREE.Color(contrast ? '#ffffff' : '#fbbf24'),
+        emissive: new THREE.Color(contrast ? '#333333' : '#d97706'),
+        emissiveIntensity: 0.34,
+        shininess: 22,
+        transparent: true,
+        opacity: 0.46,
+        side: THREE.DoubleSide,
+        depthWrite: false
+      });
+      var fsGleam = new THREE.Mesh(storeGleamGeo, fsGleamMat);
+      fsGleam.name = 'food-store-gleam-' + fsi;
+      fsGleam.rotation.x = -Math.PI / 2;
+      fsGleam.position.y = GROUND_Y + 0.068;
+      fsSlot.add(fsGleam);
+      var fsBee = build3dMiniBee(THREE, {
+        body: contrast ? 0xffffff : 0xfbbf24,
+        dark: contrast ? 0x111111 : 0x27201a,
+        scale: 0.72
+      });
+      fsBee.name = 'food-store-bee-' + fsi;
+      var fsLoadMat = new THREE.MeshPhongMaterial({
+        color: new THREE.Color(contrast ? '#ffffff' : '#fef3c7'),
+        emissive: new THREE.Color(contrast ? '#333333' : '#d97706'),
+        emissiveIntensity: 0.4,
+        shininess: 24
+      });
+      var fsLoad = new THREE.Mesh(storeLoadGeo, fsLoadMat);
+      fsLoad.name = 'food-store-load-' + fsi;
+      fsLoad.position.set(0, -0.016, 0.024);
+      fsBee.add(fsLoad);
+      fsSlot.add(fsBee);
+      fsSlot.visible = false;
+      foodStoreGroup.add(fsSlot);
+      foodStoreSlots.push({ group: fsSlot, gleam: fsGleam, bee: fsBee, load: fsLoad });
+    }
+    foodStoreGroup.visible = false;
+    anchor.add(foodStoreGroup);
+    var foodStoreMatched = [];
+
+    // Queen mandibular pheromone (QMP) royal retinue ring & marked queen emblem around the home hive (signals overlay only, raycast-safe).
+    var qmpRetinueGroup = new THREE.Group();
+    qmpRetinueGroup.name = 'qmp-retinue-court';
+    var qmpHaloMat = new THREE.MeshPhongMaterial({
+      color: new THREE.Color(contrast ? '#ffffff' : '#c084fc'),
+      emissive: new THREE.Color(contrast ? '#333333' : '#9333ea'),
+      emissiveIntensity: 0.35,
+      shininess: 0,
+      transparent: true,
+      opacity: 0.48,
+      side: THREE.DoubleSide,
+      depthWrite: false
+    });
+    var qmpRetinueHalo = new THREE.Mesh(new THREE.RingGeometry(0.185, 0.225, 6), qmpHaloMat);
+    qmpRetinueHalo.name = 'qmp-retinue-halo';
+    qmpRetinueHalo.rotation.x = -Math.PI / 2;
+    qmpRetinueHalo.position.set(-NEST_X, GROUND_Y + 0.066, NEST_Z);
+    qmpRetinueGroup.add(qmpRetinueHalo);
+    var qmpQueenBee = build3dMiniBee(THREE, {
+      body: contrast ? 0xffffff : 0xfbbf24,
+      dark: contrast ? 0x000000 : 0x3b0764,
+      scale: 0.92
+    });
+    qmpQueenBee.name = 'qmp-queen-emblem';
+    qmpQueenBee.position.set(-NEST_X, GROUND_Y + 0.31, NEST_Z);
+    var qmpQueenMark = new THREE.Mesh(new THREE.SphereGeometry(0.016, 6, 5), new THREE.MeshPhongMaterial({
+      color: new THREE.Color(contrast ? '#ffffff' : '#e879f9'),
+      emissive: new THREE.Color(contrast ? '#333333' : '#a855f7'),
+      emissiveIntensity: 0.4,
+      shininess: 28
+    }));
+    qmpQueenMark.name = 'qmp-queen-mark';
+    qmpQueenMark.position.set(0, 0.022, 0.008);
+    qmpQueenBee.add(qmpQueenMark);
+    qmpRetinueGroup.add(qmpQueenBee);
+    var qmpAttendants = [];
+    for (var qai = 0; qai < 6; qai++) {
+      var qAtt = build3dMiniBee(THREE, {
+        body: contrast ? 0xffffff : 0xf59e0b,
+        dark: contrast ? 0x000000 : 0x2e1065,
+        scale: 0.68
+      });
+      qAtt.name = 'qmp-attendant-' + qai;
+      qAtt.visible = false;
+      qmpRetinueGroup.add(qAtt);
+      qmpAttendants.push(qAtt);
+    }
+    qmpRetinueGroup.visible = false;
+    anchor.add(qmpRetinueGroup);
+
+    // Alarm-pheromone defense mobilization perimeter, outward warning chevrons, and guard sentries around the home nest (signals overlay only, raycast-safe).
+    var alarmDefenseGroup = new THREE.Group();
+    alarmDefenseGroup.name = 'alarm-defense-mobilization';
+    var alarmPerimeterMat = new THREE.MeshPhongMaterial({
+      color: new THREE.Color(contrast ? '#ffffff' : '#f87171'),
+      emissive: new THREE.Color(contrast ? '#333333' : '#dc2626'),
+      emissiveIntensity: 0.38,
+      shininess: 0,
+      transparent: true,
+      opacity: 0.50,
+      side: THREE.DoubleSide,
+      depthWrite: false
+    });
+    var alarmPerimeterRing = new THREE.Mesh(new THREE.RingGeometry(0.24, 0.275, 32), alarmPerimeterMat);
+    alarmPerimeterRing.name = 'alarm-perimeter-ring';
+    alarmPerimeterRing.rotation.x = -Math.PI / 2;
+    alarmPerimeterRing.position.set(-NEST_X, GROUND_Y + 0.062, NEST_Z);
+    alarmDefenseGroup.add(alarmPerimeterRing);
+    var alarmChevronGeo = new THREE.CircleGeometry(0.036, 3);
+    var alarmChevronMat = new THREE.MeshPhongMaterial({
+      color: new THREE.Color(contrast ? '#ffffff' : '#fb7185'),
+      emissive: new THREE.Color(contrast ? '#333333' : '#e11d48'),
+      emissiveIntensity: 0.35,
+      shininess: 0,
+      transparent: true,
+      opacity: 0.58,
+      side: THREE.DoubleSide,
+      depthWrite: false
+    });
+    var alarmSpokes = [];
+    for (var acg = 0; acg < 4; acg++) {
+      var aSpoke = new THREE.Mesh(alarmChevronGeo, alarmChevronMat);
+      aSpoke.name = 'alarm-chevron-' + acg;
+      aSpoke.rotation.x = -Math.PI / 2;
+      aSpoke.visible = false;
+      alarmDefenseGroup.add(aSpoke);
+      alarmSpokes.push(aSpoke);
+    }
+    var alarmSentries = [];
+    for (var asg = 0; asg < 6; asg++) {
+      var aSentry = build3dMiniBee(THREE, {
+        body: contrast ? 0xffffff : 0xf97316,
+        dark: contrast ? 0x000000 : 0x450a0a,
+        scale: 0.74
+      });
+      aSentry.name = 'alarm-sentry-' + asg;
+      aSentry.visible = false;
+      alarmDefenseGroup.add(aSentry);
+      alarmSentries.push(aSentry);
+    }
+    alarmDefenseGroup.visible = false;
+    anchor.add(alarmDefenseGroup);
+
     // Both nests reach the same patches. Solid/dashed lines distinguish colonies
     // without relying on color. These are schematic examples, not a fitted model.
     var routeGroup = new THREE.Group(); routeGroup.name = 'forage-routes'; anchor.add(routeGroup);
@@ -12156,6 +15076,196 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         gb.rotation.y = -gAng + Math.PI / 2;
         beatBeeWings(gb, clock, .92, reduced || sp.paused);
       }
+
+      var fanStructures = structures.filter(function(st) { return st && st.type === 'fan'; });
+      var showWaterForagers = sp.showRoutes !== false && seasonIndex !== 3 && (forageRate > 0.04 || fanStructures.length > 0);
+      waterForagerGroup.visible = showWaterForagers;
+      var activeWaterBees = showWaterForagers ? Math.min(waterForagerBees.length, Math.max(fanStructures.length > 0 ? 3 : 2, Math.round((forageRate * 0.65 + Math.min(0.35, fanStructures.length * 0.15)) * waterForagerBees.length))) : 0;
+      for (var wj = 0; wj < waterForagerBees.length; wj++) {
+        var wb = waterForagerBees[wj];
+        wb.visible = wj < activeWaterBees;
+        if (!wb.visible) continue;
+        var wRoute = wb.userData.waterRoute;
+        var wTrip = ((clock * 0.00018 * wRoute.speed) + wRoute.phase) % 2;
+        var wTravel = wTrip < 1 ? wTrip : 2 - wTrip;
+        var wDx = wRoute.bankX - (-NEST_X);
+        var wDz = wRoute.bankZ - NEST_Z;
+        wb.position.set(
+          -NEST_X + wTravel * wDx,
+          GROUND_Y + 0.14 + wRoute.lift + Math.sin(wTravel * Math.PI) * 0.09,
+          NEST_Z + wTravel * wDz
+        );
+        wb.rotation.y = Math.atan2(wDx, wDz) + (wTrip < 1 ? 0 : Math.PI);
+        if (wb.userData.waterDrop) wb.userData.waterDrop.visible = wTrip >= 1 && seasonIndex !== 3;
+        beatBeeWings(wb, clock, 0.88, reduced || sp.paused);
+      }
+
+      var showFanPlumes = sp.showGamePieces === true && seasonIndex !== 3 && fanStructures.length > 0;
+      fanAirflowGroup.visible = showFanPlumes;
+      for (var fpj = 0; fpj < fanPlumeSets.length; fpj++) {
+        var plumeSet = fanPlumeSets[fpj];
+        plumeSet.visible = showFanPlumes && fpj < fanStructures.length;
+        if (!plumeSet.visible) continue;
+        var fanPos = bhQueenStructurePosition(fanStructures[fpj], QUEEN_MAP_PAD);
+        plumeSet.position.set(fanPos.x, GROUND_Y + 0.22, fanPos.z);
+        for (var ri = 0; ri < plumeSet.children.length; ri++) {
+          var ring = plumeSet.children[ri];
+          var ry = 0.03 + ri * 0.055 + ((reduced || sp.paused) ? 0 : (((clock * 0.00035 + ri * 0.5 + fpj * 0.25) % 1) * 0.06));
+          ring.position.set(0, ry, 0);
+          ring.scale.setScalar(0.9 + ri * 0.18);
+        }
+      }
+
+      winterClusterGroup.visible = seasonIndex === 3;
+      if (winterClusterGroup.visible) {
+        var pulseH = (reduced || sp.paused) ? 0 : Math.sin(clock * 0.0022) * 0.04;
+        var pulseR = (reduced || sp.paused) ? 0 : Math.sin(clock * 0.0022 + 1.4) * 0.04;
+        homeClusterGlow.scale.setScalar(0.72 + homeHealth * 0.36);
+        homeClusterGlow.material.opacity = Math.max(0.12, Math.min(0.68, 0.20 + homeHealth * 0.34 + pulseH));
+        rivalClusterGlow.scale.setScalar(0.72 + rivalHealth * 0.36);
+        rivalClusterGlow.material.opacity = Math.max(0.12, Math.min(0.68, 0.20 + rivalHealth * 0.34 + pulseR));
+      }
+
+      var showRaidStaging = sp.showGamePieces === true && raidPressure > 0.05;
+      raidStagingGroup.visible = showRaidStaging;
+      if (showRaidStaging) {
+        var stagePulse = (reduced || sp.paused) ? 0 : Math.sin(clock * 0.0035) * 0.04;
+        raidBeaconRing.scale.setScalar(0.95 + raidPressure * 0.22 + stagePulse);
+        raidBeaconRing.material.opacity = Math.max(0.18, Math.min(0.85, 0.25 + raidPressure * 0.50));
+        var raidAdvance = Math.max(0, Math.min(1, (raidPressure - 0.25) / 0.7));
+        for (var ci = 0; ci < raidChevrons.length; ci++) {
+          var chev = raidChevrons[ci];
+          chev.visible = raidPressure >= 0.20 + ci * 0.22;
+          if (chev.visible) {
+            chev.position.set(NEST_X - 0.52 - ci * (0.34 + raidAdvance * 0.62), GROUND_Y + 0.056, NEST_Z * 0.5);
+          }
+        }
+      }
+
+      var showNasonovWaves = sp.showSignals === true && seasonIndex !== 3 && nasonov > 0.04;
+      nasonovWaveGroup.visible = showNasonovWaves;
+      if (showNasonovWaves) {
+        for (var nwi2 = 0; nwi2 < nasonovWaveRings.length; nwi2++) {
+          var nRing = nasonovWaveRings[nwi2];
+          var nPhase = (reduced || sp.paused) ? (nwi2 / nasonovWaveRings.length) : ((clock * 0.00028 + nwi2 / nasonovWaveRings.length) % 1);
+          nRing.scale.setScalar(0.85 + nPhase * (1.25 + nasonov * 0.75));
+          nRing.position.y = GROUND_Y + 0.058 + nPhase * 0.04;
+          nRing.material.opacity = Math.max(0.08, Math.min(0.68, (1 - nPhase * 0.75) * (0.28 + nasonov * 0.45)));
+        }
+      }
+
+      broodMatched.length = 0;
+      for (var bsi = 0; bsi < structures.length; bsi++) {
+        var bs = structures[bsi];
+        if (bs && (bs.type === 'brood' || bs.type === 'nursery')) broodMatched.push(bs);
+      }
+      var showNurseryWarmth = sp.showGamePieces === true && seasonIndex !== 3 && broodMatched.length > 0;
+      nurseryWarmthGroup.visible = showNurseryWarmth;
+      for (var nsi2 = 0; nsi2 < nurseryWarmthSlots.length; nsi2++) {
+        var nwItem = nurseryWarmthSlots[nsi2];
+        var bStruct = showNurseryWarmth && nsi2 < broodMatched.length ? broodMatched[nsi2] : null;
+        nwItem.group.visible = !!bStruct;
+        if (!bStruct) continue;
+        var bPos = bhQueenStructurePosition(bStruct, QUEEN_MAP_PAD);
+        var bLevel = Math.max(1, Math.min(4, Math.round(bStruct.level || 1)));
+        nwItem.group.position.set(bPos.x, 0, bPos.z);
+        var bPulse = (reduced || sp.paused) ? 0 : Math.sin(clock * 0.0026 + nsi2 * 1.1) * 0.08;
+        nwItem.halo.scale.setScalar(0.95 + bLevel * 0.14 + bPulse);
+        nwItem.halo.material.opacity = Math.max(0.18, Math.min(0.72, 0.30 + bLevel * 0.08 + bPulse * 0.8));
+        var orbLift = (reduced || sp.paused) ? 0 : ((Math.sin(clock * 0.0022 + nsi2 * 1.3) * 0.5 + 0.5) * 0.045);
+        nwItem.orb.position.set(0, GROUND_Y + 0.18 + bLevel * 0.055 + orbLift, 0);
+        nwItem.orb.scale.setScalar(0.82 + bLevel * 0.16);
+      }
+
+      foodStoreMatched.length = 0;
+      for (var fmi = 0; fmi < structures.length; fmi++) {
+        var fm = structures[fmi];
+        if (fm && (fm.type === 'honey' || fm.type === 'pollen')) foodStoreMatched.push(fm);
+      }
+      var showFoodStores = sp.showGamePieces === true && seasonIndex !== 3 && foodStoreMatched.length > 0;
+      foodStoreGroup.visible = showFoodStores;
+      for (var fsi2 = 0; fsi2 < foodStoreSlots.length; fsi2++) {
+        var fsItem = foodStoreSlots[fsi2];
+        var fStruct = showFoodStores && fsi2 < foodStoreMatched.length ? foodStoreMatched[fsi2] : null;
+        fsItem.group.visible = !!fStruct;
+        if (!fStruct) continue;
+        var fPos = bhQueenStructurePosition(fStruct, QUEEN_MAP_PAD);
+        var fLevel = Math.max(1, Math.min(4, Math.round(fStruct.level || 1)));
+        fsItem.group.position.set(fPos.x, 0, fPos.z);
+        var isPollen = fStruct.type === 'pollen';
+        if (!contrast) {
+          fsItem.gleam.material.color.setHex(isPollen ? 0xf59e0b : 0xfbbf24);
+          fsItem.gleam.material.emissive.setHex(isPollen ? 0xb45309 : 0xd97706);
+          fsItem.load.material.color.setHex(isPollen ? 0xfde047 : 0xfef3c7);
+        }
+        var fPulse = (reduced || sp.paused) ? 0 : Math.sin(clock * 0.0028 + fsi2 * 1.15) * 0.09;
+        fsItem.gleam.scale.setScalar(0.88 + fLevel * 0.14 + fPulse);
+        fsItem.gleam.material.opacity = Math.max(0.20, Math.min(0.76, 0.30 + fLevel * 0.09 + fPulse * 0.8));
+        var fAngle = (reduced || sp.paused) ? (fsi2 * 1.05) : (clock * 0.0024 + fsi2 * 1.05);
+        var fRadius = 0.095 + fLevel * 0.015;
+        var fLift = (reduced || sp.paused) ? 0 : (Math.sin(clock * 0.0042 + fsi2 * 1.4) * 0.018);
+        fsItem.bee.position.set(Math.cos(fAngle) * fRadius, GROUND_Y + 0.18 + fLevel * 0.045 + fLift, Math.sin(fAngle) * fRadius);
+        fsItem.bee.rotation.y = -fAngle;
+        fsItem.load.scale.setScalar(0.78 + fLevel * 0.16);
+        beatBeeWings(fsItem.bee, clock, 0.55 + fLevel * 0.1, reduced || sp.paused);
+      }
+
+      var showQmpCourt = sp.showSignals === true && seasonIndex !== 3 && qmp > 0.08;
+      qmpRetinueGroup.visible = showQmpCourt;
+      if (showQmpCourt) {
+        var qmpPulse = (reduced || sp.paused) ? 0 : Math.sin(clock * 0.0024) * 0.06;
+        qmpRetinueHalo.scale.setScalar(0.92 + qmp * 0.28 + qmpPulse);
+        qmpRetinueHalo.material.opacity = Math.max(0.18, Math.min(0.76, 0.26 + qmp * 0.38 + qmpPulse));
+        qmpQueenBee.rotation.y = (reduced || sp.paused) ? 0.4 : (0.4 + Math.sin(clock * 0.0011) * 0.25);
+        beatBeeWings(qmpQueenBee, clock, 0.35, reduced || sp.paused);
+        var activeAttendants = Math.max(2, Math.min(qmpAttendants.length, Math.round(qmp * qmpAttendants.length)));
+        var courtRadius = 0.265 - qmp * 0.045;
+        for (var qaj = 0; qaj < qmpAttendants.length; qaj++) {
+          var attendant = qmpAttendants[qaj];
+          attendant.visible = qaj < activeAttendants;
+          if (!attendant.visible) continue;
+          var ang = (qaj / activeAttendants) * Math.PI * 2 + ((reduced || sp.paused) ? 0.2 : clock * 0.00045);
+          var ax = -NEST_X + Math.cos(ang) * courtRadius;
+          var az = NEST_Z + Math.sin(ang) * courtRadius;
+          var ay = GROUND_Y + 0.20 + ((reduced || sp.paused) ? 0 : Math.sin(clock * 0.0032 + qaj * 1.1) * 0.012);
+          attendant.position.set(ax, ay, az);
+          attendant.rotation.y = Math.atan2(-Math.cos(ang), -Math.sin(ang));
+          beatBeeWings(attendant, clock, 0.55, reduced || sp.paused);
+        }
+      }
+
+      var showAlarmDefense = sp.showSignals === true && seasonIndex !== 3 && alarm > 0.05;
+      alarmDefenseGroup.visible = showAlarmDefense;
+      if (showAlarmDefense) {
+        var alarmPulse = (reduced || sp.paused) ? 0 : Math.sin(clock * 0.0042) * 0.08;
+        alarmPerimeterRing.scale.setScalar(0.94 + alarm * 0.34 + alarmPulse);
+        alarmPerimeterRing.material.opacity = Math.max(0.20, Math.min(0.82, 0.28 + alarm * 0.44 + alarmPulse));
+        var activeSentries = Math.max(2, Math.min(alarmSentries.length, Math.round(alarm * alarmSentries.length)));
+        var sentryRadius = 0.25 + alarm * 0.09;
+        for (var sai = 0; sai < alarmSentries.length; sai++) {
+          var sentry = alarmSentries[sai];
+          sentry.visible = sai < activeSentries;
+          if (!sentry.visible) continue;
+          var sAng = (sai / activeSentries) * Math.PI * 2 + ((reduced || sp.paused) ? 0.35 : clock * 0.00095);
+          var sx = -NEST_X + Math.cos(sAng) * sentryRadius;
+          var sz = NEST_Z + Math.sin(sAng) * sentryRadius;
+          var sy = GROUND_Y + 0.215 + ((reduced || sp.paused) ? 0 : Math.sin(clock * 0.0048 + sai * 1.3) * 0.016);
+          sentry.position.set(sx, sy, sz);
+          sentry.rotation.y = Math.atan2(Math.cos(sAng), Math.sin(sAng));
+          beatBeeWings(sentry, clock, 0.95 + alarm * 0.35, reduced || sp.paused);
+        }
+        var activeSpokes = Math.max(1, Math.min(alarmSpokes.length, Math.ceil(alarm * alarmSpokes.length)));
+        for (var aci = 0; aci < alarmSpokes.length; aci++) {
+          var spoke = alarmSpokes[aci];
+          spoke.visible = aci < activeSpokes;
+          if (!spoke.visible) continue;
+          var cAng = aci * (Math.PI / 2) + Math.PI / 4;
+          var cTravel = (reduced || sp.paused) ? 0.04 : (((clock * 0.00045 + aci * 0.25) % 1) * 0.09);
+          var cRad = 0.30 + alarm * 0.12 + cTravel;
+          spoke.position.set(-NEST_X + Math.cos(cAng) * cRad, GROUND_Y + 0.064, NEST_Z + Math.sin(cAng) * cRad);
+          spoke.rotation.z = -cAng;
+        }
+      }
     }
 
     return { meshes: meshes, picks: picks, anchor: anchor, frame: frame };
@@ -12198,6 +15308,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;
+      function bhRenderDeltaBars(cfg) {
+        if (!cfg || !Number.isFinite(cfg.before) || !Number.isFinite(cfg.after)) return null;
+        var scaleMax = Number.isFinite(cfg.scaleMax) && cfg.scaleMax > 0 ? cfg.scaleMax : Math.max(Math.abs(cfg.before), Math.abs(cfg.after), 1);
+        var beforePct = Math.max(0, Math.min(100, Math.round((Math.max(0, cfg.before) / scaleMax) * 100)));
+        var afterPct = Math.max(0, Math.min(100, Math.round((Math.max(0, cfg.after) / scaleMax) * 100)));
+        var rootProps = { className: 'bee-delta-bars' + (cfg.className ? ' ' + cfg.className : ''), 'aria-hidden': 'true' };
+        rootProps[cfg.rootAttr || 'data-delta-bars'] = 'true';
+        if (cfg.toneAttr && cfg.tone) rootProps[cfg.toneAttr] = cfg.tone;
+        var beforeProps = { className: 'bee-delta-bar-fill bee-delta-bar-before', style: { width: beforePct + '%' } };
+        var afterProps = { className: 'bee-delta-bar-fill bee-delta-bar-after', style: { width: afterPct + '%' } };
+        var barAttr = cfg.barAttr || 'data-delta-bar';
+        beforeProps[barAttr] = 'before';
+        beforeProps['data-bar-pct'] = String(beforePct);
+        afterProps[barAttr] = 'after';
+        afterProps['data-bar-pct'] = String(afterPct);
+        return h('div', rootProps,
+          h('span', { className: 'bee-delta-bar-track' }, h('span', beforeProps)),
+          h('span', { className: 'bee-delta-bar-track' }, h('span', afterProps)));
+      }
       var labToolData = ctx.toolData;
       var setLabToolData = ctx.setToolData;
       var setStemLabTool = ctx.setStemLabTool;
@@ -12415,7 +15544,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('button', { type: 'button', 'data-bee-backup-download': 'true', ref: backupReturnControlRef, onClick: downloadBeeBackup, className: buttonClass }, 'Download Bee backup'),
               h('label', { className: 'block text-sm font-semibold' }, 'Choose Bee backup to review', h('input', { type: 'file', accept: '.json,application/json', 'data-bee-backup-file': 'true', onChange: reviewBeeBackup, className: 'mt-1 block min-h-[44px] w-full max-w-full text-sm' }))),
             backupError && h('p', { role: 'alert', className: 'mt-3 text-sm font-semibold' }, backupError),
-            backupReview && h('section', { 'data-bee-backup-review': 'true', className: 'mt-3 rounded-lg border p-3', 'aria-label': 'Review selected Bee backup' },
+            backupReview && h('section', { 'data-bee-backup-review': 'true', className: 'mt-3 rounded-lg border p-3', 'aria-label': __alloT('stem.beehive.aria_review_selected_bee_backup', 'Review selected Bee backup') },
               h('h5', { tabIndex: -1, ref: backupPreviewRef, className: 'text-sm font-bold' }, 'Review selected backup'),
               h('p', { className: 'mt-2 text-sm' }, 'Saved ' + backupReview.createdAt + '. Day ' + (backupReview.state.day || 0) + ', Colony Run ' + bhExperimentRunSerial(backupReview.state.experimentRunSerial) + '. ' + ((backupReview.state.experimentArchive && backupReview.state.experimentArchive.records) || []).length + ' trial pairs.'),
               backupReview.repairs.length > 0 && h('p', { className: 'mt-2 text-sm' }, 'Recovered damaged fields: ' + backupReview.repairs.join(', ') + '. Other progress and valid notebook entries are preserved.'),
@@ -13048,8 +16177,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('optgroup', { label: 'Learning topics' }, GUIDE_SECTIONS.filter(function(item) { return !item.teacher; }).map(function(item) { return h('option', { key: item.id, value: item.id }, item.title); })),
                 guideTeacher && h('optgroup', { label: 'Teacher resources' }, GUIDE_SECTIONS.filter(function(item) { return item.teacher; }).map(function(item) { return h('option', { key: item.id, value: item.id }, item.title + ' (teacher resource)'); })))),
             h('label', { className: 'block text-[0.6875rem] font-bold ' + (dk ? 'text-slate-200' : 'text-slate-700') }, 'Search the field guide',
-              h('input', { type: 'search', value: d.guideQuery || '', 'data-beehive-guide-search': 'true', placeholder: 'e.g. propolis, varroa, waggle', onChange: function(event) { upd('guideQuery', String(event.target.value || '').slice(0, 60)); }, className: 'mt-1 block w-full min-h-[44px] rounded-lg border px-3 py-2 text-sm font-normal ' + (dk ? 'border-slate-600 bg-slate-800 text-white' : 'border-slate-300 bg-white text-slate-900') })),
-            h('div', { 'data-guide-quick-chips': 'true', role: 'group', 'aria-label': 'Suggested field guide searches', className: 'flex flex-wrap items-center gap-1.5' },
+              h('input', { type: 'search', value: d.guideQuery || '', 'data-beehive-guide-search': 'true', placeholder: __alloT('stem.beehive.placeholder_e_g_propolis_varroa_waggle', 'e.g. propolis, varroa, waggle'), onChange: function(event) { upd('guideQuery', String(event.target.value || '').slice(0, 60)); }, className: 'mt-1 block w-full min-h-[44px] rounded-lg border px-3 py-2 text-sm font-normal ' + (dk ? 'border-slate-600 bg-slate-800 text-white' : 'border-slate-300 bg-white text-slate-900') })),
+            h('div', { 'data-guide-quick-chips': 'true', role: 'group', 'aria-label': __alloT('stem.beehive.aria_suggested_field_guide_searches', 'Suggested field guide searches'), className: 'flex flex-wrap items-center gap-1.5' },
               ['Varroa', 'Waggle', 'Propolis', 'Pollination', 'Winter'].map(function(term) {
                 var chipActive = guideQuery === term.toLowerCase();
                 return h('button', { key: term, type: 'button', 'data-guide-quick-chip': term.toLowerCase(), 'aria-pressed': chipActive ? 'true' : 'false', onClick: function() { upd('guideQuery', chipActive ? '' : term); }, className: 'min-h-[44px] rounded-lg border px-2.5 py-1.5 text-[0.6875rem] font-bold transition-colors ' + (chipActive ? 'border-amber-800 bg-amber-700 text-white' : (dk ? 'border-slate-600 bg-slate-800 text-slate-200 hover:bg-slate-700' : 'border-amber-300 bg-white text-amber-900 hover:bg-amber-50')) }, '🔎 ' + term);
@@ -13068,7 +16197,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('span', { 'aria-hidden': 'true' }, s.icon), ' ', s.title);
               })),
             !(ctx && ctx.isTeacherMode) && h('button', { type: 'button', 'data-beehive-guide-teacher-toggle': 'true', 'aria-pressed': guideTeacher ? 'true' : 'false', onClick: function() { upd('guideShowTeacher', !guideTeacher); }, className: 'min-h-[44px] rounded-lg border px-3 py-1.5 text-[0.6875rem] font-bold ' + (dk ? 'border-slate-600 text-slate-200' : 'border-slate-300 text-slate-700') }, (guideTeacher ? 'Hide' : 'Show') + ' teacher resources (' + teacherCount + ')'),
-            guideHits && h('div', { 'data-beehive-guide-results': 'true', role: 'region', 'aria-live': 'polite', 'aria-label': 'Field guide search results', className: 'space-y-2' },
+            guideHits && h('div', { 'data-beehive-guide-results': 'true', role: 'region', 'aria-live': 'polite', 'aria-label': __alloT('stem.beehive.aria_field_guide_search_results', 'Field guide search results'), className: 'space-y-2' },
               h('p', { className: 'text-xs font-bold ' + (dk ? 'text-amber-200' : 'text-amber-900') }, guideHits.length + (guideHits.length === 1 ? ' match' : ' matches') + ' for \u201c' + guideQuery + '\u201d' + (guideHits.length > 20 ? ' (showing 20)' : '')),
               guideHits.slice(0, 20).map(function(hit, n) { return h('div', { key: hit.section.id + '-' + hit.idx }, h('div', { className: 'text-[0.6875rem] font-bold ' + (dk ? 'text-slate-400' : 'text-slate-600') }, hit.section.icon + ' ' + hit.section.title), renderGuideEntry(hit.item, hit.idx, hit.section.id)); })),
             !guideHits && h('div', { id: 'beehive-guide-panel', role: 'tabpanel', 'aria-labelledby': 'beehive-guide-tab-' + sec.id, className: 'space-y-2' },
@@ -14574,7 +17703,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 viewBox: '0 0 420 108',
                 role: 'img',
                 focusable: 'false',
-                'aria-label': 'Worker honeybee anatomical diagram highlighting compound eyes, 170-receptor antennae, 6.6 millimeter proboscis on the head; 230 hertz hooked wings and corbicula hind-leg pollen basket on the thorax; honey crop, eight wax glands, and barbed stinger on the abdomen.',
+                'aria-label': __alloT('stem.beehive.aria_worker_honeybee_anatomical_diagram_highlighting', 'Worker honeybee anatomical diagram highlighting compound eyes, 170-receptor antennae, 6.6 millimeter proboscis on the head; 230 hertz hooked wings and corbicula hind-leg pollen basket on the thorax; honey crop, eight wax glands, and barbed stinger on the abdomen.'),
                 className: 'w-full h-auto block rounded-lg border border-amber-700/40 bg-amber-950/60 mb-2'
               },
                 h('text', { x: 12, y: 16, fill: '#fef3c7', fontSize: 8.5, fontWeight: 'bold' }, 'Worker Anatomy (~12–15 mm · ~90 mg)'),
@@ -14928,8 +18057,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         var _loopRunning = React.useRef(false);
 
         // Store live colony state in a ref so the animation loop always reads fresh values
+        var _hasWaterStation = bhHasManagementChoice(d.managementTrail, 'water_station') || !!d.waterStation;
+        var _hasBeeHotel = bhHasManagementChoice(d.managementTrail, 'build_hotel') || !!d.beeHotel;
+        var _hasNoSpraySign = bhHasManagementChoice(d.managementTrail, 'ban_pesticides') || !!d.noSpraySign;
+        var _hasHygieneSeal = bhHasManagementChoice(d.managementTrail, 'hive_hygiene') || !!d.hygieneSeal;
         var _liveState = React.useRef({});
-        _liveState.current = { workers: workers, honey: honey, season: season, habitat: habitat, gardenPollinators: gardenPollinators, gardenBonus: gardenBonus, colonyHealth: colonyHealth, queenHealth: queenHealth, queenTransition: bhNormalizeQueenTransition(d.queenTransition, SIMULATION_PARAMS), morale: morale, day: day, year: year, brood: brood, drones: drones, pollen: pollen, varroaLevel: varroaLevel, currentReserve: currentReserve, diseaseRisk: diseaseRisk, foragingEfficiency: foragingEfficiency, pesticideExposure: pesticideExposure, activeEvent: d.activeEvent || null, waggleLab: beeView === 'waggle' ? Object.assign({}, d.waggleLab || {}, bhWaggleReading(d.waggleLab)) : d.waggleLab || null, thermHunt: beeView === 'thermo' ? Object.assign({}, d.thermHunt || {}, bhThermoReading(d.thermHunt)) : d.thermHunt || null, pollinationLab: d.pollinationLab || null, colonyName: d.colonyName || '', syrup: d.syrup || 0, supersAdded: d.supersAdded || 0, winterized: !!d.winterized, inDearth: !!d.inDearth, harvestedThisYear: d.lastHarvestYear === year, calmScene: typeof d.calmScene === 'boolean' ? d.calmScene : !!prefersReducedMotion, beeView: beeView, bkAnim: d.bkAnim, hoverZone: bhHoverHint, motionPaused: beekeeperMotionPaused, isDark: isDark };
+        _liveState.current = { workers: workers, honey: honey, season: season, habitat: habitat, gardenPollinators: gardenPollinators, gardenBonus: gardenBonus, colonyHealth: colonyHealth, queenHealth: queenHealth, queenTransition: bhNormalizeQueenTransition(d.queenTransition, SIMULATION_PARAMS), morale: morale, day: day, year: year, brood: brood, drones: drones, pollen: pollen, varroaLevel: varroaLevel, currentReserve: currentReserve, diseaseRisk: diseaseRisk, foragingEfficiency: foragingEfficiency, pesticideExposure: pesticideExposure, activeEvent: d.activeEvent || null, waggleLab: beeView === 'waggle' ? Object.assign({}, d.waggleLab || {}, bhWaggleReading(d.waggleLab)) : d.waggleLab || null, thermHunt: beeView === 'thermo' ? Object.assign({}, d.thermHunt || {}, bhThermoReading(d.thermHunt)) : d.thermHunt || null, pollinationLab: d.pollinationLab || null, colonyName: d.colonyName || '', syrup: d.syrup || 0, supersAdded: d.supersAdded || 0, winterized: !!d.winterized, inDearth: !!d.inDearth, harvestedThisYear: d.lastHarvestYear === year, waterStation: _hasWaterStation, beeHotel: _hasBeeHotel, noSpraySign: _hasNoSpraySign, calmScene: typeof d.calmScene === 'boolean' ? d.calmScene : !!prefersReducedMotion, beeView: beeView, bkAnim: d.bkAnim, hoverZone: bhHoverHint, motionPaused: beekeeperMotionPaused, isDark: isDark };
         // The frame function of the running scene, so a paused scene can still draw one fresh frame.
         var _beeFrameRef = React.useRef(null);
 
@@ -17089,10 +20222,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             function artwork(kind, x, y, scale) {
               c.save(); c.translate(x, y); c.scale(scale, scale); c.lineCap = 'round'; c.lineJoin = 'round';
               bhPollinationArtwork(kind, r).forEach(function(shape) {
-                var path = pollinationPathCache[shape.d] || (pollinationPathCache[shape.d] = new Path2D(shape.d));
                 c.setLineDash(shape.dash ? shape.dash.split(' ').map(Number) : []); c.lineWidth = shape.width || 2.5;
-                if (shape.fill) { c.fillStyle = colors[shape.fill]; c.fill(path); }
-                if (shape.stroke) { c.strokeStyle = colors[shape.stroke]; c.stroke(path); }
+                if (typeof Path2D === 'function') {
+                  var path = pollinationPathCache[shape.d] || (pollinationPathCache[shape.d] = new Path2D(shape.d));
+                  if (shape.fill) { c.fillStyle = colors[shape.fill]; c.fill(path); }
+                  if (shape.stroke) { c.strokeStyle = colors[shape.stroke]; c.stroke(path); }
+                } else {
+                  bhTraceSvgPathOnCanvas(c, shape.d);
+                  if (shape.fill) { c.fillStyle = colors[shape.fill]; c.fill(); }
+                  if (shape.stroke) { c.strokeStyle = colors[shape.stroke]; c.stroke(); }
+                }
               }); c.restore();
             }
             var steps = [
@@ -25780,6 +28919,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              // ── Conservation & community stewardship props (rendered when applied) ──
+              if (ls.waterStation) {
+                var wsX = W * 0.35, wsY = H * 0.845;
+                c.fillStyle = 'rgba(0,0,0,0.18)';
+                c.beginPath(); c.ellipse(wsX + 0.8, wsY + 1.4, 8.5, 3.2, 0, 0, 6.28); c.fill();
+                c.fillStyle = '#b45309';
+                c.beginPath(); c.ellipse(wsX, wsY, 8, 3, 0, 0, 6.28); c.fill();
+                c.fillStyle = season === 3 ? '#e0f2fe' : '#38bdf8';
+                c.beginPath(); c.ellipse(wsX, wsY - 0.5, 6.6, 2.2, 0, 0, 6.28); c.fill();
+                c.fillStyle = '#78716c';
+                [[-3, -0.5], [0, -0.8], [3.2, -0.3], [-1.5, 0.6], [2, 0.7]].forEach(function(po) {
+                  c.beginPath(); c.ellipse(wsX + po[0], wsY + po[1], 1.3, 0.8, 0, 0, 6.28); c.fill();
+                });
+              }
+              if (ls.beeHotel) {
+                var bhX = W * 0.545, bhY = H * 0.78;
+                c.fillStyle = '#78350f';
+                c.fillRect(bhX - 1.2, bhY, 2.4, 14);
+                c.fillStyle = '#b45309';
+                c.fillRect(bhX - 6, bhY - 9, 12, 9);
+                c.fillStyle = '#475569';
+                c.beginPath();
+                c.moveTo(bhX - 7.5, bhY - 9);
+                c.lineTo(bhX, bhY - 14.5);
+                c.lineTo(bhX + 7.5, bhY - 9);
+                c.closePath();
+                c.fill();
+                c.fillStyle = '#fde68a';
+                for (var bhr = 0; bhr < 6; bhr++) {
+                  c.beginPath();
+                  c.arc(bhX - 3.6 + (bhr % 3) * 3.6, bhY - 6 + Math.floor(bhr / 3) * 3.2, 1.1, 0, 6.28);
+                  c.fill();
+                }
+              }
+              if (ls.noSpraySign) {
+                var nsX = W * 0.615, nsY = H * 0.795;
+                c.fillStyle = '#78350f';
+                c.fillRect(nsX - 0.9, nsY, 1.8, 11);
+                c.fillStyle = '#ecfdf5';
+                c.fillRect(nsX - 5.5, nsY - 7, 11, 7.5);
+                c.strokeStyle = '#047857';
+                c.lineWidth = 0.8;
+                c.strokeRect(nsX - 5.5, nsY - 7, 11, 7.5);
+                c.fillStyle = '#f59e0b';
+                c.beginPath(); c.arc(nsX, nsY - 3.2, 1.4, 0, 6.28); c.fill();
+              }
+
               // ── Digital hive scale (real beekeeping equipment) ──
               // Modern beekeepers weigh hives daily — the curve tells you when
               // honey flow starts, when bees rob, and when winter stores cross
@@ -28024,7 +31210,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var bankLabel = Math.abs(bankDeg) < 3 ? 'Wings level' : bankDeg > 0 ? 'Bank right ' + bank : 'Bank left ' + Math.abs(bankDeg) + '°';
           var pitchAdvice = Math.abs(pitchDeg) < 5 ? 'Hold pitch' : pitchDeg > 0 ? 'Ease down' : 'Climb';
           var bankAdvice = Math.abs(bankDeg) < 5 ? 'Keep wings level' : bankDeg > 0 ? 'Level left' : 'Level right';
-          return { pitch: pitch, bank: bank, summary: pitchLabel + ' / ' + bankLabel, correction: pitchAdvice + ' / ' + bankAdvice };
+          return { pitch: pitch, bank: bank, pitchDeg: pitchDeg, bankDeg: bankDeg, summary: pitchLabel + ' / ' + bankLabel, correction: pitchAdvice + ' / ' + bankAdvice };
         }
         function droneSpatialReadout(state) {
           state = state || {};
@@ -28358,13 +31544,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
         function renderDroneApproachGuide() {
           var r = bhDroneApproachGuide(_droneState.current);
+          var rm = bhDroneApproachRangeVisual(_droneState.current);
           return h('div', { className: 'bee-flight-approach', 'data-flight-approach': 'true', 'data-approach-recorded': String(r.recorded || r.complete), role: 'group', 'aria-label': r.text },
             h('div', { className: 'bee-flight-altitude-strip', 'data-approach-chart': 'true', hidden: r.recorded || r.complete, 'aria-hidden': 'true' },
               h('div', { className: 'bee-flight-approach-label' }, r.bandLabel),
               h('div', { className: 'bee-flight-altitude-track' },
                 h('span', { className: 'bee-flight-altitude-band', style: { left: r.bandStartPct + '%', width: r.bandWidthPct + '%' } }),
                 h('span', { className: 'bee-flight-altitude-pointer', 'data-approach-pointer': 'true', hidden: !r.known, style: { left: r.markerPct + '%' } })),
-              h('div', { className: 'bee-flight-altitude-scale' }, h('span', null, '0'), h('span', null, 'Altitude · 300 model ft'))),
+              h('div', { className: 'bee-flight-altitude-scale' }, h('span', null, '0'), h('span', null, 'Altitude · 300 model ft')),
+              h('div', { className: 'bee-flight-range-meter', 'data-approach-range-meter': 'true', 'data-met': String(rm.inRange) },
+                h('div', { className: 'bee-flight-range-track' },
+                  h('span', { className: 'bee-flight-range-zone', style: { left: rm.zoneStartPct + '%', width: rm.zoneWidthPct + '%' } }),
+                  h('span', { className: 'bee-flight-range-fill', 'data-approach-range-fill': 'true', hidden: !rm.known, style: { width: rm.progressPct + '%' } })))),
             h('div', { className: 'bee-flight-approach-status' },
               h('strong', { 'data-approach-status': 'true' }, r.status),
               h('div', { className: 'bee-flight-entry-conditions', 'data-approach-conditions': 'true', hidden: r.recorded || r.complete },
@@ -28374,12 +31565,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         }
         function syncDroneApproachGuide(state, director) {
           var node = director.querySelector('[data-flight-approach]'); if (!node) return;
-          var r = bhDroneApproachGuide(state), recorded = r.recorded || r.complete;
+          var r = bhDroneApproachGuide(state), rm = bhDroneApproachRangeVisual(state), recorded = r.recorded || r.complete;
           node.setAttribute('aria-label', r.text); node.setAttribute('data-approach-recorded', String(recorded));
           node.querySelector('[data-approach-status]').textContent = r.status;
           node.querySelector('[data-approach-chart]').hidden = recorded;
           node.querySelector('[data-approach-conditions]').hidden = recorded;
           var pointer = node.querySelector('[data-approach-pointer]'); pointer.style.left = r.markerPct + '%'; pointer.hidden = !r.known;
+          var rangeMeter = node.querySelector('[data-approach-range-meter]');
+          if (rangeMeter) {
+            rangeMeter.setAttribute('data-met', String(rm.inRange));
+            var rangeFill = rangeMeter.querySelector('[data-approach-range-fill]');
+            if (rangeFill) { rangeFill.hidden = !rm.known; rangeFill.style.width = rm.progressPct + '%'; }
+          }
           [['range', r.inRange, r.rangeText], ['height', r.inBand, r.heightText]].forEach(function(item) {
             var value = node.querySelector('[data-approach-' + item[0] + ']'); value.setAttribute('data-met', String(item[1])); value.textContent = item[2];
           });
@@ -28465,7 +31662,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         }
 
         function renderDroneEcologyGuide() {
-          var r=bhDronePredatorReadout(_droneState.current);
+          var r=bhDronePredatorReadout(_droneState.current), pg=bhDronePredatorGauge(_droneState.current);
           function plantButton(kind,label){return droneRendererState[0]==='three-webgl' && dronePacing!=='steps' && h('button',{type:'button',className:'bee-ecology-observe','data-ecology-observe-plant':kind,disabled:!dronePaused || !bhDronePlantSubject(_droneState.current,kind,_droneHabitatLayout.current),onClick:function(){observeDroneSubject(kind);}},label);}
           function source(url,label){return h('a',{href:url,target:'_blank',rel:'noopener noreferrer'},label);}
           return h('details',{className:'bee-flight-motion bee-flight-ecology','data-flight-ecology':'true',onToggle:function(event){
@@ -28484,6 +31681,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('div',{className:'bee-ecology-encounter'},h('strong',null,'How this flight represents predation'),
                 h('p',null,'This activity uses practice encounters: bird contact costs 15 energy units and up to 10 points, then the bird moves away. It does not animate eating or simulate survival after a real capture. Red rings and warning distances are game aids, not measured hunting ranges.'),
                 h('p',{'data-ecology-predator-readout':'true','data-predator-status':r.status},r.text),
+                h('div',{className:'bee-predator-gauge','data-ecology-predator-gauge':'true','data-predator-status':pg.status,hidden:!pg.available,'aria-hidden':'true'},
+                  h('div',{className:'bee-predator-gauge-track'},
+                    h('span',{className:'bee-predator-zone-nearby',style:{left:pg.nearbyStartPct+'%',width:(pg.contactStartPct-pg.nearbyStartPct)+'%'}}),
+                    h('span',{className:'bee-predator-zone-contact',style:{left:pg.contactStartPct+'%',width:(100-pg.contactStartPct)+'%'}}),
+                    h('span',{className:'bee-predator-gauge-fill','data-predator-gauge-fill':'true',style:{width:pg.proximityPct+'%'}}))),
                 droneRendererState[0] === 'three-webgl' && dronePacing !== 'steps' && h('button',{type:'button',className:'bee-ecology-observe','data-ecology-observe-bird':'true',disabled:!dronePaused || !bhDroneNearestBird(_droneState.current),onClick:observeDroneBird},'Observe nearest bee-eater')),
 
               h('p',null,(_droneState.current && _droneState.current.pacing === 'steps' ? 'Try observing: advance a short climb, then compare the low flowers, shrubs and taller grasses.' : 'Try observing: pause, choose Height above ground, and compare the low flowers, shrubs and taller grasses.') + ' Which parts of the meadow would you investigate for food, shelter or predators?'),
@@ -28491,18 +31693,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         }
         function syncDroneEcologyGuide(state) {
           var node=document.querySelector('[data-ecology-predator-readout]');if(!node)return;
-          var r=bhDronePredatorReadout(state);node.textContent=r.text;node.setAttribute('data-predator-status',r.status);
+          var r=bhDronePredatorReadout(state),pg=bhDronePredatorGauge(state);
+          node.textContent=r.text;node.setAttribute('data-predator-status',r.status);
+          var gauge=(node.parentElement && node.parentElement.querySelector('[data-ecology-predator-gauge]')) || document.querySelector('[data-ecology-predator-gauge]');
+          if(gauge){
+            gauge.hidden=!pg.available;
+            gauge.setAttribute('data-predator-status',pg.status);
+            var fill=gauge.querySelector('[data-predator-gauge-fill]');
+            if(fill)fill.style.width=pg.proximityPct+'%';
+          }
         }
 
         function renderDroneMotionReadout() {
           var r = bhDroneMotionReadout(_droneState.current);
+          var dial = bhDroneMotionDialData(_droneState.current, r);
           return h('details', { className: 'bee-flight-motion', 'data-flight-motion': 'true' },
             h('summary', null, 'Heading, motion & wind'),
             h('div', { className: 'bee-flight-motion-body' },
-              h('div', { className: 'bee-flight-motion-legend', 'aria-hidden': 'true' }, h('span', null, '◇ Heading'), h('span', null, '○ Motion')),
-              h('strong', { 'data-motion-readout': 'direction' }, r.motionText),
-              h('span', { 'data-motion-readout': 'vertical' }, r.vertical),
-              h('span', { 'data-motion-readout': 'wind' }, r.windText),
+              h('div', { className: 'bee-flight-motion-legend', 'aria-hidden': 'true' },
+                h('span', null, '◇ Heading'),
+                h('span', { className: 'bee-motion-track-chip' }, '○ Motion'),
+                h('span', { className: 'bee-motion-wind-chip' }, '⇢ Wind')),
+              h('div', { className: 'bee-flight-motion-row' },
+                h('svg', {
+                  viewBox: '0 0 112 112',
+                  className: 'bee-flight-motion-dial',
+                  'data-motion-vector-svg': 'true',
+                  'data-vertical-state': dial.vertKey,
+                  'data-has-track': dial.hasTrack ? 'true' : 'false',
+                  'data-has-wind': dial.hasWind ? 'true' : 'false',
+                  'aria-hidden': 'true',
+                  focusable: 'false'
+                },
+                  h('circle', { cx: 52, cy: 56, r: 40, fill: 'none', stroke: 'var(--motion-ring)', strokeWidth: 1.5, strokeDasharray: '3 3' }),
+                  h('path', { d: 'M52 12v5M52 95v5M8 56h5M91 56h4M52 56h.01', fill: 'none', stroke: 'var(--motion-ring)', strokeWidth: 1.5, strokeLinecap: 'round' }),
+                  h('g', { 'data-motion-wind-vec': 'true', transform: 'rotate(' + dial.windDeg + ' 52 56)', style: { display: dial.hasWind ? '' : 'none' } },
+                    h('line', { x1: 52, y1: 56, x2: 52, y2: 26, stroke: 'var(--motion-wind)', strokeWidth: 2.2, strokeDasharray: '4 3', strokeLinecap: 'round' }),
+                    h('path', { d: 'M48 31l4-6 4 6', fill: 'none', stroke: 'var(--motion-wind)', strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round' })),
+                  h('g', { 'data-motion-heading-vec': 'true' },
+                    h('line', { x1: 52, y1: 56, x2: 52, y2: 21, stroke: 'var(--motion-head)', strokeWidth: 2.6, strokeLinecap: 'round' }),
+                    h('polygon', { points: '52,12 57,18 52,24 47,18', fill: 'var(--motion-head)' })),
+                  h('g', { 'data-motion-track-vec': 'true', transform: 'rotate(' + dial.trackDeg + ' 52 56)', style: { display: dial.hasTrack ? '' : 'none' } },
+                    h('line', { x1: 52, y1: 56, x2: 52, y2: 23, stroke: 'var(--motion-track)', strokeWidth: 2.6, strokeLinecap: 'round' }),
+                    h('circle', { cx: 52, cy: 19, r: 4.5, fill: 'none', stroke: 'var(--motion-track)', strokeWidth: 2.4 })),
+                  h('line', { x1: 101, y1: 28, x2: 101, y2: 84, stroke: 'var(--motion-ring)', strokeWidth: 1.5, strokeLinecap: 'round' }),
+                  h('path', { 'data-motion-vertical-cue': 'true', d: dial.vertPath, fill: 'none', stroke: 'var(--motion-vert)', strokeWidth: 2.4, strokeLinecap: 'round', strokeLinejoin: 'round' })),
+                h('div', { className: 'bee-flight-motion-readouts' },
+                  h('strong', { 'data-motion-readout': 'direction' }, r.motionText),
+                  h('span', { 'data-motion-readout': 'vertical' }, r.vertical),
+                  h('span', { 'data-motion-readout': 'wind' }, r.windText))),
               h('p', null, r.explanation),
               h('div', { className: 'bee-flight-trail-control' },
                 h('button', { type: 'button', 'data-flight-trail-toggle': 'true', 'aria-pressed': _droneFlightTrail.current, 'aria-describedby': 'bee-flight-trail-note', onClick: toggleDroneFlightTrail }, 'Show recent flight trail'),
@@ -28518,17 +31757,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         function syncDroneMotionReadout(state) {
           var node = document.querySelector('[data-flight-motion]'); if (!node) return;
           var r = bhDroneMotionReadout(state);
+          var dial = bhDroneMotionDialData(state, r);
+          var dialSvg = node.querySelector('[data-motion-vector-svg]');
+          if (dialSvg) {
+            dialSvg.setAttribute('data-vertical-state', dial.vertKey);
+            dialSvg.setAttribute('data-has-track', dial.hasTrack ? 'true' : 'false');
+            dialSvg.setAttribute('data-has-wind', dial.hasWind ? 'true' : 'false');
+            var trackVec = dialSvg.querySelector('[data-motion-track-vec]');
+            if (trackVec) {
+              trackVec.setAttribute('transform', 'rotate(' + dial.trackDeg + ' 52 56)');
+              trackVec.style.display = dial.hasTrack ? '' : 'none';
+            }
+            var windVec = dialSvg.querySelector('[data-motion-wind-vec]');
+            if (windVec) {
+              windVec.setAttribute('transform', 'rotate(' + dial.windDeg + ' 52 56)');
+              windVec.style.display = dial.hasWind ? '' : 'none';
+            }
+            var vertCue = dialSvg.querySelector('[data-motion-vertical-cue]');
+            if (vertCue) vertCue.setAttribute('d', dial.vertPath);
+          }
           node.querySelector('[data-flight-trail-status]').textContent = _droneFlightTrail.current ? bhDroneFlightTrail(state).text : 'Flight trail hidden';
           [['direction',r.motionText],['vertical',r.vertical],['wind',r.windText]].forEach(function(item) {
             node.querySelector('[data-motion-readout="' + item[0] + '"]').textContent = item[1];
           });
         }
 
+        function droneLiftMarkerCy(state) {
+          var alt = Number.isFinite(state && state.y) ? state.y : 0;
+          return +(33 - Math.max(0, Math.min(300, alt)) / 10).toFixed(1);
+        }
         function renderDroneLiftReadout() {
-          var r = bhDroneLiftReadout(_droneState.current);
+          var s = _droneState.current;
+          var r = bhDroneLiftReadout(s);
+          var dotCy = droneLiftMarkerCy(s);
           return h('div', { className: 'bee-flight-lift', 'data-flight-lift': 'true', 'data-lift-state': r.state, role: 'group', 'aria-label': __alloT('stem.beehive.modeled_updraft_conditions','Modeled updraft conditions') },
-            h('svg', { viewBox: '0 0 40 40', 'aria-hidden': 'true' },
-              h('path', { d: 'M8 31V16m-4 4 4-5 4 5M20 33V8m-5 6 5-7 5 7M32 31V16m-4 4 4-5 4 5', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' })),
+            h('svg', { viewBox: '0 0 40 40', 'data-lift-svg': 'true', 'aria-hidden': 'true', focusable: 'false' },
+              h('rect', { 'data-lift-column': 'true', x: 4, y: 8, width: 32, height: 27, rx: 5, fill: 'currentColor', fillOpacity: r.state === 'inside' ? 0.14 : 0.05, stroke: 'currentColor', strokeOpacity: 0.35, strokeWidth: 1 }),
+              h('line', { 'data-lift-ceiling-line': 'true', x1: 3, y1: 8, x2: 37, y2: 8, stroke: 'currentColor', strokeWidth: 1.4, strokeDasharray: '3 2' }),
+              h('path', { d: 'M8 31V16m-4 4 4-5 4 5M20 33V8m-5 6 5-7 5 7M32 31V16m-4 4 4-5 4 5', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: r.state === 'inside' ? 1 : 0.65 }),
+              h('circle', { 'data-lift-altitude-dot': 'true', cx: 20, cy: String(dotCy), r: 3.2, fill: 'currentColor' })),
             h('div', null, h('strong', { 'data-lift-title': 'true' }, r.title), h('span', { 'data-lift-detail': 'true' }, r.detail), h('small', null, r.caption)));
         }
         function syncDroneLiftReadout(state) {
@@ -28536,6 +31803,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var r = bhDroneLiftReadout(state); node.setAttribute('data-lift-state', r.state);
           node.querySelector('[data-lift-title]').textContent = r.title;
           node.querySelector('[data-lift-detail]').textContent = r.detail;
+          var dot = node.querySelector('[data-lift-altitude-dot="true"]');
+          if (dot) dot.setAttribute('cy', String(droneLiftMarkerCy(state)));
+          var col = node.querySelector('[data-lift-column="true"]');
+          if (col) col.setAttribute('fill-opacity', r.state === 'inside' ? '0.14' : '0.05');
         }
 
         function renderDroneFlightConditions(state) {
@@ -28546,14 +31817,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('p', { 'data-flight-conditions-context': 'true' }, conditions.context)),
               h('ul', { className: 'bee-flight-condition-list', 'aria-live': 'off' }, ['ground', 'climb', 'energy'].map(function(id) {
                 var item = conditions.items.find(function(reading) { return reading.id === id; });
+                var vis = bhDroneConditionVisual(id, state);
+                var iconPaths = vis.iconKind === 'ground-descent'
+                  ? [
+                      h('path', { key: 'g1', d: 'M3 20H21', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round' }),
+                      h('path', { key: 'g2', d: 'M12 4V16M7.5 11.5L12 16L16.5 11.5', fill: 'none', stroke: 'currentColor', strokeWidth: 1.9, strokeLinecap: 'round', strokeLinejoin: 'round' })
+                    ]
+                  : vis.iconKind === 'slow-climb'
+                    ? [
+                        h('path', { key: 'c1', d: 'M3 19H21', fill: 'none', stroke: 'currentColor', strokeWidth: 1.7, strokeLinecap: 'round' }),
+                        h('path', { key: 'c2', d: 'M4 17L19 9M14.5 8.5L19 9L17.5 13.5', fill: 'none', stroke: 'currentColor', strokeWidth: 1.9, strokeLinecap: 'round', strokeLinejoin: 'round' })
+                      ]
+                    : [
+                        h('path', { key: 'e1', d: 'M3 8H18V16H3ZM19 10.5V13.5', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinejoin: 'round', strokeLinecap: 'round' }),
+                        h('path', { key: 'e2', d: 'M6 10.5V13.5M10 15L14 9', fill: 'none', stroke: 'currentColor', strokeWidth: 1.9, strokeLinecap: 'round' })
+                      ];
                 return h('li', { key: id, 'data-flight-condition': id, 'data-flight-energy-warning': id === 'energy' ? 'true' : undefined,
                   'data-condition-tone': id === 'ground' ? 'danger' : 'warning', hidden: !item },
                   h('div', { className: 'bee-flight-condition-title' },
-                    h('svg', { viewBox: '0 0 24 24', width: 22, height: 22, 'aria-hidden': 'true', focusable: 'false' },
-                      h('path', { d: 'M12 3L22 21H2Z', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinejoin: 'round' }),
-                      h('path', { d: 'M12 9V14M12 17V18', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round' })),
+                    h('svg', { viewBox: '0 0 24 24', width: 22, height: 22, className: 'bee-flight-condition-icon', 'data-condition-icon': vis.iconKind, 'aria-hidden': 'true', focusable: 'false' }, iconPaths),
                     h('strong', { 'data-condition-title': 'true' }, item ? item.title : '')),
                   h('p', { 'data-condition-evidence': 'true', 'aria-live': 'off', className: 'bee-flight-condition-evidence' }, item ? item.evidence : ''),
+                  h('svg', { viewBox: '0 0 160 10', width: 160, height: 10, className: 'bee-flight-condition-gauge', 'data-condition-gauge': id, 'data-gauge-pct': String(vis.pct), 'data-tone': vis.tone, 'aria-hidden': 'true', focusable: 'false' },
+                    h('rect', { x: 0, y: 2, width: 160, height: 6, rx: 3, className: 'bee-condition-gauge-track', 'data-condition-gauge-track': 'true' }),
+                    h('rect', { x: 0, y: 2, width: vis.fillW, height: 6, rx: 3, className: 'bee-condition-gauge-fill', 'data-condition-gauge-fill': id }),
+                    h('line', { x1: vis.thresholdX, y1: 0, x2: vis.thresholdX, y2: 10, className: 'bee-condition-gauge-threshold', 'data-condition-gauge-threshold': id })),
                   h('p', { 'data-condition-advice': 'true' }, item ? item.advice : ''),
                   id === 'climb' && h('small', { className: 'bee-flight-condition-model-note' }, 'In this game, forward speed supports a climb. Real bees can hover.'));
               }))),
@@ -28572,6 +31860,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             if (card.hidden !== !item) card.hidden = !item;
             if (!item) return;
             ['title', 'evidence', 'advice'].forEach(function(key) { text(card.querySelector('[data-condition-' + key + ']'), item[key]); });
+            var vis = bhDroneConditionVisual(id, state);
+            var gauge = card.querySelector('[data-condition-gauge]');
+            if (gauge) {
+              var pctStr = String(vis.pct);
+              if (gauge.getAttribute('data-gauge-pct') !== pctStr) gauge.setAttribute('data-gauge-pct', pctStr);
+              if (gauge.getAttribute('data-tone') !== vis.tone) gauge.setAttribute('data-tone', vis.tone);
+              var fill = gauge.querySelector('[data-condition-gauge-fill]');
+              if (fill) {
+                var fillWStr = String(vis.fillW);
+                if (fill.getAttribute('width') !== fillWStr) fill.setAttribute('width', fillWStr);
+              }
+              var thresh = gauge.querySelector('[data-condition-gauge-threshold]');
+              if (thresh) {
+                var txStr = String(vis.thresholdX);
+                if (thresh.getAttribute('x1') !== txStr) {
+                  thresh.setAttribute('x1', txStr);
+                  thresh.setAttribute('x2', txStr);
+                }
+              }
+            }
           });
           // Announce changed conditions or pacing, never each numeric telemetry update.
           text(header.querySelector('[data-flight-conditions-announcement]'), conditions.announcement);
@@ -28597,7 +31905,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           return state.pacing === 'steps' ? 'Pause & plan' : state.paused ? 'Paused' : 'Flying';
         }
         function renderDroneCommandHeader() {
-          var state = _droneState.current, cue = droneTrainingStatus(state);
+          var state = _droneState.current, cue = droneTrainingStatus(state), tVis = bhDroneTrainingVisual(cue);
           return h('header', { className: 'bee-flight-command-header', 'data-flight-command-header': 'true', 'aria-label': __alloT('stem.beehive.a11y_flight_controls_and_guidance', 'Flight controls and guidance') },
             h('div', { className: 'bee-flight-command-title' }, h('h3', null, 'Flight deck'),
               h('span', { 'data-flight-command-status': 'true', 'data-beehive-flight-paused-overlay': dronePaused && dronePacing !== 'steps' ? 'true' : undefined, role: 'status', 'aria-live': 'off' }, droneCommandStatus(state))),
@@ -28607,6 +31915,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             renderDroneFlightConditions(state),
             h('div', { 'data-flight-training': 'true', 'data-training-state': cue.complete ? 'complete' : cue.active ? 'active' : 'inactive', 'data-training-step': cue.index >= 0 ? String(Math.min(cue.total, cue.index + 1)) : '0', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'aria-hidden': cue.active ? 'false' : 'true', style: { display: cue.active ? 'block' : 'none' } },
               h('div', { className: 'bee-flight-training-heading' }, h('span', { 'data-flight-training-step': 'true' }, cue.complete ? 'Complete' : 'Step ' + (cue.index + 1) + ' / ' + cue.total), h('strong', { 'data-flight-training-label': 'true' }, cue.label)),
+              h('svg', { className: 'bee-flight-training-stepper', 'data-flight-training-stepper': 'true', 'data-stepper-state': tVis.state, 'data-stepper-completed': String(tVis.completedCount), viewBox: '0 0 180 14', 'aria-hidden': 'true', focusable: 'false' },
+                tVis.rails.map(function(rail) {
+                  return h('line', { key: 'r-' + rail.index, className: 'bee-training-rail', 'data-training-rail': String(rail.index), 'data-rail-done': String(rail.done), x1: rail.x1, y1: 7, x2: rail.x2, y2: 7 });
+                }),
+                tVis.pips.map(function(pip) {
+                  return h('circle', { key: 'p-' + pip.step, className: 'bee-training-pip', 'data-training-pip': String(pip.step), 'data-pip-state': pip.state, cx: pip.cx, cy: 7, r: pip.r });
+                }),
+                tVis.pips.map(function(pip) {
+                  return h('circle', { key: 'c-' + pip.step, className: 'bee-training-pip-core', 'data-training-pip-core': String(pip.step), 'data-pip-state': pip.state, cx: pip.cx, cy: 7, r: 1.6 });
+                })),
               h('p', { 'data-flight-training-instruction': 'true' }, cue.instruction), h('p', { 'data-flight-training-hint': 'true' }, cue.hint)),
             h('div', { className: 'bee-flight-command-diagnostics', style: droneData.detailedHud === true ? undefined : BH_VISUALLY_HIDDEN },
               h('span', { 'data-flight-renderer-badge': 'true', 'data-renderer-state': 'loading', 'data-frame-health': 'warming', role: 'status', 'aria-live': 'polite' }, 'Preparing 3D'),
@@ -28632,7 +31950,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           announceBee('Flight paused. Read the direction and entry details, then resume when ready.', false);
         }
         function renderDroneDirector() {
-          var state = _droneState.current, r = bhDroneFlightDirector(state), approach = bhDroneApproachGuide(state);
+          var state = _droneState.current, r = bhDroneFlightDirector(state), approach = bhDroneApproachGuide(state), dVis = bhDroneDirectorVisuals(state);
           return h('details', { className: 'bee-flight-director', 'data-flight-director': 'true', 'data-reserve-low': String(r.energy < 25), 'aria-label': 'Flight direction guide. ' + r.text,
             onToggle: function(event) { if (event.currentTarget.open) pauseDroneForDirectionReadings(); } },
             h('summary', { 'data-director-summary': 'true', onClick: function(event) { if (!event.currentTarget.parentElement.open) pauseDroneForDirectionReadings(); } },
@@ -28651,9 +31969,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('p', null, 'The arrow shows the turn from the bee’s heading toward the target. It does not show north or the camera’s viewing direction.'),
             h('div', { className: 'bee-flight-director-metrics' }, [['range','Horizontal range · model m',String(r.range)],['altitude','Height above ground',r.altitude + ' model ft'],['energy','Energy reserve',r.energy + '%'],['seconds','Time remaining',r.seconds + ' model s']].map(function(item) {
               return h('div', { key: item[0] }, h('span', { className: 'bee-flight-director-label' }, item[1]), h('strong', { 'data-director-value': item[0] }, item[2]),
+                item[0] === 'range' && h('svg', { className: 'bee-director-metric-gauge', 'data-director-metric-gauge': 'range', 'data-gauge-tone': dVis.range.tone, viewBox: '0 0 108 10', 'aria-hidden': 'true', focusable: 'false' },
+                  h('rect', { x: 4, y: 2, width: 100, height: 6, rx: 3, className: 'bee-director-gauge-track' }),
+                  h('rect', { x: dVis.range.gateStartX, y: 1.5, width: dVis.range.gateW, height: 7, rx: 2, className: 'bee-director-gauge-gate', 'data-director-range-gate': 'true' }),
+                  h('rect', { x: 4, y: 2, width: dVis.range.fillW, height: 6, rx: 3, className: 'bee-director-gauge-fill', 'data-director-range-fill': 'true' })),
+                item[0] === 'altitude' && h('svg', { className: 'bee-director-metric-gauge', 'data-director-metric-gauge': 'altitude', 'data-gauge-tone': dVis.altitude.tone, viewBox: '0 0 108 10', 'aria-hidden': 'true', focusable: 'false' },
+                  h('rect', { x: 4, y: 2, width: 100, height: 6, rx: 3, className: 'bee-director-gauge-track' }),
+                  h('rect', { x: dVis.altitude.bandX, y: 1, width: dVis.altitude.bandW, height: 8, rx: 1.5, className: 'bee-director-gauge-band', 'data-director-alt-band': 'true' }),
+                  h('circle', { cx: dVis.altitude.markerX, cy: 5, r: 3.2, className: 'bee-director-gauge-marker', 'data-director-alt-marker': 'true' })),
                 item[0] === 'energy' && h('div', { 'data-director-energy-meter': 'true', role: 'meter', 'aria-label': 'Energy as a percentage of this difficulty’s capacity', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': r.energy },
                   h('span', { 'data-director-energy-fill': 'true', style: { width: r.energy + '%' } })),
-                item[0] === 'energy' && h('span', { 'data-director-reserve': 'true' }, r.energy < 25 ? 'Low reserve' : 'Reserve available'));
+                item[0] === 'energy' && h('span', { 'data-director-reserve': 'true' }, r.energy < 25 ? 'Low reserve' : 'Reserve available'),
+                item[0] === 'seconds' && h('svg', { className: 'bee-director-metric-gauge', 'data-director-metric-gauge': 'seconds', 'data-gauge-tone': dVis.seconds.tone, viewBox: '0 0 108 10', 'aria-hidden': 'true', focusable: 'false' },
+                  h('rect', { x: 4, y: 2, width: 100, height: 6, rx: 3, className: 'bee-director-gauge-track' }),
+                  h('rect', { x: 4, y: 2, width: dVis.seconds.fillW, height: 6, rx: 3, className: 'bee-director-gauge-fill', 'data-director-seconds-fill': 'true' }),
+                  h('line', { x1: dVis.seconds.warnTickX, y1: 1, x2: dVis.seconds.warnTickX, y2: 9, className: 'bee-director-gauge-tick', 'data-director-seconds-tick': 'true' })));
             })),
             renderDroneApproachGuide(),
             h('p', { 'data-director-note': 'true' }, approach.recorded || approach.complete ? 'Direction guide only · check obstacles before turning.' : approach.note),
@@ -28661,7 +31991,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         }
         function syncDroneDirector(state) {
           var node = document.querySelector('[data-flight-director]'); if (!node) return;
-          var r = bhDroneFlightDirector(state);
+          var r = bhDroneFlightDirector(state), dVis = bhDroneDirectorVisuals(state);
+          function setGaugeAttr(el, key, value) { var s = String(value); if (el && el.getAttribute(key) !== s) el.setAttribute(key, s); }
           var values = { target: r.target, direction: r.direction, vertical: r.vertical, range: String(r.range), altitude: r.altitude + ' model ft', energy: r.energy + '%', seconds: r.seconds + ' model s' };
           Object.keys(values).forEach(function(key) { var item = node.querySelector('[data-director-value="' + key + '"]'); if (item) item.textContent = values[key]; });
           var arrow = node.querySelector('[data-director-arrow]'); if (arrow) arrow.setAttribute('transform', 'rotate(' + r.degrees + ' 32 32)');
@@ -28670,6 +32001,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           node.querySelector('[data-director-reserve]').textContent = r.energy < 25 ? 'Low reserve' : 'Reserve available';
           node.querySelector('[data-director-energy-meter]').setAttribute('aria-valuenow', String(r.energy));
           node.querySelector('[data-director-energy-fill]').style.width = r.energy + '%';
+          setGaugeAttr(node.querySelector('[data-director-metric-gauge="range"]'), 'data-gauge-tone', dVis.range.tone);
+          var rangeGate = node.querySelector('[data-director-range-gate]');
+          setGaugeAttr(rangeGate, 'x', dVis.range.gateStartX);
+          setGaugeAttr(rangeGate, 'width', dVis.range.gateW);
+          setGaugeAttr(node.querySelector('[data-director-range-fill]'), 'width', dVis.range.fillW);
+          setGaugeAttr(node.querySelector('[data-director-metric-gauge="altitude"]'), 'data-gauge-tone', dVis.altitude.tone);
+          setGaugeAttr(node.querySelector('[data-director-alt-marker]'), 'cx', dVis.altitude.markerX);
+          setGaugeAttr(node.querySelector('[data-director-metric-gauge="seconds"]'), 'data-gauge-tone', dVis.seconds.tone);
+          setGaugeAttr(node.querySelector('[data-director-seconds-fill]'), 'width', dVis.seconds.fillW);
           node.querySelector('[data-director-status]').textContent = state.paused ? 'Paused' : 'Flying';
           node.querySelector('[data-director-budget-summary]').textContent = r.energy + '% energy' + (r.energy < 25 ? ' · Low reserve' : '') + ' · ' + r.seconds + ' model s left';
           syncDroneApproachGuide(state, node);
@@ -28789,6 +32129,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             if (pitchNode) pitchNode.textContent = attitude.pitch;
             if (bankNode) bankNode.textContent = attitude.bank;
             if (attitudeSummary) attitudeSummary.textContent = attitude.summary + ' / ' + attitude.correction;
+            var horizonSvg = attitudePanel.querySelector('[data-flight-horizon-svg="true"]');
+            if (horizonSvg) {
+              var hPitch = Math.max(-35, Math.min(35, Number(attitude.pitchDeg) || 0));
+              var hBank = Math.max(-45, Math.min(45, Number(attitude.bankDeg) || 0));
+              horizonSvg.setAttribute('data-pitch-deg', String(hPitch));
+              horizonSvg.setAttribute('data-bank-deg', String(hBank));
+              var horizonWorld = horizonSvg.querySelector('[data-flight-horizon-world="true"]');
+              if (horizonWorld) horizonWorld.setAttribute('transform', 'translate(60 38) rotate(' + (-hBank) + ') translate(0 ' + (hPitch * 0.55).toFixed(1) + ')');
+            }
           }
             var spatialCamera = spatialPanel.querySelector('[data-flight-spatial-camera="true"]');
             if (spatialCamera) spatialCamera.textContent = spatial.camera + ' view';
@@ -28819,6 +32168,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               var node = trainingPanel.querySelector('[data-flight-training-' + item[0] + '="true"]');
               if (node && node.textContent !== item[1]) node.textContent = item[1];
             });
+            var tVisSync = bhDroneTrainingVisual(training);
+            var stepper = trainingPanel.querySelector('[data-flight-training-stepper="true"]');
+            if (stepper) {
+              var completedStr = String(tVisSync.completedCount);
+              if (stepper.getAttribute('data-stepper-state') !== tVisSync.state) stepper.setAttribute('data-stepper-state', tVisSync.state);
+              if (stepper.getAttribute('data-stepper-completed') !== completedStr) stepper.setAttribute('data-stepper-completed', completedStr);
+              tVisSync.rails.forEach(function(rail) {
+                var railEl = stepper.querySelector('[data-training-rail="' + rail.index + '"]');
+                var railDone = String(rail.done);
+                if (railEl && railEl.getAttribute('data-rail-done') !== railDone) railEl.setAttribute('data-rail-done', railDone);
+              });
+              tVisSync.pips.forEach(function(pip) {
+                var pipEl = stepper.querySelector('[data-training-pip="' + pip.step + '"]');
+                if (pipEl) {
+                  if (pipEl.getAttribute('data-pip-state') !== pip.state) pipEl.setAttribute('data-pip-state', pip.state);
+                  var pipR = String(pip.r);
+                  if (pipEl.getAttribute('r') !== pipR) pipEl.setAttribute('r', pipR);
+                }
+                var coreEl = stepper.querySelector('[data-training-pip-core="' + pip.step + '"]');
+                if (coreEl && coreEl.getAttribute('data-pip-state') !== pip.state) coreEl.setAttribute('data-pip-state', pip.state);
+              });
+            }
             if (!training.complete && state._lastTrainingStep !== training.index) {
               announceBee('Flight school step ' + (training.index + 1) + ' of ' + training.total + ': ' + training.label + '. ' + training.instruction, false);
               state._lastTrainingStep = training.index;
@@ -28846,6 +32217,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             if (overallNode) { overallNode.setAttribute('data-envelope-state', envelope.overallState); overallNode.textContent = envelope.overallLabel; }
             var summaryNode = envelopePanel.querySelector('[data-flight-envelope-summary]');
             if (summaryNode) summaryNode.textContent = envelope.overallAdvice;
+            var envVisSync = bhDroneEnvelopeVisuals(state);
             envelope.items.forEach(function(item) {
               var node = envelopePanel.querySelector('[data-flight-envelope-item="' + item.id + '"]');
               if (!node) return;
@@ -28854,6 +32226,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               var valueNode = node.querySelector('[data-envelope-value]'); if (valueNode) valueNode.textContent = item.value;
               var statusNode = node.querySelector('[data-envelope-status]'); if (statusNode) statusNode.textContent = item.status;
               var adviceNode = node.querySelector('[data-envelope-advice]'); if (adviceNode) adviceNode.textContent = item.advice;
+              var gaugeSvg = node.querySelector('[data-envelope-gauge="' + item.id + '"]');
+              var evSync = envVisSync.items[item.id];
+              if (gaugeSvg && evSync) {
+                var nextTone = state.paused ? 'paused' : evSync.tone;
+                if (gaugeSvg.getAttribute('data-gauge-tone') !== nextTone) gaugeSvg.setAttribute('data-gauge-tone', nextTone);
+                var fillRect = gaugeSvg.querySelector('[data-envelope-fill="true"]');
+                if (fillRect) {
+                  var nextW = String(evSync.fillW);
+                  if (fillRect.getAttribute('width') !== nextW) fillRect.setAttribute('width', nextW);
+                  if (fillRect.getAttribute('data-gauge-tone') !== nextTone) fillRect.setAttribute('data-gauge-tone', nextTone);
+                }
+              }
             });
           }
 
@@ -28942,6 +32326,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var startBehavior = dronePacing === 'steps' ? 'Starts paused. Time moves only when you advance a maneuver.'
             : prefersReducedMotion ? 'Starts paused for your reduced-motion preference. Resume flight when ready.'
             : 'Starts moving immediately. Press P or use Pause flight whenever you need to stop and think.';
+          var preflightScale = droneFieldPrepared ? 1 : droneFieldStressed ? 0.86 : 0.94;
+          var preVis = bhDronePreflightVisuals(preflightScale, droneScenario, droneRoutePlan);
+          function renderScenarioGlyph(id) {
+            var els = id === 'clear'
+              ? [h('circle', { key: 's', cx: 7, cy: 7, r: 3.2, fill: 'none', stroke: 'currentColor', strokeWidth: 1.6 }), h('path', { key: 'r', d: 'M7 1.6v1.6M7 10.8v1.6M1.6 7h1.6M10.8 7h1.6M3 15.5h14', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round' })]
+              : id === 'crosswind'
+                ? [h('path', { key: 'w', d: 'M2 6.5h11.5a2 2 0 1 0-1.8-2.8M2 10.5h14a2 2 0 1 1-1.8 2.8M4 14.5h8.5', fill: 'none', stroke: 'currentColor', strokeWidth: 1.6, strokeLinecap: 'round' })]
+                : [h('circle', { key: 't', cx: 8.5, cy: 10, r: 6, fill: 'none', stroke: 'currentColor', strokeWidth: 1.6, strokeDasharray: '24 6' }), h('path', { key: 'a', d: 'M8.5 6.8V10l2.4 1.6M14.5 3.5l3 3-3 3', fill: 'none', stroke: 'currentColor', strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round' })];
+            return h('svg', { className: 'bee-drone-choice-glyph', 'data-scenario-glyph': id, viewBox: '0 0 20 20', width: 18, height: 18, 'aria-hidden': 'true', focusable: 'false' }, els);
+          }
+          function renderRoutePlanGlyph(id) {
+            var els = id === 'balanced'
+              ? [h('path', { key: 'p', d: 'M2 15.5Q7 15 10 10T17.5 5.5', fill: 'none', stroke: 'currentColor', strokeWidth: 1.7, strokeLinecap: 'round' }), h('circle', { key: 'q', cx: 15.5, cy: 6, r: 2.6, fill: 'none', stroke: 'currentColor', strokeWidth: 1.4 })]
+              : id === 'boost-first'
+                ? [h('ellipse', { key: 'g1', cx: 6.5, cy: 13, rx: 2, ry: 3.6, fill: 'none', stroke: 'currentColor', strokeWidth: 1.5 }), h('ellipse', { key: 'g2', cx: 12, cy: 11.5, rx: 2, ry: 3.6, fill: 'none', stroke: 'currentColor', strokeWidth: 1.5 }), h('path', { key: 'tr', d: 'M2 14l15-8', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeDasharray: '2.5 2', strokeLinecap: 'round' })]
+                : [h('path', { key: 'th', d: 'M6.5 16.5c-2.5-1.2 2.5-2.8 0-4s2.5-2.8 0-4M6.5 5.5l-2 2M6.5 5.5l2 2M9.5 6.5h8', fill: 'none', stroke: 'currentColor', strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round' })];
+            return h('svg', { className: 'bee-drone-choice-glyph', 'data-route-plan-glyph': id, viewBox: '0 0 20 20', width: 18, height: 18, 'aria-hidden': 'true', focusable: 'false' }, els);
+          }
           return h('div', { id: 'beehive-drone-playfield', tabIndex: -1, 'data-beehive-focus-panel': 'playfield', role: 'region', 'aria-label': __alloT('stem.beehive.a11y_drone_flight_playfield_briefing', 'Drone Flight playfield briefing'), 'data-beehive-stage': 'drone-briefing', className: 'bfd bee-flight-briefing' },
             h('header', { className: 'bee-flight-hero' },
               h('div', null, h('span', { className: 'bee-flight-eyebrow' }, 'FLIGHT LAB · MISSION BRIEFING'),
@@ -28963,6 +32365,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 var option = DRONE_SCENARIOS[id], selected = droneScenario === id;
                 return h('button', { key: id, type: 'button', role: 'radio', 'data-drone-scenario': id, 'aria-checked': selected ? 'true' : 'false', tabIndex: selected ? 0 : -1,
                   onClick: function() { chooseDroneScenario(id); }, onKeyDown: function(event) { handleBeeTabKey(event, Object.keys(DRONE_SCENARIOS), id, 'data-drone-scenario', chooseDroneScenario); }, className: 'bee-flight-choice', 'aria-label': option.label + ': ' + option.desc, 'aria-describedby': id === 'rescue' ? 'bee-flight-rescue-budget-note' : undefined },
+                  renderScenarioGlyph(id),
                   h('strong', null, option.label), h('small', null, option.desc), id === 'rescue' && h('small', { id: 'bee-flight-rescue-budget-note' }, '12 fewer model seconds at every difficulty.'),
                   h('span', { className: 'bee-flight-choice-state', 'aria-hidden': 'true' }, selected ? '✓ Selected' : 'Select scenario'));
               }))),
@@ -28972,6 +32375,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 var plan = DRONE_ROUTE_PLANS[id], selected = droneRoutePlan === id;
                 return h('button', { key: id, type: 'button', role: 'radio', 'data-drone-route-plan': id, 'aria-checked': selected ? 'true' : 'false', tabIndex: selected ? 0 : -1,
                   onClick: function() { chooseDroneRoutePlan(id); }, onKeyDown: function(event) { handleBeeTabKey(event, Object.keys(DRONE_ROUTE_PLANS), id, 'data-drone-route-plan', chooseDroneRoutePlan); }, className: 'bee-flight-choice', 'aria-label': plan.label + ': ' + plan.desc },
+                  renderRoutePlanGlyph(id),
                   h('strong', null, plan.label), h('small', null, plan.desc), h('span', { className: 'bee-flight-choice-state', 'aria-hidden': 'true' }, selected ? '✓ Selected' : 'Select route'));
               }))),
             h('section', { 'aria-labelledby': 'bee-flight-launch-title' },
@@ -28986,12 +32390,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 { id: 'hard', label: 'Hard', desc: 'Less time and energy; more birds and a farther queen.' }
               ].map(function(diff) {
                 var budget = droneLaunchReadout(diff.id);
+                var budgetVis = bhDroneLaunchBudgetVisual(budget);
                 return h('button', { key: diff.id, type: 'button', className: 'bee-flight-launch', 'data-flight-launch': diff.id, 'aria-label': 'Launch ' + diff.label + ' flight', 'aria-describedby': 'bee-flight-launch-description-' + diff.id + ' bee-flight-launch-budget-' + diff.id,
                   onClick: function() { startDroneFlight(diff.id); } },
                   h('strong', null, diff.label), h('small', { id: 'bee-flight-launch-description-' + diff.id }, diff.desc),
                   h('span', { id: 'bee-flight-launch-budget-' + diff.id, className: 'bee-flight-budget' },
                     h('span', null, h('small', null, 'Starting countdown'), h('b', { 'data-flight-launch-time': 'true' }, budget.timer + ' model seconds')),
                     h('span', null, h('small', null, 'Starting energy / capacity'), h('b', { 'data-flight-launch-energy': 'true' }, budget.energy + ' / ' + budget.maxEnergy))),
+                  h('svg', {
+                    viewBox: '0 0 180 22', width: 180, height: 22,
+                    className: 'bee-launch-budget-bars',
+                    'data-launch-budget-bars': diff.id,
+                    'data-energy-penalized': budgetVis.penalized ? 'true' : 'false',
+                    'aria-hidden': 'true', focusable: 'false'
+                  },
+                    h('rect', { x: 4, y: 2, width: 172, height: 6, rx: 3, className: 'bee-launch-bar-track', 'data-budget-track': 'timer' }),
+                    h('rect', { x: 4, y: 2, width: budgetVis.timerWidth, height: 6, rx: 3, className: 'bee-launch-bar-time', 'data-budget-fill': 'timer' }),
+                    h('rect', { x: 4, y: 13, width: 172, height: 6, rx: 3, className: 'bee-launch-bar-track', 'data-budget-track': 'energy' }),
+                    h('rect', { x: 4, y: 13, width: budgetVis.capacityWidth, height: 6, rx: 3, className: 'bee-launch-bar-cap', 'data-budget-cap': 'energy' }),
+                    h('rect', { x: 4, y: 13, width: budgetVis.energyWidth, height: 6, rx: 3, className: 'bee-launch-bar-energy', 'data-budget-fill': 'energy' }),
+                    h('line', { x1: +(4 + budgetVis.capacityWidth).toFixed(2), y1: 11.5, x2: +(4 + budgetVis.capacityWidth).toFixed(2), y2: 20.5, className: 'bee-launch-bar-cap-tick', 'data-budget-cap-tick': 'true' })),
                   h('span', { className: 'bee-flight-launch-cta', 'aria-hidden': 'true' }, 'Launch ' + diff.label + ' →'));
               })),
               h('p', { className: 'bfd-caption' }, 'These are game budgets, not real flight endurance. The flight ends when time or energy runs out, or when the queen is intercepted.'),
@@ -29012,7 +32430,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('p', null, 'Glowing gates measure low-altitude control. They are not required for DCA entry and do not restore energy or time.'))),
             h('details', { 'data-flight-colony-context': 'true' }, h('summary', null, 'Colony condition and a prediction to test'),
               h('section', { 'data-drone-carryover-brief': 'true', role: 'note', 'aria-label': __alloT('stem.beehive.a11y_colony_network_colony_field_evidence_carried_in', 'Colony Network colony field evidence carried into Drone Flight') },
-                h('h4', null, 'Colony condition carried forward'), h('strong', null, droneCarryoverBrief.label), h('p', null, droneCarryoverBrief.advice),
+                h('h4', null, 'Colony condition carried forward'), h('strong', null, droneCarryoverBrief.label),
+                h('svg', { className: 'bee-carryover-condition-meter', 'data-carryover-condition-meter': 'true', 'data-carryover-band': preVis.band, viewBox: '0 0 180 14', 'aria-hidden': 'true', focusable: 'false' },
+                  h('rect', { className: 'bee-carryover-track', x: 4, y: 4, width: 172, height: 6, rx: 3 }),
+                  h('rect', { className: 'bee-carryover-fill', 'data-carryover-fill': 'true', x: 4, y: 4, width: preVis.fillWidth, height: 6, rx: 3 }),
+                  h('line', { className: 'bee-carryover-tick', 'data-carryover-tick': 'stressed', x1: preVis.stressedTickX, y1: 2, x2: preVis.stressedTickX, y2: 12 }),
+                  h('line', { className: 'bee-carryover-tick', 'data-carryover-tick': 'watch', x1: preVis.watchTickX, y1: 2, x2: preVis.watchTickX, y2: 12 }),
+                  h('line', { className: 'bee-carryover-tick', 'data-carryover-tick': 'prepared', x1: preVis.fullTickX, y1: 2, x2: preVis.fullTickX, y2: 12 })),
+                h('p', null, droneCarryoverBrief.advice),
                 h('div', { 'data-drone-carryover-hypothesis': 'true' }, h('h4', null, 'Prediction to test'), h('p', null, droneCarryoverBrief.hypothesis), h('p', null, 'Measure: ' + droneCarryoverBrief.measure)),
                 h('dl', { className: 'bee-flight-context-grid' }, [{ label: 'Field report', value: droneCarryoverBrief.fieldEvidence, marker: 'field' }, { label: 'DCA geometry', value: droneCarryoverBrief.distance }, { label: 'Colony effect on countdown', value: droneCarryoverBrief.time }, { label: 'Colony effect on hazards', value: droneCarryoverBrief.hazards }].map(function(item) {
                   return h('div', { key: item.label, 'data-drone-command-evidence': item.marker || undefined }, h('dt', null, item.label), h('dd', null, item.value));
@@ -29058,11 +32483,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('p', { className: 'bee-maneuver-context', 'data-maneuver-context': 'true' }, evidence.context),
             h('div', { className: 'bee-maneuver-grid' }, evidence.rows.map(function(row) {
               var arrow = row.trend === 'up' ? 'M12 19V5M6 11L12 5L18 11' : row.trend === 'down' ? 'M12 5V19M6 13L12 19L18 13' : row.trend === 'same' ? 'M5 9H19M5 15H19' : 'M5 12H19';
+              var showBars = row.trend !== 'unknown' && Number.isFinite(row.before) && Number.isFinite(row.after);
+              var barTone = row.id === 'energy'
+                ? (row.after > row.before ? 'beneficial' : row.after < row.before ? 'adverse' : 'neutral')
+                : row.id === 'range'
+                  ? (row.after < row.before ? 'beneficial' : row.after > row.before ? 'adverse' : 'neutral')
+                  : 'neutral';
+              var barScale = row.id === 'energy'
+                ? 100
+                : row.id === 'altitude'
+                  ? Math.max(300, Math.abs(row.before || 0), Math.abs(row.after || 0), 1)
+                  : Math.max(DRONE_FLIGHT_PARAMS.dcaDistanceM || 600, Math.abs(row.before || 0), Math.abs(row.after || 0), 1);
               return h('div', { key: row.id, className: 'bee-maneuver-card', 'data-maneuver-metric': row.id, 'data-maneuver-trend': row.trend },
                 h('h5', null, row.label),
                 h('dl', { className: 'bee-maneuver-values' },
                   h('div', null, h('dt', null, 'Before'), h('dd', { 'data-maneuver-before': 'true' }, row.beforeText)),
                   h('div', null, h('dt', null, 'After'), h('dd', { 'data-maneuver-after': 'true' }, row.afterText))),
+                showBars && bhRenderDeltaBars({ before: row.before, after: row.after, scaleMax: barScale, tone: barTone, rootAttr: 'data-maneuver-bars', barAttr: 'data-maneuver-bar', toneAttr: 'data-delta-tone' }),
                 h('p', { className: 'bee-maneuver-change' }, h('svg', { width: 24, height: 24, viewBox: '0 0 24 24', 'aria-hidden': 'true', focusable: 'false' }, h('path', { d: arrow, fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' })),
                   h('strong', { 'data-maneuver-change': 'true' }, row.deltaText)),
                 row.id === 'range' && evidence.rangeNote && h('p', { className: 'bee-maneuver-note', 'data-maneuver-range-note': 'true' }, evidence.rangeNote));
@@ -29083,6 +32520,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         }
         function renderDroneRecordedSnapshot(run) {
           var snapshot = bhDroneRecordedSnapshot(run);
+          var snVis = bhDroneSnapshotExtrasVisual(run);
           var icons = {
             peak: 'M7 21V3M3 7L7 3L11 7M15 5H21M15 11H19M15 17H21',
             distance: 'M4 5H9Q17 5 17 12Q17 19 9 19H4M8 15L4 19L8 23M4 3V7',
@@ -29107,6 +32545,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               return h('article', { key: row.id, className: 'bee-result-card', 'data-result-metric': row.id, 'data-result-known': String(row.known) },
                 h('h5', null, icon(icons[row.id]), row.label),
                 h('p', { className: 'bee-result-value', 'data-result-value': 'true' }, row.value),
+                row.id === 'peak' && row.known && run && typeof run === 'object' && Number.isFinite(run.maxAlt) && run.maxAlt >= 0 && (function() {
+                  var clampedPeak = Math.max(0, Math.min(300, run.maxAlt));
+                  var peakX = +(8 + (clampedPeak / 300) * 284).toFixed(2);
+                  var dcaX = +(8 + (DRONE_FLIGHT_PARAMS.dcaMinFt / 300) * 284).toFixed(2);
+                  var dcaW = +(((DRONE_FLIGHT_PARAMS.dcaMaxFt - DRONE_FLIGHT_PARAMS.dcaMinFt) / 300) * 284).toFixed(2);
+                  var inDcaBand = run.maxAlt >= DRONE_FLIGHT_PARAMS.dcaMinFt && run.maxAlt <= DRONE_FLIGHT_PARAMS.dcaMaxFt;
+                  return h('div', { className: 'bee-result-peak-scale', 'data-result-peak-meter-wrap': 'true', 'data-in-dca-band': inDcaBand ? 'true' : 'false' },
+                    h('svg', { 'data-result-peak-scale': 'true', viewBox: '0 0 300 28', 'aria-hidden': 'true', focusable: 'false' },
+                      h('rect', { x: 8, y: 7, width: 284, height: 14, rx: 7, fill: 'var(--bf-tint)', stroke: 'var(--bf-line)', strokeWidth: 2 }),
+                      h('rect', { 'data-result-peak-dca-band': 'true', x: dcaX, y: 7, width: dcaW, height: 14, fill: 'var(--bf-accent)', fillOpacity: 0.24, stroke: 'var(--bf-accent)', strokeWidth: 1.5 }),
+                      h('rect', { 'data-result-peak-fill': 'true', x: 8, y: 10, width: Math.max(0, +(peakX - 8).toFixed(2)), height: 8, rx: 4, fill: 'var(--bf-accent)', fillOpacity: 0.55 }),
+                      h('circle', { 'data-result-peak-marker': 'true', cx: peakX, cy: 14, r: 6, fill: 'var(--bf-paper)', stroke: 'var(--bf-ink)', strokeWidth: 2.5 })),
+                    h('div', { className: 'bee-result-scale-labels', 'aria-hidden': 'true' }, h('span', null, '0 ft'), h('span', null, '300 ft')));
+                })(),
+                row.id === 'distance' && snVis.distanceKnown && h('div', { className: 'bee-result-distance-scale' },
+                  h('svg', { className: 'bee-result-distance-svg', viewBox: '0 0 120 12', 'aria-hidden': 'true', focusable: 'false', 'data-distance-visual': 'true' },
+                    h('rect', { className: 'bee-result-distance-track', x: 2, y: 4, width: 116, height: 4, rx: 2 }),
+                    h('rect', { className: 'bee-result-distance-fill', x: 2, y: 4, width: snVis.distanceFillW, height: 4, rx: 2 }),
+                    h('line', { className: 'bee-result-distance-tick', x1: snVis.dcaMarkerX, y1: 1, x2: snVis.dcaMarkerX, y2: 11 }))),
                 row.id === 'energy' && Number.isFinite(row.meterPct) && h('div', { className: 'bee-result-energy-scale' },
                   h('svg', { 'data-result-energy-meter': 'true', viewBox: '0 0 300 28', 'aria-hidden': 'true', focusable: 'false' },
                     h('rect', { x: 8, y: 6, width: 284, height: 16, rx: 3, fill: 'var(--bf-tint)', stroke: 'var(--bf-line)', strokeWidth: 1.5 }),
@@ -29116,8 +32573,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             })),
             h('details', { 'data-result-more': 'true' }, h('summary', null, 'More recorded measurements'),
               h('div', { className: 'bee-result-extra-grid' }, extras.map(function(row) {
+                var extraBar = null;
+                if (row.known && row.id === 'markers') {
+                  extraBar = h('svg', { className: 'bee-result-extra-bar', viewBox: '0 0 100 10', 'aria-hidden': 'true', focusable: 'false', 'data-extra-visual': 'markers' },
+                    h('rect', { className: 'bee-result-extra-track', x: 2, y: 3, width: 96, height: 4, rx: 2 }),
+                    h('rect', { className: 'bee-result-extra-fill', x: 2, y: 3, width: snVis.markerFillW, height: 4, rx: 2, 'data-extra-kind': 'markers' }));
+                } else if (row.known && row.id === 'facts') {
+                  extraBar = h('svg', { className: 'bee-result-extra-bar', viewBox: '0 0 100 10', 'aria-hidden': 'true', focusable: 'false', 'data-extra-visual': 'facts' },
+                    h('rect', { className: 'bee-result-extra-track', x: 2, y: 3, width: 96, height: 4, rx: 2 }),
+                    h('rect', { className: 'bee-result-extra-fill', x: 2, y: 3, width: snVis.factsFillW, height: 4, rx: 2, 'data-extra-kind': 'facts' }));
+                } else if (row.known && row.id === 'conflicts') {
+                  extraBar = h('svg', { className: 'bee-result-extra-bar', viewBox: '0 0 100 10', 'aria-hidden': 'true', focusable: 'false', 'data-extra-visual': 'conflicts', 'data-conflict-tone': snVis.conflictTone },
+                    h('rect', { className: 'bee-result-extra-track', x: 2, y: 3, width: 96, height: 4, rx: 2 }),
+                    snVis.obstacleFillW > 0 && h('rect', { className: 'bee-result-extra-fill', x: 2, y: 3, width: snVis.obstacleFillW, height: 4, rx: 1.5, 'data-extra-kind': 'obstacle' }),
+                    snVis.trafficFillW > 0 && h('rect', { className: 'bee-result-extra-fill', x: +(2 + snVis.obstacleFillW).toFixed(2), y: 3, width: snVis.trafficFillW, height: 4, rx: 1.5, 'data-extra-kind': 'traffic' }));
+                }
                 return h('article', { key: row.id, className: 'bee-result-extra', 'data-result-extra': row.id, 'data-result-known': String(row.known) },
                   h('h5', null, row.label), h('p', { className: 'bee-result-extra-value', 'data-result-value': 'true' }, row.value),
+                  extraBar,
                   h('p', { className: 'bee-result-detail', 'data-result-detail': 'true' }, row.detail));
               }))));
         }
@@ -29135,8 +32608,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('p', { className: 'text-xs leading-relaxed' }, 'Review saved measurements and decisions while the flight stays at preflight. This review does not run the flight or change its outcome. Missing readings are shown as not recorded.'),
               h('p', { className: 'text-xs leading-relaxed', 'data-drone-saved-conditions': 'true' }, 'Course ' + droneRecordedValue(run.courseSeed) + ' · Model ' + (run.flightModelVersion || 'Not recorded') + ' · Difficulty ' + (run.difficulty || 'Not recorded') + ' · Scenario ' + (run.scenario || 'Not recorded')),
               renderDroneRecordedSnapshot(run),
-              droneDebrief && h('section', { 'data-drone-saved-coach': droneDebrief.id, 'aria-label': 'Coaching from recorded evidence', className: 'rounded-lg border p-3 ' + (dk ? 'border-slate-700 bg-slate-900/70' : 'border-slate-200 bg-slate-50') }, h('h4', { className: 'font-black' }, droneDebrief.title), h('p', { className: 'mt-1 text-xs leading-relaxed' }, droneDebrief.summary), h('p', { className: 'mt-2 text-xs leading-relaxed' }, droneDebrief.next), h('p', { className: 'mt-2 text-xs leading-relaxed' }, droneDebrief.consequence)),
-              Array.isArray(run.decisionLog) && run.decisionLog.length > 0 ? h('section', { 'aria-label': 'Saved flight decisions' }, h('h4', { className: 'font-black' }, 'Your flight decisions'), renderDroneManeuverEvidence(run.decisionLog), renderDroneHistory(run.decisionLog, run)) : h('p', { className: 'text-xs' }, 'No maneuver decisions were recorded for this flight.'),
+              droneDebrief && h('section', { 'data-drone-saved-coach': droneDebrief.id, 'aria-label': __alloT('stem.beehive.aria_coaching_from_recorded_evidence', 'Coaching from recorded evidence'), className: 'rounded-lg border p-3 ' + (dk ? 'border-slate-700 bg-slate-900/70' : 'border-slate-200 bg-slate-50') }, h('h4', { className: 'font-black' }, droneDebrief.title), h('p', { className: 'mt-1 text-xs leading-relaxed' }, droneDebrief.summary), h('p', { className: 'mt-2 text-xs leading-relaxed' }, droneDebrief.next), h('p', { className: 'mt-2 text-xs leading-relaxed' }, droneDebrief.consequence)),
+              Array.isArray(run.decisionLog) && run.decisionLog.length > 0 ? h('section', { 'aria-label': __alloT('stem.beehive.aria_saved_flight_decisions', 'Saved flight decisions') }, h('h4', { className: 'font-black' }, 'Your flight decisions'), renderDroneManeuverEvidence(run.decisionLog), renderDroneHistory(run.decisionLog, run)) : h('p', { className: 'text-xs' }, 'No maneuver decisions were recorded for this flight.'),
               droneReplayChart(run.telemetry, dk, run), renderDroneScienceBoundary()));
         }
         function renderDronePlanMap(state) {
@@ -29184,6 +32657,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         function renderDronePlanningReadings(state) {
           var r = bhDronePlanningReadings(state), altitude = r.altitude, energy = r.energy;
           var scaleKey = (altitude.markerPct == null ? 'Current height unavailable' : 'Triangle: current height') + ' · ' + (altitude.kind === 'dca' ? 'outlined band: DCA entry.' : altitude.referencePct == null ? 'queen cue height unavailable.' : 'dashed mark: queen cue height.');
+          var rangeMaxM = DRONE_FLIGHT_PARAMS.dcaDistanceM || 600;
+          var rangeDcaPct = Math.max(0, Math.min(100, (DRONE_FLIGHT_PARAMS.dcaRadiusM / rangeMaxM) * 100));
+          var rangeMarkerPct = r.range.value == null ? null : Math.max(0, Math.min(100, (r.range.value / rangeMaxM) * 100));
+          var rangeKey = (rangeMarkerPct == null ? 'Current range unavailable' : 'Diamond: current range') + ' · ' + (altitude.kind === 'dca' ? 'outlined zone: ' + DRONE_FLIGHT_PARAMS.dcaRadiusM + ' model m DCA boundary.' : 'dashed mark: 0 m at queen cue.');
           function icon(path) { return h('svg', { width: 22, height: 22, viewBox: '0 0 24 24', 'aria-hidden': 'true', focusable: 'false' }, h('path', { d: path, fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' })); }
           function x(pct) { return 16 + pct * 2.68; }
           return h('section', { className: 'bee-plan-readings', 'data-flight-current-readings': 'true', 'aria-label': __alloT('stem.beehive.a11y_current_flight_readings', 'Current flight readings'), 'aria-live': 'off' },
@@ -29193,6 +32670,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('h5', null, icon('M3 12H21M7 8L3 12L7 16M17 8L21 12L17 16'), 'Horizontal range'),
                 h('p', { className: 'bee-plan-reading-value', 'data-planning-value': 'true' }, r.range.text),
                 h('p', { className: 'bee-plan-reading-reference', 'data-planning-reference': 'true' }, r.range.reference),
+                h('svg', { className: 'bee-plan-range-scale', 'data-planning-range-scale': 'true', viewBox: '0 0 300 48', 'aria-hidden': 'true', focusable: 'false' },
+                  h('rect', { x: 16, y: 20, width: 268, height: 12, rx: 3, fill: 'var(--bf-tint)', stroke: 'var(--bf-line)', strokeWidth: 1.5 }),
+                  altitude.kind === 'dca' && h('rect', { 'data-planning-range-dca-zone': 'true', x: 16, y: 20, width: rangeDcaPct * 2.68, height: 12, fill: 'var(--pr-band-fill)', stroke: 'var(--pr-band)', strokeWidth: 2 }),
+                  altitude.kind === 'queen' && h('line', { 'data-planning-range-cue-zero': 'true', x1: 16, x2: 16, y1: 10, y2: 40, stroke: 'var(--pr-band)', strokeWidth: 2.5, strokeDasharray: '4 3' }),
+                  rangeMarkerPct != null && h('g', { 'data-planning-range-pointer': 'true', transform: 'translate(' + x(rangeMarkerPct) + ' 20)' }, h('path', { d: 'M0 -11L6 -5.5L0 0L-6 -5.5Z', fill: 'var(--bf-accent)', stroke: 'var(--bf-ink)', strokeWidth: 1.5 }))),
+                h('div', { className: 'bee-plan-range-ticks' }, h('span', null, '0'), h('span', null, rangeMaxM + ' model m')),
+                h('p', { className: 'bee-plan-range-key' }, rangeKey),
                 h('p', { className: 'bee-plan-reading-detail', 'data-planning-detail': 'true' }, r.range.detail)),
               h('article', { className: 'bee-plan-reading', 'data-planning-reading': 'altitude', 'data-reading-status': altitude.status },
                 h('h5', null, icon('M7 20V4M3 8L7 4L11 8M3 16L7 20L11 16M16 4H21M16 10H19M16 16H21M16 22H19'), 'Height above ground'),
@@ -29224,6 +32708,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             traffic: 'M8 12C1 4 12 2 12 10C12 2 23 4 16 12M8 12Q4 20 12 22Q20 20 16 12ZM8 16H16M9 19H15'
           };
           function dial(id, reading) {
+            if (id === 'obstacle' || id === 'traffic') {
+              var prox = bhDroneSurroundingsProximityVisual(state, id);
+              if (!prox.available) return null;
+              var rPx = prox.radiusPx;
+              var pColor = prox.band === 'close' ? 'var(--bs-close)' : prox.band === 'moderate' ? 'var(--bs-target)' : 'var(--bf-accent)';
+              return h('div', { className: 'bee-surroundings-dial', 'aria-hidden': 'true' },
+                h('svg', { 'data-surroundings-proximity': id, 'data-proximity-band': prox.band, viewBox: '0 0 160 160', 'aria-hidden': 'true', focusable: 'false' },
+                  h('circle', { cx: 80, cy: 80, r: 54, fill: 'var(--bf-tint)', stroke: 'var(--bf-line)', strokeWidth: 2 }),
+                  h('circle', { cx: 80, cy: 80, r: 36, fill: 'none', stroke: 'var(--bf-line)', strokeWidth: 1.2, strokeDasharray: '3 4' }),
+                  h('circle', { cx: 80, cy: 80, r: 18, fill: 'none', stroke: 'var(--bf-line)', strokeWidth: 1.2, strokeDasharray: '3 4' }),
+                  h('path', { d: 'M74 18L80 8L86 18Z', fill: 'none', stroke: 'var(--bf-ink)', strokeWidth: 2, strokeLinejoin: 'round' }),
+                  prox.degrees != null
+                    ? h('g', { 'data-surroundings-proximity-ray': 'true', transform: 'rotate(' + prox.degrees + ' 80 80)' },
+                        h('line', { x1: 80, y1: 80, x2: 80, y2: +(80 - rPx).toFixed(1), stroke: pColor, strokeWidth: 2.5, strokeDasharray: '3 3' }),
+                        id === 'obstacle'
+                          ? h('rect', { 'data-surroundings-proximity-dot': 'true', x: 74.5, y: +(80 - rPx - 5.5).toFixed(1), width: 11, height: 11, rx: 2, fill: pColor, stroke: 'var(--bf-ink)', strokeWidth: 2 })
+                          : h('circle', { 'data-surroundings-proximity-dot': 'true', cx: 80, cy: +(80 - rPx).toFixed(1), r: 6, fill: pColor, stroke: 'var(--bf-ink)', strokeWidth: 2 }))
+                    : h('circle', { 'data-surroundings-proximity-ring': 'true', cx: 80, cy: 80, r: rPx, fill: 'none', stroke: pColor, strokeWidth: 3, strokeDasharray: '5 3' }),
+                  h('path', { d: 'M80 74L86 80L80 86L74 80Z', fill: 'var(--bf-paper)', stroke: 'var(--bf-ink)', strokeWidth: 2 })));
+            }
             if ((id !== 'target' && id !== 'wind') || !Number.isFinite(reading.degrees)) return null;
             var color = id === 'target' ? 'var(--bs-target)' : 'var(--bf-accent)';
             return h('div', { className: 'bee-surroundings-dial' },
@@ -29260,6 +32764,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var action = BEEHIVE_DRONE_DECISIONS.filter(function(a) { return a.id === droneDecisionId; })[0];
           var latest = state.decisionLog && state.decisionLog[state.decisionLog.length - 1];
           var hasComparison = !!bhDroneManeuverEvidence(latest);
+          function renderManeuverControlBar(mVis, attrName, optionId) {
+            var attrs = { className: 'bee-maneuver-duration-bar', 'data-maneuver-mode': mVis.mode, viewBox: '0 0 160 10', 'aria-hidden': 'true', focusable: 'false' };
+            attrs[attrName] = optionId;
+            return h('svg', attrs,
+              h('rect', { className: 'bee-maneuver-bar-track', x: 2, y: 2.5, width: 108, height: 5, rx: 2.5 }),
+              [29, 56, 83].map(function(tx) { return h('line', { key: tx, className: 'bee-maneuver-bar-tick', x1: tx, y1: 1.5, x2: tx, y2: 8.5 }); }),
+              h('rect', { className: 'bee-maneuver-bar-fill', 'data-mode': mVis.mode, x: 2, y: 2.5, width: mVis.durationWidth, height: 5, rx: 2.5 }),
+              mVis.thrust
+                ? h('polygon', { className: 'bee-maneuver-chan-active', points: '122,1.8 125.2,5 122,8.2 118.8,5' })
+                : h('circle', { className: 'bee-maneuver-chan-idle', cx: 122, cy: 5, r: 2.2 }),
+              mVis.vertical === 'up'
+                ? h('path', { className: 'bee-maneuver-chan-active', d: 'M133 6.8L136 3.2L139 6.8', style: { fill: 'none' } })
+                : mVis.vertical === 'down'
+                  ? h('path', { className: 'bee-maneuver-chan-active', d: 'M133 3.2L136 6.8L139 3.2', style: { fill: 'none' } })
+                  : mVis.vertical === 'assist'
+                    ? h('rect', { className: 'bee-maneuver-chan-active', x: 133.5, y: 2.5, width: 5, height: 5, transform: 'rotate(45 136 5)' })
+                    : h('circle', { className: 'bee-maneuver-chan-idle', cx: 136, cy: 5, r: 2.2 }),
+              mVis.yaw === 'left'
+                ? h('path', { className: 'bee-maneuver-chan-active', d: 'M151.8 2.8L148.2 5L151.8 7.2', style: { fill: 'none' } })
+                : mVis.yaw === 'right'
+                  ? h('path', { className: 'bee-maneuver-chan-active', d: 'M148.2 2.8L151.8 5L148.2 7.2', style: { fill: 'none' } })
+                  : mVis.yaw === 'assist'
+                    ? h('circle', { className: 'bee-maneuver-chan-active', cx: 150, cy: 5, r: 2.8, style: { fill: 'none' } })
+                    : h('circle', { className: 'bee-maneuver-chan-idle', cx: 150, cy: 5, r: 2.2 }));
+          }
 
           return h('section', { className: 'bfd', 'data-flight-decision-panel': 'true', 'aria-labelledby': 'bee-flight-decision-title' },
             h('h3', { id: 'bee-flight-decision-title' }, 'Pause, read the route, choose a maneuver'),
@@ -29291,11 +32820,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     h('span', { className: 'bee-maneuver-choice-meta' },
                       h('span', { id: prefix + 'time-' + option.id, className: 'bee-maneuver-choice-time', 'data-flight-choice-time': 'true' }, 'Up to ' + option.seconds + ' model second' + (option.seconds === 1 ? '' : 's')),
                       h('span', { className: 'bee-maneuver-choice-selected', 'data-flight-choice-selected': 'true', 'aria-hidden': 'true' }, 'Selected')),
-                    h('small', { id: prefix + 'detail-' + option.id, className: 'bee-maneuver-choice-detail', 'data-flight-choice-detail': 'true' }, option.detail)));
+                    h('small', { id: prefix + 'detail-' + option.id, className: 'bee-maneuver-choice-detail', 'data-flight-choice-detail': 'true' }, option.detail),
+                    renderManeuverControlBar(bhDroneManeuverChoiceVisual(option.id, option.seconds), 'data-maneuver-duration-bar', option.id)));
               }))),
             h('section', { className: 'bfd-ready', 'data-flight-maneuver-ready': 'true', 'aria-labelledby': 'bee-flight-ready-title', 'aria-live': 'off' },
               h('h4', { id: 'bee-flight-ready-title' }, 'Selected maneuver'),
               h('strong', { id: 'bee-flight-selected-maneuver', 'data-flight-selected-maneuver': 'true' }, action.label),
+              renderManeuverControlBar(bhDroneManeuverChoiceVisual(action.id, action.seconds), 'data-selected-maneuver-bar', action.id),
               h('p', null, 'Advance up to ' + action.seconds + ' model second' + (action.seconds === 1 ? '' : 's') + ', then pause to compare.'),
               h('p', { id: 'bee-flight-prediction-prompt', className: 'bee-maneuver-prediction' }, BEEHIVE_DRONE_CHOICE_GUIDANCE[action.id].prediction)),
             h('div', { className: 'bfd-actions' }, h('button', { type: 'button', className: 'bfd-primary', 'data-flight-advance-decision': 'true', 'aria-describedby': 'bee-flight-selected-maneuver bee-flight-prediction-prompt',
@@ -29796,7 +33327,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             var box = new THREE.BoxGeometry(1, 1, 1);
             var ring = new THREE.RingGeometry(10, 12, 36);
             var abdomenBandGeometry = new THREE.CylinderGeometry(1, 1, 1, 20, 1, true);
-            var objects = { scenery: [], obstacles: [], flowers: [], clouds: [], thermals: [], drones: [], birds: [], queens: [], route: [], routeLine: null, routeGates: [], windLines: [], depthMarkers: [], horizonHills: [], obstacleWarn: null, playerDrone: null, particlePoints: null, dcaBeacon: null, queenBeacon: null, sun: sun };
+            var objects = { scenery: [], obstacles: [], flowers: [], clouds: [], thermals: [], drones: [], birds: [], queens: [], route: [], routeLine: null, routeGates: [], windLines: [], depthMarkers: [], horizonHills: [], obstacleWarn: null, playerDrone: null, particlePoints: null, dcaBeacon: null, launchPad: null, queenBeacon: null, sun: sun };
             function vegetationGeometry(kind){
               var data=bhDroneVegetationMesh(kind),geometry=new THREE.BufferGeometry();
               geometry.setAttribute('position',new THREE.Float32BufferAttribute(data.positions,3));geometry.setAttribute('color',new THREE.Float32BufferAttribute(data.colors,3));geometry.computeVertexNormals();
@@ -30118,6 +33649,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               dcaStruts.push(new THREE.Vector3(sx, DRONE_FLIGHT_PARAMS.dcaMinFt, sz), new THREE.Vector3(sx, DRONE_FLIGHT_PARAMS.dcaMaxFt, sz));
             }
             dcaBeacon.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(dcaStruts), new THREE.LineBasicMaterial({ color: 0xfff3bd, transparent: true, opacity: 0.6 })));
+            var dcaAlignRing = new THREE.Mesh(new THREE.TorusGeometry(DRONE_FLIGHT_PARAMS.dcaRadiusM * 0.72, 0.85, 8, 48), basic(0x34d399, { transparent: true, opacity: 0.20, side: THREE.DoubleSide, depthWrite: false }));
+            dcaAlignRing.name = 'drone-dca-altitude-lock';
+            dcaAlignRing.rotation.x = Math.PI / 2;
+            dcaAlignRing.position.y = DRONE_FLIGHT_PARAMS.dcaMarkerFt;
+            dcaBeacon.add(dcaAlignRing);
+            objects.dcaAlignRing = dcaAlignRing;
+            var launchPad = new THREE.Group(); launchPad.name = 'drone-launch-hive-pad';
+            var hiveStand = new THREE.Group(); hiveStand.name = 'drone-launch-hive-stand'; hiveStand.position.set(0, 0, 22);
+            var standBase = mesh(box, shared.trunk, [14, 1.6, 12]); standBase.position.y = 0.8; hiveStand.add(standBase);
+            var apron = mesh(box, shared.trunk, [10, 0.5, 4.5]); apron.position.set(0, 1.5, -7.2); hiveStand.add(apron);
+            var broodBox = mesh(box, mat(0xf59e0b, { roughness: 0.78 }), [11.5, 6.2, 10]); broodBox.position.y = 4.7; hiveStand.add(broodBox);
+            var entranceSlot = mesh(box, shared.dark, [6.5, 0.9, 0.6]); entranceSlot.position.set(0, 2.1, -5.05); hiveStand.add(entranceSlot);
+            var honeySuper = mesh(box, mat(0xfbbf24, { roughness: 0.74 }), [11.5, 4.4, 10]); honeySuper.position.y = 10.2; hiveStand.add(honeySuper);
+            var roof = mesh(cone, shared.roof, [9.2, 3.6, 9.2]); roof.position.y = 14.2; roof.rotation.y = Math.PI / 4; hiveStand.add(roof);
+            var entranceHalo = new THREE.Mesh(new THREE.TorusGeometry(6.5, 0.45, 6, 32), basic(0xfde68a, { transparent: true, opacity: 0.55, side: THREE.DoubleSide, depthWrite: false }));
+            entranceHalo.name = 'drone-launch-entrance-halo'; entranceHalo.rotation.x = Math.PI / 2; entranceHalo.position.set(0, 2.2, -7.2); hiveStand.add(entranceHalo);
+            launchPad.add(hiveStand);
+            var climbCorridor = new THREE.Group(); climbCorridor.name = 'drone-launch-climb-corridor';
+            var launchChevrons = [];
+            for (var cIdx = 0; cIdx < 3; cIdx++) {
+              var chev = new THREE.Mesh(new THREE.TorusGeometry(10 + cIdx * 1.8, 0.42, 6, 28, Math.PI), basic(cIdx === 2 ? 0xfbbf24 : 0x38bdf8, { transparent: true, opacity: 0.34, side: THREE.DoubleSide, depthWrite: false }));
+              chev.name = 'drone-launch-chevron-' + cIdx; chev.position.set(0, 14 + cIdx * 14, -22 - cIdx * 28);
+              climbCorridor.add(chev); launchChevrons.push(chev);
+            }
+            launchPad.add(climbCorridor);
+            launchPad.userData = { stand: hiveStand, halo: entranceHalo, corridor: climbCorridor, chevrons: launchChevrons };
+            scene.add(launchPad); objects.launchPad = launchPad;
             var queenBeacon = new THREE.Group();
             var queenColumn = new THREE.Mesh(new THREE.CylinderGeometry(18, 18, 80, 20, 1, true), basic(0xa78bfa, { transparent: true, opacity: 0.08, side: THREE.DoubleSide, depthWrite: false })); queenColumn.position.y = 40; queenBeacon.add(queenColumn);
             // Same treatment as the DCA halo above: this is the cue that REPLACES it
@@ -30327,6 +33885,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               var trafficRing = mesh(new THREE.TorusGeometry(12, 1, 8, 24), basic(0xfb923c, { transparent: true, opacity: 0.65, side: THREE.DoubleSide, depthWrite: false })); trafficRing.rotation.x = Math.PI / 2; trafficRing.position.y = -5; trafficRing.visible = false; group.add(trafficRing);
               scene.add(group); objects.drones.push({ group: group, drone: od, alert: trafficRing });
             });
+            var dcaSwirlGroup = new THREE.Group();
+            dcaSwirlGroup.name = 'drone-dca-congregation-swirl';
+            dcaSwirlGroup.position.set(0, 0, -DRONE_FLIGHT_PARAMS.dcaDistanceM);
+            var dcaSwirlRings = [];
+            var dcaSwirlHeights = [DRONE_FLIGHT_PARAMS.dcaMinFt + 8, DRONE_FLIGHT_PARAMS.dcaMaxFt - 8];
+            var dcaSwirlRadii = [DRONE_FLIGHT_PARAMS.dcaRadiusM * 0.52, DRONE_FLIGHT_PARAMS.dcaRadiusM * 0.34];
+            for (var srk = 0; srk < 2; srk++) {
+              var swirlRing = mesh(new THREE.TorusGeometry(dcaSwirlRadii[srk], 0.55, 8, 40), basic(srk === 0 ? 0xfbbf24 : 0x38bdf8, { transparent: true, opacity: srk === 0 ? 0.20 : 0.14, side: THREE.DoubleSide, depthWrite: false }));
+              swirlRing.name = 'dca-swirl-ring-' + srk;
+              swirlRing.rotation.x = Math.PI / 2;
+              swirlRing.position.y = dcaSwirlHeights[srk];
+              dcaSwirlGroup.add(swirlRing);
+              dcaSwirlRings.push({ mesh: swirlRing });
+            }
+            var dcaSwirlDrones = [];
+            for (var sdk = 0; sdk < 6; sdk++) {
+              var baseAngle = sdk * (Math.PI / 3);
+              var radius = DRONE_FLIGHT_PARAMS.dcaRadiusM * (0.28 + (sdk % 3) * 0.14);
+              var height = DRONE_FLIGHT_PARAMS.dcaMinFt + 6 + (sdk % 3) * 8;
+              var sdGroup = buildBeeAvatar({ scale: 0.72, bodyMat: shared.drone });
+              sdGroup.name = 'dca-congregation-drone-' + sdk;
+              sdGroup.position.set(Math.cos(baseAngle) * radius, height, Math.sin(baseAngle) * radius);
+              dcaSwirlGroup.add(sdGroup);
+              dcaSwirlDrones.push({ group: sdGroup, baseAngle: baseAngle, radius: radius, height: height, dir: sdk % 2 === 0 ? 1 : -1 });
+            }
+            scene.add(dcaSwirlGroup);
+            objects.dcaSwirl = { group: dcaSwirlGroup, rings: dcaSwirlRings, drones: dcaSwirlDrones };
             // Stylized bee-eaters: tapered wings, a long bill, mask and tail streamers.
             // Silhouette/colour identify an insect-eating bird; size remains illustrative.
             var birdTeal=mat(0x3c9e9e),birdRust=mat(0xb66e36),birdGold=mat(0xf2ca55),birdInk=mat(0x202e30);
@@ -30628,7 +34213,75 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               });
             }
 
-            if (o.dcaBeacon) { o.dcaBeacon.visible = ['bird','butterfly','shrub','grass','reed'].indexOf(_droneInspectionView.current)<0 && !ds.reachedDca && ds.phase !== 'mating' && ds.phase !== 'end'; o.dcaBeacon.rotation.y = 0; o.dcaBeacon.children[1].rotation.z = 0; }
+            if (o.dcaBeacon) {
+              o.dcaBeacon.visible = ['bird','butterfly','shrub','grass','reed'].indexOf(_droneInspectionView.current)<0 && !ds.reachedDca && ds.phase !== 'mating' && ds.phase !== 'end';
+              o.dcaBeacon.rotation.y = 0; o.dcaBeacon.children[1].rotation.z = 0;
+              if (o.dcaAlignRing) {
+                var inDcaBand = Number.isFinite(ds.y) && ds.y >= DRONE_FLIGHT_PARAMS.dcaMinFt && ds.y <= DRONE_FLIGHT_PARAMS.dcaMaxFt;
+                o.dcaAlignRing.visible = o.dcaBeacon.visible;
+                o.dcaAlignRing.position.y = inDcaBand ? ds.y : DRONE_FLIGHT_PARAMS.dcaMarkerFt;
+                o.dcaAlignRing.material.opacity = inDcaBand ? (prefersReducedMotion ? 0.82 : 0.72 + 0.14 * Math.sin(now * 0.006)) : 0.18;
+                o.dcaAlignRing.scale.setScalar(inDcaBand && !prefersReducedMotion ? 1 + 0.03 * Math.sin(now * 0.006) : 1);
+              }
+            }
+            if (o.dcaSwirl && o.dcaSwirl.group) {
+              var swirlInspection = ['bird','butterfly','shrub','grass','reed'].indexOf(_droneInspectionView.current) >= 0;
+              var swirlTier = t.qualityTier || ds.graphicsTier || 'high';
+              var swirlActive = !swirlInspection && !fieldStudy && ds.phase !== 'mating' && ds.phase !== 'end' && swirlTier !== 'eco' && swirlTier !== 'low';
+              o.dcaSwirl.group.visible = swirlActive;
+              if (swirlActive) {
+                var swirlFrozen = prefersReducedMotion || ds.paused;
+                var swirlDistSq = (ds.x || 0) * (ds.x || 0) + ((ds.z || 0) + DRONE_FLIGHT_PARAMS.dcaDistanceM) * ((ds.z || 0) + DRONE_FLIGHT_PARAMS.dcaDistanceM);
+                var swirlNear = !!(ds.reachedDca || ds.phase === 'congregation' || swirlDistSq < Math.pow(DRONE_FLIGHT_PARAMS.dcaRadiusM * 2.2, 2));
+                var swirlSpin = swirlFrozen ? 0 : now * 0.0009;
+                var swirlRings = o.dcaSwirl.rings || [];
+                for (var sri = 0; sri < swirlRings.length; sri++) {
+                  var sr = swirlRings[sri];
+                  sr.mesh.visible = sri === 0 || swirlTier === 'high';
+                  if (sr.mesh.visible) {
+                    sr.mesh.rotation.z = sri === 0 ? swirlSpin : -swirlSpin * 1.25;
+                    sr.mesh.scale.setScalar(swirlFrozen ? 1 : (swirlNear ? 1.04 : 0.98) + 0.03 * Math.sin(now * 0.003 + sri * 1.4));
+                    sr.mesh.material.opacity = swirlNear ? (sri === 0 ? 0.34 : 0.28) : (sri === 0 ? 0.20 : 0.14);
+                  }
+                }
+                var swirlDrones = o.dcaSwirl.drones || [];
+                var activeSwirlDrones = (swirlTier === 'balanced' || swirlTier === 'medium') ? 3 : swirlDrones.length;
+                for (var sdi = 0; sdi < swirlDrones.length; sdi++) {
+                  var sdItem = swirlDrones[sdi];
+                  sdItem.group.visible = sdi < activeSwirlDrones;
+                  if (sdItem.group.visible) {
+                    var orbitA = sdItem.baseAngle + (swirlFrozen ? 0 : now * 0.0012 * sdItem.dir);
+                    var bobY = swirlFrozen ? 0 : Math.sin(now * 0.0028 + sdItem.baseAngle * 2) * 3.5;
+                    var orbX = Math.cos(orbitA) * sdItem.radius;
+                    var orbZ = Math.sin(orbitA) * sdItem.radius;
+                    sdItem.group.position.set(orbX, sdItem.height + bobY, orbZ);
+                    sdItem.group.rotation.y = Math.atan2(-Math.sin(orbitA) * sdItem.dir, -Math.cos(orbitA) * sdItem.dir);
+                    beatBeeWings(sdItem.group, now, 0.72, swirlFrozen);
+                  }
+                }
+              }
+            }
+            if (o.launchPad) {
+              var launchInspect = ['bird','butterfly','shrub','grass','reed'].indexOf(_droneInspectionView.current) >= 0;
+              o.launchPad.visible = !launchInspect && !fieldStudy;
+              if (o.launchPad.visible && o.launchPad.userData) {
+                var lpData = o.launchPad.userData;
+                var nearLaunch = ds.phase !== 'end' && !ds.reachedDca && (ds.z == null || ds.z > -260);
+                if (lpData.corridor) lpData.corridor.visible = nearLaunch && t.qualityTier !== 'eco';
+                if (lpData.halo) {
+                  lpData.halo.material.opacity = (prefersReducedMotion || ds.paused) ? 0.5 : 0.42 + 0.18 * Math.sin(now * 0.004);
+                }
+                if (nearLaunch && lpData.chevrons && lpData.corridor && lpData.corridor.visible) {
+                  var fadeDist = Math.max(0.15, Math.min(1, (260 + (ds.z || 0)) / 220));
+                  for (var ci = 0; ci < lpData.chevrons.length; ci++) {
+                    var chev = lpData.chevrons[ci];
+                    var wave = (prefersReducedMotion || ds.paused) ? 0.65 : 0.45 + 0.55 * (0.5 + 0.5 * Math.sin(now * 0.005 - ci * 0.9));
+                    chev.material.opacity = +(0.46 * fadeDist * wave).toFixed(3);
+                    chev.scale.setScalar((prefersReducedMotion || ds.paused) ? 1 : 1 + 0.03 * Math.sin(now * 0.005 - ci * 0.9));
+                  }
+                }
+              }
+            }
             if (o.queenBeacon && ds.nearQueens && ds.nearQueens[0]) {
               var signalQueen = ds.nearQueens[0]; o.queenBeacon.position.set(signalQueen.x, 0, signalQueen.z); o.queenBeacon.visible = ['bird','butterfly','shrub','grass','reed'].indexOf(_droneInspectionView.current)<0 && !signalQueen.caught && (ds.phase === 'congregation' || ds.reachedDca); o.queenBeacon.rotation.y = -now * 0.0004; o.queenBeacon.children[1].rotation.z = now * 0.0007;
               if (o.queenBeacon.visible && o.queenBeacon.children[2]) {
@@ -32708,8 +36361,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var sc = queenScore;
           var feedback = { tone: 'success', text: action.label + ' signal applied.' };
 
-          if (actionId === 'lay_workers') { productionQueue.push({ id: 'worker-brood-' + queenDay + '-' + (productionQueue.length + 1), type: 'workers', label: 'Worker brood', icon: '\uD83D\uDC23', amount: 20, remaining: 2 }); sc += 10; ph.brood = Math.min(100, ph.brood + 5); feedback.text = 'Worker brood queued; 20 nurses mature in 2 cycles.'; playSfx(sfxBeeCollect); }
-          else if (actionId === 'lay_drones') { productionQueue.push({ id: 'drone-brood-' + queenDay + '-' + (productionQueue.length + 1), type: 'drones', label: 'Drone brood', icon: '\u2642\uFE0F', amount: 40, remaining: 3 }); sc += 5; feedback.text = 'Drone brood queued; mating capacity matures in 3 cycles.'; playSfx(sfxBeeCollect); }
+          if (actionId === 'lay_workers') { productionQueue.push({ id: 'worker-brood-' + queenDay + '-' + (productionQueue.length + 1), type: 'workers', label: 'Worker brood', icon: '\uD83D\uDC23', amount: 20, remaining: 2, totalCycles: 2 }); sc += 10; ph.brood = Math.min(100, ph.brood + 5); feedback.text = 'Worker brood queued; 20 nurses mature in 2 cycles.'; playSfx(sfxBeeCollect); }
+          else if (actionId === 'lay_drones') { productionQueue.push({ id: 'drone-brood-' + queenDay + '-' + (productionQueue.length + 1), type: 'drones', label: 'Drone brood', icon: '\u2642\uFE0F', amount: 40, remaining: 3, totalCycles: 3 }); sc += 5; feedback.text = 'Drone brood queued; mating capacity matures in 3 cycles.'; playSfx(sfxBeeCollect); }
           else if (actionId === 'emit_qmp') { ph.qmp = Math.min(100, ph.qmp + 30); sc += 5; feedback.text = 'QMP restored colony cohesion and reduced swarm risk.'; playSfx(sfxBeeWaggle); }
           // Signals move EXISTING workers between jobs; they do not create bees. (They used to add
           // 20 guards or 15 foragers from nowhere, which contradicted this mode's own lesson that
@@ -33381,7 +37034,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               superCount: hive3dSuperCount, honeyBoxes: hive3dHoneyBoxes,
               swarmPressure: hive3dSwarmPressure, frameIndex: hive3dFrame,
               syrupFill: hive3dSyrupFill, clusterWarmth: hive3dClusterWarmth,
-              smokeActive: hive3dSmokeActive, queenTransitionKind: hive3dQueenTransition ? hive3dQueenTransition.kind : null
+              smokeActive: hive3dSmokeActive, winterized: !!(d.winterized && season >= 2),
+              waterStation: _hasWaterStation, beeHotel: _hasBeeHotel, hygieneSeal: _hasHygieneSeal,
+              queenTransitionKind: hive3dQueenTransition ? hive3dQueenTransition.kind : null
             },
             onPick: function(id) {
               // Picking her out of a crowded frame by eye counts every bit as
@@ -33398,7 +37053,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           });
         }, [hive3dPart, hive3dExploded, isDark, isContrast, hive3dHoneyFill, hive3dBroodFill,
           hive3dVarroa, hive3dTraffic, hive3dPollen, hive3dLaying, hive3dPulled, season,
-          hive3dSuperCount, hive3dHoneyBoxes, hive3dSwarmPressure, hive3dFrame, hive3dSyrupFill, hive3dClusterWarmth, hive3dSmokeActive, hive3dQueenTransitionSig, prefersReducedMotion]);
+          hive3dSuperCount, hive3dHoneyBoxes, hive3dSwarmPressure, hive3dFrame, hive3dSyrupFill, hive3dClusterWarmth, hive3dSmokeActive, hive3dQueenTransitionSig, _hasWaterStation, _hasBeeHotel, _hasHygieneSeal, prefersReducedMotion]);
 
         var queen3dShare = Math.max(0, Math.min(1, queenTerritory / 100));
         var queen3dHome = Math.max(0, Math.min(1, (queenHiveHealth || 0) / 100));
@@ -33561,6 +37216,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('p', { id: 'bee-map-study-readiness', role: 'status' }, count === 2 ? 'Both colony views recorded at ' + patch.label + '. These snapshots stay fixed when the map changes.' : bhQueenMapStudyReady(study, queenStudyView(d)) || 'This view is ready. Trace the visible path, then record it.'),
                 h('div', { className: 'bee-map-study-routes' }, routeCard('home', 'Your colony'), routeCard('neighbor', 'Neighbor colony'))),
               count === 2 && h('div', { className: 'bee-map-study-stage' }, h('h5', null, '3 · Explain the evidence'),
+                h('div', { className: 'bee-map-study-schematic', 'data-map-study-schematic': 'shared', 'aria-hidden': 'true' },
+                  h('svg', { viewBox: '0 0 240 68', 'aria-hidden': 'true', focusable: 'false' },
+                    h('path', { className: 'bee-map-schem-home-route', d: 'M34 34 Q78 12 120 34' }),
+                    h('path', { className: 'bee-map-schem-neighbor-route', d: 'M206 34 Q162 56 120 34' }),
+                    h('circle', { className: 'bee-map-schem-ring', cx: '120', cy: '34', r: '16' }),
+                    h('circle', { className: 'bee-map-schem-flower', cx: '120', cy: '28', r: '4.2' }),
+                    h('circle', { className: 'bee-map-schem-flower', cx: '114', cy: '37', r: '4.2' }),
+                    h('circle', { className: 'bee-map-schem-flower', cx: '126', cy: '37', r: '4.2' }),
+                    h('circle', { className: 'bee-map-schem-home-nest', cx: '26', cy: '34', r: '10' }),
+                    h('circle', { className: 'bee-map-schem-neighbor-nest', cx: '214', cy: '34', r: '10' }))),
                 h('fieldset', { className: 'bee-map-study-choices' }, h('legend', null, 'Which claim do your two diagram views support?'), Object.keys(QUEEN_MAP_CLAIMS).map(function(id) { return h('label', { key: id }, h('input', { type: 'radio', name: 'bee-map-claim', checked: study.claim === id, onChange: function() { editQueenStudy('claim', id); } }), QUEEN_MAP_CLAIMS[id]); })),
                 study.claim && h('div', { className: 'bee-map-study-feedback', role: 'status', 'data-supported': complete }, h('strong', null, complete ? 'Observation supported · investigation complete' : 'Look again at what was recorded'), h('p', null, complete ? 'Both routes end at ' + patch.label + '. This diagram illustrates shared access. It does not measure how often either colony visits, how far bees fly, or how much food they collect.' : study.claim === 'border' ? 'The ring marks your selection. Each recorded colony route reaches the same patch; neither view records a defended border. Try another claim.' : 'One line per colony is a drawing choice. Your records contain no visit counts or nectar measurements, so they cannot show equal food collection. Try another claim.')),
                 h('label', { className: 'bee-map-study-note' }, h('span', null, 'My note or next field question (optional)'), h('textarea', { rows: 3, maxLength: 1200, value: study.reflection, placeholder: __alloT('stem.beehive.what_would_you_need_to_observe_at_real_nests','What would you need to observe at real nests and flowers?'), onChange: function(e) { editQueenStudy('reflection', e.target.value); } })),
@@ -33587,13 +37252,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         }
         function renderQueenFieldGuide() {
           var goal = bhQueenFieldObjective(d.queenFieldObjective, { intel: queenRival.intel || 0, territory: queenTerritory, guards: queenPopulation.guards, health: queenHiveHealth, structures: queenStructures.length, nectar: queenResources.nectar });
+          var goalVis = bhQueenFieldObjectiveVisual(goal, queen3dRaid);
           var action = QUEEN_ACTIONS.find(function(item) { return item.id === goal.action; });
           var cost = Object.keys(action.cost || {}).map(function(key) { return action.cost[key] + ' ' + key; }).join(' · ');
           var affordable = Object.keys(action.cost || {}).every(function(key) { return (queenResources[key] || 0) >= action.cost[key]; });
           return h('section', { className: 'bee-rts-objective', 'data-rts-field-objective': goal.id, 'aria-labelledby': 'bee-rts-field-title' },
-            h('div', { className: 'bee-rts-objective-head' }, h('div', null, h('div', { className: 'bee-discovery-kicker' }, 'Game objective · choose a focus'), h('h4', { id: 'bee-rts-field-title' }, goal.title)), h('select', { value: goal.id, 'aria-label': __alloT('stem.beehive.choose_an_rts_field_objective','Choose an RTS field objective'), onChange: function(e) { upd('queenFieldObjective', e.target.value); } }, h('option', { value: 'explore' }, 'Read the meadow'), h('option', { value: 'defend' }, 'Protect the colony'), h('option', { value: 'build' }, 'Build with a reserve'))),
+            h('div', { className: 'bee-rts-objective-head' },
+              h('div', null,
+                h('div', { className: 'bee-discovery-kicker' }, 'Game objective · choose a focus'),
+                h('div', { className: 'bee-rts-objective-title-row' },
+                  h('svg', { className: 'bee-rts-objective-emblem', viewBox: '0 0 28 28', 'aria-hidden': 'true', focusable: 'false', 'data-objective-emblem': goalVis.emblemKind },
+                    goalVis.emblemKind === 'shield' && h('g', null,
+                      h('path', { className: 'bee-rts-emblem-stroke', d: 'M14 4 L22 7 V14 C22 19 18.5 22.8 14 25 C9.5 22.8 6 19 6 14 V7 Z' }),
+                      h('path', { className: 'bee-rts-emblem-accent', d: 'M10 14 L13 17 L18.5 11.5' })),
+                    goalVis.emblemKind === 'hex-comb' && h('g', null,
+                      h('polygon', { className: 'bee-rts-emblem-stroke', points: '14,4 22,8.5 22,17.5 14,22 6,17.5 6,8.5' }),
+                      h('polygon', { className: 'bee-rts-emblem-accent', points: '14,8.5 18.5,11 18.5,15.5 14,18 9.5,15.5 9.5,11' })),
+                    goalVis.emblemKind === 'compass' && h('g', null,
+                      h('circle', { className: 'bee-rts-emblem-stroke', cx: 14, cy: 14, r: 9.5 }),
+                      h('polygon', { className: 'bee-rts-emblem-accent', points: '14,5.5 16.8,14 14,22.5 11.2,14' }),
+                      h('circle', { className: 'bee-rts-emblem-core', cx: 14, cy: 14, r: 1.8 }))),
+                  h('h4', { id: 'bee-rts-field-title' }, goal.title))),
+              h('select', { value: goal.id, 'aria-label': __alloT('stem.beehive.choose_an_rts_field_objective','Choose an RTS field objective'), onChange: function(e) { upd('queenFieldObjective', e.target.value); } }, h('option', { value: 'explore' }, 'Read the meadow'), h('option', { value: 'defend' }, 'Protect the colony'), h('option', { value: 'build' }, 'Build with a reserve'))),
             h('p', null, goal.explanation),
-            h('div', { className: 'bee-rts-targets' }, goal.metrics.map(function(metric) { return h('div', { key: metric.label, 'data-rts-target': metric.label, 'data-target-met': String(metric.value >= metric.target) }, h('span', null, metric.value >= metric.target ? '✓ ' + metric.label : metric.label), h('strong', null, Math.round(metric.value * 10) / 10 + metric.unit), h('small', null, 'Target ≥ ' + metric.target + metric.unit)); })),
+            h('div', { className: 'bee-rts-targets' }, goal.metrics.map(function(metric, mIdx) {
+              var mv = goalVis.metrics[mIdx];
+              return h('div', { key: metric.label, 'data-rts-target': metric.label, 'data-target-met': String(metric.value >= metric.target) },
+                h('span', null, metric.value >= metric.target ? '✓ ' + metric.label : metric.label),
+                h('strong', null, Math.round(metric.value * 10) / 10 + metric.unit),
+                h('small', null, 'Target ≥ ' + metric.target + metric.unit),
+                h('svg', { className: 'bee-rts-target-bar', viewBox: '0 0 120 10', 'aria-hidden': 'true', focusable: 'false', 'data-target-met': String(metric.value >= metric.target) },
+                  h('rect', { className: 'bee-rts-target-track', x: 2, y: 3, width: 116, height: 4, rx: 2 }),
+                  h('rect', { className: 'bee-rts-target-fill', x: 2, y: 3, width: mv ? mv.fillW : 0, height: 4, rx: 2, 'data-target-met': String(metric.value >= metric.target) }),
+                  h('line', { className: 'bee-rts-target-tick', x1: mv ? mv.targetX : 94.8, y1: 1, x2: mv ? mv.targetX : 94.8, y2: 9 })));
+            })),
             h('p', { className: 'bee-rts-goal-status', role: 'status' }, goal.met ? 'Both targets currently met. Keep them balanced or try another objective.' : 'Optional model targets. Watch both readings as you make decisions.'),
             h('div', { className: 'bee-discovery-actions' },
               h('button', { type: 'button', className: 'bee-discovery-button', disabled: !!queenResult || !affordable, 'data-rts-field-command': goal.action, onClick: function() { queenAction(goal.action); }, 'aria-describedby': 'bee-rts-field-cost' }, action.icon + ' ' + action.label),
@@ -33607,6 +37299,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var patch = queenInspection.patch, winter = bhQueenSeason(queenDay + 1) === 3;
           var routesVisible = d.queen3dRoutes !== false && !winter;
           var count = routesVisible ? (patch ? 1 : QUEEN_LANDSCAPE_PATCHES.length) * (queenInspection.colony === 'both' ? 2 : 1) : 0;
+          var pxVis = bhQueenPatchExplorerVisual(patch ? patch.id : 'all', queenInspection.colony, d.queen3dRoutes !== false, winter);
           var patchIdx = patch ? QUEEN_LANDSCAPE_PATCHES.findIndex(function(item) { return item.id === patch.id; }) : -1;
           function stepQueenPatch(delta) {
             var total = QUEEN_LANDSCAPE_PATCHES.length;
@@ -33621,14 +37314,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('div', { className: 'bee-rts-explorer-controls' },
               h('label', { className: 'bee-rts-patch-select' }, h('span', null, 'Inspect a flower patch'), h('select', { value: patch ? patch.id : 'all', onChange: function(event) { selectQueenMapPatch(event.target.value); } },
                 h('option', { value: 'all' }, 'Whole landscape'), QUEEN_LANDSCAPE_PATCHES.map(function(item) { return h('option', { key: item.id, value: item.id }, item.label); }))),
-              h('div', { className: 'flex flex-wrap gap-1.5', 'data-rts-patch-stepper': 'true', role: 'group', 'aria-label': 'Step through flower patches' },
-                h('button', { type: 'button', className: 'bee-discovery-button min-h-[44px]', 'data-secondary': 'true', 'data-rts-patch-step': 'prev', 'aria-label': 'Inspect previous flower patch', onClick: function() { stepQueenPatch(-1); } }, '◀ Prev'),
-                h('button', { type: 'button', className: 'bee-discovery-button min-h-[44px]', 'data-secondary': 'true', 'data-rts-patch-step': 'next', 'aria-label': 'Inspect next flower patch', onClick: function() { stepQueenPatch(1); } }, 'Next ▶')),
+              h('div', { className: 'flex flex-wrap gap-1.5', 'data-rts-patch-stepper': 'true', role: 'group', 'aria-label': __alloT('stem.beehive.aria_step_through_flower_patches', 'Step through flower patches') },
+                h('button', { type: 'button', className: 'bee-discovery-button min-h-[44px]', 'data-secondary': 'true', 'data-rts-patch-step': 'prev', 'aria-label': __alloT('stem.beehive.aria_inspect_previous_flower_patch', 'Inspect previous flower patch'), onClick: function() { stepQueenPatch(-1); } }, '◀ Prev'),
+                h('button', { type: 'button', className: 'bee-discovery-button min-h-[44px]', 'data-secondary': 'true', 'data-rts-patch-step': 'next', 'aria-label': __alloT('stem.beehive.aria_inspect_next_flower_patch', 'Inspect next flower patch'), onClick: function() { stepQueenPatch(1); } }, 'Next ▶')),
               h('div', { className: 'bee-rts-route-views', role: 'group', 'aria-label': __alloT('stem.beehive.show_colony_routes','Show colony routes') }, [['both','Both colonies'],['home','Your colony'],['neighbor','Neighbor colony']].map(function(item) {
                 return h('button', { key: item[0], type: 'button', 'aria-pressed': queenInspection.colony === item[0], 'data-route-view': item[0], onClick: function() { upd('queen3dColony', item[0]); } }, item[1]);
               })),
               h('button', { type: 'button', className: 'bee-discovery-button', 'data-secondary': 'true', disabled: !patch || queen3dStatus !== 'ready', onClick: function() { QUEEN_3D_VIEWER.focus(patch.id, { immediate: prefersReducedMotion }); } }, 'Focus patch'),
               h('button', { type: 'button', className: 'bee-discovery-button', 'data-secondary': 'true', onClick: function() { updFn(function(state) { state.queen3dPatch = null; state.queen3dPart = null; state.queen3dColony = 'both'; }); QUEEN_3D_VIEWER.reset(); } }, 'Whole landscape')),
+            h('svg', { className: 'bee-rts-patch-schematic', 'data-rts-patch-schematic': 'true', 'data-selected-patch': pxVis.selectedPatch, 'data-colony-filter': pxVis.colony, 'data-routes-active': String(pxVis.routesActive), viewBox: '0 0 240 56', 'aria-hidden': 'true', focusable: 'false' },
+              h('rect', { className: 'bee-rts-schem-bg', x: 2, y: 2, width: 236, height: 52, rx: 8 }),
+              pxVis.patches.map(function(pt) {
+                return (pxVis.homeActive && (pxVis.selectedPatch === 'all' || pt.selected))
+                  ? h('line', { key: 'h-' + pt.id, className: 'bee-rts-schem-home-route', 'data-schem-route': 'home-' + pt.id, x1: pxVis.homeNest.x, y1: pxVis.homeNest.y, x2: pt.x, y2: pt.y })
+                  : null;
+              }),
+              pxVis.patches.map(function(pt) {
+                return (pxVis.neighborActive && (pxVis.selectedPatch === 'all' || pt.selected))
+                  ? h('line', { key: 'n-' + pt.id, className: 'bee-rts-schem-neighbor-route', 'data-schem-route': 'neighbor-' + pt.id, x1: pxVis.neighborNest.x, y1: pxVis.neighborNest.y, x2: pt.x, y2: pt.y })
+                  : null;
+              }),
+              pxVis.patches.map(function(pt) {
+                return h('g', { key: 'p-' + pt.id },
+                  pt.selected && h('circle', { className: 'bee-rts-schem-ring', 'data-schem-ring': pt.id, cx: pt.x, cy: pt.y, r: 7 }),
+                  h('circle', { className: 'bee-rts-schem-patch', 'data-patch-node': pt.id, 'data-patch-selected': String(pt.selected), cx: pt.x, cy: pt.y, r: pt.selected ? 4.2 : 3.2 }));
+              }),
+              h('polygon', { className: 'bee-rts-schem-home-nest', 'data-schem-nest': 'home', points: '18,21 24,24.5 24,31.5 18,35 12,31.5 12,24.5' }),
+              h('polygon', { className: 'bee-rts-schem-neighbor-nest', 'data-schem-nest': 'neighbor', points: '222,21 228,24.5 228,31.5 222,35 216,31.5 216,24.5' })),
             h('p', { className: 'bee-rts-inspection-readout', role: 'status', 'aria-atomic': 'true' }, count + ' diagram route' + (count === 1 ? '' : 's') + ' shown' + (patch ? ' to ' + patch.label : ' across six patches') + '. ' + (winter ? 'The game’s winter calendar hides routes and forager traffic.' : d.queen3dRoutes === false ? 'Turn on Forager routes below the map to see the paths.' : patch ? 'The ring marks your selection. Filtering a colony does not change access to the flowers.' : 'Select flowers on the map or choose a patch, then compare the two colonies.')),
             h('p', { className: 'bee-rts-explorer-hint' }, 'Try this: choose one patch, show each colony in turn, and compare where the routes end. These view controls do not spend resources or advance the game.'),
             d.queenMapStudyOpen === true && study.prediction && h('div', { className: 'bee-rts-study-shortcut' },
@@ -33637,12 +37349,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('button', { type: 'button', className: 'bee-discovery-button', 'data-secondary': 'true', onClick: function() { focusDiscoveryTarget('bee-rts-study-panel'); } }, 'Open investigation ↓')));
         }
         function renderQueen3dToolbar() {
+          var raidBarVis = bhQueenFieldObjectiveVisual({ id: d.queenFieldObjective || 'explore', metrics: [] }, queen3dRaid);
           return h('div', { className: 'bee-rts-toolbar', 'data-rts-3d-toolbar': 'true' },
             h('button', { type: 'button', className: 'bee-discovery-button', 'data-secondary': 'true', 'aria-pressed': queenMapExpanded, onClick: toggleQueenMapExpanded }, queenMapExpanded ? 'Exit expanded map' : 'Expand map'),
             h('span', { className: 'bee-rts-clock' }, 'Cycle ' + queenDay + ' · ' + (queenResult ? 'Review' : queenPaused ? 'Tactical pause' : 'Live')),
             h('button', { type: 'button', className: 'bee-discovery-button', disabled: !!queenResult, onClick: toggleQueenPause }, queenPaused ? 'Resume RTS' : 'Pause RTS'),
             h('button', { type: 'button', className: 'bee-discovery-button', 'data-secondary': 'true', disabled: !queenPaused || !!queenResult, onClick: advanceQueenDay, title: queenPaused ? 'Advance exactly one cycle, then stay paused' : 'Pause first to advance one cycle at a time' }, 'Step one cycle'),
-            h('span', { className: 'bee-rts-pressure', 'data-raid-level': queen3dRaid >= .6 ? 'high' : 'watch' }, 'Raid pressure ' + Math.round(queen3dRaid * 100) + '/100'));
+            h('span', { className: 'bee-rts-pressure', 'data-raid-level': queen3dRaid >= .6 ? 'high' : 'watch' },
+              h('span', null, 'Raid pressure ' + Math.round(queen3dRaid * 100) + '/100'),
+              h('svg', { className: 'bee-rts-toolbar-pressure-bar', viewBox: '0 0 88 10', 'aria-hidden': 'true', focusable: 'false', 'data-raid-band': raidBarVis.raidBand },
+                h('rect', { className: 'bee-rts-raid-track', x: 2, y: 3, width: 84, height: 4, rx: 2 }),
+                h('rect', { className: 'bee-rts-raid-fill', x: 2, y: 3, width: raidBarVis.raidFillW, height: 4, rx: 2, 'data-raid-band': raidBarVis.raidBand }),
+                h('line', { className: 'bee-rts-raid-tick', x1: raidBarVis.raidThresholdX, y1: 1, x2: raidBarVis.raidThresholdX, y2: 9 }))));
         }
         function renderQueen3dLayers() {
           return h('div', { className: 'bee-rts-layers', role: 'group', 'aria-label': __alloT('stem.beehive.3d_map_overlays','3D map overlays') },
@@ -33655,7 +37373,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           if (!queenImpact) return null;
           return h('div', { className: 'bee-rts-map-impact', 'data-rts-map-impact': queenImpact.kind, role: 'group', 'aria-label': __alloT('stem.beehive.latest_rts_action_or_cycle_outcome','Latest RTS action or cycle outcome') },
             h('strong', null, 'Cycle ' + queenImpact.cycle + ' · ' + queenImpact.title), h('p', null, queenImpact.summary),
-            h('div', null, (queenImpact.changes || []).slice(0, 4).map(function(change) { return h('span', { key: change.label }, change.label + ' ' + change.before + ' → ' + change.after + (change.suffix || '')); })));
+            h('div', null, (queenImpact.changes || []).slice(0, 4).map(function(change) {
+              var bVal = Number(change.before), aVal = Number(change.after);
+              var isPercentScale = change.suffix === '%' || /territory|advantage|health|qmp|alarm|nasonov|brood signal|pressure/i.test(change.label);
+              var lowerBetter = /alarm|raid|pressure|loss|cost|threat|rival hive/i.test(change.label);
+              var neutralLabel = /action|order/i.test(change.label);
+              var tone = (!Number.isFinite(bVal) || !Number.isFinite(aVal) || Math.abs(aVal - bVal) < 1e-6 || neutralLabel)
+                ? 'neutral'
+                : (lowerBetter ? aVal < bVal : aVal > bVal) ? 'beneficial' : 'adverse';
+              var scaleMax = isPercentScale ? Math.max(100, Math.abs(bVal), Math.abs(aVal), 1) : Math.max(Math.abs(bVal), Math.abs(aVal), 1);
+              return h('span', { key: change.label, 'data-rts-map-impact-chip': change.label },
+                change.label + ' ' + change.before + ' → ' + change.after + (change.suffix || ''),
+                Number.isFinite(bVal) && Number.isFinite(aVal) && bhRenderDeltaBars({
+                  before: bVal, after: aVal, scaleMax: scaleMax,
+                  rootAttr: 'data-rts-map-impact-bars', toneAttr: 'data-delta-tone', tone: tone, barAttr: 'data-rts-map-impact-bar'
+                }));
+            })));
         }
 
         function openHiveInterior() {
@@ -33803,11 +37536,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           }
           announceBee('Beekeeper ' + field + ' writing opened. Your existing writing is kept.', false);
         }
+        function renderSharedScaleRail(attrName, kind, percent) {
+          var props = { className: 'bee-interior-reading-rail', viewBox: '0 0 100 10', preserveAspectRatio: 'none', 'aria-hidden': 'true', focusable: 'false' };
+          props[attrName] = kind;
+          return h('svg', props,
+            h('path', { d: 'M0 5H100 M0 1V9 M100 1V9', className: 'bee-interior-reading-axis' }),
+            h('line', { 'data-reading-bar-fill': 'true', x1: 0, x2: percent, y1: 5, y2: 5, className: (kind === 'held' || kind === 'baseline') ? 'bee-interior-reading-held' : 'bee-interior-reading-current' }));
+        }
         function renderHiveNotebookContext() {
           if (viewMode !== 'beekeeper' || !hiveInteriorHeld) return null;
           var comparison = bhHiveInteriorComparison(hiveInteriorHeld, d, hive3dFrame);
           var study = bhHiveInteriorEvidence(d, hive3dFrame, hiveInteriorTopic, hiveInteriorRole, false);
           var row = comparison.rows.find(function(item) { return item.id === study.topic.id; });
+          var scale = comparison.available ? bhHiveInteriorReadingScale(comparison, row.id) : null;
           var scope = row.id === 'queen' ? 'Model health score' : row.id === 'brood' ? 'Whole-colony total · all modeled brood' : 'Whole-colony total';
           var scopeNote = study.role && study.role.id === 'empty' ? 'Unmarked comb has no separate colony total; these readings provide colony context.' : row.id === 'queen' ? 'This score does not locate the queen.' : 'These readings cover the whole colony, not the selected frame or the number of drawn marks.';
           if (row.id === 'food') scopeNote += ' Food includes fed syrup; it does not measure harvestable honey.';
@@ -33821,10 +37562,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('h5', { id: 'beehive-notebook-hive-reading-title' }, row.label),
               h('p', { 'data-notebook-hive-scope': 'true', className: 'bee-notebook-hive-scope' }, scope),
               h('dl', { 'data-notebook-hive-readings': 'true', className: 'bee-notebook-hive-values' },
-                h('div', { 'data-notebook-hive-card': 'held' }, h('dt', null, 'Held · Day ' + comparison.held.data.day), h('dd', { 'data-notebook-hive-value': 'held' }, row.before)),
-                h('div', { 'data-notebook-hive-card': 'current' }, h('dt', null, 'Current · Day ' + comparison.current.data.day), h('dd', { 'data-notebook-hive-value': 'current' }, row.current)),
+                h('div', { 'data-notebook-hive-card': 'held' }, h('dt', null, 'Held · Day ' + comparison.held.data.day), h('dd', { 'data-notebook-hive-value': 'held' }, row.before), scale && scale.available && renderSharedScaleRail('data-notebook-reading-bar', 'held', scale.heldPercent)),
+                h('div', { 'data-notebook-hive-card': 'current' }, h('dt', null, 'Current · Day ' + comparison.current.data.day), h('dd', { 'data-notebook-hive-value': 'current' }, row.current), scale && scale.available && renderSharedScaleRail('data-notebook-reading-bar', 'current', scale.currentPercent)),
                 h('div', { 'data-notebook-hive-card': 'difference' }, h('dt', null, 'Current minus held'),
                   h('dd', { 'data-notebook-hive-value': 'difference' }, row.difference), h('dd', { 'data-notebook-hive-direction': 'true', className: 'bee-notebook-hive-note' }, row.direction))),
+              scale && scale.available && h('p', { 'data-notebook-hive-scale': 'true', className: 'bee-notebook-hive-note' }, scale.scaleLabel),
               h('p', { 'data-notebook-hive-scope-note': 'true', className: 'bee-notebook-hive-note' }, scopeNote)),
             h('p', null, comparison.available ? 'Name the choice or interval in your prediction. Use the values when explaining what changed, what stayed the same, and what other conditions could matter.' : 'Hold a new reference inside the hive before using a comparison. Your notebook writing is kept.'));
         }
@@ -33849,6 +37591,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var snapshot = bhHiveInteriorSnapshot(d);
           var comparison = hiveInteriorHeld ? bhHiveInteriorComparison(hiveInteriorHeld, d, hive3dFrame) : null;
           var referenceState = !comparison ? 'empty' : comparison.available ? 'held' : 'unavailable';
+          var refVis = bhHiveReferenceVisual(snapshot, comparison);
           function dayLabel(value) { return Number.isSafeInteger(value) && value >= 0 && value <= 10000000 ? 'Day ' + value : 'Not recorded'; }
           var status = !snapshot.available ? snapshot.reason : comparison ? comparison.available ? comparison.interval : comparison.reason : 'Hold the current readings before trying a choice or advancing a modeled day.';
           return h('section', { id: 'beehive-interior-reference', 'data-interior-reference': 'true', 'data-reference-state': referenceState, className: 'bee-interior-reference', 'aria-labelledby': 'beehive-interior-reference-title' },
@@ -33862,6 +37605,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('div', { 'data-reference-card': 'current' }, h('dt', null, 'Current colony'),
                 h('dd', { 'data-reference-day': 'current' }, dayLabel(snapshot.data.day)),
                 h('dd', { 'data-reference-description': 'current', className: 'bee-interior-note' }, 'Updates with the colony.'))),
+            h('svg', { className: 'bee-interior-ref-timeline', 'data-interior-ref-timeline': 'true', 'data-ref-visual-state': refVis.state, viewBox: '0 0 180 14', 'aria-hidden': 'true', focusable: 'false' },
+              h('line', { className: 'bee-ref-tl-track', x1: 12, y1: 7, x2: 168, y2: 7 }),
+              refVis.spanWidth > 0 && h('line', { className: 'bee-ref-tl-bridge', 'data-ref-bridge': 'true', 'data-bridge-state': refVis.state, x1: refVis.spanX, y1: 7, x2: +(refVis.spanX + refVis.spanWidth).toFixed(1), y2: 7 }),
+              refVis.heldPinX != null && h('polygon', { className: 'bee-ref-tl-held', 'data-ref-pin': 'held', points: refVis.heldPinX + ',2.2 ' + (refVis.heldPinX + 4.5) + ',7 ' + refVis.heldPinX + ',11.8 ' + (refVis.heldPinX - 4.5) + ',7' }),
+              refVis.currentPinX != null && h('circle', { className: 'bee-ref-tl-current', 'data-ref-pin': 'current', cx: refVis.currentPinX, cy: 7, r: 3.6 })),
             h('div', { className: 'bee-interior-comparison-actions' },
               h('button', { type: 'button', 'data-interior-hold': 'true', disabled: !snapshot.available, 'aria-describedby': 'beehive-interior-reference-status', onClick: function() { var live = bhHiveInteriorSnapshot(_beeStateRef.current || d); if (live.available) { setHiveInteriorHeld(live); announceBee('Colony readings held. Your colony clock and action points are unchanged.', false); } } }, hiveInteriorHeld ? 'Replace held readings' : 'Hold current readings'),
               hiveInteriorHeld && h('button', { type: 'button', 'data-interior-clear': 'true', 'aria-describedby': 'beehive-interior-reference-status', onClick: function() { forecastStudyFocusRef.current = '[data-interior-hold]'; setHiveInteriorHeld(null); announceBee('Held readings cleared.', false); } }, 'Clear held readings')),
@@ -33875,6 +37623,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var message = !comparison ? 'Hold a reference, use the simulation controls, then return to compare. The reference lasts until you clear it or leave this tool.' : !comparison.available ? comparison.reason :
             'Held Day ' + comparison.held.data.day + ' → Current Day ' + comparison.current.data.day + '. ' + comparison.interval + ' Both drawings use Frame ' + (hive3dFrame + 1) + '/6.';
           var saveHint = !comparison || !comparison.canSave ? 'No comparable colony reading is available to add.' : append.status === 'full' ? 'Your writing is kept. Make room for ' + append.needed + ' more characters to add this comparison.' : append.status === 'duplicate' ? 'This exact comparison is already in your evidence.' : 'Adds exactly this preview to Beekeeper evidence and clears only its evidence review mark.';
+          function renderInteriorInquiryIcon(kind) {
+            var els = kind === 'predict'
+              ? [h('circle', { key: 'c', cx: 8, cy: 8, r: 5.2, fill: 'none', stroke: 'currentColor', strokeWidth: 1.5 }), h('path', { key: 'p', d: 'M8 1.5v2.3M8 12.2v2.3M1.5 8h2.3M12.2 8h2.3', stroke: 'currentColor', strokeWidth: 1.4, strokeLinecap: 'round' }), h('circle', { key: 'd', cx: 8, cy: 8, r: 1.4, fill: 'currentColor' })]
+              : kind === 'try'
+                ? [h('path', { key: 'p', d: 'M2.5 5.2h11M2.5 10.8h11', stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round' }), h('circle', { key: 'a', cx: 6, cy: 5.2, r: 2, fill: 'var(--hi-paper,#fff)', stroke: 'currentColor', strokeWidth: 1.5 }), h('circle', { key: 'b', cx: 10.5, cy: 10.8, r: 2, fill: 'var(--hi-paper,#fff)', stroke: 'currentColor', strokeWidth: 1.5 })]
+                : [h('circle', { key: 'c', cx: 7, cy: 7, r: 4.6, fill: 'none', stroke: 'currentColor', strokeWidth: 1.5 }), h('path', { key: 'p', d: 'M10.4 10.4l3.3 3.3M5.2 7h3.6M5.2 5.2h2.2', stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round' })];
+            return h('svg', { className: 'bee-interior-inquiry-icon', 'data-interior-inquiry-icon': kind, viewBox: '0 0 16 16', width: 15, height: 15, 'aria-hidden': 'true', focusable: 'false' }, els);
+          }
           return h('section', { 'data-interior-comparison': 'true', className: 'bee-interior-comparison', 'aria-labelledby': 'beehive-interior-comparison-title' },
             h('h4', { id: 'beehive-interior-comparison-title', tabIndex: -1 }, 'Watch this colony change'),
             h('p', null, 'Hold the colony’s current readings, make a prediction, then compare after a choice or a modeled day. Changing frames keeps both drawings on the same frame.'),
@@ -33887,13 +37643,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             } }, 'Manage held reference'),
             h('p', { id: 'beehive-interior-comparison-status', 'data-interior-comparison-status': 'true', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, !snapshot.available && !comparison ? snapshot.reason : message),
             h('ol', { 'data-interior-inquiry': 'true', className: 'bee-interior-inquiry', 'aria-label': __alloT('stem.beehive.a11y_use_your_hive_comparison_in_an_inquiry', 'Use your hive comparison in an inquiry') },
-              h('li', null, h('strong', null, '1 · Predict'),
+              h('li', null, h('strong', null, renderInteriorInquiryIcon('predict'), '1 · Predict'),
                 h('p', null, 'Which reading do you expect to change, in which direction, and after what choice or interval?'),
                 h('button', { type: 'button', 'data-interior-inquiry-prediction': 'true', onClick: function(event) { openHiveNotebookField('prediction', event); } }, 'Open prediction')),
-              h('li', null, h('strong', null, '2 · Try a choice'),
+              h('li', null, h('strong', null, renderInteriorInquiryIcon('try'), '2 · Try a choice'),
                 h('p', null, 'Explore a choice, weigh its cost, then use its control if you decide to try it.'),
                 h('button', { type: 'button', 'data-interior-management': 'true', disabled: !colonySurvived, onClick: openHiveManagement }, 'Explore choices')),
-              h('li', null, h('strong', null, '3 · Explain'),
+              h('li', null, h('strong', null, renderInteriorInquiryIcon('explain'), '3 · Explain'),
                 h('p', null, comparison && comparison.available ? 'Compare the readings with your prediction. What do they support, and what else could explain the change?' : 'Hold a reference first. Then use the comparison readings to explain what happened.'),
                 h('button', { type: 'button', 'data-interior-inquiry-explanation': 'true', disabled: !comparison || !comparison.available, onClick: function(event) { openHiveNotebookField('explanation', event); } }, 'Explain findings'))),
             !colonySurvived && h('p', { className: 'bee-interior-note' }, 'The colony run has ended. Its readings remain available for review; management choices are closed.'),
@@ -33978,14 +37734,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           }
           function renderTopicReadings() {
             var row = comparison && comparison.available ? comparison.rows.find(function(item) { return item.id === topic.id; }) : null;
+            var scale = row ? bhHiveInteriorReadingScale(comparison, topic.id) : null;
             var currentDay = Number.isSafeInteger(d.day) && d.day >= 0 && d.day <= 10000000 ? d.day : 'not recorded';
             var scope = topic.id === 'queen' ? 'Model health score' : topic.id === 'brood' ? 'Whole-colony total · all modeled brood' : 'Whole-colony total';
             return h('div', { 'data-interior-topic-readings': 'true', className: 'bee-interior-topic-readings', role: 'group', 'aria-labelledby': 'beehive-interior-topic-readings-title' },
               h('h5', { id: 'beehive-interior-topic-readings-title' }, 'Readings for this topic'),
               h('p', { 'data-interior-topic-scope': 'true', className: 'bee-interior-topic-scope' }, scope),
               h('dl', { className: 'bee-interior-topic-values', 'data-paired': row ? 'true' : 'false' },
-                row && h('div', { 'data-held': 'true' }, h('dt', null, 'Held · Day ' + comparison.held.data.day), h('dd', { 'data-interior-topic-held': 'true' }, row.before)),
-                h('div', null, h('dt', null, 'Current · Day ' + currentDay), h('dd', { 'data-interior-reading': 'true' }, study.value)),
+                row && h('div', { 'data-held': 'true' }, h('dt', null, 'Held · Day ' + comparison.held.data.day), h('dd', { 'data-interior-topic-held': 'true' }, row.before), scale && scale.available && renderSharedScaleRail('data-topic-reading-bar', 'held', scale.heldPercent)),
+                h('div', null, h('dt', null, 'Current · Day ' + currentDay), h('dd', { 'data-interior-reading': 'true' }, study.value), scale && scale.available && renderSharedScaleRail('data-topic-reading-bar', 'current', scale.currentPercent)),
                 row && h('div', { className: 'bee-interior-topic-difference' }, h('dt', null, 'Current minus held'),
                   h('dd', { 'data-interior-topic-difference': 'true' }, row.difference), h('dd', { 'data-interior-topic-direction': 'true', className: 'bee-interior-topic-direction' }, row.direction))),
               h('p', { id: 'beehive-interior-topic-status', 'data-interior-topic-status': 'true', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, comparison ? comparison.available ? comparison.interval : comparison.reason : 'Current readings only. Hold a reference to compare this topic over time.'),
@@ -34018,7 +37775,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('div', { className: 'bee-interior-focus-grid' },
                 h('div', { className: 'bee-interior-focus-group' },
                   h('h5', null, 'Colony readings'),
-                  h('div', { 'data-interior-topic-controls': 'true', role: 'group', 'aria-label': 'Explore hive contents', className: 'bee-interior-topics' }, BH_HIVE_INTERIOR_TOPICS.map(function(item) {
+                  h('div', { 'data-interior-topic-controls': 'true', role: 'group', 'aria-label': __alloT('stem.beehive.aria_explore_hive_contents', 'Explore hive contents'), className: 'bee-interior-topics' }, BH_HIVE_INTERIOR_TOPICS.map(function(item) {
                     return h('button', { key: item.id, type: 'button', 'data-interior-topic': item.id, 'aria-pressed': topic.id === item.id ? 'true' : 'false', onClick: function() { setHiveInteriorTopic(item.id); setHiveInteriorRole(null); } }, h('span', { 'aria-hidden': 'true', className: 'bee-interior-symbol' }, item.symbol), item.label);
                   }))),
                 h('div', { 'data-interior-legend': 'true', className: 'bee-interior-key bee-interior-focus-group' },
@@ -34058,7 +37815,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('div', { className: 'bee-interior-position-pair' }, [0, 2].map(function(index) {
                     var item = frameGuide.frames[index], drawn = renderCells(d, false, null, index);
                     return h('figure', { key: index, 'data-position-study-frame': String(index), 'data-selected': index === hive3dFrame ? 'true' : 'false', className: 'bee-interior-figure bee-interior-position-figure' },
-                      h('div', { className: 'bee-interior-figure-heading' }, h('strong', null, 'Frame ' + (index + 1) + ' · ' + item.frameKind),
+                      h('div', { className: 'bee-interior-figure-heading', 'data-position-study-heading': String(index), style: { cursor: 'pointer' }, onClick: function(event) { inspectHivePositionFrame(index, event); } }, h('strong', null, 'Frame ' + (index + 1) + ' · ' + item.frameKind),
                         h('span', { 'data-position-study-selection': 'true', className: 'bee-interior-position-selection' }, index === hive3dFrame ? 'Selected frame' : 'Not selected')),
                       h('svg', { 'data-position-study-diagram': String(index), viewBox: '0 0 610 325', role: 'img', 'aria-label': 'Current model pattern. Frame ' + (index + 1) + ' of 6, ' + item.frameKind.toLowerCase() + '. ' + frameGuide.label + ': ' + item.label + '. Both frame drawings use the same current readings. Use the selected-pattern key to read the schematic marks.', preserveAspectRatio: 'xMidYMid meet' },
                         h('rect', { x: 12, y: 12, width: 586, height: 290, rx: 12, className: 'bee-interior-wood' }),
@@ -34180,10 +37937,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('h5', { id: 'beehive-interior-lens-results-title', 'data-interior-lens-results-title': 'true', 'data-beehive-focus-panel': 'true', tabIndex: -1, 'aria-describedby': 'beehive-interior-lens-results-context' + (paired ? ' beehive-interior-lens-verdict' : '') }, 'Enlarged cells'),
                   h('button', { type: 'button', 'data-interior-lens-return-controls': 'true', 'aria-controls': 'beehive-interior-lens-title', onClick: function(event) { focusHiveInspectionTarget(event, '[data-interior-lens-title]'); } }, 'Back to close-up controls')),
                 h('p', { id: 'beehive-interior-lens-results-context', 'data-interior-lens-results-context': 'true', className: 'bee-interior-note' }, 'Frame ' + (hive3dFrame + 1) + ' · Illustration row ' + (hiveInteriorCell.row + 1) + ', column ' + (hiveInteriorCell.col + 1) + '. ' + (paired ? 'Both close-ups use this same position.' : 'The close-up uses this illustration position.')),
-                paired && h('div', { id: 'beehive-interior-lens-verdict', 'data-interior-lens-verdict': !changesKnown ? 'unavailable' : changedHere ? 'changed' : 'same', className: 'bee-interior-lens-verdict' },
-                  h('strong', { 'data-lens-verdict-title': 'true' }, !changesKnown ? 'Cannot compare marks' : changedHere ? 'Different diagram marks' : 'Same diagram mark'),
-                  h('p', { 'data-lens-verdict-detail': 'true' }, changesKnown ? 'Held mark: ' + heldLens.label + ' → Current mark: ' + lens.label + '.' : changeStatus),
-                  changesKnown && h('p', { 'data-lens-verdict-limit': 'true', className: 'bee-interior-note' }, 'Diagram categories, not tracked physical cells. Small reading changes may leave marks unchanged.')),
+                paired && (function() {
+                  var verdictVis = bhLensVerdictVisual(changesKnown, !!changedHere, heldLens, lens);
+                  return h('div', { id: 'beehive-interior-lens-verdict', 'data-interior-lens-verdict': !changesKnown ? 'unavailable' : changedHere ? 'changed' : 'same', className: 'bee-interior-lens-verdict' },
+                    h('strong', { 'data-lens-verdict-title': 'true' }, !changesKnown ? 'Cannot compare marks' : changedHere ? 'Different diagram marks' : 'Same diagram mark'),
+                    h('svg', {
+                      viewBox: '0 0 92 32', width: 92, height: 32,
+                      className: 'bee-lens-verdict-glyph',
+                      'data-lens-verdict-glyph': verdictVis.status,
+                      'aria-hidden': 'true', focusable: 'false'
+                    },
+                      h('polygon', { points: verdictVis.leftHex, className: 'bee-lens-glyph-hex', 'data-glyph-side': 'held', style: verdictVis.available ? { fill: verdictVis.heldFill } : undefined }),
+                      verdictVis.available && h('g', { className: 'bee-lens-glyph-mark', 'data-glyph-role': verdictVis.heldRole }, mark(verdictVis.heldRole, 18, 16, 1.2)),
+                      h('path', { d: verdictVis.connectorPath, className: 'bee-lens-glyph-connector', 'data-lens-verdict-connector': verdictVis.status }),
+                      h('polygon', { points: verdictVis.rightHex, className: 'bee-lens-glyph-hex', 'data-glyph-side': 'current', style: verdictVis.available ? { fill: verdictVis.currentFill } : undefined }),
+                      verdictVis.status === 'changed' && h('polygon', { points: verdictVis.rightInnerHex, className: 'bee-lens-glyph-change-ring', 'data-glyph-change-ring': 'true' }),
+                      verdictVis.available && h('g', { className: 'bee-lens-glyph-mark', 'data-glyph-role': verdictVis.currentRole }, mark(verdictVis.currentRole, 74, 16, 1.2))),
+                    h('p', { 'data-lens-verdict-detail': 'true' }, changesKnown ? 'Held mark: ' + heldLens.label + ' → Current mark: ' + lens.label + '.' : changeStatus),
+                    changesKnown && h('p', { 'data-lens-verdict-limit': 'true', className: 'bee-interior-note' }, 'Diagram categories, not tracked physical cells. Small reading changes may leave marks unchanged.'));
+                })(),
                 h('div', { className: 'bee-interior-lens-pair', 'data-paired': paired ? 'true' : 'false' }, paired && frameFigure(true, true), frameFigure(false, true))));
           }
           study = bhHiveInteriorEvidence(d, hive3dFrame, topic.id, selectedRole && selectedRole.id, selectedShown);
@@ -34217,7 +37989,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         index === hive3dFrame && h('path', { d: 'M' + (45 + index * 48) + ' 17h12l-6 8z', fill: 'currentColor' }));
                     }))),
                   h('p', null, 'Top view of the model brood box with its cover removed. The selected slot is the comb face shown below. Honey supers sit above this box in the 3D stack.')),
-                h('div', { className: 'bee-interior-frames', role: 'group', 'aria-label': 'Choose a model hive frame' }, frameGuide.frames.map(function(item) {
+                h('div', { className: 'bee-interior-frames', role: 'group', 'aria-label': __alloT('stem.beehive.aria_choose_a_model_hive_frame', 'Choose a model hive frame') }, frameGuide.frames.map(function(item) {
                   return h('button', { key: item.frame, type: 'button', 'data-interior-frame': String(item.frame), 'data-interior-pattern': item.status, 'aria-pressed': item.frame === hive3dFrame ? 'true' : 'false', onClick: function() { selectHiveInteriorFrame(item.frame); } },
                     h('strong', null, 'Frame ' + (item.frame + 1)), h('span', null, item.frameKind),
                     item.status !== 'unmapped' && h('span', { 'data-interior-frame-presence': 'true', className: 'bee-interior-frame-presence' }, h('span', { 'aria-hidden': 'true' }, item.status === 'shown' ? '● ' : item.status === 'absent' ? '— ' : '? '), item.label));
@@ -34494,21 +38266,97 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.fillStyle = '#f3e8ff'; c.fillText('YOUR GAME STATION', W * .23, H - 12);
             c.fillStyle = '#fee2e2'; c.fillText('RIVAL GAME STATION', W * .78, H - 12);
 
-            // Rival queen and structures are always visible; scouting reveals exact power in the UI.
+            // Rival queen and structures reflect winter clustering, raid staging, expansion, and scouted posture.
             var rivalX = W * 0.78, rivalY = H * 0.5;
-            var rivalPulse = 34 + Math.sin(_qTime * 0.035) * 4;
+            var rState = qs.queenRival || {};
+            var rPressure = Math.max(0, Math.min(100, Number(rState.pressure) || 0));
+            var rIntel = Number(rState.intel) || 0;
+            var rPosture = rState.posture || (qSeason2 === 3 ? 'cluster' : 'forage');
+            var _rAnimMs = (prefersReducedMotion || qs.queenPaused) ? ((qs.queenDay || 1) * 1000) : Date.now();
+            var rivalPulse = 34 + Math.sin((prefersReducedMotion || qs.queenPaused ? (qs.queenDay || 1) * 12 : _qTime) * 0.035) * 4;
             c.save();
-            var rivalGlow = c.createRadialGradient(rivalX, rivalY, 4, rivalX, rivalY, rivalPulse);
-            rivalGlow.addColorStop(0, 'rgba(239,68,68,0.46)'); rivalGlow.addColorStop(1, 'rgba(127,29,29,0)');
-            c.fillStyle = rivalGlow; c.beginPath(); c.arc(rivalX, rivalY, rivalPulse, 0, 6.28); c.fill();
+            if (qSeason2 === 3) {
+              var rStarving = rState.stores !== undefined && Number(rState.stores) <= 0;
+              var rClusterGlow = c.createRadialGradient(rivalX, rivalY, 4, rivalX, rivalY, 44);
+              if (rStarving) {
+                rClusterGlow.addColorStop(0, 'rgba(148,163,184,0.45)');
+                rClusterGlow.addColorStop(1, 'rgba(15,23,42,0)');
+              } else {
+                rClusterGlow.addColorStop(0, 'rgba(251,146,60,0.48)');
+                rClusterGlow.addColorStop(0.6, 'rgba(239,68,68,0.18)');
+                rClusterGlow.addColorStop(1, 'rgba(127,29,29,0)');
+              }
+              c.fillStyle = rClusterGlow; c.beginPath(); c.arc(rivalX, rivalY, 44, 0, 6.28); c.fill();
+              c.fillStyle = rStarving ? '#cbd5e1' : '#fca5a5';
+              for (var rw = 0; rw < 22; rw++) {
+                var rwa = (rw / 22) * 6.28 + _rAnimMs * 0.00008;
+                var rwr = 11 + (rw % 5) * 3.1 + Math.sin(rw * 1.9 + _rAnimMs * 0.0006) * 1.3;
+                c.globalAlpha = 0.68;
+                c.beginPath(); c.arc(rivalX + Math.cos(rwa) * rwr, rivalY + Math.sin(rwa) * rwr * 0.72, 1.5, 0, 6.28); c.fill();
+              }
+              c.globalAlpha = 1;
+            } else {
+              var rivalGlow = c.createRadialGradient(rivalX, rivalY, 4, rivalX, rivalY, rivalPulse);
+              rivalGlow.addColorStop(0, 'rgba(239,68,68,0.46)'); rivalGlow.addColorStop(1, 'rgba(127,29,29,0)');
+              c.fillStyle = rivalGlow; c.beginPath(); c.arc(rivalX, rivalY, rivalPulse, 0, 6.28); c.fill();
+              if (rPressure >= 45 || rPosture === 'assault') {
+                var raidRingR = 64 + Math.sin(_rAnimMs * 0.003) * 3;
+                if (c.setLineDash) c.setLineDash([5, 4]);
+                c.strokeStyle = rPressure >= 60 ? 'rgba(244,63,94,0.88)' : 'rgba(251,191,36,0.75)';
+                c.lineWidth = rPressure >= 60 ? 2.4 : 1.7;
+                c.beginPath(); c.arc(rivalX, rivalY, raidRingR, 0, 6.28); c.stroke();
+                if (c.setLineDash) c.setLineDash([]);
+                c.fillStyle = '#fb7185';
+                for (var raIdx = 0; raIdx < 5; raIdx++) {
+                  var rArcAng = 2.35 + (raIdx / 4) * 1.6 + Math.sin(_rAnimMs * 0.0018 + raIdx) * 0.08;
+                  c.beginPath(); c.arc(rivalX + Math.cos(rArcAng) * 58, rivalY + Math.sin(rArcAng) * 44, 2.2, 0, 6.28); c.fill();
+                }
+              }
+              if (rPosture === 'forage' || rPosture === 'contest') {
+                c.fillStyle = rPosture === 'contest' ? '#fdba74' : '#fca5a5';
+                for (var rf = 0; rf < 6; rf++) {
+                  var rfPhase = ((_rAnimMs * 0.00028 + rf * 0.16) % 1);
+                  var rfProg = (rf % 2 === 0) ? rfPhase : (1 - rfPhase);
+                  var rfTargetX = W * 0.54;
+                  var rfTargetY = H * (0.28 + ((rf * 0.17) % 0.44));
+                  var rfCurve = Math.sin(rfProg * Math.PI) * ((rf % 3) - 1) * 14;
+                  var rfX = (rivalX - 18) + (rfTargetX - (rivalX - 18)) * rfProg;
+                  var rfY = rivalY + (rfTargetY - rivalY) * rfProg + rfCurve;
+                  c.globalAlpha = 0.78;
+                  c.beginPath(); c.arc(rfX, rfY, 1.7, 0, 6.28); c.fill();
+                }
+                c.globalAlpha = 1;
+              }
+            }
             c.font = '28px system-ui'; c.textAlign = 'center'; c.fillText('\uD83D\uDC51', rivalX, rivalY + 9);
-            var rivalCount = Math.min(8, (qs.queenRival && qs.queenRival.structures) || 3);
+            var rivalCount = Math.min(8, rState.structures || 3);
             for (var ri = 0; ri < rivalCount; ri++) {
               var ra = ri / rivalCount * 6.28;
               var rx = rivalX + Math.cos(ra) * (52 + (ri % 2) * 18);
               var ry = rivalY + Math.sin(ra) * (42 + (ri % 2) * 12);
               c.fillStyle = 'rgba(127,29,29,0.72)'; c.beginPath(); c.arc(rx, ry, 10, 0, 6.28); c.fill();
               c.fillStyle = '#fecaca'; c.font = '10px system-ui'; c.fillText('\u2B22', rx, ry + 4);
+              if (qSeason2 !== 3 && rPosture === 'expand' && ri === rivalCount - 1) {
+                if (c.setLineDash) c.setLineDash([2, 4]);
+                c.strokeStyle = 'rgba(250,204,21,0.78)';
+                c.lineWidth = 1.6;
+                c.beginPath(); c.arc(rx, ry, 15, 0, 6.28); c.stroke();
+                if (c.setLineDash) c.setLineDash([]);
+              }
+            }
+            if (qSeason2 === 3 || rPressure >= 60 || rIntel > 0) {
+              var rBadgeText = qSeason2 === 3
+                ? (rState.stores !== undefined && Number(rState.stores) <= 0 ? '\uD83E\uDD76 STARVING' : '\u2744\uFE0F CLUSTERED')
+                : rPressure >= 60 ? '\uD83D\uDEA8 RAID READY' : '\uD83D\uDD0E ' + String(rPosture).toUpperCase();
+              c.fillStyle = 'rgba(15,23,42,0.82)';
+              c.beginPath();
+              if (c.roundRect) c.roundRect(rivalX - 46, rivalY - 70, 92, 18, 9);
+              else c.rect(rivalX - 46, rivalY - 70, 92, 18);
+              c.fill();
+              c.fillStyle = rPressure >= 60 && qSeason2 !== 3 ? '#fda4af' : qSeason2 === 3 ? '#bae6fd' : '#fde68a';
+              c.font = 'bold 8px system-ui';
+              c.textAlign = 'center';
+              c.fillText(rBadgeText, rivalX, rivalY - 58);
             }
             c.restore();
             (qs.queenStructures || []).forEach(function(st) {
@@ -35020,6 +38868,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             }
             return null;
           }
+          var placeVis = bhQueenPlacementVisual(queenBuildMode, queenStructures);
+          function hexPoints(cx, cy, r) {
+            var pts = [];
+            for (var hi = 0; hi < 6; hi++) {
+              var ang = hi * Math.PI / 3;
+              pts.push((cx + Math.cos(ang) * r).toFixed(1) + ',' + (cy + Math.sin(ang) * r).toFixed(1));
+            }
+            return pts.join(' ');
+          }
           return h('div', { 'data-beehive-queen-placement': 'true', role: 'group', 'aria-label': __alloFill(__alloT('stem.beehive.a11y_place_on_your_comb', 'Place {value1} on your comb'), { value1: sType.label }),
             className: 'mt-3 rounded-xl border p-2.5 ' + (dk ? 'border-amber-600/50 bg-amber-950/30' : 'border-amber-300 bg-amber-50') },
             h('div', { className: 'mb-2 flex items-center justify-between gap-2' },
@@ -35031,6 +38888,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 'Cancel')),
             h('p', { className: 'mb-2 text-[0.625rem] leading-relaxed ' + (dk ? 'text-amber-100/80' : 'text-amber-800') },
               'Click the comb, or choose a cell below. Front cells sit nearest the entrance.'),
+            h('svg', { className: 'bee-queen-placement-schematic', 'data-queen-placement-schematic': 'true', 'data-build-type': placeVis.buildMode, 'data-recommended-zone': placeVis.recommendedZone, 'data-open-cells': String(placeVis.openCount), viewBox: '0 0 180 56', 'aria-hidden': 'true', focusable: 'false' },
+              h('rect', { className: 'bee-place-schem-bg', x: 2, y: 2, width: 176, height: 52, rx: 6 }),
+              h('path', { className: 'bee-place-schem-entrance', 'data-place-entrance': 'true', d: 'M10 15v26M14 23l6 5-6 5' }),
+              h('ellipse', { className: 'bee-place-schem-core', cx: 102, cy: 28, rx: 22, ry: 18 }),
+              placeVis.cells.map(function(cell) {
+                return h('g', { key: cell.id, 'data-place-cell-node': cell.id, 'data-cell-occupied': String(cell.occupied), 'data-cell-recommended': String(cell.recommended) },
+                  cell.recommended && h('circle', { className: 'bee-place-cell-rec', 'data-place-cell-rec': cell.id, cx: cell.cx, cy: cell.cy, r: 9.2 }),
+                  h('polygon', { className: 'bee-place-hex', points: hexPoints(cell.cx, cell.cy, 6.8) }),
+                  cell.occupied && h('path', { className: 'bee-place-occ-mark', d: 'M' + (cell.cx - 2.6) + ' ' + (cell.cy - 2.6) + 'L' + (cell.cx + 2.6) + ' ' + (cell.cy + 2.6) + 'M' + (cell.cx + 2.6) + ' ' + (cell.cy - 2.6) + 'L' + (cell.cx - 2.6) + ' ' + (cell.cy + 2.6) }));
+              })),
             h('div', { className: 'grid grid-cols-3 gap-1.5' },
               QUEEN_PLACE_CELLS.map(function(cell) {
                 var taken = occupantOf(cell);
@@ -35090,13 +38957,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var careIds = ['emit_qmp', 'nasonov_call', 'lay_workers', 'build_comb'];
           var shortcuts = quickIds.map(function(id) { return QUEEN_ACTIONS.find(function(action) { return action.id === id; }); }).filter(Boolean);
           var careSignals = careIds.map(function(id) { return QUEEN_ACTIONS.find(function(action) { return action.id === id; }); }).filter(Boolean);
+          var dockVis = bhQueenDockVisuals(queenPheromones, queenPopulation, queenResources);
           return h('section', { 'data-beehive-battlefield-dock': 'true', className: 'rounded-xl border p-3 ' + (dk ? 'border-purple-700/45 bg-gradient-to-r from-purple-950/35 to-slate-900/70' : 'border-purple-200 bg-gradient-to-r from-purple-50 to-white'), 'aria-label': __alloT('stem.beehive.a11y_colony_network_quick_responses', 'Colony Network quick responses') },
             h('div', { className: 'flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between' },
               h('div', { className: 'min-w-0 sm:max-w-xs' },
                 h('div', { className: 'text-[0.625rem] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-purple-300' : 'text-purple-700') }, 'Network response'),
                 h('div', { className: 'mt-0.5 text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, advice.title),
                 h('p', { className: 'mt-0.5 text-[0.625rem] ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Issue the essential response here; the full strategy deck remains below.'),
-                h('div', { className: 'mt-1.5 flex flex-wrap gap-1.5', role: 'group', 'aria-label': 'Pheromone and defense summary' },
+                h('div', { className: 'mt-1.5 flex flex-wrap gap-1.5', role: 'group', 'aria-label': __alloT('stem.beehive.aria_pheromone_and_defense_summary', 'Pheromone and defense summary') },
                   h('span', { className: 'rounded-full px-2 py-0.5 text-[0.625rem] font-black ' + ((queenPheromones.qmp || 0) < 40 ? 'bg-rose-600 text-white' : (dk ? 'bg-purple-900/60 text-purple-200' : 'bg-purple-100 text-purple-900')) }, 'QMP ' + Math.round(queenPheromones.qmp || 0) + '%'),
                   h('span', { className: 'rounded-full px-2 py-0.5 text-[0.625rem] font-black ' + (dk ? 'bg-slate-800 text-amber-200' : 'bg-amber-100 text-amber-900') }, 'Alarm ' + Math.round(queenPheromones.alarm || 0) + '%'),
                   h('span', { className: 'rounded-full px-2 py-0.5 text-[0.625rem] font-black ' + (dk ? 'bg-slate-800 text-emerald-200' : 'bg-emerald-100 text-emerald-900') }, 'Guards ' + Math.round(queenPopulation.guards || 0)),
@@ -35104,7 +38972,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('span', { 'data-dock-resource': 'pollen', className: 'rounded-full px-2 py-0.5 text-[0.625rem] font-black tabular-nums ' + (dk ? 'bg-slate-800 text-yellow-200' : 'bg-yellow-100 text-yellow-900') }, '🌼 ' + Math.round(queenResources.pollen || 0)),
                   h('span', { 'data-dock-resource': 'wax', className: 'rounded-full px-2 py-0.5 text-[0.625rem] font-black tabular-nums ' + (dk ? 'bg-slate-800 text-orange-200' : 'bg-orange-100 text-orange-900') }, '🕯 ' + Math.round(queenResources.wax || 0)),
                   h('span', { 'data-dock-resource': 'royalJelly', className: 'rounded-full px-2 py-0.5 text-[0.625rem] font-black tabular-nums ' + (dk ? 'bg-slate-800 text-purple-200' : 'bg-purple-100 text-purple-900') }, '👑 ' + Math.round(queenResources.royalJelly || 0))),
-                !queenResult && h('div', { 'data-dock-clock-controls': 'true', role: 'group', 'aria-label': 'Tactical clock controls', className: 'mt-2 flex flex-wrap items-center gap-1.5' },
+                h('svg', { className: 'bee-dock-vital-strip', viewBox: '0 0 160 14', 'aria-hidden': 'true', focusable: 'false', 'data-dock-vital-strip': 'true' },
+                  dockVis.channels.map(function(ch) {
+                    return h('g', { key: ch.id, 'data-dock-channel': ch.id },
+                      h('rect', { className: 'bee-dock-vital-track', x: ch.x, y: 4, width: ch.trackW, height: 6, rx: 2.5 }),
+                      h('rect', { className: 'bee-dock-vital-fill', x: ch.x, y: 4, width: ch.fillW, height: 6, rx: 2.5, 'data-dock-channel': ch.id, 'data-channel-band': ch.band }),
+                      h('line', { className: 'bee-dock-vital-tick', x1: ch.thresholdX, y1: 2, x2: ch.thresholdX, y2: 12 }));
+                  })),
+                !queenResult && h('div', { 'data-dock-clock-controls': 'true', role: 'group', 'aria-label': __alloT('stem.beehive.aria_tactical_clock_controls', 'Tactical clock controls'), className: 'mt-2 flex flex-wrap items-center gap-1.5' },
                   h('button', {
                     type: 'button',
                     'data-dock-pause-toggle': 'true',
@@ -35130,12 +39005,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   var unavailableReason = readiness.reason;
                   var isRecommended = suggestedActionId === action.id;
                   return h('button', { key: action.id, type: 'button', onClick: function() { if (!ready) { explainBeeUnavailable(action.label, unavailableReason); return; } queenAction(action.id); }, 'aria-disabled': ready ? undefined : 'true', 'data-unavailable-reason': ready ? undefined : unavailableReason, 'data-quick-command': action.id, 'data-command-ready': ready ? 'true' : 'false', 'data-rts-recommended': isRecommended ? 'true' : undefined, 'aria-label': action.label + '. ' + action.desc + '. Effect: ' + preview + '. Cost: ' + cost + '. ' + (ready ? 'Ready' : 'Unavailable. ' + unavailableReason), className: 'min-h-[64px] rounded-lg border px-2 py-2 text-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 ' + (ready ? (isRecommended ? (dk ? 'border-amber-400 bg-purple-950/70 text-purple-100 ring-1 ring-amber-400/70 hover:bg-purple-900/70' : 'border-purple-600 bg-purple-50 text-purple-950 ring-1 ring-purple-500/40 hover:bg-purple-100') : (dk ? 'border-purple-700 bg-slate-900 text-purple-100 hover:bg-slate-800' : 'border-purple-200 bg-white text-purple-900 hover:bg-purple-100')) : (dk ? 'border-slate-700 bg-slate-900/50 text-slate-500 opacity-60' : 'border-slate-200 bg-slate-50 text-slate-600 opacity-70')) },
-                    h('span', { className: 'block text-base leading-none', 'aria-hidden': 'true' }, action.icon),
+                    h('span', { className: 'inline-flex items-center justify-center gap-1 text-base leading-none', 'aria-hidden': 'true' },
+                      (function() {
+                        var gKind = dockVis.glyphByCommand[action.id] || 'radar';
+                        return h('svg', { className: 'bee-dock-command-glyph', viewBox: '0 0 16 16', 'aria-hidden': 'true', focusable: 'false', 'data-dock-glyph': gKind },
+                          gKind === 'radar' && h('g', null, h('circle', { className: 'bee-dock-glyph-stroke', cx: 8, cy: 8, r: 5.5 }), h('circle', { className: 'bee-dock-glyph-fill', cx: 8, cy: 8, r: 2 }), h('line', { className: 'bee-dock-glyph-stroke', x1: 8, y1: 8, x2: 12.2, y2: 3.8 })),
+                          gKind === 'wave-shield' && h('g', null, h('path', { className: 'bee-dock-glyph-stroke', d: 'M8 2.2 L13 4.2 V8 C13 11 10.8 13.2 8 14.3 C5.2 13.2 3 11 3 8 V4.2 Z' }), h('path', { className: 'bee-dock-glyph-accent', d: 'M6 8.5 L8 6.5 L10 8.5' })),
+                          gKind === 'converge-lance' && h('g', null, h('path', { className: 'bee-dock-glyph-stroke', d: 'M3 12.5 L8 3.5 L13 12.5' }), h('line', { className: 'bee-dock-glyph-accent', x1: 8, y1: 3.5, x2: 8, y2: 13.5 })));
+                      })(),
+                      action.icon),
                     h('span', { className: 'mt-1 block text-[0.625rem] font-black leading-tight' }, action.label),
                     h('span', { 'data-command-preview': action.id, className: 'mt-0.5 block text-[0.625rem] leading-snug ' + (dk ? 'text-slate-400' : 'text-slate-600') }, preview),
                     h('span', { className: 'mt-1 block text-[0.625rem] font-bold uppercase tracking-wide ' + (ready ? 'text-emerald-500' : '') }, isRecommended && ready ? '★ Suggested' : ready ? (cost === 'Free' ? 'Ready / free' : 'Ready') : unavailableReason));
                 }))),
-            !queenResult && careSignals.length > 0 && h('div', { 'data-quick-colony-strip': 'true', role: 'group', 'aria-label': 'Quick colony care signals', className: 'mt-2.5 border-t pt-2.5 ' + (dk ? 'border-purple-800/45' : 'border-purple-200/80') },
+            !queenResult && careSignals.length > 0 && h('div', { 'data-quick-colony-strip': 'true', role: 'group', 'aria-label': __alloT('stem.beehive.aria_quick_colony_care_signals', 'Quick colony care signals'), className: 'mt-2.5 border-t pt-2.5 ' + (dk ? 'border-purple-800/45' : 'border-purple-200/80') },
               h('div', { className: 'flex flex-wrap items-center gap-1.5' },
                 h('span', { className: 'mr-1 text-[0.625rem] font-black uppercase tracking-wider ' + (dk ? 'text-purple-300' : 'text-purple-900') }, '🧬 Colony care:'),
                 careSignals.map(function(action) {
@@ -35162,7 +39045,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     isRecommended && ready && h('span', { className: 'rounded-full px-1.5 py-0.5 text-[0.625rem] font-black ' + (dk ? 'bg-amber-400 text-slate-950' : 'bg-purple-800 text-white') }, '★'),
                     h('span', { className: 'text-[0.625rem] font-semibold opacity-80' }, cost === 'Free' ? 'Free' : cost));
                 }))),
-            !queenResult && h('div', { 'data-quick-build-strip': 'true', role: 'group', 'aria-label': 'Quick comb structure builder', className: 'mt-2.5 border-t pt-2.5 ' + (dk ? 'border-purple-800/45' : 'border-purple-200/80') },
+            !queenResult && h('div', { 'data-quick-build-strip': 'true', role: 'group', 'aria-label': __alloT('stem.beehive.aria_quick_comb_structure_builder', 'Quick comb structure builder'), className: 'mt-2.5 border-t pt-2.5 ' + (dk ? 'border-purple-800/45' : 'border-purple-200/80') },
               h('div', { className: 'flex flex-wrap items-center gap-1.5' },
                 h('span', { className: 'mr-1 text-[0.625rem] font-black uppercase tracking-wider ' + (dk ? 'text-amber-300' : 'text-amber-900') }, '🏗 Quick build:'),
                 Object.keys(QUEEN_STRUCTURE_TYPES).map(function(stId) {
@@ -35252,6 +39135,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               ? { id: 'rival-build', label: 'Spring census', timing: Math.max(0, BH_QUEEN_YEAR_CYCLES - queenDay) + ' cycles', detail: 'The healthier brood core leads into spring. A rival that runs out of stores starves.' }
               : { id: 'rival-build', label: 'Rival structure', timing: buildIn <= 1 ? 'Next cycle' : buildIn + ' cycles', detail: queenRival.name + ' gains production and combat power when it completes.' }
           ];
+          var tlVis = bhQueenTimelineVisuals(queenRival, queenDay, bhQueenSeason(nextCycle), raidIn, buildIn, queenDifficultyCfg.structureEvery, queenPaused, queenSpeed);
           var whyText = queenImpact && queenImpact.kind === 'structure'
             ? 'The build cost was paid immediately. Its production or defense bonus begins on automatic cycles.'
             : queenImpact && queenImpact.kind === 'command'
@@ -35296,9 +39180,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('p', { className: 'mt-1 text-[0.625rem] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, queenImpact ? queenImpact.summary : 'Apply a signal or let the clock advance to see exact before-and-after evidence here.')),
                 queenImpact && h('span', { className: 'rounded-full border px-2 py-1 text-[0.625rem] font-black ' + (dk ? 'border-slate-700 text-slate-300' : 'border-slate-200 text-slate-600') }, 'Cycle ' + queenImpact.cycle)),
               impactChanges.length > 0 && h('div', { className: 'mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4', role: 'list', 'aria-label': __alloT('stem.beehive.a11y_last_impact_metric_changes', 'Last impact metric changes') }, impactChanges.map(function(metric, index) {
+                var isImpactPct = metric.suffix === '%' || metric.label === 'QMP' || metric.label === 'Alarm' || metric.label === 'Hive health';
+                var lowerBetterImpact = metric.label === 'Rival pressure' || metric.label === 'Threat';
+                var impactTone = metric.delta === 0 ? 'neutral' : ((lowerBetterImpact ? metric.delta < 0 : metric.delta > 0) ? 'beneficial' : 'adverse');
                 return h('div', { key: metric.label + '-' + index, 'data-rts-impact-metric': metric.label.toLowerCase().replace(/[^a-z0-9]+/g, '-'), role: 'listitem', 'aria-label': metric.label + ' changed from ' + metric.before + metric.suffix + ' to ' + metric.after + metric.suffix + ', ' + queenSignedValue(metric.delta, metric.suffix), className: 'rounded-lg border px-2.5 py-2 ' + (dk ? 'border-white/10 bg-slate-900/70' : 'border-slate-200 bg-slate-50') },
                   h('div', { className: 'flex items-baseline justify-between gap-1' }, h('span', { className: 'text-[0.625rem] font-black uppercase tracking-wide ' + (dk ? 'text-slate-300' : 'text-slate-600') }, metric.label), h('span', { className: 'text-[0.625rem] font-black text-fuchsia-600' }, queenSignedValue(metric.delta, metric.suffix))),
-                  h('div', { className: 'mt-1 text-[0.625rem] font-bold tabular-nums ' + (dk ? 'text-slate-300' : 'text-slate-700') }, metric.before + metric.suffix + ' \u2192 ' + metric.after + metric.suffix));
+                  h('div', { className: 'mt-1 text-[0.625rem] font-bold tabular-nums ' + (dk ? 'text-slate-300' : 'text-slate-700') }, metric.before + metric.suffix + ' \u2192 ' + metric.after + metric.suffix),
+                  bhRenderDeltaBars({ before: metric.before, after: metric.after, scaleMax: isImpactPct ? 100 : null, rootAttr: 'data-rts-impact-bars', toneAttr: 'data-delta-tone', tone: impactTone, barAttr: 'data-rts-impact-bar' }));
               })),
               h('div', { 'data-rts-impact-why': 'true', className: 'mt-3 border-t pt-3 ' + (dk ? 'border-white/10' : 'border-slate-200') },
                 h('div', { className: 'text-[0.625rem] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Why it changed'),
@@ -35308,9 +39196,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('div', { 'data-rts-production-queue': 'true', role: 'region', 'aria-label': __alloT('stem.beehive.a11y_modeled_brood_development_queue', 'Modeled brood-development queue'), className: 'mt-3 rounded-xl border p-3 ' + (dk ? 'border-cyan-700/40 bg-cyan-950/20' : 'border-cyan-200 bg-cyan-50/60') },
               h('div', { className: 'flex items-center justify-between gap-2' }, h('div', { className: 'text-[0.625rem] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-cyan-300' : 'text-cyan-800') }, 'Production queue'), h('span', { className: 'text-[0.625rem] font-bold ' + (dk ? 'text-slate-300' : 'text-slate-600') }, queenProductionQueue.length + ' active')),
               queenProductionQueue.length > 0
-                ? h('ol', { className: 'mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2', 'aria-label': __alloT('stem.beehive.a11y_active_modeled_brood_development', 'Active modeled brood development') }, queenProductionQueue.map(function(order) { return h('li', { key: order.id, 'data-rts-production-order': order.type, className: 'flex min-w-0 items-center gap-2 rounded-lg border px-2.5 py-2 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white bg-white/80') }, h('span', { className: 'text-base', 'aria-hidden': 'true' }, order.icon), h('span', { className: 'min-w-0 flex-1 text-[0.625rem] font-black ' + (dk ? 'text-white' : 'text-slate-900') }, order.label + ' · Ready in ' + order.remaining + ' cycle' + (order.remaining === 1 ? '' : 's'))); }))
+                ? h('ol', { className: 'mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2', 'aria-label': __alloT('stem.beehive.a11y_active_modeled_brood_development', 'Active modeled brood development') }, queenProductionQueue.map(function(order) {
+                    var remCycles = Math.max(0, Number(order.remaining) || 0);
+                    var totCycles = Number(order.totalCycles) > 0 ? Number(order.totalCycles) : (order.type === 'drones' ? 3 : Math.max(2, remCycles));
+                    var stagePct = Math.max(15, Math.min(100, Math.round(((totCycles - remCycles + 1) / (totCycles + 1)) * 100)));
+                    return h('li', { key: order.id, 'data-rts-production-order': order.type, className: 'flex min-w-0 items-center gap-2 rounded-lg border px-2.5 py-2 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white bg-white/80') },
+                      h('span', { className: 'text-base', 'aria-hidden': 'true' }, order.icon),
+                      h('div', { className: 'min-w-0 flex-1' },
+                        h('span', { className: 'block text-[0.625rem] font-black ' + (dk ? 'text-white' : 'text-slate-900') }, order.label + ' · Ready in ' + order.remaining + ' cycle' + (order.remaining === 1 ? '' : 's')),
+                        h('div', { 'data-rts-order-progress': 'true', 'data-total-cycles': String(totCycles), 'data-remaining-cycles': String(remCycles), 'data-progress-pct': String(stagePct), 'aria-hidden': 'true', className: 'mt-1.5 h-1.5 w-full overflow-hidden rounded-full border ' + (dk ? 'border-cyan-700/70 bg-slate-900' : 'border-cyan-200 bg-cyan-100') },
+                          h('span', { className: 'bee-rts-order-bar block h-full rounded-full ' + (dk ? 'bg-cyan-400' : 'bg-cyan-700'), style: { width: stagePct + '%' } }))));
+                  }))
                 : h('p', { className: 'mt-2 text-[0.625rem] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'No brood orders are active. Queue worker or drone brood when royal jelly is available.'),
-              !queenResult && h('div', { 'data-rts-queue-actions': 'true', role: 'group', 'aria-label': 'Queue brood orders', className: 'mt-2 flex flex-wrap gap-2' },
+              !queenResult && h('div', { 'data-rts-queue-actions': 'true', role: 'group', 'aria-label': __alloT('stem.beehive.aria_queue_brood_orders', 'Queue brood orders'), className: 'mt-2 flex flex-wrap gap-2' },
                 ['lay_workers', 'lay_drones'].map(function(orderId) {
                   var orderAction = QUEEN_ACTIONS.find(function(a) { return a.id === orderId; });
                   if (!orderAction) return null;
@@ -35349,6 +39247,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   }, rivalIntelKnown ? '↻ Refresh Intel' : '🔍 Scout Rival'),
                   h('span', { className: 'rounded-full px-2 py-1 text-[0.625rem] font-black uppercase tracking-wide ' + (rivalIntelKnown ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-white') }, rivalIntelKnown ? Math.round(queenRival.intel || 0) + '% intel' : 'Unscouted'))),
               h('p', { className: 'mt-1 text-[0.625rem] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-700') }, rivalIntelKnown ? rivalDoctrineProfile.signature : 'Every rival plays one of three styles. Scout to find out which, before you commit guards or raids.'),
+              (function() {
+                var emblemEl = tlVis.postureKind === 'assault'
+                  ? [
+                      h('circle', { key: 'a1', cx: 9, cy: 7, r: 4.2, fill: 'none' }),
+                      h('line', { key: 'a2', x1: 9, y1: 1.5, x2: 9, y2: 12.5 }),
+                      h('line', { key: 'a3', x1: 3.5, y1: 7, x2: 14.5, y2: 7 })
+                    ]
+                  : (tlVis.postureKind === 'expand' || tlVis.postureKind === 'contest')
+                    ? [
+                        h('path', { key: 'e1', d: 'M3 9L7 4L11 9' }),
+                        h('path', { key: 'e2', d: 'M8 10L12 5L16 10' })
+                      ]
+                    : tlVis.postureKind === 'forage'
+                      ? h('polygon', { points: '9,2.5 13,4.8 13,9.2 9,11.5 5,9.2 5,4.8' })
+                      : h('polygon', { points: '9,2 14,7 9,12 4,7', className: 'bee-rts-intel-emblem-dashed' });
+                return h('svg', {
+                  className: 'bee-rts-intel-meter',
+                  'data-rts-intel-meter': 'true',
+                  'data-intel-band': tlVis.intelBand,
+                  'data-intel-pct': String(tlVis.intelPct),
+                  'data-posture-kind': tlVis.postureKind,
+                  viewBox: '0 0 188 14',
+                  'aria-hidden': 'true',
+                  focusable: 'false'
+                },
+                  h('g', { 'data-intel-emblem': tlVis.postureKind, className: 'bee-rts-intel-emblem' }, emblemEl),
+                  h('rect', { x: 22, y: 4, width: 160, height: 6, rx: 3, className: 'bee-rts-intel-track' }),
+                  h('rect', { x: 22, y: 4, width: tlVis.intelFillW, height: 6, rx: 3, className: 'bee-rts-intel-fill', 'data-intel-band': tlVis.intelBand }),
+                  h('line', { x1: 22 + tlVis.confirmTickX, y1: 1.5, x2: 22 + tlVis.confirmTickX, y2: 12.5, className: 'bee-rts-intel-tick', 'data-intel-confirm-tick': 'true' }));
+              })(),
               h('div', { className: 'mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3', role: 'list', 'aria-label': __alloT('stem.beehive.a11y_rival_posture_telegraph_and_counterplay', 'Rival posture, telegraph, and counterplay') }, [
                 { label: 'Current posture', value: rivalIntelKnown ? (queenRival.posture || 'forage') : 'Unconfirmed', detail: rivalIntelKnown ? (queenRival.lastMove || 'No move logged') : 'Scout to reveal current worker allocation.' },
                 { label: 'Telegraph', value: rivalIntelKnown ? (queenRival.telegraph || 'No clear signal') : 'Hidden', detail: rivalIntelKnown ? 'What the rival is likely to do next.' : 'Pressure still reveals the raid threshold.' },
@@ -35357,9 +39285,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             ),
             h('div', { className: 'mt-3 text-[0.625rem] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-fuchsia-300' : 'text-fuchsia-800') }, 'Upcoming on the live clock'),
             h('ol', { className: 'mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3', 'aria-label': __alloT('stem.beehive.a11y_upcoming_colony_network_events', 'Upcoming Colony Network events') }, forecast.map(function(item, index) {
+              var fcVis = tlVis.forecasts[index] || tlVis.forecasts[0];
               return h('li', { key: item.id, 'data-rts-forecast': item.id, className: 'flex min-h-[86px] gap-2.5 rounded-lg border p-3 ' + (dk ? 'border-white/10 bg-slate-950/30' : 'border-slate-200 bg-white') },
                 h('span', { className: 'grid h-7 w-7 shrink-0 place-items-center rounded-full bg-fuchsia-600 text-[0.625rem] font-black text-white', 'aria-hidden': 'true' }, index + 1),
-                h('span', { className: 'min-w-0' }, h('span', { className: 'block text-[0.625rem] font-black ' + (dk ? 'text-white' : 'text-slate-900') }, item.label), h('span', { className: 'block text-[0.625rem] font-black text-fuchsia-600' }, item.timing), h('span', { className: 'mt-0.5 block text-[0.625rem] leading-relaxed ' + (dk ? 'text-slate-400' : 'text-slate-600') }, item.detail)));
+                h('span', { className: 'min-w-0 flex-1' }, h('span', { className: 'block text-[0.625rem] font-black ' + (dk ? 'text-white' : 'text-slate-900') }, item.label), h('span', { className: 'block text-[0.625rem] font-black text-fuchsia-600' }, item.timing), h('span', { className: 'mt-0.5 block text-[0.625rem] leading-relaxed ' + (dk ? 'text-slate-400' : 'text-slate-600') }, item.detail),
+                  h('svg', {
+                    className: 'bee-rts-forecast-rail',
+                    'data-rts-forecast-rail': item.id,
+                    'data-forecast-tone': fcVis.tone,
+                    'data-urgency-pct': String(fcVis.urgencyPct),
+                    viewBox: '0 0 100 8',
+                    'aria-hidden': 'true',
+                    focusable: 'false'
+                  },
+                    h('rect', { x: 2, y: 1.5, width: 96, height: 5, rx: 2.5, className: 'bee-rts-forecast-track' }),
+                    h('rect', { x: 2, y: 1.5, width: fcVis.fillW, height: 5, rx: 2.5, className: 'bee-rts-forecast-fill', 'data-forecast-tone': fcVis.tone }),
+                    [26, 50, 74].map(function(tx) { return h('line', { key: tx, x1: tx, y1: 1.5, x2: tx, y2: 6.5, className: 'bee-rts-forecast-tick' }); }))));
             })),
             h('p', { className: 'mt-2 text-[0.625rem] italic ' + (dk ? 'text-slate-500' : 'text-slate-600') }, 'Forecasts use the current phase, pressure, difficulty, and fixed rival cadence; your next strategy choice can change them.'));
         }
@@ -35508,7 +39449,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 : kind === 'several-changes' ? 'Several conditions changed, so I cannot isolate …'
                 : kind === 'one-change-null' ? 'In these fixed conditions, … stayed the same; another case could …'
                 : 'This schematic shows …; it does not establish …';
-              return h('ol', { className: 'bee-pollen-explanation-steps', 'data-pollination-explanation-plan': kind, 'aria-label': 'Three steps for explaining the saved flower cases' },
+              return h('ol', { className: 'bee-pollen-explanation-steps', 'data-pollination-explanation-plan': kind, 'aria-label': __alloT('stem.beehive.aria_three_steps_for_explaining_the_saved_flower_case', 'Three steps for explaining the saved flower cases') },
                 [['conditions', 'Conditions', conditions, conditionStart], ['readings', 'Saved readings', young ? 'Which saved words match? Which are different?' : readings, readingStart], ['limit', 'Limits', limit, limitStart]].map(function(step, index) {
                   return h('li', { key: step[0], 'data-explanation-step': step[0] },
                     h('h6', null, h('span', { className: 'bee-pollen-explanation-number', 'aria-hidden': 'true' }, index + 1), h('span', { className: 'bee-pollen-explanation-heading' }, step[1])),
@@ -35516,7 +39457,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     h('p', { className: 'bee-pollen-explanation-starter', 'data-explanation-starter': step[0] }, h('span', null, 'Try a beginning'), h('q', null, step[3])));
                 }));
             }
-            return h('section', { className: 'bee-discovery-comparison', 'data-discovery-comparison': 'true', 'data-pollination-comparison': flowerInsight.kind, 'aria-label': 'Flower comparison: selected conditions and modeled outcomes' },
+            return h('section', { className: 'bee-discovery-comparison', 'data-discovery-comparison': 'true', 'data-pollination-comparison': flowerInsight.kind, 'aria-label': __alloT('stem.beehive.aria_flower_comparison_selected_conditions_and_modele', 'Flower comparison: selected conditions and modeled outcomes') },
               h('h5', null, 'What changed in your flower cases?'),
               h('p', null, 'Saved starting and compared cases. These values stay fixed when you change the live flower controls.'),
               h('div', { className: 'bee-pollen-design', 'data-pollination-design': String(flowerInsight.changedCount) }, h('h6', null, flowerInsight.title), h('p', null, flowerInsight.detail)),
@@ -35537,7 +39478,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('dl', null, comparison.rows.map(function(row) {
               return h('div', { key: row.id, 'data-evidence-metric': row.id },
                 h('dt', null, row.label),
-                h('dd', null, h('span', null, row.unit === '0/1' ? bhDiscoveryMetricText(row.before, row.unit) + ' → ' + bhDiscoveryMetricText(row.after, row.unit) : row.before + ' → ' + row.after + ' ' + row.unit), h('strong', null, row.delta === 0 ? 'No change' : row.unit === '0/1' ? 'Changed' : (row.delta > 0 ? '+' : '') + row.delta + ' ' + (row.deltaUnit || row.unit) + (row.angle ? ' turn' : ''))));
+                h('dd', null, h('span', null, row.unit === '0/1' ? bhDiscoveryMetricText(row.before, row.unit) + ' → ' + bhDiscoveryMetricText(row.after, row.unit) : row.before + ' → ' + row.after + ' ' + row.unit), h('strong', null, row.delta === 0 ? 'No change' : row.unit === '0/1' ? 'Changed' : (row.delta > 0 ? '+' : '') + row.delta + ' ' + (row.deltaUnit || row.unit) + (row.angle ? ' turn' : ''))),
+                row.unit !== '0/1' && Number.isFinite(row.before) && Number.isFinite(row.after) && bhRenderDeltaBars({
+                  before: row.before,
+                  after: row.after,
+                  scaleMax: row.angle ? 360 : Math.max(Math.abs(row.before), Math.abs(row.after), 1),
+                  rootAttr: 'data-discovery-metric-bars',
+                  barAttr: 'data-discovery-metric-bar'
+                }));
             })),
             h('p', null, comparison.rows.every(function(row) { return row.unit === '0/1'; }) ? 'Compare selected conditions and modeled outcomes. These are not field measurements; fertilization is not observed.' : comparison.unchanged ? 'No measured change in this trial. Explain what stayed fixed and whether these readings could detect the change you expected.' : 'Which conditions changed? These readings show a change, not its cause.'),
             comparison.rows.some(function(row) { return row.angle; }) && h('p', null, 'Angle changes use the shortest turn around the circle.'));
@@ -35584,14 +39532,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('div', { className: 'bee-visits-live' }, h('span', null, 'Live cumulative model count'),
               h('output', { 'data-flower-visit-count': 'true', 'aria-live': 'polite', 'aria-atomic': 'true' }, count == null ? 'Unavailable' : number(count) + ' visits'),
               h('small', null, 'Day ' + day + ' · visits can repeat on the same flower; unique flowers are not counted.')),
-            h('ol', { className: 'bee-visits-path', 'aria-label': 'What this counter measures' },
-              h('li', null, h('h5', null, '1 · Flower visits'), h('strong', null, 'Modeled activity'), h('p', null, 'The daily model adds estimated encounters to the counter.')),
-              h('li', null, h('h5', null, '2 · Pollen deposition'), h('strong', null, 'Not measured by this counter'), h('p', null, 'A visit count does not record how much pollen reached a stigma.')),
-              h('li', null, h('h5', null, '3 · Seeds or fruit'), h('strong', null, 'Not measured by this counter'), h('p', null, 'Later plant outcomes need their own evidence. Unmeasured does not mean zero.'))),
+            h('ol', { className: 'bee-visits-path', 'aria-label': __alloT('stem.beehive.aria_what_this_counter_measures', 'What this counter measures') },
+              h('li', null,
+                h('svg', { className: 'bee-visits-step-svg', viewBox: '0 0 88 28', 'data-visit-step-icon': 'visits', 'data-measured': 'true', 'aria-hidden': 'true', focusable: 'false' },
+                  h('rect', { className: 'bee-visits-step-measured', x: '2', y: '3', width: '24', height: '22', rx: '5' }),
+                  h('path', { className: 'bee-visits-step-line', d: 'M8 19 L12 12 L16 16 L21 9' }),
+                  h('circle', { className: 'bee-visits-step-dot', cx: '21', cy: '9', r: '2.4' }),
+                  h('path', { className: 'bee-visits-step-line', d: 'M32 14 L82 14' })),
+                h('h5', null, '1 · Flower visits'), h('strong', null, 'Modeled activity'), h('p', null, 'The daily model adds estimated encounters to the counter.')),
+              h('li', null,
+                h('svg', { className: 'bee-visits-step-svg', viewBox: '0 0 88 28', 'data-visit-step-icon': 'pollen', 'data-measured': 'false', 'aria-hidden': 'true', focusable: 'false' },
+                  h('circle', { className: 'bee-visits-step-unmeasured', cx: '14', cy: '14', r: '10' }),
+                  h('circle', { className: 'bee-visits-step-muted-dot', cx: '14', cy: '14', r: '4' }),
+                  h('path', { className: 'bee-visits-step-muted-dot', d: 'M30 14 L82 14' })),
+                h('h5', null, '2 · Pollen deposition'), h('strong', null, 'Not measured by this counter'), h('p', null, 'A visit count does not record how much pollen reached a stigma.')),
+              h('li', null,
+                h('svg', { className: 'bee-visits-step-svg', viewBox: '0 0 88 28', 'data-visit-step-icon': 'seeds', 'data-measured': 'false', 'aria-hidden': 'true', focusable: 'false' },
+                  h('rect', { className: 'bee-visits-step-unmeasured', x: '3', y: '4', width: '22', height: '20', rx: '10' }),
+                  h('circle', { className: 'bee-visits-step-muted-dot', cx: '11', cy: '14', r: '2.5' }),
+                  h('circle', { className: 'bee-visits-step-muted-dot', cx: '17', cy: '14', r: '2.5' }),
+                  h('path', { className: 'bee-visits-step-muted-dot', d: 'M30 14 L82 14' })),
+                h('h5', null, '3 · Seeds or fruit'), h('strong', null, 'Not measured by this counter'), h('p', null, 'Later plant outcomes need their own evidence. Unmeasured does not mean zero.'))),
             h('div', { className: 'bee-visits-actions' }, h('button', { type: 'button', disabled: !current, onClick: saveStart, 'aria-describedby': 'bee-visit-baseline-help' }, baseline ? 'Replace starting reading' : 'Save starting reading'),
               h('button', { type: 'button', 'data-secondary': 'true', disabled: !live.ok, onClick: freezeInterval }, 'Freeze current interval')),
             h('p', { id: 'bee-visit-baseline-help' }, baseline ? 'Replacing the start clears this panel’s saved pair. Your explanation and notebook writing are kept.' : 'Save → advance the colony → freeze. Only the colony’s day controls advance time.'),
             h('p', { 'data-flower-visit-notice': live.ok ? 'ready' : live.reason, role: 'status' }, notice),
+            live.ok && (function() {
+              var totalVisits = Math.max(1, Number(current.visits) || 0, Number(baseline.visits) || 0);
+              var baseVisits = Math.max(0, Number(baseline.visits) || 0);
+              var addedVisits = Math.max(0, (Number(current.visits) || 0) - baseVisits);
+              var basePct = Math.round((baseVisits / totalVisits) * 1000) / 10;
+              var addedPct = Math.max(0, Math.min(100 - basePct, Math.round((addedVisits / totalVisits) * 1000) / 10));
+              return h('div', { className: 'bee-visits-live-preview', 'data-flower-visit-live-preview': 'true', 'aria-hidden': 'true' },
+                h('div', { className: 'bee-visits-live-rail' },
+                  h('span', { className: 'bee-visits-live-segment', 'data-live-segment': 'baseline', 'data-zero': String(baseVisits === 0), style: { width: basePct + '%' } }),
+                  h('span', { className: 'bee-visits-live-segment', 'data-live-segment': 'added', 'data-zero': String(addedVisits === 0), style: { width: addedPct + '%' } })));
+            })(),
             frozen && h('section', { className: 'bee-visits-comparison', 'data-flower-visit-comparison': 'frozen', 'aria-labelledby': 'bee-visits-frozen-title' },
               h('h5', { id: 'bee-visits-frozen-title', 'aria-live': 'polite' }, 'Saved interval · Day ' + frozen.before.day + ' → Day ' + frozen.after.day),
               h('p', null, 'Run ' + frozen.before.runSerial + ' · seed ' + frozen.before.simulationSeed + ' · ' + frozen.before.modelVersion + ' · tracking from Day ' + frozen.before.seededFromDay),
@@ -35707,7 +39683,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('h4', { id: 'bee-pollen-title' }, 'A visit or pollen transfer?'),
             h('p', null, 'Set up one controlled visit. Change one condition and trace what reaches the flower. This case assumes viable pollen and a receptive stigma.'),
             h('fieldset', { style: { border: 0, padding: 0 } }, h('legend', { style: { fontWeight: 800, marginBottom: '.5rem' } }, 'Choose a controlled case'),
-              h('div', { className: 'bee-pollen-presets', 'data-pollination-presets': 'true', role: 'group', 'aria-label': 'Ecological flower-visit presets' }, [
+              h('div', { className: 'bee-pollen-presets', 'data-pollination-presets': 'true', role: 'group', 'aria-label': __alloT('stem.beehive.aria_ecological_flower_visit_presets', 'Ecological flower-visit presets') }, [
                 { id: 'side_visit', label: 'Side visit (no contact)', pollen: true, contact: false, compatible: true },
                 { id: 'cross_pollination', label: 'Cross-pollination', pollen: true, contact: true, compatible: true },
                 { id: 'incompatible_pollen', label: 'Incompatible species', pollen: true, contact: true, compatible: false },
@@ -35717,10 +39693,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 return h('button', { key: preset.id, type: 'button', className: 'bee-pollen-preset', 'data-pollination-preset': preset.id, 'aria-pressed': String(active), onClick: function() { applyPreset(preset); } }, preset.label);
               })),
               h('div', { className: 'bee-pollen-controls' }, choice('pollen', 'Loose pollen on bee', 'Grains available on the body for transfer.'), choice('contact', 'Bee contacts stigma', 'The stigma is the pollen-receiving surface.'), choice('compatible', 'Pollen compatible', 'Compatibility affects the next step after deposition.'))),
-            h('div', { className: 'bee-pollen-path', role: 'group', 'aria-label': 'Trace the pollen path' },
+            h('div', { className: 'bee-pollen-path', role: 'group', 'aria-label': __alloT('stem.beehive.aria_trace_the_pollen_path', 'Trace the pollen path') },
               h('figure', { className: 'bee-pollen-step', 'data-pollination-step': 'carried', 'data-step-state': r.pollen ? 'present' : 'absent' }, stepHeading('1 · Carried on the bee', r.pollen ? 'Available' : 'None carried', ['pollen'], 'Input:'), beePicture, h('figcaption', null, h('strong', null, r.pollen ? 'Loose grains available' : 'No loose grains carried'), 'Anthers produce pollen. Some grains can cling to a visiting bee; these dots represent loose grains, not a leg basket.')),
               h('figure', { className: 'bee-pollen-step', 'data-pollination-step': 'deposited', 'data-step-state': r.transferred ? 'shown' : 'not-shown' }, stepHeading('2 · Deposited on the stigma', r.transferred ? 'Shown' : 'Not shown', ['pollen', 'contact'], 'Needs both:'), flowerPicture,
-                h('div', { className: 'bee-pollen-part', role: 'group', 'aria-label': 'Diagram key' }, h('span', null, h('i', { 'aria-hidden': 'true' }), 'Round · stigma'), h('span', null, h('i', { 'data-anther': 'true', 'aria-hidden': 'true' }), 'Rectangles · anthers'), h('span', null, h('i', { 'data-grain': 'true', 'aria-hidden': 'true' }), 'Small rings · pollen')),
+                h('div', { className: 'bee-pollen-part', role: 'group', 'aria-label': __alloT('stem.beehive.aria_diagram_key', 'Diagram key') }, h('span', null, h('i', { 'aria-hidden': 'true' }), 'Round · stigma'), h('span', null, h('i', { 'data-anther': 'true', 'aria-hidden': 'true' }), 'Rectangles · anthers'), h('span', null, h('i', { 'data-grain': 'true', 'aria-hidden': 'true' }), 'Small rings · pollen')),
                 h('figcaption', null, h('strong', null, r.outcome), r.reason)),
               h('figure', { className: 'bee-pollen-step', 'data-pollination-step': 'later', 'data-step-state': 'not-observed' }, stepHeading('3 · What could happen later?', 'Not observed', ['compatible'], 'After deposition:'), laterPicture, h('figcaption', null, h('strong', null, 'Fertilization is not observed'), r.next))),
             h('output', { className: 'bee-pollen-result', 'data-pollination-outcome': r.transferred ? 'transfer' : 'no-transfer', htmlFor: 'bee-pollen-pollen bee-pollen-contact bee-pollen-compatible', 'aria-live': 'polite', 'aria-atomic': 'true' }, h('strong', null, r.outcome), h('span', null, r.reason), h('span', null, r.possible ? 'Next step possible · no seed or fruit result is predicted.' : r.transferred ? 'Compatibility limits the next step · transfer still occurred.' : 'Try changing pollen carried or contact while holding the other conditions fixed.')),
@@ -35802,7 +39778,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('label', { htmlFor: 'bee-waggle-sun' }, 'Sun bearing from north ', h('strong', null, angles.sun + '°'),
                 h('input', { id: 'bee-waggle-sun', type: 'range', min: 0, max: r.sun > 345 ? 360 : 345, step: r.sun % 15 === 0 ? 15 : 'any', value: r.sun, 'aria-valuetext': angles.sun + ' degrees clockwise from north', 'aria-describedby': 'bee-waggle-sun-help', onChange: function(e) { setControl('sun', Number(e.target.value)); } }),
                 h('small', { id: 'bee-waggle-sun-help' }, 'North 0° · east 90° · south 180° · west 270°.'))),
-            h('div', { className: 'bee-waggle-presets', 'data-waggle-presets': 'true', role: 'group', 'aria-label': 'Time of day sun presets' },
+            h('div', { className: 'bee-waggle-presets', 'data-waggle-presets': 'true', role: 'group', 'aria-label': __alloT('stem.beehive.aria_time_of_day_sun_presets', 'Time of day sun presets') },
               [{ deg: 0, label: 'North 0°' }, { deg: 90, label: 'Morning 90°' }, { deg: 180, label: 'Noon 180°' }, { deg: 270, label: 'Afternoon 270°' }].map(function(p) {
                 return h('button', { key: p.deg, type: 'button', className: 'bee-waggle-preset', 'data-waggle-sun-preset': String(p.deg), 'aria-pressed': Math.abs(r.sun - p.deg) < 0.01, onClick: function() { setControl('sun', p.deg); } }, p.label);
               })),
@@ -35847,7 +39823,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             !calendar.available ? h('p', { className: 'bee-brood-question', 'data-brood-calendar-unavailable': 'true' }, calendar.reason) : h(React.Fragment, null,
               h('p', { className: 'bee-brood-note', 'data-brood-calendar-context': 'true' }, 'Read on Day ' + calendar.startDay + ' · ' + count(calendar.broodTotal) + ' brood in the saved model. Next 7 days: ' + count(calendar.totals.total) + ' scheduled adults; ' + count(calendar.later) + ' remain for later.'),
               h('figure', null,
-                h('div', { className: 'bee-brood-legend', role: 'group', 'aria-label': 'Chart legend' },
+                h('div', { className: 'bee-brood-legend', role: 'group', 'aria-label': __alloT('stem.beehive.aria_chart_legend', 'Chart legend') },
                   h('span', null, h('i', { className: 'bee-brood-swatch bee-brood-worker', 'aria-hidden': 'true' }), 'Workers · solid'),
                   h('span', null, h('i', { className: 'bee-brood-swatch bee-brood-drone', 'aria-hidden': 'true' }), 'Drones · striped')),
                 h('ol', { className: 'bee-brood-bars', 'data-large-counts': String(peak >= 10000), 'aria-hidden': 'true' }, calendar.rows.map(function(row) {
@@ -35873,7 +39849,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('details', { 'data-brood-calendar-table': 'true' }, h('summary', null, 'Read all seven days'),
                 h('table', { role: 'table' }, h('caption', null, 'Conditional adult emergence from brood saved on Day ' + calendar.startDay),
                   h('thead', null, h('tr', null, ['Day', 'Workers', 'Drones', 'Total'].map(function(label) { return h('th', { key: label, scope: 'col' }, label); }))),
-                  h('tbody', null, calendar.rows.map(function(row) { return h('tr', { key: row.offset }, h('th', { scope: 'row' }, 'Day ' + row.day + ' (+' + row.offset + ')'), ['workers', 'drones', 'total'].map(function(metric) { return h('td', { key: metric }, h('span', { className: 'bee-brood-cell-label', 'aria-hidden': 'true' }, metric === 'workers' ? 'Workers' : metric === 'drones' ? 'Drones' : 'Total'), h('span', { 'data-brood-table-count': metric }, count(row[metric]))); })); })))),
+                  h('tbody', null, calendar.rows.map(function(row) { return h('tr', { key: row.offset, 'data-brood-table-row': String(row.offset), 'data-selected': String(row.offset === broodCalendarDay), onClick: function() { setBroodCalendarDay(row.offset); } }, h('th', { scope: 'row' }, 'Day ' + row.day + ' (+' + row.offset + ')'), ['workers', 'drones', 'total'].map(function(metric) { return h('td', { key: metric }, h('span', { className: 'bee-brood-cell-label', 'aria-hidden': 'true' }, metric === 'workers' ? 'Workers' : metric === 'drones' ? 'Drones' : 'Total'), h('span', { 'data-brood-table-count': metric }, count(row[metric]))); })); })))),
               h('p', { className: 'bee-brood-question', 'data-brood-calendar-question': beeGradeBand }, h('strong', null, 'Try explaining: '), lesson.question),
               h('details', { 'data-brood-calendar-reasoning': 'true' }, h('summary', null, 'Compare your reasoning'), h('p', null, lesson.reasoning), h('p', { className: 'bee-brood-note' }, lesson.limit)),
               h('details', { 'data-brood-calendar-model': 'true' }, h('summary', null, 'Where do these ages come from?'),
@@ -35895,6 +39871,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             setWorkerBalancePrediction(null); setWorkerBalanceReview(null);
           }
           function directionText(direction) { return direction === 'increase' ? 'increase' : direction === 'decrease' ? 'decrease' : 'stay the same'; }
+          var maxFlowChoice = Math.max.apply(null, practice.choices.concat([1]));
+          var inStroke = (2.2 + (practice.arrivals / maxFlowChoice) * 5.2).toFixed(1);
+          var outStroke = (2.2 + (practice.losses / maxFlowChoice) * 5.2).toFixed(1);
           return h('section', { key: 'worker-balance-lab', className: 'bee-brood-calendar bee-worker-balance', 'data-worker-balance-lab': 'true', 'aria-labelledby': 'bee-worker-balance-title' },
             h('div', { className: 'bee-brood-kicker' }, __alloT('stem.beehive.worker_balance_connection', 'Try it · population change')),
             h('h4', { id: 'bee-worker-balance-title' }, __alloT('stem.beehive.worker_balance_title', 'Can a colony shrink as adults emerge?')),
@@ -35904,7 +39883,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('p', { className: 'bee-brood-note', 'data-worker-balance-scope': 'true' }, 'Hypothetical practice colony · one step with two flows. These numbers are chosen for learning; your saved colony continues separately.'),
               h('ol', { className: 'bee-balance-steps' }, h('li', null, 'Choose arrivals and losses.'), h('li', null, 'Predict, then check the adult total.'), h('li', null, 'Explain what the balance shows.')),
               h('p', { className: 'bee-balance-start' }, h('strong', null, 'Practice starts with ' + practice.start + ' adult workers.')),
-              h('div', { className: 'bee-balance-presets', 'data-worker-balance-presets': 'true', role: 'group', 'aria-label': 'Hypothetical flow presets' },
+              h('div', { className: 'bee-balance-presets', 'data-worker-balance-presets': 'true', role: 'group', 'aria-label': __alloT('stem.beehive.aria_hypothetical_flow_presets', 'Hypothetical flow presets') },
                 [
                   { id: 'growth', label: 'Growth (+)', a: 3, l: 1 },
                   { id: 'same', label: 'Balanced (=)', a: 2, l: 2 },
@@ -35930,6 +39909,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('select', { id: 'bee-worker-balance-' + flow, 'data-worker-balance-flow': flow, value: flow === 'arrivals' ? practice.arrivalIndex : practice.lossIndex, onChange: function(event) { changeFlow(flow, event.target.value); } },
                     practice.choices.map(function(value, index) { return h('option', { key: index, value: index }, value + (value === 1 ? ' worker' : ' workers')); })));
               })),
+              h('div', { className: 'bee-balance-schematic-wrap', 'aria-hidden': 'true' },
+                h('svg', { 'data-worker-balance-schematic': 'true', 'data-schematic-reviewed': reviewed ? 'true' : 'false', viewBox: '0 0 360 108', 'aria-hidden': 'true', focusable: 'false', className: 'bee-balance-schematic' },
+                  h('g', { 'data-flow-node': 'arrivals', 'data-flow-arrivals': String(practice.arrivals) },
+                    h('rect', { x: 8, y: 16, width: 86, height: 46, rx: 8, fill: 'var(--bb-paper)', stroke: 'var(--bb-worker)', strokeWidth: 1.5 }),
+                    h('text', { x: 51, y: 31, textAnchor: 'middle', fill: 'var(--bb-muted)', fontSize: 9, fontWeight: 700 }, 'JOINING'),
+                    h('text', { x: 51, y: 49, textAnchor: 'middle', fill: 'var(--bb-worker)', fontSize: 15, fontWeight: 800 }, '+' + practice.arrivals),
+                    h('line', { x1: 96, y1: 39, x2: 126, y2: 39, stroke: 'var(--bb-worker)', strokeWidth: inStroke, strokeLinecap: 'round' }),
+                    h('polygon', { points: '132,39 124,34 124,44', fill: 'var(--bb-worker)' })),
+                  h('g', { 'data-flow-node': 'start', 'data-flow-start': String(practice.start) },
+                    h('rect', { x: 134, y: 10, width: 92, height: 58, rx: 10, fill: 'var(--bb-paper)', stroke: 'var(--bb-ink)', strokeWidth: 2 }),
+                    h('text', { x: 180, y: 25, textAnchor: 'middle', fill: 'var(--bb-muted)', fontSize: 9, fontWeight: 700 }, 'START POOL'),
+                    h('text', { x: 180, y: 44, textAnchor: 'middle', fill: 'var(--bb-ink)', fontSize: 17, fontWeight: 800 }, String(practice.start)),
+                    h('text', { x: 180, y: 58, textAnchor: 'middle', fill: 'var(--bb-muted)', fontSize: 9, fontWeight: 700 }, 'adults')),
+                  h('g', { 'data-flow-node': 'losses', 'data-flow-losses': String(practice.losses) },
+                    h('line', { x1: 228, y1: 39, x2: 258, y2: 39, stroke: 'var(--bb-drone)', strokeWidth: outStroke, strokeDasharray: '5 3', strokeLinecap: 'round' }),
+                    h('polygon', { points: '264,39 256,34 256,44', fill: 'var(--bb-drone)' }),
+                    h('rect', { x: 266, y: 16, width: 86, height: 46, rx: 8, fill: 'var(--bb-paper)', stroke: 'var(--bb-drone)', strokeWidth: 1.5 }),
+                    h('text', { x: 309, y: 31, textAnchor: 'middle', fill: 'var(--bb-muted)', fontSize: 9, fontWeight: 700 }, 'LOST'),
+                    h('text', { x: 309, y: 49, textAnchor: 'middle', fill: 'var(--bb-drone)', fontSize: 15, fontWeight: 800 }, '\u2212' + practice.losses)),
+                  h('g', { 'data-flow-node': 'after', 'data-flow-after': reviewed ? String(practice.after) : '?' },
+                    h('line', { x1: 180, y1: 68, x2: 180, y2: 76, stroke: reviewed ? 'var(--bb-worker)' : 'var(--bb-muted)', strokeWidth: 1.5 }),
+                    h('rect', { x: 96, y: 76, width: 168, height: 26, rx: 13, fill: 'var(--bb-paper)', stroke: reviewed ? 'var(--bb-worker)' : 'var(--bb-muted)', strokeWidth: 1.5 }),
+                    h('text', { x: 180, y: 93, textAnchor: 'middle', fill: 'var(--bb-ink)', fontSize: 11, fontWeight: 800 }, 'After step: ' + (reviewed ? practice.after : '?') + ' adults')))),
               h('p', { className: 'bee-brood-question', 'data-worker-balance-prompt': beeGradeBand }, lesson.question),
               h('fieldset', null, h('legend', null, 'Predict the adult worker total'),
                 ['increase', 'same', 'decrease'].map(function(direction) { return h('label', { key: direction, className: 'bee-balance-choice' },
@@ -36234,7 +40236,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('p', null, 'This illustration uses the same current model cue as the 3D view. Shape count and size are illustrative, not measured cell counts. Management actions can change this observation; saved inspection answers stay as recorded.'),
                 returnToInspectionReview('cells')));
           }
-          if (season === 3) return h('section', { 'data-beehive-guided-inspection': 'winter', role: 'region', 'aria-label': 'Guided inspection', className: 'bee-guided-inspection rounded-xl border p-3 text-xs ' + tone },
+          if (season === 3) return h('section', { 'data-beehive-guided-inspection': 'winter', role: 'region', 'aria-label': __alloT('stem.beehive.aria_guided_inspection', 'Guided inspection'), className: 'bee-guided-inspection rounded-xl border p-3 text-xs ' + tone },
             h('strong', null, 'Guided inspection: winter'), ' Keep the hive closed. Opening it chills the cluster, so a beekeeper only heft-tests the weight and checks the entrance.');
           return h('section', { 'data-beehive-guided-inspection': record ? 'recorded' : 'open', role: 'region', 'aria-labelledby': 'beehive-guided-inspection-title', className: 'bee-guided-inspection space-y-2 rounded-xl border p-3 ' + tone },
             h('h3', { id: 'beehive-guided-inspection-title', tabIndex: -1, className: 'text-sm font-black' }, 'Guided inspection' + (d.colonyName ? ' \u00b7 ' + String(d.colonyName) : '')),
@@ -36242,6 +40244,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('section', { className: 'bee-inspection-prep-card', 'data-inspection-step': 'frames', 'data-done': framesSeen === 6 ? 'true' : 'false', 'aria-labelledby': 'beehive-inspection-frames-title' },
                 h('h4', { id: 'beehive-inspection-frames-title' }, '1. Explore the six frames'),
                 h('p', { 'data-inspection-frame-progress': 'true' }, h('strong', null, 'Frames explored: ' + framesSeen + ' of 6')),
+                h('svg', { 'data-inspection-frame-comb': 'true', className: 'bee-inspection-comb-map', viewBox: '0 0 264 44', 'aria-hidden': 'true', focusable: 'false' },
+                  h('rect', { x: 4, y: 4, width: 256, height: 36, rx: 5, className: 'bee-inspection-box-rim' }),
+                  Array.from({ length: 6 }, function(_, idx) {
+                    var sx = 13 + idx * 40;
+                    var isVis = visitedFrames.indexOf(idx) !== -1;
+                    var isCur = idx === hive3dFrame;
+                    return h('g', { key: idx, 'data-comb-slot': String(idx), 'data-comb-visited': isVis ? 'true' : 'false', 'data-comb-current': isCur ? 'true' : 'false' },
+                      h('rect', { x: sx, y: 10, width: 32, height: 24, rx: 3, className: 'bee-inspection-comb-bar' }),
+                      isCur && h('rect', { x: sx - 2.5, y: 7.5, width: 37, height: 29, rx: 4, className: 'bee-inspection-comb-focus' }),
+                      isVis && h('path', { d: 'M' + (sx + 10) + ' 22 L' + (sx + 14.5) + ' 26.5 L' + (sx + 22.5) + ' 17.5', className: 'bee-inspection-comb-check' }));
+                  })),
                 h('p', null, 'Choose a frame to open its cutaway. Previous frame and Next frame also work in the 3D view when available.'),
                 h('div', { className: 'bee-inspection-route-frames', role: 'group', 'aria-label': __alloT('stem.beehive.a11y_explore_frames_for_the_guided_inspection', 'Explore frames for the guided inspection') }, Array.from({ length: 6 }, function(_, index) {
                   var visited = visitedFrames.indexOf(index) !== -1;
@@ -36263,11 +40276,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               broodPatternGuide(),
               bottomBarObservation(),
               h('div', { className: 'bee-inspection-questions' },
-                h('div', { role: 'radiogroup', 'aria-label': 'Brood pattern', 'aria-required': 'true', 'aria-describedby': 'beehive-inspection-choice-help beehive-inspection-brood-guide-help', className: 'bee-inspection-question' },
+                h('div', { role: 'radiogroup', 'aria-label': __alloT('stem.beehive.aria_brood_pattern', 'Brood pattern'), 'aria-required': 'true', 'aria-describedby': 'beehive-inspection-choice-help beehive-inspection-brood-guide-help', className: 'bee-inspection-question' },
                   h('span', { className: 'font-bold' }, '3. The brood pattern is'),
                   h('p', { id: 'beehive-inspection-brood-guide-help', className: 'bee-inspection-bottom-bar-help' }, 'Compare the examples above, then inspect the current brood before choosing.'),
                   h('div', { className: 'bee-inspection-options' }, choice('brood', 'solid', 'Solid, mostly continuous'), choice('brood', 'spotty', 'Spotty, with gaps'))),
-                h('div', { role: 'radiogroup', 'aria-label': 'Queen cells', 'aria-required': 'true', 'aria-describedby': 'beehive-inspection-choice-help beehive-inspection-bottom-bar-help', className: 'bee-inspection-question' },
+                h('div', { role: 'radiogroup', 'aria-label': __alloT('stem.beehive.aria_queen_cells', 'Queen cells'), 'aria-required': 'true', 'aria-describedby': 'beehive-inspection-choice-help beehive-inspection-bottom-bar-help', className: 'bee-inspection-question' },
                   h('span', { className: 'font-bold' }, '4. Queen cells on the bottom bars?'),
                   h('p', { id: 'beehive-inspection-bottom-bar-help', className: 'bee-inspection-bottom-bar-help' }, 'Open the observation above to inspect the current model, with or without 3D.'),
                   h('div', { className: 'bee-inspection-options' }, choice('cells', 'yes', 'Yes'), choice('cells', 'no', 'No')))),
@@ -36279,8 +40292,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('h4', { id: 'beehive-inspection-review-title', 'data-inspection-review-title': 'true', 'data-beehive-focus-panel': 'true', tabIndex: -1 }, 'Recorded inspection · Day ' + (inspectionReview.day === null ? 'not recorded' : inspectionReview.day)),
               h('p', null, 'Saved answers and the model comparison made when this inspection was recorded.'),
               h('div', { className: 'bee-inspection-results' }, inspectionReview.readings.map(function(reading) {
+                var verdictIconSvg = reading.result === 'match'
+                  ? h('svg', { 'data-inspection-result-icon': 'match', className: 'bee-inspection-verdict-icon', viewBox: '0 0 20 20', 'aria-hidden': 'true', focusable: 'false' },
+                      h('circle', { cx: 10, cy: 10, r: 8, fill: 'none', stroke: 'currentColor', strokeWidth: 2 }),
+                      h('path', { d: 'M6 10.5 L8.8 13.2 L14.2 7.2', fill: 'none', stroke: 'currentColor', strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round' }))
+                  : reading.result === 'review'
+                    ? h('svg', { 'data-inspection-result-icon': 'review', className: 'bee-inspection-verdict-icon', viewBox: '0 0 20 20', 'aria-hidden': 'true', focusable: 'false' },
+                        h('polygon', { points: '10,2 18,10 10,18 2,10', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinejoin: 'round' }),
+                        h('path', { d: 'M10 6.5 V11', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round' }),
+                        h('circle', { cx: 10, cy: 13.8, r: 1, fill: 'currentColor' }))
+                    : h('svg', { 'data-inspection-result-icon': 'unknown', className: 'bee-inspection-verdict-icon', viewBox: '0 0 20 20', 'aria-hidden': 'true', focusable: 'false' },
+                        h('circle', { cx: 10, cy: 10, r: 8, fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeDasharray: '3 2' }),
+                        h('path', { d: 'M6.5 10 H13.5', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round' }));
                 return h('div', { key: reading.id, 'data-inspection-result': reading.id, 'data-result': reading.result, className: 'bee-inspection-result' },
-                  h('div', { className: 'bee-inspection-result-head' }, h('h5', null, reading.label), h('span', { 'data-inspection-verdict': 'true', className: 'bee-inspection-verdict' }, reading.resultLabel)),
+                  h('div', { className: 'bee-inspection-result-head' }, h('h5', null, reading.label),
+                    h('div', { className: 'bee-inspection-verdict-row' }, verdictIconSvg, h('span', { 'data-inspection-verdict': 'true', className: 'bee-inspection-verdict' }, reading.resultLabel))),
                   h('dl', null,
                     h('div', null, h('dt', null, 'Your answer'), h('dd', { 'data-inspection-answer': 'true' }, reading.answer)),
                     h('div', null, h('dt', null, 'Model answer when recorded'), h('dd', { 'data-inspection-expected': 'true' }, reading.expected))),
@@ -36303,11 +40329,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             { id: 'nectar', label: 'Nectar honey for harvesting', name: 'Nectar honey', amount: harvestableNectar, origin: 'Excludes fed syrup.' }
           ];
           function reserveReading(amount) { return (Math.round(amount * 10) / 10).toLocaleString(); }
+          var trackW = 336;
+          var clampedSyrup = Math.max(0, Math.min(storedSyrup, honey));
+          var clampedNectar = Math.max(0, harvestableNectar);
+          var clampedNectarReserve = Math.max(0, Math.min(clampedNectar, currentReserve));
+          var clampedNectarSurplus = Math.max(0, clampedNectar - currentReserve);
+          var syrupW = Math.min(trackW, Math.round((clampedSyrup / reserveScale) * trackW * 100) / 100);
+          var nectarResW = Math.min(Math.max(0, trackW - syrupW), Math.round((clampedNectarReserve / reserveScale) * trackW * 100) / 100);
+          var nectarSurW = Math.min(Math.max(0, trackW - syrupW - nectarResW), Math.round((clampedNectarSurplus / reserveScale) * trackW * 100) / 100);
+          var nectarTotalW = Math.min(trackW, Math.round((clampedNectar / reserveScale) * trackW * 100) / 100);
+          var reserveLineX = Math.round((12 + Math.max(0, Math.min(1, currentReserve / reserveScale)) * trackW) * 100) / 100;
           return h('section', { 'data-colony-food-origins': 'true', className: 'bee-colony-group', 'aria-labelledby': 'beehive-food-balance-title' },
             h('h4', { id: 'beehive-food-balance-title' }, 'Food balance'),
             h('dl', { className: 'bee-colony-grid' }, readings.map(function(reading) {
               return h('div', { key: reading[0] }, h('dt', null, reading[0]), h('dd', null, reserveReading(reading[1]) + ' lb'));
             })),
+            h('div', { 'data-food-partition-visual': 'true', className: 'bee-food-partition', 'aria-hidden': 'true' },
+              h('svg', { 'data-food-partition-svg': 'true', className: 'bee-food-partition-svg', viewBox: '0 0 360 58', 'aria-hidden': 'true', focusable: 'false' },
+                h('defs', null,
+                  h('pattern', { id: 'bee-syrup-hatch', width: '6', height: '6', patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' },
+                    h('line', { x1: '0', y1: '0', x2: '0', y2: '6', stroke: dk ? '#cbd5e1' : '#334155', strokeWidth: '2', opacity: '0.65' }))),
+                h('rect', { x: '12', y: '8', width: String(trackW), height: '16', rx: '4', fill: dk ? '#0f172a' : '#fffef8', stroke: dk ? '#475569' : '#94a3b8', strokeWidth: '1' }),
+                h('rect', { 'data-food-segment-bg': 'syrup', x: '12', y: '8', width: String(syrupW), height: '16', fill: dk ? '#64748b' : '#cbd5e1' }),
+                h('rect', { 'data-food-segment': 'syrup', x: '12', y: '8', width: String(syrupW), height: '16', fill: 'url(#bee-syrup-hatch)' }),
+                h('rect', { 'data-food-segment': 'nectar-reserve', x: String(12 + syrupW), y: '8', width: String(nectarResW), height: '16', fill: dk ? '#d97706' : '#f59e0b' }),
+                h('rect', { 'data-food-segment': 'nectar-surplus', x: String(Math.round((12 + syrupW + nectarResW) * 100) / 100), y: '8', width: String(nectarSurW), height: '16', fill: dk ? '#34d399' : '#059669' }),
+                h('rect', { x: '12', y: '32', width: String(trackW), height: '12', rx: '3', fill: dk ? '#0f172a' : '#fffef8', stroke: dk ? '#475569' : '#94a3b8', strokeWidth: '1' }),
+                h('rect', { 'data-food-nectar-only': 'true', x: '12', y: '32', width: String(nectarTotalW), height: '12', rx: '2', fill: dk ? '#fbbf24' : '#d97706' }),
+                h('line', { 'data-food-reserve-line': 'true', x1: String(reserveLineX), y1: '4', x2: String(reserveLineX), y2: '50', stroke: dk ? '#f8fafc' : '#1e293b', strokeWidth: '2', strokeDasharray: '4 3' })),
+              h('div', { className: 'bee-food-partition-legend' },
+                h('span', null, h('span', { className: 'bee-food-swatch', style: { background: dk ? 'repeating-linear-gradient(135deg,#94a3b8 0 2px,#475569 2px 4px)' : 'repeating-linear-gradient(135deg,#cbd5e1 0 2px,#64748b 2px 4px)' } }), 'Fed syrup (eaten first): ' + reserveReading(clampedSyrup) + ' lb'),
+                h('span', null, h('span', { className: 'bee-food-swatch', style: { background: dk ? '#d97706' : '#f59e0b' } }), 'Nectar in reserve: ' + reserveReading(clampedNectarReserve) + ' lb'),
+                h('span', null, h('span', { className: 'bee-food-swatch', style: { background: dk ? '#34d399' : '#059669' } }), 'Harvestable surplus: ' + reserveReading(harvestableSurplus) + ' lb'))),
             h('p', { className: 'bee-colony-note' }, 'Combined food is measured in honey-equivalent pounds. The model consumes fed syrup first; syrup cannot be harvested as honey. Food readings are rounded to one decimal place.'),
             h('details', { 'data-colony-reserve-guide': 'true', className: 'bee-colony-role-guide bee-colony-reserve-guide' },
               h('summary', null, 'Compare food with the reserve'),
@@ -36604,8 +40657,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               activeEvent
                 ? h('button', { type: 'button', className: 'bee-command-go', 'data-discovery-advance': 'event', 'data-command-tone': 'event', onClick: function() { jump('beehive-active-event'); } }, 'Decision waiting', h('span', { 'aria-hidden': 'true' }, ' \u2193'))
                 : h('button', { type: 'button', className: 'bee-command-go', 'data-discovery-advance': 'true', 'aria-keyshortcuts': 'N', onClick: advanceDay }, day === 0 ? 'Start day 1' : 'Next day', h('kbd', { 'aria-hidden': 'true' }, 'N')),
-              !activeEvent && h('button', { type: 'button', className: 'bee-command-skip', 'data-command-time': '5', 'aria-label': 'Advance up to 5 days; pauses if an event needs a decision', title: 'Advance up to 5 days', onClick: function() { advanceDays(5); } }, '+5'),
-              !activeEvent && h('button', { type: 'button', className: 'bee-command-skip', 'data-command-time': '30', 'aria-label': 'Advance up to 30 days; pauses if an event needs a decision', title: 'Advance up to 30 days', onClick: function() { advanceDays(30); } }, '+30'),
+              !activeEvent && h('button', { type: 'button', className: 'bee-command-skip', 'data-command-time': '5', 'aria-label': __alloT('stem.beehive.aria_advance_up_to_5_days_pauses_if_an_event_needs_a', 'Advance up to 5 days; pauses if an event needs a decision'), title: __alloT('stem.beehive.title_advance_up_to_5_days', 'Advance up to 5 days'), onClick: function() { advanceDays(5); } }, '+5'),
+              !activeEvent && h('button', { type: 'button', className: 'bee-command-skip', 'data-command-time': '30', 'aria-label': __alloT('stem.beehive.aria_advance_up_to_30_days_pauses_if_an_event_needs_a', 'Advance up to 30 days; pauses if an event needs a decision'), title: __alloT('stem.beehive.title_advance_up_to_30_days', 'Advance up to 30 days'), onClick: function() { advanceDays(30); } }, '+30'),
               !activeEvent && h('button', {
                 type: 'button',
                 className: 'bee-command-skip',
@@ -36627,7 +40680,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   type: 'button',
                   className: 'bee-command-skip',
                   'data-command-speed': String(spd),
-                  title: 'Cycle auto-advance speed (1x slow, 2x medium, 3x fast)',
+                  title: __alloT('stem.beehive.title_cycle_auto_advance_speed_1x_slow_2x_medium_3x_fa', 'Cycle auto-advance speed (1x slow, 2x medium, 3x fast)'),
                   'aria-label': 'Auto speed ' + spd + 'x. Click for ' + nextSpd + 'x.',
                   onClick: function() { upd('autoSpeed', nextSpd); }
                 }, spd + 'x');
@@ -36701,6 +40754,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               return h('button', { key: path.id, type: 'button', 'data-topic-pathway': path.id, 'aria-pressed': selected, 'aria-label': path.label, 'aria-describedby': 'beehive-path-' + path.id + '-description beehive-path-' + path.id + '-count', onClick: function() { if (!selected) selectBeeView(entryId); } },
                 h('span', { className: 'bee-topic-card-top' }, h('span', { 'aria-hidden': 'true' }, path.icon), h('strong', null, path.label), selected && h('span', { 'data-topic-path-selected': 'true' }, 'Current')),
                 h('span', { id: 'beehive-path-' + path.id + '-description', 'data-topic-path-description': 'true' }, path.desc),
+                h('span', { className: 'bee-topic-path-pips', 'data-topic-pathway-pips': path.id, 'aria-hidden': 'true' }, path.ids.map(function(id) {
+                  return h('span', { key: id, className: 'bee-topic-path-pip', 'data-pip-opened': isBeeTopicExplored(id) ? 'true' : 'false' });
+                })),
                 h('span', { id: 'beehive-path-' + path.id + '-count', 'data-topic-path-count': 'true' }, count + '/' + path.ids.length + ' views opened'));
             })),
             h('h3', null, '2. Choose a science view'),
@@ -36737,22 +40793,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('div', { className: 'bee-perspective-heading' }, h('h2', { id: 'beehive-perspective-title' }, 'Choose a perspective'), h('p', null, 'Each perspective has its own controls and Science Notebook.')),
             h('div', { className: 'bee-perspective-options', 'data-perspective-options': 'true', 'data-mobile-rail': 'perspectives', role: 'radiogroup', 'aria-label': __alloT('stem.beehive.simulation_perspective', 'Simulation perspective'), 'aria-describedby': 'beehive-perspective-help' }, perspectives.map(function(perspective) {
               var selected = viewMode === perspective.id, status = simCardStatus(perspective.id);
+              var curFlight = _droneState.current || {};
+              var pVis = bhPerspectiveCardVisual(perspective.id, {
+                colonySurvived: colonySurvived, colonyHealth: colonyHealth, activeEvent: !!activeEvent, varroaLevel: varroaLevel, honey: honey, currentReserve: currentReserve,
+                queenResult: queenResult, queenGameActive: queenGameActive, queenPaused: queenPaused, queenTerritory: queenData && queenData.territory, queenWins: queenCareer && queenCareer.wins,
+                droneFlightActive: droneFlightActive, dronePaused: dronePaused, dronePhase: curFlight.phase, droneEnergy: curFlight.energy, droneMaxEnergy: droneMaxEnergy(curFlight.difficulty || droneDifficulty), droneLastRun: droneLastRun
+              });
               return h('button', { key: perspective.id, type: 'button', id: 'beehive-mode-tab-' + perspective.id, role: 'radio', 'aria-checked': selected ? 'true' : 'false', tabIndex: selected ? 0 : -1, 'data-beehive-mode-tab': perspective.id,
                 'aria-label': perspective.label + '. ' + perspective.purpose + '. ' + status + (selected ? '. Current perspective.' : '. Select this perspective.'),
                 onClick: function() { upd('viewMode', perspective.id); },
                 onKeyDown: function(event) { handleBeeTabKey(event, ['beekeeper', 'queen', 'drone'], perspective.id, 'data-beehive-mode-tab', function(nextId) { upd('viewMode', nextId); }); } },
                 h('span', { className: 'bee-perspective-top' },
-                  h('span', { className: 'bee-perspective-icon', 'aria-hidden': 'true' }, perspective.icon),
+                  h('span', { className: 'bee-perspective-icon', 'aria-hidden': 'true' },
+                    h('svg', { className: 'bee-perspective-emblem', 'data-perspective-emblem': perspective.id, width: 22, height: 22, viewBox: '0 0 28 28', 'aria-hidden': 'true', focusable: 'false' },
+                      pVis.emblemPaths.map(function(dStr, pi) {
+                        return h('path', { key: pi, d: dStr, fill: 'none', stroke: 'currentColor', strokeWidth: 1.9, strokeLinecap: 'round', strokeLinejoin: 'round' });
+                      }))),
                   h('strong', { 'data-perspective-label': 'true' }, perspective.label),
                   selected && h('span', { 'data-perspective-selected': 'true' }, h('span', { 'aria-hidden': 'true' }, '✓ '), 'Selected')),
                 h('span', { 'data-beehive-mode-eyebrow': 'true' }, beeRoleVisual(perspective.id).eyebrow),
                 h('span', { 'data-perspective-purpose': 'true' }, perspective.purpose),
-                h('span', { 'data-perspective-status': 'true' }, h('span', { className: 'bee-perspective-status-label' }, 'Status: '), status));
+                h('span', { 'data-perspective-status': 'true' }, h('span', { className: 'bee-perspective-status-label' }, 'Status: '), status),
+                h('svg', { className: 'bee-perspective-meter', 'data-perspective-meter': perspective.id, 'data-tone': pVis.tone, viewBox: '0 0 120 6', 'aria-hidden': 'true', focusable: 'false' },
+                  h('rect', { className: 'bee-perspective-meter-track', x: 1, y: 1, width: 118, height: 4, rx: 2 }),
+                  h('rect', { className: 'bee-perspective-meter-fill', 'data-tone': pVis.tone, x: 1, y: 1, width: pVis.fillWidth, height: 4, rx: 2 })));
             })),
             h('p', { id: 'beehive-perspective-help', className: 'bee-perspective-help' }, 'Use arrow keys to change perspective. Tab continues into the lab.'));
         }
         function renderBeeFlowNav() {
           var playTarget = viewMode === 'queen' ? 'beehive-queen-playfield' : viewMode === 'drone' ? 'beehive-drone-playfield' : 'beehive-canvas-wrap';
+          var flowVis = bhFlowNavVisuals(d);
+          function renderFlowStepEmblem(stepId) {
+            var shapes = stepId === 'focus'
+              ? [h('circle', { key: 'c', cx: 8, cy: 8, r: 4.5, fill: 'none', stroke: 'currentColor', strokeWidth: 1.5 }), h('path', { key: 'x', d: 'M8 1.5V4M8 12V14.5M1.5 8H4M12 8H14.5', fill: 'none', stroke: 'currentColor', strokeWidth: 1.4, strokeLinecap: 'round' }), h('circle', { key: 'd', cx: 8, cy: 8, r: 1.4, fill: 'currentColor' })]
+              : stepId === 'play'
+                ? [h('path', { key: 'h', d: 'M8 1.8L13.4 4.9V11.1L8 14.2L2.6 11.1V4.9Z', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeLinejoin: 'round' }), h('path', { key: 'p', d: 'M6.5 5.6L10.8 8L6.5 10.4Z', fill: 'currentColor' })]
+                : stepId === 'learn'
+                  ? [h('path', { key: 'b', d: 'M2 3.6C4.2 3 6.3 3.4 8 4.6C9.7 3.4 11.8 3 14 3.6V12.5C11.8 12 9.7 12.4 8 13.5C6.3 12.4 4.2 12 2 12.5Z', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeLinejoin: 'round' }), h('path', { key: 's', d: 'M8 4.6V13.5', fill: 'none', stroke: 'currentColor', strokeWidth: 1.4 })]
+                  : stepId === 'explain'
+                    ? [h('rect', { key: 'r', x: 2.6, y: 2.2, width: 8.4, height: 11.6, rx: 1.4, fill: 'none', stroke: 'currentColor', strokeWidth: 1.5 }), h('path', { key: 'l', d: 'M4.8 5.6H8.8M4.8 8.2H8.2', fill: 'none', stroke: 'currentColor', strokeWidth: 1.3, strokeLinecap: 'round' }), h('path', { key: 'p', d: 'M9.8 11.6L13.8 7.6', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round' })]
+                    : [h('polygon', { key: 't', points: '8,3.2 3.2,12.2 12.8,12.2', fill: 'none', stroke: 'currentColor', strokeWidth: 1.4, strokeLinejoin: 'round' }), h('circle', { key: 'n1', cx: 8, cy: 3.2, r: 1.7, fill: 'currentColor' }), h('circle', { key: 'n2', cx: 3.2, cy: 12.2, r: 1.7, fill: 'currentColor' }), h('circle', { key: 'n3', cx: 12.8, cy: 12.2, r: 1.7, fill: 'currentColor' })];
+            return h('svg', { className: 'bee-flow-step-icon', 'data-flow-step-icon': stepId, viewBox: '0 0 16 16', 'aria-hidden': 'true', focusable: 'false' }, shapes);
+          }
           var steps = [
             { id: 'focus', target: 'beehive-play-focus', label: 'Focus', hint: 'Read the suggested next action.' },
             { id: 'play', target: playTarget, label: 'Play', hint: viewMode === 'queen' ? 'Explore the Colony Network board.' : viewMode === 'drone' ? 'Open the flight deck or launch briefing.' : 'Explore the living hive and scene controls.' },
@@ -36773,9 +40855,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('button', { type: 'button', 'data-beehive-focus-layout': 'true', 'aria-label': __alloT('stem.beehive.a11y_stage_first_layout', 'Stage-first layout'), 'aria-pressed': focusLayout, 'aria-describedby': 'beehive-layout-description', onClick: function() { var nextLayout = !focusLayout; discoveryLayoutFocus.current = true; upd('focusLayout', nextLayout); announceBee(nextLayout ? 'Stage-first layout enabled.' : 'Overview-first layout enabled.', false); } }, h('span', { 'aria-hidden': 'true' }, focusLayout ? '▣' : '▤'), 'Stage-first layout'),
                 h('p', { id: 'beehive-layout-description' }, focusLayout ? 'Scene before supporting dashboards.' : 'Supporting dashboards before the scene.'))),
             h('ol', { className: 'bee-flow-links', 'data-mobile-rail': 'learning-flow' }, steps.map(function(step, index) {
+              var sVis = flowVis.byId[step.id] || { id: step.id, state: 'ready', fillWidth: 28 };
               return h('li', { key: step.id }, h('a', { href: '#' + step.target, 'data-beehive-flow-step': step.id, 'aria-label': step.label + ': ' + step.hint, onClick: function(event) { openDestination(event, step); } },
-                h('span', { className: 'bee-flow-destination' }, h('span', { className: 'bee-flow-number', 'aria-hidden': 'true' }, index + 1), h('strong', null, step.label)),
-                h('span', { className: 'bee-flow-hint' }, step.hint)));
+                h('span', { className: 'bee-flow-destination' }, h('span', { className: 'bee-flow-number', 'aria-hidden': 'true' }, index + 1), renderFlowStepEmblem(step.id), h('strong', null, step.label)),
+                h('span', { className: 'bee-flow-hint' }, step.hint),
+                h('svg', { className: 'bee-flow-step-meter', 'data-flow-step-meter': step.id, 'data-flow-state': sVis.state, viewBox: '0 0 100 5', preserveAspectRatio: 'none', 'aria-hidden': 'true', focusable: 'false' },
+                  h('rect', { className: 'bee-flow-meter-track', x: 0.5, y: 0.5, width: 99, height: 4, rx: 2 }),
+                  h('rect', { className: 'bee-flow-meter-fill', 'data-flow-state': sVis.state, x: 0.5, y: 0.5, width: sVis.fillWidth, height: 4, rx: 2 }))));
             })));
         }
         // One source for the next-step advice, shared by the coach panel and the command bar.
@@ -36878,12 +40964,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         }
         function renderBeePlayCoach() {
           var plan = beeCoachPlan(), title = plan.title, body = plan.body, readings = plan.readings, action = plan.action, coachState = plan.coachState, routine = plan.routine, ended = plan.ended;
+          var coachVis = bhPlayCoachVisuals(viewMode, coachState, readings);
           var ready = !action || action.ready !== false;
           var phaseLabels = { colony: 'Current colony', setup: 'Before you start', live: 'Model running', paused: 'Model paused', review: viewMode === 'drone' && ended ? 'Current outcome' : 'Recorded outcome' };
           return h('div', { key: 'beehive-coach', id: 'beehive-play-focus', tabIndex: -1, 'data-beehive-focus-panel': 'coach', 'data-beehive-play-coach': 'true', 'data-coach-state': coachState, 'data-coach-role': viewMode, className: 'bee-coach', role: 'region', 'aria-label': __alloT('stem.beehive.current_sim_goal', 'Current simulation goal') },
             h('div', { className: 'bee-coach-layout' },
-              h('div', { className: 'bee-coach-main', 'data-coach-main': 'true' }, h('div', { className: 'bee-coach-kicker' }, h('span', null, 'Next step'), h('span', { className: 'bee-coach-phase' }, phaseLabels[coachState])), h('h2', null, title), h('p', null, body),
-                h('dl', { className: 'bee-coach-readings', 'data-coach-readings': 'true', 'aria-label': __alloT("stem.beehive.a11y_context_for_this_step", 'Context for this step') }, readings.map(function(item) { return h('div', { key: item[0], 'data-coach-reading': item[0] }, h('dt', null, item[0]), h('dd', null, item[1])); }))),
+              h('div', { className: 'bee-coach-main', 'data-coach-main': 'true' },
+                h('div', { className: 'bee-coach-kicker' },
+                  h('span', null, 'Next step'),
+                  h('span', { className: 'bee-coach-phase' },
+                    h('svg', { className: 'bee-coach-phase-icon', 'data-coach-phase-icon': coachState, width: 14, height: 14, viewBox: '0 0 16 16', 'aria-hidden': 'true', focusable: 'false' },
+                      h('path', { d: coachVis.phaseIcon, fill: 'none', stroke: 'currentColor', strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round' })),
+                    phaseLabels[coachState])),
+                h('h2', null, title), h('p', null, body),
+                h('dl', { className: 'bee-coach-readings', 'data-coach-readings': 'true', 'aria-label': __alloT("stem.beehive.a11y_context_for_this_step", 'Context for this step') }, readings.map(function(item, idx) {
+                  var rVis = coachVis.readings[idx];
+                  return h('div', { key: item[0], 'data-coach-reading': item[0] },
+                    h('dt', null, item[0]),
+                    h('dd', null, item[1], rVis && rVis.bounded && h('svg', { className: 'bee-coach-reading-bar', 'data-coach-reading-bar': rVis.kind, 'data-tone': rVis.tone, viewBox: '0 0 120 8', 'aria-hidden': 'true', focusable: 'false' },
+                      rVis.kind === 'pips'
+                        ? [0, 1, 2].map(function(pipIdx) {
+                            var pipActive = pipIdx < rVis.activePips;
+                            return h('rect', { key: pipIdx, className: pipActive ? 'bee-coach-bar-fill' : 'bee-coach-bar-track', 'data-tone': pipActive ? rVis.tone : undefined, x: 2 + pipIdx * 40, y: 1.5, width: 36, height: 5, rx: 2 });
+                          })
+                        : [
+                            h('rect', { key: 't', className: 'bee-coach-bar-track', x: 2, y: 1.5, width: 116, height: 5, rx: 2.5 }),
+                            h('rect', { key: 'f', className: 'bee-coach-bar-fill', 'data-tone': rVis.tone, x: 2, y: 1.5, width: rVis.fillWidth, height: 5, rx: 2.5 })
+                          ])));
+                }))),
               action && h('div', { className: 'bee-coach-action', 'data-beehive-coach-action': action.id, 'data-beehive-cause-effect': 'true', 'data-action-ready': ready ? 'true' : 'false' }, h('h3', null, ready ? 'Suggested action' : 'Check availability'),
                 h('button', { type: 'button', disabled: !ready, onClick: action.onClick, 'data-action-ready': ready ? 'true' : 'false', 'aria-describedby': 'beehive-coach-action-hint beehive-coach-watch', 'aria-keyshortcuts': ready ? action.shortcut || undefined : undefined }, action.label, action.shortcut && h('kbd', { 'aria-hidden': 'true' }, action.shortcut)),
                 h('p', { id: 'beehive-coach-action-hint', 'data-coach-action-hint': 'true' }, action.hint), h('p', { id: 'beehive-coach-watch', className: 'bee-coach-watch', 'data-beehive-coach-watch': 'true', role: 'note' }, h('strong', null, 'What to observe: '), action.watch))),
@@ -36998,12 +41106,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             'Make that choice, then advance one day when ready.',
             'Compare before and after; note other conditions that could matter.'
           ];
+          var briefVis = bhMissionBriefVisuals(viewMode, metrics, inquiryStep, { currentReserve: viewMode === 'beekeeper' ? currentReserve : null });
           return h('section', { 'data-beehive-command': viewMode, 'data-brief-source': evidenceSource, className: 'bee-brief', 'aria-labelledby': 'beehive-command-title' },
             h('header', { className: 'bee-brief-header' },
               h('div', { className: 'bee-brief-kicker' }, h('span', null, viewMode === 'queen' ? 'Colony systems brief' : viewMode === 'drone' ? 'Flight systems brief' : 'Superorganism brief'), h('span', { className: 'bee-brief-phase', 'data-brief-phase': 'true' }, phase)),
               h('p', { className: 'bee-brief-context' }, contextLabel),
               h('h2', { id: 'beehive-command-title' }, mission.title), h('p', null, mission.body)),
-            h('dl', { className: 'bee-brief-metrics', 'data-brief-metrics': 'true', 'aria-label': phase === 'Setup guide' ? 'Getting started' : phase }, metrics.map(function(metric) { return h('div', { key: metric[1], className: 'bee-brief-metric', 'data-brief-metric': metric[1] }, h('dt', null, metric[1]), h('dd', null, h('span', { 'data-brief-value': 'true' }, metric[0]), h('p', null, metric[2]))); })),
+            h('dl', { className: 'bee-brief-metrics', 'data-brief-metrics': 'true', 'aria-label': phase === 'Setup guide' ? 'Getting started' : phase }, metrics.map(function(metric, mIdx) {
+              var barInfo = briefVis.metrics[mIdx];
+              return h('div', { key: metric[1], className: 'bee-brief-metric', 'data-brief-metric': metric[1] },
+                h('dt', null, metric[1]),
+                h('dd', null,
+                  h('span', { 'data-brief-value': 'true' }, metric[0]),
+                  barInfo && barInfo.available && h('svg', {
+                    viewBox: '0 0 200 10', width: 200, height: 10,
+                    className: 'bee-brief-metric-bar',
+                    'data-brief-metric-bar': metric[1],
+                    'data-tone': barInfo.tone,
+                    'aria-hidden': 'true', focusable: 'false'
+                  },
+                    h('rect', { x: 2, y: 2, width: 196, height: 6, rx: 3, className: 'bee-brief-bar-track' }),
+                    barInfo.fillWidth > 0 && h('rect', { x: 2, y: 2, width: barInfo.fillWidth, height: 6, rx: 3, className: 'bee-brief-bar-fill' }),
+                    barInfo.thresholdX != null && h('line', { x1: barInfo.thresholdX, y1: 0.5, x2: barInfo.thresholdX, y2: 9.5, className: 'bee-brief-bar-threshold', 'data-brief-threshold': 'true' })),
+                  h('p', null, metric[2])));
+            })),
             h('div', { className: 'bee-brief-layout' },
               h('aside', { className: 'bee-brief-reading', 'data-brief-read-guide': 'true', role: 'note', 'aria-labelledby': 'beehive-brief-guide' }, h('h3', { id: 'beehive-brief-guide' }, phase === 'Setup guide' ? 'Before you begin' : 'Read the evidence'), h('p', null, readingGuide), h('p', { className: 'bee-brief-boundary' }, footer)),
               h('div', { className: 'bee-brief-goals' }, h('h3', null, 'What to investigate'), h('ul', null, evidenceGoals.map(function(goal) { return h('li', { key: goal }, goal); })))),
@@ -37011,7 +41137,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('h3', null, 'Suggested inquiry step · ' + inquiry[inquiryStep]),
               h('p', { className: 'bee-brief-inquiry-note' }, 'Revisit any step as your evidence changes.'),
               h('ol', null, inquiry.map(function(label, index) { return h('li', { key: label, 'data-inquiry-step': label.toLowerCase(), 'aria-current': index === inquiryStep ? 'step' : undefined },
-                h('div', null, h('strong', null, (index + 1) + '. ' + label), index === inquiryStep && h('span', { 'data-inquiry-suggestion': 'true' }, 'Suggested')),
+                h('div', null,
+                  h('svg', {
+                    viewBox: '0 0 16 16', width: 16, height: 16,
+                    className: 'bee-inquiry-step-icon',
+                    'data-inquiry-step-icon': briefVis.steps[index].id,
+                    'aria-hidden': 'true', focusable: 'false'
+                  }, h('path', { d: briefVis.steps[index].iconPath })),
+                  h('strong', null, (index + 1) + '. ' + label),
+                  index === inquiryStep && h('span', { 'data-inquiry-suggestion': 'true' }, 'Suggested')),
                 h('p', { 'data-inquiry-prompt': 'true' }, inquiryPrompts[index])); })))
           );
         }
@@ -37103,11 +41237,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('div', { className: 'bee-comparison-metrics' }, comparison.metrics.map(function(metric) {
                   var direction = metric.delta == null ? 'unavailable' : metric.delta > 0 ? 'increased' : metric.delta < 0 ? 'decreased' : 'unchanged';
                   var missing = metric.before == null && metric.after == null ? 'Neither recorded day has a ' + metric.label.toLowerCase() + ' reading' : 'The ' + metric.label.toLowerCase() + ' reading for Day ' + (metric.before == null ? comparison.before.day : comparison.after.day) + ' was not recorded';
+                  var hasBars = metric.delta != null && Number.isFinite(metric.before) && Number.isFinite(metric.after);
+                  var barMax = hasBars ? ((metric.id === 'mites' || metric.id === 'stability') ? 100 : Math.max(metric.before, metric.after, 1)) : 1;
+                  var beforePct = hasBars ? Math.max(0, Math.min(100, Math.round((metric.before / barMax) * 1000) / 10)) : 0;
+                  var afterPct = hasBars ? Math.max(0, Math.min(100, Math.round((metric.after / barMax) * 1000) / 10)) : 0;
                   return h('article', { key: metric.id, 'data-observation-metric': metric.id, className: 'bee-observations-card' },
                     h('header', { className: 'bee-comparison-metric-heading' }, h('h6', null, metric.label), h('span', { 'data-comparison-direction': direction, className: 'bee-comparison-direction' }, direction.charAt(0).toUpperCase() + direction.slice(1))),
                     h('dl', null,
                       h('div', null, h('dt', null, 'Earlier \u00b7 Day ' + comparison.before.day), h('dd', null, metric.before == null ? 'Unavailable' : metric.before + ' ' + metric.unit)),
                       h('div', null, h('dt', null, 'Later \u00b7 Day ' + comparison.after.day), h('dd', null, metric.after == null ? 'Unavailable' : metric.after + ' ' + metric.unit))),
+                    hasBars && h('div', { 'data-observation-bars': 'true', className: 'bee-observation-bars', 'aria-hidden': 'true' },
+                      h('div', { className: 'bee-observation-bar-row' },
+                        h('span', { className: 'bee-observation-bar-label' }, 'Day ' + comparison.before.day),
+                        h('div', { className: 'bee-observation-bar-track' },
+                          h('span', { 'data-observation-bar': 'before', 'data-which': 'before', className: 'bee-observation-bar-fill', style: { width: beforePct + '%' } }))),
+                      h('div', { className: 'bee-observation-bar-row' },
+                        h('span', { className: 'bee-observation-bar-label' }, 'Day ' + comparison.after.day),
+                        h('div', { className: 'bee-observation-bar-track' },
+                          h('span', { 'data-observation-bar': 'after', 'data-which': 'after', className: 'bee-observation-bar-fill', style: { width: afterPct + '%' } })))),
                     h('p', { 'data-observation-delta': metric.id }, h('strong', null, 'Change: '), bhColonyObservationChange(metric.delta, metric.unit)),
                     metric.delta == null && h('p', { 'data-comparison-missing': 'true' }, missing + '; no change can be calculated.'));
                 })),
@@ -37254,6 +41401,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var network = role === 'queen', colony = role === 'beekeeper', flight = role === 'drone';
           var idPrefix = colony ? 'beehive-colony-evidence' : network ? 'beehive-network-evidence' : 'beehive-flight-evidence';
           var append = bhAppendNotebookEvidence(entry, capture.text);
+          var visuals = bhNotebookCaptureVisuals(capture, entry, role);
           var sourceLabel = colony ? capture.sourceLabel : capture.source === 'saved' ? (network ? 'Recorded match' : 'Last saved flight') : capture.state === 'final' ? 'Just completed flight' : capture.state === 'paused' ? (network ? 'Current match · Paused' : 'Current flight · Paused') : capture.state === 'live' ? (network ? 'Current match · Live' : 'Current flight · Live') : network ? 'Before a match' : 'Before a flight';
           var saveHint = !capture.available ? (network ? 'Start a match to collect Colony Network readings. Your existing writing is kept.' : 'Launch a flight or open a saved flight to collect readings. Your existing writing is kept.') : append.status === 'full' ? 'Your writing is preserved. Make room for ' + append.needed + ' more characters to add this record; the evidence box holds 1,200.' : append.status === 'duplicate' ? 'These exact readings are already in your evidence. Refresh for another reading, or review your explanation.' : 'Adds the previewed text to your evidence and marks only the evidence section for self-review. Your prediction and explanation are kept.';
           return h('section', { className: 'bee-evidence-capture', 'data-capture-role': role, 'data-flight-notebook-capture': flight ? 'true' : undefined, 'data-network-notebook-capture': network ? 'true' : undefined, 'data-colony-notebook-capture': colony ? 'true' : undefined, 'data-capture-source': capture.source, 'data-capture-state': capture.state, 'data-beehive-notebook-handoff': flight && capture.source === 'saved' ? 'true' : undefined, 'aria-labelledby': idPrefix + '-title' },
@@ -37262,7 +41410,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('h3', { id: idPrefix + '-title' }, capture.title),
               h('p', { 'data-capture-context': 'true' }, capture.context)),
             capture.available && h('dl', { className: 'bee-evidence-capture-readings' }, capture.readings.map(function(reading) {
-              return h('div', { key: reading.id, 'data-capture-reading': reading.id }, h('dt', null, reading.label), h('dd', { 'data-capture-value': 'true' }, reading.value));
+              var bar = visuals && visuals.readingBars ? visuals.readingBars[reading.id] : null;
+              return h('div', { key: reading.id, 'data-capture-reading': reading.id },
+                h('dt', null, reading.label),
+                h('dd', { 'data-capture-value': 'true' }, reading.value),
+                bar && h('svg', {
+                  viewBox: '0 0 120 6', width: 120, height: 6,
+                  className: 'bee-capture-reading-bar',
+                  'data-capture-reading-bar': reading.id,
+                  'data-capture-bar-pct': String(bar.pct),
+                  'data-capture-bar-tone': bar.tone,
+                  'aria-hidden': 'true', focusable: 'false'
+                },
+                h('rect', { x: 0, y: 1, width: 120, height: 4, rx: 2, className: 'bee-capture-bar-track' }),
+                h('rect', { x: 0, y: 1, width: +((bar.pct / 100) * 120).toFixed(2), height: 4, rx: 2, className: 'bee-capture-bar-fill', 'data-tone': bar.tone })));
             })),
             capture.frameObservation && h('p', { className: 'bee-evidence-capture-guide', 'data-capture-frame': 'true' }, capture.frameObservation),
             h('p', { className: 'bee-evidence-capture-guide', 'data-capture-guide': 'true' }, capture.guide),
@@ -37273,6 +41434,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('div', { className: 'bee-evidence-capture-actions' },
               h('button', { type: 'button', 'data-beehive-capture-evidence': role, disabled: !capture.available, 'data-primary': 'true', 'aria-describedby': idPrefix + '-save-hint', onClick: function() { captureBeeNotebookEvidence(capture); } }, 'Add these readings'),
               h('button', { type: 'button', 'data-capture-refresh': 'true', 'aria-describedby': idPrefix + '-controls-help', onClick: function() { notebookCaptureRefresh[1](function(value) { return value + 1; }); announceBee((colony ? 'Beekeeper' : network ? 'Colony Network' : 'Flight') + ' reading preview refreshed.', false); } }, 'Refresh readings')),
+            h('svg', {
+              viewBox: '0 0 240 8', width: 240, height: 8,
+              className: 'bee-capture-capacity-rail',
+              'data-capture-capacity-rail': 'true',
+              'data-capacity-status': visuals.capacity.status,
+              'aria-hidden': 'true', focusable: 'false'
+            },
+            h('rect', { x: 0, y: 1, width: 240, height: 6, rx: 3, className: 'bee-capture-capacity-track', 'data-capacity-track': 'true' }),
+            h('rect', { x: 0, y: 1, width: visuals.capacity.usedW, height: 6, rx: 3, className: 'bee-capture-capacity-used', 'data-capacity-used': 'true' }),
+            visuals.capacity.showIncoming && h('rect', { x: visuals.capacity.incomingX, y: 1, width: visuals.capacity.incomingW, height: 6, rx: 3, className: 'bee-capture-capacity-incoming', 'data-capacity-incoming': 'true' })),
             h('p', { id: idPrefix + '-save-hint', 'data-capture-save-hint': capture.available ? append.status : 'unavailable', className: 'bee-evidence-capture-save-hint' }, saveHint));
         }
         function captureBeeNotebookEvidence(preparedCapture) {
@@ -37474,6 +41645,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     h('dl', { id: roleStatusId, className: 'bee-portfolio-role-status' },
                       h('div', null, h('dt', null, 'Writing'), h('dd', { 'data-notebook-role-written': 'true' }, role.completed + ' / 3 written')),
                       h('div', null, h('dt', null, 'Self-review'), h('dd', { 'data-notebook-role-reviewed': 'true' }, role.reviewCompleted + ' / 3 self-reviewed'))),
+                    (function() {
+                      var savedReview = savedEntry.review && typeof savedEntry.review === 'object' ? savedEntry.review : {};
+                      return h('div', { className: 'bee-portfolio-role-pips', 'data-notebook-role-pips': role.id, 'aria-hidden': 'true' }, fields.map(function(field) {
+                        var isWritten = String(savedEntry[field] || '').trim().length > 0;
+                        var isReviewed = isWritten && savedReview[field] === true;
+                        return h('span', { key: field, className: 'bee-portfolio-role-pip', 'data-pip-field': field, 'data-written': String(isWritten), 'data-reviewed': String(isReviewed) });
+                      }));
+                    })(),
                     h('button', { type: 'button', 'data-notebook-role': role.id, className: 'bee-portfolio-button', 'aria-current': active ? 'true' : undefined, 'aria-describedby': roleStatusId, onClick: function() { openBeeNotebookRole(role.id, role.label); } }, 'Open ' + role.label + ' notebook'),
                     h('details', { 'data-notebook-role-records': role.id, className: 'bee-portfolio-records' },
                       h('summary', null, 'Read saved writing', h('span', { className: 'bee-sr-only' }, ' · ' + role.label)),
@@ -37512,6 +41691,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         function openBeeJourneySynthesis() {
           upd('notebookOpen', true);
           window.requestAnimationFrame(function() { focusBeeNotebookWriting('synthesis'); });
+        }
+        function renderJourneyMilestonePips(milestones, location) {
+          return h('span', { className: 'bee-journey-pips', 'data-journey-milestone-pips': location, 'aria-hidden': 'true' }, milestones.map(function(m) {
+            return h('span', { key: m.id, className: 'bee-journey-pip', 'data-journey-pip': m.id, 'data-pip-reached': m.done ? 'true' : 'false', 'data-pip-current': viewMode === m.id ? 'true' : 'false' });
+          }));
+        }
+        function renderJourneyIcon(kind, attrName) {
+          var props = { className: 'bee-journey-icon', viewBox: '0 0 20 20', 'aria-hidden': 'true', focusable: 'false' };
+          props[attrName] = kind;
+          if (kind === 'beekeeper' || kind === 'field') {
+            return h('svg', props,
+              h('rect', { x: 3, y: 4, width: 14, height: 12, rx: 2, fill: 'none', stroke: 'currentColor', strokeWidth: 1.7 }),
+              h('path', { d: 'M6.5 7.5 V12.5 M10 7.5 V12.5 M13.5 7.5 V12.5 M7 15.5 H13', fill: 'none', stroke: 'currentColor', strokeWidth: 1.6, strokeLinecap: 'round' }));
+          }
+          if (kind === 'queen' || kind === 'command') {
+            return h('svg', props,
+              h('path', { d: 'M5 14 L10 5 L15 14 Z', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeLinejoin: 'round' }),
+              h('circle', { cx: 10, cy: 5, r: 2.1, fill: 'currentColor' }),
+              h('circle', { cx: 5, cy: 14, r: 2.1, fill: 'currentColor' }),
+              h('circle', { cx: 15, cy: 14, r: 2.1, fill: 'currentColor' }));
+          }
+          return h('svg', props,
+            h('circle', { cx: 10, cy: 6, r: 4, fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeDasharray: '2.5 2' }),
+            h('path', { d: 'M4.5 14.5 L10 9.5 L15.5 14.5 M10 9.5 V17', fill: 'none', stroke: 'currentColor', strokeWidth: 1.7, strokeLinecap: 'round', strokeLinejoin: 'round' }));
         }
         function renderBeeJourney(milestones) {
           var completed = milestones.filter(function(item) { return item.done; }).length;
@@ -37552,12 +41755,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             announceBee((target === 'queen' ? 'Colony Network' : 'Drone Flight') + ' opened. Your saved work is available.', false);
           }
           return h('section', { 'data-beehive-journey': 'true', className: 'bee-journey-body', 'aria-labelledby': 'beehive-journey-title' },
-            h('div', { className: 'bee-journey-heading' }, h('h2', { id: 'beehive-journey-title' }, 'Perspective journey'), h('span', { className: 'bee-journey-count' }, completed + ' / 3 milestones')),
+            h('div', { className: 'bee-journey-heading' }, h('h2', { id: 'beehive-journey-title' }, 'Perspective journey'), h('div', { className: 'bee-journey-count-group' }, renderJourneyMilestonePips(milestones, 'body'), h('span', { className: 'bee-journey-count' }, completed + ' / 3 milestones'))),
             h('p', { className: 'bee-journey-intro' }, 'Choose any role. These game milestones track activities; they do not assess your explanations. A difficult or unfinished attempt can still provide useful evidence.'),
             h('div', { className: 'bee-journey-role-grid', 'data-journey-role-grid': 'true', role: 'group', 'aria-label': __alloT("stem.beehive.a11y_choose_a_perspective", 'Choose a perspective') }, milestones.map(function(item, index) {
               var current = viewMode === item.id, prefix = 'beehive-journey-' + item.id;
               return h('button', { key: item.id, type: 'button', className: 'bee-journey-role', 'data-journey-role': item.id, 'data-journey-milestone': item.done ? 'reached' : 'not-yet', 'aria-current': current ? 'step' : undefined, 'aria-label': 'Open ' + item.role, 'aria-describedby': prefix + '-criterion ' + prefix + '-record', onClick: function() { upd('viewMode', item.id); announceBee(item.role + ' opened.', false); } },
-                h('span', { className: 'bee-journey-role-top' }, h('span', null, (index + 1) + '. ' + item.role), current && h('span', null, 'Viewing')),
+                h('span', { className: 'bee-journey-role-top' }, h('span', { className: 'bee-journey-role-label' }, renderJourneyIcon(item.id, 'data-journey-role-icon'), h('span', null, (index + 1) + '. ' + item.role)), current && h('span', null, 'Viewing')),
                 h('span', { className: 'bee-journey-role-title' }, item.title), h('span', { id: prefix + '-criterion', className: 'bee-journey-role-criterion' }, item.criterion),
                 h('span', { className: 'bee-journey-role-record' }, h('span', { className: 'bee-journey-state' }, item.done ? 'Milestone reached' : 'Not reached yet'), h('span', { id: prefix + '-record', className: 'bee-journey-role-criterion' }, item.record)));
             })),
@@ -37567,7 +41770,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('section', { className: 'bee-journey-evidence', 'aria-labelledby': 'beehive-journey-evidence-title' },
               h('h3', { id: 'beehive-journey-evidence-title' }, 'Evidence across roles'), h('p', null, 'Check the source and timing of each reading before connecting the ideas.'),
               h('div', { className: 'bee-journey-evidence-grid', 'data-journey-evidence-grid': 'true', 'data-beehive-causal-chain': 'true' }, evidence.map(function(item) {
-                return h('section', { key: item.id, className: 'bee-journey-evidence-card', 'data-journey-evidence': item.id, 'data-causal-step': item.id, 'aria-labelledby': 'beehive-journey-evidence-' + item.id }, h('h4', { id: 'beehive-journey-evidence-' + item.id }, item.label), h('span', { className: 'bee-journey-state', 'data-journey-evidence-state': 'true' }, item.state), h('p', { 'data-journey-reading': 'true' }, item.reading), h('p', { className: 'bee-journey-connection' }, item.connection));
+                return h('section', { key: item.id, className: 'bee-journey-evidence-card', 'data-journey-evidence': item.id, 'data-causal-step': item.id, 'aria-labelledby': 'beehive-journey-evidence-' + item.id }, h('div', { className: 'bee-journey-evidence-head' }, renderJourneyIcon(item.id, 'data-journey-evidence-icon'), h('h4', { id: 'beehive-journey-evidence-' + item.id }, item.label)), h('span', { className: 'bee-journey-state', 'data-journey-evidence-state': 'true' }, item.state), h('p', { 'data-journey-reading': 'true' }, item.reading), h('p', { className: 'bee-journey-connection' }, item.connection));
               }))),
             h('div', { className: 'bee-journey-handoff', 'data-beehive-handoff': viewMode }, h('div', null, h('h3', null, handoffTitle), h('p', null, handoffDetail)), h('button', { type: 'button', className: 'bee-journey-action', 'data-beehive-handoff-action': viewMode, onClick: advanceHandoff }, actionLabel))
           );
@@ -37580,17 +41783,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('summary', { id: 'beehive-journey-summary', 'aria-label': (journeyOpen ? 'Collapse' : 'Expand') + ' Experience path. ' + completed + ' of 3 game milestones reached.' },
               h('span', { className: 'bee-journey-symbol', 'aria-hidden': 'true' }, '◇'),
               h('span', { className: 'bee-journey-summary-text' }, h('span', { className: 'bee-journey-kicker' }, 'Experience path'), h('span', { className: 'bee-journey-summary-title' }, completed === 3 ? 'Milestones reached · connect your evidence' : 'Explore three perspectives'), h('span', { className: 'bee-journey-summary-next' }, next ? 'Try next: ' + next.role : 'Next: Notebook synthesis')),
-              h('span', { className: 'bee-journey-count', 'aria-hidden': 'true' }, completed + ' / 3'), h('span', { className: 'bee-journey-arrow', 'aria-hidden': 'true' }, '⌄')),
+              h('span', { className: 'bee-journey-count-group', 'aria-hidden': 'true' }, renderJourneyMilestonePips(milestones, 'summary'), h('span', { className: 'bee-journey-count' }, completed + ' / 3')), h('span', { className: 'bee-journey-arrow', 'aria-hidden': 'true' }, '⌄')),
             renderBeeJourney(milestones));
         }
         function renderAdvanceEvidence() {
           var ev = d.lastAdvance;
           if (!ev || !ev.days) return null;
+          var foodAfter = Math.max(0, (Number.isFinite(honey) ? honey : 0) + (Number.isFinite(d.syrup) ? d.syrup : 0));
+          var workersAfter = Math.max(0, Number.isFinite(workers) ? workers : 0);
+          var varroaAfter = Math.max(0, Math.min(100, Number.isFinite(varroaLevel) ? varroaLevel : 0));
+          var moraleAfter = Math.max(0, Math.min(100, Number.isFinite(morale) ? morale : 0));
           var deltas = [
-            { label: 'Workers', suffix: '', amount: ev.workers, good: ev.workers >= 0 },
-            { label: 'Combined food', suffix: ' lb', amount: ev.honey, good: ev.honey >= 0 },
-            { label: 'Mite pressure', suffix: ' pt', amount: ev.varroa, good: ev.varroa <= 0 },
-            { label: 'Colony stability', suffix: ' pt', amount: ev.morale, good: ev.morale >= 0 }
+            { label: 'Workers', suffix: '', amount: ev.workers, good: ev.workers >= 0,
+              afterVal: workersAfter, beforeVal: Number.isFinite(ev.workers) ? Math.max(0, workersAfter - ev.workers) : NaN,
+              scaleMax: Math.max(workersAfter, Number.isFinite(ev.workers) ? Math.max(0, workersAfter - ev.workers) : 0, 1000) },
+            { label: 'Combined food', suffix: ' lb', amount: ev.honey, good: ev.honey >= 0,
+              afterVal: foodAfter, beforeVal: Number.isFinite(ev.honey) ? Math.max(0, foodAfter - ev.honey) : NaN,
+              scaleMax: Math.max(foodAfter, Number.isFinite(ev.honey) ? Math.max(0, foodAfter - ev.honey) : 0, currentReserve || 20, 10) },
+            { label: 'Mite pressure', suffix: ' pt', amount: ev.varroa, good: ev.varroa <= 0,
+              afterVal: varroaAfter, beforeVal: Number.isFinite(ev.varroa) ? Math.max(0, Math.min(100, varroaAfter - ev.varroa)) : NaN,
+              scaleMax: 100 },
+            { label: 'Colony stability', suffix: ' pt', amount: ev.morale, good: ev.morale >= 0,
+              afterVal: moraleAfter, beforeVal: Number.isFinite(ev.morale) ? Math.max(0, Math.min(100, moraleAfter - ev.morale)) : NaN,
+              scaleMax: 100 }
           ];
           return h('section', { 'data-beehive-advance-evidence': 'true', className: 'bee-evidence rounded-xl border p-3 ' + (dk ? 'border-sky-700/40 bg-sky-950/20' : 'border-sky-200 bg-sky-50/70'), role: 'status', 'aria-live': 'polite', 'aria-label': __alloT('stem.beehive.a11y_evidence_from_the_latest_time_advance', 'Evidence from the latest time advance') },
             h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
@@ -37602,6 +41817,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               return h('div', { key: delta.label, className: 'rounded-lg border p-3 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-sky-100 bg-white/80') },
                 h('div', { className: 'text-xs font-bold ' + (dk ? 'text-slate-300' : 'text-slate-600') }, delta.label),
                 h('div', { className: 'bee-evidence-value mt-1 ' + color }, known ? (delta.amount > 0 ? '+' : '') + delta.amount.toLocaleString('en-US') + delta.suffix : 'Not recorded'),
+                known && bhRenderDeltaBars({
+                  before: delta.beforeVal, after: delta.afterVal, scaleMax: delta.scaleMax,
+                  rootAttr: 'data-advance-evidence-bars', toneAttr: 'data-delta-tone',
+                  tone: neutral ? 'neutral' : delta.good ? 'beneficial' : 'adverse', barAttr: 'data-advance-bar'
+                }),
                 h('div', { className: 'mt-1 text-xs ' + color }, !known ? 'Reading unavailable' : delta.amount > 0 ? 'Increased' : delta.amount < 0 ? 'Decreased' : 'Unchanged'));
             })),
             h('p', { className: 'mt-3 font-semibold ' + (dk ? 'text-sky-200' : 'text-sky-800') }, 'Explain it: choose one change. What biological process or management choice could help explain it?')
@@ -37681,6 +41901,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var signs = beeColonySigns();
           if (!signs.length) return null;
           var open = signs.find(function(s) { return s.id === bhOpenSign; }) || null;
+          var signCrowd = workers / (Math.max(1, typeof d.capacity === 'number' ? d.capacity : 80) * (SIMULATION_PARAMS.beesPerCapacityUnit || 250));
+          var openMeter = open ? bhColonySignMeter(open.id, {
+            honey: honey, currentReserve: currentReserve, lowLine: SIMULATION_PARAMS.lowStoreThreshold || 8,
+            varroaLevel: varroaLevel, diseaseRisk: diseaseRisk, queenHealth: queenHealth, crowd: signCrowd
+          }) : null;
           var hiveIndex = 0;
           function close(returnFocus) {
             setBhOpenSign(null);
@@ -37688,7 +41913,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             if (returnFocus && id) window.requestAnimationFrame(function() { var el = document.querySelector('[data-beehive-sign="' + id + '"]'); if (el) el.focus(); });
           }
           return h('div', { key: 'colony-signs', className: 'bee-signs-layer', 'data-beehive-colony-signs': String(signs.length) },
-            h('div', { className: 'bee-signs', role: 'group', 'aria-label': 'Colony signs in the scene' }, signs.map(function(sign) {
+            h('div', { className: 'bee-signs', role: 'group', 'aria-label': __alloT('stem.beehive.aria_colony_signs_in_the_scene', 'Colony signs in the scene') }, signs.map(function(sign) {
               var pos = sign.where === 'meadow' ? { left: '62%', top: '70%' } : { left: '18%', top: (40 - 10.5 * hiveIndex++) + '%' };
               return h('button', { key: sign.id, type: 'button', className: 'bee-sign', 'data-beehive-sign': sign.id, 'data-tone': sign.tone, style: pos, 'aria-expanded': open && open.id === sign.id ? 'true' : 'false', 'aria-controls': 'beehive-sign-card',
                 onClick: function() { _bhSignReturnRef.current = sign.id; setBhOpenSign(open && open.id === sign.id ? null : sign.id); } },
@@ -37697,6 +41922,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             open && h('section', { id: 'beehive-sign-card', className: 'bee-sign-card', 'data-sign-card': open.id, 'data-tone': open.tone, role: 'region', 'aria-labelledby': 'beehive-sign-card-title',
               onKeyDown: function(e) { if (e.key === 'Escape') { e.stopPropagation(); close(true); } } },
               h('h4', { id: 'beehive-sign-card-title', tabIndex: -1 }, h('span', { 'aria-hidden': 'true' }, open.icon + ' '), open.label),
+              openMeter && h('div', { className: 'bee-sign-meter', 'data-sign-threshold-meter': open.id, 'aria-hidden': 'true' },
+                h('svg', { 'data-sign-threshold-svg': 'true', viewBox: '0 0 240 22', focusable: 'false', 'aria-hidden': 'true' },
+                  h('rect', { x: 6, y: 6, width: 228, height: 10, rx: 5, fill: dk ? '#1e293b' : '#e2e8f0', stroke: dk ? '#64748b' : '#94a3b8', strokeWidth: 1 }),
+                  openMeter.warnWidthPct > 0 && h('rect', { 'data-sign-threshold-band': 'warn', x: +(6 + openMeter.warnStartPct * 2.28).toFixed(1), y: 6, width: +(openMeter.warnWidthPct * 2.28).toFixed(1), height: 10, fill: '#d97706', fillOpacity: 0.45 }),
+                  openMeter.badWidthPct > 0 && h('rect', { 'data-sign-threshold-band': 'bad', x: +(6 + openMeter.badStartPct * 2.28).toFixed(1), y: 6, width: +(openMeter.badWidthPct * 2.28).toFixed(1), height: 10, fill: '#be123c', fillOpacity: 0.48 }),
+                  h('line', { 'data-sign-threshold-line': 'true', x1: +(6 + openMeter.thresholdPct * 2.28).toFixed(1), x2: +(6 + openMeter.thresholdPct * 2.28).toFixed(1), y1: 2, y2: 20, stroke: dk ? '#f8fafc' : '#0f172a', strokeWidth: 2, strokeDasharray: '2 2' }),
+                  h('circle', { 'data-sign-threshold-marker': 'true', cx: +(6 + openMeter.markerPct * 2.28).toFixed(1), cy: 11, r: 5.5, fill: open.tone === 'bad' ? '#e11d48' : '#d97706', stroke: dk ? '#f8fafc' : '#0f172a', strokeWidth: 2 }))),
               h('p', null, h('strong', null, 'What you see: '), open.see),
               h('p', null, h('strong', null, 'Why it happens: '), open.why),
               h('div', { className: 'bee-sign-actions' },
@@ -37724,6 +41956,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         }
         function renderBeeEventForecast(event, recordKey) {
           var view = bhColonyEventView(event), observation = view.observation;
+          var evVis = bhColonyEventVisual(event);
           var titleId = 'beehive-event-forecast-title' + (recordKey || ''), promptId = 'beehive-event-forecast-prompt' + (recordKey || '');
           var evidence = bhBuildColonyEventEvidence(event), append = bhAppendNotebookEvidence(d.notebook && d.notebook.beekeeper, evidence);
           var reading = function(value, unit) { return value == null ? 'Unavailable' : value.toLocaleString('en-US', { maximumSignificantDigits: 21 }) + ' ' + unit; };
@@ -37733,19 +41966,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('span', { className: 'bee-forecast-badge' }, observation ? 'Day ' + observation.fromDay + ' → ' + observation.toDay : 'Readings unavailable')),
             h('p', { className: 'bee-event-note' }, view.readingsNote),
             observation && h('div', { className: 'bee-event-grid', 'data-event-day-readings': 'true' }, view.metrics.map(function(metric) {
+              var isEvtIndex = metric.unit === '/ 100';
+              var lowerBetterEvt = metric.id === 'varroaLevel' || metric.id === 'diseaseRisk' || metric.id === 'pesticideExposure';
+              var evtDelta = Number.isFinite(metric.delta) ? metric.delta : (Number.isFinite(metric.after) && Number.isFinite(metric.before) ? metric.after - metric.before : 0);
+              var evtTone = evtDelta === 0 ? 'neutral' : ((lowerBetterEvt ? evtDelta < 0 : evtDelta > 0) ? 'beneficial' : 'adverse');
               return h('section', { key: metric.id, 'data-event-reading': metric.id, className: 'bee-event-metric', 'aria-label': metric.label },
                 h('h5', null, metric.label),
                 h('dl', null,
                   h('div', null, h('dt', null, 'Day ' + observation.fromDay), h('dd', null, reading(metric.before, metric.unit))),
                   h('div', null, h('dt', null, 'Day ' + observation.toDay), h('dd', null, reading(metric.after, metric.unit)))),
+                bhRenderDeltaBars({ before: metric.before, after: metric.after, scaleMax: isEvtIndex ? 100 : null, rootAttr: 'data-event-reading-bars', toneAttr: 'data-delta-tone', tone: evtTone, barAttr: 'data-event-bar' }),
                 h('p', { 'data-event-day-delta': metric.id }, h('strong', null, 'Change: '), metric.delta == null ? 'Unavailable' : metric.delta === 0 ? 'Unchanged' : (metric.delta > 0 ? '+' : '') + reading(metric.delta, metric.unit)));
             })),
             observation && h('p', { className: 'bee-event-note', 'data-event-provenance': 'true' }, 'Run ' + (observation.runSerial == null ? 'unrecorded' : observation.runSerial) + ' · Seed ' + (observation.simulationSeed == null ? 'unrecorded' : observation.simulationSeed) + ' · Model ' + (observation.modelVersion || 'unrecorded') + '. Combined food includes fed syrup; model indices use 0–100 points.'),
             h('details', { className: 'bee-event-settings', 'data-event-settings': 'true' },
               h('summary', null, 'Event settings · ' + view.settings.length + ' preset effect' + (view.settings.length === 1 ? '' : 's')),
               h('p', { className: 'bee-event-note' }, 'These are model inputs, not measured changes. Limits and other daily processes can change the final result.'),
+              evVis.impacts.length > 0 && h('svg', { className: 'bee-event-comparison-summary', viewBox: '0 0 120 14', 'aria-hidden': 'true', focusable: 'false', 'data-impact-count': String(evVis.impacts.length) },
+                h('line', { className: 'bee-event-axis', x1: 60, y1: 1, x2: 60, y2: 13 }),
+                evVis.summaryBars.map(function(b) {
+                  return h('rect', { key: b.id, className: 'bee-event-summary-bar', x: b.x, y: b.y, width: b.w, height: b.h, rx: 1, 'data-impact-tone': b.tone });
+                })),
               view.settings.length ? h('ul', { 'aria-label': __alloT("stem.beehive.a11y_preset_event_effects", 'Preset event effects') }, view.settings.map(function(metric) {
-                return h('li', { key: metric.id, 'data-event-impact': metric.id }, h('span', null, metric.label), h('strong', null, (metric.amount > 0 ? '+' : '') + reading(metric.amount, metric.unit)));
+                var mv = evVis.byId[metric.id] || evVis.fallbackImpact(metric);
+                return h('li', { key: metric.id, 'data-event-impact': metric.id },
+                  h('span', null, metric.label),
+                  h('strong', null, (metric.amount > 0 ? '+' : '') + reading(metric.amount, metric.unit)),
+                  h('svg', { className: 'bee-event-impact-bar', viewBox: '0 0 120 10', 'aria-hidden': 'true', focusable: 'false', 'data-impact-tone': mv.tone, 'data-impact-dir': mv.direction },
+                    h('rect', { className: 'bee-event-impact-track', x: 6, y: 3, width: 108, height: 4, rx: 2 }),
+                    h('line', { className: 'bee-event-axis', x1: 60, y1: 1, x2: 60, y2: 9 }),
+                    h('rect', { className: 'bee-event-impact-fill', x: mv.barX, y: 2.5, width: mv.barW, height: 5, rx: 2, 'data-impact-tone': mv.tone })));
               })) : h('p', null, 'No numeric preset effects were recorded. Read the event description for changes to colony behavior.')),
             view.lesson && h('p', { className: 'bee-event-lesson' }, h('strong', null, 'Science connection: '), view.lesson),
             h('p', { id: promptId, 'data-beehive-event-prompt': 'true' }, h('strong', null, 'Evidence check: '), observation ? (view.settings.length ? 'Choose one metric. How does the recorded change compare with the event setting? What else could explain it?' : 'Choose one metric. What changed over the day, and which colony processes could explain it?') : 'Choose one metric to investigate. Which before-and-after readings would you need to check what happened?'),
@@ -37914,7 +42164,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('div', { 'data-emphasis': 'true', 'data-pending': Number.isFinite(result.actual) ? 'false' : 'true' }, h('dt', null, 'Observed at Day ' + study.targetDay), h('dd', null, Number.isFinite(result.actual) ? format(result.actual) : study.status === 'tracking' ? 'Checkpoint not reached yet' : 'Checkpoint not recorded')),
                   h('div', null, h('dt', null, 'Starting value · Day ' + study.startDay), h('dd', null, format(result.start))),
                   h('div', null, h('dt', null, 'Saved forecast · Day ' + study.targetDay), h('dd', null, format(result.projected))),
-                  h('div', { style: { gridColumn: '1 / -1' } }, h('dt', null, 'Difference from forecast'), h('dd', null, Number.isFinite(result.error) ? (result.error > 0 ? '+' : '') + format(result.error) : study.status === 'tracking' ? 'Available at the checkpoint' : 'Not recorded', Number.isFinite(result.error) && h('p', { className: 'bee-forecast-muted' }, result.error > 0 ? 'Above the saved forecast' : result.error < 0 ? 'Below the saved forecast' : 'Matches the saved forecast at shown precision'))))),
+                  h('div', { style: { gridColumn: '1 / -1' } }, h('dt', null, 'Difference from forecast'), h('dd', null, Number.isFinite(result.error) ? (result.error > 0 ? '+' : '') + format(result.error) : study.status === 'tracking' ? 'Available at the checkpoint' : 'Not recorded', Number.isFinite(result.error) && h('p', { className: 'bee-forecast-muted' }, result.error > 0 ? 'Above the saved forecast' : result.error < 0 ? 'Below the saved forecast' : 'Matches the saved forecast at shown precision'),
+                    (function() {
+                      var fcv = bhForecastComparisonVisual(result);
+                      if (!fcv) return null;
+                      return h('div', { className: 'bee-forecast-result-visual', 'data-forecast-result-visual': 'true', 'data-forecast-visual-tone': fcv.tone, 'aria-hidden': 'true' },
+                        h('svg', { viewBox: '0 0 160 28', 'aria-hidden': 'true', focusable: 'false' },
+                          h('rect', { className: 'bee-fcv-track' + (fcv.hasActual ? '' : ' bee-fcv-pending'), x: '8', y: '3', width: '144', height: '22', rx: '4' }),
+                          h('rect', { className: 'bee-fcv-projected', x: '8', y: '6', width: String(fcv.projectedW), height: '6', rx: '2' }),
+                          fcv.hasActual && h('rect', { className: 'bee-fcv-actual', x: '8', y: '15', width: String(fcv.actualW), height: '6', rx: '2' }),
+                          fcv.hasActual && fcv.residualX != null && h('line', { className: 'bee-fcv-residual', x1: String(fcv.residualX), y1: '12', x2: String(fcv.residualX + fcv.residualW), y2: '12' }),
+                          h('line', { className: 'bee-fcv-start', x1: String(fcv.startX), y1: '4', x2: String(fcv.startX), y2: '24' })));
+                    })())))),
                 h('p', null, result.alignment === 'unavailable' ? 'A direction check needs the starting reading and the exact checkpoint.' : 'The observed direction ' + (result.alignment === 'aligned' ? 'matches' : 'differs from') + ' your prediction at shown precision. This comparison does not establish cause.'),
                 h('details', { className: 'bee-forecast-details' }, h('summary', null, 'Daily readings and intervening choices'),
                   h('div', { className: 'overflow-x-auto', tabIndex: 0, role: 'region', 'aria-label': __alloT("stem.beehive.a11y_daily_forecast_and_observed_readings", 'Daily forecast and observed readings') }, h('table', { 'data-forecast-study-table': 'true' },
@@ -37989,6 +42250,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         function renderManagementProjectionNotebookContext() {
           if (viewMode !== 'beekeeper' || !managementWritingContext) return null;
           var context = bhManagementProjectionContext(managementWritingContext, rawBeeState), record = context.record;
+          var projScale = record ? bhProjectedPairScale(record.selected.baseline, record.selected.withAction, record.metric.id) : null;
           function reading(value, signed) { return (signed && value > 0 ? '+' : '') + (value === 0 ? 0 : value).toLocaleString('en-US', { maximumFractionDigits: 3 }) + record.metric.suffix; }
           return h('section', { 'data-notebook-projection-context': 'true', 'data-projection-state': context.available ? 'valid' : 'invalid', className: 'bee-notebook-projection-context', 'aria-labelledby': 'beehive-notebook-projection-title' },
             h('h4', { id: 'beehive-notebook-projection-title' }, 'Your kept model projection'),
@@ -37997,8 +42259,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             record && h(React.Fragment, null,
               h('p', null, record.action.label + ' (' + record.action.cost + ' AP) · ' + record.metric.label + ' · ' + record.daysCompared + ' of ' + record.requestedDays + ' projected days compared.'),
               h('dl', { className: 'bee-projection-readings', 'aria-label': __alloT('stem.beehive.a11y_saved_projected_readings', 'Saved projected readings') },
-                h('div', null, h('dt', null, 'Do nothing'), h('dd', { 'data-notebook-projection-reading': 'baseline' }, reading(record.selected.baseline, false))),
-                h('div', null, h('dt', null, record.action.label), h('dd', { 'data-notebook-projection-reading': 'action' }, reading(record.selected.withAction, false))),
+                h('div', null, h('dt', null, 'Do nothing'), h('dd', { 'data-notebook-projection-reading': 'baseline' }, reading(record.selected.baseline, false)), projScale && projScale.available && renderSharedScaleRail('data-notebook-projection-bar', 'baseline', projScale.baselinePercent)),
+                h('div', null, h('dt', null, record.action.label), h('dd', { 'data-notebook-projection-reading': 'action' }, reading(record.selected.withAction, false)), projScale && projScale.available && renderSharedScaleRail('data-notebook-projection-bar', 'action', projScale.actionPercent)),
                 h('div', null, h('dt', null, 'Choice minus do nothing'), h('dd', { 'data-notebook-projection-reading': 'difference' }, reading(record.selected.delta, true)))),
               h('p', null, 'This copy is kept for this visit. Later choices and days do not rewrite this projection. A higher reading is not always better.'),
               h('details', { className: 'bee-projection-details' }, h('summary', null, 'Read the kept projection note'), h('pre', { 'data-notebook-projection-text': 'true' }, record.text))),
@@ -38011,6 +42273,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           if (!timeline.available) return h('section', { 'data-management-timing': 'true', className: 'bee-management-timing', 'aria-label': __alloT('stem.beehive.a11y_explore_management_timing', 'Explore management timing') }, h('h4', null, 'Explore the timing'), h('p', { role: 'status' }, timeline.reason));
           var landmarks = bhManagementTimelineLandmarks(timeline);
           var offset = Math.max(1, Math.min(timeline.points.length, managementTimelineOffset)), selected = timeline.points[offset - 1];
+          var dayScale = bhProjectedPairScale(selected.baseline, selected.withAction, timeline.metric.id);
           var first = timeline.points[0], last = timeline.points[timeline.points.length - 1];
           function x(point) { return last.day === first.day ? 300 : 16 + (point.day - first.day) / (last.day - first.day) * 568; }
           function y(value) { return 224 - (value - timeline.min) / (timeline.max - timeline.min) * 208; }
@@ -38043,6 +42306,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             else if (landmarks.differentDays) status = timeline.metric.label + ': a displayed difference on ' + landmarks.differentDays + ' of ' + landmarks.comparedDays + ' paired projected days.';
             else status = timeline.metric.label + ': no displayed difference in the ' + landmarks.comparedDays + ' paired projected ' + (landmarks.comparedDays === 1 ? 'day.' : 'days.');
             if (landmarks.missingDays) status += ' ' + landmarks.missingDays + ' projected ' + (landmarks.missingDays === 1 ? 'day cannot' : 'days cannot') + ' be compared because a reading is missing.';
+            var largestAbsDelta = landmarks.largestDifference ? landmarks.largestDifference.delta : 0;
             return h('section', { 'data-preview-timeline-landmarks': 'true', className: 'bee-timing-landmarks', 'aria-labelledby': 'beehive-management-landmarks-title' },
               h('h5', { id: 'beehive-management-landmarks-title' }, 'Find where the readings differ'),
               h('p', { 'data-preview-timeline-landmark-status': 'true' }, status),
@@ -38050,9 +42314,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 { id: 'first', title: 'First recorded difference', point: landmarks.firstDifference, button: 'Inspect first difference' },
                 { id: 'largest', title: 'Largest recorded gap', point: landmarks.largestDifference, button: 'Inspect largest gap' }
               ].map(function(item) {
+                var lVis = bhTimingLandmarkVisual(item.point, landmarks.totalDays, largestAbsDelta);
                 return h('div', { key: item.id, 'data-preview-timeline-landmark': item.id, className: 'bee-timing-landmark-card' },
                   h('p', { className: 'bee-timing-landmark-title' }, item.title),
                   h('strong', { id: 'beehive-management-landmark-' + item.id + '-day', 'data-landmark-day': 'true', className: 'bee-timing-landmark-day' }, 'Day ' + item.point.day),
+                  h('svg', { className: 'bee-landmark-horizon-bar', 'data-landmark-horizon-bar': item.id, 'data-gap-direction': lVis.direction, viewBox: '0 0 160 22', 'aria-hidden': 'true', focusable: 'false' },
+                    h('rect', { className: 'bee-landmark-rail-track', x: 8, y: 4.5, width: 144, height: 3, rx: 1.5 }),
+                    h('rect', { className: 'bee-landmark-rail-span', x: 8, y: 4.5, width: Math.max(2, +(lVis.pinX - 8).toFixed(2)), height: 3, rx: 1.5 }),
+                    h('line', { className: 'bee-landmark-zero-tick', x1: 8, y1: 2.5, x2: 8, y2: 9.5 }),
+                    h('line', { className: 'bee-landmark-zero-tick', x1: 152, y1: 2.5, x2: 152, y2: 9.5 }),
+                    h('circle', { className: 'bee-landmark-pin', cx: lVis.pinX, cy: 6, r: 3.4 }),
+                    h('rect', { className: 'bee-landmark-gap-track', x: 12, y: 14, width: 136, height: 4, rx: 2 }),
+                    h('line', { className: 'bee-landmark-zero-tick', x1: 80, y1: 12, x2: 80, y2: 20 }),
+                    h('rect', { className: 'bee-landmark-gap-fill', 'data-direction': lVis.direction, x: lVis.gapX, y: 14, width: lVis.gapWidth, height: 4, rx: 2 })),
                   h('dl', null, h('dt', null, 'Choice minus do nothing'), h('dd', { id: 'beehive-management-landmark-' + item.id + '-difference', 'data-landmark-difference': 'true' }, signedReading(item.point.delta))),
                   item.id === 'largest' && landmarks.largestTieDays > 1 && h('p', { 'data-landmark-ties': 'true' }, 'This gap size occurs on ' + landmarks.largestTieDays + ' projected days; Day ' + item.point.day + ' is the earliest.'),
                   h('button', { type: 'button', 'data-preview-timeline-jump': item.id, className: 'bee-forecast-button bee-timing-landmark-button', 'aria-describedby': 'beehive-management-landmark-' + item.id + '-day beehive-management-landmark-' + item.id + '-difference', onClick: function() { setManagementTimelineOffset(item.point.offset); } }, item.button));
@@ -38095,8 +42369,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('h5', { id: 'beehive-management-inspector-title' }, 'Read the selected day'),
               h('p', { 'data-preview-timeline-context': 'true', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, 'Projected Day ' + selected.day + ' · ' + selected.offset + ' of ' + timeline.points.length + ' days compared. These are model projections, not observed colony readings.'),
               h('dl', { className: 'bee-management-timing-readings', 'aria-label': __alloT('stem.beehive.a11y_exact_projected_readings', 'Exact projected readings') },
-                h('div', null, h('dt', null, sample('baseline'), h('span', null, 'Do nothing')), h('dd', { 'data-preview-timeline-reading': 'baseline' }, reading(selected.baseline))),
-                h('div', null, h('dt', null, sample('action'), h('span', null, preview.action.label)), h('dd', { 'data-preview-timeline-reading': 'action' }, reading(selected.withAction))),
+                h('div', null, h('dt', null, sample('baseline'), h('span', null, 'Do nothing')), h('dd', { 'data-preview-timeline-reading': 'baseline' }, reading(selected.baseline)), dayScale.available && renderSharedScaleRail('data-projected-reading-bar', 'baseline', dayScale.baselinePercent)),
+                h('div', null, h('dt', null, sample('action'), h('span', null, preview.action.label)), h('dd', { 'data-preview-timeline-reading': 'action' }, reading(selected.withAction)), dayScale.available && renderSharedScaleRail('data-projected-reading-bar', 'action', dayScale.actionPercent)),
                 h('div', null, h('dt', null, 'Choice minus do nothing'), h('dd', { 'data-preview-timeline-reading': 'difference' }, signedReading(selected.delta)))),
               h('p', null, 'Difference uses the displayed readings. A higher value is not always better; consider the cost and timing alongside the other measures. The projection excludes random events and later management choices.')),
             renderLandmarks(),
@@ -38108,6 +42382,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var study = bhHiveInteriorEvidence(d, hive3dFrame, hiveInteriorTopic, hiveInteriorRole, false);
           var comparison = hiveInteriorHeld ? bhHiveInteriorComparison(hiveInteriorHeld, d, hive3dFrame) : null;
           var row = comparison && comparison.available ? comparison.rows.find(function(item) { return item.id === study.topic.id; }) : null;
+          var hiveScale = row ? bhHiveInteriorReadingScale(comparison, row.id) : null;
           var currentDay = Number.isSafeInteger(d.day) && d.day >= 0 && d.day <= 10000000 ? d.day : 'not recorded';
           var scope = study.topic.label + ' · ' + (study.topic.id === 'queen' ? 'Model health score' : study.topic.id === 'brood' ? 'Whole-colony total · all modeled brood' : 'Whole-colony total');
           var projection = bhManagementPreviewTimeline(preview, study.topic.key);
@@ -38124,8 +42399,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('p', { id: 'beehive-management-hive-focus', 'data-management-hive-focus': 'true' }, 'Frame ' + (study.frame + 1) + ' of 6 · ' + study.frameKind + ' · ' + (study.role ? study.role.label : study.topic.label)),
             h('p', { id: 'beehive-management-hive-scope', 'data-management-hive-scope': 'true', className: 'bee-preview-hive-scope' }, scope),
             h('dl', { id: 'beehive-management-hive-readings', className: 'bee-preview-hive-readings', 'data-paired': row ? 'true' : 'false' },
-              row && h('div', { 'data-held': 'true' }, h('dt', null, 'Held · Day ' + comparison.held.data.day), h('dd', { 'data-management-hive-reading': 'held' }, row.before)),
-              h('div', null, h('dt', null, 'Current · Day ' + currentDay), h('dd', { 'data-management-hive-reading': 'current' }, study.value)),
+              row && h('div', { 'data-held': 'true' }, h('dt', null, 'Held · Day ' + comparison.held.data.day), h('dd', { 'data-management-hive-reading': 'held' }, row.before), hiveScale && hiveScale.available && renderSharedScaleRail('data-management-hive-bar', 'held', hiveScale.heldPercent)),
+              h('div', null, h('dt', null, 'Current · Day ' + currentDay), h('dd', { 'data-management-hive-reading': 'current' }, study.value), hiveScale && hiveScale.available && renderSharedScaleRail('data-management-hive-bar', 'current', hiveScale.currentPercent)),
               row && h('div', { className: 'bee-preview-hive-difference' }, h('dt', null, 'Current minus held'), h('dd', { 'data-management-hive-difference': 'true' }, row.difference))),
             h('p', { id: 'beehive-management-hive-status', 'data-management-hive-status': 'true', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, comparison ? comparison.available ? comparison.interval : comparison.reason : 'No held reference. Return inside the hive to hold current readings before trying a choice.'),
             study.role && study.role.id === 'empty' && h('p', null, 'Unmarked comb has no separate colony total. This reading provides colony context.'),
@@ -38148,6 +42423,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         function renderManagementPreview() {
           var preview = managementPreviewOpen ? bhPreviewManagementChoice(Object.assign({}, d, bhSnapshot(), { actionPoints: actionPoints }), bhCfg(), managementPreviewChoice, managementPreviewHorizon) : null;
           function reading(value, suffix) { return (Number.isFinite(value) ? (value === 0 ? 0 : value).toLocaleString('en-US') : String(value)) + (suffix || ''); }
+          function previewTone(key, beforeVal, afterVal) {
+            if (!Number.isFinite(beforeVal) || !Number.isFinite(afterVal) || Math.abs(afterVal - beforeVal) < 1e-6) return 'neutral';
+            if (key === 'varroaLevel' || key === 'varroa' || key === 'diseaseRisk' || key === 'disease' || key === 'crowdRisk') return afterVal < beforeVal ? 'beneficial' : 'adverse';
+            if (key === 'workers' || key === 'honey' || key === 'pollen' || key === 'brood' || key === 'queenHealth' || key === 'morale' || key === 'supers') return afterVal > beforeVal ? 'beneficial' : 'adverse';
+            return 'neutral';
+          }
+          function previewScale(key, a, b) {
+            var peak = Math.max(Math.abs(a), Math.abs(b), 1);
+            return (key === 'queenHealth' || key === 'morale' || key === 'varroaLevel' || key === 'varroa' || key === 'diseaseRisk' || key === 'disease') ? Math.max(100, peak) : peak;
+          }
           return h('details', { 'data-management-preview': 'true', open: managementPreviewOpen, onToggle: function(event) { setManagementPreviewOpen(event.currentTarget.open); }, className: 'bee-forecast bee-preview' },
             h('summary', { className: 'bee-forecast-summary' },
               h('span', { className: 'bee-forecast-chevron', 'aria-hidden': 'true' }, '▸'),
@@ -38185,6 +42470,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       h('dl', { className: 'bee-preview-immediate-readings' },
                         h('div', null, h('dt', null, 'Current'), h('dd', { 'data-preview-immediate-value': 'before' }, reading(change.before, change.suffix))),
                         h('div', null, h('dt', null, 'If applied now'), h('dd', { 'data-preview-immediate-value': 'after' }, reading(change.after, change.suffix)))),
+                      numeric && bhRenderDeltaBars({ before: change.before, after: change.after, scaleMax: previewScale(change.key, change.before, change.after), tone: previewTone(change.key, change.before, change.after), rootAttr: 'data-preview-immediate-bars', barAttr: 'data-preview-immediate-bar', toneAttr: 'data-delta-tone' }),
                       h('p', { 'data-preview-immediate-difference': 'true' }, numeric ? 'Change now: ' + (delta > 0 ? '+' : '') + reading(delta, deltaSuffix) : 'Status changes'));
                   })),
                   managementPreviewChoice === 'feed_bees' && h('p', { className: 'mt-2' }, 'Added syrup is food the colony consumes first. It is not newly made nectar honey and cannot be harvested.'),
@@ -38201,6 +42487,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         h('div', { className: 'bee-preview-values' },
                           h('div', null, h('span', null, 'Do nothing'), h('strong', { 'data-preview-baseline': change.key }, reading(change.baseline, change.suffix))),
                           h('div', null, h('span', null, preview.action.label), h('strong', { 'data-preview-with-action': change.key }, reading(change.withAction, change.suffix)))),
+                        Number.isFinite(change.baseline) && Number.isFinite(change.withAction) && bhRenderDeltaBars({ before: change.baseline, after: change.withAction, scaleMax: previewScale(change.key, change.baseline, change.withAction), tone: previewTone(change.key, change.baseline, change.withAction), rootAttr: 'data-preview-scenario-bars', barAttr: 'data-preview-scenario-bar', toneAttr: 'data-delta-tone' }),
                         h('div', { className: 'bee-preview-difference' }, h('span', null, 'Difference'), h('strong', { 'data-preview-difference': change.key }, (change.delta > 0 ? '+' : '') + reading(change.delta, change.suffix)), h('small', null, change.delta === 0 ? 'No difference between scenarios' : (change.delta > 0 ? 'Higher' : 'Lower') + ' with ' + preview.action.label))));
                   }))),
                 h('p', null, 'Difference means ' + preview.action.label + ' minus doing nothing. A higher value is not always better; weigh the cost, timing, and other readings.')),
@@ -38239,10 +42526,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 var good = !numeric || (lowerIsBetter ? change.delta <= 0 : change.delta >= 0);
                 var color = !numeric || change.delta === 0 ? (dk ? 'text-slate-200' : 'text-slate-700') : good ? (dk ? 'text-emerald-300' : 'text-emerald-700') : (dk ? 'text-rose-300' : 'text-rose-700');
                 function reading(value) { return Number.isFinite(value) ? value.toLocaleString('en-US') + suffix : typeof value === 'string' ? value + suffix : typeof value === 'boolean' ? value ? 'Yes' : 'No' : 'Not recorded'; }
+                var isMgmtPct = change.label === 'Varroa' || change.label === 'Disease risk' || change.label === 'Pesticide exposure' || change.label === 'Queen health' || change.label === 'Morale';
+                var mgmtTone = !numeric || change.delta === 0 ? 'neutral' : good ? 'good' : 'cost';
                 return h('div', { key: change.label + '-' + index, role: 'listitem', 'aria-label': change.label + ' changed from ' + reading(change.before) + ' to ' + reading(change.after) + (numeric ? ', ' + (change.delta > 0 ? '+' : '') + change.delta + suffix : ''), className: 'rounded-lg border p-3 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-emerald-100 bg-white/80') },
                   h('div', { className: 'text-xs font-bold ' + (dk ? 'text-slate-300' : 'text-slate-600') }, change.label),
                   h('div', { className: 'bee-evidence-value mt-1 ' + color }, reading(change.after)),
                   h('div', { className: 'mt-1 text-xs ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Before: ' + reading(change.before)),
+                  bhRenderDeltaBars({ before: change.before, after: change.after, scaleMax: isMgmtPct ? 100 : null, rootAttr: 'data-management-change-bars', toneAttr: 'data-change-tone', tone: mgmtTone, barAttr: 'data-management-bar' }),
                   numeric && h('div', { className: 'mt-1 text-xs font-semibold ' + color }, (change.delta > 0 ? '+' : '') + change.delta.toLocaleString('en-US') + suffix + ' · ' + (change.delta > 0 ? 'Increased' : change.delta < 0 ? 'Decreased' : 'Unchanged')));
               })) : h('p', null, 'No numeric changes were recorded; use the event log and forecast to evaluate this intervention.'));
           }
@@ -38312,6 +42602,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var current = step >= 3 && b ? b : a;
           var last = current.rows[current.rows.length - 1];
           var ready = bhHoneyLabReady(lab);
+          var hlVis = bhHoneyLabVisuals(lab, a, b, comparison);
           function money(value) { return Number(value).toFixed(1) + ' lb'; }
           function signed(value) { return (value > 0 ? '+' : '') + Number(value).toFixed(1) + ' lb'; }
           function choices(field, label, options) {
@@ -38396,6 +42687,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('button', { type: 'button', className: 'bhh-secondary', onClick: function() { _beeHoneyFocusIntent.current = 'return'; updFn(function(state) { state.honeyInvestigation = Object.assign({}, bhNormalizeHoneyLab(state.honeyInvestigation), { active: false }); }); } }, 'Return to my hive')),
             h('h2', { id: 'bee-honey-title' }, 'Why are stores falling while bees are still flying?'),
             h('p', { className: 'bhh-intro' }, 'Follow the food through a summer dearth. These practice colonies use the daily model; your ongoing hive is preserved. Progress saves as you go.'),
+            h('svg', { className: 'bhh-stepper-rail', viewBox: '0 0 240 16', 'aria-hidden': 'true', focusable: 'false', 'data-honey-stepper': 'true', 'data-completed-steps': String(hlVis.stepper.completedCount) },
+              hlVis.stepper.rails.map(function(r, idx) {
+                return h('line', { key: idx, className: 'bhh-stepper-line', x1: r.x1, y1: 8, x2: r.x2, y2: 8, 'data-rail-done': String(r.done) });
+              }),
+              hlVis.stepper.nodes.map(function(n, idx) {
+                return h('g', { key: idx, 'data-stepper-node': String(idx), 'data-node-state': n.state },
+                  h('circle', { className: 'bhh-stepper-node', cx: n.cx, cy: 8, r: n.r, 'data-node-state': n.state }),
+                  n.state !== 'upcoming' && h('circle', { className: 'bhh-stepper-core', cx: n.cx, cy: 8, r: n.state === 'complete' ? 1.8 : 2.1, 'data-node-state': n.state }));
+              })),
             h('ol', { className: 'bhh-steps', 'aria-label': __alloT('stem.beehive.a11y_investigation_progress', 'Investigation progress') }, BEEHIVE_HONEY_LAB_STEPS.map(function(label, i) {
               return h('li', { key: label, 'aria-current': step === i ? 'step' : undefined, 'data-done': step > i ? 'true' : 'false' }, h('span', { 'aria-hidden': 'true' }, step > i ? '✓' : String(i + 1)), label);
             })),
@@ -38412,8 +42712,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('p', { className: 'bhh-note' }, 'Every prediction can be tested. A surprising result is a reason to revise your explanation.')),
               step >= 1 && step <= 4 && h('div', null,
                 h('div', { className: 'bhh-metrics', role: 'list', 'aria-label': (step >= 3 ? 'Run B' : 'Run A') + ' final-day readings' },
-                  [{ label: 'Forage in', value: money(last.incoming) }, { label: 'Consumed', value: money(last.consumed) }, { label: 'End stores', value: money(last.stores) }].map(function(metric) {
-                    return h('div', { key: metric.label, role: 'listitem' }, h('span', null, metric.label), h('strong', null, metric.value));
+                  [{ id: 'forage', label: 'Forage in', value: money(last.incoming) }, { id: 'consumed', label: 'Consumed', value: money(last.consumed) }, { id: 'stores', label: 'End stores', value: money(last.stores) }].map(function(metric) {
+                    var mb = hlVis.dailyBars[metric.id];
+                    return h('div', { key: metric.label, role: 'listitem' },
+                      h('span', null, metric.label),
+                      h('strong', null, metric.value),
+                      mb && h('svg', { className: 'bhh-metric-bar', viewBox: '0 0 100 10', 'aria-hidden': 'true', focusable: 'false', 'data-honey-metric-bar': metric.id, 'data-bar-tone': mb.tone },
+                        h('rect', { className: 'bhh-metric-track', x: 2, y: 3, width: 96, height: 4, rx: 2 }),
+                        h('rect', { className: 'bhh-metric-fill', x: 2, y: 3, width: mb.fillW, height: 4, rx: 2, 'data-bar-tone': mb.tone }),
+                        mb.tickX != null && h('line', { className: 'bhh-metric-tick', x1: mb.tickX, y1: 1, x2: mb.tickX, y2: 9 })));
                   })),
                 step === 1 && h('p', { className: 'bhh-result' }, 'Run A changed by ' + signed(a.state.honey - a.start.honey) + '. The model still estimated ' + last.visits.toLocaleString() + ' flower visits on the final day. Compare food coming in with food being used.'),
                 step !== 2 && chart(),
@@ -38437,6 +42744,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('p', { className: 'bhh-note' }, 'The model uses the same stock, site, and event-free warm-up in both runs. No random weather or disease events occur in this lesson.')),
                 step >= 3 && comparison && h('div', null,
                   h('p', { className: 'bhh-result' }, 'Day 55: Run A ' + money(a.state.honey) + '; Run B ' + money(b.state.honey) + '. Difference (B − A): ' + signed(row.delta) + '.'),
+                  hlVis.pairComparison && h('svg', { className: 'bhh-comparison-bars', viewBox: '0 0 160 18', 'aria-hidden': 'true', focusable: 'false', 'data-honey-comparison-bars': 'true', 'data-comparison-tone': hlVis.pairComparison.tone },
+                    h('rect', { className: 'bhh-comp-track', x: 4, y: 2, width: 152, height: 5, rx: 2.5 }),
+                    h('rect', { className: 'bhh-comp-run-a', x: 4, y: 2, width: hlVis.pairComparison.runAFillW, height: 5, rx: 2.5 }),
+                    h('rect', { className: 'bhh-comp-track', x: 4, y: 11, width: 152, height: 5, rx: 2.5 }),
+                    h('rect', { className: 'bhh-comp-run-b', x: 4, y: 11, width: hlVis.pairComparison.runBFillW, height: 5, rx: 2.5, 'data-comparison-tone': hlVis.pairComparison.tone })),
                   h('p', null, comparison.prediction.status === 'aligned' ? 'The displayed direction agrees with your registered prediction. Use the food budget to explain why.' : 'The displayed direction differs from your registered prediction. Use this evidence to revise your explanation.'),
                   h('p', { className: 'bhh-note', 'data-honey-fair-comparison': comparison.interpretationReady ? 'matched' : 'unmatched' }, comparison.interpretationReady ? 'Fair comparison: same starting colony, model, days, and event policy; one planned management choice changed. Your plan was recorded before Run B.' : 'The saved plan and result do not match. Revise the plan and repeat Run B before drawing a conclusion.'),
                   h('details', null, h('summary', null, 'Read both food budgets'), budget(a, 'Run A'), budget(b, 'Run B'),
@@ -38752,10 +43064,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               { id: 'explain', label: 'Explain the evidence', detail: 'Record observations, an alternative explanation, and a conclusion.', complete: explanationReady }
             ];
             var currentIndex = protocolSteps.findIndex(function(step) { return !step.complete; });
+            var protoVis = bhExperimentProtocolVisual(protocolSteps);
+            function renderProtocolStepIcon(stepId, stepState) {
+              var marks = stepState === 'complete'
+                ? [h('circle', { key: 'c', cx: 7, cy: 7, r: 5.5, fill: 'none', stroke: 'currentColor', strokeWidth: 1.5 }), h('path', { key: 'k', d: 'M4.3 7.2l1.9 1.9 3.6-3.8', fill: 'none', stroke: 'currentColor', strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round' })]
+                : stepState === 'current'
+                  ? [h('circle', { key: 'c', cx: 7, cy: 7, r: 5.5, fill: 'none', stroke: 'currentColor', strokeWidth: 1.5 }), h('circle', { key: 'd', cx: 7, cy: 7, r: 2, fill: 'currentColor' })]
+                  : [h('circle', { key: 'c', cx: 7, cy: 7, r: 5.5, fill: 'none', stroke: 'currentColor', strokeWidth: 1.4, strokeDasharray: '2.2 1.8' })];
+              return h('svg', { className: 'bee-protocol-step-icon ml-auto shrink-0', 'data-protocol-step-icon': stepId, 'data-step-state': stepState, viewBox: '0 0 14 14', width: 13, height: 13, 'aria-hidden': 'true', focusable: 'false' }, marks);
+            }
             return h('section', { 'data-experiment-protocol': 'true', className: 'mt-3 rounded-xl border p-3 ' + (dk ? 'border-indigo-800/55 bg-indigo-950/20' : 'border-indigo-200 bg-indigo-50/45'), 'aria-labelledby': 'beehive-experiment-protocol-title' },
               h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
                 h('h5', { id: 'beehive-experiment-protocol-title', className: 'text-[0.6875rem] font-black ' + (dk ? 'text-indigo-200' : 'text-indigo-900') }, 'Fair-test path'),
                 h('span', { className: 'text-[0.625rem] font-bold ' + bodyTone }, protocolSteps.filter(function(step) { return step.complete; }).length + ' of ' + protocolSteps.length + ' steps ready')),
+              h('svg', { className: 'bee-protocol-stepper', 'data-protocol-stepper': 'true', 'data-protocol-state': protoVis.state, 'data-protocol-completed': String(protoVis.completedCount), viewBox: '0 0 220 14', 'aria-hidden': 'true', focusable: 'false' },
+                protoVis.rails.map(function(rail) {
+                  return h('line', { key: 'pr-' + rail.index, className: 'bee-protocol-rail', 'data-protocol-rail': String(rail.index), 'data-rail-done': String(rail.done), x1: rail.x1, y1: 7, x2: rail.x2, y2: 7 });
+                }),
+                protoVis.nodes.map(function(node) {
+                  return h('circle', { key: 'pn-' + node.step, className: 'bee-protocol-node', 'data-protocol-node': String(node.step), 'data-node-id': node.id, 'data-node-state': node.state, cx: node.cx, cy: 7, r: node.r });
+                }),
+                protoVis.nodes.map(function(node) {
+                  return h('circle', { key: 'pc-' + node.step, className: 'bee-protocol-node-core', 'data-node-state': node.state, cx: node.cx, cy: 7, r: 1.5 });
+                })),
               h('div', { 'data-experiment-next-step': nextStep.id, className: 'mt-2 flex flex-col items-start gap-3 sm:flex-row sm:justify-between' },
                 h('div', { className: 'min-w-0 flex-1' },
                   h('p', { className: 'text-xs font-black ' + (dk ? 'text-indigo-100' : 'text-indigo-950') }, 'Next: ' + nextStep.title),
@@ -38773,6 +43104,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 return h('li', { key: step.id, 'data-experiment-protocol-step': step.id, 'data-protocol-step-state': state, 'aria-current': state === 'current' ? 'step' : undefined, className: 'rounded-lg border p-2 ' + tone },
                   h('div', { className: 'flex items-start justify-between gap-2' },
                     h('span', { className: 'text-[0.625rem] font-black ' + (dk ? 'text-slate-100' : 'text-slate-900') }, (index + 1) + '. ' + step.label),
+                    renderProtocolStepIcon(step.id, state),
                     h('span', { className: 'rounded-full px-1.5 py-0.5 text-[0.5625rem] font-black ' + (state === 'complete' ? (dk ? 'bg-emerald-900 text-emerald-200' : 'bg-emerald-100 text-emerald-800') : state === 'current' ? (dk ? 'bg-indigo-900 text-indigo-200' : 'bg-indigo-100 text-indigo-800') : (dk ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600')) }, state === 'complete' ? 'Done' : state === 'current' ? 'Now' : 'Later')),
                   h('p', { className: 'mt-1 text-[0.5625rem] leading-relaxed ' + bodyTone }, step.detail));
               }))));
@@ -38857,11 +43189,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   }))
                 : !waitingForRun && h('p', { className: 'mt-2 rounded-lg border p-2 text-[0.625rem] font-semibold ' + cardTone }, 'Run A and Run B have the same recorded action sequence through Day ' + audit.comparedThroughDay + '.'),
               !waitingForRun && audit.differences.length > 6 && h('p', { className: 'mt-2 text-[0.5625rem] font-bold ' + bodyTone }, (audit.differences.length - 6) + ' more differences are included in the exported evidence record.'),
-              h('div', { 'data-experiment-plan-alignment': plannedChoice.status, className: 'mt-3 rounded-lg border p-2.5 ' + planTone },
-                h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
-                  h('strong', { className: 'text-[0.625rem] ' + (dk ? 'text-slate-100' : 'text-slate-900') }, 'Plan-versus-actual check'),
-                  h('span', { className: 'rounded-full border px-2 py-0.5 text-[0.5625rem] font-black ' + (dk ? 'border-white/15 text-slate-100' : 'border-slate-300 text-slate-800') }, planBadge)),
-                h('p', { className: 'mt-1 text-[0.5625rem] leading-relaxed ' + bodyTone }, planDetail)));
+              (function() {
+                var trailState = waitingForRun ? 'waiting' : audit.status;
+                var divergenceXs = trailState === 'waiting' || trailState === 'identical'
+                  ? []
+                  : trailState === 'one-change'
+                    ? [80]
+                    : (audit.differenceCount >= 4 ? [38, 66, 94, 122] : audit.differenceCount === 3 ? [44, 80, 116] : [52, 108]);
+                var bStroke = trailState === 'waiting'
+                  ? (dk ? '#94a3b8' : '#64748b')
+                  : trailState === 'identical'
+                    ? (dk ? '#34d399' : '#047857')
+                    : trailState === 'one-change'
+                      ? (plannedChoice.status === 'matched' ? (dk ? '#34d399' : '#047857') : plannedChoice.status === 'unplanned' ? (dk ? '#fbbf24' : '#b45309') : (dk ? '#fb7185' : '#be123c'))
+                      : (dk ? '#fb7185' : '#be123c');
+                var baseStroke = dk ? '#94a3b8' : '#475569';
+                return h('div', { 'data-experiment-plan-alignment': plannedChoice.status, className: 'mt-3 rounded-lg border p-2.5 ' + planTone },
+                  h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                    h('strong', { className: 'text-[0.625rem] ' + (dk ? 'text-slate-100' : 'text-slate-900') }, 'Plan-versus-actual check'),
+                    h('span', { className: 'rounded-full border px-2 py-0.5 text-[0.5625rem] font-black ' + (dk ? 'border-white/15 text-slate-100' : 'border-slate-300 text-slate-800') }, planBadge)),
+                  h('svg', { 'data-audit-trail-strip': 'true', 'data-audit-trail-state': trailState, viewBox: '0 0 160 22', width: 160, height: 22, className: 'mt-2 block max-w-full', 'aria-hidden': 'true', focusable: 'false' },
+                    h('line', { x1: 8, y1: 6, x2: 152, y2: 6, stroke: baseStroke, strokeWidth: 2, strokeLinecap: 'round' }),
+                    h('circle', { cx: 8, cy: 6, r: 2, fill: baseStroke }),
+                    h('circle', { cx: 152, cy: 6, r: 2, fill: baseStroke }),
+                    h('line', { x1: 8, y1: 16, x2: 152, y2: 16, stroke: bStroke, strokeWidth: 2, strokeLinecap: 'round', strokeDasharray: trailState === 'waiting' ? '4 4' : undefined, opacity: trailState === 'waiting' ? 0.65 : 1 }),
+                    h('circle', { cx: 8, cy: 16, r: 2, fill: bStroke, opacity: trailState === 'waiting' ? 0.65 : 1 }),
+                    h('circle', { cx: 152, cy: 16, r: 2, fill: bStroke, opacity: trailState === 'waiting' ? 0.65 : 1 }),
+                    divergenceXs.map(function(mx, idx) {
+                      return h('g', { key: idx, 'data-audit-divergence': 'true' },
+                        h('line', { x1: mx, y1: 6, x2: mx, y2: 16, stroke: bStroke, strokeWidth: 1.75, strokeDasharray: '2 2' }),
+                        h('circle', { cx: mx, cy: 6, r: 2.2, fill: baseStroke }),
+                        h('circle', { cx: mx, cy: 16, r: 3, fill: bStroke }));
+                    })),
+                  h('p', { className: 'mt-1 text-[0.5625rem] leading-relaxed ' + bodyTone }, planDetail));
+              })());
           }
 
           function renderPlanRegistrationAudit() {
@@ -38894,6 +43255,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             var currentPlanMissing = bhExperimentPlanMissing(experimentNotebook);
             var planFieldTotal = BEEHIVE_EXPERIMENT_PLAN_REQUIRED_FIELDS.length;
             var tiedCopy = audit.registeredPlan;
+            var pVis = bhPlanRegistrationVisual(audit, experimentComparison.status, currentPlanMissing.length, planFieldTotal);
+            function renderPlanStageIcon(stageId, stageState) {
+              var marks = stageState === 'complete'
+                ? [h('circle', { key: 'c', cx: 7, cy: 7, r: 5.5, fill: 'none', stroke: 'currentColor', strokeWidth: 1.5 }), h('path', { key: 'k', d: 'M4.3 7.2l1.9 1.9 3.6-3.8', fill: 'none', stroke: 'currentColor', strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round' })]
+                : stageState === 'waiting'
+                  ? [h('circle', { key: 'c', cx: 7, cy: 7, r: 5.5, fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeDasharray: '2.2 1.8' }), h('path', { key: 'h', d: 'M7 4.2V7.2l2 1.2', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round' })]
+                  : [h('polygon', { key: 'd', points: '7,1.4 12.6,7 7,12.6 1.4,7', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5 }), h('path', { key: 'l', d: 'M7 4.4v3', fill: 'none', stroke: 'currentColor', strokeWidth: 1.6, strokeLinecap: 'round' }), h('circle', { key: 'p', cx: 7, cy: 9.7, r: 0.8, fill: 'currentColor' })];
+              return h('svg', { className: 'bee-plan-stage-icon ml-auto shrink-0', 'data-plan-stage-icon': stageId, 'data-stage-state': stageState, viewBox: '0 0 14 14', width: 14, height: 14, 'aria-hidden': 'true', focusable: 'false' }, marks);
+            }
             var timingStages = [
               {
                 id: 'plan',
@@ -38920,11 +43290,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('h5', { id: 'beehive-plan-registration-title', className: 'text-[0.6875rem] font-black ' + (dk ? 'text-white' : 'text-slate-900') }, 'Plan timing check'),
                   h('p', { className: 'mt-1 text-[0.625rem] leading-relaxed ' + bodyTone }, detail)),
                 h('span', { className: 'rounded-full border px-2 py-1 text-[0.625rem] font-black ' + (dk ? 'border-white/15 text-slate-100' : 'border-slate-300 text-slate-800') }, badgeLabel)),
+              h('svg', { className: 'bee-plan-integrity-bar', 'data-plan-integrity-bar': 'true', 'data-integrity-verdict': pVis.verdictState, viewBox: '0 0 180 10', preserveAspectRatio: 'none', 'aria-hidden': 'true', focusable: 'false' },
+                pVis.segments.map(function(seg) {
+                  return h('rect', { key: 'ps-' + seg.index, className: 'bee-plan-field-slot', 'data-plan-field-slot': String(seg.index), 'data-slot-state': seg.state, x: seg.x, y: 2, width: seg.width, height: 6, rx: 1.5 });
+                })),
               h('ol', { 'data-plan-registration-sequence': 'true', className: 'm-0 p-0', 'aria-label': __alloT('stem.beehive.a11y_plan_timing_sequence', 'Plan timing sequence') }, timingStages.map(function(stage, index) {
                 return h('li', { key: stage.id, 'data-plan-registration-node': stage.id, 'data-sequence-state': stage.state, 'aria-label': (index + 1) + '. ' + stage.label + ': ' + stage.meta },
                   h('div', { className: 'flex items-center gap-2' },
                     h('span', { 'data-plan-registration-step': 'true', 'aria-hidden': 'true' }, index + 1),
-                    h('span', { className: 'min-w-0 text-[0.625rem] font-black ' + (dk ? 'text-slate-100' : 'text-slate-900') }, stage.label)),
+                    h('span', { className: 'min-w-0 text-[0.625rem] font-black ' + (dk ? 'text-slate-100' : 'text-slate-900') }, stage.label),
+                    renderPlanStageIcon(stage.id, stage.state)),
                   h('p', { className: 'mt-1.5 text-[0.5625rem] font-semibold leading-relaxed ' + bodyTone }, stage.meta));
               })),
               issueItems.length > 0 && h('ul', { className: 'mt-2 flex flex-wrap gap-1.5', 'aria-label': audit.status === 'changed' ? 'Plan items edited after Run B began' : 'Plan items missing when Run B began' }, issueItems.map(function(item) {
@@ -38958,6 +43333,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             var observed = audit.status === 'aligned' || audit.status === 'not-aligned'
               ? audit.observedDirectionLabel + ' (' + experimentMetricDelta(audit) + ')'
               : 'Not evaluated yet';
+            var predVis = bhExperimentPredictionVisual(audit);
+            function renderPredictionArrowSvg(kind, dir) {
+              var strokeColor = kind === 'observed'
+                ? (predVis.matched ? (dk ? '#34d399' : '#047857') : predVis.status === 'not-aligned' ? (dk ? '#fb7185' : '#be123c') : (dk ? '#94a3b8' : '#64748b'))
+                : (dir === 'unset' ? (dk ? '#94a3b8' : '#64748b') : (dk ? '#a5b4fc' : '#4338ca'));
+              var shape = dir === 'up'
+                ? [h('path', { key: 's', d: 'M8 13V3', stroke: strokeColor, strokeWidth: 2, strokeLinecap: 'round' }), h('path', { key: 'h', d: 'M4 7l4-4 4 4', stroke: strokeColor, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', fill: 'none' })]
+                : dir === 'down'
+                  ? [h('path', { key: 's', d: 'M8 3v10', stroke: strokeColor, strokeWidth: 2, strokeLinecap: 'round' }), h('path', { key: 'h', d: 'M4 9l4 4 4-4', stroke: strokeColor, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', fill: 'none' })]
+                  : dir === 'same'
+                    ? [h('path', { key: 'e', d: 'M3 6h10M3 10h10', stroke: strokeColor, strokeWidth: 2, strokeLinecap: 'round', fill: 'none' })]
+                    : [h('circle', { key: 'u', cx: 8, cy: 8, r: 4.5, stroke: strokeColor, strokeWidth: 1.75, strokeDasharray: dir === 'pending' ? '2 2' : '3 2', fill: 'none' })];
+              return h('svg', { 'data-prediction-arrow': kind, 'data-arrow-dir': dir, viewBox: '0 0 16 16', width: 14, height: 14, className: 'inline-block shrink-0', 'aria-hidden': 'true', focusable: 'false' }, shape);
+            }
             return h('section', { 'data-experiment-prediction-audit': 'true', 'data-prediction-audit-status': audit.status, className: 'mt-3 rounded-xl border p-3 ' + tone, 'aria-labelledby': 'beehive-prediction-audit-title' },
               h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
                 h('div', null,
@@ -38966,10 +43355,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('span', { className: 'rounded-full border px-2 py-1 text-[0.625rem] font-black ' + (dk ? 'border-white/15 text-slate-100' : 'border-slate-300 text-slate-800') }, badgeLabel)),
               h('dl', { className: 'mt-2 grid gap-2 sm:grid-cols-2' },
                 h('div', { className: 'rounded-lg border p-2 ' + cardTone },
-                  h('dt', { className: 'text-[0.5625rem] font-black uppercase tracking-wide ' + bodyTone }, 'Expected'),
+                  h('dt', { className: 'flex items-center gap-1.5 text-[0.5625rem] font-black uppercase tracking-wide ' + bodyTone }, renderPredictionArrowSvg('expected', predVis.expectedDir), 'Expected'),
                   h('dd', { className: 'mt-1 text-[0.625rem] font-bold ' + (dk ? 'text-slate-100' : 'text-slate-900') }, audit.status === 'unplanned' ? 'Choose a metric and direction' : audit.metricLabel + ': ' + audit.directionLabel)),
                 h('div', { className: 'rounded-lg border p-2 ' + cardTone },
-                  h('dt', { className: 'text-[0.5625rem] font-black uppercase tracking-wide ' + bodyTone }, 'Observed'),
+                  h('dt', { className: 'flex items-center gap-1.5 text-[0.5625rem] font-black uppercase tracking-wide ' + bodyTone }, renderPredictionArrowSvg('observed', predVis.observedDir), 'Observed'),
                   h('dd', { className: 'mt-1 text-[0.625rem] font-bold ' + (dk ? 'text-slate-100' : 'text-slate-900') }, observed))),
               h('p', { className: 'mt-2 text-[0.5625rem] leading-relaxed ' + bodyTone }, 'This check compares the displayed direction only. Alignment describes this trial; it does not prove causation or guarantee the same result in another run.'));
           }
@@ -38977,16 +43366,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           function renderExperimentActionSchedule() {
             var schedule = bhExperimentActionSchedule(experimentBaseline, d, experimentNotebook);
             if (!schedule) return null;
+            var schedVis = bhExperimentScheduleVisual(schedule);
             function renderScheduleRow(row, canLocate) {
               var tone = row.status === 'matched'
                 ? (dk ? 'border-emerald-800 bg-emerald-950/20' : 'border-emerald-200 bg-emerald-50')
                 : row.plannedCategory
                   ? (dk ? 'border-indigo-700 bg-indigo-950/30' : 'border-indigo-200 bg-indigo-50')
                   : (dk ? 'border-slate-700 bg-slate-900/30' : 'border-slate-200 bg-white');
+              var statusIcon = row.status === 'matched' ? 'matched' : row.plannedCategory ? 'exception' : 'pending';
+              var iconStroke = statusIcon === 'matched'
+                ? (dk ? '#34d399' : '#047857')
+                : statusIcon === 'exception'
+                  ? (dk ? '#a5b4fc' : '#4338ca')
+                  : (dk ? '#94a3b8' : '#64748b');
+              var iconMark = statusIcon === 'matched'
+                ? [h('circle', { key: 'c', cx: 8, cy: 8, r: 6.5, stroke: iconStroke, strokeWidth: 1.5, fill: 'none' }), h('path', { key: 'k', d: 'M4.75 8.25l2.25 2.25 4.25-4.5', stroke: iconStroke, strokeWidth: 1.75, strokeLinecap: 'round', strokeLinejoin: 'round', fill: 'none' })]
+                : statusIcon === 'exception'
+                  ? [h('polygon', { key: 'p', points: '8,1.5 14.5,8 8,14.5 1.5,8', stroke: iconStroke, strokeWidth: 1.5, fill: 'none' }), h('path', { key: 'e', d: 'M8 5v3.5', stroke: iconStroke, strokeWidth: 1.75, strokeLinecap: 'round' }), h('circle', { key: 'd', cx: 8, cy: 11, r: 0.9, fill: iconStroke })]
+                  : [h('circle', { key: 'c', cx: 8, cy: 8, r: 6, stroke: iconStroke, strokeWidth: 1.5, strokeDasharray: '2.5 2', fill: 'none' })];
               return h('li', { key: row.id, 'data-experiment-schedule-row': row.id, 'data-schedule-day': row.day, 'data-schedule-phase': row.phase, 'data-schedule-status': row.status, 'data-schedule-planned-category': row.plannedCategory ? 'true' : 'false', className: 'flex flex-wrap items-start justify-between gap-2 rounded-lg border p-2.5 ' + tone },
-                h('div', { className: 'min-w-0 flex-1' },
-                  h('p', { className: 'text-xs font-bold ' + (dk ? 'text-slate-100' : 'text-slate-900') }, 'Day ' + row.day + ': ' + row.label + (row.cost ? ' · ' + row.cost : '')),
-                  h('p', { className: 'mt-1 text-xs leading-relaxed ' + bodyTone }, row.statusLabel)),
+                h('div', { className: 'flex min-w-0 flex-1 items-start gap-2' },
+                  h('svg', { 'data-schedule-status-icon': statusIcon, viewBox: '0 0 16 16', width: 16, height: 16, className: 'mt-0.5 shrink-0', 'aria-hidden': 'true', focusable: 'false' }, iconMark),
+                  h('div', { className: 'min-w-0 flex-1' },
+                    h('p', { className: 'text-xs font-bold ' + (dk ? 'text-slate-100' : 'text-slate-900') }, 'Day ' + row.day + ': ' + row.label + (row.cost ? ' · ' + row.cost : '')),
+                    h('p', { className: 'mt-1 text-xs leading-relaxed ' + bodyTone }, row.statusLabel))),
                 canLocate && row.status !== 'matched' && h('button', { type: 'button', 'data-experiment-schedule-locate': row.id, onClick: function(event) { focusExperimentGuideTarget(row.target, event); }, className: 'min-h-[44px] rounded-lg border px-3 py-2 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ' + (dk ? 'border-indigo-600 text-indigo-100 hover:bg-indigo-950/50' : 'border-indigo-300 text-indigo-900 hover:bg-indigo-50'), 'aria-label': 'Locate controls for ' + row.label + '. This only moves focus; it does not apply the action.' }, 'Locate control'));
             }
             var todayVisible = schedule.today.slice(0, 4);
@@ -38995,6 +43398,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('h5', { id: 'beehive-experiment-schedule-title', className: 'text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, 'Run B action schedule'),
                 h('span', { className: 'text-xs font-semibold ' + bodyTone }, schedule.distinctRuns ? 'Day ' + schedule.currentDay + ' · checkpoint Day ' + schedule.checkpointDay : 'Preview before Run B')),
               h('p', { className: 'mt-1 text-xs leading-relaxed ' + bodyTone }, 'Match Run A’s day, order, method, and cost for every choice except the single change you planned. Locate control moves focus; you decide whether and when to apply it.'),
+              h('svg', { className: 'bee-schedule-timeline-rail', viewBox: '0 0 220 20', 'aria-hidden': 'true', focusable: 'false', 'data-schedule-timeline-svg': 'true', 'data-run-state': schedVis.runState },
+                h('line', { className: 'bee-schedule-rail-track', x1: 10, y1: 10, x2: 210, y2: 10 }),
+                schedVis.distinctRuns && schedVis.progressW > 0 && h('line', { className: 'bee-schedule-rail-progress', x1: 10, y1: 10, x2: +(10 + schedVis.progressW).toFixed(2), y2: 10 }),
+                h('line', { className: 'bee-schedule-checkpoint-tick', x1: 210, y1: 4, x2: 210, y2: 16 }),
+                schedVis.distinctRuns && h('line', { className: 'bee-schedule-cursor-tick', x1: schedVis.cursorX, y1: 3, x2: schedVis.cursorX, y2: 17, 'data-schedule-cursor': 'true' }),
+                schedVis.pins.map(function(pin) {
+                  return pin.shape === 'diamond'
+                    ? h('polygon', { key: pin.id, className: 'bee-schedule-pin', points: pin.x + ',' + (pin.y - 4.2) + ' ' + (pin.x + 4.2) + ',' + pin.y + ' ' + pin.x + ',' + (pin.y + 4.2) + ' ' + (pin.x - 4.2) + ',' + pin.y, 'data-pin-status': pin.status, 'data-pin-shape': 'diamond' })
+                    : h('circle', { key: pin.id, className: 'bee-schedule-pin', cx: pin.x, cy: pin.y, r: pin.shape === 'alert' ? 3.8 : 3.4, 'data-pin-status': pin.status, 'data-pin-shape': pin.shape });
+                })),
               !schedule.historyComplete && h('p', { 'data-experiment-schedule-limit': 'true', className: 'mt-2 rounded-lg border p-2 text-xs font-semibold ' + (dk ? 'border-amber-700 bg-amber-950/20 text-amber-200' : 'border-amber-200 bg-amber-50 text-amber-900') }, 'Retained-record preview only: at least one action history is incomplete. Missing earlier choices cannot be reconstructed, and this schedule cannot establish a fair one-change comparison.'),
               h('div', { 'data-experiment-schedule-exception': schedule.plannedAction ? schedule.plannedAction.id : 'unselected', className: 'mt-2 rounded-lg border p-2.5 ' + (dk ? 'border-indigo-700 bg-indigo-950/20' : 'border-indigo-200 bg-indigo-50') },
                 h('p', { className: 'text-xs font-bold ' + (dk ? 'text-indigo-100' : 'text-indigo-950') }, schedule.plannedAction ? 'Your planned exception: ' + schedule.plannedAction.label : 'Choose your single planned exception'),
@@ -39074,14 +43487,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       h('th', { scope: 'row', className: 'p-2 font-semibold' }, (bhExperimentPlanAction(group.plannedActionId) || { label: group.plannedActionId }).label + ' · ' + group.metricLabel, h('span', { className: 'mt-1 block font-normal ' + bodyTone }, group.modelVersion + ' · ' + group.stockId + ' · ' + group.siteId + ' · Day ' + group.checkpointDay)),
                       h('td', { className: 'p-2 tabular-nums' }, group.seedCount + ' seeds / ' + group.pairCount + ' pairs', group.repeatedSeedCount > 0 && h('span', { className: 'block ' + bodyTone }, group.repeatedSeedCount + ' replay pairs counted once')),
                       h('td', { className: 'p-2 font-bold tabular-nums' }, difference(group.meanDelta, group.suffix)),
-                      h('td', { className: 'p-2 tabular-nums' }, difference(group.minDelta, group.suffix) + ' to ' + difference(group.maxDelta, group.suffix))); })))),
+                      h('td', { className: 'p-2 tabular-nums' }, difference(group.minDelta, group.suffix) + ' to ' + difference(group.maxDelta, group.suffix),
+                        (function() {
+                          var w = bhExperimentArchiveWhisker(group);
+                          if (!w) return null;
+                          return h('svg', { className: 'bee-archive-whisker', viewBox: '0 0 120 22', 'data-archive-range-whisker': 'true', 'data-whisker-tone': w.tone, 'aria-hidden': 'true', focusable: 'false' },
+                            h('line', { className: 'bee-archive-whisker-rail', x1: '8', y1: '11', x2: '112', y2: '11' }),
+                            h('line', { className: 'bee-archive-whisker-zero', x1: String(w.zeroX), y1: '3', x2: String(w.zeroX), y2: '19' }),
+                            h('rect', { className: 'bee-archive-whisker-span', x: String(w.minX), y: '7', width: String(w.spanWidth), height: '8', rx: '3' }),
+                            h('circle', { className: 'bee-archive-whisker-mean', cx: String(w.meanX), cy: '11', r: '3.6' }));
+                        })())); })))),
                 h('ol', { className: 'mt-3 space-y-2', 'aria-label': __alloT("stem.beehive.a11y_saved_completed_trial_pairs", 'Saved completed trial pairs') }, experimentArchive.records.map(function(record, index) {
                   var metric = bhExperimentPredictionMetric(record.notebook.predictedMetricId);
-                  var delta = record.current.metrics[metric.id] - record.baseline.metrics[metric.id];
+                  var pairBase = record.baseline.metrics[metric.id];
+                  var pairCurr = record.current.metrics[metric.id];
+                  var delta = pairCurr - pairBase;
+                  var pairLowerBetter = metric.id === 'varroa' || metric.id === 'diseaseRisk';
+                  var pairTone = delta === 0 ? 'neutral' : ((pairLowerBetter ? delta < 0 : delta > 0) ? 'beneficial' : 'adverse');
                   return h('li', { key: record.pairId, className: 'rounded-lg border p-2 ' + (dk ? 'border-slate-700' : 'border-slate-200') },
                     h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
                       h('p', { className: 'text-[0.625rem] font-bold' }, 'Pair ' + (index + 1) + ': Seed ' + record.baseline.simulationSeed + ' · Runs ' + record.baseline.runSerial + ' / ' + record.current.runSerial + ' · Day ' + record.baseline.capturedDay + ' · ' + metric.label + ' ' + difference(delta, metric.suffix)),
                       h('button', { type: 'button', 'data-experiment-archive-remove': record.pairId, 'aria-label': 'Remove saved pair ' + (index + 1) + ' with seed ' + record.baseline.simulationSeed, onClick: function() { updFn(function(b) { b.experimentArchive = bhRemoveExperimentArchivePair(b.experimentArchive, record.pairId); }); announceBee('Saved pair removed from the archive.', false); }, className: 'min-h-[44px] rounded-lg border px-3 py-2 text-[0.625rem] font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ' + (dk ? 'border-slate-600' : 'border-slate-300') }, 'Remove pair')),
+                    Number.isFinite(pairBase) && Number.isFinite(pairCurr) && bhRenderDeltaBars({
+                      before: pairBase,
+                      after: pairCurr,
+                      scaleMax: Math.max(Math.abs(pairBase), Math.abs(pairCurr), 1),
+                      rootAttr: 'data-archive-pair-bars',
+                      barAttr: 'data-archive-pair-bar',
+                      toneAttr: 'data-delta-tone',
+                      tone: pairTone
+                    }),
                     h('p', { className: 'mt-1 break-words text-[0.625rem] ' + bodyTone }, record.notebook.question));
                 }))));
           }
@@ -39191,11 +43626,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       h('th', { scope: 'col', className: 'px-3 py-2 font-black' }, 'Run B'),
                       h('th', { scope: 'col', className: 'px-3 py-2 font-black' }, 'Difference (B - A)'))),
                   h('tbody', null, experimentComparison.metrics.map(function(row) {
-                    return h('tr', { key: row.id, 'data-experiment-metric': row.id, className: dk ? 'border-t border-white/10' : 'border-t border-slate-200' },
-                      h('th', { scope: 'row', className: 'px-3 py-2 font-bold' }, row.label),
-                      h('td', { className: 'px-3 py-2 tabular-nums' }, experimentMetricValue(row, 'baseline')),
-                      h('td', { className: 'px-3 py-2 tabular-nums' }, experimentMetricValue(row, 'current')),
-                      h('td', { className: 'px-3 py-2 font-black tabular-nums' }, experimentMetricDelta(row)));
+                    var isPredictedMetric = !!(experimentNotebook && experimentNotebook.predictedMetricId && experimentNotebook.predictedMetricId === row.id);
+                    var hasAnyVal = Number.isFinite(row.baseline) || Number.isFinite(row.current);
+                    var rowScale = hasAnyVal ? Math.max(Math.abs(Number.isFinite(row.baseline) ? row.baseline : 0), Math.abs(Number.isFinite(row.current) ? row.current : 0), 1) : 1;
+                    var basePct = Number.isFinite(row.baseline) ? Math.min(100, Math.max(0, Math.abs(row.baseline) / rowScale * 100)) : null;
+                    var currPct = Number.isFinite(row.current) ? Math.min(100, Math.max(0, Math.abs(row.current) / rowScale * 100)) : null;
+                    var deltaPct = Number.isFinite(row.delta) ? Math.min(50, Math.max(0, Math.abs(row.delta) / rowScale * 50)) : null;
+                    return h('tr', { key: row.id, 'data-experiment-metric': row.id, 'data-predicted-metric': isPredictedMetric ? 'true' : undefined, className: (dk ? 'border-t border-white/10' : 'border-t border-slate-200') + (isPredictedMetric ? (dk ? ' bg-indigo-950/35' : ' bg-indigo-50/70') : '') },
+                      h('th', { scope: 'row', className: 'px-3 py-2 font-bold' },
+                        h('span', { className: 'inline-flex flex-wrap items-center gap-1.5' },
+                          h('span', null, row.label),
+                          isPredictedMetric && h('span', { 'data-experiment-predicted-badge': 'true', className: 'rounded-full border px-1.5 py-0.5 text-[0.5625rem] font-black uppercase tracking-wide ' + (dk ? 'border-indigo-500 bg-indigo-950 text-indigo-200' : 'border-indigo-300 bg-indigo-100 text-indigo-900') }, 'Predicted'))),
+                      h('td', { className: 'px-3 py-2 tabular-nums' },
+                        experimentMetricValue(row, 'baseline'),
+                        basePct !== null && h('span', { 'data-experiment-bar': 'baseline', 'aria-hidden': 'true', className: 'mt-1 block h-1.5 w-full max-w-[5.5rem] overflow-hidden rounded-full ' + (dk ? 'bg-slate-800' : 'bg-slate-200') },
+                          h('span', { 'data-experiment-bar-fill': 'baseline', className: 'block h-full rounded-full ' + (dk ? 'bg-slate-400' : 'bg-slate-500'), style: { width: basePct.toFixed(1) + '%' } }))),
+                      h('td', { className: 'px-3 py-2 tabular-nums' },
+                        experimentMetricValue(row, 'current'),
+                        currPct !== null && h('span', { 'data-experiment-bar': 'current', 'aria-hidden': 'true', className: 'mt-1 block h-1.5 w-full max-w-[5.5rem] overflow-hidden rounded-full ' + (dk ? 'bg-slate-800' : 'bg-slate-200') },
+                          h('span', { 'data-experiment-bar-fill': 'current', className: 'block h-full rounded-full ' + (dk ? 'bg-sky-400' : 'bg-sky-600'), style: { width: currPct.toFixed(1) + '%' } }))),
+                      h('td', { className: 'px-3 py-2 font-black tabular-nums' },
+                        experimentMetricDelta(row),
+                        deltaPct !== null && h('span', { 'data-experiment-delta-bar': row.delta > 0 ? 'positive' : row.delta < 0 ? 'negative' : 'zero', 'aria-hidden': 'true', className: 'relative mt-1 block h-1.5 w-full max-w-[6rem] overflow-hidden rounded-full ' + (dk ? 'bg-slate-800' : 'bg-slate-200') },
+                          h('span', { className: 'absolute inset-y-0 left-1/2 w-px ' + (dk ? 'bg-slate-500' : 'bg-slate-400') }),
+                          row.delta !== 0 && h('span', { 'data-experiment-delta-fill': 'true', className: 'absolute inset-y-0 rounded-full ' + (row.delta > 0 ? (dk ? 'bg-sky-400' : 'bg-sky-600') : (dk ? 'bg-amber-400' : 'bg-amber-600')), style: row.delta > 0 ? { left: '50%', width: deltaPct.toFixed(1) + '%' } : { left: (50 - deltaPct).toFixed(1) + '%', width: deltaPct.toFixed(1) + '%' } }))));
                   })))),
               h('p', { className: 'mt-2 text-[0.625rem] leading-relaxed ' + bodyTone },
                 'Outcome check: Run A ' + (experimentComparison.baseline.colonySurvived ? 'survived' : 'collapsed') + '; Run B ' + (experimentComparison.current.colonySurvived ? 'survived' : 'collapsed') + '.'),
@@ -39236,6 +43690,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           }
           var startSeason = Math.floor(((day || 0) % 120) / 30);
           var endSeason = Math.floor(((forecast.end.day || 0) % 120) / 30);
+          var outVis = bhColonyOutlookVisual(forecast, outlookReserve);
           return h('section', { className: 'bee-forecast bee-outlook', 'data-beehive-colony-outlook': 'true', 'aria-labelledby': 'beehive-forecast-title' },
             h('div', { className: 'bee-outlook-header' },
               h('div', null,
@@ -39256,6 +43711,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('div', { className: 'bee-outlook-core', 'data-beehive-outlook-overview': 'true' },
             forecast.daysProjected < forecast.daysRequested && h('p', { className: 'bee-outlook-shortened', 'data-outlook-shortened': 'true' },
               'Projection stopped after ' + forecast.daysProjected + ' of ' + forecast.daysRequested + ' requested days: the worker force reached the model’s collapse threshold. Projected metric values below show Day ' + forecast.end.day + '.'),
+            h('svg', { className: 'bee-outlook-stability-strip', viewBox: '0 0 160 20', 'aria-hidden': 'true', focusable: 'false', 'data-outlook-status': outVis.status },
+              outVis.channels.map(function(ch) {
+                return h('g', { key: ch.id, 'data-channel-id': ch.id },
+                  h('rect', { className: 'bee-outlook-channel-track', x: ch.x, y: 6, width: ch.trackW, height: 8, rx: 3 }),
+                  h('rect', { className: 'bee-outlook-channel-fill', x: ch.x, y: 6, width: ch.fillW, height: 8, rx: 3, 'data-channel-id': ch.id, 'data-channel-band': ch.band }),
+                  h('line', { className: 'bee-outlook-channel-tick', x1: ch.thresholdX, y1: 3, x2: ch.thresholdX, y2: 17 }));
+              })),
             h('h4', null, 'Projected at Day ' + forecast.end.day),
             h('div', { className: 'bee-outlook-metrics', role: 'list', 'aria-label': forecast.daysProjected + '-day projected colony metrics at Day ' + forecast.end.day },
               metrics.map(function(metric) {
@@ -39318,9 +43780,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     var riskTone = risk.level === 'critical'
                       ? (dk ? 'border-rose-700/40 bg-rose-950/30' : 'border-rose-200 bg-white')
                       : (dk ? 'border-amber-700/40 bg-amber-950/30' : 'border-amber-200 bg-white');
+                    var rVis = outVis.riskMap[risk.id] || outVis.fallbackRisk(risk);
                     return h('li', { key: risk.id, className: 'bee-outlook-risk ' + riskTone + ' ' + (risk.level === 'critical' ? (dk ? 'text-rose-200' : 'text-rose-900') : (dk ? 'text-amber-200' : 'text-amber-900')) },
                       h('h4', null,
                         (risk.level === 'critical' ? 'Action: ' : 'Watch: ') + risk.label),
+                      h('svg', { className: 'bee-outlook-risk-gauge', viewBox: '0 0 100 10', 'aria-hidden': 'true', focusable: 'false', 'data-risk-level': rVis.band },
+                        h('rect', { className: 'bee-outlook-risk-track', x: 2, y: 3, width: 96, height: 4, rx: 2 }),
+                        h('rect', { className: 'bee-outlook-risk-fill', x: 2, y: 3, width: rVis.fillW, height: 4, rx: 2, 'data-risk-level': rVis.band }),
+                        h('line', { className: 'bee-outlook-risk-tick', x1: rVis.thresholdX, y1: 1, x2: rVis.thresholdX, y2: 9 })),
                       h('p', { className: 'text-sm ' + bodyTone }, risk.detail),
                       h('p', { className: 'text-sm font-bold ' + (dk ? 'text-slate-200' : 'text-slate-700') }, risk.action),
                       h('button', { type: 'button', 'data-forecast-response': risk.id, onClick: function() { focusForecastResponse(risk); }, className: 'bee-forecast-button', 'aria-label': __alloFill(__alloT('stem.beehive.a11y_open_intervention_controls_for', 'Open intervention controls for {value1}'), { value1: risk.label })}, 'Open response controls'));
@@ -39470,9 +43937,68 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('figcaption', { id: 'beehive-thermo-scale-caption' }, h('strong', null, 'Read the temperature scale'),
                   h('span', null, '○ Outside: ' + reading.outsideC + ' °C · ▲ Estimate: ' + hiveTempC.toFixed(1) + ' °C'),
                   h('span', null, 'Dashed band: typical brood range, 34–36 °C. The scale stays fixed across trials.'))),
+              (function() {
+                var weatherBand = reading.outsideC <= 10 ? 'cold' : reading.outsideC >= 30 ? 'hot' : 'mild';
+                var heaterCount = iq.heaterBees <= 0 ? 0 : Math.min(8, Math.max(1, Math.ceil(iq.heaterBees / 625)));
+                var heatRingR = Math.round((14 + Math.min(14, (reading.heatingC / 45) * 14)) * 10) / 10;
+                var fanArrowCount = iq.beesFanning <= 0 ? 0 : Math.min(5, Math.max(1, Math.ceil(iq.beesFanning / 100)));
+                var weatherStroke = weatherBand === 'cold' ? (dk ? '#7dd3fc' : '#0369a1') : weatherBand === 'hot' ? (dk ? '#fca5a5' : '#b91c1c') : (dk ? '#fcd34d' : '#b45309');
+                var warmStroke = dk ? '#fbbf24' : '#b45309';
+                var coolStroke = dk ? '#7dd3fc' : '#0369a1';
+                var hiveFill = sm.bg;
+                return h('div', { 'data-thermo-mechanism': 'true', 'data-thermo-mechanism-state': state, className: 'bee-thermo-mechanism' },
+                  h('svg', { 'data-thermo-mechanism-svg': 'true', viewBox: '0 0 360 92', 'aria-hidden': 'true', focusable: 'false' },
+                    h('g', { 'data-thermo-weather': weatherBand },
+                      h('rect', { x: '8', y: '10', width: '88', height: '72', rx: '8', fill: 'var(--bd-paper)', stroke: weatherStroke, strokeWidth: '1.5' }),
+                      weatherBand === 'cold'
+                        ? h('g', { stroke: weatherStroke, strokeWidth: '1.6', strokeLinecap: 'round' },
+                            h('line', { x1: '44', y1: '28', x2: '60', y2: '28' }),
+                            h('line', { x1: '52', y1: '20', x2: '52', y2: '36' }),
+                            h('line', { x1: '46', y1: '22', x2: '58', y2: '34' }),
+                            h('line', { x1: '58', y1: '22', x2: '46', y2: '34' }))
+                        : weatherBand === 'hot'
+                        ? h('g', null,
+                            h('circle', { cx: '52', cy: '28', r: '6', fill: weatherStroke }),
+                            [0, 1, 2, 3, 4, 5, 6, 7].map(function(ri) {
+                              var ra = ri * Math.PI / 4;
+                              return h('line', { key: ri, x1: String(Math.round((52 + Math.cos(ra) * 8.5) * 10) / 10), y1: String(Math.round((28 + Math.sin(ra) * 8.5) * 10) / 10), x2: String(Math.round((52 + Math.cos(ra) * 12) * 10) / 10), y2: String(Math.round((28 + Math.sin(ra) * 12) * 10) / 10), stroke: weatherStroke, strokeWidth: '1.5', strokeLinecap: 'round' });
+                            }))
+                        : h('g', null,
+                            h('circle', { cx: '52', cy: '27', r: '6', fill: weatherStroke }),
+                            h('path', { d: 'M41 35q11 -5 22 0', fill: 'none', stroke: weatherStroke, strokeWidth: '1.6', strokeLinecap: 'round' })),
+                      h('text', { x: '52', y: '52', textAnchor: 'middle', fontSize: '9.5', fill: 'currentColor' }, 'Outside'),
+                      h('text', { x: '52', y: '70', textAnchor: 'middle', fontSize: '12', fontWeight: '700', fill: 'currentColor' }, reading.outsideC + ' \u00b0C')),
+                    h('line', { x1: '96', y1: '46', x2: '108', y2: '46', stroke: weatherStroke, strokeWidth: '2', strokeDasharray: '3 2' }),
+                    h('g', { 'data-thermo-heaters': String(heaterCount) },
+                      h('rect', { x: '108', y: '8', width: '144', height: '76', rx: '10', fill: hiveFill, stroke: sm.border, strokeWidth: '2' }),
+                      h('circle', { 'data-thermo-heat-ring': 'true', cx: '180', cy: '42', r: String(heatRingR), fill: warmStroke, fillOpacity: iq.heaterBees > 0 ? '0.18' : '0.05', stroke: warmStroke, strokeWidth: '1.5', strokeDasharray: iq.heaterBees > 0 ? undefined : '3 3' }),
+                      Array.from({ length: heaterCount }).map(function(_, hi) {
+                        var ha = -Math.PI / 2 + (hi * Math.PI * 2) / Math.max(1, heaterCount);
+                        var hx = Math.round((180 + Math.cos(ha) * 26) * 10) / 10;
+                        var hy = Math.round((42 + Math.sin(ha) * 19) * 10) / 10;
+                        return h('circle', { key: hi, 'data-thermo-heater-bee': String(hi), cx: String(hx), cy: String(hy), r: '3.2', fill: warmStroke });
+                      }),
+                      h('text', { x: '180', y: '46', textAnchor: 'middle', fontSize: '12.5', fontWeight: '800', fill: 'currentColor' }, hiveTempC.toFixed(1) + ' \u00b0C'),
+                      h('text', { x: '180', y: '78', textAnchor: 'middle', fontSize: '9.5', fontWeight: '700', fill: warmStroke }, '+' + reading.heatingC.toFixed(1) + ' \u00b0C heaters')),
+                    h('line', { x1: '252', y1: '46', x2: '264', y2: '46', stroke: coolStroke, strokeWidth: '2', strokeDasharray: '3 2' }),
+                    h('g', { 'data-thermo-fanners': String(fanArrowCount) },
+                      h('rect', { x: '264', y: '10', width: '88', height: '72', rx: '8', fill: 'var(--bd-paper)', stroke: coolStroke, strokeWidth: '1.5' }),
+                      fanArrowCount > 0
+                        ? Array.from({ length: fanArrowCount }).map(function(_, fi) {
+                            var fy = 22 + fi * 9;
+                            return h('g', { key: fi, 'data-thermo-airflow-arrow': String(fi) },
+                              h('line', { x1: '275', y1: String(fy), x2: '335', y2: String(fy), stroke: coolStroke, strokeWidth: '1.8', strokeLinecap: 'round' }),
+                              h('polygon', { points: '334,' + (fy - 3) + ' 341,' + fy + ' 334,' + (fy + 3), fill: coolStroke }));
+                          })
+                        : h('g', null,
+                            h('line', { x1: '278', y1: '40', x2: '338', y2: '40', stroke: coolStroke, strokeWidth: '1.5', strokeDasharray: '4 3' }),
+                            h('text', { x: '308', y: '34', textAnchor: 'middle', fontSize: '9', fill: 'currentColor' }, '0 fanning')),
+                      h('text', { x: '308', y: '75', textAnchor: 'middle', fontSize: '9.5', fontWeight: '700', fill: coolStroke }, '\u2212' + reading.coolingC.toFixed(1) + ' \u00b0C fanning'))),
+                  h('p', { className: 'bee-thermo-mechanism-note' }, 'Illustrative diagram of the three classroom formula terms (not a physical airflow measurement).'));
+              })(),
               h('fieldset', { 'aria-describedby': 'beehive-thermo-instructions' },
                 h('legend', null, 'Trial conditions'),
-                h('div', { className: 'bee-thermo-presets', 'data-thermo-presets': 'true', role: 'group', 'aria-label': 'Weather test presets' },
+                h('div', { className: 'bee-thermo-presets', 'data-thermo-presets': 'true', role: 'group', 'aria-label': __alloT('stem.beehive.aria_weather_test_presets', 'Weather test presets') },
                   [{ temp: 0, label: '❄️ Frost 0 °C' }, { temp: 20, label: '🌤 Mild 20 °C' }, { temp: 38, label: '☀️ Heatwave 38 °C' }].map(function(p) {
                     return h('button', { key: p.temp, type: 'button', 'data-thermo-preset': String(p.temp), 'aria-pressed': iq.outsideC === p.temp, onClick: function() { updFn(function(b) { b.thermHunt = bhSetThermoControl(b.thermHunt, 'outsideC', p.temp); }); } }, p.label);
                   })),
@@ -39501,8 +44027,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   comparison.kind === 'single' ? 'The other two inputs stayed fixed. Explain the result within this classroom model.' : comparison.kind === 'multiple' ? 'This comparison cannot isolate one input. Keep two conditions fixed and repeat the trial.' : comparison.kind === 'unchanged' ? 'Try one deliberate change, then compare again.' : comparison.reason === 'older-model' || comparison.reason === 'different-model' ? 'This saved trial uses a different model; its original result is kept in the log.' : comparison.reason === 'inconsistent' || comparison.reason === 'invalid' ? 'The saved values cannot be verified against this formula. Log a fresh baseline; the original entry is kept.' : 'Your first logged trial will become the baseline. Logging another trial keeps that baseline fixed.'),
                 comparison.rows.length > 0 && h('dl', null, comparison.rows.map(function(row) {
                   function valueText(value) { return (row.unit === 'bees' ? countText(value) : value.toFixed(1)) + ' ' + row.unit; }
+                  var thermoTone = row.id === 'temperature'
+                    ? (Math.abs(row.after - 35) + 0.05 < Math.abs(row.before - 35) ? 'beneficial' : Math.abs(row.after - 35) - 0.05 > Math.abs(row.before - 35) ? 'adverse' : 'neutral')
+                    : 'neutral';
+                  var thermoScale = row.id === 'heaterBees'
+                    ? 5000
+                    : row.id === 'beesFanning'
+                      ? 500
+                      : row.unit === '°C'
+                        ? Math.max(45, Math.abs(row.before), Math.abs(row.after))
+                        : Math.max(100, Math.abs(row.before), Math.abs(row.after), 1);
                   return h('div', { key: row.id, 'data-thermo-delta': row.id }, h('dt', null, row.label), h('dd', { style: { margin: 0 } },
-                    h('dl', { className: 'bee-thermo-values' }, [['Baseline', valueText(row.before)], ['Now', valueText(row.after)], ['Change', (row.delta > 0 ? '+' : '') + valueText(row.delta)]].map(function(cell) { return h('div', { key: cell[0] }, h('dt', null, cell[0]), h('dd', null, cell[1])); }))));
+                    h('dl', { className: 'bee-thermo-values' }, [['Baseline', valueText(row.before)], ['Now', valueText(row.after)], ['Change', (row.delta > 0 ? '+' : '') + valueText(row.delta)]].map(function(cell) { return h('div', { key: cell[0] }, h('dt', null, cell[0]), h('dd', null, cell[1])); })),
+                    Number.isFinite(row.before) && Number.isFinite(row.after) && bhRenderDeltaBars({ before: row.before, after: row.after, scaleMax: thermoScale, tone: thermoTone, rootAttr: 'data-thermo-delta-bars', barAttr: 'data-thermo-delta-bar', toneAttr: 'data-delta-tone' })));
                 }))),
               h('section', { className: 'bee-thermo-prompt', 'aria-labelledby': 'beehive-thermo-predict-title' },
                 h('h4', { id: 'beehive-thermo-predict-title' }, 'Predict, then test'), h('p', null, lesson.question),
@@ -40049,8 +44586,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
                     h('div', null, h('div', { id: 'beehive-flight-attitude-title', className: 'text-[0.625rem] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-indigo-300' : 'text-indigo-800') }, 'Flight attitude'), h('p', { id: 'beehive-flight-attitude-summary', 'data-flight-attitude-summary': 'true', className: 'mt-1 text-[0.625rem] font-semibold ' + (dk ? 'text-slate-200' : 'text-slate-700') }, instrumentAttitude.summary + ' / ' + instrumentAttitude.correction)),
                     h('span', { className: 'rounded-full border px-2.5 py-1 text-[0.625rem] font-black uppercase tracking-wide ' + (dk ? 'border-indigo-700 text-indigo-200' : 'border-indigo-200 bg-white text-indigo-800') }, 'Horizon model')),
-                  h('div', { className: 'mt-3 grid grid-cols-2 gap-2', role: 'list', 'aria-label': __alloT('stem.beehive.a11y_pitch_and_bank_measurements', 'Pitch and bank measurements') },
-                    [['pitch', 'Pitch', instrumentAttitude.pitch], ['bank', 'Bank', instrumentAttitude.bank]].map(function(item) { return h('div', { key: item[0], role: 'listitem', className: 'rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/40' : 'border-white bg-white/80') }, h('div', { className: 'text-[0.625rem] font-black uppercase tracking-wide ' + (dk ? 'text-slate-300' : 'text-slate-600') }, item[1]), h('div', { 'data-flight-attitude-value': item[0], className: 'mt-1 text-lg font-black tabular-nums ' + (dk ? 'text-white' : 'text-slate-900') }, item[2])); }))),
+                  (function() {
+                    var clampedPitch = Math.max(-35, Math.min(35, Number(instrumentAttitude.pitchDeg) || 0));
+                    var clampedBank = Math.max(-45, Math.min(45, Number(instrumentAttitude.bankDeg) || 0));
+                    return h('div', { className: 'mt-3 grid grid-cols-1 gap-2 sm:grid-cols-[7.75rem_minmax(0,1fr)] items-center' },
+                      h('div', { 'aria-hidden': 'true', className: 'flex items-center justify-center rounded-lg border p-1.5 ' + (dk ? 'border-white/10 bg-slate-950/50' : 'border-white bg-white/85') },
+                        h('svg', { 'data-flight-horizon-svg': 'true', 'data-pitch-deg': String(clampedPitch), 'data-bank-deg': String(clampedBank), viewBox: '0 0 120 76', 'aria-hidden': 'true', focusable: 'false', className: 'h-16 w-28 max-w-full' },
+                          h('defs', null, h('clipPath', { id: 'beehive-flight-horizon-clip' }, h('circle', { cx: 60, cy: 38, r: 30 }))),
+                          h('g', { clipPath: 'url(#beehive-flight-horizon-clip)' },
+                            h('g', { 'data-flight-horizon-world': 'true', transform: 'translate(60 38) rotate(' + (-clampedBank) + ') translate(0 ' + (clampedPitch * 0.55).toFixed(1) + ')' },
+                              h('rect', { x: -70, y: -80, width: 140, height: 80, fill: dk ? '#0369a1' : '#38bdf8' }),
+                              h('rect', { x: -70, y: 0, width: 140, height: 80, fill: dk ? '#3f6212' : '#65a30d' }),
+                              h('line', { x1: -70, y1: 0, x2: 70, y2: 0, stroke: '#ffffff', strokeWidth: 1.8 }),
+                              h('line', { x1: -12, y1: -11, x2: 12, y2: -11, stroke: 'rgba(255,255,255,0.8)', strokeWidth: 1.2 }),
+                              h('line', { x1: -12, y1: 11, x2: 12, y2: 11, stroke: 'rgba(255,255,255,0.8)', strokeWidth: 1.2 }))),
+                          h('circle', { cx: 60, cy: 38, r: 30, fill: 'none', stroke: dk ? '#818cf8' : '#4338ca', strokeWidth: 2 }),
+                          h('polygon', { points: '60,8 57,13 63,13', fill: '#fbbf24' }),
+                          h('g', { 'data-flight-horizon-reticle': 'true' },
+                            h('path', { d: 'M38 38 H52 L55 42', fill: 'none', stroke: '#ffffff', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+                            h('path', { d: 'M82 38 H68 L65 42', fill: 'none', stroke: '#ffffff', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+                            h('circle', { cx: 60, cy: 38, r: 2.5, fill: '#fbbf24' })))),
+                      h('div', { className: 'grid grid-cols-2 gap-2', role: 'list', 'aria-label': __alloT('stem.beehive.a11y_pitch_and_bank_measurements', 'Pitch and bank measurements') },
+                        [['pitch', 'Pitch', instrumentAttitude.pitch], ['bank', 'Bank', instrumentAttitude.bank]].map(function(item) { return h('div', { key: item[0], role: 'listitem', className: 'rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/40' : 'border-white bg-white/80') }, h('div', { className: 'text-[0.625rem] font-black uppercase tracking-wide ' + (dk ? 'text-slate-300' : 'text-slate-600') }, item[1]), h('div', { 'data-flight-attitude-value': item[0], className: 'mt-1 text-lg font-black tabular-nums ' + (dk ? 'text-white' : 'text-slate-900') }, item[2])); })));
+                  })()),
                 h('div', { className: 'mt-3 grid grid-cols-2 gap-2 sm:grid-cols-8', role: 'list', 'aria-label': __alloT('stem.beehive.a11y_current_flight_measurements', 'Current flight measurements') },
                   instrumentCards.map(function(card) { return h('div', { key: card.key, role: 'listitem', className: 'rounded-xl border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/45' : 'border-slate-200 bg-slate-50') },
                     h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'text-[0.625rem] font-black uppercase tracking-wide ' + (dk ? 'text-slate-300' : 'text-slate-600') }, card.label), h('span', { 'aria-hidden': 'true' }, card.icon)),
@@ -40061,13 +44619,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     h('div', null, h('div', { id: 'beehive-flight-envelope-title', className: 'text-[0.625rem] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-emerald-300' : 'text-emerald-800') }, 'Flight envelope'), h('p', { className: 'mt-0.5 text-[0.625rem] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Five conditions that tell you whether the route is still viable. Crosswind is shown as an additional live cue.')),
                     h('span', { 'data-flight-envelope-overall': 'true', 'data-envelope-state': instrumentEnvelope.overallState, className: 'rounded-full border px-2.5 py-1 text-[0.625rem] font-black uppercase tracking-wide ' + (dk ? 'border-white/15 bg-slate-950/45 text-white' : 'border-emerald-200 bg-white text-slate-800') }, instrumentEnvelope.overallLabel)),
                   h('p', { id: 'beehive-flight-envelope-summary', 'data-flight-envelope-summary': 'true', className: 'mt-2 text-[0.625rem] font-semibold ' + (dk ? 'text-slate-200' : 'text-slate-700') }, instrumentEnvelope.overallAdvice),
-                  h('ul', { className: 'mt-2 grid grid-cols-2 gap-2 sm:grid-cols-5', 'aria-label': __alloT('stem.beehive.a11y_flight_envelope_conditions', 'Flight envelope conditions') }, instrumentEnvelope.items.map(function(item) {
-                    return h('li', { key: item.id, 'data-flight-envelope-item': item.id, 'data-envelope-state': dronePaused ? 'paused' : item.state, 'aria-label': item.label + ': ' + item.value + '. ' + item.status + '. ' + item.advice, className: 'min-h-[104px] rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white bg-white') },
-                      h('div', { className: 'flex items-center justify-between gap-1' }, h('span', { className: 'text-[0.625rem] font-black uppercase tracking-wide ' + (dk ? 'text-slate-300' : 'text-slate-600') }, item.label), h('span', { 'aria-hidden': 'true' }, item.icon)),
-                      h('div', { 'data-envelope-value': 'true', className: 'mt-1 text-xs font-black tabular-nums ' + (dk ? 'text-white' : 'text-slate-900') }, item.value),
-                      h('div', { 'data-envelope-status': 'true', className: 'mt-1 text-[0.625rem] font-black uppercase tracking-wide ' + (item.state === 'danger' ? 'text-red-600' : item.state === 'caution' ? 'text-amber-600' : 'text-emerald-600') }, item.status),
-                      h('p', { 'data-envelope-advice': 'true', className: 'mt-1 text-[0.625rem] leading-snug ' + (dk ? 'text-slate-400' : 'text-slate-600') }, item.advice));
-                  }))),
+                  (function() {
+                    var envVis = bhDroneEnvelopeVisuals(Object.assign({}, instrumentState, { paused: dronePaused }));
+                    return h('ul', { className: 'mt-2 grid grid-cols-2 gap-2 sm:grid-cols-5', 'aria-label': __alloT('stem.beehive.a11y_flight_envelope_conditions', 'Flight envelope conditions') }, instrumentEnvelope.items.map(function(item) {
+                      var evItem = envVis.items[item.id];
+                      var gTone = dronePaused ? 'paused' : (evItem ? evItem.tone : item.state);
+                      return h('li', { key: item.id, 'data-flight-envelope-item': item.id, 'data-envelope-state': dronePaused ? 'paused' : item.state, 'aria-label': item.label + ': ' + item.value + '. ' + item.status + '. ' + item.advice, className: 'min-h-[104px] rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white bg-white') },
+                        h('div', { className: 'flex items-center justify-between gap-1' }, h('span', { className: 'text-[0.625rem] font-black uppercase tracking-wide ' + (dk ? 'text-slate-300' : 'text-slate-600') }, item.label), h('span', { 'aria-hidden': 'true' }, item.icon)),
+                        h('div', { 'data-envelope-value': 'true', className: 'mt-1 text-xs font-black tabular-nums ' + (dk ? 'text-white' : 'text-slate-900') }, item.value),
+                        evItem && h('svg', { className: 'bee-envelope-item-gauge', viewBox: '0 0 100 10', 'aria-hidden': 'true', focusable: 'false', 'data-envelope-gauge': item.id, 'data-gauge-tone': gTone },
+                          h('rect', { className: 'bee-envelope-gauge-track', x: 2, y: 3, width: 96, height: 4, rx: 2 }),
+                          evItem.bandW > 0 && h('rect', { className: 'bee-envelope-gauge-band', x: evItem.bandX, y: 2, width: evItem.bandW, height: 6, rx: 1.5, 'data-envelope-band': 'true' }),
+                          h('rect', { className: 'bee-envelope-gauge-fill', x: 2, y: 3, width: evItem.fillW, height: 4, rx: 2, 'data-envelope-fill': 'true', 'data-gauge-tone': gTone }),
+                          evItem.tickX != null && h('line', { className: 'bee-envelope-gauge-tick', x1: evItem.tickX, y1: 1, x2: evItem.tickX, y2: 9, 'data-envelope-tick': '1' }),
+                          evItem.tick2X != null && h('line', { className: 'bee-envelope-gauge-tick', x1: evItem.tick2X, y1: 1, x2: evItem.tick2X, y2: 9, 'data-envelope-tick': '2' })),
+                        h('div', { 'data-envelope-status': 'true', className: 'mt-1 text-[0.625rem] font-black uppercase tracking-wide ' + (item.state === 'danger' ? 'text-red-600' : item.state === 'caution' ? 'text-amber-600' : 'text-emerald-600') }, item.status),
+                        h('p', { 'data-envelope-advice': 'true', className: 'mt-1 text-[0.625rem] leading-snug ' + (dk ? 'text-slate-400' : 'text-slate-600') }, item.advice));
+                    }));
+                  })()),
                 h('section', { 'data-beehive-maneuver-impact': 'true', role: 'note', className: 'mt-3 rounded-xl border p-3 ' + (dk ? 'border-violet-700/40 bg-violet-950/20' : 'border-violet-200 bg-violet-50/60'), 'aria-label': __alloT('stem.beehive.a11y_current_maneuver_impact_and_coaching', 'Current maneuver impact and coaching') },
                   h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', { className: 'text-[0.625rem] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-violet-300' : 'text-violet-800') }, 'Maneuver impact'), h('span', { className: 'rounded-full px-2 py-1 text-[0.625rem] font-black ' + (dronePaused ? 'bg-amber-500 text-slate-950' : 'bg-violet-600 text-white'), 'data-flight-maneuver': 'action' }, dronePaused ? 'Paused' : 'Glide')),
                   h('div', { className: 'mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2' },
@@ -40253,7 +44822,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       h('div', { className: 'flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between' },
                         h('div', null, h('div', { className: 'text-lg font-black' }, queenResult === 'victory' ? 'VICTORY — Network objective met' : 'DEFEAT - Brood core lost'), h('p', { className: 'mt-1 text-[0.6875rem] text-white/85' }, queenResult === 'victory' ? 'Your colony converted information, worker allocation, and structure timing into forage control.' : 'The colony is frozen for evidence review. Check the final raid, QMP level, and defense investment before trying again.')),
                         h('button', { onClick: startQueenGame, className: 'shrink-0 rounded-lg bg-white px-4 py-2 text-xs font-black text-slate-900 hover:bg-slate-100' }, 'Start rematch')),
-                      h('div', { className: 'mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4 text-center' }, [[queenDay, 'cycles'], [queenScore, 'score'], [Math.round(queenTerritory) + '/100', 'RTS advantage'], [queenStructures.length, 'structures']].map(function(stat) { return h('div', { key: stat[1], className: 'rounded-lg bg-black/15 p-2' }, h('div', { className: 'text-sm font-black' }, stat[0]), h('div', { className: 'text-[0.625rem] uppercase tracking-wide text-white/75' }, stat[1])); }))),
+                      h('div', { className: 'mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4 text-center' }, [[queenDay, 'cycles'], [queenScore, 'score'], [Math.round(queenTerritory) + '/100', 'RTS advantage'], [queenStructures.length, 'structures']].map(function(stat) { return h('div', { key: stat[1], className: 'rounded-lg bg-black/15 p-2' }, h('div', { className: 'text-sm font-black' }, stat[0]), h('div', { className: 'text-[0.625rem] uppercase tracking-wide text-white/75' }, stat[1])); })),
+                      (function() {
+                        var homeCorePct = Math.max(0, Math.min(100, Math.round(queenHiveHealth || 0)));
+                        var rivalCorePct = Math.max(0, Math.min(100, Math.round((queenRival && queenRival.health) || 0)));
+                        var homeForagePct = Math.max(0, Math.min(100, Math.round(queenTerritory || 0)));
+                        var rivalForagePct = 100 - homeForagePct;
+                        var casteRows = [
+                          { id: 'nurses', label: 'Nurses', count: Math.max(0, Math.round(queenPopulation.nurses || 0)), color: '#38bdf8' },
+                          { id: 'foragers', label: 'Foragers', count: Math.max(0, Math.round(queenPopulation.foragers || 0)), color: '#fbbf24' },
+                          { id: 'builders', label: 'Builders', count: Math.max(0, Math.round(queenPopulation.builders || 0)), color: '#fb923c' },
+                          { id: 'guards', label: 'Guards', count: Math.max(0, Math.round(queenPopulation.guards || 0)), color: '#f87171' },
+                          { id: 'scouts', label: 'Scouts', count: Math.max(0, Math.round(queenPopulation.scouts || 0)), color: '#c084fc' }
+                        ];
+                        var totalBees = casteRows.reduce(function(acc, c) { return acc + c.count; }, 0) || 1;
+                        return h('div', { 'data-rts-debrief-visual': 'true', className: 'mt-3 space-y-2.5 rounded-lg border border-white/25 bg-black/30 p-3 text-left text-white' },
+                          h('div', { 'data-rts-debrief-matchup': 'true', className: 'grid grid-cols-1 gap-2 sm:grid-cols-2' },
+                            h('div', { 'data-rts-debrief-bar': 'core', className: 'space-y-1 min-w-0' },
+                              h('div', { className: 'flex justify-between gap-2 text-[0.6875rem] font-bold tabular-nums' },
+                                h('span', null, 'Brood core: You ' + homeCorePct + '%'),
+                                h('span', null, 'Rival ' + rivalCorePct + '%')),
+                              h('div', { className: 'grid grid-cols-2 gap-1.5', 'aria-hidden': 'true' },
+                                h('span', { className: 'block h-2 overflow-hidden rounded-full border border-white/30 bg-slate-950/60' },
+                                  h('span', { className: 'bee-rts-debrief-fill block h-full rounded-full bg-emerald-300', style: { width: homeCorePct + '%' } })),
+                                h('span', { className: 'block h-2 overflow-hidden rounded-full border border-white/30 bg-slate-950/60' },
+                                  h('span', { className: 'bee-rts-debrief-fill block h-full rounded-full bg-rose-300', style: { width: rivalCorePct + '%' } })))),
+                            h('div', { 'data-rts-debrief-bar': 'forage', className: 'space-y-1 min-w-0' },
+                              h('div', { className: 'flex justify-between gap-2 text-[0.6875rem] font-bold tabular-nums' },
+                                h('span', null, 'Forage balance: ' + homeForagePct + '%'),
+                                h('span', null, 'Neighbor ' + rivalForagePct + '%')),
+                              h('div', { className: 'flex h-2 overflow-hidden rounded-full border border-white/30 bg-slate-950/60', 'aria-hidden': 'true' },
+                                h('span', { className: 'bee-rts-debrief-fill block h-full bg-violet-300', style: { width: homeForagePct + '%' } }),
+                                h('span', { className: 'bee-rts-debrief-fill block h-full bg-rose-300', style: { width: rivalForagePct + '%' } })))),
+                          h('div', { 'data-rts-debrief-castes': 'true', className: 'space-y-1.5 border-t border-white/20 pt-2' },
+                            h('div', { className: 'text-[0.6875rem] font-bold' }, 'Final caste workforce mix'),
+                            h('div', { 'data-rts-caste-strip': 'true', className: 'flex h-2.5 w-full overflow-hidden rounded-full border border-white/30 bg-slate-950/60', 'aria-hidden': 'true' }, casteRows.map(function(c) {
+                              var pct = Math.max(0, (c.count / totalBees) * 100);
+                              return h('span', { key: c.id, 'data-rts-caste-seg': c.id, className: 'bee-rts-caste-seg block h-full', style: { width: pct.toFixed(1) + '%', backgroundColor: c.color } });
+                            })),
+                            h('div', { className: 'flex flex-wrap gap-x-3 gap-y-1 text-[0.6875rem] font-semibold tabular-nums text-white' }, casteRows.map(function(c) {
+                              return h('span', { key: c.id, className: 'inline-flex items-center gap-1' },
+                                h('span', { className: 'inline-block h-2 w-2 rounded-sm border border-white/40', 'aria-hidden': 'true', style: { backgroundColor: c.color } }),
+                                c.label + ' ' + c.count.toLocaleString('en-US'));
+                            }))));
+                      })()),
                       h('div', { 'data-rts-opening-review': 'true', className: 'mt-3 rounded-lg border border-white/15 bg-black/10 p-3 text-left' },
                         h('div', { className: 'text-[0.625rem] font-black uppercase tracking-wider text-white/70' }, 'Opening doctrine: ' + queenOpeningCfg.label),
                         h('p', { className: 'mt-1 text-[0.625rem] leading-relaxed text-white/85' }, queenOpeningCfg.effect),
@@ -40324,6 +44936,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       var rounded = Math.round((Number(value) || 0) * 10) / 10;
                       return (rounded > 0 ? '+' : '') + rounded;
                     }
+                    var maxForecastStock = forecastResources.reduce(function(acc, item) {
+                      var cur = Math.max(0, Number(item.value) || 0);
+                      var nxt = Math.max(0, cur + (Number(item.delta) || 0));
+                      return Math.max(acc, cur, nxt);
+                    }, 20);
                     return h('section', { 'data-rts-next-cycle-economy': 'true', className: 'mt-3 rounded-xl border p-3 ' + (dk ? 'border-cyan-700/35 bg-cyan-950/20' : 'border-cyan-200 bg-cyan-50/60'), 'aria-labelledby': 'rts-next-cycle-title', 'aria-describedby': 'rts-next-cycle-note' },
                       h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
                         h('div', { id: 'rts-next-cycle-title', className: 'text-[0.625rem] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-cyan-300' : 'text-cyan-800') }, 'Next-cycle forecast'),
@@ -40331,9 +44948,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       h('p', { className: 'mt-1 text-[0.625rem] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Worker throughput, structures, season, and upkeep are projected from the current state.'),
                       h('div', { className: 'mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4' }, forecastResources.map(function(resource) {
                         var deltaTone = resource.delta > 0.05 ? 'text-emerald-500' : resource.delta < -0.05 ? 'text-rose-500' : (dk ? 'text-slate-300' : 'text-slate-600');
+                        var curVal = Math.max(0, Number(resource.value) || 0);
+                        var nextVal = Math.max(0, curVal + (Number(resource.delta) || 0));
+                        var barTone = resource.delta > 0.05 ? 'beneficial' : resource.delta < -0.05 ? 'adverse' : 'neutral';
                         return h('div', { key: resource.key, 'data-rts-next-cycle-resource': resource.key, className: 'rounded-lg border p-2 ' + (dk ? 'border-white/10 bg-slate-950/40' : 'border-cyan-100 bg-white/75') },
                           h('div', { className: 'flex items-center justify-between gap-1' }, h('span', { className: 'text-sm', 'aria-hidden': 'true' }, resource.icon), h('span', { className: 'text-[0.625rem] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-600') }, resource.label)),
                           h('div', { className: 'mt-1 text-sm font-black ' + resource.tone }, Math.round(resource.value)),
+                          bhRenderDeltaBars({ before: curVal, after: nextVal, scaleMax: maxForecastStock, tone: barTone, rootAttr: 'data-rts-next-cycle-bars', barAttr: 'data-rts-next-cycle-bar', toneAttr: 'data-delta-tone' }),
                           h('div', { 'data-rts-next-cycle-delta': resource.key, className: 'text-[0.625rem] font-black ' + deltaTone }, signedForecast(resource.delta) + ' next'));
                       })),
                       h('p', { id: 'rts-next-cycle-note', 'data-rts-economy-watch': 'true', className: 'mt-2 text-[0.625rem] font-bold leading-relaxed ' + (dk ? 'text-cyan-100' : 'text-cyan-900') }, nextEconomy.watch));
@@ -40505,12 +45126,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                           // (t.v−0.5)×100 (60%) — never in agreement, and the varroa
                           // row read like "more mites" for a more-resistant bee.
                           var pct = Math.max(4, Math.min(100, Math.round((t.v - 0.5) * 100)));
+                          var traitTone = t.v > 1.001 ? 'above' : t.v < 0.999 ? 'below' : 'baseline';
+                          var fillW = +((pct / 100) * 112).toFixed(2);
                           return h('div', { key: ti },
                             h('div', { className: 'flex justify-between text-[0.625rem] mb-0.5' },
                               h('span', { className: dk ? 'text-slate-300' : 'text-slate-600' }, t.k),
                               h('span', { className: dk ? 'text-slate-300' : 'text-slate-600' }, t.txt)),
-                            h('div', { className: 'h-1.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-slate-200') },
-                              h('div', { style: { width: pct + '%' }, className: 'h-full ' + traitBarColor(t.c) + ' rounded-full' }))); // was 'bg-' + 'bg-amber-400' = no fill at all
+                            h('svg', {
+                              className: 'bee-stock-trait-bar',
+                              'data-stock-trait-bar': String(ti),
+                              'data-trait-tone': traitTone,
+                              'data-bar-pct': String(pct),
+                              viewBox: '0 0 120 8',
+                              'aria-hidden': 'true',
+                              focusable: 'false'
+                            },
+                              h('rect', { x: 4, y: 1.5, width: 112, height: 5, rx: 2.5, className: 'bee-stock-trait-track' }),
+                              h('rect', { x: 4, y: 1.5, width: fillW, height: 5, rx: 2.5, className: 'bee-stock-trait-fill', 'data-trait-color': t.c }),
+                              h('line', { x1: 60, y1: 0.4, x2: 60, y2: 7.6, className: 'bee-stock-baseline-tick', 'data-baseline-tick': 'true' })));
                         })))));
               })));
           })(),
@@ -40526,6 +45159,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 var active = activeSite.id === s.id;
                 var siteDetailId = 'beehive-site-detail-' + s.id;
                 var siteMetricsId = 'beehive-site-metrics-' + s.id;
+                var siteVis = bhApiarySiteVisual(s.id, s.mods);
+                var siteEmblem = siteVis.siteGlyph === 'meadow'
+                  ? [
+                      h('path', { key: 'm1', d: 'M3 15H19 M8 15V7 M14 15V9' }),
+                      h('circle', { key: 'm2', cx: 8, cy: 6, r: 2 }),
+                      h('circle', { key: 'm3', cx: 14, cy: 8, r: 1.8 })
+                    ]
+                  : siteVis.siteGlyph === 'forest_edge'
+                    ? [
+                        h('path', { key: 'f1', d: 'M11 3L5 12H17Z' }),
+                        h('line', { key: 'f2', x1: 11, y1: 12, x2: 11, y2: 16 })
+                      ]
+                    : siteVis.siteGlyph === 'urban'
+                      ? h('path', { d: 'M3 16V8H8V16 M9 16V4H14V16 M15 16V10H19V16' })
+                      : siteVis.siteGlyph === 'coastal'
+                        ? [
+                            h('path', { key: 'c1', d: 'M3 11Q7 8 11 11T19 11 M3 15Q7 12 11 15T19 15' }),
+                            h('circle', { key: 'c2', cx: 15, cy: 6, r: 2 })
+                          ]
+                        : h('path', { d: 'M2 15L8 5L12 11L15 7L20 15Z' });
                 return h('button', { key: s.id, id: 'beehive-site-option-' + s.id, type: 'button', role: 'radio', 'aria-checked': active ? 'true' : 'false', tabIndex: active ? 0 : -1, 'data-beehive-site-option': s.id, 'aria-label': s.name + ' apiary site', 'aria-describedby': siteDetailId + ' ' + siteMetricsId, onKeyDown: function(event) { handleBeeTabKey(event, APIARY_SITES.map(function(option) { return option.id; }), s.id, 'data-beehive-site-option', function(nextId) { var nextSite = APIARY_SITES.filter(function(option) { return option.id === nextId; })[0]; updFn(function(b) { bhApplyExperimentControlChange(b, 'apiarySite', nextId); }); if (nextSite) announceBee('Apiary site selected: ' + nextSite.name + '.', false); }); }, onClick: function() {
                     updFn(function(b) { bhApplyExperimentControlChange(b, 'apiarySite', s.id); });
                     announceBee('Apiary site selected: ' + s.name + '.', false);
@@ -40552,7 +45205,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         s.mods.varroa && h('span', { className: s.mods.varroa > 1 ? (dk ? 'text-amber-400' : 'text-amber-700') : (dk ? 'text-green-400' : 'text-green-700') }, '🦟 Mites ' + Math.round(s.mods.varroa * 100) + '%'),
                         s.mods.summerFlow && h('span', { className: (dk ? 'text-green-400' : 'text-green-700') }, '🍯 Big early-summer flow'),
                         s.mods.shortSeason && h('span', { className: (dk ? 'text-amber-400' : 'text-amber-700') }, '🍂 Short autumn'),
-                        s.mods.bear && h('span', { className: (dk ? 'text-amber-400' : 'text-amber-700') }, '🐻 Bears ×' + s.mods.bear)))));
+                        s.mods.bear && h('span', { className: (dk ? 'text-amber-400' : 'text-amber-700') }, '🐻 Bears ×' + s.mods.bear)),
+                      h('svg', {
+                        className: 'bee-site-profile-bars',
+                        'data-site-profile-bars': s.id,
+                        'data-site-special': siteVis.specialTag,
+                        viewBox: '0 0 248 18',
+                        'aria-hidden': 'true',
+                        focusable: 'false'
+                      },
+                        h('g', { 'data-site-emblem': siteVis.siteGlyph, className: 'bee-site-emblem' }, siteEmblem),
+                        siteVis.bars.map(function(bar) {
+                          return [
+                            h('rect', { key: bar.id + '-t', x: bar.x, y: 6, width: 68, height: 6, rx: 3, className: 'bee-site-bar-track' }),
+                            h('rect', { key: bar.id + '-f', x: bar.x, y: 6, width: bar.fillW, height: 6, rx: 3, className: 'bee-site-bar-fill', 'data-site-bar': bar.id, 'data-bar-tone': bar.tone }),
+                            h('line', { key: bar.id + '-b', x1: bar.baselineX, y1: 3.5, x2: bar.baselineX, y2: 14.5, className: 'bee-site-baseline-tick', 'data-site-baseline-tick': 'true' })
+                          ];
+                        })))));
               }))),
 
           // ═══ TUTORIAL OVERLAY ═══
@@ -40610,6 +45279,107 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             var grade = scoreRows.reduce(function(a, r) { return a + r.pts; }, 0);
             var letter = grade >= 8 ? 'A+' : grade >= 6 ? 'A' : grade >= 5 ? 'B' : grade >= 3 ? 'C' : grade >= 2 ? 'D' : 'F';
             var letterColor = grade >= 6 ? (dk ? 'text-amber-400' : 'text-amber-600') : grade >= 3 ? (dk ? 'text-green-400' : 'text-green-600') : (dk ? 'text-red-400' : 'text-red-600');
+            var yearStartDay = (completedYears - 1) * 120;
+            var yearEndDay = completedYears * 120;
+            var yearByDay = Object.create(null);
+            (Array.isArray(history) ? history : []).forEach(function(entry) {
+              if (entry && Number.isSafeInteger(entry.d) && entry.d >= yearStartDay && entry.d <= yearEndDay) {
+                yearByDay[String(entry.d)] = entry;
+              }
+            });
+            var yearRows = Object.keys(yearByDay).sort(function(a, b) {
+              return Number(a) - Number(b);
+            }).map(function(k) { return yearByDay[k]; });
+            var yearTrajectoryEl = null;
+            if (yearRows.length >= 2) {
+              var firstYearRow = yearRows[0];
+              var lastYearRow = yearRows[yearRows.length - 1];
+              var peakYearRowWorkers = yearRows.reduce(function(best, row) {
+                return Number.isFinite(row.w) && row.w >= 0 ? Math.max(best, row.w) : best;
+              }, 2500);
+              var peakYearRowFood = yearRows.reduce(function(best, row) {
+                return Number.isFinite(row.h) && row.h >= 0 ? Math.max(best, row.h) : best;
+              }, 10);
+              var buildYearSeries = function(key, maxVal) {
+                var coords = [];
+                yearRows.forEach(function(row) {
+                  var raw = row[key];
+                  if (!Number.isFinite(raw) || raw < 0) return;
+                  var x = Math.round((10 + Math.max(0, Math.min(1, (row.d - yearStartDay) / 120)) * 340) * 10) / 10;
+                  var ratio = Math.max(0, Math.min(1, raw / Math.max(1, maxVal)));
+                  var y = Math.round((84 - ratio * 68) * 10) / 10;
+                  coords.push({ x: x, y: y, v: raw });
+                });
+                return coords;
+              };
+              var yWorkersSeries = buildYearSeries('w', peakYearRowWorkers);
+              var yFoodSeries = buildYearSeries('h', peakYearRowFood);
+              var yMitesSeries = buildYearSeries('v', 100);
+              var ySummaryParts = ['Day ' + firstYearRow.d + ' to Day ' + lastYearRow.d];
+              if (yWorkersSeries.length >= 2) {
+                ySummaryParts.push('workers ' + Math.round(yWorkersSeries[0].v).toLocaleString('en-US') + ' \u2192 ' + Math.round(yWorkersSeries[yWorkersSeries.length - 1].v).toLocaleString('en-US'));
+              }
+              if (yFoodSeries.length >= 2) {
+                ySummaryParts.push('food ' + (Math.round(yFoodSeries[0].v * 10) / 10) + ' \u2192 ' + (Math.round(yFoodSeries[yFoodSeries.length - 1].v * 10) / 10) + ' lb');
+              }
+              if (yMitesSeries.length >= 2) {
+                ySummaryParts.push('mites ' + (Math.round(yMitesSeries[0].v * 10) / 10) + ' \u2192 ' + (Math.round(yMitesSeries[yMitesSeries.length - 1].v * 10) / 10) + '/100');
+              }
+              var ySeriesSpecs = [
+                { id: 'workers', label: 'Workers', coords: yWorkersSeries, color: dk ? '#fbbf24' : '#d97706', dash: '' },
+                { id: 'food', label: 'Food', coords: yFoodSeries, color: dk ? '#38bdf8' : '#0284c7', dash: '' },
+                { id: 'mites', label: 'Mites', coords: yMitesSeries, color: dk ? '#f87171' : '#dc2626', dash: '4 3' }
+              ];
+              var seasonBandNames = ['Spring', 'Summer', 'Autumn', 'Winter'];
+              yearTrajectoryEl = h('div', { 'data-year-trajectory': 'true', className: 'rounded-lg p-3 border text-xs space-y-2 ' + (dk ? 'bg-slate-800 border-amber-700/30 text-slate-200' : 'bg-white border-amber-200 text-slate-800') },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                  h('span', { className: 'font-bold ' + (dk ? 'text-amber-300' : 'text-amber-800') }, '4-Season Colony Arc'),
+                  h('span', { className: 'text-[0.6875rem] font-semibold ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Days ' + (yearStartDay + 1) + '\u2013' + yearEndDay)),
+                h('div', { className: 'flex flex-wrap items-center gap-3 text-[0.6875rem] ' + (dk ? 'text-slate-200' : 'text-slate-700') },
+                  ySeriesSpecs.filter(function(sp) { return sp.coords.length >= 2; }).map(function(sp) {
+                    return h('span', { key: sp.id, className: 'inline-flex items-center gap-1.5 font-medium' },
+                      h('span', { 'aria-hidden': 'true', style: { display: 'inline-block', width: '14px', height: '0', borderTop: '2.5px ' + (sp.dash ? 'dashed ' : 'solid ') + sp.color } }),
+                      sp.label);
+                  }),
+                  h('span', { className: 'inline-flex items-center gap-1.5 font-medium' },
+                    h('span', { 'aria-hidden': 'true', style: { display: 'inline-block', width: '14px', height: '0', borderTop: '1.5px dashed ' + (dk ? '#f87171' : '#dc2626') } }),
+                    'Mite danger (20)')),
+                h('svg', {
+                  'data-year-trajectory-svg': 'true',
+                  viewBox: '0 0 360 98',
+                  preserveAspectRatio: 'none',
+                  'aria-hidden': 'true',
+                  className: 'w-full h-24 rounded border ' + (dk ? 'bg-slate-900/70 border-slate-700' : 'bg-slate-50 border-slate-200'),
+                  style: { display: 'block', forcedColorAdjust: 'auto' }
+                },
+                  seasonBandNames.map(function(_, si) {
+                    var bandFill = si % 2 === 0 ? (dk ? '#1e293b' : '#f1f5f9') : (dk ? '#0f172a' : '#ffffff');
+                    return h('rect', { key: si, 'data-year-season-band': String(si), x: String(10 + si * 85), y: '10', width: '85', height: '74', fill: bandFill, opacity: '0.65' });
+                  }),
+                  h('line', { x1: '10', y1: '84', x2: '350', y2: '84', stroke: dk ? '#475569' : '#cbd5e1', strokeWidth: '1' }),
+                  h('line', { 'data-year-mite-caution': 'true', x1: '10', y1: '70.4', x2: '350', y2: '70.4', stroke: dk ? '#f87171' : '#dc2626', strokeWidth: '1', strokeDasharray: '4 3', opacity: '0.75' }),
+                  ySeriesSpecs.map(function(sp) {
+                    if (sp.coords.length < 2) return null;
+                    var pts = sp.coords.map(function(pt) { return pt.x + ',' + pt.y; }).join(' ');
+                    var lastPt = sp.coords[sp.coords.length - 1];
+                    return h('g', { key: sp.id },
+                      h('polyline', {
+                        'data-year-series': sp.id,
+                        fill: 'none',
+                        stroke: sp.color,
+                        strokeWidth: '2.2',
+                        strokeLinecap: 'round',
+                        strokeLinejoin: 'round',
+                        strokeDasharray: sp.dash || undefined,
+                        points: pts
+                      }),
+                      h('circle', { cx: String(lastPt.x), cy: String(lastPt.y), r: '2.8', fill: sp.color }));
+                  })),
+                h('div', { className: 'grid grid-cols-4 text-center text-[0.625rem] font-semibold ' + (dk ? 'text-slate-300' : 'text-slate-600'), 'aria-hidden': 'true' },
+                  seasonBandNames.map(function(sName) { return h('span', { key: sName }, sName); })),
+                h('p', { 'data-year-trajectory-summary': 'true', className: 'text-[0.6875rem] leading-relaxed ' + (dk ? 'text-slate-200' : 'text-slate-700') },
+                  ySummaryParts.length > 1 ? ySummaryParts[0] + ': ' + ySummaryParts.slice(1).join(' \u00B7 ') : ySummaryParts[0]));
+            }
             return h('div', { id: 'beehive-year-report', 'data-beehive-year-report': 'true', className: 'rounded-2xl border-2 p-5 space-y-3 ' + (dk ? 'bg-gradient-to-br from-amber-900/40 to-yellow-900/30 border-amber-400' : 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-400'), role: 'region', 'aria-label': __alloFill(__alloT('stem.beehive.a11y_year_retrospective', 'Year {value1} retrospective'), { value1: completedYears }), style: { boxShadow: '0 0 24px rgba(251,191,36,0.25)' } },
               h('div', { className: 'flex items-start justify-between' },
                 h('div', null,
@@ -40640,13 +45410,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       h('span', { className: 'text-xs font-black ' + (dk ? 'text-amber-300' : 'text-amber-800'), style: { fontFamily: 'monospace' } }, s.val)),
                     h('div', { className: 'text-[0.625rem] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, s.label));
                 })),
+              yearTrajectoryEl,
               // How the points were earned: what to change next year.
               h('details', { open: true, 'data-beehive-year-score': 'checklist', className: 'rounded-lg p-3 border text-xs ' + (dk ? 'bg-slate-800 border-amber-700/30 text-slate-300' : 'bg-white border-amber-200 text-slate-700') },
                 h('summary', { className: 'cursor-pointer font-bold ' + (dk ? 'text-amber-300' : 'text-amber-800') }, __alloT('stem.beehive.how_this_year_scored', 'How this year scored')),
                 h('ul', { className: 'mt-2 space-y-1' }, scoreRows.map(function(r, ri) {
                   return h('li', { key: ri, className: 'flex items-start gap-2' },
-                    h('span', { 'aria-hidden': 'true', className: r.pts > 0 ? (dk ? 'text-green-400' : 'text-green-700') : (dk ? 'text-slate-500' : 'text-slate-500') }, r.pts > 0 ? '✓' : '○'),
+                    h('span', { 'aria-hidden': 'true', className: r.pts > 0 ? (dk ? 'text-green-400' : 'text-green-700') : (dk ? 'text-slate-400' : 'text-slate-500') }, r.pts > 0 ? '✓' : '○'),
                     h('span', { className: 'flex-1' }, r.text),
+                    h('span', { 'data-year-score-bar': 'true', 'aria-hidden': 'true', className: 'inline-block shrink-0 self-center rounded-full overflow-hidden border ' + (dk ? 'bg-slate-700 border-slate-600' : 'bg-slate-100 border-slate-300'), style: { width: '44px', height: '6px' } },
+                      h('span', { 'data-year-score-fill': 'true', className: 'block h-full rounded-full ' + (r.pts > 0 ? (dk ? 'bg-amber-400' : 'bg-amber-600') : 'bg-transparent'), style: { width: Math.round((r.pts / Math.max(1, r.max)) * 100) + '%' } })),
                     h('span', { className: 'font-bold whitespace-nowrap' }, r.pts + '/' + r.max));
                 }))),
               // Highlight paragraph
@@ -40690,6 +45463,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               { label: __alloT('stem.beehive.report_honey', 'Honey'), value: Number.isFinite(from.h) ? signed(honey - from.h, ' lb') : 'Earlier reading unavailable', unavailable: !Number.isFinite(from.h), good: honey >= from.h },
               { label: __alloT('stem.beehive.report_mites', 'Mites'), value: Number.isFinite(from.v) ? signed(varroaLevel - from.v) : 'Earlier reading unavailable', unavailable: !Number.isFinite(from.v), good: varroaLevel <= from.v + 2 }
             ];
+            var seasonPts = history.filter(function(e) {
+              return e && typeof e.d === 'number' && e.d >= startDay && e.d <= day && Number.isFinite(e.w) && Number.isFinite(e.h) && Number.isFinite(e.v);
+            }).slice().sort(function(a, b) { return a.d - b.d; });
+            var seasonArc = null;
+            if (seasonPts.length >= 2) {
+              var arcFirstD = seasonPts[0].d;
+              var arcLastD = Math.max(arcFirstD + 1, seasonPts[seasonPts.length - 1].d);
+              var arcMaxW = seasonPts.reduce(function(acc, p) { return Math.max(acc, p.w || 0); }, 30000);
+              var arcMaxH = seasonPts.reduce(function(acc, p) { return Math.max(acc, p.h || 0); }, 80);
+              var arcCoords = seasonPts.map(function(p) {
+                var px = (12 + ((p.d - arcFirstD) / (arcLastD - arcFirstD)) * 256).toFixed(1);
+                return {
+                  x: px,
+                  wy: (56 - Math.max(0, Math.min(1, p.w / arcMaxW)) * 44).toFixed(1),
+                  hy: (56 - Math.max(0, Math.min(1, p.h / arcMaxH)) * 44).toFixed(1),
+                  vy: (56 - Math.max(0, Math.min(1, p.v / 100)) * 44).toFixed(1)
+                };
+              });
+              seasonArc = {
+                firstD: arcFirstD,
+                lastD: seasonPts[seasonPts.length - 1].d,
+                coords: arcCoords,
+                workersPts: arcCoords.map(function(c) { return c.x + ',' + c.wy; }).join(' '),
+                honeyPts: arcCoords.map(function(c) { return c.x + ',' + c.hy; }).join(' '),
+                mitesPts: arcCoords.map(function(c) { return c.x + ',' + c.vy; }).join(' ')
+              };
+            }
             var concern = varroaLevel >= 20 ? 'Mites are in the danger band (' + varroaLevel + ' / 100). Treat before the load builds further.'
               : pesticideExposure > 20 ? 'Pesticide exposure is still killing workers every day. A no-spray zone cuts it.'
               : honey < currentReserve ? 'Stores (' + honey + ' lb) are below what ' + srNames[season].toLowerCase() + ' needs (about ' + currentReserve + ' lb).'
@@ -40702,6 +45502,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('div', { className: 'text-[0.6875rem] font-bold ' + (dk ? 'text-slate-300' : 'text-slate-600') }, r.label),
                   h('div', { className: 'text-sm font-black ' + (r.unavailable ? (dk ? 'text-slate-300' : 'text-slate-600') : r.good ? (dk ? 'text-emerald-300' : 'text-emerald-800') : (dk ? 'text-rose-300' : 'text-rose-700')) }, r.value));
               })),
+              seasonArc && h('div', { 'data-season-report-trajectory': 'true', className: 'rounded-lg border p-2.5 ' + (dk ? 'border-slate-700 bg-slate-900/80' : 'border-emerald-200 bg-white') },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                  h('span', { 'data-season-report-trajectory-summary': 'true', className: 'text-[0.6875rem] font-bold ' + (dk ? 'text-slate-200' : 'text-slate-800') }, '30-day ' + srNames[endedSeason].toLowerCase() + ' arc (Day ' + seasonArc.firstD + ' to Day ' + seasonArc.lastD + ')'),
+                  h('div', { className: 'flex flex-wrap items-center gap-2 text-[0.6875rem] font-bold' }, [
+                    { label: 'Workers', color: dk ? '#34d399' : '#047857', dash: undefined, cls: dk ? 'text-emerald-300' : 'text-emerald-800' },
+                    { label: 'Honey', color: dk ? '#fbbf24' : '#92400e', dash: '4 2', cls: dk ? 'text-amber-300' : 'text-amber-900' },
+                    { label: 'Mites', color: dk ? '#fb7185' : '#be123c', dash: '2 2', cls: dk ? 'text-rose-300' : 'text-rose-800' }
+                  ].map(function(leg) {
+                    return h('span', { key: leg.label, className: 'inline-flex items-center gap-1 ' + leg.cls },
+                      h('svg', { width: 16, height: 6, viewBox: '0 0 16 6', 'aria-hidden': 'true', focusable: 'false' },
+                        h('line', { x1: 0, y1: 3, x2: 16, y2: 3, stroke: leg.color, strokeWidth: 2, strokeDasharray: leg.dash })),
+                      leg.label);
+                  }))),
+                h('svg', { 'data-season-report-svg': 'true', viewBox: '0 0 280 68', 'aria-hidden': 'true', focusable: 'false', className: 'mt-1.5 block h-auto w-full' },
+                  h('line', { x1: 12, y1: 56, x2: 268, y2: 56, stroke: dk ? '#334155' : '#cbd5e1', strokeWidth: 1 }),
+                  h('polyline', { 'data-season-series': 'workers', fill: 'none', stroke: dk ? '#34d399' : '#047857', strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round', points: seasonArc.workersPts }),
+                  h('polyline', { 'data-season-series': 'honey', fill: 'none', stroke: dk ? '#fbbf24' : '#92400e', strokeWidth: 2.2, strokeDasharray: '6 3', strokeLinecap: 'round', strokeLinejoin: 'round', points: seasonArc.honeyPts }),
+                  h('polyline', { 'data-season-series': 'mites', fill: 'none', stroke: dk ? '#fb7185' : '#be123c', strokeWidth: 2.2, strokeDasharray: '2.5 2.5', strokeLinecap: 'round', strokeLinejoin: 'round', points: seasonArc.mitesPts }),
+                  h('circle', { cx: seasonArc.coords[seasonArc.coords.length - 1].x, cy: seasonArc.coords[seasonArc.coords.length - 1].wy, r: 3, fill: dk ? '#34d399' : '#047857' }),
+                  h('circle', { cx: seasonArc.coords[seasonArc.coords.length - 1].x, cy: seasonArc.coords[seasonArc.coords.length - 1].hy, r: 3, fill: dk ? '#fbbf24' : '#92400e' }),
+                  h('circle', { cx: seasonArc.coords[seasonArc.coords.length - 1].x, cy: seasonArc.coords[seasonArc.coords.length - 1].vy, r: 3, fill: dk ? '#fb7185' : '#be123c' }))),
               concern && h('p', { className: 'text-xs font-semibold ' + (dk ? 'text-amber-200' : 'text-amber-900') }, '⚠ ' + concern),
               nextTip && h('p', { className: 'text-xs ' + (dk ? 'text-slate-200' : 'text-slate-700') }, '➡ ' + nextTip),
               h('button', { type: 'button', 'data-beehive-season-report-continue': 'true', onClick: function() {
@@ -40811,7 +45632,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('h3', { id: 'beehive-quiz-results-title', ref: _beeQuizResultRef, tabIndex: -1, className: 'text-lg font-black ' + (dk ? 'text-white' : 'text-slate-900') }, 'Quiz complete'),
                   h('p', { className: 'mt-2 text-3xl font-black text-indigo-700', 'data-beehive-quiz-score': 'true' }, quizScore + ' of ' + qs.length),
                   h('p', { className: 'mt-2 text-sm ' + (dk ? 'text-slate-200' : 'text-slate-700') }, resultMessage)),
-                reviewEntries.length > 0 && h('div', { 'data-quiz-review-list': 'true', role: 'list', 'aria-label': 'Quiz answer review', className: 'space-y-2 max-h-64 overflow-y-auto pr-1' },
+                reviewEntries.length > 0 && h('div', { 'data-quiz-review-list': 'true', role: 'list', 'aria-label': __alloT('stem.beehive.aria_quiz_answer_review', 'Quiz answer review'), className: 'space-y-2 max-h-64 overflow-y-auto pr-1' },
                   reviewEntries.map(function(entry, rIdx) {
                     return h('div', { key: rIdx, role: 'listitem', 'data-quiz-review-item': entry.correct ? 'correct' : 'missed', className: 'rounded-xl border p-3 text-xs ' + (entry.correct ? (dk ? 'border-emerald-700/50 bg-emerald-950/30 text-slate-100' : 'border-emerald-300 bg-white text-slate-800') : (dk ? 'border-rose-700/60 bg-rose-950/35 text-slate-100' : 'border-rose-300 bg-rose-50/80 text-slate-900')) },
                       h('div', { className: 'font-bold flex items-start gap-1.5' },
@@ -41011,6 +45832,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               // Poisoning is not one of the five scored dimensions, so it used to go unnamed while it
               // killed workers every day (a poisoned colony was told to "smoke, feed, or check the queen").
               if (pesticideExposure > 20) sentence = 'Pesticide poisoning is killing workers every day (exposure ' + Math.round(pesticideExposure) + ' of 100). A no-spray zone cuts it. ' + sentence;
+              var scoreStack = bhScoreContributionStack(dims);
               return h('div', null,
                 h('p', { 'data-colony-diagnosis': 'true', className: 'bee-colony-diagnosis', role: 'status' }, sentence),
                 h('details', { 'data-colony-score-guide': 'true', className: 'bee-colony-role-guide bee-colony-score-guide' },
@@ -41034,31 +45856,77 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       h('p', { 'data-score-method': 'true' }, input.method + '.'));
                   })),
                   h('div', { className: 'bee-colony-score-total', 'data-score-total': 'true' }, h('strong', null, 'Overall model score: ' + colonyHealth + '/100'),
+                    h('svg', {
+                      viewBox: '0 0 240 18', width: 240, height: 18,
+                      className: 'bee-score-contribution-stack',
+                      'data-score-contribution-stack': 'true',
+                      'data-score-stack-total': String(scoreStack.totalPts),
+                      'aria-hidden': 'true', focusable: 'false'
+                    },
+                    h('rect', { x: 6, y: 3, width: 228, height: 12, rx: 4, className: 'bee-score-stack-track', 'data-score-stack-track': 'true' }),
+                    scoreStack.segments.map(function(seg) {
+                      var slotX = +((6 + (seg.slotStartPct / 100) * 228).toFixed(2));
+                      var slotW = +(((seg.slotWidthPct / 100) * 228).toFixed(2));
+                      var fillW = +(((seg.fillWidthPct / 100) * 228).toFixed(2));
+                      return h(React.Fragment, { key: seg.id },
+                        h('rect', { x: slotX, y: 3, width: slotW, height: 12, rx: 1, className: 'bee-score-stack-slot', 'data-score-stack-slot': seg.id }),
+                        h('rect', { x: slotX, y: 4, width: fillW, height: 10, rx: 1.5, className: 'bee-score-stack-fill', 'data-score-stack-fill': seg.id, 'data-tone': seg.tone }),
+                        seg.slotStartPct > 0 && h('line', { x1: slotX, y1: 3, x2: slotX, y2: 15, className: 'bee-score-stack-divider', 'data-score-stack-divider': seg.id }));
+                    })),
                     h('p', null, 'Contributions are shown to at most one decimal place. The total uses full values, then rounds once.'))));
             })(),
-            h('section', { className: 'bee-colony-group', 'data-colony-population-guide': 'true', 'aria-labelledby': 'beehive-population-title' },
-              h('h4', { id: 'beehive-population-title' }, 'Population and queen condition'),
-              h('p', { 'data-population-scope': 'true' }, 'Whole-colony model readings for Day ' + day + '.'),
-              h('dl', { className: 'bee-colony-grid', 'data-colony-population': 'true' },
-                [
-                  { id: 'workers', label: 'Workers', value: workers, unit: 'adult workers', context: 'Includes workers doing jobs inside and outside the hive.' },
-                  { id: 'brood', label: 'Developing brood', value: brood, unit: 'developing bees', context: 'All modeled brood; separate from the adult counts.' },
-                  { id: 'drones', label: 'Drones', value: drones, unit: 'adult drones', context: 'Adult drones are separate from the worker count.' }
-                ].map(function(reading) {
-                  return h('div', { key: reading.id, 'data-population-reading': reading.id }, h('dt', null, reading.label),
-                    h('dd', null, h('span', { 'data-population-value': 'true' }, reading.value.toLocaleString()),
-                      h('span', { 'data-population-unit': 'true' }, reading.unit),
-                      h('span', { 'data-population-context': 'true' }, reading.context)));
-                })),
-              h('div', { className: 'bee-colony-queen-condition', 'data-colony-queen-condition': 'true' },
-                h('dl', null, h('dt', null, 'Queen condition'),
-                  h('dd', null, h('span', { 'data-queen-condition-value': 'true' }, queenHealth + ' / 100'),
-                    h('span', { 'data-queen-condition-unit': 'true' }, 'condition points'))),
-                h('p', { 'data-queen-condition-basis': 'true' }, 'A model condition score, not a population count.'),
-                h('div', { className: 'bee-colony-queen-meter', 'data-queen-condition-meter': 'true', role: 'meter', 'aria-label': __alloT('stem.beehive.a11y_queen_condition_model_score', 'Queen condition model score'), 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': queenHealth,
-                  'aria-valuetext': queenHealth + ' of 100 condition points. Higher values indicate better modeled condition.' }, h('span', { style: { width: queenHealth + '%' } })),
-                h('div', { className: 'bee-colony-queen-scale', 'aria-hidden': 'true' }, h('span', null, '0'), h('span', null, '100')),
-                h('p', { 'data-queen-condition-direction': 'true' }, 'Higher values indicate better queen condition in this model.'))),
+            (function() {
+              var popVis = bhPopulationShareVisual(workers, brood, drones, queenHealth);
+              return h('section', { className: 'bee-colony-group', 'data-colony-population-guide': 'true', 'aria-labelledby': 'beehive-population-title' },
+                h('h4', { id: 'beehive-population-title' }, 'Population and queen condition'),
+                h('p', { 'data-population-scope': 'true' }, 'Whole-colony model readings for Day ' + day + '.'),
+                h('dl', { className: 'bee-colony-grid', 'data-colony-population': 'true' },
+                  [
+                    { id: 'workers', label: 'Workers', value: workers, unit: 'adult workers', context: 'Includes workers doing jobs inside and outside the hive.' },
+                    { id: 'brood', label: 'Developing brood', value: brood, unit: 'developing bees', context: 'All modeled brood; separate from the adult counts.' },
+                    { id: 'drones', label: 'Drones', value: drones, unit: 'adult drones', context: 'Adult drones are separate from the worker count.' }
+                  ].map(function(reading) {
+                    return h('div', { key: reading.id, 'data-population-reading': reading.id }, h('dt', null, reading.label),
+                      h('dd', null, h('span', { 'data-population-value': 'true' }, reading.value.toLocaleString()),
+                        h('span', { 'data-population-unit': 'true' }, reading.unit),
+                        h('svg', {
+                          viewBox: '0 0 200 12', width: 200, height: 12,
+                          className: 'bee-population-share-bar',
+                          'data-population-share-bar': reading.id,
+                          'data-share-pct': String(popVis.shares[reading.id]),
+                          'aria-hidden': 'true', focusable: 'false'
+                        },
+                          h('rect', { x: 4, y: 2.5, width: 192, height: 7, rx: 3.5, className: 'bee-pop-share-track' }),
+                          popVis.widths[reading.id] > 0 && h('rect', { x: 4, y: 2.5, width: popVis.widths[reading.id], height: 7, rx: 3.5, className: 'bee-pop-share-fill', 'data-caste': reading.id })),
+                        h('span', { 'data-population-context': 'true' }, reading.context)));
+                  })),
+                h('div', { className: 'bee-colony-queen-condition', 'data-colony-queen-condition': 'true' },
+                  h('dl', null, h('dt', null, 'Queen condition'),
+                    h('dd', null, h('span', { 'data-queen-condition-value': 'true' }, queenHealth + ' / 100'),
+                      h('span', { 'data-queen-condition-unit': 'true' }, 'condition points'))),
+                  h('p', { 'data-queen-condition-basis': 'true' }, 'A model condition score, not a population count.'),
+                  h('div', { className: 'bee-colony-queen-meter', 'data-queen-condition-meter': 'true', role: 'meter', 'aria-label': __alloT('stem.beehive.a11y_queen_condition_model_score', 'Queen condition model score'), 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': queenHealth,
+                    'aria-valuetext': queenHealth + ' of 100 condition points. Higher values indicate better modeled condition.' }, h('span', { style: { width: queenHealth + '%' } })),
+                  h('svg', {
+                    viewBox: '0 0 240 16', width: 240, height: 16,
+                    className: 'bee-queen-condition-scale',
+                    'data-queen-condition-scale': 'true',
+                    'data-queen-band': popVis.queenBand,
+                    'aria-hidden': 'true', focusable: 'false'
+                  },
+                    h('rect', { x: 6, y: 4, width: 79.8, height: 6, rx: 1.5, className: 'bee-queen-zone', 'data-zone': 'danger', 'data-zone-active': popVis.queenBand === 'danger' ? 'true' : 'false' }),
+                    h('rect', { x: 85.8, y: 4, width: 79.8, height: 6, rx: 1.5, className: 'bee-queen-zone', 'data-zone': 'watch', 'data-zone-active': popVis.queenBand === 'watch' ? 'true' : 'false' }),
+                    h('rect', { x: 165.6, y: 4, width: 68.4, height: 6, rx: 1.5, className: 'bee-queen-zone', 'data-zone': 'healthy', 'data-zone-active': popVis.queenBand === 'healthy' ? 'true' : 'false' }),
+                    [6, 85.8, 120, 165.6, 234].map(function(tx, ti) {
+                      return h('line', { key: ti, x1: tx, y1: 2, x2: tx, y2: 12, className: 'bee-queen-scale-tick', 'data-queen-tick': String(ti) });
+                    }),
+                    h('polygon', {
+                      points: popVis.queenMarkerX + ',1 ' + (popVis.queenMarkerX + 4) + ',7 ' + popVis.queenMarkerX + ',13 ' + (popVis.queenMarkerX - 4) + ',7',
+                      className: 'bee-queen-scale-marker', 'data-queen-scale-marker': 'true'
+                    })),
+                  h('div', { className: 'bee-colony-queen-scale', 'aria-hidden': 'true' }, h('span', null, '0'), h('span', null, '100')),
+                  h('p', { 'data-queen-condition-direction': 'true' }, 'Higher values indicate better queen condition in this model.')));
+            })(),
             renderColonyFoodBalance(),
             // ── Workforce by Role (seasonal distribution) ──
             // Bee roles are age-based AND season-modulated. Showing the
@@ -41161,6 +46029,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 var isOpen = openExp === id;
                 var arrow = isOpen ? '▼' : '▶';
                 var currentBand = explainer.status === 'Needs attention' ? 'danger' : explainer.status === 'Watch' ? 'watch' : 'healthy';
+                var ruler = bhStatThresholdRuler(id, id === 'foraging' ? foragingEfficiency : widthPct);
+                var markerX = Math.round((8 + ruler.clampedPct * 2.24) * 100) / 100;
                 return h('div', { className: 'rounded-md ' + (isOpen ? (dk ? 'bg-slate-800/40' : 'bg-slate-50') : '') },
                   h('button', {
                     type: 'button', 'data-colony-stat-toggle': id,
@@ -41192,6 +46062,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     h('p', { className: 'mb-1 ' + (dk ? 'text-slate-100' : 'text-slate-700') }, explainer.what),
                     h('p', { 'data-stat-direction': 'true' }, explainer.direction),
                     id === 'foraging' && h('p', { 'data-stat-bonus-note': 'true' }, 'The bar includes the garden bonus and stops at 100%. These ranges use base efficiency only.'),
+                    h('svg', {
+                      'data-stat-threshold-ruler': id,
+                      'data-ruler-active-band': ruler.activeBand,
+                      'data-ruler-direction': ruler.direction,
+                      className: 'bee-stat-threshold-ruler',
+                      viewBox: '0 0 240 22',
+                      'aria-hidden': 'true',
+                      focusable: 'false'
+                    },
+                      ruler.segments.map(function(seg) {
+                        var sx = Math.round((8 + seg.startPct * 2.24) * 100) / 100;
+                        var sw = Math.round((seg.widthPct * 2.24) * 100) / 100;
+                        var isActive = seg.band === ruler.activeBand;
+                        return h('rect', {
+                          key: seg.band,
+                          'data-ruler-segment': seg.band,
+                          'data-ruler-segment-active': isActive ? 'true' : 'false',
+                          x: sx, y: 8, width: sw, height: 10, rx: 1.5
+                        });
+                      }),
+                      h('rect', { className: 'bee-ruler-frame', x: 8, y: 8, width: 224, height: 10, rx: 2 }),
+                      ruler.ticksPct.map(function(tick) {
+                        var tx = Math.round((8 + tick * 2.24) * 100) / 100;
+                        return h('line', { key: String(tick), className: 'bee-ruler-tick', x1: tx, y1: 6, x2: tx, y2: 20 });
+                      }),
+                      h('line', { className: 'bee-ruler-needle', x1: markerX, y1: 6, x2: markerX, y2: 20 }),
+                      h('polygon', {
+                        'data-ruler-marker': 'true',
+                        points: markerX + ',2 ' + Math.round((markerX + 4) * 100) / 100 + ',6 ' + markerX + ',10 ' + Math.round((markerX - 4) * 100) / 100 + ',6'
+                      }),
+                      h('path', {
+                        'data-ruler-direction-arrow': ruler.direction,
+                        d: ruler.direction === 'lower' ? 'M6 10L2 13L6 16' : 'M234 10L238 13L234 16'
+                      })
+                    ),
                     h('div', { className: 'bee-colony-bands' },
                       h('div', { 'data-stat-band': 'healthy', 'data-stat-current-band': currentBand === 'healthy' ? 'true' : 'false', className: 'rounded p-1 text-center ' + (dk ? 'bg-emerald-900/30 text-emerald-200' : 'bg-emerald-50 text-emerald-800') },
                         h('div', { className: 'font-bold' }, __alloT('stem.beehive.healthy', '✓ Healthy')),
@@ -41451,6 +46356,109 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             var flowerVisitsTotal = bhFlowerVisitCounter(d);
             var flowerVisitsLabel = flowerVisitsTotal === null ? 'Unavailable' : (flowerVisitsTotal > 1e6 ? (Math.round(flowerVisitsTotal / 1e5) / 10) + 'M' : flowerVisitsTotal.toLocaleString('en-US'));
             var seasonsLived = Math.max(1, Math.floor(Math.max(0, day - 1) / 30) + 1);
+            var collapseByDay = Object.create(null);
+            (Array.isArray(history) ? history : []).forEach(function(entry) {
+              if (entry && Number.isSafeInteger(entry.d) && entry.d >= 0) {
+                collapseByDay[String(entry.d)] = entry;
+              }
+            });
+            var collapseRows = Object.keys(collapseByDay).sort(function(a, b) {
+              return Number(a) - Number(b);
+            }).map(function(k) { return collapseByDay[k]; });
+            var collapseTrajectoryEl = null;
+            if (collapseRows.length >= 2) {
+              var firstCollapseRow = collapseRows[0];
+              var lastCollapseRow = collapseRows[collapseRows.length - 1];
+              var firstDayNum = firstCollapseRow.d;
+              var lastDayNum = lastCollapseRow.d;
+              var spanDays = Math.max(1, lastDayNum - firstDayNum);
+              var peakRowWorkers = collapseRows.reduce(function(best, row) {
+                return Number.isFinite(row.w) && row.w >= 0 ? Math.max(best, row.w) : best;
+              }, 2500);
+              var peakRowFood = collapseRows.reduce(function(best, row) {
+                return Number.isFinite(row.h) && row.h >= 0 ? Math.max(best, row.h) : best;
+              }, 10);
+              var buildTrajectorySeries = function(key, maxVal) {
+                var coords = [];
+                collapseRows.forEach(function(row) {
+                  var raw = row[key];
+                  if (!Number.isFinite(raw) || raw < 0) return;
+                  var x = Math.round((10 + ((row.d - firstDayNum) / spanDays) * 340) * 10) / 10;
+                  var ratio = Math.max(0, Math.min(1, raw / Math.max(1, maxVal)));
+                  var y = Math.round((82 - ratio * 68) * 10) / 10;
+                  coords.push({ x: x, y: y, v: raw });
+                });
+                return coords;
+              };
+              var workersSeries = buildTrajectorySeries('w', peakRowWorkers);
+              var foodSeries = buildTrajectorySeries('h', peakRowFood);
+              var mitesSeries = buildTrajectorySeries('v', 100);
+              var summaryParts = ['Day ' + firstDayNum + ' to Day ' + lastDayNum];
+              if (workersSeries.length >= 2) {
+                summaryParts.push('workers ' + Math.round(workersSeries[0].v).toLocaleString('en-US') + ' \u2192 ' + Math.round(workersSeries[workersSeries.length - 1].v).toLocaleString('en-US'));
+              }
+              if (foodSeries.length >= 2) {
+                summaryParts.push('food ' + (Math.round(foodSeries[0].v * 10) / 10) + ' \u2192 ' + (Math.round(foodSeries[foodSeries.length - 1].v * 10) / 10) + ' lb');
+              }
+              if (mitesSeries.length >= 2) {
+                summaryParts.push('mites ' + (Math.round(mitesSeries[0].v * 10) / 10) + ' \u2192 ' + (Math.round(mitesSeries[mitesSeries.length - 1].v * 10) / 10) + '/100');
+              }
+              var seriesSpecs = [
+                { id: 'workers', label: 'Workers', coords: workersSeries, color: dk ? '#fbbf24' : '#d97706', dash: '' },
+                { id: 'food', label: 'Food', coords: foodSeries, color: dk ? '#38bdf8' : '#0284c7', dash: '' },
+                { id: 'mites', label: 'Mites', coords: mitesSeries, color: dk ? '#f87171' : '#dc2626', dash: '4 3' }
+              ];
+              collapseTrajectoryEl = h('div', { 'data-collapse-trajectory': 'true', className: 'rounded-lg p-3 text-xs border space-y-2 ' + (dk ? 'bg-slate-800 text-slate-200 border-red-700/30' : 'bg-white text-slate-800 border-red-200') },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                  h('span', { className: 'font-bold ' + (dk ? 'text-slate-100' : 'text-slate-800') }, 'Recorded Trajectory'),
+                  h('span', { className: 'text-[0.6875rem] font-semibold ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Day ' + firstDayNum + ' \u2192 Day ' + lastDayNum)
+                ),
+                h('div', { className: 'flex flex-wrap items-center gap-3 text-[0.6875rem] ' + (dk ? 'text-slate-200' : 'text-slate-700') },
+                  seriesSpecs.filter(function(sp) { return sp.coords.length >= 2; }).map(function(sp) {
+                    return h('span', { key: sp.id, className: 'inline-flex items-center gap-1.5 font-medium' },
+                      h('span', { 'aria-hidden': 'true', style: { display: 'inline-block', width: '14px', height: '0', borderTop: '2.5px ' + (sp.dash ? 'dashed ' : 'solid ') + sp.color } }),
+                      sp.label
+                    );
+                  }),
+                  h('span', { className: 'inline-flex items-center gap-1.5 font-medium' },
+                    h('span', { 'aria-hidden': 'true', style: { display: 'inline-block', width: '14px', height: '0', borderTop: '1.5px dashed ' + (dk ? '#f87171' : '#dc2626') } }),
+                    'Caution floor'
+                  )
+                ),
+                h('svg', {
+                  'data-collapse-trajectory-svg': 'true',
+                  viewBox: '0 0 360 96',
+                  preserveAspectRatio: 'none',
+                  'aria-hidden': 'true',
+                  className: 'w-full h-24 rounded border ' + (dk ? 'bg-slate-900/70 border-slate-700' : 'bg-slate-50 border-slate-200'),
+                  style: { display: 'block', forcedColorAdjust: 'auto' }
+                },
+                  h('line', { x1: '10', y1: '82', x2: '350', y2: '82', stroke: dk ? '#475569' : '#cbd5e1', strokeWidth: '1' }),
+                  h('line', { 'data-collapse-threshold': 'true', x1: '10', y1: '68.4', x2: '350', y2: '68.4', stroke: dk ? '#f87171' : '#dc2626', strokeWidth: '1', strokeDasharray: '4 3', opacity: '0.75' }),
+                  seriesSpecs.map(function(sp) {
+                    if (sp.coords.length < 2) return null;
+                    var pts = sp.coords.map(function(pt) { return pt.x + ',' + pt.y; }).join(' ');
+                    var lastPt = sp.coords[sp.coords.length - 1];
+                    return h('g', { key: sp.id },
+                      h('polyline', {
+                        'data-collapse-series': sp.id,
+                        fill: 'none',
+                        stroke: sp.color,
+                        strokeWidth: '2.2',
+                        strokeLinecap: 'round',
+                        strokeLinejoin: 'round',
+                        strokeDasharray: sp.dash || undefined,
+                        points: pts
+                      }),
+                      h('circle', { cx: String(lastPt.x), cy: String(lastPt.y), r: '2.8', fill: sp.color })
+                    );
+                  })
+                ),
+                h('p', { 'data-collapse-trajectory-summary': 'true', className: 'text-[0.6875rem] leading-relaxed ' + (dk ? 'text-slate-200' : 'text-slate-700') },
+                  summaryParts.length > 1 ? summaryParts[0] + ': ' + summaryParts.slice(1).join(' \u00B7 ') : summaryParts[0]
+                )
+              );
+            }
             return h('div', { id: 'beehive-collapse-report', 'data-beehive-collapse-report': 'true', className: 'rounded-xl border-2 p-5 space-y-3 ' + (dk ? 'bg-gradient-to-b from-red-900/30 to-orange-900/20 border-red-700/50' : 'bg-gradient-to-b from-red-50 to-orange-50 border-red-300'), role: 'alert' },
               h('div', { className: 'text-center' },
                 h('div', { className: 'text-4xl mb-1' }, '\uD83D\uDC1D\uD83D\uDE22'),
@@ -41474,6 +46482,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   );
                 })
               ),
+            collapseTrajectoryEl,
             // Diagnosis
             h('div', { className: 'rounded-lg p-3 text-xs border ' + (dk ? 'bg-slate-800 text-slate-300 border-red-700/30' : 'bg-white text-slate-700 border-red-200') },
               h('p', { className: 'font-bold mb-1 ' + (dk ? 'text-red-300' : 'text-red-700') }, __alloT('stem.beehive.diagnosis_what_went_wrong', '\uD83D\uDD2C Diagnosis: What went wrong?')),
@@ -41680,19 +46689,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           })(),
 
           // Habitat & Pesticide meters (beekeeper only)
-          viewMode === 'beekeeper' && colonySurvived && h('div', { className: 'grid grid-cols-2 gap-2' },
-            h('div', { className: 'rounded-lg border p-2 ' + (dk ? 'bg-green-900/20 border-green-700/40' : 'bg-green-50 border-green-200') },
-              h('div', { className: 'flex justify-between text-[0.6875rem] mb-0.5' },
-                h('span', { className: 'font-bold ' + (dk ? 'text-green-300' : 'text-green-700') }, __alloT('stem.beehive.local_habitat', '🌳 Local Habitat')),
-                h('span', { className: habitat > 60 ? (dk ? 'text-green-300' : 'text-green-700') : habitat > 30 ? (dk ? 'text-yellow-300' : 'text-yellow-800') : (dk ? 'text-red-300' : 'text-red-700'), style: { fontFamily: 'monospace' } }, habitat + '%')),
-              h('div', { className: 'h-2.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-green-100'), style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
-                h('div', { style: { width: habitat + '%' }, className: 'h-full bg-gradient-to-r from-green-500 to-emerald-400 rounded-full transition-all' }))),
-            h('div', { className: 'rounded-lg border p-2 ' + (dk ? 'bg-red-900/20 border-red-700/40' : 'bg-red-50 border-red-200') },
-              h('div', { className: 'flex justify-between text-[0.6875rem] mb-0.5' },
-                h('span', { className: 'font-bold ' + (dk ? 'text-red-300' : 'text-red-700') }, __alloT('stem.beehive.pesticide_exposure', '☠️ Pesticide Exposure')),
-                h('span', { className: pesticideExposure > 20 ? (dk ? 'text-red-300 font-bold' : 'text-red-700 font-bold') : (dk ? 'text-slate-200' : 'text-slate-600'), style: { fontFamily: 'monospace' } }, pesticideExposure + '%')),
-              h('div', { className: 'h-2.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-red-100'), style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
-                h('div', { style: { width: pesticideExposure + '%' }, className: 'h-full bg-gradient-to-r from-red-500 to-red-400 rounded-full transition-all' })))),
+          viewMode === 'beekeeper' && colonySurvived && (function() {
+            var envVis = bhScienceCardVisual('env', false, { habitat: habitat, pesticideExposure: pesticideExposure });
+            return h('div', { className: 'grid grid-cols-2 gap-2' },
+              h('div', { className: 'rounded-lg border p-2 ' + (dk ? 'bg-green-900/20 border-green-700/40' : 'bg-green-50 border-green-200') },
+                h('div', { className: 'flex justify-between text-[0.6875rem] mb-0.5' },
+                  h('span', { className: 'font-bold ' + (dk ? 'text-green-300' : 'text-green-700') }, __alloT('stem.beehive.local_habitat', '🌳 Local Habitat')),
+                  h('span', { className: habitat > 60 ? (dk ? 'text-green-300' : 'text-green-700') : habitat > 30 ? (dk ? 'text-yellow-300' : 'text-yellow-800') : (dk ? 'text-red-300' : 'text-red-700'), style: { fontFamily: 'monospace' } }, habitat + '%')),
+                h('svg', {
+                  className: 'bee-env-threshold-bar',
+                  'data-env-meter': 'habitat',
+                  'data-env-band': envVis.habitatBand,
+                  'data-env-pct': String(envVis.habitatPct),
+                  viewBox: '0 0 120 10',
+                  'aria-hidden': 'true',
+                  focusable: 'false'
+                },
+                  h('rect', { x: 2, y: 2, width: 116, height: 6, rx: 3, className: 'bee-env-bar-track' }),
+                  h('rect', { x: 2, y: 2, width: envVis.habitatFillW, height: 6, rx: 3, className: 'bee-env-bar-fill', 'data-env-kind': 'habitat', 'data-env-band': envVis.habitatBand }),
+                  h('line', { x1: envVis.habitatWatchTickX, y1: 0.8, x2: envVis.habitatWatchTickX, y2: 9.2, className: 'bee-env-bar-tick', 'data-env-tick': '30' }),
+                  h('line', { x1: envVis.habitatSafeTickX, y1: 0.8, x2: envVis.habitatSafeTickX, y2: 9.2, className: 'bee-env-bar-tick', 'data-env-tick': '60' }))),
+              h('div', { className: 'rounded-lg border p-2 ' + (dk ? 'bg-red-900/20 border-red-700/40' : 'bg-red-50 border-red-200') },
+                h('div', { className: 'flex justify-between text-[0.6875rem] mb-0.5' },
+                  h('span', { className: 'font-bold ' + (dk ? 'text-red-300' : 'text-red-700') }, __alloT('stem.beehive.pesticide_exposure', '☠️ Pesticide Exposure')),
+                  h('span', { className: pesticideExposure > 20 ? (dk ? 'text-red-300 font-bold' : 'text-red-700 font-bold') : (dk ? 'text-slate-200' : 'text-slate-600'), style: { fontFamily: 'monospace' } }, pesticideExposure + '%')),
+                h('svg', {
+                  className: 'bee-env-threshold-bar',
+                  'data-env-meter': 'pesticide',
+                  'data-env-band': envVis.pesticideBand,
+                  'data-env-pct': String(envVis.pesticidePct),
+                  viewBox: '0 0 120 10',
+                  'aria-hidden': 'true',
+                  focusable: 'false'
+                },
+                  h('rect', { x: 2, y: 2, width: 116, height: 6, rx: 3, className: 'bee-env-bar-track' }),
+                  h('rect', { x: 2, y: 2, width: envVis.pesticideFillW, height: 6, rx: 3, className: 'bee-env-bar-fill', 'data-env-kind': 'pesticide', 'data-env-band': envVis.pesticideBand }),
+                  h('line', { x1: envVis.pesticideThresholdX, y1: 0.8, x2: envVis.pesticideThresholdX, y2: 9.2, className: 'bee-env-bar-tick', 'data-env-tick': '20' }))));
+          })(),
 
           // Action buttons — grouped by purpose (beekeeper only)
           viewMode === 'beekeeper' && colonySurvived && renderColonyForecast(),
@@ -41955,8 +46988,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               { viewId: 'threats', cta: 'Open Colony Threats view', title: __alloT('stem.beehive.colony_collapse_disorder_2', '⚠️ Colony Collapse Disorder'), text: __alloT('stem.beehive.since_2006_beekeepers_have_reported_lo', 'Colony Collapse Disorder (CCD) describes a specific syndrome in which most adult workers disappear while the queen, brood, and food remain. It is not a label for every colony loss. Honey bee health reflects interacting pressures including Varroa and viruses, nutrition and forage, pesticide exposure, weather, queen problems, and management conditions.') }
             ].map(function(sc) {
               var isCurrentView = beeView === sc.viewId;
+              var cardVis = bhScienceCardVisual(sc.viewId, isCurrentView);
+              var diagEl = sc.viewId === 'waggle'
+                ? [
+                    h('circle', { key: 'sun', cx: 22, cy: 10, r: 4, className: 'bee-sci-diag-accent' }),
+                    h('path', { key: 'rays', d: 'M22 3V5M22 15V17M15 10H17M27 10H29', className: 'bee-sci-diag-stroke' }),
+                    h('line', { key: 'axis', x1: 90, y1: 4, x2: 90, y2: 28, className: 'bee-sci-diag-guide' }),
+                    h('path', { key: 'loop', d: 'M90 16C74 5 64 25 90 16C116 7 106 27 90 16Z', className: 'bee-sci-diag-loop' }),
+                    h('polyline', { key: 'run', points: '80,22 85,17 88,20 93,14 96,17 101,11', className: 'bee-sci-diag-primary' }),
+                    h('circle', { key: 'flw', cx: 156, cy: 16, r: 5, className: 'bee-sci-diag-node' }),
+                    h('circle', { key: 'flwc', cx: 156, cy: 16, r: 2, className: 'bee-sci-diag-accent' })
+                  ]
+                : sc.viewId === 'castes'
+                  ? [
+                      h('ellipse', { key: 'q', cx: 26, cy: 16, rx: 9, ry: 3.5, className: 'bee-sci-diag-accent' }),
+                      h('ellipse', { key: 'w', cx: 56, cy: 16, rx: 6, ry: 3.2, className: 'bee-sci-diag-node' }),
+                      h('ellipse', { key: 'd', cx: 84, cy: 16, rx: 7, ry: 4.6, className: 'bee-sci-diag-loop' }),
+                      h('path', { key: 'lnk', d: 'M98 16H116', className: 'bee-sci-diag-guide' }),
+                      h('rect', { key: 'tb', x: 120, y: 9, width: 48, height: 14, rx: 4, className: 'bee-sci-diag-band' }),
+                      h('rect', { key: 'ts', x: 134, y: 9, width: 20, height: 14, className: 'bee-sci-diag-sweet' }),
+                      h('line', { key: 'tn', x1: 144, y1: 7, x2: 144, y2: 25, className: 'bee-sci-diag-primary' })
+                    ]
+                  : sc.viewId === 'honey'
+                    ? [
+                        h('rect', { key: 'nb', x: 18, y: 6, width: 16, height: 20, rx: 2, className: 'bee-sci-diag-band' }),
+                        h('rect', { key: 'nf', x: 18, y: 10, width: 16, height: 16, rx: 2, className: 'bee-sci-diag-node' }),
+                        h('path', { key: 'ev', d: 'M46 13Q58 8 70 13T94 13M46 19Q58 14 70 19T94 19', className: 'bee-sci-diag-primary' }),
+                        h('polygon', { key: 'hx', points: '142,6 154,12 154,22 142,28 130,22 130,12', className: 'bee-sci-diag-accent' }),
+                        h('line', { key: 'cap', x1: 130, y1: 12, x2: 154, y2: 12, className: 'bee-sci-diag-stroke' })
+                      ]
+                    : [
+                        h('polygon', { key: 'cn', points: '90,8 99,13 99,21 90,26 81,21 81,13', className: 'bee-sci-diag-band' }),
+                        [[24, 8], [24, 24], [156, 8], [156, 24]].map(function(pt, si) {
+                          return [
+                            h('line', { key: 'vl-' + si, x1: pt[0], y1: pt[1], x2: 90, y2: 17, className: 'bee-sci-diag-guide' }),
+                            h('circle', { key: 'vn-' + si, cx: pt[0], cy: pt[1], r: 3.5, className: 'bee-sci-diag-warn' })
+                          ];
+                        })
+                      ];
               return h('div', { key: sc.viewId, className: 'rounded-xl border p-3 transition-all hover:shadow-md flex flex-col justify-between gap-2.5 ' + (dk ? 'bg-slate-800 border-slate-700 hover:border-amber-600/40' : 'bg-white border-slate-200 hover:border-amber-300'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.05)' } },
                 h('div', null,
+                  h('svg', {
+                    className: 'bee-science-card-diagram',
+                    'data-science-card-diagram': sc.viewId,
+                    'data-diagram-kind': cardVis.diagramKind,
+                    'data-card-active': isCurrentView ? 'true' : 'false',
+                    viewBox: '0 0 180 32',
+                    'aria-hidden': 'true',
+                    focusable: 'false'
+                  },
+                    h('rect', { x: 1, y: 1, width: 178, height: 30, rx: 6, className: 'bee-sci-diag-bg' }),
+                    diagEl),
                   h('h4', { className: 'text-xs font-bold mb-1 ' + (dk ? 'text-slate-200' : 'text-slate-800') }, sc.title),
                   h('p', { className: 'text-[0.6875rem] leading-relaxed ' + (dk ? 'text-slate-200' : 'text-slate-700') }, sc.text)),
                 h('button', {
@@ -42041,7 +47123,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       bhSeedFromInput: bhSeedFromInput,
       bhFreshExperimentSeed: bhFreshExperimentSeed,
       bhCreateSeededRandom: bhCreateSeededRandom,
-      bhDroneDecisionKeys: bhDroneDecisionKeys, bhDroneDecisionReadout: bhDroneDecisionReadout, bhDroneManeuverEvidence: bhDroneManeuverEvidence, bhDroneHistorySelection: bhDroneHistorySelection, bhDroneReplayModel: bhDroneReplayModel, bhDroneNavigationTarget: bhDroneNavigationTarget, bhDroneFlightConditions: bhDroneFlightConditions, bhDroneFlightDirector: bhDroneFlightDirector, bhDroneApproachGuide: bhDroneApproachGuide, bhDroneCueLeaderPath: bhDroneCueLeaderPath, bhDroneCueLabelLayout: bhDroneCueLabelLayout, bhDroneApproachCues: bhDroneApproachCues, bhDroneInspectionCamera: bhDroneInspectionCamera, bhDroneHeightGuide: bhDroneHeightGuide, bhDroneHabitatLayout: bhDroneHabitatLayout, bhDroneVegetationMesh: bhDroneVegetationMesh, bhDroneStreamDetail: bhDroneStreamDetail, bhDroneStreamSurface: bhDroneStreamSurface, bhDroneStreamTexture: bhDroneStreamTexture, bhDroneStreamOffset: bhDroneStreamOffset, bhDronePlantSubject: bhDronePlantSubject, bhDroneHabitatFraction: bhDroneHabitatFraction, bhDronePredatorReadout: bhDronePredatorReadout, bhDroneNearestBird: bhDroneNearestBird, bhDroneButterflyVisible: bhDroneButterflyVisible, bhDroneButterflyPose: bhDroneButterflyPose, bhDroneButterflySubject: bhDroneButterflySubject, bhDroneButterflyWing: bhDroneButterflyWing, bhDroneButterflyAnatomy: bhDroneButterflyAnatomy, bhDroneButterflyCallouts: bhDroneButterflyCallouts, bhDroneMotionReadout: bhDroneMotionReadout, bhDroneFlightTrail: bhDroneFlightTrail, bhDroneThermalSample: bhDroneThermalSample, bhDroneLiftReadout: bhDroneLiftReadout, bhDroneRouteOverview: bhDroneRouteOverview, bhDronePlanMap: bhDronePlanMap, bhDronePlanningReadings: bhDronePlanningReadings, bhDronePlanningSurroundings: bhDronePlanningSurroundings, bhDroneRecordedSnapshot: bhDroneRecordedSnapshot,
+      bhDroneDecisionKeys: bhDroneDecisionKeys, bhDroneDecisionReadout: bhDroneDecisionReadout, bhDroneManeuverEvidence: bhDroneManeuverEvidence, bhDroneHistorySelection: bhDroneHistorySelection, bhDroneReplayModel: bhDroneReplayModel, bhDroneNavigationTarget: bhDroneNavigationTarget, bhDroneFlightConditions: bhDroneFlightConditions, bhDroneFlightDirector: bhDroneFlightDirector, bhDroneApproachGuide: bhDroneApproachGuide, bhDroneApproachRangeVisual: bhDroneApproachRangeVisual, bhDroneCueLeaderPath: bhDroneCueLeaderPath, bhDroneCueLabelLayout: bhDroneCueLabelLayout, bhDroneApproachCues: bhDroneApproachCues, bhDroneInspectionCamera: bhDroneInspectionCamera, bhDroneHeightGuide: bhDroneHeightGuide, bhDroneHabitatLayout: bhDroneHabitatLayout, bhDroneVegetationMesh: bhDroneVegetationMesh, bhDroneStreamDetail: bhDroneStreamDetail, bhDroneStreamSurface: bhDroneStreamSurface, bhDroneStreamTexture: bhDroneStreamTexture, bhDroneStreamOffset: bhDroneStreamOffset, bhDronePlantSubject: bhDronePlantSubject, bhDroneHabitatFraction: bhDroneHabitatFraction, bhDronePredatorReadout: bhDronePredatorReadout, bhDronePredatorGauge: bhDronePredatorGauge, bhDroneNearestBird: bhDroneNearestBird, bhDroneButterflyVisible: bhDroneButterflyVisible, bhDroneButterflyPose: bhDroneButterflyPose, bhDroneButterflySubject: bhDroneButterflySubject, bhDroneButterflyWing: bhDroneButterflyWing, bhDroneButterflyAnatomy: bhDroneButterflyAnatomy, bhDroneButterflyCallouts: bhDroneButterflyCallouts, bhDroneMotionReadout: bhDroneMotionReadout, bhDroneMotionDialData: bhDroneMotionDialData, bhDroneFlightTrail: bhDroneFlightTrail, bhDroneThermalSample: bhDroneThermalSample, bhDroneLiftReadout: bhDroneLiftReadout, bhHasManagementChoice: bhHasManagementChoice, bhDroneSurroundingsProximityVisual: bhDroneSurroundingsProximityVisual, bhColonySignMeter: bhColonySignMeter, bhDroneRouteOverview: bhDroneRouteOverview, bhDronePlanMap: bhDronePlanMap, bhDronePlanningReadings: bhDronePlanningReadings, bhDronePlanningSurroundings: bhDronePlanningSurroundings, bhDroneRecordedSnapshot: bhDroneRecordedSnapshot, bhTraceSvgPathOnCanvas: bhTraceSvgPathOnCanvas, bhExperimentArchiveWhisker: bhExperimentArchiveWhisker, bhForecastComparisonVisual: bhForecastComparisonVisual, bhProjectedPairScale: bhProjectedPairScale, bhExperimentPredictionVisual: bhExperimentPredictionVisual, bhStatThresholdRuler: bhStatThresholdRuler, bhScoreContributionStack: bhScoreContributionStack, bhNotebookCaptureVisuals: bhNotebookCaptureVisuals, bhDroneConditionVisual: bhDroneConditionVisual, bhDroneHistorySparkline: bhDroneHistorySparkline, bhPopulationShareVisual: bhPopulationShareVisual, bhMissionBriefVisuals: bhMissionBriefVisuals, bhLensVerdictVisual: bhLensVerdictVisual, bhDroneLaunchBudgetVisual: bhDroneLaunchBudgetVisual, bhPlayCoachVisuals: bhPlayCoachVisuals, bhPerspectiveCardVisual: bhPerspectiveCardVisual, bhDroneManeuverChoiceVisual: bhDroneManeuverChoiceVisual, bhTimingLandmarkVisual: bhTimingLandmarkVisual, bhFlowNavVisuals: bhFlowNavVisuals, bhDroneTrainingVisual: bhDroneTrainingVisual, bhQueenPatchExplorerVisual: bhQueenPatchExplorerVisual, bhPlanRegistrationVisual: bhPlanRegistrationVisual, bhExperimentProtocolVisual: bhExperimentProtocolVisual, bhHiveReferenceVisual: bhHiveReferenceVisual, bhQueenPlacementVisual: bhQueenPlacementVisual, bhDronePreflightVisuals: bhDronePreflightVisuals, bhApiarySiteVisual: bhApiarySiteVisual, bhQueenTimelineVisuals: bhQueenTimelineVisuals, bhDroneDirectorVisuals: bhDroneDirectorVisuals, bhScienceCardVisual: bhScienceCardVisual, bhQueenFieldObjectiveVisual: bhQueenFieldObjectiveVisual, bhDroneSnapshotExtrasVisual: bhDroneSnapshotExtrasVisual, bhColonyEventVisual: bhColonyEventVisual, bhColonyOutlookVisual: bhColonyOutlookVisual, bhHoneyLabVisuals: bhHoneyLabVisuals, bhExperimentScheduleVisual: bhExperimentScheduleVisual, bhQueenDockVisuals: bhQueenDockVisuals, bhDroneEnvelopeVisuals: bhDroneEnvelopeVisuals,
       bhRunHoneyLab: bhRunHoneyLab, bhNewHoneyLab: bhNewHoneyLab,
       bhNormalizeHoneyLab: bhNormalizeHoneyLab, bhHoneyLabReady: bhHoneyLabReady,
       bhHoneyLabPlan: bhHoneyLabPlan, bhHoneyLabComparison: bhHoneyLabComparison,

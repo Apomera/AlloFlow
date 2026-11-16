@@ -252,6 +252,10 @@ function SpotlightTourView(props) {
   var popupLeft = Math.max(16, Math.min(Math.max(16, viewportWidth - popupWidth - 16), preferredLeft));
   var estimatedHeight = Math.min(400, Math.max(0, viewportHeight - 32));
   var popupTop = Math.max(16, Math.min(Math.max(16, viewportHeight - estimatedHeight - 16), tourRect.top));
+  var _rawHelpLabel = typeof t === 'function' ? t('common.help', {
+    defaultValue: 'Help'
+  }) : '';
+  var _helpTitleFallback = _rawHelpLabel && _rawHelpLabel !== 'common.help' ? _rawHelpLabel : 'Help';
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("style", null, SPOTLIGHT_TOUR_ANIMATION_CSS), /*#__PURE__*/React.createElement("div", {
     "data-help-ignore": "true",
     className: "fixed inset-0 z-[10998] pointer-events-none bg-black/5",
@@ -281,6 +285,14 @@ function SpotlightTourView(props) {
     "aria-modal": "false",
     "aria-labelledby": "spotlight-message-title",
     "aria-describedby": "spotlight-message-body",
+    onKeyDown: function (e) {
+      if (e.defaultPrevented || e.nativeEvent && e.nativeEvent.isComposing || e.isComposing || e.keyCode === 229) return;
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsSpotlightMode(false);
+      }
+    },
     className: "bg-slate-900/95 backdrop-blur-2xl p-6 rounded-2xl shadow-[0_0_40px_rgba(139,92,246,0.3)] border border-white/10 ring-1 ring-white/20 relative overflow-hidden group transition-all duration-300 hover:shadow-[0_0_60px_rgba(139,92,246,0.5)] motion-reduce:transition-none"
   }, /*#__PURE__*/React.createElement("div", {
     className: "absolute -top-20 -right-20 w-40 h-40 bg-violet-600/30 rounded-full blur-[80px] pointer-events-none animate-pulse motion-reduce:animate-none"
@@ -301,7 +313,7 @@ function SpotlightTourView(props) {
     "aria-hidden": "true",
     size: 18,
     className: "text-white fill-white/20"
-  })), spotlightMessage.title || 'Help'), /*#__PURE__*/React.createElement("div", {
+  })), spotlightMessage.title || _helpTitleFallback), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-1 shrink-0"
   }, typeof window !== 'undefined' && typeof window.callTTS === 'function' && /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -336,7 +348,7 @@ function SpotlightTourView(props) {
   }, ttsState === 'loading' ? '⏳' : ttsState === 'playing' ? '⏹' : '🔊')), /*#__PURE__*/React.createElement("button", {
     ref: closeButtonRef,
     type: "button",
-    "aria-label": t('common.close'),
+    "aria-label": t('common.close') || 'Close',
     onClick: e => {
       e.stopPropagation();
       setIsSpotlightMode(false);
@@ -407,8 +419,8 @@ function SpotlightTourView(props) {
     "aria-hidden": "true",
     style: {
       top: '24px',
-      [tourRect.left > window.innerWidth / 2 ? 'right' : 'left']: '-24px',
-      transform: tourRect.left > window.innerWidth / 2 ? 'rotate(-90deg)' : 'rotate(90deg)'
+      [tourRect.left > viewportWidth / 2 ? 'right' : 'left']: '-24px',
+      transform: tourRect.left > viewportWidth / 2 ? 'rotate(-90deg)' : 'rotate(90deg)'
     },
     viewBox: "0 0 24 24",
     fill: "currentColor"

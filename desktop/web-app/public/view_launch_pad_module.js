@@ -481,7 +481,7 @@
   function closeStudentPanel() {
     setStudentOpen(false);
     var button = launchPadRef.current && launchPadRef.current.querySelector('[data-pathway="student"]');
-    if (button) button.focus();
+    if (button && button !== document.body && button !== document.documentElement && button.isConnected && typeof button.focus === 'function') button.focus();
   }
   function renderRoleDoor(door) {
     return /*#__PURE__*/React.createElement("button", {
@@ -551,7 +551,10 @@
     setLangMenuOpen(false);
     if (typeof window !== 'undefined') {
       window.setTimeout(function () {
-        if (langTriggerRef.current) langTriggerRef.current.focus();
+        var trigger = langTriggerRef.current;
+        if (trigger && trigger !== document.body && trigger !== document.documentElement && trigger.isConnected && typeof trigger.focus === 'function') {
+          if (langTriggerRef.current) langTriggerRef.current.focus();
+        }
       }, 0);
     }
   };
@@ -881,14 +884,26 @@
       element.setAttribute('inert', '');
       element.setAttribute('aria-hidden', 'true');
     });
-    var focusTarget = root.querySelector('[data-lp-initial-focus="true"]') || root.querySelector('button:not([disabled]), summary, [href], input, select, textarea');
+    var isVisibleFocusable = function (el) {
+      if (!el || el.disabled) return false;
+      if (el.closest('[inert], [hidden], [aria-hidden="true"]')) return false;
+      var closedDetails = el.closest('details:not([open])');
+      if (closedDetails && !(el.tagName === 'SUMMARY' && el.parentElement === closedDetails)) return false;
+      var cs = typeof window !== 'undefined' && typeof window.getComputedStyle === 'function' ? window.getComputedStyle(el) : null;
+      if (cs && (cs.display === 'none' || cs.visibility === 'hidden')) return false;
+      var hasLayout = typeof root.getBoundingClientRect === 'function' && (root.getBoundingClientRect().width > 0 || root.getBoundingClientRect().height > 0);
+      if (hasLayout && typeof el.getClientRects === 'function' && el.getClientRects().length === 0) return false;
+      return true;
+    };
+    var preferredFocus = Array.prototype.find.call(root.querySelectorAll('[data-lp-initial-focus="true"]'), isVisibleFocusable);
+    var focusTarget = preferredFocus || Array.prototype.find.call(root.querySelectorAll('button:not([disabled]), summary, [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled])'), isVisibleFocusable);
     if (focusTarget && typeof focusTarget.focus === 'function') focusTarget.focus();
     return function () {
       previousState.forEach(function (state) {
         if (state.inert) state.element.setAttribute('inert', '');else state.element.removeAttribute('inert');
         if (state.ariaHidden === null) state.element.removeAttribute('aria-hidden');else state.element.setAttribute('aria-hidden', state.ariaHidden);
       });
-      if (previousActive && previousActive !== document.body && previousActive.isConnected && typeof previousActive.focus === 'function') {
+      if (previousActive && previousActive !== document.body && previousActive !== document.documentElement && previousActive.isConnected && typeof previousActive.focus === 'function') {
         previousActive.focus();
       }
     };
@@ -926,6 +941,7 @@
     var focusTarget = selectedButton || firstButton;
     if (focusTarget) focusTarget.focus();
     var handleLanguageKeyDown = function (event) {
+      if (event.isComposing || event.keyCode === 229) return;
       if (event.key === 'Escape') {
         event.preventDefault();
         closeLanguageMenu();
@@ -1460,6 +1476,7 @@
     id: "launch-pad-student-panel",
     className: "lp-student-panel",
     onKeyDown: function (event) {
+      if (event.isComposing || event.keyCode === 229) return;
       if (event.key === 'Escape') {
         event.preventDefault();
         event.stopPropagation();

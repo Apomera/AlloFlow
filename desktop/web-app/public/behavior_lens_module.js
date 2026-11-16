@@ -513,6 +513,7 @@
         if (v != null && v !== '' && v !== key) return llInterp(v, params); // pack translation wins
         return trRuntime(en, params);
     };
+    const __alloT = tt;
     const llCleanJson = (raw) => { let s = String(raw || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, ''); const f = s.indexOf('{'), l = s.lastIndexOf('}'); return f >= 0 && l > f ? s.slice(f, l + 1) : s; };
     const llSanitize = (obj, wanted) => { if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return null; const out = {}; let n = 0; wanted.forEach((k) => { let v = obj[k]; if (typeof v === 'string') { v = v.slice(0, 600); if (v) { out[k] = v; n++; } } }); return n ? out : null; };
     const llPrompt = (langName, list) => ['Translate these user-interface labels for a classroom behavior-tracking / ABC-observation app (used by teachers and school psychologists) into natural, concise ' + langName + ' (buttons, headings, field labels, help text — keep them short and professional).', 'Keep any {tokens}, numbers, and any emoji EXACTLY as written. Do NOT translate the acronyms ABC, FBA, BCBA, IEP, IOA, BIP, ABA. No commentary.', 'Return ONLY a JSON object mapping each ENGLISH string (used verbatim as the key) to its ' + langName + ' translation.', JSON.stringify(list)].join(String.fromCharCode(10));
@@ -1060,7 +1061,7 @@
 
     const csvCell = (value) => {
         let s = value == null ? '' : String(value);
-        if (typeof value !== 'number' && /^[=+\-@\t\r]/.test(s)) s = "'" + s;
+        if (typeof value !== 'number' && /^(?:[\t\r\n ]*[=+\-@|]|[\t\r\n])/.test(s)) s = "'" + s;
         return '"' + s.replace(/"/g, '""') + '"';
     };
     // Applying an AI "edit this entry" result. It used to spread the whole reply over
@@ -31254,7 +31255,8 @@ Use professional language. Refer to "the student" (not the codename).`;
             }
             // Anything else is plain text: it was saved as .csv, unescaped, and broke columns.
             const asText = csvContent == null;
-            const blob = new Blob([asText ? getToolExportData(activePanel) : csvContent], { type: asText ? 'text/plain' : 'text/csv' });
+            const csvPayload = !asText && csvContent.charCodeAt(0) !== 0xFEFF ? '\uFEFF' + csvContent : csvContent;
+            const blob = new Blob([asText ? getToolExportData(activePanel) : csvPayload], { type: asText ? 'text/plain' : 'text/csv;charset=utf-8' });
             const a = blCreateDownloadLink();
             a.href = URL.createObjectURL(blob);
             a.download = `behaviorlens-${activePanel}-${studentLabel.replace(/\s+/g, '_')}.${asText ? 'txt' : 'csv'}`;
@@ -33087,11 +33089,11 @@ Use professional language. Refer to "the student" (not the codename).`;
                                 }, '📁 Download CSV'),
                                 h('button', {
                                     type: 'button',
-                                    'aria-label': 'Open this BehaviorLens data in AlloSheet',
+                                    'aria-label': __alloT('behavior_lens.export.open_in_allosheet_aria', 'Open this BehaviorLens data in AlloSheet'),
                                     onClick: openAlloSheetHandoffReview,
                                     className: 'w-full min-h-[44px] px-4 py-2 text-start text-sm font-bold text-emerald-800 hover:bg-emerald-50 flex items-center gap-2'
                                 }, '📊 Open in AlloSheet'),
-                                graphPanels.includes(activePanel) && h('button', { "aria-label": "Export as PNG",
+                                graphPanels.includes(activePanel) && h('button', { "aria-label": __alloT('behavior_lens.export.export_png_aria', 'Export as PNG'),
                                     onClick: () => { exportSvgAsPng(`behaviorlens-${activePanel}.png`); setShowExportMenu(false); },
                                     className: 'w-full px-4 py-2 text-start text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2'
                                 }, '🖼️ Export as PNG')

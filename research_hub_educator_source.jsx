@@ -191,7 +191,7 @@
                 return (
                   <li key={i}>
                     {clip(c.text, 100)}
-                    {c.label && (<span style={{ marginLeft: '6px', color: c.staleLabel ? '#b45309' : '#16a34a', fontWeight: 700 }}>
+                    {c.label && (<span style={{ marginLeft: '6px', color: c.staleLabel ? '#92400e' : '#166534', fontWeight: 700 }}>
                       [{c.label}{c.staleLabel ? ' — STALE' : ''}]
                     </span>)}
                   </li>
@@ -245,9 +245,9 @@
                   {b.buildText || ''}
                 </div>
                 <div style={{ marginTop: '4px', display: 'flex', gap: '6px', fontSize: '10px' }}>
-                  {passes > 0 && (<span style={{ color: '#16a34a', fontWeight: 700 }}>{passes} pass</span>)}
-                  {fails > 0 && (<span style={{ color: '#dc2626', fontWeight: 700 }}>{fails} fail</span>)}
-                  {linkedFail > 0 && (<span style={{ color: '#b45309', fontWeight: 700 }}>{'\u{1F501} ' + linkedFail}</span>)}
+                  {passes > 0 && (<span style={{ color: '#166534', fontWeight: 700 }}>{passes} pass</span>)}
+                  {fails > 0 && (<span style={{ color: '#991b1b', fontWeight: 700 }}>{fails} fail</span>)}
+                  {linkedFail > 0 && (<span style={{ color: '#92400e', fontWeight: 700 }}>{'\u{1F501} ' + linkedFail}</span>)}
                 </div>
               </div>
             );
@@ -270,8 +270,8 @@
                     <em>{clip(f.modeText, 60)}</em>{deltaText}
                     {f.predictionVsRealityRadio && (
                       <span style={{ marginLeft: '6px',
-                        color: f.predictionVsRealityRadio === 'confirmed' ? '#16a34a' :
-                               f.predictionVsRealityRadio === 'refuted' ? '#dc2626' : '#d97706',
+                        color: f.predictionVsRealityRadio === 'confirmed' ? '#166534' :
+                               f.predictionVsRealityRadio === 'refuted' ? '#991b1b' : '#92400e',
                         fontWeight: 700 }}>
                         [{f.predictionVsRealityRadio}]
                       </span>
@@ -283,7 +283,7 @@
           </div>
         )}
         {weightGameFlag && (
-          <div role="alert" style={{ marginTop: '8px', padding: '8px 10px', borderRadius: '8px',
+          <div role="status" style={{ marginTop: '8px', padding: '8px 10px', borderRadius: '8px',
             background: '#fef3c7', border: '1px solid #fbbf24',
             fontSize: '11px', color: '#92400e' }}>
             <strong>{'\u{26A0}\u{FE0F} '}criteriaWeightLog flag:</strong> at least one weight changed AFTER the decision matrix was filled (potential weight-gaming pattern; ask student to walk through why).
@@ -297,7 +297,7 @@
                 return (
                   <li key={i}>
                     {clip(c.text, 100)}
-                    {c.label && (<span style={{ marginLeft: '6px', color: c.staleLabel ? '#b45309' : '#16a34a', fontWeight: 700 }}>
+                    {c.label && (<span style={{ marginLeft: '6px', color: c.staleLabel ? '#92400e' : '#166534', fontWeight: 700 }}>
                       [{c.label}{c.staleLabel ? ' — STALE' : ''}]
                     </span>)}
                   </li>
@@ -360,9 +360,9 @@
         <div style={{ marginBottom: '10px' }}>
           <strong style={{ fontSize: '11px', color: '#475569' }}>Source tier movement:</strong>
           <div style={{ marginTop: '4px', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-            <Pill color="#16a34a" label={tierPromotions + ' promotion(s)'} />
-            <Pill color="#d97706" label={tierDowngrades + ' downgrade(s) — good data'} />
-            <Pill color="#dc2626" label={failedSIFT + ' failed SIFT'} />
+            <Pill color="#166534" label={tierPromotions + ' promotion(s)'} />
+            <Pill color="#92400e" label={tierDowngrades + ' downgrade(s) — good data'} />
+            <Pill color="#991b1b" label={failedSIFT + ' failed SIFT'} />
           </div>
           <Note small>Downgrades and failed-SIFT entries are the lateral reading working as intended. Never penalize them.</Note>
         </div>
@@ -379,16 +379,16 @@
               </div>
               <div style={{ marginTop: '4px', display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                 {qLog.map(function (q, qi) {
-                  return <Pill key={'q' + qi} color="#d97706"
+                  return <Pill key={'q' + qi} color="#92400e"
                     label={'qual v' + (qi + 2) + (q.deltaJaccard != null ? (' Δ' + (q.deltaJaccard).toFixed(2)) : '')} />;
                 })}
                 {wLog.map(function (w, wi) {
-                  return <Pill key={'w' + wi} color="#a855f7"
+                  return <Pill key={'w' + wi} color="#6b21a8"
                     label={'warrant v' + (wi + 2)} />;
                 })}
                 {linkProbes.map(function (p, pi) {
-                  var color = p.verdict === 'warrant_survives' ? '#16a34a' :
-                              p.verdict === 'warrant_contracts' ? '#d97706' : '#dc2626';
+                  var color = p.verdict === 'warrant_survives' ? '#166534' :
+                              p.verdict === 'warrant_contracts' ? '#92400e' : '#991b1b';
                   return <Pill key={'p' + pi} color={color}
                     label={p.verdict.replace('warrant_', '')} />;
                 })}
@@ -401,12 +401,12 @@
           <div style={{ marginTop: '8px' }}>
             <strong style={{ fontSize: '11px', color: '#475569' }}>Framing probes ({probes.length}):</strong>
             <div style={{ marginTop: '4px', display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-              <Pill color="#16a34a" label={byVerdict.warrant_survives + ' survives'} />
-              <Pill color="#d97706" label={byVerdict.warrant_contracts + ' contracts'} />
-              <Pill color="#dc2626" label={byVerdict.warrant_fails + ' fails'} />
+              <Pill color="#166534" label={byVerdict.warrant_survives + ' survives'} />
+              <Pill color="#92400e" label={byVerdict.warrant_contracts + ' contracts'} />
+              <Pill color="#991b1b" label={byVerdict.warrant_fails + ' fails'} />
             </div>
             {allSurvivesFlag && (
-              <div role="alert" style={{ marginTop: '6px', padding: '6px 8px', borderRadius: '6px',
+              <div role="status" style={{ marginTop: '6px', padding: '6px 8px', borderRadius: '6px',
                 background: '#fef3c7', border: '1px solid #fbbf24',
                 fontSize: '11px', color: '#92400e' }}>
                 <strong>{'\u{26A0}\u{FE0F} '}All-survives without justification:</strong> Every framing probe verdict is "warrant survives" but no allSurvivesJustification ≥120c was authored. Frameworks usually contract under at least one alternative — ask student why theirs did not.
@@ -426,7 +426,7 @@
                 return (
                   <li key={i}>
                     v{c.v} · genre: {c.genreChoice} ·{' '}
-                    <span style={{ color: avMissing > 0 ? '#dc2626' : '#16a34a' }}>
+                    <span style={{ color: avMissing > 0 ? '#991b1b' : '#166534' }}>
                       Foreclosure Coda {avMissing > 0 ? 'missing ' + avMissing + ' absent voice(s)' : 'complete'}
                     </span>
                   </li>
@@ -510,7 +510,7 @@
             <strong style={{ fontSize: '11px', color: '#475569' }}>Top bypass signals (gate-reasons):</strong>
             <div style={{ marginTop: '4px', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
               {topBypass.map(function (b) {
-                return <Pill key={b} color="#d97706" label={b + ' × ' + bypassDist[b]} />;
+                return <Pill key={b} color="#92400e" label={b + ' × ' + bypassDist[b]} />;
               })}
             </div>
           </div>
@@ -521,7 +521,7 @@
           </div>
         )}
         {pasteEvents > 0 && (
-          <div role="alert" style={{ marginTop: '8px', padding: '6px 8px', borderRadius: '6px',
+          <div role="status" style={{ marginTop: '8px', padding: '6px 8px', borderRadius: '6px',
             background: '#fef3c7', border: '1px solid #fbbf24',
             fontSize: '11px', color: '#92400e' }}>
             <strong>authorshipLog: {pasteEvents} paste event(s).</strong> Worth discussing with student — where did pasted content come from?
@@ -539,7 +539,7 @@
     return (
       <details style={{ padding: '10px 12px', borderRadius: '10px',
         background: '#fef2f2', border: '1px solid #fecaca' }}>
-        <summary style={{ cursor: 'pointer', fontSize: '11px', fontWeight: 800, color: '#991b1b' }}>
+        <summary className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-700 rounded" style={{ cursor: 'pointer', fontSize: '11px', fontWeight: 800, color: '#991b1b', minHeight: '44px', display: 'flex', alignItems: 'center' }}>
           <span aria-hidden="true">{'\u{1F6AB} '}</span>
           What NOT to grade on (click to expand)
         </summary>
@@ -592,7 +592,7 @@
   function EmptyTrajectory(title, body) {
     return (
       <Panel title={title}>
-        <p style={{ margin: 0, fontSize: '11px', color: '#94a3b8', fontStyle: 'italic' }}>{body}</p>
+        <p style={{ margin: 0, fontSize: '11px', color: '#475569', fontStyle: 'italic' }}>{body}</p>
       </Panel>
     );
   }
@@ -645,7 +645,7 @@
     var helper = window.ResearchHub && window.ResearchHub.helpers && window.ResearchHub.helpers.researchStorageHealth;
     if (typeof helper !== 'function') return null;
     var health = helper(props.journal);
-    var color = health.status === 'healthy' ? '#2563eb' : health.status === 'warning' ? '#d97706' : '#dc2626';
+    var color = health.status === 'healthy' ? '#1d4ed8' : health.status === 'warning' ? '#92400e' : '#991b1b';
     return (
       <Panel title="Local portfolio storage" subtitle={health.percent + '% of 4 MB safety budget'}>
         <div data-educator-storage-health="true" style={{ height: '7px', borderRadius: '999px', overflow: 'hidden', background: '#e2e8f0' }}><div style={{ height: '100%', width: Math.min(100, health.percent) + '%', background: color }} /></div>
@@ -671,7 +671,7 @@
             var artifact = row.artifact;
             var contract = artifact.integrationContract || {};
             var receipt = artifact.reproducibilityReceipt || {};
-            var color = row.health.status === 'healthy' ? '#16a34a' : row.health.status === 'action_needed' ? '#dc2626' : '#d97706';
+            var color = row.health.status === 'healthy' ? '#166534' : row.health.status === 'action_needed' ? '#991b1b' : '#92400e';
             return (
               <div key={artifact.id} style={{ padding: '8px 10px', borderRadius: '9px', border: '1px solid ' + color, background: color + '0d' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
@@ -705,10 +705,12 @@
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         <DashboardHeader journal={j} />
         <button type="button" onClick={onExit}
+          className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1"
           style={{ alignSelf: 'flex-start',
-            padding: '4px 12px', borderRadius: '999px',
-            background: '#f1f5f9', color: '#475569', border: 'none',
-            fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>
+            minHeight: '44px', display: 'inline-flex', alignItems: 'center',
+            padding: '8px 16px', borderRadius: '999px',
+            background: '#f1f5f9', color: '#334155', border: '1px solid #cbd5e1',
+            fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>
           {'\u{2190} '}{t('research_hub.educator_view_exit') || 'Return to student view'}
         </button>
 

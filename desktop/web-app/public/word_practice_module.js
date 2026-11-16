@@ -5,6 +5,3560 @@ if (window.AlloModules && window.AlloModules.WordPractice) return;
 window.AlloWordPracticeAnnotationAssets = {"runtime":"(()=>{var vn=(e,t)=>()=>{try{return t||e((t={exports:{}}).exports,t),t.exports}catch(n){throw t=0,n}};var Va=vn(J=>{\"use strict\";/**\n * @license React\n * react.production.min.js\n *\n * Copyright (c) Facebook, Inc. and its affiliates.\n *\n * This source code is licensed under the MIT license found in the\n * LICENSE file in the root directory of this source tree.\n */var hr=Symbol.for(\"react.element\"),Nd=Symbol.for(\"react.portal\"),_d=Symbol.for(\"react.fragment\"),Td=Symbol.for(\"react.strict_mode\"),Pd=Symbol.for(\"react.profiler\"),Ad=Symbol.for(\"react.provider\"),Dd=Symbol.for(\"react.context\"),Ld=Symbol.for(\"react.forward_ref\"),Md=Symbol.for(\"react.suspense\"),zd=Symbol.for(\"react.memo\"),Id=Symbol.for(\"react.lazy\"),La=Symbol.iterator;function Od(e){return e===null||typeof e!=\"object\"?null:(e=La&&e[La]||e[\"@@iterator\"],typeof e==\"function\"?e:null)}var Ia={isMounted:function(){return!1},enqueueForceUpdate:function(){},enqueueReplaceState:function(){},enqueueSetState:function(){}},Oa=Object.assign,Fa={};function Fn(e,t,n){this.props=e,this.context=t,this.refs=Fa,this.updater=n||Ia}Fn.prototype.isReactComponent={};Fn.prototype.setState=function(e,t){if(typeof e!=\"object\"&&typeof e!=\"function\"&&e!=null)throw Error(\"setState(...): takes an object of state variables to update or a function which returns an object of state variables.\");this.updater.enqueueSetState(this,e,t,\"setState\")};Fn.prototype.forceUpdate=function(e){this.updater.enqueueForceUpdate(this,e,\"forceUpdate\")};function ja(){}ja.prototype=Fn.prototype;function $l(e,t,n){this.props=e,this.context=t,this.refs=Fa,this.updater=n||Ia}var Ql=$l.prototype=new ja;Ql.constructor=$l;Oa(Ql,Fn.prototype);Ql.isPureReactComponent=!0;var Ma=Array.isArray,Ua=Object.prototype.hasOwnProperty,Kl={current:null},Ha={key:!0,ref:!0,__self:!0,__source:!0};function Ba(e,t,n){var r,o={},l=null,i=null;if(t!=null)for(r in t.ref!==void 0&&(i=t.ref),t.key!==void 0&&(l=\"\"+t.key),t)Ua.call(t,r)&&!Ha.hasOwnProperty(r)&&(o[r]=t[r]);var a=arguments.length-2;if(a===1)o.children=n;else if(1<a){for(var s=Array(a),y=0;y<a;y++)s[y]=arguments[y+2];o.children=s}if(e&&e.defaultProps)for(r in a=e.defaultProps,a)o[r]===void 0&&(o[r]=a[r]);return{$$typeof:hr,type:e,key:l,ref:i,props:o,_owner:Kl.current}}function Fd(e,t){return{$$typeof:hr,type:e.type,key:t,ref:e.ref,props:e.props,_owner:e._owner}}function Yl(e){return typeof e==\"object\"&&e!==null&&e.$$typeof===hr}function jd(e){var t={\"=\":\"=0\",\":\":\"=2\"};return\"$\"+e.replace(/[=:]/g,function(n){return t[n]})}var za=/\\/+/g;function Vl(e,t){return typeof e==\"object\"&&e!==null&&e.key!=null?jd(\"\"+e.key):t.toString(36)}function mo(e,t,n,r,o){var l=typeof e;(l===\"undefined\"||l===\"boolean\")&&(e=null);var i=!1;if(e===null)i=!0;else switch(l){case\"string\":case\"number\":i=!0;break;case\"object\":switch(e.$$typeof){case hr:case Nd:i=!0}}if(i)return i=e,o=o(i),e=r===\"\"?\".\"+Vl(i,0):r,Ma(o)?(n=\"\",e!=null&&(n=e.replace(za,\"$&/\")+\"/\"),mo(o,t,n,\"\",function(y){return y})):o!=null&&(Yl(o)&&(o=Fd(o,n+(!o.key||i&&i.key===o.key?\"\":(\"\"+o.key).replace(za,\"$&/\")+\"/\")+e)),t.push(o)),1;if(i=0,r=r===\"\"?\".\":r+\":\",Ma(e))for(var a=0;a<e.length;a++){l=e[a];var s=r+Vl(l,a);i+=mo(l,t,n,s,o)}else if(s=Od(e),typeof s==\"function\")for(e=s.call(e),a=0;!(l=e.next()).done;)l=l.value,s=r+Vl(l,a++),i+=mo(l,t,n,s,o);else if(l===\"object\")throw t=String(e),Error(\"Objects are not valid as a React child (found: \"+(t===\"[object Object]\"?\"object with keys {\"+Object.keys(e).join(\", \")+\"}\":t)+\"). If you meant to render a collection of children, use an array instead.\");return i}function po(e,t,n){if(e==null)return e;var r=[],o=0;return mo(e,r,\"\",\"\",function(l){return t.call(n,l,o++)}),r}function Ud(e){if(e._status===-1){var t=e._result;t=t(),t.then(function(n){(e._status===0||e._status===-1)&&(e._status=1,e._result=n)},function(n){(e._status===0||e._status===-1)&&(e._status=2,e._result=n)}),e._status===-1&&(e._status=0,e._result=t)}if(e._status===1)return e._result.default;throw e._result}var $e={current:null},ho={transition:null},Hd={ReactCurrentDispatcher:$e,ReactCurrentBatchConfig:ho,ReactCurrentOwner:Kl};function Wa(){throw Error(\"act(...) is not supported in production builds of React.\")}J.Children={map:po,forEach:function(e,t,n){po(e,function(){t.apply(this,arguments)},n)},count:function(e){var t=0;return po(e,function(){t++}),t},toArray:function(e){return po(e,function(t){return t})||[]},only:function(e){if(!Yl(e))throw Error(\"React.Children.only expected to receive a single React element child.\");return e}};J.Component=Fn;J.Fragment=_d;J.Profiler=Pd;J.PureComponent=$l;J.StrictMode=Td;J.Suspense=Md;J.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED=Hd;J.act=Wa;J.cloneElement=function(e,t,n){if(e==null)throw Error(\"React.cloneElement(...): The argument must be a React element, but you passed \"+e+\".\");var r=Oa({},e.props),o=e.key,l=e.ref,i=e._owner;if(t!=null){if(t.ref!==void 0&&(l=t.ref,i=Kl.current),t.key!==void 0&&(o=\"\"+t.key),e.type&&e.type.defaultProps)var a=e.type.defaultProps;for(s in t)Ua.call(t,s)&&!Ha.hasOwnProperty(s)&&(r[s]=t[s]===void 0&&a!==void 0?a[s]:t[s])}var s=arguments.length-2;if(s===1)r.children=n;else if(1<s){a=Array(s);for(var y=0;y<s;y++)a[y]=arguments[y+2];r.children=a}return{$$typeof:hr,type:e.type,key:o,ref:l,props:r,_owner:i}};J.createContext=function(e){return e={$$typeof:Dd,_currentValue:e,_currentValue2:e,_threadCount:0,Provider:null,Consumer:null,_defaultValue:null,_globalName:null},e.Provider={$$typeof:Ad,_context:e},e.Consumer=e};J.createElement=Ba;J.createFactory=function(e){var t=Ba.bind(null,e);return t.type=e,t};J.createRef=function(){return{current:null}};J.forwardRef=function(e){return{$$typeof:Ld,render:e}};J.isValidElement=Yl;J.lazy=function(e){return{$$typeof:Id,_payload:{_status:-1,_result:e},_init:Ud}};J.memo=function(e,t){return{$$typeof:zd,type:e,compare:t===void 0?null:t}};J.startTransition=function(e){var t=ho.transition;ho.transition={};try{e()}finally{ho.transition=t}};J.unstable_act=Wa;J.useCallback=function(e,t){return $e.current.useCallback(e,t)};J.useContext=function(e){return $e.current.useContext(e)};J.useDebugValue=function(){};J.useDeferredValue=function(e){return $e.current.useDeferredValue(e)};J.useEffect=function(e,t){return $e.current.useEffect(e,t)};J.useId=function(){return $e.current.useId()};J.useImperativeHandle=function(e,t,n){return $e.current.useImperativeHandle(e,t,n)};J.useInsertionEffect=function(e,t){return $e.current.useInsertionEffect(e,t)};J.useLayoutEffect=function(e,t){return $e.current.useLayoutEffect(e,t)};J.useMemo=function(e,t){return $e.current.useMemo(e,t)};J.useReducer=function(e,t,n){return $e.current.useReducer(e,t,n)};J.useRef=function(e){return $e.current.useRef(e)};J.useState=function(e){return $e.current.useState(e)};J.useSyncExternalStore=function(e,t,n){return $e.current.useSyncExternalStore(e,t,n)};J.useTransition=function(){return $e.current.useTransition()};J.version=\"18.3.1\"});var Xl=vn((Qm,$a)=>{\"use strict\";$a.exports=Va()});var es=vn(ce=>{\"use strict\";/**\n * @license React\n * scheduler.production.min.js\n *\n * Copyright (c) Facebook, Inc. and its affiliates.\n *\n * This source code is licensed under the MIT license found in the\n * LICENSE file in the root directory of this source tree.\n */function bl(e,t){var n=e.length;e.push(t);e:for(;0<n;){var r=n-1>>>1,o=e[r];if(0<go(o,t))e[r]=t,e[n]=o,n=r;else break e}}function gt(e){return e.length===0?null:e[0]}function vo(e){if(e.length===0)return null;var t=e[0],n=e.pop();if(n!==t){e[0]=n;e:for(var r=0,o=e.length,l=o>>>1;r<l;){var i=2*(r+1)-1,a=e[i],s=i+1,y=e[s];if(0>go(a,n))s<o&&0>go(y,a)?(e[r]=y,e[s]=n,r=s):(e[r]=a,e[i]=n,r=i);else if(s<o&&0>go(y,n))e[r]=y,e[s]=n,r=s;else break e}}return t}function go(e,t){var n=e.sortIndex-t.sortIndex;return n!==0?n:e.id-t.id}typeof performance==\"object\"&&typeof performance.now==\"function\"?(Qa=performance,ce.unstable_now=function(){return Qa.now()}):(ql=Date,Ka=ql.now(),ce.unstable_now=function(){return ql.now()-Ka});var Qa,ql,Ka,Nt=[],Qt=[],Bd=1,st=null,Fe=3,wo=!1,wn=!1,yr=!1,qa=typeof setTimeout==\"function\"?setTimeout:null,Ga=typeof clearTimeout==\"function\"?clearTimeout:null,Ya=typeof setImmediate<\"u\"?setImmediate:null;typeof navigator<\"u\"&&navigator.scheduling!==void 0&&navigator.scheduling.isInputPending!==void 0&&navigator.scheduling.isInputPending.bind(navigator.scheduling);function Jl(e){for(var t=gt(Qt);t!==null;){if(t.callback===null)vo(Qt);else if(t.startTime<=e)vo(Qt),t.sortIndex=t.expirationTime,bl(Nt,t);else break;t=gt(Qt)}}function ei(e){if(yr=!1,Jl(e),!wn)if(gt(Nt)!==null)wn=!0,ni(ti);else{var t=gt(Qt);t!==null&&ri(ei,t.startTime-e)}}function ti(e,t){wn=!1,yr&&(yr=!1,Ga(vr),vr=-1),wo=!0;var n=Fe;try{for(Jl(t),st=gt(Nt);st!==null&&(!(st.expirationTime>t)||e&&!Ja());){var r=st.callback;if(typeof r==\"function\"){st.callback=null,Fe=st.priorityLevel;var o=r(st.expirationTime<=t);t=ce.unstable_now(),typeof o==\"function\"?st.callback=o:st===gt(Nt)&&vo(Nt),Jl(t)}else vo(Nt);st=gt(Nt)}if(st!==null)var l=!0;else{var i=gt(Qt);i!==null&&ri(ei,i.startTime-t),l=!1}return l}finally{st=null,Fe=n,wo=!1}}var xo=!1,yo=null,vr=-1,Za=5,ba=-1;function Ja(){return!(ce.unstable_now()-ba<Za)}function Gl(){if(yo!==null){var e=ce.unstable_now();ba=e;var t=!0;try{t=yo(!0,e)}finally{t?gr():(xo=!1,yo=null)}}else xo=!1}var gr;typeof Ya==\"function\"?gr=function(){Ya(Gl)}:typeof MessageChannel<\"u\"?(Zl=new MessageChannel,Xa=Zl.port2,Zl.port1.onmessage=Gl,gr=function(){Xa.postMessage(null)}):gr=function(){qa(Gl,0)};var Zl,Xa;function ni(e){yo=e,xo||(xo=!0,gr())}function ri(e,t){vr=qa(function(){e(ce.unstable_now())},t)}ce.unstable_IdlePriority=5;ce.unstable_ImmediatePriority=1;ce.unstable_LowPriority=4;ce.unstable_NormalPriority=3;ce.unstable_Profiling=null;ce.unstable_UserBlockingPriority=2;ce.unstable_cancelCallback=function(e){e.callback=null};ce.unstable_continueExecution=function(){wn||wo||(wn=!0,ni(ti))};ce.unstable_forceFrameRate=function(e){0>e||125<e?console.error(\"forceFrameRate takes a positive int between 0 and 125, forcing frame rates higher than 125 fps is not supported\"):Za=0<e?Math.floor(1e3/e):5};ce.unstable_getCurrentPriorityLevel=function(){return Fe};ce.unstable_getFirstCallbackNode=function(){return gt(Nt)};ce.unstable_next=function(e){switch(Fe){case 1:case 2:case 3:var t=3;break;default:t=Fe}var n=Fe;Fe=t;try{return e()}finally{Fe=n}};ce.unstable_pauseExecution=function(){};ce.unstable_requestPaint=function(){};ce.unstable_runWithPriority=function(e,t){switch(e){case 1:case 2:case 3:case 4:case 5:break;default:e=3}var n=Fe;Fe=e;try{return t()}finally{Fe=n}};ce.unstable_scheduleCallback=function(e,t,n){var r=ce.unstable_now();switch(typeof n==\"object\"&&n!==null?(n=n.delay,n=typeof n==\"number\"&&0<n?r+n:r):n=r,e){case 1:var o=-1;break;case 2:o=250;break;case 5:o=1073741823;break;case 4:o=1e4;break;default:o=5e3}return o=n+o,e={id:Bd++,callback:t,priorityLevel:e,startTime:n,expirationTime:o,sortIndex:-1},n>r?(e.sortIndex=n,bl(Qt,e),gt(Nt)===null&&e===gt(Qt)&&(yr?(Ga(vr),vr=-1):yr=!0,ri(ei,n-r))):(e.sortIndex=o,bl(Nt,e),wn||wo||(wn=!0,ni(ti))),e};ce.unstable_shouldYield=Ja;ce.unstable_wrapCallback=function(e){var t=Fe;return function(){var n=Fe;Fe=t;try{return e.apply(this,arguments)}finally{Fe=n}}}});var ns=vn((Ym,ts)=>{\"use strict\";ts.exports=es()});var ud=vn(it=>{\"use strict\";/**\n * @license React\n * react-dom.production.min.js\n *\n * Copyright (c) Facebook, Inc. and its affiliates.\n *\n * This source code is licensed under the MIT license found in the\n * LICENSE file in the root directory of this source tree.\n */var Wd=Xl(),ot=ns();function T(e){for(var t=\"https://reactjs.org/docs/error-decoder.html?invariant=\"+e,n=1;n<arguments.length;n++)t+=\"&args[]=\"+encodeURIComponent(arguments[n]);return\"Minified React error #\"+e+\"; visit \"+t+\" for the full message or use the non-minified dev environment for full errors and additional helpful warnings.\"}var sc=new Set,Hr={};function Ln(e,t){or(e,t),or(e+\"Capture\",t)}function or(e,t){for(Hr[e]=t,e=0;e<t.length;e++)sc.add(t[e])}var Ht=!(typeof window>\"u\"||typeof window.document>\"u\"||typeof window.document.createElement>\"u\"),Ni=Object.prototype.hasOwnProperty,Vd=/^[:A-Z_a-z\\u00C0-\\u00D6\\u00D8-\\u00F6\\u00F8-\\u02FF\\u0370-\\u037D\\u037F-\\u1FFF\\u200C-\\u200D\\u2070-\\u218F\\u2C00-\\u2FEF\\u3001-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFFD][:A-Z_a-z\\u00C0-\\u00D6\\u00D8-\\u00F6\\u00F8-\\u02FF\\u0370-\\u037D\\u037F-\\u1FFF\\u200C-\\u200D\\u2070-\\u218F\\u2C00-\\u2FEF\\u3001-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFFD\\-.0-9\\u00B7\\u0300-\\u036F\\u203F-\\u2040]*$/,rs={},os={};function $d(e){return Ni.call(os,e)?!0:Ni.call(rs,e)?!1:Vd.test(e)?os[e]=!0:(rs[e]=!0,!1)}function Qd(e,t,n,r){if(n!==null&&n.type===0)return!1;switch(typeof t){case\"function\":case\"symbol\":return!0;case\"boolean\":return r?!1:n!==null?!n.acceptsBooleans:(e=e.toLowerCase().slice(0,5),e!==\"data-\"&&e!==\"aria-\");default:return!1}}function Kd(e,t,n,r){if(t===null||typeof t>\"u\"||Qd(e,t,n,r))return!0;if(r)return!1;if(n!==null)switch(n.type){case 3:return!t;case 4:return t===!1;case 5:return isNaN(t);case 6:return isNaN(t)||1>t}return!1}function Ye(e,t,n,r,o,l,i){this.acceptsBooleans=t===2||t===3||t===4,this.attributeName=r,this.attributeNamespace=o,this.mustUseProperty=n,this.propertyName=e,this.type=t,this.sanitizeURL=l,this.removeEmptyString=i}var Oe={};\"children dangerouslySetInnerHTML defaultValue defaultChecked innerHTML suppressContentEditableWarning suppressHydrationWarning style\".split(\" \").forEach(function(e){Oe[e]=new Ye(e,0,!1,e,null,!1,!1)});[[\"acceptCharset\",\"accept-charset\"],[\"className\",\"class\"],[\"htmlFor\",\"for\"],[\"httpEquiv\",\"http-equiv\"]].forEach(function(e){var t=e[0];Oe[t]=new Ye(t,1,!1,e[1],null,!1,!1)});[\"contentEditable\",\"draggable\",\"spellCheck\",\"value\"].forEach(function(e){Oe[e]=new Ye(e,2,!1,e.toLowerCase(),null,!1,!1)});[\"autoReverse\",\"externalResourcesRequired\",\"focusable\",\"preserveAlpha\"].forEach(function(e){Oe[e]=new Ye(e,2,!1,e,null,!1,!1)});\"allowFullScreen async autoFocus autoPlay controls default defer disabled disablePictureInPicture disableRemotePlayback formNoValidate hidden loop noModule noValidate open playsInline readOnly required reversed scoped seamless itemScope\".split(\" \").forEach(function(e){Oe[e]=new Ye(e,3,!1,e.toLowerCase(),null,!1,!1)});[\"checked\",\"multiple\",\"muted\",\"selected\"].forEach(function(e){Oe[e]=new Ye(e,3,!0,e,null,!1,!1)});[\"capture\",\"download\"].forEach(function(e){Oe[e]=new Ye(e,4,!1,e,null,!1,!1)});[\"cols\",\"rows\",\"size\",\"span\"].forEach(function(e){Oe[e]=new Ye(e,6,!1,e,null,!1,!1)});[\"rowSpan\",\"start\"].forEach(function(e){Oe[e]=new Ye(e,5,!1,e.toLowerCase(),null,!1,!1)});var vu=/[\\-:]([a-z])/g;function wu(e){return e[1].toUpperCase()}\"accent-height alignment-baseline arabic-form baseline-shift cap-height clip-path clip-rule color-interpolation color-interpolation-filters color-profile color-rendering dominant-baseline enable-background fill-opacity fill-rule flood-color flood-opacity font-family font-size font-size-adjust font-stretch font-style font-variant font-weight glyph-name glyph-orientation-horizontal glyph-orientation-vertical horiz-adv-x horiz-origin-x image-rendering letter-spacing lighting-color marker-end marker-mid marker-start overline-position overline-thickness paint-order panose-1 pointer-events rendering-intent shape-rendering stop-color stop-opacity strikethrough-position strikethrough-thickness stroke-dasharray stroke-dashoffset stroke-linecap stroke-linejoin stroke-miterlimit stroke-opacity stroke-width text-anchor text-decoration text-rendering underline-position underline-thickness unicode-bidi unicode-range units-per-em v-alphabetic v-hanging v-ideographic v-mathematical vector-effect vert-adv-y vert-origin-x vert-origin-y word-spacing writing-mode xmlns:xlink x-height\".split(\" \").forEach(function(e){var t=e.replace(vu,wu);Oe[t]=new Ye(t,1,!1,e,null,!1,!1)});\"xlink:actuate xlink:arcrole xlink:role xlink:show xlink:title xlink:type\".split(\" \").forEach(function(e){var t=e.replace(vu,wu);Oe[t]=new Ye(t,1,!1,e,\"http://www.w3.org/1999/xlink\",!1,!1)});[\"xml:base\",\"xml:lang\",\"xml:space\"].forEach(function(e){var t=e.replace(vu,wu);Oe[t]=new Ye(t,1,!1,e,\"http://www.w3.org/XML/1998/namespace\",!1,!1)});[\"tabIndex\",\"crossOrigin\"].forEach(function(e){Oe[e]=new Ye(e,1,!1,e.toLowerCase(),null,!1,!1)});Oe.xlinkHref=new Ye(\"xlinkHref\",1,!1,\"xlink:href\",\"http://www.w3.org/1999/xlink\",!0,!1);[\"src\",\"href\",\"action\",\"formAction\"].forEach(function(e){Oe[e]=new Ye(e,1,!1,e.toLowerCase(),null,!0,!0)});function xu(e,t,n,r){var o=Oe.hasOwnProperty(t)?Oe[t]:null;(o!==null?o.type!==0:r||!(2<t.length)||t[0]!==\"o\"&&t[0]!==\"O\"||t[1]!==\"n\"&&t[1]!==\"N\")&&(Kd(t,n,o,r)&&(n=null),r||o===null?$d(t)&&(n===null?e.removeAttribute(t):e.setAttribute(t,\"\"+n)):o.mustUseProperty?e[o.propertyName]=n===null?o.type===3?!1:\"\":n:(t=o.attributeName,r=o.attributeNamespace,n===null?e.removeAttribute(t):(o=o.type,n=o===3||o===4&&n===!0?\"\":\"\"+n,r?e.setAttributeNS(r,t,n):e.setAttribute(t,n))))}var $t=Wd.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED,ko=Symbol.for(\"react.element\"),Hn=Symbol.for(\"react.portal\"),Bn=Symbol.for(\"react.fragment\"),ku=Symbol.for(\"react.strict_mode\"),_i=Symbol.for(\"react.profiler\"),cc=Symbol.for(\"react.provider\"),fc=Symbol.for(\"react.context\"),Su=Symbol.for(\"react.forward_ref\"),Ti=Symbol.for(\"react.suspense\"),Pi=Symbol.for(\"react.suspense_list\"),Eu=Symbol.for(\"react.memo\"),Yt=Symbol.for(\"react.lazy\"),dc=Symbol.for(\"react.offscreen\"),ls=Symbol.iterator;function wr(e){return e===null||typeof e!=\"object\"?null:(e=ls&&e[ls]||e[\"@@iterator\"],typeof e==\"function\"?e:null)}var Se=Object.assign,oi;function _r(e){if(oi===void 0)try{throw Error()}catch(n){var t=n.stack.trim().match(/\\n( *(at )?)/);oi=t&&t[1]||\"\"}return`\n`+oi+e}var li=!1;function ii(e,t){if(!e||li)return\"\";li=!0;var n=Error.prepareStackTrace;Error.prepareStackTrace=void 0;try{if(t)if(t=function(){throw Error()},Object.defineProperty(t.prototype,\"props\",{set:function(){throw Error()}}),typeof Reflect==\"object\"&&Reflect.construct){try{Reflect.construct(t,[])}catch(y){var r=y}Reflect.construct(e,[],t)}else{try{t.call()}catch(y){r=y}e.call(t.prototype)}else{try{throw Error()}catch(y){r=y}e()}}catch(y){if(y&&r&&typeof y.stack==\"string\"){for(var o=y.stack.split(`\n`),l=r.stack.split(`\n`),i=o.length-1,a=l.length-1;1<=i&&0<=a&&o[i]!==l[a];)a--;for(;1<=i&&0<=a;i--,a--)if(o[i]!==l[a]){if(i!==1||a!==1)do if(i--,a--,0>a||o[i]!==l[a]){var s=`\n`+o[i].replace(\" at new \",\" at \");return e.displayName&&s.includes(\"<anonymous>\")&&(s=s.replace(\"<anonymous>\",e.displayName)),s}while(1<=i&&0<=a);break}}}finally{li=!1,Error.prepareStackTrace=n}return(e=e?e.displayName||e.name:\"\")?_r(e):\"\"}function Yd(e){switch(e.tag){case 5:return _r(e.type);case 16:return _r(\"Lazy\");case 13:return _r(\"Suspense\");case 19:return _r(\"SuspenseList\");case 0:case 2:case 15:return e=ii(e.type,!1),e;case 11:return e=ii(e.type.render,!1),e;case 1:return e=ii(e.type,!0),e;default:return\"\"}}function Ai(e){if(e==null)return null;if(typeof e==\"function\")return e.displayName||e.name||null;if(typeof e==\"string\")return e;switch(e){case Bn:return\"Fragment\";case Hn:return\"Portal\";case _i:return\"Profiler\";case ku:return\"StrictMode\";case Ti:return\"Suspense\";case Pi:return\"SuspenseList\"}if(typeof e==\"object\")switch(e.$$typeof){case fc:return(e.displayName||\"Context\")+\".Consumer\";case cc:return(e._context.displayName||\"Context\")+\".Provider\";case Su:var t=e.render;return e=e.displayName,e||(e=t.displayName||t.name||\"\",e=e!==\"\"?\"ForwardRef(\"+e+\")\":\"ForwardRef\"),e;case Eu:return t=e.displayName||null,t!==null?t:Ai(e.type)||\"Memo\";case Yt:t=e._payload,e=e._init;try{return Ai(e(t))}catch{}}return null}function Xd(e){var t=e.type;switch(e.tag){case 24:return\"Cache\";case 9:return(t.displayName||\"Context\")+\".Consumer\";case 10:return(t._context.displayName||\"Context\")+\".Provider\";case 18:return\"DehydratedFragment\";case 11:return e=t.render,e=e.displayName||e.name||\"\",t.displayName||(e!==\"\"?\"ForwardRef(\"+e+\")\":\"ForwardRef\");case 7:return\"Fragment\";case 5:return t;case 4:return\"Portal\";case 3:return\"Root\";case 6:return\"Text\";case 16:return Ai(t);case 8:return t===ku?\"StrictMode\":\"Mode\";case 22:return\"Offscreen\";case 12:return\"Profiler\";case 21:return\"Scope\";case 13:return\"Suspense\";case 19:return\"SuspenseList\";case 25:return\"TracingMarker\";case 1:case 0:case 17:case 2:case 14:case 15:if(typeof t==\"function\")return t.displayName||t.name||null;if(typeof t==\"string\")return t}return null}function an(e){switch(typeof e){case\"boolean\":case\"number\":case\"string\":case\"undefined\":return e;case\"object\":return e;default:return\"\"}}function pc(e){var t=e.type;return(e=e.nodeName)&&e.toLowerCase()===\"input\"&&(t===\"checkbox\"||t===\"radio\")}function qd(e){var t=pc(e)?\"checked\":\"value\",n=Object.getOwnPropertyDescriptor(e.constructor.prototype,t),r=\"\"+e[t];if(!e.hasOwnProperty(t)&&typeof n<\"u\"&&typeof n.get==\"function\"&&typeof n.set==\"function\"){var o=n.get,l=n.set;return Object.defineProperty(e,t,{configurable:!0,get:function(){return o.call(this)},set:function(i){r=\"\"+i,l.call(this,i)}}),Object.defineProperty(e,t,{enumerable:n.enumerable}),{getValue:function(){return r},setValue:function(i){r=\"\"+i},stopTracking:function(){e._valueTracker=null,delete e[t]}}}}function So(e){e._valueTracker||(e._valueTracker=qd(e))}function mc(e){if(!e)return!1;var t=e._valueTracker;if(!t)return!0;var n=t.getValue(),r=\"\";return e&&(r=pc(e)?e.checked?\"true\":\"false\":e.value),e=r,e!==n?(t.setValue(e),!0):!1}function Go(e){if(e=e||(typeof document<\"u\"?document:void 0),typeof e>\"u\")return null;try{return e.activeElement||e.body}catch{return e.body}}function Di(e,t){var n=t.checked;return Se({},t,{defaultChecked:void 0,defaultValue:void 0,value:void 0,checked:n??e._wrapperState.initialChecked})}function is(e,t){var n=t.defaultValue==null?\"\":t.defaultValue,r=t.checked!=null?t.checked:t.defaultChecked;n=an(t.value!=null?t.value:n),e._wrapperState={initialChecked:r,initialValue:n,controlled:t.type===\"checkbox\"||t.type===\"radio\"?t.checked!=null:t.value!=null}}function hc(e,t){t=t.checked,t!=null&&xu(e,\"checked\",t,!1)}function Li(e,t){hc(e,t);var n=an(t.value),r=t.type;if(n!=null)r===\"number\"?(n===0&&e.value===\"\"||e.value!=n)&&(e.value=\"\"+n):e.value!==\"\"+n&&(e.value=\"\"+n);else if(r===\"submit\"||r===\"reset\"){e.removeAttribute(\"value\");return}t.hasOwnProperty(\"value\")?Mi(e,t.type,n):t.hasOwnProperty(\"defaultValue\")&&Mi(e,t.type,an(t.defaultValue)),t.checked==null&&t.defaultChecked!=null&&(e.defaultChecked=!!t.defaultChecked)}function us(e,t,n){if(t.hasOwnProperty(\"value\")||t.hasOwnProperty(\"defaultValue\")){var r=t.type;if(!(r!==\"submit\"&&r!==\"reset\"||t.value!==void 0&&t.value!==null))return;t=\"\"+e._wrapperState.initialValue,n||t===e.value||(e.value=t),e.defaultValue=t}n=e.name,n!==\"\"&&(e.name=\"\"),e.defaultChecked=!!e._wrapperState.initialChecked,n!==\"\"&&(e.name=n)}function Mi(e,t,n){(t!==\"number\"||Go(e.ownerDocument)!==e)&&(n==null?e.defaultValue=\"\"+e._wrapperState.initialValue:e.defaultValue!==\"\"+n&&(e.defaultValue=\"\"+n))}var Tr=Array.isArray;function bn(e,t,n,r){if(e=e.options,t){t={};for(var o=0;o<n.length;o++)t[\"$\"+n[o]]=!0;for(n=0;n<e.length;n++)o=t.hasOwnProperty(\"$\"+e[n].value),e[n].selected!==o&&(e[n].selected=o),o&&r&&(e[n].defaultSelected=!0)}else{for(n=\"\"+an(n),t=null,o=0;o<e.length;o++){if(e[o].value===n){e[o].selected=!0,r&&(e[o].defaultSelected=!0);return}t!==null||e[o].disabled||(t=e[o])}t!==null&&(t.selected=!0)}}function zi(e,t){if(t.dangerouslySetInnerHTML!=null)throw Error(T(91));return Se({},t,{value:void 0,defaultValue:void 0,children:\"\"+e._wrapperState.initialValue})}function as(e,t){var n=t.value;if(n==null){if(n=t.children,t=t.defaultValue,n!=null){if(t!=null)throw Error(T(92));if(Tr(n)){if(1<n.length)throw Error(T(93));n=n[0]}t=n}t==null&&(t=\"\"),n=t}e._wrapperState={initialValue:an(n)}}function gc(e,t){var n=an(t.value),r=an(t.defaultValue);n!=null&&(n=\"\"+n,n!==e.value&&(e.value=n),t.defaultValue==null&&e.defaultValue!==n&&(e.defaultValue=n)),r!=null&&(e.defaultValue=\"\"+r)}function ss(e){var t=e.textContent;t===e._wrapperState.initialValue&&t!==\"\"&&t!==null&&(e.value=t)}function yc(e){switch(e){case\"svg\":return\"http://www.w3.org/2000/svg\";case\"math\":return\"http://www.w3.org/1998/Math/MathML\";default:return\"http://www.w3.org/1999/xhtml\"}}function Ii(e,t){return e==null||e===\"http://www.w3.org/1999/xhtml\"?yc(t):e===\"http://www.w3.org/2000/svg\"&&t===\"foreignObject\"?\"http://www.w3.org/1999/xhtml\":e}var Eo,vc=(function(e){return typeof MSApp<\"u\"&&MSApp.execUnsafeLocalFunction?function(t,n,r,o){MSApp.execUnsafeLocalFunction(function(){return e(t,n,r,o)})}:e})(function(e,t){if(e.namespaceURI!==\"http://www.w3.org/2000/svg\"||\"innerHTML\"in e)e.innerHTML=t;else{for(Eo=Eo||document.createElement(\"div\"),Eo.innerHTML=\"<svg>\"+t.valueOf().toString()+\"</svg>\",t=Eo.firstChild;e.firstChild;)e.removeChild(e.firstChild);for(;t.firstChild;)e.appendChild(t.firstChild)}});function Br(e,t){if(t){var n=e.firstChild;if(n&&n===e.lastChild&&n.nodeType===3){n.nodeValue=t;return}}e.textContent=t}var Dr={animationIterationCount:!0,aspectRatio:!0,borderImageOutset:!0,borderImageSlice:!0,borderImageWidth:!0,boxFlex:!0,boxFlexGroup:!0,boxOrdinalGroup:!0,columnCount:!0,columns:!0,flex:!0,flexGrow:!0,flexPositive:!0,flexShrink:!0,flexNegative:!0,flexOrder:!0,gridArea:!0,gridRow:!0,gridRowEnd:!0,gridRowSpan:!0,gridRowStart:!0,gridColumn:!0,gridColumnEnd:!0,gridColumnSpan:!0,gridColumnStart:!0,fontWeight:!0,lineClamp:!0,lineHeight:!0,opacity:!0,order:!0,orphans:!0,tabSize:!0,widows:!0,zIndex:!0,zoom:!0,fillOpacity:!0,floodOpacity:!0,stopOpacity:!0,strokeDasharray:!0,strokeDashoffset:!0,strokeMiterlimit:!0,strokeOpacity:!0,strokeWidth:!0},Gd=[\"Webkit\",\"ms\",\"Moz\",\"O\"];Object.keys(Dr).forEach(function(e){Gd.forEach(function(t){t=t+e.charAt(0).toUpperCase()+e.substring(1),Dr[t]=Dr[e]})});function wc(e,t,n){return t==null||typeof t==\"boolean\"||t===\"\"?\"\":n||typeof t!=\"number\"||t===0||Dr.hasOwnProperty(e)&&Dr[e]?(\"\"+t).trim():t+\"px\"}function xc(e,t){e=e.style;for(var n in t)if(t.hasOwnProperty(n)){var r=n.indexOf(\"--\")===0,o=wc(n,t[n],r);n===\"float\"&&(n=\"cssFloat\"),r?e.setProperty(n,o):e[n]=o}}var Zd=Se({menuitem:!0},{area:!0,base:!0,br:!0,col:!0,embed:!0,hr:!0,img:!0,input:!0,keygen:!0,link:!0,meta:!0,param:!0,source:!0,track:!0,wbr:!0});function Oi(e,t){if(t){if(Zd[e]&&(t.children!=null||t.dangerouslySetInnerHTML!=null))throw Error(T(137,e));if(t.dangerouslySetInnerHTML!=null){if(t.children!=null)throw Error(T(60));if(typeof t.dangerouslySetInnerHTML!=\"object\"||!(\"__html\"in t.dangerouslySetInnerHTML))throw Error(T(61))}if(t.style!=null&&typeof t.style!=\"object\")throw Error(T(62))}}function Fi(e,t){if(e.indexOf(\"-\")===-1)return typeof t.is==\"string\";switch(e){case\"annotation-xml\":case\"color-profile\":case\"font-face\":case\"font-face-src\":case\"font-face-uri\":case\"font-face-format\":case\"font-face-name\":case\"missing-glyph\":return!1;default:return!0}}var ji=null;function Cu(e){return e=e.target||e.srcElement||window,e.correspondingUseElement&&(e=e.correspondingUseElement),e.nodeType===3?e.parentNode:e}var Ui=null,Jn=null,er=null;function cs(e){if(e=lo(e)){if(typeof Ui!=\"function\")throw Error(T(280));var t=e.stateNode;t&&(t=Cl(t),Ui(e.stateNode,e.type,t))}}function kc(e){Jn?er?er.push(e):er=[e]:Jn=e}function Sc(){if(Jn){var e=Jn,t=er;if(er=Jn=null,cs(e),t)for(e=0;e<t.length;e++)cs(t[e])}}function Ec(e,t){return e(t)}function Cc(){}var ui=!1;function Rc(e,t,n){if(ui)return e(t,n);ui=!0;try{return Ec(e,t,n)}finally{ui=!1,(Jn!==null||er!==null)&&(Cc(),Sc())}}function Wr(e,t){var n=e.stateNode;if(n===null)return null;var r=Cl(n);if(r===null)return null;n=r[t];e:switch(t){case\"onClick\":case\"onClickCapture\":case\"onDoubleClick\":case\"onDoubleClickCapture\":case\"onMouseDown\":case\"onMouseDownCapture\":case\"onMouseMove\":case\"onMouseMoveCapture\":case\"onMouseUp\":case\"onMouseUpCapture\":case\"onMouseEnter\":(r=!r.disabled)||(e=e.type,r=!(e===\"button\"||e===\"input\"||e===\"select\"||e===\"textarea\")),e=!r;break e;default:e=!1}if(e)return null;if(n&&typeof n!=\"function\")throw Error(T(231,t,typeof n));return n}var Hi=!1;if(Ht)try{jn={},Object.defineProperty(jn,\"passive\",{get:function(){Hi=!0}}),window.addEventListener(\"test\",jn,jn),window.removeEventListener(\"test\",jn,jn)}catch{Hi=!1}var jn;function bd(e,t,n,r,o,l,i,a,s){var y=Array.prototype.slice.call(arguments,3);try{t.apply(n,y)}catch(E){this.onError(E)}}var Lr=!1,Zo=null,bo=!1,Bi=null,Jd={onError:function(e){Lr=!0,Zo=e}};function ep(e,t,n,r,o,l,i,a,s){Lr=!1,Zo=null,bd.apply(Jd,arguments)}function tp(e,t,n,r,o,l,i,a,s){if(ep.apply(this,arguments),Lr){if(Lr){var y=Zo;Lr=!1,Zo=null}else throw Error(T(198));bo||(bo=!0,Bi=y)}}function Mn(e){var t=e,n=e;if(e.alternate)for(;t.return;)t=t.return;else{e=t;do t=e,(t.flags&4098)!==0&&(n=t.return),e=t.return;while(e)}return t.tag===3?n:null}function Nc(e){if(e.tag===13){var t=e.memoizedState;if(t===null&&(e=e.alternate,e!==null&&(t=e.memoizedState)),t!==null)return t.dehydrated}return null}function fs(e){if(Mn(e)!==e)throw Error(T(188))}function np(e){var t=e.alternate;if(!t){if(t=Mn(e),t===null)throw Error(T(188));return t!==e?null:e}for(var n=e,r=t;;){var o=n.return;if(o===null)break;var l=o.alternate;if(l===null){if(r=o.return,r!==null){n=r;continue}break}if(o.child===l.child){for(l=o.child;l;){if(l===n)return fs(o),e;if(l===r)return fs(o),t;l=l.sibling}throw Error(T(188))}if(n.return!==r.return)n=o,r=l;else{for(var i=!1,a=o.child;a;){if(a===n){i=!0,n=o,r=l;break}if(a===r){i=!0,r=o,n=l;break}a=a.sibling}if(!i){for(a=l.child;a;){if(a===n){i=!0,n=l,r=o;break}if(a===r){i=!0,r=l,n=o;break}a=a.sibling}if(!i)throw Error(T(189))}}if(n.alternate!==r)throw Error(T(190))}if(n.tag!==3)throw Error(T(188));return n.stateNode.current===n?e:t}function _c(e){return e=np(e),e!==null?Tc(e):null}function Tc(e){if(e.tag===5||e.tag===6)return e;for(e=e.child;e!==null;){var t=Tc(e);if(t!==null)return t;e=e.sibling}return null}var Pc=ot.unstable_scheduleCallback,ds=ot.unstable_cancelCallback,rp=ot.unstable_shouldYield,op=ot.unstable_requestPaint,_e=ot.unstable_now,lp=ot.unstable_getCurrentPriorityLevel,Ru=ot.unstable_ImmediatePriority,Ac=ot.unstable_UserBlockingPriority,Jo=ot.unstable_NormalPriority,ip=ot.unstable_LowPriority,Dc=ot.unstable_IdlePriority,xl=null,At=null;function up(e){if(At&&typeof At.onCommitFiberRoot==\"function\")try{At.onCommitFiberRoot(xl,e,void 0,(e.current.flags&128)===128)}catch{}}var kt=Math.clz32?Math.clz32:cp,ap=Math.log,sp=Math.LN2;function cp(e){return e>>>=0,e===0?32:31-(ap(e)/sp|0)|0}var Co=64,Ro=4194304;function Pr(e){switch(e&-e){case 1:return 1;case 2:return 2;case 4:return 4;case 8:return 8;case 16:return 16;case 32:return 32;case 64:case 128:case 256:case 512:case 1024:case 2048:case 4096:case 8192:case 16384:case 32768:case 65536:case 131072:case 262144:case 524288:case 1048576:case 2097152:return e&4194240;case 4194304:case 8388608:case 16777216:case 33554432:case 67108864:return e&130023424;case 134217728:return 134217728;case 268435456:return 268435456;case 536870912:return 536870912;case 1073741824:return 1073741824;default:return e}}function el(e,t){var n=e.pendingLanes;if(n===0)return 0;var r=0,o=e.suspendedLanes,l=e.pingedLanes,i=n&268435455;if(i!==0){var a=i&~o;a!==0?r=Pr(a):(l&=i,l!==0&&(r=Pr(l)))}else i=n&~o,i!==0?r=Pr(i):l!==0&&(r=Pr(l));if(r===0)return 0;if(t!==0&&t!==r&&(t&o)===0&&(o=r&-r,l=t&-t,o>=l||o===16&&(l&4194240)!==0))return t;if((r&4)!==0&&(r|=n&16),t=e.entangledLanes,t!==0)for(e=e.entanglements,t&=r;0<t;)n=31-kt(t),o=1<<n,r|=e[n],t&=~o;return r}function fp(e,t){switch(e){case 1:case 2:case 4:return t+250;case 8:case 16:case 32:case 64:case 128:case 256:case 512:case 1024:case 2048:case 4096:case 8192:case 16384:case 32768:case 65536:case 131072:case 262144:case 524288:case 1048576:case 2097152:return t+5e3;case 4194304:case 8388608:case 16777216:case 33554432:case 67108864:return-1;case 134217728:case 268435456:case 536870912:case 1073741824:return-1;default:return-1}}function dp(e,t){for(var n=e.suspendedLanes,r=e.pingedLanes,o=e.expirationTimes,l=e.pendingLanes;0<l;){var i=31-kt(l),a=1<<i,s=o[i];s===-1?((a&n)===0||(a&r)!==0)&&(o[i]=fp(a,t)):s<=t&&(e.expiredLanes|=a),l&=~a}}function Wi(e){return e=e.pendingLanes&-1073741825,e!==0?e:e&1073741824?1073741824:0}function Lc(){var e=Co;return Co<<=1,(Co&4194240)===0&&(Co=64),e}function ai(e){for(var t=[],n=0;31>n;n++)t.push(e);return t}function ro(e,t,n){e.pendingLanes|=t,t!==536870912&&(e.suspendedLanes=0,e.pingedLanes=0),e=e.eventTimes,t=31-kt(t),e[t]=n}function pp(e,t){var n=e.pendingLanes&~t;e.pendingLanes=t,e.suspendedLanes=0,e.pingedLanes=0,e.expiredLanes&=t,e.mutableReadLanes&=t,e.entangledLanes&=t,t=e.entanglements;var r=e.eventTimes;for(e=e.expirationTimes;0<n;){var o=31-kt(n),l=1<<o;t[o]=0,r[o]=-1,e[o]=-1,n&=~l}}function Nu(e,t){var n=e.entangledLanes|=t;for(e=e.entanglements;n;){var r=31-kt(n),o=1<<r;o&t|e[r]&t&&(e[r]|=t),n&=~o}}var ie=0;function Mc(e){return e&=-e,1<e?4<e?(e&268435455)!==0?16:536870912:4:1}var zc,_u,Ic,Oc,Fc,Vi=!1,No=[],Jt=null,en=null,tn=null,Vr=new Map,$r=new Map,qt=[],mp=\"mousedown mouseup touchcancel touchend touchstart auxclick dblclick pointercancel pointerdown pointerup dragend dragstart drop compositionend compositionstart keydown keypress keyup input textInput copy cut paste click change contextmenu reset submit\".split(\" \");function ps(e,t){switch(e){case\"focusin\":case\"focusout\":Jt=null;break;case\"dragenter\":case\"dragleave\":en=null;break;case\"mouseover\":case\"mouseout\":tn=null;break;case\"pointerover\":case\"pointerout\":Vr.delete(t.pointerId);break;case\"gotpointercapture\":case\"lostpointercapture\":$r.delete(t.pointerId)}}function xr(e,t,n,r,o,l){return e===null||e.nativeEvent!==l?(e={blockedOn:t,domEventName:n,eventSystemFlags:r,nativeEvent:l,targetContainers:[o]},t!==null&&(t=lo(t),t!==null&&_u(t)),e):(e.eventSystemFlags|=r,t=e.targetContainers,o!==null&&t.indexOf(o)===-1&&t.push(o),e)}function hp(e,t,n,r,o){switch(t){case\"focusin\":return Jt=xr(Jt,e,t,n,r,o),!0;case\"dragenter\":return en=xr(en,e,t,n,r,o),!0;case\"mouseover\":return tn=xr(tn,e,t,n,r,o),!0;case\"pointerover\":var l=o.pointerId;return Vr.set(l,xr(Vr.get(l)||null,e,t,n,r,o)),!0;case\"gotpointercapture\":return l=o.pointerId,$r.set(l,xr($r.get(l)||null,e,t,n,r,o)),!0}return!1}function jc(e){var t=Sn(e.target);if(t!==null){var n=Mn(t);if(n!==null){if(t=n.tag,t===13){if(t=Nc(n),t!==null){e.blockedOn=t,Fc(e.priority,function(){Ic(n)});return}}else if(t===3&&n.stateNode.current.memoizedState.isDehydrated){e.blockedOn=n.tag===3?n.stateNode.containerInfo:null;return}}}e.blockedOn=null}function Ho(e){if(e.blockedOn!==null)return!1;for(var t=e.targetContainers;0<t.length;){var n=$i(e.domEventName,e.eventSystemFlags,t[0],e.nativeEvent);if(n===null){n=e.nativeEvent;var r=new n.constructor(n.type,n);ji=r,n.target.dispatchEvent(r),ji=null}else return t=lo(n),t!==null&&_u(t),e.blockedOn=n,!1;t.shift()}return!0}function ms(e,t,n){Ho(e)&&n.delete(t)}function gp(){Vi=!1,Jt!==null&&Ho(Jt)&&(Jt=null),en!==null&&Ho(en)&&(en=null),tn!==null&&Ho(tn)&&(tn=null),Vr.forEach(ms),$r.forEach(ms)}function kr(e,t){e.blockedOn===t&&(e.blockedOn=null,Vi||(Vi=!0,ot.unstable_scheduleCallback(ot.unstable_NormalPriority,gp)))}function Qr(e){function t(o){return kr(o,e)}if(0<No.length){kr(No[0],e);for(var n=1;n<No.length;n++){var r=No[n];r.blockedOn===e&&(r.blockedOn=null)}}for(Jt!==null&&kr(Jt,e),en!==null&&kr(en,e),tn!==null&&kr(tn,e),Vr.forEach(t),$r.forEach(t),n=0;n<qt.length;n++)r=qt[n],r.blockedOn===e&&(r.blockedOn=null);for(;0<qt.length&&(n=qt[0],n.blockedOn===null);)jc(n),n.blockedOn===null&&qt.shift()}var tr=$t.ReactCurrentBatchConfig,tl=!0;function yp(e,t,n,r){var o=ie,l=tr.transition;tr.transition=null;try{ie=1,Tu(e,t,n,r)}finally{ie=o,tr.transition=l}}function vp(e,t,n,r){var o=ie,l=tr.transition;tr.transition=null;try{ie=4,Tu(e,t,n,r)}finally{ie=o,tr.transition=l}}function Tu(e,t,n,r){if(tl){var o=$i(e,t,n,r);if(o===null)hi(e,t,r,nl,n),ps(e,r);else if(hp(o,e,t,n,r))r.stopPropagation();else if(ps(e,r),t&4&&-1<mp.indexOf(e)){for(;o!==null;){var l=lo(o);if(l!==null&&zc(l),l=$i(e,t,n,r),l===null&&hi(e,t,r,nl,n),l===o)break;o=l}o!==null&&r.stopPropagation()}else hi(e,t,r,null,n)}}var nl=null;function $i(e,t,n,r){if(nl=null,e=Cu(r),e=Sn(e),e!==null)if(t=Mn(e),t===null)e=null;else if(n=t.tag,n===13){if(e=Nc(t),e!==null)return e;e=null}else if(n===3){if(t.stateNode.current.memoizedState.isDehydrated)return t.tag===3?t.stateNode.containerInfo:null;e=null}else t!==e&&(e=null);return nl=e,null}function Uc(e){switch(e){case\"cancel\":case\"click\":case\"close\":case\"contextmenu\":case\"copy\":case\"cut\":case\"auxclick\":case\"dblclick\":case\"dragend\":case\"dragstart\":case\"drop\":case\"focusin\":case\"focusout\":case\"input\":case\"invalid\":case\"keydown\":case\"keypress\":case\"keyup\":case\"mousedown\":case\"mouseup\":case\"paste\":case\"pause\":case\"play\":case\"pointercancel\":case\"pointerdown\":case\"pointerup\":case\"ratechange\":case\"reset\":case\"resize\":case\"seeked\":case\"submit\":case\"touchcancel\":case\"touchend\":case\"touchstart\":case\"volumechange\":case\"change\":case\"selectionchange\":case\"textInput\":case\"compositionstart\":case\"compositionend\":case\"compositionupdate\":case\"beforeblur\":case\"afterblur\":case\"beforeinput\":case\"blur\":case\"fullscreenchange\":case\"focus\":case\"hashchange\":case\"popstate\":case\"select\":case\"selectstart\":return 1;case\"drag\":case\"dragenter\":case\"dragexit\":case\"dragleave\":case\"dragover\":case\"mousemove\":case\"mouseout\":case\"mouseover\":case\"pointermove\":case\"pointerout\":case\"pointerover\":case\"scroll\":case\"toggle\":case\"touchmove\":case\"wheel\":case\"mouseenter\":case\"mouseleave\":case\"pointerenter\":case\"pointerleave\":return 4;case\"message\":switch(lp()){case Ru:return 1;case Ac:return 4;case Jo:case ip:return 16;case Dc:return 536870912;default:return 16}default:return 16}}var Zt=null,Pu=null,Bo=null;function Hc(){if(Bo)return Bo;var e,t=Pu,n=t.length,r,o=\"value\"in Zt?Zt.value:Zt.textContent,l=o.length;for(e=0;e<n&&t[e]===o[e];e++);var i=n-e;for(r=1;r<=i&&t[n-r]===o[l-r];r++);return Bo=o.slice(e,1<r?1-r:void 0)}function Wo(e){var t=e.keyCode;return\"charCode\"in e?(e=e.charCode,e===0&&t===13&&(e=13)):e=t,e===10&&(e=13),32<=e||e===13?e:0}function _o(){return!0}function hs(){return!1}function lt(e){function t(n,r,o,l,i){this._reactName=n,this._targetInst=o,this.type=r,this.nativeEvent=l,this.target=i,this.currentTarget=null;for(var a in e)e.hasOwnProperty(a)&&(n=e[a],this[a]=n?n(l):l[a]);return this.isDefaultPrevented=(l.defaultPrevented!=null?l.defaultPrevented:l.returnValue===!1)?_o:hs,this.isPropagationStopped=hs,this}return Se(t.prototype,{preventDefault:function(){this.defaultPrevented=!0;var n=this.nativeEvent;n&&(n.preventDefault?n.preventDefault():typeof n.returnValue!=\"unknown\"&&(n.returnValue=!1),this.isDefaultPrevented=_o)},stopPropagation:function(){var n=this.nativeEvent;n&&(n.stopPropagation?n.stopPropagation():typeof n.cancelBubble!=\"unknown\"&&(n.cancelBubble=!0),this.isPropagationStopped=_o)},persist:function(){},isPersistent:_o}),t}var fr={eventPhase:0,bubbles:0,cancelable:0,timeStamp:function(e){return e.timeStamp||Date.now()},defaultPrevented:0,isTrusted:0},Au=lt(fr),oo=Se({},fr,{view:0,detail:0}),wp=lt(oo),si,ci,Sr,kl=Se({},oo,{screenX:0,screenY:0,clientX:0,clientY:0,pageX:0,pageY:0,ctrlKey:0,shiftKey:0,altKey:0,metaKey:0,getModifierState:Du,button:0,buttons:0,relatedTarget:function(e){return e.relatedTarget===void 0?e.fromElement===e.srcElement?e.toElement:e.fromElement:e.relatedTarget},movementX:function(e){return\"movementX\"in e?e.movementX:(e!==Sr&&(Sr&&e.type===\"mousemove\"?(si=e.screenX-Sr.screenX,ci=e.screenY-Sr.screenY):ci=si=0,Sr=e),si)},movementY:function(e){return\"movementY\"in e?e.movementY:ci}}),gs=lt(kl),xp=Se({},kl,{dataTransfer:0}),kp=lt(xp),Sp=Se({},oo,{relatedTarget:0}),fi=lt(Sp),Ep=Se({},fr,{animationName:0,elapsedTime:0,pseudoElement:0}),Cp=lt(Ep),Rp=Se({},fr,{clipboardData:function(e){return\"clipboardData\"in e?e.clipboardData:window.clipboardData}}),Np=lt(Rp),_p=Se({},fr,{data:0}),ys=lt(_p),Tp={Esc:\"Escape\",Spacebar:\" \",Left:\"ArrowLeft\",Up:\"ArrowUp\",Right:\"ArrowRight\",Down:\"ArrowDown\",Del:\"Delete\",Win:\"OS\",Menu:\"ContextMenu\",Apps:\"ContextMenu\",Scroll:\"ScrollLock\",MozPrintableKey:\"Unidentified\"},Pp={8:\"Backspace\",9:\"Tab\",12:\"Clear\",13:\"Enter\",16:\"Shift\",17:\"Control\",18:\"Alt\",19:\"Pause\",20:\"CapsLock\",27:\"Escape\",32:\" \",33:\"PageUp\",34:\"PageDown\",35:\"End\",36:\"Home\",37:\"ArrowLeft\",38:\"ArrowUp\",39:\"ArrowRight\",40:\"ArrowDown\",45:\"Insert\",46:\"Delete\",112:\"F1\",113:\"F2\",114:\"F3\",115:\"F4\",116:\"F5\",117:\"F6\",118:\"F7\",119:\"F8\",120:\"F9\",121:\"F10\",122:\"F11\",123:\"F12\",144:\"NumLock\",145:\"ScrollLock\",224:\"Meta\"},Ap={Alt:\"altKey\",Control:\"ctrlKey\",Meta:\"metaKey\",Shift:\"shiftKey\"};function Dp(e){var t=this.nativeEvent;return t.getModifierState?t.getModifierState(e):(e=Ap[e])?!!t[e]:!1}function Du(){return Dp}var Lp=Se({},oo,{key:function(e){if(e.key){var t=Tp[e.key]||e.key;if(t!==\"Unidentified\")return t}return e.type===\"keypress\"?(e=Wo(e),e===13?\"Enter\":String.fromCharCode(e)):e.type===\"keydown\"||e.type===\"keyup\"?Pp[e.keyCode]||\"Unidentified\":\"\"},code:0,location:0,ctrlKey:0,shiftKey:0,altKey:0,metaKey:0,repeat:0,locale:0,getModifierState:Du,charCode:function(e){return e.type===\"keypress\"?Wo(e):0},keyCode:function(e){return e.type===\"keydown\"||e.type===\"keyup\"?e.keyCode:0},which:function(e){return e.type===\"keypress\"?Wo(e):e.type===\"keydown\"||e.type===\"keyup\"?e.keyCode:0}}),Mp=lt(Lp),zp=Se({},kl,{pointerId:0,width:0,height:0,pressure:0,tangentialPressure:0,tiltX:0,tiltY:0,twist:0,pointerType:0,isPrimary:0}),vs=lt(zp),Ip=Se({},oo,{touches:0,targetTouches:0,changedTouches:0,altKey:0,metaKey:0,ctrlKey:0,shiftKey:0,getModifierState:Du}),Op=lt(Ip),Fp=Se({},fr,{propertyName:0,elapsedTime:0,pseudoElement:0}),jp=lt(Fp),Up=Se({},kl,{deltaX:function(e){return\"deltaX\"in e?e.deltaX:\"wheelDeltaX\"in e?-e.wheelDeltaX:0},deltaY:function(e){return\"deltaY\"in e?e.deltaY:\"wheelDeltaY\"in e?-e.wheelDeltaY:\"wheelDelta\"in e?-e.wheelDelta:0},deltaZ:0,deltaMode:0}),Hp=lt(Up),Bp=[9,13,27,32],Lu=Ht&&\"CompositionEvent\"in window,Mr=null;Ht&&\"documentMode\"in document&&(Mr=document.documentMode);var Wp=Ht&&\"TextEvent\"in window&&!Mr,Bc=Ht&&(!Lu||Mr&&8<Mr&&11>=Mr),ws=\" \",xs=!1;function Wc(e,t){switch(e){case\"keyup\":return Bp.indexOf(t.keyCode)!==-1;case\"keydown\":return t.keyCode!==229;case\"keypress\":case\"mousedown\":case\"focusout\":return!0;default:return!1}}function Vc(e){return e=e.detail,typeof e==\"object\"&&\"data\"in e?e.data:null}var Wn=!1;function Vp(e,t){switch(e){case\"compositionend\":return Vc(t);case\"keypress\":return t.which!==32?null:(xs=!0,ws);case\"textInput\":return e=t.data,e===ws&&xs?null:e;default:return null}}function $p(e,t){if(Wn)return e===\"compositionend\"||!Lu&&Wc(e,t)?(e=Hc(),Bo=Pu=Zt=null,Wn=!1,e):null;switch(e){case\"paste\":return null;case\"keypress\":if(!(t.ctrlKey||t.altKey||t.metaKey)||t.ctrlKey&&t.altKey){if(t.char&&1<t.char.length)return t.char;if(t.which)return String.fromCharCode(t.which)}return null;case\"compositionend\":return Bc&&t.locale!==\"ko\"?null:t.data;default:return null}}var Qp={color:!0,date:!0,datetime:!0,\"datetime-local\":!0,email:!0,month:!0,number:!0,password:!0,range:!0,search:!0,tel:!0,text:!0,time:!0,url:!0,week:!0};function ks(e){var t=e&&e.nodeName&&e.nodeName.toLowerCase();return t===\"input\"?!!Qp[e.type]:t===\"textarea\"}function $c(e,t,n,r){kc(r),t=rl(t,\"onChange\"),0<t.length&&(n=new Au(\"onChange\",\"change\",null,n,r),e.push({event:n,listeners:t}))}var zr=null,Kr=null;function Kp(e){tf(e,0)}function Sl(e){var t=Qn(e);if(mc(t))return e}function Yp(e,t){if(e===\"change\")return t}var Qc=!1;Ht&&(Ht?(Po=\"oninput\"in document,Po||(di=document.createElement(\"div\"),di.setAttribute(\"oninput\",\"return;\"),Po=typeof di.oninput==\"function\"),To=Po):To=!1,Qc=To&&(!document.documentMode||9<document.documentMode));var To,Po,di;function Ss(){zr&&(zr.detachEvent(\"onpropertychange\",Kc),Kr=zr=null)}function Kc(e){if(e.propertyName===\"value\"&&Sl(Kr)){var t=[];$c(t,Kr,e,Cu(e)),Rc(Kp,t)}}function Xp(e,t,n){e===\"focusin\"?(Ss(),zr=t,Kr=n,zr.attachEvent(\"onpropertychange\",Kc)):e===\"focusout\"&&Ss()}function qp(e){if(e===\"selectionchange\"||e===\"keyup\"||e===\"keydown\")return Sl(Kr)}function Gp(e,t){if(e===\"click\")return Sl(t)}function Zp(e,t){if(e===\"input\"||e===\"change\")return Sl(t)}function bp(e,t){return e===t&&(e!==0||1/e===1/t)||e!==e&&t!==t}var Et=typeof Object.is==\"function\"?Object.is:bp;function Yr(e,t){if(Et(e,t))return!0;if(typeof e!=\"object\"||e===null||typeof t!=\"object\"||t===null)return!1;var n=Object.keys(e),r=Object.keys(t);if(n.length!==r.length)return!1;for(r=0;r<n.length;r++){var o=n[r];if(!Ni.call(t,o)||!Et(e[o],t[o]))return!1}return!0}function Es(e){for(;e&&e.firstChild;)e=e.firstChild;return e}function Cs(e,t){var n=Es(e);e=0;for(var r;n;){if(n.nodeType===3){if(r=e+n.textContent.length,e<=t&&r>=t)return{node:n,offset:t-e};e=r}e:{for(;n;){if(n.nextSibling){n=n.nextSibling;break e}n=n.parentNode}n=void 0}n=Es(n)}}function Yc(e,t){return e&&t?e===t?!0:e&&e.nodeType===3?!1:t&&t.nodeType===3?Yc(e,t.parentNode):\"contains\"in e?e.contains(t):e.compareDocumentPosition?!!(e.compareDocumentPosition(t)&16):!1:!1}function Xc(){for(var e=window,t=Go();t instanceof e.HTMLIFrameElement;){try{var n=typeof t.contentWindow.location.href==\"string\"}catch{n=!1}if(n)e=t.contentWindow;else break;t=Go(e.document)}return t}function Mu(e){var t=e&&e.nodeName&&e.nodeName.toLowerCase();return t&&(t===\"input\"&&(e.type===\"text\"||e.type===\"search\"||e.type===\"tel\"||e.type===\"url\"||e.type===\"password\")||t===\"textarea\"||e.contentEditable===\"true\")}function Jp(e){var t=Xc(),n=e.focusedElem,r=e.selectionRange;if(t!==n&&n&&n.ownerDocument&&Yc(n.ownerDocument.documentElement,n)){if(r!==null&&Mu(n)){if(t=r.start,e=r.end,e===void 0&&(e=t),\"selectionStart\"in n)n.selectionStart=t,n.selectionEnd=Math.min(e,n.value.length);else if(e=(t=n.ownerDocument||document)&&t.defaultView||window,e.getSelection){e=e.getSelection();var o=n.textContent.length,l=Math.min(r.start,o);r=r.end===void 0?l:Math.min(r.end,o),!e.extend&&l>r&&(o=r,r=l,l=o),o=Cs(n,l);var i=Cs(n,r);o&&i&&(e.rangeCount!==1||e.anchorNode!==o.node||e.anchorOffset!==o.offset||e.focusNode!==i.node||e.focusOffset!==i.offset)&&(t=t.createRange(),t.setStart(o.node,o.offset),e.removeAllRanges(),l>r?(e.addRange(t),e.extend(i.node,i.offset)):(t.setEnd(i.node,i.offset),e.addRange(t)))}}for(t=[],e=n;e=e.parentNode;)e.nodeType===1&&t.push({element:e,left:e.scrollLeft,top:e.scrollTop});for(typeof n.focus==\"function\"&&n.focus(),n=0;n<t.length;n++)e=t[n],e.element.scrollLeft=e.left,e.element.scrollTop=e.top}}var em=Ht&&\"documentMode\"in document&&11>=document.documentMode,Vn=null,Qi=null,Ir=null,Ki=!1;function Rs(e,t,n){var r=n.window===n?n.document:n.nodeType===9?n:n.ownerDocument;Ki||Vn==null||Vn!==Go(r)||(r=Vn,\"selectionStart\"in r&&Mu(r)?r={start:r.selectionStart,end:r.selectionEnd}:(r=(r.ownerDocument&&r.ownerDocument.defaultView||window).getSelection(),r={anchorNode:r.anchorNode,anchorOffset:r.anchorOffset,focusNode:r.focusNode,focusOffset:r.focusOffset}),Ir&&Yr(Ir,r)||(Ir=r,r=rl(Qi,\"onSelect\"),0<r.length&&(t=new Au(\"onSelect\",\"select\",null,t,n),e.push({event:t,listeners:r}),t.target=Vn)))}function Ao(e,t){var n={};return n[e.toLowerCase()]=t.toLowerCase(),n[\"Webkit\"+e]=\"webkit\"+t,n[\"Moz\"+e]=\"moz\"+t,n}var $n={animationend:Ao(\"Animation\",\"AnimationEnd\"),animationiteration:Ao(\"Animation\",\"AnimationIteration\"),animationstart:Ao(\"Animation\",\"AnimationStart\"),transitionend:Ao(\"Transition\",\"TransitionEnd\")},pi={},qc={};Ht&&(qc=document.createElement(\"div\").style,\"AnimationEvent\"in window||(delete $n.animationend.animation,delete $n.animationiteration.animation,delete $n.animationstart.animation),\"TransitionEvent\"in window||delete $n.transitionend.transition);function El(e){if(pi[e])return pi[e];if(!$n[e])return e;var t=$n[e],n;for(n in t)if(t.hasOwnProperty(n)&&n in qc)return pi[e]=t[n];return e}var Gc=El(\"animationend\"),Zc=El(\"animationiteration\"),bc=El(\"animationstart\"),Jc=El(\"transitionend\"),ef=new Map,Ns=\"abort auxClick cancel canPlay canPlayThrough click close contextMenu copy cut drag dragEnd dragEnter dragExit dragLeave dragOver dragStart drop durationChange emptied encrypted ended error gotPointerCapture input invalid keyDown keyPress keyUp load loadedData loadedMetadata loadStart lostPointerCapture mouseDown mouseMove mouseOut mouseOver mouseUp paste pause play playing pointerCancel pointerDown pointerMove pointerOut pointerOver pointerUp progress rateChange reset resize seeked seeking stalled submit suspend timeUpdate touchCancel touchEnd touchStart volumeChange scroll toggle touchMove waiting wheel\".split(\" \");function cn(e,t){ef.set(e,t),Ln(t,[e])}for(Do=0;Do<Ns.length;Do++)Lo=Ns[Do],_s=Lo.toLowerCase(),Ts=Lo[0].toUpperCase()+Lo.slice(1),cn(_s,\"on\"+Ts);var Lo,_s,Ts,Do;cn(Gc,\"onAnimationEnd\");cn(Zc,\"onAnimationIteration\");cn(bc,\"onAnimationStart\");cn(\"dblclick\",\"onDoubleClick\");cn(\"focusin\",\"onFocus\");cn(\"focusout\",\"onBlur\");cn(Jc,\"onTransitionEnd\");or(\"onMouseEnter\",[\"mouseout\",\"mouseover\"]);or(\"onMouseLeave\",[\"mouseout\",\"mouseover\"]);or(\"onPointerEnter\",[\"pointerout\",\"pointerover\"]);or(\"onPointerLeave\",[\"pointerout\",\"pointerover\"]);Ln(\"onChange\",\"change click focusin focusout input keydown keyup selectionchange\".split(\" \"));Ln(\"onSelect\",\"focusout contextmenu dragend focusin keydown keyup mousedown mouseup selectionchange\".split(\" \"));Ln(\"onBeforeInput\",[\"compositionend\",\"keypress\",\"textInput\",\"paste\"]);Ln(\"onCompositionEnd\",\"compositionend focusout keydown keypress keyup mousedown\".split(\" \"));Ln(\"onCompositionStart\",\"compositionstart focusout keydown keypress keyup mousedown\".split(\" \"));Ln(\"onCompositionUpdate\",\"compositionupdate focusout keydown keypress keyup mousedown\".split(\" \"));var Ar=\"abort canplay canplaythrough durationchange emptied encrypted ended error loadeddata loadedmetadata loadstart pause play playing progress ratechange resize seeked seeking stalled suspend timeupdate volumechange waiting\".split(\" \"),tm=new Set(\"cancel close invalid load scroll toggle\".split(\" \").concat(Ar));function Ps(e,t,n){var r=e.type||\"unknown-event\";e.currentTarget=n,tp(r,t,void 0,e),e.currentTarget=null}function tf(e,t){t=(t&4)!==0;for(var n=0;n<e.length;n++){var r=e[n],o=r.event;r=r.listeners;e:{var l=void 0;if(t)for(var i=r.length-1;0<=i;i--){var a=r[i],s=a.instance,y=a.currentTarget;if(a=a.listener,s!==l&&o.isPropagationStopped())break e;Ps(o,a,y),l=s}else for(i=0;i<r.length;i++){if(a=r[i],s=a.instance,y=a.currentTarget,a=a.listener,s!==l&&o.isPropagationStopped())break e;Ps(o,a,y),l=s}}}if(bo)throw e=Bi,bo=!1,Bi=null,e}function pe(e,t){var n=t[Zi];n===void 0&&(n=t[Zi]=new Set);var r=e+\"__bubble\";n.has(r)||(nf(t,e,2,!1),n.add(r))}function mi(e,t,n){var r=0;t&&(r|=4),nf(n,e,r,t)}var Mo=\"_reactListening\"+Math.random().toString(36).slice(2);function Xr(e){if(!e[Mo]){e[Mo]=!0,sc.forEach(function(n){n!==\"selectionchange\"&&(tm.has(n)||mi(n,!1,e),mi(n,!0,e))});var t=e.nodeType===9?e:e.ownerDocument;t===null||t[Mo]||(t[Mo]=!0,mi(\"selectionchange\",!1,t))}}function nf(e,t,n,r){switch(Uc(t)){case 1:var o=yp;break;case 4:o=vp;break;default:o=Tu}n=o.bind(null,t,n,e),o=void 0,!Hi||t!==\"touchstart\"&&t!==\"touchmove\"&&t!==\"wheel\"||(o=!0),r?o!==void 0?e.addEventListener(t,n,{capture:!0,passive:o}):e.addEventListener(t,n,!0):o!==void 0?e.addEventListener(t,n,{passive:o}):e.addEventListener(t,n,!1)}function hi(e,t,n,r,o){var l=r;if((t&1)===0&&(t&2)===0&&r!==null)e:for(;;){if(r===null)return;var i=r.tag;if(i===3||i===4){var a=r.stateNode.containerInfo;if(a===o||a.nodeType===8&&a.parentNode===o)break;if(i===4)for(i=r.return;i!==null;){var s=i.tag;if((s===3||s===4)&&(s=i.stateNode.containerInfo,s===o||s.nodeType===8&&s.parentNode===o))return;i=i.return}for(;a!==null;){if(i=Sn(a),i===null)return;if(s=i.tag,s===5||s===6){r=l=i;continue e}a=a.parentNode}}r=r.return}Rc(function(){var y=l,E=Cu(n),N=[];e:{var C=ef.get(e);if(C!==void 0){var L=Au,O=e;switch(e){case\"keypress\":if(Wo(n)===0)break e;case\"keydown\":case\"keyup\":L=Mp;break;case\"focusin\":O=\"focus\",L=fi;break;case\"focusout\":O=\"blur\",L=fi;break;case\"beforeblur\":case\"afterblur\":L=fi;break;case\"click\":if(n.button===2)break e;case\"auxclick\":case\"dblclick\":case\"mousedown\":case\"mousemove\":case\"mouseup\":case\"mouseout\":case\"mouseover\":case\"contextmenu\":L=gs;break;case\"drag\":case\"dragend\":case\"dragenter\":case\"dragexit\":case\"dragleave\":case\"dragover\":case\"dragstart\":case\"drop\":L=kp;break;case\"touchcancel\":case\"touchend\":case\"touchmove\":case\"touchstart\":L=Op;break;case Gc:case Zc:case bc:L=Cp;break;case Jc:L=jp;break;case\"scroll\":L=wp;break;case\"wheel\":L=Hp;break;case\"copy\":case\"cut\":case\"paste\":L=Np;break;case\"gotpointercapture\":case\"lostpointercapture\":case\"pointercancel\":case\"pointerdown\":case\"pointermove\":case\"pointerout\":case\"pointerover\":case\"pointerup\":L=vs}var F=(t&4)!==0,he=!F&&e===\"scroll\",h=F?C!==null?C+\"Capture\":null:C;F=[];for(var f=y,v;f!==null;){v=f;var P=v.stateNode;if(v.tag===5&&P!==null&&(v=P,h!==null&&(P=Wr(f,h),P!=null&&F.push(qr(f,P,v)))),he)break;f=f.return}0<F.length&&(C=new L(C,O,null,n,E),N.push({event:C,listeners:F}))}}if((t&7)===0){e:{if(C=e===\"mouseover\"||e===\"pointerover\",L=e===\"mouseout\"||e===\"pointerout\",C&&n!==ji&&(O=n.relatedTarget||n.fromElement)&&(Sn(O)||O[Bt]))break e;if((L||C)&&(C=E.window===E?E:(C=E.ownerDocument)?C.defaultView||C.parentWindow:window,L?(O=n.relatedTarget||n.toElement,L=y,O=O?Sn(O):null,O!==null&&(he=Mn(O),O!==he||O.tag!==5&&O.tag!==6)&&(O=null)):(L=null,O=y),L!==O)){if(F=gs,P=\"onMouseLeave\",h=\"onMouseEnter\",f=\"mouse\",(e===\"pointerout\"||e===\"pointerover\")&&(F=vs,P=\"onPointerLeave\",h=\"onPointerEnter\",f=\"pointer\"),he=L==null?C:Qn(L),v=O==null?C:Qn(O),C=new F(P,f+\"leave\",L,n,E),C.target=he,C.relatedTarget=v,P=null,Sn(E)===y&&(F=new F(h,f+\"enter\",O,n,E),F.target=v,F.relatedTarget=he,P=F),he=P,L&&O)t:{for(F=L,h=O,f=0,v=F;v;v=Un(v))f++;for(v=0,P=h;P;P=Un(P))v++;for(;0<f-v;)F=Un(F),f--;for(;0<v-f;)h=Un(h),v--;for(;f--;){if(F===h||h!==null&&F===h.alternate)break t;F=Un(F),h=Un(h)}F=null}else F=null;L!==null&&As(N,C,L,F,!1),O!==null&&he!==null&&As(N,he,O,F,!0)}}e:{if(C=y?Qn(y):window,L=C.nodeName&&C.nodeName.toLowerCase(),L===\"select\"||L===\"input\"&&C.type===\"file\")var H=Yp;else if(ks(C))if(Qc)H=Zp;else{H=qp;var W=Xp}else(L=C.nodeName)&&L.toLowerCase()===\"input\"&&(C.type===\"checkbox\"||C.type===\"radio\")&&(H=Gp);if(H&&(H=H(e,y))){$c(N,H,n,E);break e}W&&W(e,C,y),e===\"focusout\"&&(W=C._wrapperState)&&W.controlled&&C.type===\"number\"&&Mi(C,\"number\",C.value)}switch(W=y?Qn(y):window,e){case\"focusin\":(ks(W)||W.contentEditable===\"true\")&&(Vn=W,Qi=y,Ir=null);break;case\"focusout\":Ir=Qi=Vn=null;break;case\"mousedown\":Ki=!0;break;case\"contextmenu\":case\"mouseup\":case\"dragend\":Ki=!1,Rs(N,n,E);break;case\"selectionchange\":if(em)break;case\"keydown\":case\"keyup\":Rs(N,n,E)}var B;if(Lu)e:{switch(e){case\"compositionstart\":var Q=\"onCompositionStart\";break e;case\"compositionend\":Q=\"onCompositionEnd\";break e;case\"compositionupdate\":Q=\"onCompositionUpdate\";break e}Q=void 0}else Wn?Wc(e,n)&&(Q=\"onCompositionEnd\"):e===\"keydown\"&&n.keyCode===229&&(Q=\"onCompositionStart\");Q&&(Bc&&n.locale!==\"ko\"&&(Wn||Q!==\"onCompositionStart\"?Q===\"onCompositionEnd\"&&Wn&&(B=Hc()):(Zt=E,Pu=\"value\"in Zt?Zt.value:Zt.textContent,Wn=!0)),W=rl(y,Q),0<W.length&&(Q=new ys(Q,e,null,n,E),N.push({event:Q,listeners:W}),B?Q.data=B:(B=Vc(n),B!==null&&(Q.data=B)))),(B=Wp?Vp(e,n):$p(e,n))&&(y=rl(y,\"onBeforeInput\"),0<y.length&&(E=new ys(\"onBeforeInput\",\"beforeinput\",null,n,E),N.push({event:E,listeners:y}),E.data=B))}tf(N,t)})}function qr(e,t,n){return{instance:e,listener:t,currentTarget:n}}function rl(e,t){for(var n=t+\"Capture\",r=[];e!==null;){var o=e,l=o.stateNode;o.tag===5&&l!==null&&(o=l,l=Wr(e,n),l!=null&&r.unshift(qr(e,l,o)),l=Wr(e,t),l!=null&&r.push(qr(e,l,o))),e=e.return}return r}function Un(e){if(e===null)return null;do e=e.return;while(e&&e.tag!==5);return e||null}function As(e,t,n,r,o){for(var l=t._reactName,i=[];n!==null&&n!==r;){var a=n,s=a.alternate,y=a.stateNode;if(s!==null&&s===r)break;a.tag===5&&y!==null&&(a=y,o?(s=Wr(n,l),s!=null&&i.unshift(qr(n,s,a))):o||(s=Wr(n,l),s!=null&&i.push(qr(n,s,a)))),n=n.return}i.length!==0&&e.push({event:t,listeners:i})}var nm=/\\r\\n?/g,rm=/\\u0000|\\uFFFD/g;function Ds(e){return(typeof e==\"string\"?e:\"\"+e).replace(nm,`\n`).replace(rm,\"\")}function zo(e,t,n){if(t=Ds(t),Ds(e)!==t&&n)throw Error(T(425))}function ol(){}var Yi=null,Xi=null;function qi(e,t){return e===\"textarea\"||e===\"noscript\"||typeof t.children==\"string\"||typeof t.children==\"number\"||typeof t.dangerouslySetInnerHTML==\"object\"&&t.dangerouslySetInnerHTML!==null&&t.dangerouslySetInnerHTML.__html!=null}var Gi=typeof setTimeout==\"function\"?setTimeout:void 0,om=typeof clearTimeout==\"function\"?clearTimeout:void 0,Ls=typeof Promise==\"function\"?Promise:void 0,lm=typeof queueMicrotask==\"function\"?queueMicrotask:typeof Ls<\"u\"?function(e){return Ls.resolve(null).then(e).catch(im)}:Gi;function im(e){setTimeout(function(){throw e})}function gi(e,t){var n=t,r=0;do{var o=n.nextSibling;if(e.removeChild(n),o&&o.nodeType===8)if(n=o.data,n===\"/$\"){if(r===0){e.removeChild(o),Qr(t);return}r--}else n!==\"$\"&&n!==\"$?\"&&n!==\"$!\"||r++;n=o}while(n);Qr(t)}function nn(e){for(;e!=null;e=e.nextSibling){var t=e.nodeType;if(t===1||t===3)break;if(t===8){if(t=e.data,t===\"$\"||t===\"$!\"||t===\"$?\")break;if(t===\"/$\")return null}}return e}function Ms(e){e=e.previousSibling;for(var t=0;e;){if(e.nodeType===8){var n=e.data;if(n===\"$\"||n===\"$!\"||n===\"$?\"){if(t===0)return e;t--}else n===\"/$\"&&t++}e=e.previousSibling}return null}var dr=Math.random().toString(36).slice(2),Pt=\"__reactFiber$\"+dr,Gr=\"__reactProps$\"+dr,Bt=\"__reactContainer$\"+dr,Zi=\"__reactEvents$\"+dr,um=\"__reactListeners$\"+dr,am=\"__reactHandles$\"+dr;function Sn(e){var t=e[Pt];if(t)return t;for(var n=e.parentNode;n;){if(t=n[Bt]||n[Pt]){if(n=t.alternate,t.child!==null||n!==null&&n.child!==null)for(e=Ms(e);e!==null;){if(n=e[Pt])return n;e=Ms(e)}return t}e=n,n=e.parentNode}return null}function lo(e){return e=e[Pt]||e[Bt],!e||e.tag!==5&&e.tag!==6&&e.tag!==13&&e.tag!==3?null:e}function Qn(e){if(e.tag===5||e.tag===6)return e.stateNode;throw Error(T(33))}function Cl(e){return e[Gr]||null}var bi=[],Kn=-1;function fn(e){return{current:e}}function me(e){0>Kn||(e.current=bi[Kn],bi[Kn]=null,Kn--)}function fe(e,t){Kn++,bi[Kn]=e.current,e.current=t}var sn={},Be=fn(sn),Ge=fn(!1),_n=sn;function lr(e,t){var n=e.type.contextTypes;if(!n)return sn;var r=e.stateNode;if(r&&r.__reactInternalMemoizedUnmaskedChildContext===t)return r.__reactInternalMemoizedMaskedChildContext;var o={},l;for(l in n)o[l]=t[l];return r&&(e=e.stateNode,e.__reactInternalMemoizedUnmaskedChildContext=t,e.__reactInternalMemoizedMaskedChildContext=o),o}function Ze(e){return e=e.childContextTypes,e!=null}function ll(){me(Ge),me(Be)}function zs(e,t,n){if(Be.current!==sn)throw Error(T(168));fe(Be,t),fe(Ge,n)}function rf(e,t,n){var r=e.stateNode;if(t=t.childContextTypes,typeof r.getChildContext!=\"function\")return n;r=r.getChildContext();for(var o in r)if(!(o in t))throw Error(T(108,Xd(e)||\"Unknown\",o));return Se({},n,r)}function il(e){return e=(e=e.stateNode)&&e.__reactInternalMemoizedMergedChildContext||sn,_n=Be.current,fe(Be,e),fe(Ge,Ge.current),!0}function Is(e,t,n){var r=e.stateNode;if(!r)throw Error(T(169));n?(e=rf(e,t,_n),r.__reactInternalMemoizedMergedChildContext=e,me(Ge),me(Be),fe(Be,e)):me(Ge),fe(Ge,n)}var Ot=null,Rl=!1,yi=!1;function of(e){Ot===null?Ot=[e]:Ot.push(e)}function sm(e){Rl=!0,of(e)}function dn(){if(!yi&&Ot!==null){yi=!0;var e=0,t=ie;try{var n=Ot;for(ie=1;e<n.length;e++){var r=n[e];do r=r(!0);while(r!==null)}Ot=null,Rl=!1}catch(o){throw Ot!==null&&(Ot=Ot.slice(e+1)),Pc(Ru,dn),o}finally{ie=t,yi=!1}}return null}var Yn=[],Xn=0,ul=null,al=0,ct=[],ft=0,Tn=null,Ft=1,jt=\"\";function xn(e,t){Yn[Xn++]=al,Yn[Xn++]=ul,ul=e,al=t}function lf(e,t,n){ct[ft++]=Ft,ct[ft++]=jt,ct[ft++]=Tn,Tn=e;var r=Ft;e=jt;var o=32-kt(r)-1;r&=~(1<<o),n+=1;var l=32-kt(t)+o;if(30<l){var i=o-o%5;l=(r&(1<<i)-1).toString(32),r>>=i,o-=i,Ft=1<<32-kt(t)+o|n<<o|r,jt=l+e}else Ft=1<<l|n<<o|r,jt=e}function zu(e){e.return!==null&&(xn(e,1),lf(e,1,0))}function Iu(e){for(;e===ul;)ul=Yn[--Xn],Yn[Xn]=null,al=Yn[--Xn],Yn[Xn]=null;for(;e===Tn;)Tn=ct[--ft],ct[ft]=null,jt=ct[--ft],ct[ft]=null,Ft=ct[--ft],ct[ft]=null}var rt=null,nt=null,ye=!1,xt=null;function uf(e,t){var n=dt(5,null,null,0);n.elementType=\"DELETED\",n.stateNode=t,n.return=e,t=e.deletions,t===null?(e.deletions=[n],e.flags|=16):t.push(n)}function Os(e,t){switch(e.tag){case 5:var n=e.type;return t=t.nodeType!==1||n.toLowerCase()!==t.nodeName.toLowerCase()?null:t,t!==null?(e.stateNode=t,rt=e,nt=nn(t.firstChild),!0):!1;case 6:return t=e.pendingProps===\"\"||t.nodeType!==3?null:t,t!==null?(e.stateNode=t,rt=e,nt=null,!0):!1;case 13:return t=t.nodeType!==8?null:t,t!==null?(n=Tn!==null?{id:Ft,overflow:jt}:null,e.memoizedState={dehydrated:t,treeContext:n,retryLane:1073741824},n=dt(18,null,null,0),n.stateNode=t,n.return=e,e.child=n,rt=e,nt=null,!0):!1;default:return!1}}function Ji(e){return(e.mode&1)!==0&&(e.flags&128)===0}function eu(e){if(ye){var t=nt;if(t){var n=t;if(!Os(e,t)){if(Ji(e))throw Error(T(418));t=nn(n.nextSibling);var r=rt;t&&Os(e,t)?uf(r,n):(e.flags=e.flags&-4097|2,ye=!1,rt=e)}}else{if(Ji(e))throw Error(T(418));e.flags=e.flags&-4097|2,ye=!1,rt=e}}}function Fs(e){for(e=e.return;e!==null&&e.tag!==5&&e.tag!==3&&e.tag!==13;)e=e.return;rt=e}function Io(e){if(e!==rt)return!1;if(!ye)return Fs(e),ye=!0,!1;var t;if((t=e.tag!==3)&&!(t=e.tag!==5)&&(t=e.type,t=t!==\"head\"&&t!==\"body\"&&!qi(e.type,e.memoizedProps)),t&&(t=nt)){if(Ji(e))throw af(),Error(T(418));for(;t;)uf(e,t),t=nn(t.nextSibling)}if(Fs(e),e.tag===13){if(e=e.memoizedState,e=e!==null?e.dehydrated:null,!e)throw Error(T(317));e:{for(e=e.nextSibling,t=0;e;){if(e.nodeType===8){var n=e.data;if(n===\"/$\"){if(t===0){nt=nn(e.nextSibling);break e}t--}else n!==\"$\"&&n!==\"$!\"&&n!==\"$?\"||t++}e=e.nextSibling}nt=null}}else nt=rt?nn(e.stateNode.nextSibling):null;return!0}function af(){for(var e=nt;e;)e=nn(e.nextSibling)}function ir(){nt=rt=null,ye=!1}function Ou(e){xt===null?xt=[e]:xt.push(e)}var cm=$t.ReactCurrentBatchConfig;function Er(e,t,n){if(e=n.ref,e!==null&&typeof e!=\"function\"&&typeof e!=\"object\"){if(n._owner){if(n=n._owner,n){if(n.tag!==1)throw Error(T(309));var r=n.stateNode}if(!r)throw Error(T(147,e));var o=r,l=\"\"+e;return t!==null&&t.ref!==null&&typeof t.ref==\"function\"&&t.ref._stringRef===l?t.ref:(t=function(i){var a=o.refs;i===null?delete a[l]:a[l]=i},t._stringRef=l,t)}if(typeof e!=\"string\")throw Error(T(284));if(!n._owner)throw Error(T(290,e))}return e}function Oo(e,t){throw e=Object.prototype.toString.call(t),Error(T(31,e===\"[object Object]\"?\"object with keys {\"+Object.keys(t).join(\", \")+\"}\":e))}function js(e){var t=e._init;return t(e._payload)}function sf(e){function t(h,f){if(e){var v=h.deletions;v===null?(h.deletions=[f],h.flags|=16):v.push(f)}}function n(h,f){if(!e)return null;for(;f!==null;)t(h,f),f=f.sibling;return null}function r(h,f){for(h=new Map;f!==null;)f.key!==null?h.set(f.key,f):h.set(f.index,f),f=f.sibling;return h}function o(h,f){return h=un(h,f),h.index=0,h.sibling=null,h}function l(h,f,v){return h.index=v,e?(v=h.alternate,v!==null?(v=v.index,v<f?(h.flags|=2,f):v):(h.flags|=2,f)):(h.flags|=1048576,f)}function i(h){return e&&h.alternate===null&&(h.flags|=2),h}function a(h,f,v,P){return f===null||f.tag!==6?(f=Ci(v,h.mode,P),f.return=h,f):(f=o(f,v),f.return=h,f)}function s(h,f,v,P){var H=v.type;return H===Bn?E(h,f,v.props.children,P,v.key):f!==null&&(f.elementType===H||typeof H==\"object\"&&H!==null&&H.$$typeof===Yt&&js(H)===f.type)?(P=o(f,v.props),P.ref=Er(h,f,v),P.return=h,P):(P=qo(v.type,v.key,v.props,null,h.mode,P),P.ref=Er(h,f,v),P.return=h,P)}function y(h,f,v,P){return f===null||f.tag!==4||f.stateNode.containerInfo!==v.containerInfo||f.stateNode.implementation!==v.implementation?(f=Ri(v,h.mode,P),f.return=h,f):(f=o(f,v.children||[]),f.return=h,f)}function E(h,f,v,P,H){return f===null||f.tag!==7?(f=Nn(v,h.mode,P,H),f.return=h,f):(f=o(f,v),f.return=h,f)}function N(h,f,v){if(typeof f==\"string\"&&f!==\"\"||typeof f==\"number\")return f=Ci(\"\"+f,h.mode,v),f.return=h,f;if(typeof f==\"object\"&&f!==null){switch(f.$$typeof){case ko:return v=qo(f.type,f.key,f.props,null,h.mode,v),v.ref=Er(h,null,f),v.return=h,v;case Hn:return f=Ri(f,h.mode,v),f.return=h,f;case Yt:var P=f._init;return N(h,P(f._payload),v)}if(Tr(f)||wr(f))return f=Nn(f,h.mode,v,null),f.return=h,f;Oo(h,f)}return null}function C(h,f,v,P){var H=f!==null?f.key:null;if(typeof v==\"string\"&&v!==\"\"||typeof v==\"number\")return H!==null?null:a(h,f,\"\"+v,P);if(typeof v==\"object\"&&v!==null){switch(v.$$typeof){case ko:return v.key===H?s(h,f,v,P):null;case Hn:return v.key===H?y(h,f,v,P):null;case Yt:return H=v._init,C(h,f,H(v._payload),P)}if(Tr(v)||wr(v))return H!==null?null:E(h,f,v,P,null);Oo(h,v)}return null}function L(h,f,v,P,H){if(typeof P==\"string\"&&P!==\"\"||typeof P==\"number\")return h=h.get(v)||null,a(f,h,\"\"+P,H);if(typeof P==\"object\"&&P!==null){switch(P.$$typeof){case ko:return h=h.get(P.key===null?v:P.key)||null,s(f,h,P,H);case Hn:return h=h.get(P.key===null?v:P.key)||null,y(f,h,P,H);case Yt:var W=P._init;return L(h,f,v,W(P._payload),H)}if(Tr(P)||wr(P))return h=h.get(v)||null,E(f,h,P,H,null);Oo(f,P)}return null}function O(h,f,v,P){for(var H=null,W=null,B=f,Q=f=0,ve=null;B!==null&&Q<v.length;Q++){B.index>Q?(ve=B,B=null):ve=B.sibling;var q=C(h,B,v[Q],P);if(q===null){B===null&&(B=ve);break}e&&B&&q.alternate===null&&t(h,B),f=l(q,f,Q),W===null?H=q:W.sibling=q,W=q,B=ve}if(Q===v.length)return n(h,B),ye&&xn(h,Q),H;if(B===null){for(;Q<v.length;Q++)B=N(h,v[Q],P),B!==null&&(f=l(B,f,Q),W===null?H=B:W.sibling=B,W=B);return ye&&xn(h,Q),H}for(B=r(h,B);Q<v.length;Q++)ve=L(B,h,Q,v[Q],P),ve!==null&&(e&&ve.alternate!==null&&B.delete(ve.key===null?Q:ve.key),f=l(ve,f,Q),W===null?H=ve:W.sibling=ve,W=ve);return e&&B.forEach(function(ut){return t(h,ut)}),ye&&xn(h,Q),H}function F(h,f,v,P){var H=wr(v);if(typeof H!=\"function\")throw Error(T(150));if(v=H.call(v),v==null)throw Error(T(151));for(var W=H=null,B=f,Q=f=0,ve=null,q=v.next();B!==null&&!q.done;Q++,q=v.next()){B.index>Q?(ve=B,B=null):ve=B.sibling;var ut=C(h,B,q.value,P);if(ut===null){B===null&&(B=ve);break}e&&B&&ut.alternate===null&&t(h,B),f=l(ut,f,Q),W===null?H=ut:W.sibling=ut,W=ut,B=ve}if(q.done)return n(h,B),ye&&xn(h,Q),H;if(B===null){for(;!q.done;Q++,q=v.next())q=N(h,q.value,P),q!==null&&(f=l(q,f,Q),W===null?H=q:W.sibling=q,W=q);return ye&&xn(h,Q),H}for(B=r(h,B);!q.done;Q++,q=v.next())q=L(B,h,Q,q.value,P),q!==null&&(e&&q.alternate!==null&&B.delete(q.key===null?Q:q.key),f=l(q,f,Q),W===null?H=q:W.sibling=q,W=q);return e&&B.forEach(function(Il){return t(h,Il)}),ye&&xn(h,Q),H}function he(h,f,v,P){if(typeof v==\"object\"&&v!==null&&v.type===Bn&&v.key===null&&(v=v.props.children),typeof v==\"object\"&&v!==null){switch(v.$$typeof){case ko:e:{for(var H=v.key,W=f;W!==null;){if(W.key===H){if(H=v.type,H===Bn){if(W.tag===7){n(h,W.sibling),f=o(W,v.props.children),f.return=h,h=f;break e}}else if(W.elementType===H||typeof H==\"object\"&&H!==null&&H.$$typeof===Yt&&js(H)===W.type){n(h,W.sibling),f=o(W,v.props),f.ref=Er(h,W,v),f.return=h,h=f;break e}n(h,W);break}else t(h,W);W=W.sibling}v.type===Bn?(f=Nn(v.props.children,h.mode,P,v.key),f.return=h,h=f):(P=qo(v.type,v.key,v.props,null,h.mode,P),P.ref=Er(h,f,v),P.return=h,h=P)}return i(h);case Hn:e:{for(W=v.key;f!==null;){if(f.key===W)if(f.tag===4&&f.stateNode.containerInfo===v.containerInfo&&f.stateNode.implementation===v.implementation){n(h,f.sibling),f=o(f,v.children||[]),f.return=h,h=f;break e}else{n(h,f);break}else t(h,f);f=f.sibling}f=Ri(v,h.mode,P),f.return=h,h=f}return i(h);case Yt:return W=v._init,he(h,f,W(v._payload),P)}if(Tr(v))return O(h,f,v,P);if(wr(v))return F(h,f,v,P);Oo(h,v)}return typeof v==\"string\"&&v!==\"\"||typeof v==\"number\"?(v=\"\"+v,f!==null&&f.tag===6?(n(h,f.sibling),f=o(f,v),f.return=h,h=f):(n(h,f),f=Ci(v,h.mode,P),f.return=h,h=f),i(h)):n(h,f)}return he}var ur=sf(!0),cf=sf(!1),sl=fn(null),cl=null,qn=null,Fu=null;function ju(){Fu=qn=cl=null}function Uu(e){var t=sl.current;me(sl),e._currentValue=t}function tu(e,t,n){for(;e!==null;){var r=e.alternate;if((e.childLanes&t)!==t?(e.childLanes|=t,r!==null&&(r.childLanes|=t)):r!==null&&(r.childLanes&t)!==t&&(r.childLanes|=t),e===n)break;e=e.return}}function nr(e,t){cl=e,Fu=qn=null,e=e.dependencies,e!==null&&e.firstContext!==null&&((e.lanes&t)!==0&&(qe=!0),e.firstContext=null)}function mt(e){var t=e._currentValue;if(Fu!==e)if(e={context:e,memoizedValue:t,next:null},qn===null){if(cl===null)throw Error(T(308));qn=e,cl.dependencies={lanes:0,firstContext:e}}else qn=qn.next=e;return t}var En=null;function Hu(e){En===null?En=[e]:En.push(e)}function ff(e,t,n,r){var o=t.interleaved;return o===null?(n.next=n,Hu(t)):(n.next=o.next,o.next=n),t.interleaved=n,Wt(e,r)}function Wt(e,t){e.lanes|=t;var n=e.alternate;for(n!==null&&(n.lanes|=t),n=e,e=e.return;e!==null;)e.childLanes|=t,n=e.alternate,n!==null&&(n.childLanes|=t),n=e,e=e.return;return n.tag===3?n.stateNode:null}var Xt=!1;function Bu(e){e.updateQueue={baseState:e.memoizedState,firstBaseUpdate:null,lastBaseUpdate:null,shared:{pending:null,interleaved:null,lanes:0},effects:null}}function df(e,t){e=e.updateQueue,t.updateQueue===e&&(t.updateQueue={baseState:e.baseState,firstBaseUpdate:e.firstBaseUpdate,lastBaseUpdate:e.lastBaseUpdate,shared:e.shared,effects:e.effects})}function Ut(e,t){return{eventTime:e,lane:t,tag:0,payload:null,callback:null,next:null}}function rn(e,t,n){var r=e.updateQueue;if(r===null)return null;if(r=r.shared,(oe&2)!==0){var o=r.pending;return o===null?t.next=t:(t.next=o.next,o.next=t),r.pending=t,Wt(e,n)}return o=r.interleaved,o===null?(t.next=t,Hu(r)):(t.next=o.next,o.next=t),r.interleaved=t,Wt(e,n)}function Vo(e,t,n){if(t=t.updateQueue,t!==null&&(t=t.shared,(n&4194240)!==0)){var r=t.lanes;r&=e.pendingLanes,n|=r,t.lanes=n,Nu(e,n)}}function Us(e,t){var n=e.updateQueue,r=e.alternate;if(r!==null&&(r=r.updateQueue,n===r)){var o=null,l=null;if(n=n.firstBaseUpdate,n!==null){do{var i={eventTime:n.eventTime,lane:n.lane,tag:n.tag,payload:n.payload,callback:n.callback,next:null};l===null?o=l=i:l=l.next=i,n=n.next}while(n!==null);l===null?o=l=t:l=l.next=t}else o=l=t;n={baseState:r.baseState,firstBaseUpdate:o,lastBaseUpdate:l,shared:r.shared,effects:r.effects},e.updateQueue=n;return}e=n.lastBaseUpdate,e===null?n.firstBaseUpdate=t:e.next=t,n.lastBaseUpdate=t}function fl(e,t,n,r){var o=e.updateQueue;Xt=!1;var l=o.firstBaseUpdate,i=o.lastBaseUpdate,a=o.shared.pending;if(a!==null){o.shared.pending=null;var s=a,y=s.next;s.next=null,i===null?l=y:i.next=y,i=s;var E=e.alternate;E!==null&&(E=E.updateQueue,a=E.lastBaseUpdate,a!==i&&(a===null?E.firstBaseUpdate=y:a.next=y,E.lastBaseUpdate=s))}if(l!==null){var N=o.baseState;i=0,E=y=s=null,a=l;do{var C=a.lane,L=a.eventTime;if((r&C)===C){E!==null&&(E=E.next={eventTime:L,lane:0,tag:a.tag,payload:a.payload,callback:a.callback,next:null});e:{var O=e,F=a;switch(C=t,L=n,F.tag){case 1:if(O=F.payload,typeof O==\"function\"){N=O.call(L,N,C);break e}N=O;break e;case 3:O.flags=O.flags&-65537|128;case 0:if(O=F.payload,C=typeof O==\"function\"?O.call(L,N,C):O,C==null)break e;N=Se({},N,C);break e;case 2:Xt=!0}}a.callback!==null&&a.lane!==0&&(e.flags|=64,C=o.effects,C===null?o.effects=[a]:C.push(a))}else L={eventTime:L,lane:C,tag:a.tag,payload:a.payload,callback:a.callback,next:null},E===null?(y=E=L,s=N):E=E.next=L,i|=C;if(a=a.next,a===null){if(a=o.shared.pending,a===null)break;C=a,a=C.next,C.next=null,o.lastBaseUpdate=C,o.shared.pending=null}}while(!0);if(E===null&&(s=N),o.baseState=s,o.firstBaseUpdate=y,o.lastBaseUpdate=E,t=o.shared.interleaved,t!==null){o=t;do i|=o.lane,o=o.next;while(o!==t)}else l===null&&(o.shared.lanes=0);An|=i,e.lanes=i,e.memoizedState=N}}function Hs(e,t,n){if(e=t.effects,t.effects=null,e!==null)for(t=0;t<e.length;t++){var r=e[t],o=r.callback;if(o!==null){if(r.callback=null,r=n,typeof o!=\"function\")throw Error(T(191,o));o.call(r)}}}var io={},Dt=fn(io),Zr=fn(io),br=fn(io);function Cn(e){if(e===io)throw Error(T(174));return e}function Wu(e,t){switch(fe(br,t),fe(Zr,e),fe(Dt,io),e=t.nodeType,e){case 9:case 11:t=(t=t.documentElement)?t.namespaceURI:Ii(null,\"\");break;default:e=e===8?t.parentNode:t,t=e.namespaceURI||null,e=e.tagName,t=Ii(t,e)}me(Dt),fe(Dt,t)}function ar(){me(Dt),me(Zr),me(br)}function pf(e){Cn(br.current);var t=Cn(Dt.current),n=Ii(t,e.type);t!==n&&(fe(Zr,e),fe(Dt,n))}function Vu(e){Zr.current===e&&(me(Dt),me(Zr))}var xe=fn(0);function dl(e){for(var t=e;t!==null;){if(t.tag===13){var n=t.memoizedState;if(n!==null&&(n=n.dehydrated,n===null||n.data===\"$?\"||n.data===\"$!\"))return t}else if(t.tag===19&&t.memoizedProps.revealOrder!==void 0){if((t.flags&128)!==0)return t}else if(t.child!==null){t.child.return=t,t=t.child;continue}if(t===e)break;for(;t.sibling===null;){if(t.return===null||t.return===e)return null;t=t.return}t.sibling.return=t.return,t=t.sibling}return null}var vi=[];function $u(){for(var e=0;e<vi.length;e++)vi[e]._workInProgressVersionPrimary=null;vi.length=0}var $o=$t.ReactCurrentDispatcher,wi=$t.ReactCurrentBatchConfig,Pn=0,ke=null,Ae=null,Le=null,pl=!1,Or=!1,Jr=0,fm=0;function je(){throw Error(T(321))}function Qu(e,t){if(t===null)return!1;for(var n=0;n<t.length&&n<e.length;n++)if(!Et(e[n],t[n]))return!1;return!0}function Ku(e,t,n,r,o,l){if(Pn=l,ke=t,t.memoizedState=null,t.updateQueue=null,t.lanes=0,$o.current=e===null||e.memoizedState===null?hm:gm,e=n(r,o),Or){l=0;do{if(Or=!1,Jr=0,25<=l)throw Error(T(301));l+=1,Le=Ae=null,t.updateQueue=null,$o.current=ym,e=n(r,o)}while(Or)}if($o.current=ml,t=Ae!==null&&Ae.next!==null,Pn=0,Le=Ae=ke=null,pl=!1,t)throw Error(T(300));return e}function Yu(){var e=Jr!==0;return Jr=0,e}function Tt(){var e={memoizedState:null,baseState:null,baseQueue:null,queue:null,next:null};return Le===null?ke.memoizedState=Le=e:Le=Le.next=e,Le}function ht(){if(Ae===null){var e=ke.alternate;e=e!==null?e.memoizedState:null}else e=Ae.next;var t=Le===null?ke.memoizedState:Le.next;if(t!==null)Le=t,Ae=e;else{if(e===null)throw Error(T(310));Ae=e,e={memoizedState:Ae.memoizedState,baseState:Ae.baseState,baseQueue:Ae.baseQueue,queue:Ae.queue,next:null},Le===null?ke.memoizedState=Le=e:Le=Le.next=e}return Le}function eo(e,t){return typeof t==\"function\"?t(e):t}function xi(e){var t=ht(),n=t.queue;if(n===null)throw Error(T(311));n.lastRenderedReducer=e;var r=Ae,o=r.baseQueue,l=n.pending;if(l!==null){if(o!==null){var i=o.next;o.next=l.next,l.next=i}r.baseQueue=o=l,n.pending=null}if(o!==null){l=o.next,r=r.baseState;var a=i=null,s=null,y=l;do{var E=y.lane;if((Pn&E)===E)s!==null&&(s=s.next={lane:0,action:y.action,hasEagerState:y.hasEagerState,eagerState:y.eagerState,next:null}),r=y.hasEagerState?y.eagerState:e(r,y.action);else{var N={lane:E,action:y.action,hasEagerState:y.hasEagerState,eagerState:y.eagerState,next:null};s===null?(a=s=N,i=r):s=s.next=N,ke.lanes|=E,An|=E}y=y.next}while(y!==null&&y!==l);s===null?i=r:s.next=a,Et(r,t.memoizedState)||(qe=!0),t.memoizedState=r,t.baseState=i,t.baseQueue=s,n.lastRenderedState=r}if(e=n.interleaved,e!==null){o=e;do l=o.lane,ke.lanes|=l,An|=l,o=o.next;while(o!==e)}else o===null&&(n.lanes=0);return[t.memoizedState,n.dispatch]}function ki(e){var t=ht(),n=t.queue;if(n===null)throw Error(T(311));n.lastRenderedReducer=e;var r=n.dispatch,o=n.pending,l=t.memoizedState;if(o!==null){n.pending=null;var i=o=o.next;do l=e(l,i.action),i=i.next;while(i!==o);Et(l,t.memoizedState)||(qe=!0),t.memoizedState=l,t.baseQueue===null&&(t.baseState=l),n.lastRenderedState=l}return[l,r]}function mf(){}function hf(e,t){var n=ke,r=ht(),o=t(),l=!Et(r.memoizedState,o);if(l&&(r.memoizedState=o,qe=!0),r=r.queue,Xu(vf.bind(null,n,r,e),[e]),r.getSnapshot!==t||l||Le!==null&&Le.memoizedState.tag&1){if(n.flags|=2048,to(9,yf.bind(null,n,r,o,t),void 0,null),Me===null)throw Error(T(349));(Pn&30)!==0||gf(n,t,o)}return o}function gf(e,t,n){e.flags|=16384,e={getSnapshot:t,value:n},t=ke.updateQueue,t===null?(t={lastEffect:null,stores:null},ke.updateQueue=t,t.stores=[e]):(n=t.stores,n===null?t.stores=[e]:n.push(e))}function yf(e,t,n,r){t.value=n,t.getSnapshot=r,wf(t)&&xf(e)}function vf(e,t,n){return n(function(){wf(t)&&xf(e)})}function wf(e){var t=e.getSnapshot;e=e.value;try{var n=t();return!Et(e,n)}catch{return!0}}function xf(e){var t=Wt(e,1);t!==null&&St(t,e,1,-1)}function Bs(e){var t=Tt();return typeof e==\"function\"&&(e=e()),t.memoizedState=t.baseState=e,e={pending:null,interleaved:null,lanes:0,dispatch:null,lastRenderedReducer:eo,lastRenderedState:e},t.queue=e,e=e.dispatch=mm.bind(null,ke,e),[t.memoizedState,e]}function to(e,t,n,r){return e={tag:e,create:t,destroy:n,deps:r,next:null},t=ke.updateQueue,t===null?(t={lastEffect:null,stores:null},ke.updateQueue=t,t.lastEffect=e.next=e):(n=t.lastEffect,n===null?t.lastEffect=e.next=e:(r=n.next,n.next=e,e.next=r,t.lastEffect=e)),e}function kf(){return ht().memoizedState}function Qo(e,t,n,r){var o=Tt();ke.flags|=e,o.memoizedState=to(1|t,n,void 0,r===void 0?null:r)}function Nl(e,t,n,r){var o=ht();r=r===void 0?null:r;var l=void 0;if(Ae!==null){var i=Ae.memoizedState;if(l=i.destroy,r!==null&&Qu(r,i.deps)){o.memoizedState=to(t,n,l,r);return}}ke.flags|=e,o.memoizedState=to(1|t,n,l,r)}function Ws(e,t){return Qo(8390656,8,e,t)}function Xu(e,t){return Nl(2048,8,e,t)}function Sf(e,t){return Nl(4,2,e,t)}function Ef(e,t){return Nl(4,4,e,t)}function Cf(e,t){if(typeof t==\"function\")return e=e(),t(e),function(){t(null)};if(t!=null)return e=e(),t.current=e,function(){t.current=null}}function Rf(e,t,n){return n=n!=null?n.concat([e]):null,Nl(4,4,Cf.bind(null,t,e),n)}function qu(){}function Nf(e,t){var n=ht();t=t===void 0?null:t;var r=n.memoizedState;return r!==null&&t!==null&&Qu(t,r[1])?r[0]:(n.memoizedState=[e,t],e)}function _f(e,t){var n=ht();t=t===void 0?null:t;var r=n.memoizedState;return r!==null&&t!==null&&Qu(t,r[1])?r[0]:(e=e(),n.memoizedState=[e,t],e)}function Tf(e,t,n){return(Pn&21)===0?(e.baseState&&(e.baseState=!1,qe=!0),e.memoizedState=n):(Et(n,t)||(n=Lc(),ke.lanes|=n,An|=n,e.baseState=!0),t)}function dm(e,t){var n=ie;ie=n!==0&&4>n?n:4,e(!0);var r=wi.transition;wi.transition={};try{e(!1),t()}finally{ie=n,wi.transition=r}}function Pf(){return ht().memoizedState}function pm(e,t,n){var r=ln(e);if(n={lane:r,action:n,hasEagerState:!1,eagerState:null,next:null},Af(e))Df(t,n);else if(n=ff(e,t,n,r),n!==null){var o=Ke();St(n,e,r,o),Lf(n,t,r)}}function mm(e,t,n){var r=ln(e),o={lane:r,action:n,hasEagerState:!1,eagerState:null,next:null};if(Af(e))Df(t,o);else{var l=e.alternate;if(e.lanes===0&&(l===null||l.lanes===0)&&(l=t.lastRenderedReducer,l!==null))try{var i=t.lastRenderedState,a=l(i,n);if(o.hasEagerState=!0,o.eagerState=a,Et(a,i)){var s=t.interleaved;s===null?(o.next=o,Hu(t)):(o.next=s.next,s.next=o),t.interleaved=o;return}}catch{}n=ff(e,t,o,r),n!==null&&(o=Ke(),St(n,e,r,o),Lf(n,t,r))}}function Af(e){var t=e.alternate;return e===ke||t!==null&&t===ke}function Df(e,t){Or=pl=!0;var n=e.pending;n===null?t.next=t:(t.next=n.next,n.next=t),e.pending=t}function Lf(e,t,n){if((n&4194240)!==0){var r=t.lanes;r&=e.pendingLanes,n|=r,t.lanes=n,Nu(e,n)}}var ml={readContext:mt,useCallback:je,useContext:je,useEffect:je,useImperativeHandle:je,useInsertionEffect:je,useLayoutEffect:je,useMemo:je,useReducer:je,useRef:je,useState:je,useDebugValue:je,useDeferredValue:je,useTransition:je,useMutableSource:je,useSyncExternalStore:je,useId:je,unstable_isNewReconciler:!1},hm={readContext:mt,useCallback:function(e,t){return Tt().memoizedState=[e,t===void 0?null:t],e},useContext:mt,useEffect:Ws,useImperativeHandle:function(e,t,n){return n=n!=null?n.concat([e]):null,Qo(4194308,4,Cf.bind(null,t,e),n)},useLayoutEffect:function(e,t){return Qo(4194308,4,e,t)},useInsertionEffect:function(e,t){return Qo(4,2,e,t)},useMemo:function(e,t){var n=Tt();return t=t===void 0?null:t,e=e(),n.memoizedState=[e,t],e},useReducer:function(e,t,n){var r=Tt();return t=n!==void 0?n(t):t,r.memoizedState=r.baseState=t,e={pending:null,interleaved:null,lanes:0,dispatch:null,lastRenderedReducer:e,lastRenderedState:t},r.queue=e,e=e.dispatch=pm.bind(null,ke,e),[r.memoizedState,e]},useRef:function(e){var t=Tt();return e={current:e},t.memoizedState=e},useState:Bs,useDebugValue:qu,useDeferredValue:function(e){return Tt().memoizedState=e},useTransition:function(){var e=Bs(!1),t=e[0];return e=dm.bind(null,e[1]),Tt().memoizedState=e,[t,e]},useMutableSource:function(){},useSyncExternalStore:function(e,t,n){var r=ke,o=Tt();if(ye){if(n===void 0)throw Error(T(407));n=n()}else{if(n=t(),Me===null)throw Error(T(349));(Pn&30)!==0||gf(r,t,n)}o.memoizedState=n;var l={value:n,getSnapshot:t};return o.queue=l,Ws(vf.bind(null,r,l,e),[e]),r.flags|=2048,to(9,yf.bind(null,r,l,n,t),void 0,null),n},useId:function(){var e=Tt(),t=Me.identifierPrefix;if(ye){var n=jt,r=Ft;n=(r&~(1<<32-kt(r)-1)).toString(32)+n,t=\":\"+t+\"R\"+n,n=Jr++,0<n&&(t+=\"H\"+n.toString(32)),t+=\":\"}else n=fm++,t=\":\"+t+\"r\"+n.toString(32)+\":\";return e.memoizedState=t},unstable_isNewReconciler:!1},gm={readContext:mt,useCallback:Nf,useContext:mt,useEffect:Xu,useImperativeHandle:Rf,useInsertionEffect:Sf,useLayoutEffect:Ef,useMemo:_f,useReducer:xi,useRef:kf,useState:function(){return xi(eo)},useDebugValue:qu,useDeferredValue:function(e){var t=ht();return Tf(t,Ae.memoizedState,e)},useTransition:function(){var e=xi(eo)[0],t=ht().memoizedState;return[e,t]},useMutableSource:mf,useSyncExternalStore:hf,useId:Pf,unstable_isNewReconciler:!1},ym={readContext:mt,useCallback:Nf,useContext:mt,useEffect:Xu,useImperativeHandle:Rf,useInsertionEffect:Sf,useLayoutEffect:Ef,useMemo:_f,useReducer:ki,useRef:kf,useState:function(){return ki(eo)},useDebugValue:qu,useDeferredValue:function(e){var t=ht();return Ae===null?t.memoizedState=e:Tf(t,Ae.memoizedState,e)},useTransition:function(){var e=ki(eo)[0],t=ht().memoizedState;return[e,t]},useMutableSource:mf,useSyncExternalStore:hf,useId:Pf,unstable_isNewReconciler:!1};function vt(e,t){if(e&&e.defaultProps){t=Se({},t),e=e.defaultProps;for(var n in e)t[n]===void 0&&(t[n]=e[n]);return t}return t}function nu(e,t,n,r){t=e.memoizedState,n=n(r,t),n=n==null?t:Se({},t,n),e.memoizedState=n,e.lanes===0&&(e.updateQueue.baseState=n)}var _l={isMounted:function(e){return(e=e._reactInternals)?Mn(e)===e:!1},enqueueSetState:function(e,t,n){e=e._reactInternals;var r=Ke(),o=ln(e),l=Ut(r,o);l.payload=t,n!=null&&(l.callback=n),t=rn(e,l,o),t!==null&&(St(t,e,o,r),Vo(t,e,o))},enqueueReplaceState:function(e,t,n){e=e._reactInternals;var r=Ke(),o=ln(e),l=Ut(r,o);l.tag=1,l.payload=t,n!=null&&(l.callback=n),t=rn(e,l,o),t!==null&&(St(t,e,o,r),Vo(t,e,o))},enqueueForceUpdate:function(e,t){e=e._reactInternals;var n=Ke(),r=ln(e),o=Ut(n,r);o.tag=2,t!=null&&(o.callback=t),t=rn(e,o,r),t!==null&&(St(t,e,r,n),Vo(t,e,r))}};function Vs(e,t,n,r,o,l,i){return e=e.stateNode,typeof e.shouldComponentUpdate==\"function\"?e.shouldComponentUpdate(r,l,i):t.prototype&&t.prototype.isPureReactComponent?!Yr(n,r)||!Yr(o,l):!0}function Mf(e,t,n){var r=!1,o=sn,l=t.contextType;return typeof l==\"object\"&&l!==null?l=mt(l):(o=Ze(t)?_n:Be.current,r=t.contextTypes,l=(r=r!=null)?lr(e,o):sn),t=new t(n,l),e.memoizedState=t.state!==null&&t.state!==void 0?t.state:null,t.updater=_l,e.stateNode=t,t._reactInternals=e,r&&(e=e.stateNode,e.__reactInternalMemoizedUnmaskedChildContext=o,e.__reactInternalMemoizedMaskedChildContext=l),t}function $s(e,t,n,r){e=t.state,typeof t.componentWillReceiveProps==\"function\"&&t.componentWillReceiveProps(n,r),typeof t.UNSAFE_componentWillReceiveProps==\"function\"&&t.UNSAFE_componentWillReceiveProps(n,r),t.state!==e&&_l.enqueueReplaceState(t,t.state,null)}function ru(e,t,n,r){var o=e.stateNode;o.props=n,o.state=e.memoizedState,o.refs={},Bu(e);var l=t.contextType;typeof l==\"object\"&&l!==null?o.context=mt(l):(l=Ze(t)?_n:Be.current,o.context=lr(e,l)),o.state=e.memoizedState,l=t.getDerivedStateFromProps,typeof l==\"function\"&&(nu(e,t,l,n),o.state=e.memoizedState),typeof t.getDerivedStateFromProps==\"function\"||typeof o.getSnapshotBeforeUpdate==\"function\"||typeof o.UNSAFE_componentWillMount!=\"function\"&&typeof o.componentWillMount!=\"function\"||(t=o.state,typeof o.componentWillMount==\"function\"&&o.componentWillMount(),typeof o.UNSAFE_componentWillMount==\"function\"&&o.UNSAFE_componentWillMount(),t!==o.state&&_l.enqueueReplaceState(o,o.state,null),fl(e,n,o,r),o.state=e.memoizedState),typeof o.componentDidMount==\"function\"&&(e.flags|=4194308)}function sr(e,t){try{var n=\"\",r=t;do n+=Yd(r),r=r.return;while(r);var o=n}catch(l){o=`\nError generating stack: `+l.message+`\n`+l.stack}return{value:e,source:t,stack:o,digest:null}}function Si(e,t,n){return{value:e,source:null,stack:n??null,digest:t??null}}function ou(e,t){try{console.error(t.value)}catch(n){setTimeout(function(){throw n})}}var vm=typeof WeakMap==\"function\"?WeakMap:Map;function zf(e,t,n){n=Ut(-1,n),n.tag=3,n.payload={element:null};var r=t.value;return n.callback=function(){gl||(gl=!0,mu=r),ou(e,t)},n}function If(e,t,n){n=Ut(-1,n),n.tag=3;var r=e.type.getDerivedStateFromError;if(typeof r==\"function\"){var o=t.value;n.payload=function(){return r(o)},n.callback=function(){ou(e,t)}}var l=e.stateNode;return l!==null&&typeof l.componentDidCatch==\"function\"&&(n.callback=function(){ou(e,t),typeof r!=\"function\"&&(on===null?on=new Set([this]):on.add(this));var i=t.stack;this.componentDidCatch(t.value,{componentStack:i!==null?i:\"\"})}),n}function Qs(e,t,n){var r=e.pingCache;if(r===null){r=e.pingCache=new vm;var o=new Set;r.set(t,o)}else o=r.get(t),o===void 0&&(o=new Set,r.set(t,o));o.has(n)||(o.add(n),e=Lm.bind(null,e,t,n),t.then(e,e))}function Ks(e){do{var t;if((t=e.tag===13)&&(t=e.memoizedState,t=t!==null?t.dehydrated!==null:!0),t)return e;e=e.return}while(e!==null);return null}function Ys(e,t,n,r,o){return(e.mode&1)===0?(e===t?e.flags|=65536:(e.flags|=128,n.flags|=131072,n.flags&=-52805,n.tag===1&&(n.alternate===null?n.tag=17:(t=Ut(-1,1),t.tag=2,rn(n,t,1))),n.lanes|=1),e):(e.flags|=65536,e.lanes=o,e)}var wm=$t.ReactCurrentOwner,qe=!1;function Qe(e,t,n,r){t.child=e===null?cf(t,null,n,r):ur(t,e.child,n,r)}function Xs(e,t,n,r,o){n=n.render;var l=t.ref;return nr(t,o),r=Ku(e,t,n,r,l,o),n=Yu(),e!==null&&!qe?(t.updateQueue=e.updateQueue,t.flags&=-2053,e.lanes&=~o,Vt(e,t,o)):(ye&&n&&zu(t),t.flags|=1,Qe(e,t,r,o),t.child)}function qs(e,t,n,r,o){if(e===null){var l=n.type;return typeof l==\"function\"&&!ra(l)&&l.defaultProps===void 0&&n.compare===null&&n.defaultProps===void 0?(t.tag=15,t.type=l,Of(e,t,l,r,o)):(e=qo(n.type,null,r,t,t.mode,o),e.ref=t.ref,e.return=t,t.child=e)}if(l=e.child,(e.lanes&o)===0){var i=l.memoizedProps;if(n=n.compare,n=n!==null?n:Yr,n(i,r)&&e.ref===t.ref)return Vt(e,t,o)}return t.flags|=1,e=un(l,r),e.ref=t.ref,e.return=t,t.child=e}function Of(e,t,n,r,o){if(e!==null){var l=e.memoizedProps;if(Yr(l,r)&&e.ref===t.ref)if(qe=!1,t.pendingProps=r=l,(e.lanes&o)!==0)(e.flags&131072)!==0&&(qe=!0);else return t.lanes=e.lanes,Vt(e,t,o)}return lu(e,t,n,r,o)}function Ff(e,t,n){var r=t.pendingProps,o=r.children,l=e!==null?e.memoizedState:null;if(r.mode===\"hidden\")if((t.mode&1)===0)t.memoizedState={baseLanes:0,cachePool:null,transitions:null},fe(Zn,tt),tt|=n;else{if((n&1073741824)===0)return e=l!==null?l.baseLanes|n:n,t.lanes=t.childLanes=1073741824,t.memoizedState={baseLanes:e,cachePool:null,transitions:null},t.updateQueue=null,fe(Zn,tt),tt|=e,null;t.memoizedState={baseLanes:0,cachePool:null,transitions:null},r=l!==null?l.baseLanes:n,fe(Zn,tt),tt|=r}else l!==null?(r=l.baseLanes|n,t.memoizedState=null):r=n,fe(Zn,tt),tt|=r;return Qe(e,t,o,n),t.child}function jf(e,t){var n=t.ref;(e===null&&n!==null||e!==null&&e.ref!==n)&&(t.flags|=512,t.flags|=2097152)}function lu(e,t,n,r,o){var l=Ze(n)?_n:Be.current;return l=lr(t,l),nr(t,o),n=Ku(e,t,n,r,l,o),r=Yu(),e!==null&&!qe?(t.updateQueue=e.updateQueue,t.flags&=-2053,e.lanes&=~o,Vt(e,t,o)):(ye&&r&&zu(t),t.flags|=1,Qe(e,t,n,o),t.child)}function Gs(e,t,n,r,o){if(Ze(n)){var l=!0;il(t)}else l=!1;if(nr(t,o),t.stateNode===null)Ko(e,t),Mf(t,n,r),ru(t,n,r,o),r=!0;else if(e===null){var i=t.stateNode,a=t.memoizedProps;i.props=a;var s=i.context,y=n.contextType;typeof y==\"object\"&&y!==null?y=mt(y):(y=Ze(n)?_n:Be.current,y=lr(t,y));var E=n.getDerivedStateFromProps,N=typeof E==\"function\"||typeof i.getSnapshotBeforeUpdate==\"function\";N||typeof i.UNSAFE_componentWillReceiveProps!=\"function\"&&typeof i.componentWillReceiveProps!=\"function\"||(a!==r||s!==y)&&$s(t,i,r,y),Xt=!1;var C=t.memoizedState;i.state=C,fl(t,r,i,o),s=t.memoizedState,a!==r||C!==s||Ge.current||Xt?(typeof E==\"function\"&&(nu(t,n,E,r),s=t.memoizedState),(a=Xt||Vs(t,n,a,r,C,s,y))?(N||typeof i.UNSAFE_componentWillMount!=\"function\"&&typeof i.componentWillMount!=\"function\"||(typeof i.componentWillMount==\"function\"&&i.componentWillMount(),typeof i.UNSAFE_componentWillMount==\"function\"&&i.UNSAFE_componentWillMount()),typeof i.componentDidMount==\"function\"&&(t.flags|=4194308)):(typeof i.componentDidMount==\"function\"&&(t.flags|=4194308),t.memoizedProps=r,t.memoizedState=s),i.props=r,i.state=s,i.context=y,r=a):(typeof i.componentDidMount==\"function\"&&(t.flags|=4194308),r=!1)}else{i=t.stateNode,df(e,t),a=t.memoizedProps,y=t.type===t.elementType?a:vt(t.type,a),i.props=y,N=t.pendingProps,C=i.context,s=n.contextType,typeof s==\"object\"&&s!==null?s=mt(s):(s=Ze(n)?_n:Be.current,s=lr(t,s));var L=n.getDerivedStateFromProps;(E=typeof L==\"function\"||typeof i.getSnapshotBeforeUpdate==\"function\")||typeof i.UNSAFE_componentWillReceiveProps!=\"function\"&&typeof i.componentWillReceiveProps!=\"function\"||(a!==N||C!==s)&&$s(t,i,r,s),Xt=!1,C=t.memoizedState,i.state=C,fl(t,r,i,o);var O=t.memoizedState;a!==N||C!==O||Ge.current||Xt?(typeof L==\"function\"&&(nu(t,n,L,r),O=t.memoizedState),(y=Xt||Vs(t,n,y,r,C,O,s)||!1)?(E||typeof i.UNSAFE_componentWillUpdate!=\"function\"&&typeof i.componentWillUpdate!=\"function\"||(typeof i.componentWillUpdate==\"function\"&&i.componentWillUpdate(r,O,s),typeof i.UNSAFE_componentWillUpdate==\"function\"&&i.UNSAFE_componentWillUpdate(r,O,s)),typeof i.componentDidUpdate==\"function\"&&(t.flags|=4),typeof i.getSnapshotBeforeUpdate==\"function\"&&(t.flags|=1024)):(typeof i.componentDidUpdate!=\"function\"||a===e.memoizedProps&&C===e.memoizedState||(t.flags|=4),typeof i.getSnapshotBeforeUpdate!=\"function\"||a===e.memoizedProps&&C===e.memoizedState||(t.flags|=1024),t.memoizedProps=r,t.memoizedState=O),i.props=r,i.state=O,i.context=s,r=y):(typeof i.componentDidUpdate!=\"function\"||a===e.memoizedProps&&C===e.memoizedState||(t.flags|=4),typeof i.getSnapshotBeforeUpdate!=\"function\"||a===e.memoizedProps&&C===e.memoizedState||(t.flags|=1024),r=!1)}return iu(e,t,n,r,l,o)}function iu(e,t,n,r,o,l){jf(e,t);var i=(t.flags&128)!==0;if(!r&&!i)return o&&Is(t,n,!1),Vt(e,t,l);r=t.stateNode,wm.current=t;var a=i&&typeof n.getDerivedStateFromError!=\"function\"?null:r.render();return t.flags|=1,e!==null&&i?(t.child=ur(t,e.child,null,l),t.child=ur(t,null,a,l)):Qe(e,t,a,l),t.memoizedState=r.state,o&&Is(t,n,!0),t.child}function Uf(e){var t=e.stateNode;t.pendingContext?zs(e,t.pendingContext,t.pendingContext!==t.context):t.context&&zs(e,t.context,!1),Wu(e,t.containerInfo)}function Zs(e,t,n,r,o){return ir(),Ou(o),t.flags|=256,Qe(e,t,n,r),t.child}var uu={dehydrated:null,treeContext:null,retryLane:0};function au(e){return{baseLanes:e,cachePool:null,transitions:null}}function Hf(e,t,n){var r=t.pendingProps,o=xe.current,l=!1,i=(t.flags&128)!==0,a;if((a=i)||(a=e!==null&&e.memoizedState===null?!1:(o&2)!==0),a?(l=!0,t.flags&=-129):(e===null||e.memoizedState!==null)&&(o|=1),fe(xe,o&1),e===null)return eu(t),e=t.memoizedState,e!==null&&(e=e.dehydrated,e!==null)?((t.mode&1)===0?t.lanes=1:e.data===\"$!\"?t.lanes=8:t.lanes=1073741824,null):(i=r.children,e=r.fallback,l?(r=t.mode,l=t.child,i={mode:\"hidden\",children:i},(r&1)===0&&l!==null?(l.childLanes=0,l.pendingProps=i):l=Al(i,r,0,null),e=Nn(e,r,n,null),l.return=t,e.return=t,l.sibling=e,t.child=l,t.child.memoizedState=au(n),t.memoizedState=uu,e):Gu(t,i));if(o=e.memoizedState,o!==null&&(a=o.dehydrated,a!==null))return xm(e,t,i,r,a,o,n);if(l){l=r.fallback,i=t.mode,o=e.child,a=o.sibling;var s={mode:\"hidden\",children:r.children};return(i&1)===0&&t.child!==o?(r=t.child,r.childLanes=0,r.pendingProps=s,t.deletions=null):(r=un(o,s),r.subtreeFlags=o.subtreeFlags&14680064),a!==null?l=un(a,l):(l=Nn(l,i,n,null),l.flags|=2),l.return=t,r.return=t,r.sibling=l,t.child=r,r=l,l=t.child,i=e.child.memoizedState,i=i===null?au(n):{baseLanes:i.baseLanes|n,cachePool:null,transitions:i.transitions},l.memoizedState=i,l.childLanes=e.childLanes&~n,t.memoizedState=uu,r}return l=e.child,e=l.sibling,r=un(l,{mode:\"visible\",children:r.children}),(t.mode&1)===0&&(r.lanes=n),r.return=t,r.sibling=null,e!==null&&(n=t.deletions,n===null?(t.deletions=[e],t.flags|=16):n.push(e)),t.child=r,t.memoizedState=null,r}function Gu(e,t){return t=Al({mode:\"visible\",children:t},e.mode,0,null),t.return=e,e.child=t}function Fo(e,t,n,r){return r!==null&&Ou(r),ur(t,e.child,null,n),e=Gu(t,t.pendingProps.children),e.flags|=2,t.memoizedState=null,e}function xm(e,t,n,r,o,l,i){if(n)return t.flags&256?(t.flags&=-257,r=Si(Error(T(422))),Fo(e,t,i,r)):t.memoizedState!==null?(t.child=e.child,t.flags|=128,null):(l=r.fallback,o=t.mode,r=Al({mode:\"visible\",children:r.children},o,0,null),l=Nn(l,o,i,null),l.flags|=2,r.return=t,l.return=t,r.sibling=l,t.child=r,(t.mode&1)!==0&&ur(t,e.child,null,i),t.child.memoizedState=au(i),t.memoizedState=uu,l);if((t.mode&1)===0)return Fo(e,t,i,null);if(o.data===\"$!\"){if(r=o.nextSibling&&o.nextSibling.dataset,r)var a=r.dgst;return r=a,l=Error(T(419)),r=Si(l,r,void 0),Fo(e,t,i,r)}if(a=(i&e.childLanes)!==0,qe||a){if(r=Me,r!==null){switch(i&-i){case 4:o=2;break;case 16:o=8;break;case 64:case 128:case 256:case 512:case 1024:case 2048:case 4096:case 8192:case 16384:case 32768:case 65536:case 131072:case 262144:case 524288:case 1048576:case 2097152:case 4194304:case 8388608:case 16777216:case 33554432:case 67108864:o=32;break;case 536870912:o=268435456;break;default:o=0}o=(o&(r.suspendedLanes|i))!==0?0:o,o!==0&&o!==l.retryLane&&(l.retryLane=o,Wt(e,o),St(r,e,o,-1))}return na(),r=Si(Error(T(421))),Fo(e,t,i,r)}return o.data===\"$?\"?(t.flags|=128,t.child=e.child,t=Mm.bind(null,e),o._reactRetry=t,null):(e=l.treeContext,nt=nn(o.nextSibling),rt=t,ye=!0,xt=null,e!==null&&(ct[ft++]=Ft,ct[ft++]=jt,ct[ft++]=Tn,Ft=e.id,jt=e.overflow,Tn=t),t=Gu(t,r.children),t.flags|=4096,t)}function bs(e,t,n){e.lanes|=t;var r=e.alternate;r!==null&&(r.lanes|=t),tu(e.return,t,n)}function Ei(e,t,n,r,o){var l=e.memoizedState;l===null?e.memoizedState={isBackwards:t,rendering:null,renderingStartTime:0,last:r,tail:n,tailMode:o}:(l.isBackwards=t,l.rendering=null,l.renderingStartTime=0,l.last=r,l.tail=n,l.tailMode=o)}function Bf(e,t,n){var r=t.pendingProps,o=r.revealOrder,l=r.tail;if(Qe(e,t,r.children,n),r=xe.current,(r&2)!==0)r=r&1|2,t.flags|=128;else{if(e!==null&&(e.flags&128)!==0)e:for(e=t.child;e!==null;){if(e.tag===13)e.memoizedState!==null&&bs(e,n,t);else if(e.tag===19)bs(e,n,t);else if(e.child!==null){e.child.return=e,e=e.child;continue}if(e===t)break e;for(;e.sibling===null;){if(e.return===null||e.return===t)break e;e=e.return}e.sibling.return=e.return,e=e.sibling}r&=1}if(fe(xe,r),(t.mode&1)===0)t.memoizedState=null;else switch(o){case\"forwards\":for(n=t.child,o=null;n!==null;)e=n.alternate,e!==null&&dl(e)===null&&(o=n),n=n.sibling;n=o,n===null?(o=t.child,t.child=null):(o=n.sibling,n.sibling=null),Ei(t,!1,o,n,l);break;case\"backwards\":for(n=null,o=t.child,t.child=null;o!==null;){if(e=o.alternate,e!==null&&dl(e)===null){t.child=o;break}e=o.sibling,o.sibling=n,n=o,o=e}Ei(t,!0,n,null,l);break;case\"together\":Ei(t,!1,null,null,void 0);break;default:t.memoizedState=null}return t.child}function Ko(e,t){(t.mode&1)===0&&e!==null&&(e.alternate=null,t.alternate=null,t.flags|=2)}function Vt(e,t,n){if(e!==null&&(t.dependencies=e.dependencies),An|=t.lanes,(n&t.childLanes)===0)return null;if(e!==null&&t.child!==e.child)throw Error(T(153));if(t.child!==null){for(e=t.child,n=un(e,e.pendingProps),t.child=n,n.return=t;e.sibling!==null;)e=e.sibling,n=n.sibling=un(e,e.pendingProps),n.return=t;n.sibling=null}return t.child}function km(e,t,n){switch(t.tag){case 3:Uf(t),ir();break;case 5:pf(t);break;case 1:Ze(t.type)&&il(t);break;case 4:Wu(t,t.stateNode.containerInfo);break;case 10:var r=t.type._context,o=t.memoizedProps.value;fe(sl,r._currentValue),r._currentValue=o;break;case 13:if(r=t.memoizedState,r!==null)return r.dehydrated!==null?(fe(xe,xe.current&1),t.flags|=128,null):(n&t.child.childLanes)!==0?Hf(e,t,n):(fe(xe,xe.current&1),e=Vt(e,t,n),e!==null?e.sibling:null);fe(xe,xe.current&1);break;case 19:if(r=(n&t.childLanes)!==0,(e.flags&128)!==0){if(r)return Bf(e,t,n);t.flags|=128}if(o=t.memoizedState,o!==null&&(o.rendering=null,o.tail=null,o.lastEffect=null),fe(xe,xe.current),r)break;return null;case 22:case 23:return t.lanes=0,Ff(e,t,n)}return Vt(e,t,n)}var Wf,su,Vf,$f;Wf=function(e,t){for(var n=t.child;n!==null;){if(n.tag===5||n.tag===6)e.appendChild(n.stateNode);else if(n.tag!==4&&n.child!==null){n.child.return=n,n=n.child;continue}if(n===t)break;for(;n.sibling===null;){if(n.return===null||n.return===t)return;n=n.return}n.sibling.return=n.return,n=n.sibling}};su=function(){};Vf=function(e,t,n,r){var o=e.memoizedProps;if(o!==r){e=t.stateNode,Cn(Dt.current);var l=null;switch(n){case\"input\":o=Di(e,o),r=Di(e,r),l=[];break;case\"select\":o=Se({},o,{value:void 0}),r=Se({},r,{value:void 0}),l=[];break;case\"textarea\":o=zi(e,o),r=zi(e,r),l=[];break;default:typeof o.onClick!=\"function\"&&typeof r.onClick==\"function\"&&(e.onclick=ol)}Oi(n,r);var i;n=null;for(y in o)if(!r.hasOwnProperty(y)&&o.hasOwnProperty(y)&&o[y]!=null)if(y===\"style\"){var a=o[y];for(i in a)a.hasOwnProperty(i)&&(n||(n={}),n[i]=\"\")}else y!==\"dangerouslySetInnerHTML\"&&y!==\"children\"&&y!==\"suppressContentEditableWarning\"&&y!==\"suppressHydrationWarning\"&&y!==\"autoFocus\"&&(Hr.hasOwnProperty(y)?l||(l=[]):(l=l||[]).push(y,null));for(y in r){var s=r[y];if(a=o?.[y],r.hasOwnProperty(y)&&s!==a&&(s!=null||a!=null))if(y===\"style\")if(a){for(i in a)!a.hasOwnProperty(i)||s&&s.hasOwnProperty(i)||(n||(n={}),n[i]=\"\");for(i in s)s.hasOwnProperty(i)&&a[i]!==s[i]&&(n||(n={}),n[i]=s[i])}else n||(l||(l=[]),l.push(y,n)),n=s;else y===\"dangerouslySetInnerHTML\"?(s=s?s.__html:void 0,a=a?a.__html:void 0,s!=null&&a!==s&&(l=l||[]).push(y,s)):y===\"children\"?typeof s!=\"string\"&&typeof s!=\"number\"||(l=l||[]).push(y,\"\"+s):y!==\"suppressContentEditableWarning\"&&y!==\"suppressHydrationWarning\"&&(Hr.hasOwnProperty(y)?(s!=null&&y===\"onScroll\"&&pe(\"scroll\",e),l||a===s||(l=[])):(l=l||[]).push(y,s))}n&&(l=l||[]).push(\"style\",n);var y=l;(t.updateQueue=y)&&(t.flags|=4)}};$f=function(e,t,n,r){n!==r&&(t.flags|=4)};function Cr(e,t){if(!ye)switch(e.tailMode){case\"hidden\":t=e.tail;for(var n=null;t!==null;)t.alternate!==null&&(n=t),t=t.sibling;n===null?e.tail=null:n.sibling=null;break;case\"collapsed\":n=e.tail;for(var r=null;n!==null;)n.alternate!==null&&(r=n),n=n.sibling;r===null?t||e.tail===null?e.tail=null:e.tail.sibling=null:r.sibling=null}}function Ue(e){var t=e.alternate!==null&&e.alternate.child===e.child,n=0,r=0;if(t)for(var o=e.child;o!==null;)n|=o.lanes|o.childLanes,r|=o.subtreeFlags&14680064,r|=o.flags&14680064,o.return=e,o=o.sibling;else for(o=e.child;o!==null;)n|=o.lanes|o.childLanes,r|=o.subtreeFlags,r|=o.flags,o.return=e,o=o.sibling;return e.subtreeFlags|=r,e.childLanes=n,t}function Sm(e,t,n){var r=t.pendingProps;switch(Iu(t),t.tag){case 2:case 16:case 15:case 0:case 11:case 7:case 8:case 12:case 9:case 14:return Ue(t),null;case 1:return Ze(t.type)&&ll(),Ue(t),null;case 3:return r=t.stateNode,ar(),me(Ge),me(Be),$u(),r.pendingContext&&(r.context=r.pendingContext,r.pendingContext=null),(e===null||e.child===null)&&(Io(t)?t.flags|=4:e===null||e.memoizedState.isDehydrated&&(t.flags&256)===0||(t.flags|=1024,xt!==null&&(yu(xt),xt=null))),su(e,t),Ue(t),null;case 5:Vu(t);var o=Cn(br.current);if(n=t.type,e!==null&&t.stateNode!=null)Vf(e,t,n,r,o),e.ref!==t.ref&&(t.flags|=512,t.flags|=2097152);else{if(!r){if(t.stateNode===null)throw Error(T(166));return Ue(t),null}if(e=Cn(Dt.current),Io(t)){r=t.stateNode,n=t.type;var l=t.memoizedProps;switch(r[Pt]=t,r[Gr]=l,e=(t.mode&1)!==0,n){case\"dialog\":pe(\"cancel\",r),pe(\"close\",r);break;case\"iframe\":case\"object\":case\"embed\":pe(\"load\",r);break;case\"video\":case\"audio\":for(o=0;o<Ar.length;o++)pe(Ar[o],r);break;case\"source\":pe(\"error\",r);break;case\"img\":case\"image\":case\"link\":pe(\"error\",r),pe(\"load\",r);break;case\"details\":pe(\"toggle\",r);break;case\"input\":is(r,l),pe(\"invalid\",r);break;case\"select\":r._wrapperState={wasMultiple:!!l.multiple},pe(\"invalid\",r);break;case\"textarea\":as(r,l),pe(\"invalid\",r)}Oi(n,l),o=null;for(var i in l)if(l.hasOwnProperty(i)){var a=l[i];i===\"children\"?typeof a==\"string\"?r.textContent!==a&&(l.suppressHydrationWarning!==!0&&zo(r.textContent,a,e),o=[\"children\",a]):typeof a==\"number\"&&r.textContent!==\"\"+a&&(l.suppressHydrationWarning!==!0&&zo(r.textContent,a,e),o=[\"children\",\"\"+a]):Hr.hasOwnProperty(i)&&a!=null&&i===\"onScroll\"&&pe(\"scroll\",r)}switch(n){case\"input\":So(r),us(r,l,!0);break;case\"textarea\":So(r),ss(r);break;case\"select\":case\"option\":break;default:typeof l.onClick==\"function\"&&(r.onclick=ol)}r=o,t.updateQueue=r,r!==null&&(t.flags|=4)}else{i=o.nodeType===9?o:o.ownerDocument,e===\"http://www.w3.org/1999/xhtml\"&&(e=yc(n)),e===\"http://www.w3.org/1999/xhtml\"?n===\"script\"?(e=i.createElement(\"div\"),e.innerHTML=\"<script><\\/script>\",e=e.removeChild(e.firstChild)):typeof r.is==\"string\"?e=i.createElement(n,{is:r.is}):(e=i.createElement(n),n===\"select\"&&(i=e,r.multiple?i.multiple=!0:r.size&&(i.size=r.size))):e=i.createElementNS(e,n),e[Pt]=t,e[Gr]=r,Wf(e,t,!1,!1),t.stateNode=e;e:{switch(i=Fi(n,r),n){case\"dialog\":pe(\"cancel\",e),pe(\"close\",e),o=r;break;case\"iframe\":case\"object\":case\"embed\":pe(\"load\",e),o=r;break;case\"video\":case\"audio\":for(o=0;o<Ar.length;o++)pe(Ar[o],e);o=r;break;case\"source\":pe(\"error\",e),o=r;break;case\"img\":case\"image\":case\"link\":pe(\"error\",e),pe(\"load\",e),o=r;break;case\"details\":pe(\"toggle\",e),o=r;break;case\"input\":is(e,r),o=Di(e,r),pe(\"invalid\",e);break;case\"option\":o=r;break;case\"select\":e._wrapperState={wasMultiple:!!r.multiple},o=Se({},r,{value:void 0}),pe(\"invalid\",e);break;case\"textarea\":as(e,r),o=zi(e,r),pe(\"invalid\",e);break;default:o=r}Oi(n,o),a=o;for(l in a)if(a.hasOwnProperty(l)){var s=a[l];l===\"style\"?xc(e,s):l===\"dangerouslySetInnerHTML\"?(s=s?s.__html:void 0,s!=null&&vc(e,s)):l===\"children\"?typeof s==\"string\"?(n!==\"textarea\"||s!==\"\")&&Br(e,s):typeof s==\"number\"&&Br(e,\"\"+s):l!==\"suppressContentEditableWarning\"&&l!==\"suppressHydrationWarning\"&&l!==\"autoFocus\"&&(Hr.hasOwnProperty(l)?s!=null&&l===\"onScroll\"&&pe(\"scroll\",e):s!=null&&xu(e,l,s,i))}switch(n){case\"input\":So(e),us(e,r,!1);break;case\"textarea\":So(e),ss(e);break;case\"option\":r.value!=null&&e.setAttribute(\"value\",\"\"+an(r.value));break;case\"select\":e.multiple=!!r.multiple,l=r.value,l!=null?bn(e,!!r.multiple,l,!1):r.defaultValue!=null&&bn(e,!!r.multiple,r.defaultValue,!0);break;default:typeof o.onClick==\"function\"&&(e.onclick=ol)}switch(n){case\"button\":case\"input\":case\"select\":case\"textarea\":r=!!r.autoFocus;break e;case\"img\":r=!0;break e;default:r=!1}}r&&(t.flags|=4)}t.ref!==null&&(t.flags|=512,t.flags|=2097152)}return Ue(t),null;case 6:if(e&&t.stateNode!=null)$f(e,t,e.memoizedProps,r);else{if(typeof r!=\"string\"&&t.stateNode===null)throw Error(T(166));if(n=Cn(br.current),Cn(Dt.current),Io(t)){if(r=t.stateNode,n=t.memoizedProps,r[Pt]=t,(l=r.nodeValue!==n)&&(e=rt,e!==null))switch(e.tag){case 3:zo(r.nodeValue,n,(e.mode&1)!==0);break;case 5:e.memoizedProps.suppressHydrationWarning!==!0&&zo(r.nodeValue,n,(e.mode&1)!==0)}l&&(t.flags|=4)}else r=(n.nodeType===9?n:n.ownerDocument).createTextNode(r),r[Pt]=t,t.stateNode=r}return Ue(t),null;case 13:if(me(xe),r=t.memoizedState,e===null||e.memoizedState!==null&&e.memoizedState.dehydrated!==null){if(ye&&nt!==null&&(t.mode&1)!==0&&(t.flags&128)===0)af(),ir(),t.flags|=98560,l=!1;else if(l=Io(t),r!==null&&r.dehydrated!==null){if(e===null){if(!l)throw Error(T(318));if(l=t.memoizedState,l=l!==null?l.dehydrated:null,!l)throw Error(T(317));l[Pt]=t}else ir(),(t.flags&128)===0&&(t.memoizedState=null),t.flags|=4;Ue(t),l=!1}else xt!==null&&(yu(xt),xt=null),l=!0;if(!l)return t.flags&65536?t:null}return(t.flags&128)!==0?(t.lanes=n,t):(r=r!==null,r!==(e!==null&&e.memoizedState!==null)&&r&&(t.child.flags|=8192,(t.mode&1)!==0&&(e===null||(xe.current&1)!==0?De===0&&(De=3):na())),t.updateQueue!==null&&(t.flags|=4),Ue(t),null);case 4:return ar(),su(e,t),e===null&&Xr(t.stateNode.containerInfo),Ue(t),null;case 10:return Uu(t.type._context),Ue(t),null;case 17:return Ze(t.type)&&ll(),Ue(t),null;case 19:if(me(xe),l=t.memoizedState,l===null)return Ue(t),null;if(r=(t.flags&128)!==0,i=l.rendering,i===null)if(r)Cr(l,!1);else{if(De!==0||e!==null&&(e.flags&128)!==0)for(e=t.child;e!==null;){if(i=dl(e),i!==null){for(t.flags|=128,Cr(l,!1),r=i.updateQueue,r!==null&&(t.updateQueue=r,t.flags|=4),t.subtreeFlags=0,r=n,n=t.child;n!==null;)l=n,e=r,l.flags&=14680066,i=l.alternate,i===null?(l.childLanes=0,l.lanes=e,l.child=null,l.subtreeFlags=0,l.memoizedProps=null,l.memoizedState=null,l.updateQueue=null,l.dependencies=null,l.stateNode=null):(l.childLanes=i.childLanes,l.lanes=i.lanes,l.child=i.child,l.subtreeFlags=0,l.deletions=null,l.memoizedProps=i.memoizedProps,l.memoizedState=i.memoizedState,l.updateQueue=i.updateQueue,l.type=i.type,e=i.dependencies,l.dependencies=e===null?null:{lanes:e.lanes,firstContext:e.firstContext}),n=n.sibling;return fe(xe,xe.current&1|2),t.child}e=e.sibling}l.tail!==null&&_e()>cr&&(t.flags|=128,r=!0,Cr(l,!1),t.lanes=4194304)}else{if(!r)if(e=dl(i),e!==null){if(t.flags|=128,r=!0,n=e.updateQueue,n!==null&&(t.updateQueue=n,t.flags|=4),Cr(l,!0),l.tail===null&&l.tailMode===\"hidden\"&&!i.alternate&&!ye)return Ue(t),null}else 2*_e()-l.renderingStartTime>cr&&n!==1073741824&&(t.flags|=128,r=!0,Cr(l,!1),t.lanes=4194304);l.isBackwards?(i.sibling=t.child,t.child=i):(n=l.last,n!==null?n.sibling=i:t.child=i,l.last=i)}return l.tail!==null?(t=l.tail,l.rendering=t,l.tail=t.sibling,l.renderingStartTime=_e(),t.sibling=null,n=xe.current,fe(xe,r?n&1|2:n&1),t):(Ue(t),null);case 22:case 23:return ta(),r=t.memoizedState!==null,e!==null&&e.memoizedState!==null!==r&&(t.flags|=8192),r&&(t.mode&1)!==0?(tt&1073741824)!==0&&(Ue(t),t.subtreeFlags&6&&(t.flags|=8192)):Ue(t),null;case 24:return null;case 25:return null}throw Error(T(156,t.tag))}function Em(e,t){switch(Iu(t),t.tag){case 1:return Ze(t.type)&&ll(),e=t.flags,e&65536?(t.flags=e&-65537|128,t):null;case 3:return ar(),me(Ge),me(Be),$u(),e=t.flags,(e&65536)!==0&&(e&128)===0?(t.flags=e&-65537|128,t):null;case 5:return Vu(t),null;case 13:if(me(xe),e=t.memoizedState,e!==null&&e.dehydrated!==null){if(t.alternate===null)throw Error(T(340));ir()}return e=t.flags,e&65536?(t.flags=e&-65537|128,t):null;case 19:return me(xe),null;case 4:return ar(),null;case 10:return Uu(t.type._context),null;case 22:case 23:return ta(),null;case 24:return null;default:return null}}var jo=!1,He=!1,Cm=typeof WeakSet==\"function\"?WeakSet:Set,j=null;function Gn(e,t){var n=e.ref;if(n!==null)if(typeof n==\"function\")try{n(null)}catch(r){Ce(e,t,r)}else n.current=null}function cu(e,t,n){try{n()}catch(r){Ce(e,t,r)}}var Js=!1;function Rm(e,t){if(Yi=tl,e=Xc(),Mu(e)){if(\"selectionStart\"in e)var n={start:e.selectionStart,end:e.selectionEnd};else e:{n=(n=e.ownerDocument)&&n.defaultView||window;var r=n.getSelection&&n.getSelection();if(r&&r.rangeCount!==0){n=r.anchorNode;var o=r.anchorOffset,l=r.focusNode;r=r.focusOffset;try{n.nodeType,l.nodeType}catch{n=null;break e}var i=0,a=-1,s=-1,y=0,E=0,N=e,C=null;t:for(;;){for(var L;N!==n||o!==0&&N.nodeType!==3||(a=i+o),N!==l||r!==0&&N.nodeType!==3||(s=i+r),N.nodeType===3&&(i+=N.nodeValue.length),(L=N.firstChild)!==null;)C=N,N=L;for(;;){if(N===e)break t;if(C===n&&++y===o&&(a=i),C===l&&++E===r&&(s=i),(L=N.nextSibling)!==null)break;N=C,C=N.parentNode}N=L}n=a===-1||s===-1?null:{start:a,end:s}}else n=null}n=n||{start:0,end:0}}else n=null;for(Xi={focusedElem:e,selectionRange:n},tl=!1,j=t;j!==null;)if(t=j,e=t.child,(t.subtreeFlags&1028)!==0&&e!==null)e.return=t,j=e;else for(;j!==null;){t=j;try{var O=t.alternate;if((t.flags&1024)!==0)switch(t.tag){case 0:case 11:case 15:break;case 1:if(O!==null){var F=O.memoizedProps,he=O.memoizedState,h=t.stateNode,f=h.getSnapshotBeforeUpdate(t.elementType===t.type?F:vt(t.type,F),he);h.__reactInternalSnapshotBeforeUpdate=f}break;case 3:var v=t.stateNode.containerInfo;v.nodeType===1?v.textContent=\"\":v.nodeType===9&&v.documentElement&&v.removeChild(v.documentElement);break;case 5:case 6:case 4:case 17:break;default:throw Error(T(163))}}catch(P){Ce(t,t.return,P)}if(e=t.sibling,e!==null){e.return=t.return,j=e;break}j=t.return}return O=Js,Js=!1,O}function Fr(e,t,n){var r=t.updateQueue;if(r=r!==null?r.lastEffect:null,r!==null){var o=r=r.next;do{if((o.tag&e)===e){var l=o.destroy;o.destroy=void 0,l!==void 0&&cu(t,n,l)}o=o.next}while(o!==r)}}function Tl(e,t){if(t=t.updateQueue,t=t!==null?t.lastEffect:null,t!==null){var n=t=t.next;do{if((n.tag&e)===e){var r=n.create;n.destroy=r()}n=n.next}while(n!==t)}}function fu(e){var t=e.ref;if(t!==null){var n=e.stateNode;e.tag,e=n,typeof t==\"function\"?t(e):t.current=e}}function Qf(e){var t=e.alternate;t!==null&&(e.alternate=null,Qf(t)),e.child=null,e.deletions=null,e.sibling=null,e.tag===5&&(t=e.stateNode,t!==null&&(delete t[Pt],delete t[Gr],delete t[Zi],delete t[um],delete t[am])),e.stateNode=null,e.return=null,e.dependencies=null,e.memoizedProps=null,e.memoizedState=null,e.pendingProps=null,e.stateNode=null,e.updateQueue=null}function Kf(e){return e.tag===5||e.tag===3||e.tag===4}function ec(e){e:for(;;){for(;e.sibling===null;){if(e.return===null||Kf(e.return))return null;e=e.return}for(e.sibling.return=e.return,e=e.sibling;e.tag!==5&&e.tag!==6&&e.tag!==18;){if(e.flags&2||e.child===null||e.tag===4)continue e;e.child.return=e,e=e.child}if(!(e.flags&2))return e.stateNode}}function du(e,t,n){var r=e.tag;if(r===5||r===6)e=e.stateNode,t?n.nodeType===8?n.parentNode.insertBefore(e,t):n.insertBefore(e,t):(n.nodeType===8?(t=n.parentNode,t.insertBefore(e,n)):(t=n,t.appendChild(e)),n=n._reactRootContainer,n!=null||t.onclick!==null||(t.onclick=ol));else if(r!==4&&(e=e.child,e!==null))for(du(e,t,n),e=e.sibling;e!==null;)du(e,t,n),e=e.sibling}function pu(e,t,n){var r=e.tag;if(r===5||r===6)e=e.stateNode,t?n.insertBefore(e,t):n.appendChild(e);else if(r!==4&&(e=e.child,e!==null))for(pu(e,t,n),e=e.sibling;e!==null;)pu(e,t,n),e=e.sibling}var ze=null,wt=!1;function Kt(e,t,n){for(n=n.child;n!==null;)Yf(e,t,n),n=n.sibling}function Yf(e,t,n){if(At&&typeof At.onCommitFiberUnmount==\"function\")try{At.onCommitFiberUnmount(xl,n)}catch{}switch(n.tag){case 5:He||Gn(n,t);case 6:var r=ze,o=wt;ze=null,Kt(e,t,n),ze=r,wt=o,ze!==null&&(wt?(e=ze,n=n.stateNode,e.nodeType===8?e.parentNode.removeChild(n):e.removeChild(n)):ze.removeChild(n.stateNode));break;case 18:ze!==null&&(wt?(e=ze,n=n.stateNode,e.nodeType===8?gi(e.parentNode,n):e.nodeType===1&&gi(e,n),Qr(e)):gi(ze,n.stateNode));break;case 4:r=ze,o=wt,ze=n.stateNode.containerInfo,wt=!0,Kt(e,t,n),ze=r,wt=o;break;case 0:case 11:case 14:case 15:if(!He&&(r=n.updateQueue,r!==null&&(r=r.lastEffect,r!==null))){o=r=r.next;do{var l=o,i=l.destroy;l=l.tag,i!==void 0&&((l&2)!==0||(l&4)!==0)&&cu(n,t,i),o=o.next}while(o!==r)}Kt(e,t,n);break;case 1:if(!He&&(Gn(n,t),r=n.stateNode,typeof r.componentWillUnmount==\"function\"))try{r.props=n.memoizedProps,r.state=n.memoizedState,r.componentWillUnmount()}catch(a){Ce(n,t,a)}Kt(e,t,n);break;case 21:Kt(e,t,n);break;case 22:n.mode&1?(He=(r=He)||n.memoizedState!==null,Kt(e,t,n),He=r):Kt(e,t,n);break;default:Kt(e,t,n)}}function tc(e){var t=e.updateQueue;if(t!==null){e.updateQueue=null;var n=e.stateNode;n===null&&(n=e.stateNode=new Cm),t.forEach(function(r){var o=zm.bind(null,e,r);n.has(r)||(n.add(r),r.then(o,o))})}}function yt(e,t){var n=t.deletions;if(n!==null)for(var r=0;r<n.length;r++){var o=n[r];try{var l=e,i=t,a=i;e:for(;a!==null;){switch(a.tag){case 5:ze=a.stateNode,wt=!1;break e;case 3:ze=a.stateNode.containerInfo,wt=!0;break e;case 4:ze=a.stateNode.containerInfo,wt=!0;break e}a=a.return}if(ze===null)throw Error(T(160));Yf(l,i,o),ze=null,wt=!1;var s=o.alternate;s!==null&&(s.return=null),o.return=null}catch(y){Ce(o,t,y)}}if(t.subtreeFlags&12854)for(t=t.child;t!==null;)Xf(t,e),t=t.sibling}function Xf(e,t){var n=e.alternate,r=e.flags;switch(e.tag){case 0:case 11:case 14:case 15:if(yt(t,e),_t(e),r&4){try{Fr(3,e,e.return),Tl(3,e)}catch(F){Ce(e,e.return,F)}try{Fr(5,e,e.return)}catch(F){Ce(e,e.return,F)}}break;case 1:yt(t,e),_t(e),r&512&&n!==null&&Gn(n,n.return);break;case 5:if(yt(t,e),_t(e),r&512&&n!==null&&Gn(n,n.return),e.flags&32){var o=e.stateNode;try{Br(o,\"\")}catch(F){Ce(e,e.return,F)}}if(r&4&&(o=e.stateNode,o!=null)){var l=e.memoizedProps,i=n!==null?n.memoizedProps:l,a=e.type,s=e.updateQueue;if(e.updateQueue=null,s!==null)try{a===\"input\"&&l.type===\"radio\"&&l.name!=null&&hc(o,l),Fi(a,i);var y=Fi(a,l);for(i=0;i<s.length;i+=2){var E=s[i],N=s[i+1];E===\"style\"?xc(o,N):E===\"dangerouslySetInnerHTML\"?vc(o,N):E===\"children\"?Br(o,N):xu(o,E,N,y)}switch(a){case\"input\":Li(o,l);break;case\"textarea\":gc(o,l);break;case\"select\":var C=o._wrapperState.wasMultiple;o._wrapperState.wasMultiple=!!l.multiple;var L=l.value;L!=null?bn(o,!!l.multiple,L,!1):C!==!!l.multiple&&(l.defaultValue!=null?bn(o,!!l.multiple,l.defaultValue,!0):bn(o,!!l.multiple,l.multiple?[]:\"\",!1))}o[Gr]=l}catch(F){Ce(e,e.return,F)}}break;case 6:if(yt(t,e),_t(e),r&4){if(e.stateNode===null)throw Error(T(162));o=e.stateNode,l=e.memoizedProps;try{o.nodeValue=l}catch(F){Ce(e,e.return,F)}}break;case 3:if(yt(t,e),_t(e),r&4&&n!==null&&n.memoizedState.isDehydrated)try{Qr(t.containerInfo)}catch(F){Ce(e,e.return,F)}break;case 4:yt(t,e),_t(e);break;case 13:yt(t,e),_t(e),o=e.child,o.flags&8192&&(l=o.memoizedState!==null,o.stateNode.isHidden=l,!l||o.alternate!==null&&o.alternate.memoizedState!==null||(Ju=_e())),r&4&&tc(e);break;case 22:if(E=n!==null&&n.memoizedState!==null,e.mode&1?(He=(y=He)||E,yt(t,e),He=y):yt(t,e),_t(e),r&8192){if(y=e.memoizedState!==null,(e.stateNode.isHidden=y)&&!E&&(e.mode&1)!==0)for(j=e,E=e.child;E!==null;){for(N=j=E;j!==null;){switch(C=j,L=C.child,C.tag){case 0:case 11:case 14:case 15:Fr(4,C,C.return);break;case 1:Gn(C,C.return);var O=C.stateNode;if(typeof O.componentWillUnmount==\"function\"){r=C,n=C.return;try{t=r,O.props=t.memoizedProps,O.state=t.memoizedState,O.componentWillUnmount()}catch(F){Ce(r,n,F)}}break;case 5:Gn(C,C.return);break;case 22:if(C.memoizedState!==null){rc(N);continue}}L!==null?(L.return=C,j=L):rc(N)}E=E.sibling}e:for(E=null,N=e;;){if(N.tag===5){if(E===null){E=N;try{o=N.stateNode,y?(l=o.style,typeof l.setProperty==\"function\"?l.setProperty(\"display\",\"none\",\"important\"):l.display=\"none\"):(a=N.stateNode,s=N.memoizedProps.style,i=s!=null&&s.hasOwnProperty(\"display\")?s.display:null,a.style.display=wc(\"display\",i))}catch(F){Ce(e,e.return,F)}}}else if(N.tag===6){if(E===null)try{N.stateNode.nodeValue=y?\"\":N.memoizedProps}catch(F){Ce(e,e.return,F)}}else if((N.tag!==22&&N.tag!==23||N.memoizedState===null||N===e)&&N.child!==null){N.child.return=N,N=N.child;continue}if(N===e)break e;for(;N.sibling===null;){if(N.return===null||N.return===e)break e;E===N&&(E=null),N=N.return}E===N&&(E=null),N.sibling.return=N.return,N=N.sibling}}break;case 19:yt(t,e),_t(e),r&4&&tc(e);break;case 21:break;default:yt(t,e),_t(e)}}function _t(e){var t=e.flags;if(t&2){try{e:{for(var n=e.return;n!==null;){if(Kf(n)){var r=n;break e}n=n.return}throw Error(T(160))}switch(r.tag){case 5:var o=r.stateNode;r.flags&32&&(Br(o,\"\"),r.flags&=-33);var l=ec(e);pu(e,l,o);break;case 3:case 4:var i=r.stateNode.containerInfo,a=ec(e);du(e,a,i);break;default:throw Error(T(161))}}catch(s){Ce(e,e.return,s)}e.flags&=-3}t&4096&&(e.flags&=-4097)}function Nm(e,t,n){j=e,qf(e,t,n)}function qf(e,t,n){for(var r=(e.mode&1)!==0;j!==null;){var o=j,l=o.child;if(o.tag===22&&r){var i=o.memoizedState!==null||jo;if(!i){var a=o.alternate,s=a!==null&&a.memoizedState!==null||He;a=jo;var y=He;if(jo=i,(He=s)&&!y)for(j=o;j!==null;)i=j,s=i.child,i.tag===22&&i.memoizedState!==null?oc(o):s!==null?(s.return=i,j=s):oc(o);for(;l!==null;)j=l,qf(l,t,n),l=l.sibling;j=o,jo=a,He=y}nc(e,t,n)}else(o.subtreeFlags&8772)!==0&&l!==null?(l.return=o,j=l):nc(e,t,n)}}function nc(e){for(;j!==null;){var t=j;if((t.flags&8772)!==0){var n=t.alternate;try{if((t.flags&8772)!==0)switch(t.tag){case 0:case 11:case 15:He||Tl(5,t);break;case 1:var r=t.stateNode;if(t.flags&4&&!He)if(n===null)r.componentDidMount();else{var o=t.elementType===t.type?n.memoizedProps:vt(t.type,n.memoizedProps);r.componentDidUpdate(o,n.memoizedState,r.__reactInternalSnapshotBeforeUpdate)}var l=t.updateQueue;l!==null&&Hs(t,l,r);break;case 3:var i=t.updateQueue;if(i!==null){if(n=null,t.child!==null)switch(t.child.tag){case 5:n=t.child.stateNode;break;case 1:n=t.child.stateNode}Hs(t,i,n)}break;case 5:var a=t.stateNode;if(n===null&&t.flags&4){n=a;var s=t.memoizedProps;switch(t.type){case\"button\":case\"input\":case\"select\":case\"textarea\":s.autoFocus&&n.focus();break;case\"img\":s.src&&(n.src=s.src)}}break;case 6:break;case 4:break;case 12:break;case 13:if(t.memoizedState===null){var y=t.alternate;if(y!==null){var E=y.memoizedState;if(E!==null){var N=E.dehydrated;N!==null&&Qr(N)}}}break;case 19:case 17:case 21:case 22:case 23:case 25:break;default:throw Error(T(163))}He||t.flags&512&&fu(t)}catch(C){Ce(t,t.return,C)}}if(t===e){j=null;break}if(n=t.sibling,n!==null){n.return=t.return,j=n;break}j=t.return}}function rc(e){for(;j!==null;){var t=j;if(t===e){j=null;break}var n=t.sibling;if(n!==null){n.return=t.return,j=n;break}j=t.return}}function oc(e){for(;j!==null;){var t=j;try{switch(t.tag){case 0:case 11:case 15:var n=t.return;try{Tl(4,t)}catch(s){Ce(t,n,s)}break;case 1:var r=t.stateNode;if(typeof r.componentDidMount==\"function\"){var o=t.return;try{r.componentDidMount()}catch(s){Ce(t,o,s)}}var l=t.return;try{fu(t)}catch(s){Ce(t,l,s)}break;case 5:var i=t.return;try{fu(t)}catch(s){Ce(t,i,s)}}}catch(s){Ce(t,t.return,s)}if(t===e){j=null;break}var a=t.sibling;if(a!==null){a.return=t.return,j=a;break}j=t.return}}var _m=Math.ceil,hl=$t.ReactCurrentDispatcher,Zu=$t.ReactCurrentOwner,pt=$t.ReactCurrentBatchConfig,oe=0,Me=null,Te=null,Ie=0,tt=0,Zn=fn(0),De=0,no=null,An=0,Pl=0,bu=0,jr=null,Xe=null,Ju=0,cr=1/0,It=null,gl=!1,mu=null,on=null,Uo=!1,bt=null,yl=0,Ur=0,hu=null,Yo=-1,Xo=0;function Ke(){return(oe&6)!==0?_e():Yo!==-1?Yo:Yo=_e()}function ln(e){return(e.mode&1)===0?1:(oe&2)!==0&&Ie!==0?Ie&-Ie:cm.transition!==null?(Xo===0&&(Xo=Lc()),Xo):(e=ie,e!==0||(e=window.event,e=e===void 0?16:Uc(e.type)),e)}function St(e,t,n,r){if(50<Ur)throw Ur=0,hu=null,Error(T(185));ro(e,n,r),((oe&2)===0||e!==Me)&&(e===Me&&((oe&2)===0&&(Pl|=n),De===4&&Gt(e,Ie)),be(e,r),n===1&&oe===0&&(t.mode&1)===0&&(cr=_e()+500,Rl&&dn()))}function be(e,t){var n=e.callbackNode;dp(e,t);var r=el(e,e===Me?Ie:0);if(r===0)n!==null&&ds(n),e.callbackNode=null,e.callbackPriority=0;else if(t=r&-r,e.callbackPriority!==t){if(n!=null&&ds(n),t===1)e.tag===0?sm(lc.bind(null,e)):of(lc.bind(null,e)),lm(function(){(oe&6)===0&&dn()}),n=null;else{switch(Mc(r)){case 1:n=Ru;break;case 4:n=Ac;break;case 16:n=Jo;break;case 536870912:n=Dc;break;default:n=Jo}n=rd(n,Gf.bind(null,e))}e.callbackPriority=t,e.callbackNode=n}}function Gf(e,t){if(Yo=-1,Xo=0,(oe&6)!==0)throw Error(T(327));var n=e.callbackNode;if(rr()&&e.callbackNode!==n)return null;var r=el(e,e===Me?Ie:0);if(r===0)return null;if((r&30)!==0||(r&e.expiredLanes)!==0||t)t=vl(e,r);else{t=r;var o=oe;oe|=2;var l=bf();(Me!==e||Ie!==t)&&(It=null,cr=_e()+500,Rn(e,t));do try{Am();break}catch(a){Zf(e,a)}while(!0);ju(),hl.current=l,oe=o,Te!==null?t=0:(Me=null,Ie=0,t=De)}if(t!==0){if(t===2&&(o=Wi(e),o!==0&&(r=o,t=gu(e,o))),t===1)throw n=no,Rn(e,0),Gt(e,r),be(e,_e()),n;if(t===6)Gt(e,r);else{if(o=e.current.alternate,(r&30)===0&&!Tm(o)&&(t=vl(e,r),t===2&&(l=Wi(e),l!==0&&(r=l,t=gu(e,l))),t===1))throw n=no,Rn(e,0),Gt(e,r),be(e,_e()),n;switch(e.finishedWork=o,e.finishedLanes=r,t){case 0:case 1:throw Error(T(345));case 2:kn(e,Xe,It);break;case 3:if(Gt(e,r),(r&130023424)===r&&(t=Ju+500-_e(),10<t)){if(el(e,0)!==0)break;if(o=e.suspendedLanes,(o&r)!==r){Ke(),e.pingedLanes|=e.suspendedLanes&o;break}e.timeoutHandle=Gi(kn.bind(null,e,Xe,It),t);break}kn(e,Xe,It);break;case 4:if(Gt(e,r),(r&4194240)===r)break;for(t=e.eventTimes,o=-1;0<r;){var i=31-kt(r);l=1<<i,i=t[i],i>o&&(o=i),r&=~l}if(r=o,r=_e()-r,r=(120>r?120:480>r?480:1080>r?1080:1920>r?1920:3e3>r?3e3:4320>r?4320:1960*_m(r/1960))-r,10<r){e.timeoutHandle=Gi(kn.bind(null,e,Xe,It),r);break}kn(e,Xe,It);break;case 5:kn(e,Xe,It);break;default:throw Error(T(329))}}}return be(e,_e()),e.callbackNode===n?Gf.bind(null,e):null}function gu(e,t){var n=jr;return e.current.memoizedState.isDehydrated&&(Rn(e,t).flags|=256),e=vl(e,t),e!==2&&(t=Xe,Xe=n,t!==null&&yu(t)),e}function yu(e){Xe===null?Xe=e:Xe.push.apply(Xe,e)}function Tm(e){for(var t=e;;){if(t.flags&16384){var n=t.updateQueue;if(n!==null&&(n=n.stores,n!==null))for(var r=0;r<n.length;r++){var o=n[r],l=o.getSnapshot;o=o.value;try{if(!Et(l(),o))return!1}catch{return!1}}}if(n=t.child,t.subtreeFlags&16384&&n!==null)n.return=t,t=n;else{if(t===e)break;for(;t.sibling===null;){if(t.return===null||t.return===e)return!0;t=t.return}t.sibling.return=t.return,t=t.sibling}}return!0}function Gt(e,t){for(t&=~bu,t&=~Pl,e.suspendedLanes|=t,e.pingedLanes&=~t,e=e.expirationTimes;0<t;){var n=31-kt(t),r=1<<n;e[n]=-1,t&=~r}}function lc(e){if((oe&6)!==0)throw Error(T(327));rr();var t=el(e,0);if((t&1)===0)return be(e,_e()),null;var n=vl(e,t);if(e.tag!==0&&n===2){var r=Wi(e);r!==0&&(t=r,n=gu(e,r))}if(n===1)throw n=no,Rn(e,0),Gt(e,t),be(e,_e()),n;if(n===6)throw Error(T(345));return e.finishedWork=e.current.alternate,e.finishedLanes=t,kn(e,Xe,It),be(e,_e()),null}function ea(e,t){var n=oe;oe|=1;try{return e(t)}finally{oe=n,oe===0&&(cr=_e()+500,Rl&&dn())}}function Dn(e){bt!==null&&bt.tag===0&&(oe&6)===0&&rr();var t=oe;oe|=1;var n=pt.transition,r=ie;try{if(pt.transition=null,ie=1,e)return e()}finally{ie=r,pt.transition=n,oe=t,(oe&6)===0&&dn()}}function ta(){tt=Zn.current,me(Zn)}function Rn(e,t){e.finishedWork=null,e.finishedLanes=0;var n=e.timeoutHandle;if(n!==-1&&(e.timeoutHandle=-1,om(n)),Te!==null)for(n=Te.return;n!==null;){var r=n;switch(Iu(r),r.tag){case 1:r=r.type.childContextTypes,r!=null&&ll();break;case 3:ar(),me(Ge),me(Be),$u();break;case 5:Vu(r);break;case 4:ar();break;case 13:me(xe);break;case 19:me(xe);break;case 10:Uu(r.type._context);break;case 22:case 23:ta()}n=n.return}if(Me=e,Te=e=un(e.current,null),Ie=tt=t,De=0,no=null,bu=Pl=An=0,Xe=jr=null,En!==null){for(t=0;t<En.length;t++)if(n=En[t],r=n.interleaved,r!==null){n.interleaved=null;var o=r.next,l=n.pending;if(l!==null){var i=l.next;l.next=o,r.next=i}n.pending=r}En=null}return e}function Zf(e,t){do{var n=Te;try{if(ju(),$o.current=ml,pl){for(var r=ke.memoizedState;r!==null;){var o=r.queue;o!==null&&(o.pending=null),r=r.next}pl=!1}if(Pn=0,Le=Ae=ke=null,Or=!1,Jr=0,Zu.current=null,n===null||n.return===null){De=1,no=t,Te=null;break}e:{var l=e,i=n.return,a=n,s=t;if(t=Ie,a.flags|=32768,s!==null&&typeof s==\"object\"&&typeof s.then==\"function\"){var y=s,E=a,N=E.tag;if((E.mode&1)===0&&(N===0||N===11||N===15)){var C=E.alternate;C?(E.updateQueue=C.updateQueue,E.memoizedState=C.memoizedState,E.lanes=C.lanes):(E.updateQueue=null,E.memoizedState=null)}var L=Ks(i);if(L!==null){L.flags&=-257,Ys(L,i,a,l,t),L.mode&1&&Qs(l,y,t),t=L,s=y;var O=t.updateQueue;if(O===null){var F=new Set;F.add(s),t.updateQueue=F}else O.add(s);break e}else{if((t&1)===0){Qs(l,y,t),na();break e}s=Error(T(426))}}else if(ye&&a.mode&1){var he=Ks(i);if(he!==null){(he.flags&65536)===0&&(he.flags|=256),Ys(he,i,a,l,t),Ou(sr(s,a));break e}}l=s=sr(s,a),De!==4&&(De=2),jr===null?jr=[l]:jr.push(l),l=i;do{switch(l.tag){case 3:l.flags|=65536,t&=-t,l.lanes|=t;var h=zf(l,s,t);Us(l,h);break e;case 1:a=s;var f=l.type,v=l.stateNode;if((l.flags&128)===0&&(typeof f.getDerivedStateFromError==\"function\"||v!==null&&typeof v.componentDidCatch==\"function\"&&(on===null||!on.has(v)))){l.flags|=65536,t&=-t,l.lanes|=t;var P=If(l,a,t);Us(l,P);break e}}l=l.return}while(l!==null)}ed(n)}catch(H){t=H,Te===n&&n!==null&&(Te=n=n.return);continue}break}while(!0)}function bf(){var e=hl.current;return hl.current=ml,e===null?ml:e}function na(){(De===0||De===3||De===2)&&(De=4),Me===null||(An&268435455)===0&&(Pl&268435455)===0||Gt(Me,Ie)}function vl(e,t){var n=oe;oe|=2;var r=bf();(Me!==e||Ie!==t)&&(It=null,Rn(e,t));do try{Pm();break}catch(o){Zf(e,o)}while(!0);if(ju(),oe=n,hl.current=r,Te!==null)throw Error(T(261));return Me=null,Ie=0,De}function Pm(){for(;Te!==null;)Jf(Te)}function Am(){for(;Te!==null&&!rp();)Jf(Te)}function Jf(e){var t=nd(e.alternate,e,tt);e.memoizedProps=e.pendingProps,t===null?ed(e):Te=t,Zu.current=null}function ed(e){var t=e;do{var n=t.alternate;if(e=t.return,(t.flags&32768)===0){if(n=Sm(n,t,tt),n!==null){Te=n;return}}else{if(n=Em(n,t),n!==null){n.flags&=32767,Te=n;return}if(e!==null)e.flags|=32768,e.subtreeFlags=0,e.deletions=null;else{De=6,Te=null;return}}if(t=t.sibling,t!==null){Te=t;return}Te=t=e}while(t!==null);De===0&&(De=5)}function kn(e,t,n){var r=ie,o=pt.transition;try{pt.transition=null,ie=1,Dm(e,t,n,r)}finally{pt.transition=o,ie=r}return null}function Dm(e,t,n,r){do rr();while(bt!==null);if((oe&6)!==0)throw Error(T(327));n=e.finishedWork;var o=e.finishedLanes;if(n===null)return null;if(e.finishedWork=null,e.finishedLanes=0,n===e.current)throw Error(T(177));e.callbackNode=null,e.callbackPriority=0;var l=n.lanes|n.childLanes;if(pp(e,l),e===Me&&(Te=Me=null,Ie=0),(n.subtreeFlags&2064)===0&&(n.flags&2064)===0||Uo||(Uo=!0,rd(Jo,function(){return rr(),null})),l=(n.flags&15990)!==0,(n.subtreeFlags&15990)!==0||l){l=pt.transition,pt.transition=null;var i=ie;ie=1;var a=oe;oe|=4,Zu.current=null,Rm(e,n),Xf(n,e),Jp(Xi),tl=!!Yi,Xi=Yi=null,e.current=n,Nm(n,e,o),op(),oe=a,ie=i,pt.transition=l}else e.current=n;if(Uo&&(Uo=!1,bt=e,yl=o),l=e.pendingLanes,l===0&&(on=null),up(n.stateNode,r),be(e,_e()),t!==null)for(r=e.onRecoverableError,n=0;n<t.length;n++)o=t[n],r(o.value,{componentStack:o.stack,digest:o.digest});if(gl)throw gl=!1,e=mu,mu=null,e;return(yl&1)!==0&&e.tag!==0&&rr(),l=e.pendingLanes,(l&1)!==0?e===hu?Ur++:(Ur=0,hu=e):Ur=0,dn(),null}function rr(){if(bt!==null){var e=Mc(yl),t=pt.transition,n=ie;try{if(pt.transition=null,ie=16>e?16:e,bt===null)var r=!1;else{if(e=bt,bt=null,yl=0,(oe&6)!==0)throw Error(T(331));var o=oe;for(oe|=4,j=e.current;j!==null;){var l=j,i=l.child;if((j.flags&16)!==0){var a=l.deletions;if(a!==null){for(var s=0;s<a.length;s++){var y=a[s];for(j=y;j!==null;){var E=j;switch(E.tag){case 0:case 11:case 15:Fr(8,E,l)}var N=E.child;if(N!==null)N.return=E,j=N;else for(;j!==null;){E=j;var C=E.sibling,L=E.return;if(Qf(E),E===y){j=null;break}if(C!==null){C.return=L,j=C;break}j=L}}}var O=l.alternate;if(O!==null){var F=O.child;if(F!==null){O.child=null;do{var he=F.sibling;F.sibling=null,F=he}while(F!==null)}}j=l}}if((l.subtreeFlags&2064)!==0&&i!==null)i.return=l,j=i;else e:for(;j!==null;){if(l=j,(l.flags&2048)!==0)switch(l.tag){case 0:case 11:case 15:Fr(9,l,l.return)}var h=l.sibling;if(h!==null){h.return=l.return,j=h;break e}j=l.return}}var f=e.current;for(j=f;j!==null;){i=j;var v=i.child;if((i.subtreeFlags&2064)!==0&&v!==null)v.return=i,j=v;else e:for(i=f;j!==null;){if(a=j,(a.flags&2048)!==0)try{switch(a.tag){case 0:case 11:case 15:Tl(9,a)}}catch(H){Ce(a,a.return,H)}if(a===i){j=null;break e}var P=a.sibling;if(P!==null){P.return=a.return,j=P;break e}j=a.return}}if(oe=o,dn(),At&&typeof At.onPostCommitFiberRoot==\"function\")try{At.onPostCommitFiberRoot(xl,e)}catch{}r=!0}return r}finally{ie=n,pt.transition=t}}return!1}function ic(e,t,n){t=sr(n,t),t=zf(e,t,1),e=rn(e,t,1),t=Ke(),e!==null&&(ro(e,1,t),be(e,t))}function Ce(e,t,n){if(e.tag===3)ic(e,e,n);else for(;t!==null;){if(t.tag===3){ic(t,e,n);break}else if(t.tag===1){var r=t.stateNode;if(typeof t.type.getDerivedStateFromError==\"function\"||typeof r.componentDidCatch==\"function\"&&(on===null||!on.has(r))){e=sr(n,e),e=If(t,e,1),t=rn(t,e,1),e=Ke(),t!==null&&(ro(t,1,e),be(t,e));break}}t=t.return}}function Lm(e,t,n){var r=e.pingCache;r!==null&&r.delete(t),t=Ke(),e.pingedLanes|=e.suspendedLanes&n,Me===e&&(Ie&n)===n&&(De===4||De===3&&(Ie&130023424)===Ie&&500>_e()-Ju?Rn(e,0):bu|=n),be(e,t)}function td(e,t){t===0&&((e.mode&1)===0?t=1:(t=Ro,Ro<<=1,(Ro&130023424)===0&&(Ro=4194304)));var n=Ke();e=Wt(e,t),e!==null&&(ro(e,t,n),be(e,n))}function Mm(e){var t=e.memoizedState,n=0;t!==null&&(n=t.retryLane),td(e,n)}function zm(e,t){var n=0;switch(e.tag){case 13:var r=e.stateNode,o=e.memoizedState;o!==null&&(n=o.retryLane);break;case 19:r=e.stateNode;break;default:throw Error(T(314))}r!==null&&r.delete(t),td(e,n)}var nd;nd=function(e,t,n){if(e!==null)if(e.memoizedProps!==t.pendingProps||Ge.current)qe=!0;else{if((e.lanes&n)===0&&(t.flags&128)===0)return qe=!1,km(e,t,n);qe=(e.flags&131072)!==0}else qe=!1,ye&&(t.flags&1048576)!==0&&lf(t,al,t.index);switch(t.lanes=0,t.tag){case 2:var r=t.type;Ko(e,t),e=t.pendingProps;var o=lr(t,Be.current);nr(t,n),o=Ku(null,t,r,e,o,n);var l=Yu();return t.flags|=1,typeof o==\"object\"&&o!==null&&typeof o.render==\"function\"&&o.$$typeof===void 0?(t.tag=1,t.memoizedState=null,t.updateQueue=null,Ze(r)?(l=!0,il(t)):l=!1,t.memoizedState=o.state!==null&&o.state!==void 0?o.state:null,Bu(t),o.updater=_l,t.stateNode=o,o._reactInternals=t,ru(t,r,e,n),t=iu(null,t,r,!0,l,n)):(t.tag=0,ye&&l&&zu(t),Qe(null,t,o,n),t=t.child),t;case 16:r=t.elementType;e:{switch(Ko(e,t),e=t.pendingProps,o=r._init,r=o(r._payload),t.type=r,o=t.tag=Om(r),e=vt(r,e),o){case 0:t=lu(null,t,r,e,n);break e;case 1:t=Gs(null,t,r,e,n);break e;case 11:t=Xs(null,t,r,e,n);break e;case 14:t=qs(null,t,r,vt(r.type,e),n);break e}throw Error(T(306,r,\"\"))}return t;case 0:return r=t.type,o=t.pendingProps,o=t.elementType===r?o:vt(r,o),lu(e,t,r,o,n);case 1:return r=t.type,o=t.pendingProps,o=t.elementType===r?o:vt(r,o),Gs(e,t,r,o,n);case 3:e:{if(Uf(t),e===null)throw Error(T(387));r=t.pendingProps,l=t.memoizedState,o=l.element,df(e,t),fl(t,r,null,n);var i=t.memoizedState;if(r=i.element,l.isDehydrated)if(l={element:r,isDehydrated:!1,cache:i.cache,pendingSuspenseBoundaries:i.pendingSuspenseBoundaries,transitions:i.transitions},t.updateQueue.baseState=l,t.memoizedState=l,t.flags&256){o=sr(Error(T(423)),t),t=Zs(e,t,r,n,o);break e}else if(r!==o){o=sr(Error(T(424)),t),t=Zs(e,t,r,n,o);break e}else for(nt=nn(t.stateNode.containerInfo.firstChild),rt=t,ye=!0,xt=null,n=cf(t,null,r,n),t.child=n;n;)n.flags=n.flags&-3|4096,n=n.sibling;else{if(ir(),r===o){t=Vt(e,t,n);break e}Qe(e,t,r,n)}t=t.child}return t;case 5:return pf(t),e===null&&eu(t),r=t.type,o=t.pendingProps,l=e!==null?e.memoizedProps:null,i=o.children,qi(r,o)?i=null:l!==null&&qi(r,l)&&(t.flags|=32),jf(e,t),Qe(e,t,i,n),t.child;case 6:return e===null&&eu(t),null;case 13:return Hf(e,t,n);case 4:return Wu(t,t.stateNode.containerInfo),r=t.pendingProps,e===null?t.child=ur(t,null,r,n):Qe(e,t,r,n),t.child;case 11:return r=t.type,o=t.pendingProps,o=t.elementType===r?o:vt(r,o),Xs(e,t,r,o,n);case 7:return Qe(e,t,t.pendingProps,n),t.child;case 8:return Qe(e,t,t.pendingProps.children,n),t.child;case 12:return Qe(e,t,t.pendingProps.children,n),t.child;case 10:e:{if(r=t.type._context,o=t.pendingProps,l=t.memoizedProps,i=o.value,fe(sl,r._currentValue),r._currentValue=i,l!==null)if(Et(l.value,i)){if(l.children===o.children&&!Ge.current){t=Vt(e,t,n);break e}}else for(l=t.child,l!==null&&(l.return=t);l!==null;){var a=l.dependencies;if(a!==null){i=l.child;for(var s=a.firstContext;s!==null;){if(s.context===r){if(l.tag===1){s=Ut(-1,n&-n),s.tag=2;var y=l.updateQueue;if(y!==null){y=y.shared;var E=y.pending;E===null?s.next=s:(s.next=E.next,E.next=s),y.pending=s}}l.lanes|=n,s=l.alternate,s!==null&&(s.lanes|=n),tu(l.return,n,t),a.lanes|=n;break}s=s.next}}else if(l.tag===10)i=l.type===t.type?null:l.child;else if(l.tag===18){if(i=l.return,i===null)throw Error(T(341));i.lanes|=n,a=i.alternate,a!==null&&(a.lanes|=n),tu(i,n,t),i=l.sibling}else i=l.child;if(i!==null)i.return=l;else for(i=l;i!==null;){if(i===t){i=null;break}if(l=i.sibling,l!==null){l.return=i.return,i=l;break}i=i.return}l=i}Qe(e,t,o.children,n),t=t.child}return t;case 9:return o=t.type,r=t.pendingProps.children,nr(t,n),o=mt(o),r=r(o),t.flags|=1,Qe(e,t,r,n),t.child;case 14:return r=t.type,o=vt(r,t.pendingProps),o=vt(r.type,o),qs(e,t,r,o,n);case 15:return Of(e,t,t.type,t.pendingProps,n);case 17:return r=t.type,o=t.pendingProps,o=t.elementType===r?o:vt(r,o),Ko(e,t),t.tag=1,Ze(r)?(e=!0,il(t)):e=!1,nr(t,n),Mf(t,r,o),ru(t,r,o,n),iu(null,t,r,!0,e,n);case 19:return Bf(e,t,n);case 22:return Ff(e,t,n)}throw Error(T(156,t.tag))};function rd(e,t){return Pc(e,t)}function Im(e,t,n,r){this.tag=e,this.key=n,this.sibling=this.child=this.return=this.stateNode=this.type=this.elementType=null,this.index=0,this.ref=null,this.pendingProps=t,this.dependencies=this.memoizedState=this.updateQueue=this.memoizedProps=null,this.mode=r,this.subtreeFlags=this.flags=0,this.deletions=null,this.childLanes=this.lanes=0,this.alternate=null}function dt(e,t,n,r){return new Im(e,t,n,r)}function ra(e){return e=e.prototype,!(!e||!e.isReactComponent)}function Om(e){if(typeof e==\"function\")return ra(e)?1:0;if(e!=null){if(e=e.$$typeof,e===Su)return 11;if(e===Eu)return 14}return 2}function un(e,t){var n=e.alternate;return n===null?(n=dt(e.tag,t,e.key,e.mode),n.elementType=e.elementType,n.type=e.type,n.stateNode=e.stateNode,n.alternate=e,e.alternate=n):(n.pendingProps=t,n.type=e.type,n.flags=0,n.subtreeFlags=0,n.deletions=null),n.flags=e.flags&14680064,n.childLanes=e.childLanes,n.lanes=e.lanes,n.child=e.child,n.memoizedProps=e.memoizedProps,n.memoizedState=e.memoizedState,n.updateQueue=e.updateQueue,t=e.dependencies,n.dependencies=t===null?null:{lanes:t.lanes,firstContext:t.firstContext},n.sibling=e.sibling,n.index=e.index,n.ref=e.ref,n}function qo(e,t,n,r,o,l){var i=2;if(r=e,typeof e==\"function\")ra(e)&&(i=1);else if(typeof e==\"string\")i=5;else e:switch(e){case Bn:return Nn(n.children,o,l,t);case ku:i=8,o|=8;break;case _i:return e=dt(12,n,t,o|2),e.elementType=_i,e.lanes=l,e;case Ti:return e=dt(13,n,t,o),e.elementType=Ti,e.lanes=l,e;case Pi:return e=dt(19,n,t,o),e.elementType=Pi,e.lanes=l,e;case dc:return Al(n,o,l,t);default:if(typeof e==\"object\"&&e!==null)switch(e.$$typeof){case cc:i=10;break e;case fc:i=9;break e;case Su:i=11;break e;case Eu:i=14;break e;case Yt:i=16,r=null;break e}throw Error(T(130,e==null?e:typeof e,\"\"))}return t=dt(i,n,t,o),t.elementType=e,t.type=r,t.lanes=l,t}function Nn(e,t,n,r){return e=dt(7,e,r,t),e.lanes=n,e}function Al(e,t,n,r){return e=dt(22,e,r,t),e.elementType=dc,e.lanes=n,e.stateNode={isHidden:!1},e}function Ci(e,t,n){return e=dt(6,e,null,t),e.lanes=n,e}function Ri(e,t,n){return t=dt(4,e.children!==null?e.children:[],e.key,t),t.lanes=n,t.stateNode={containerInfo:e.containerInfo,pendingChildren:null,implementation:e.implementation},t}function Fm(e,t,n,r,o){this.tag=t,this.containerInfo=e,this.finishedWork=this.pingCache=this.current=this.pendingChildren=null,this.timeoutHandle=-1,this.callbackNode=this.pendingContext=this.context=null,this.callbackPriority=0,this.eventTimes=ai(0),this.expirationTimes=ai(-1),this.entangledLanes=this.finishedLanes=this.mutableReadLanes=this.expiredLanes=this.pingedLanes=this.suspendedLanes=this.pendingLanes=0,this.entanglements=ai(0),this.identifierPrefix=r,this.onRecoverableError=o,this.mutableSourceEagerHydrationData=null}function oa(e,t,n,r,o,l,i,a,s){return e=new Fm(e,t,n,a,s),t===1?(t=1,l===!0&&(t|=8)):t=0,l=dt(3,null,null,t),e.current=l,l.stateNode=e,l.memoizedState={element:r,isDehydrated:n,cache:null,transitions:null,pendingSuspenseBoundaries:null},Bu(l),e}function jm(e,t,n){var r=3<arguments.length&&arguments[3]!==void 0?arguments[3]:null;return{$$typeof:Hn,key:r==null?null:\"\"+r,children:e,containerInfo:t,implementation:n}}function od(e){if(!e)return sn;e=e._reactInternals;e:{if(Mn(e)!==e||e.tag!==1)throw Error(T(170));var t=e;do{switch(t.tag){case 3:t=t.stateNode.context;break e;case 1:if(Ze(t.type)){t=t.stateNode.__reactInternalMemoizedMergedChildContext;break e}}t=t.return}while(t!==null);throw Error(T(171))}if(e.tag===1){var n=e.type;if(Ze(n))return rf(e,n,t)}return t}function ld(e,t,n,r,o,l,i,a,s){return e=oa(n,r,!0,e,o,l,i,a,s),e.context=od(null),n=e.current,r=Ke(),o=ln(n),l=Ut(r,o),l.callback=t??null,rn(n,l,o),e.current.lanes=o,ro(e,o,r),be(e,r),e}function Dl(e,t,n,r){var o=t.current,l=Ke(),i=ln(o);return n=od(n),t.context===null?t.context=n:t.pendingContext=n,t=Ut(l,i),t.payload={element:e},r=r===void 0?null:r,r!==null&&(t.callback=r),e=rn(o,t,i),e!==null&&(St(e,o,i,l),Vo(e,o,i)),i}function wl(e){return e=e.current,e.child?(e.child.tag===5,e.child.stateNode):null}function uc(e,t){if(e=e.memoizedState,e!==null&&e.dehydrated!==null){var n=e.retryLane;e.retryLane=n!==0&&n<t?n:t}}function la(e,t){uc(e,t),(e=e.alternate)&&uc(e,t)}function Um(){return null}var id=typeof reportError==\"function\"?reportError:function(e){console.error(e)};function ia(e){this._internalRoot=e}Ll.prototype.render=ia.prototype.render=function(e){var t=this._internalRoot;if(t===null)throw Error(T(409));Dl(e,t,null,null)};Ll.prototype.unmount=ia.prototype.unmount=function(){var e=this._internalRoot;if(e!==null){this._internalRoot=null;var t=e.containerInfo;Dn(function(){Dl(null,e,null,null)}),t[Bt]=null}};function Ll(e){this._internalRoot=e}Ll.prototype.unstable_scheduleHydration=function(e){if(e){var t=Oc();e={blockedOn:null,target:e,priority:t};for(var n=0;n<qt.length&&t!==0&&t<qt[n].priority;n++);qt.splice(n,0,e),n===0&&jc(e)}};function ua(e){return!(!e||e.nodeType!==1&&e.nodeType!==9&&e.nodeType!==11)}function Ml(e){return!(!e||e.nodeType!==1&&e.nodeType!==9&&e.nodeType!==11&&(e.nodeType!==8||e.nodeValue!==\" react-mount-point-unstable \"))}function ac(){}function Hm(e,t,n,r,o){if(o){if(typeof r==\"function\"){var l=r;r=function(){var y=wl(i);l.call(y)}}var i=ld(t,r,e,0,null,!1,!1,\"\",ac);return e._reactRootContainer=i,e[Bt]=i.current,Xr(e.nodeType===8?e.parentNode:e),Dn(),i}for(;o=e.lastChild;)e.removeChild(o);if(typeof r==\"function\"){var a=r;r=function(){var y=wl(s);a.call(y)}}var s=oa(e,0,!1,null,null,!1,!1,\"\",ac);return e._reactRootContainer=s,e[Bt]=s.current,Xr(e.nodeType===8?e.parentNode:e),Dn(function(){Dl(t,s,n,r)}),s}function zl(e,t,n,r,o){var l=n._reactRootContainer;if(l){var i=l;if(typeof o==\"function\"){var a=o;o=function(){var s=wl(i);a.call(s)}}Dl(t,i,e,o)}else i=Hm(n,t,e,o,r);return wl(i)}zc=function(e){switch(e.tag){case 3:var t=e.stateNode;if(t.current.memoizedState.isDehydrated){var n=Pr(t.pendingLanes);n!==0&&(Nu(t,n|1),be(t,_e()),(oe&6)===0&&(cr=_e()+500,dn()))}break;case 13:Dn(function(){var r=Wt(e,1);if(r!==null){var o=Ke();St(r,e,1,o)}}),la(e,1)}};_u=function(e){if(e.tag===13){var t=Wt(e,134217728);if(t!==null){var n=Ke();St(t,e,134217728,n)}la(e,134217728)}};Ic=function(e){if(e.tag===13){var t=ln(e),n=Wt(e,t);if(n!==null){var r=Ke();St(n,e,t,r)}la(e,t)}};Oc=function(){return ie};Fc=function(e,t){var n=ie;try{return ie=e,t()}finally{ie=n}};Ui=function(e,t,n){switch(t){case\"input\":if(Li(e,n),t=n.name,n.type===\"radio\"&&t!=null){for(n=e;n.parentNode;)n=n.parentNode;for(n=n.querySelectorAll(\"input[name=\"+JSON.stringify(\"\"+t)+'][type=\"radio\"]'),t=0;t<n.length;t++){var r=n[t];if(r!==e&&r.form===e.form){var o=Cl(r);if(!o)throw Error(T(90));mc(r),Li(r,o)}}}break;case\"textarea\":gc(e,n);break;case\"select\":t=n.value,t!=null&&bn(e,!!n.multiple,t,!1)}};Ec=ea;Cc=Dn;var Bm={usingClientEntryPoint:!1,Events:[lo,Qn,Cl,kc,Sc,ea]},Rr={findFiberByHostInstance:Sn,bundleType:0,version:\"18.3.1\",rendererPackageName:\"react-dom\"},Wm={bundleType:Rr.bundleType,version:Rr.version,rendererPackageName:Rr.rendererPackageName,rendererConfig:Rr.rendererConfig,overrideHookState:null,overrideHookStateDeletePath:null,overrideHookStateRenamePath:null,overrideProps:null,overridePropsDeletePath:null,overridePropsRenamePath:null,setErrorHandler:null,setSuspenseHandler:null,scheduleUpdate:null,currentDispatcherRef:$t.ReactCurrentDispatcher,findHostInstanceByFiber:function(e){return e=_c(e),e===null?null:e.stateNode},findFiberByHostInstance:Rr.findFiberByHostInstance||Um,findHostInstancesForRefresh:null,scheduleRefresh:null,scheduleRoot:null,setRefreshHandler:null,getCurrentFiber:null,reconcilerVersion:\"18.3.1-next-f1338f8080-20240426\"};if(typeof __REACT_DEVTOOLS_GLOBAL_HOOK__<\"u\"&&(Nr=__REACT_DEVTOOLS_GLOBAL_HOOK__,!Nr.isDisabled&&Nr.supportsFiber))try{xl=Nr.inject(Wm),At=Nr}catch{}var Nr;it.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED=Bm;it.createPortal=function(e,t){var n=2<arguments.length&&arguments[2]!==void 0?arguments[2]:null;if(!ua(t))throw Error(T(200));return jm(e,t,null,n)};it.createRoot=function(e,t){if(!ua(e))throw Error(T(299));var n=!1,r=\"\",o=id;return t!=null&&(t.unstable_strictMode===!0&&(n=!0),t.identifierPrefix!==void 0&&(r=t.identifierPrefix),t.onRecoverableError!==void 0&&(o=t.onRecoverableError)),t=oa(e,1,!1,null,null,n,!1,r,o),e[Bt]=t.current,Xr(e.nodeType===8?e.parentNode:e),new ia(t)};it.findDOMNode=function(e){if(e==null)return null;if(e.nodeType===1)return e;var t=e._reactInternals;if(t===void 0)throw typeof e.render==\"function\"?Error(T(188)):(e=Object.keys(e).join(\",\"),Error(T(268,e)));return e=_c(t),e=e===null?null:e.stateNode,e};it.flushSync=function(e){return Dn(e)};it.hydrate=function(e,t,n){if(!Ml(t))throw Error(T(200));return zl(null,e,t,!0,n)};it.hydrateRoot=function(e,t,n){if(!ua(e))throw Error(T(405));var r=n!=null&&n.hydratedSources||null,o=!1,l=\"\",i=id;if(n!=null&&(n.unstable_strictMode===!0&&(o=!0),n.identifierPrefix!==void 0&&(l=n.identifierPrefix),n.onRecoverableError!==void 0&&(i=n.onRecoverableError)),t=ld(t,null,e,1,n??null,o,!1,l,i),e[Bt]=t.current,Xr(e),r)for(e=0;e<r.length;e++)n=r[e],o=n._getVersion,o=o(n._source),t.mutableSourceEagerHydrationData==null?t.mutableSourceEagerHydrationData=[n,o]:t.mutableSourceEagerHydrationData.push(n,o);return new Ll(t)};it.render=function(e,t,n){if(!Ml(t))throw Error(T(200));return zl(null,e,t,!1,n)};it.unmountComponentAtNode=function(e){if(!Ml(e))throw Error(T(40));return e._reactRootContainer?(Dn(function(){zl(null,null,e,!1,function(){e._reactRootContainer=null,e[Bt]=null})}),!0):!1};it.unstable_batchedUpdates=ea;it.unstable_renderSubtreeIntoContainer=function(e,t,n,r){if(!Ml(n))throw Error(T(200));if(e==null||e._reactInternals===void 0)throw Error(T(38));return zl(e,t,n,!1,r)};it.version=\"18.3.1-next-f1338f8080-20240426\"});var cd=vn((qm,sd)=>{\"use strict\";function ad(){if(!(typeof __REACT_DEVTOOLS_GLOBAL_HOOK__>\"u\"||typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.checkDCE!=\"function\"))try{__REACT_DEVTOOLS_GLOBAL_HOOK__.checkDCE(ad)}catch(e){console.error(e)}}ad(),sd.exports=ud()});var fd=vn(()=>{(function(){\"use strict\";if(window.AlloModules&&window.AlloModules.AnnotationSuiteModule){console.log(\"[CDN] AnnotationSuiteModule already loaded, skipping\");return}var e=Object.getOwnPropertyNames,t=(r,o)=>function(){try{return o||(0,r[e(r)[0]])((o={exports:{}}).exports,o),o.exports}catch(i){throw o=0,i}},n=t({\"_tmp_annotation_suite_entry.jsx\"(r,o){(function(u,c){var p=c();typeof o==\"object\"&&o.exports&&(o.exports=p),u&&(u.AlloFlowAnnotationInquiryBridge=p)})(typeof globalThis<\"u\"?globalThis:r,function(){\"use strict\";var u=\"1.0.0\",c=[\"supports\",\"complicates\",\"context\",\"language\",\"question\"],p={supports:\"green\",complicates:\"pink\",context:\"blue\",language:\"yellow\",question:\"blue\"};function w(g,x){return String(g??\"\").replace(/\\s+/g,\" \").trim().slice(0,x||500)}function d(g){return w(g,1800).replace(/\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}\\b/gi,\"[email omitted]\").replace(/\\b\\d{3}-\\d{2}-\\d{4}\\b/g,\"[identifier omitted]\").replace(/\\b(?:\\+?1[-.\\s]?)?\\(?\\d{3}\\)?[-.\\s]\\d{3}[-.\\s]\\d{4}\\b/g,\"[phone omitted]\").replace(/\\b[ACGTUN]{40,}\\b/gi,\"[nucleic-acid sequence omitted]\").replace(/\\b[ACDEFGHIKLMNPQRSTVWY]{40,}\\b/gi,\"[protein sequence omitted]\")}function S(g){for(var x=w(g,500).toLowerCase(),M=2166136261,D=0;D<x.length;D++)M^=x.charCodeAt(D),M=Math.imul(M,16777619);return(M>>>0).toString(16).padStart(8,\"0\")}function k(g){g=g||{};var x=g.source||{},M=(Array.isArray(g.excerpts)?g.excerpts:[]).slice(0,10).map(function(A,X){return{excerptId:\"excerpt-\"+(X+1),sentenceIndex:Math.max(1,Number(A&&A.sentenceIndex)||X+1),excerpt:d(A&&A.excerpt).slice(0,360)}}).filter(function(A){return!!A.excerpt});if(!M.length)return{ok:!1,reason:\"At least one bounded concordance excerpt is required.\"};var D=w(g.sourceRecordId,180)||\"text-\"+S([x.title,x.creator,x.edition,x.stableUrl].join(\"|\"));return{ok:!0,handoff:{schemaVersion:1,bridgeVersion:u,handoffId:\"annotation-handoff-\"+S(D+\"|\"+g.queryTerm+\"|\"+M.map(function(A){return A.excerpt}).join(\"|\")),sourceRecordId:D,queryTerm:w(g.queryTerm,80),source:{title:d(x.title).slice(0,180),creator:d(x.creator).slice(0,180),edition:d(x.edition).slice(0,220),stableUrl:w(x.stableUrl,500),context:d(x.context).slice(0,1200)},excerpts:M,createdAt:w(g.createdAt,80)||new Date().toISOString()}}}function m(g,x){if(x=x||{},!g||!Array.isArray(g.excerpts))return{ok:!1,reason:\"A valid inquiry handoff is required.\"};var M=w(x.excerptId,80),D=g.excerpts.find(function(Y){return Y.excerptId===M});if(!D)return{ok:!1,reason:\"Choose a current excerpt.\"};var A=c.indexOf(x.stance)===-1?\"language\":x.stance,X=d(x.note).slice(0,900);if(X.length<12)return{ok:!1,reason:\"Write an annotation of at least 12 characters.\"};var le=w(x.createdAt,80)||new Date().toISOString();return{ok:!0,annotation:{id:w(x.id,120)||\"inquiry-note-\"+S(g.handoffId+\"|\"+M+\"|\"+A+\"|\"+X+\"|\"+le),kind:\"note\",type:\"inquiry\",x:32,y:64+g.excerpts.indexOf(D)*76,content:X,color:p[A],author:\"student\",authorName:d(x.authorName).slice(0,80),createdAt:le,inquiryStance:A,inquiryTarget:{handoffId:g.handoffId,sourceRecordId:g.sourceRecordId,queryTerm:g.queryTerm,excerptId:D.excerptId,sentenceIndex:D.sentenceIndex,excerpt:D.excerpt}}}}function R(g,x){return!x||x.kind!==\"note\"||!x.inquiryTarget||c.indexOf(x.inquiryStance)===-1||w(x.content,900).length<12?!1:!!(g&&x.inquiryTarget.handoffId===g.handoffId&&g.excerpts.some(function(M){return M.excerptId===x.inquiryTarget.excerptId}))}function z(g,x){var M=(Array.isArray(x)?x:[]).filter(function(A){return R(g,A)}).slice(0,20),D={};return c.forEach(function(A){D[A]=M.filter(function(X){return X.inquiryStance===A}).length}),{schemaVersion:1,bridgeVersion:u,handoffId:g&&g.handoffId,sourceRecordId:g&&g.sourceRecordId,queryTerm:g&&g.queryTerm,annotationCounts:D,annotations:M.map(function(A){return{id:A.id,stance:A.inquiryStance,note:d(A.content).slice(0,900),target:A.inquiryTarget}})}}function _(g,x){return{docTitle:(g&&g.source&&g.source.title||\"Text Inquiry excerpts\")+\" \\u2014 close reading\",annotations:(Array.isArray(x)?x:[]).filter(function(M){return R(g,M)})}}return{version:u,stances:c.slice(),createHandoff:k,createAnnotation:m,validateAnnotation:R,summarizeForCapture:z,toAnnotationSuitePayload:_}});let l={star:\"\\u2B50\",check:\"\\u2705\",idea:\"\\u{1F4A1}\",love:\"\\u2764\\uFE0F\",question:\"\\u2753\",important:\"\\u2757\",fire:\"\\u{1F525}\",target:\"\\u{1F3AF}\",thumbsup:\"\\u{1F44D}\",party:\"\\u{1F389}\",rocket:\"\\u{1F680}\",flag:\"\\u{1F6A9}\"},i=[\"star\",\"check\",\"idea\",\"love\",\"question\",\"important\",\"fire\",\"target\",\"thumbsup\",\"party\",\"rocket\",\"flag\"],a=[\"sticker\",\"note\",\"highlight\",\"voice\",\"draw\"],s=null,y=u=>{u&&typeof u.t==\"function\"&&(s=u.t)};function E(u,c){return s?s(u,c):u}let N={red:\"#dc2626\",blue:\"#2563eb\",green:\"#16a34a\",yellow:\"#ca8a04\",black:\"#111827\"},C=[\"red\",\"blue\",\"green\",\"yellow\",\"black\"],L=[2,4,6,10],O=[\"free\",\"line\",\"arrow\",\"rect\",\"circle\",\"erase\"],F={free:\"Freehand\",line:\"Line\",arrow:\"Arrow\",rect:\"Rectangle\",circle:\"Circle\",erase:\"Eraser\"},he={free:\"\\u270F\\uFE0F\",line:\"\\u2571\",arrow:\"\\u279C\",rect:\"\\u25AD\",circle:\"\\u25CB\",erase:\"\\u{1F9FD}\"},h=60,f=500*1024;(function(){if(typeof document>\"u\"||document.getElementById(\"alloflow-anno-suite-styles\"))return;let c=document.createElement(\"style\");c.id=\"alloflow-anno-suite-styles\",c.textContent=`@keyframes alloflow-anno-pulse { 0% { transform: scale(0.6); opacity: 1; } 100% { transform: scale(1.8); opacity: 0; } }\n@keyframes alloflow-undo-flash { 0% { background-color: rgba(99,102,241,0.55); transform: scale(0.94); } 60% { background-color: rgba(99,102,241,0.25); } 100% { background-color: transparent; transform: scale(1); } }\n.alloflow-undo-flash { animation: alloflow-undo-flash 0.45s ease-out; }`,document.head.appendChild(c)})();let v={yellow:{fill:\"#fef9c3\",border:\"#facc15\",text:\"#713f12\"},green:{fill:\"#dcfce7\",border:\"#4ade80\",text:\"#14532d\"},blue:{fill:\"#dbeafe\",border:\"#60a5fa\",text:\"#1e3a8a\"},pink:{fill:\"#fce7f3\",border:\"#f472b6\",text:\"#831843\"}},P=[\"yellow\",\"green\",\"blue\",\"pink\"],H=[{label:\"Great work!\",content:\"\\u2B50 Great work!\"},{label:\"Strong evidence\",content:\"\\u2705 Strong use of evidence here.\"},{label:\"Clear writing\",content:\"\\u2705 Clear, well-organized writing.\"},{label:\"Add detail\",content:\"\\u270F\\uFE0F Can you add more specific detail or an example?\"},{label:\"Cite your source\",content:\"\\u{1F4DA} Where did this come from? Add a citation.\"},{label:\"Try again\",content:\"\\u{1F501} Take another look at this \\u2014 something is off.\"},{label:\"Show your work\",content:\"\\u{1F9EE} Show the steps that got you to this answer.\"},{label:\"Reflect\",content:\"\\u{1F914} How would you explain this in your own words?\"},{label:\"Talk to me\",content:\"\\u{1F4AC} Let\\u2019s discuss this together at our next check-in.\"}],W=[{label:\"Question\",content:\"\\u2753 I have a question about this.\"},{label:\"Important\",content:\"\\u2B50 This part feels important.\"},{label:\"Unclear\",content:\"\\u{1F914} I\\u2019m not sure I understand this.\"},{label:\"Surprised\",content:\"\\u{1F62F} This surprised me \\u2014 I didn\\u2019t expect this.\"},{label:\"Reminds me of\",content:\"\\u{1F4A1} This reminds me of\\u2026\"},{label:\"Need help\",content:\"\\u{1F64B} Can you help me with this part?\"}],B={yellow:{fill:\"rgba(250, 204, 21, 0.40)\",border:\"rgba(202, 138, 4, 0.55)\"},green:{fill:\"rgba(74, 222, 128, 0.38)\",border:\"rgba(22, 163, 74, 0.55)\"},blue:{fill:\"rgba(96, 165, 250, 0.36)\",border:\"rgba(37, 99, 235, 0.55)\"},pink:{fill:\"rgba(244, 114, 182, 0.36)\",border:\"rgba(219, 39, 119, 0.55)\"}},Q=[\"yellow\",\"green\",\"blue\",\"pink\"];function ve(u){return Array.isArray(u)?u.map(function(c){return!c||c.kind?c:i.indexOf(c.type)!==-1?Object.assign({},c,{kind:\"sticker\"}):c}):[]}function q(u){let c=[];if(u&&u.author===\"teacher\"?c.push(\"Teacher feedback\"):u&&u.author===\"student\"&&c.push(u.authorName||\"Student\"),u&&u.createdAt)try{let p=new Date(u.createdAt);isNaN(p.getTime())||c.push(p.toLocaleDateString(void 0,{month:\"short\",day:\"numeric\"}))}catch{}return c.join(\" \\u2022 \")}function ut(u,c,p,w){return function(d){if(!p||d.button!==void 0&&d.button!==0)return;let S=c?c(d.currentTarget):null;if(!S)return;d.preventDefault(),d.stopPropagation();let k=d.currentTarget,m=parseFloat(k.style.top)||u.y,R=parseFloat(k.style.left)||u.x,z=m-u.y,_=R-u.x,g=d.clientX,x=d.clientY;w&&(w.current=!1);let M=!1,D=function(X){let le=X.clientX-g,Y=X.clientY-x;!M&&(Math.abs(le)>2||Math.abs(Y)>2)&&(M=!0,w&&(w.current=!0)),k.style.left=u.x+le+_+\"px\",k.style.top=u.y+Y+z+\"px\"},A=function(X){if(window.removeEventListener(\"pointermove\",D),window.removeEventListener(\"pointerup\",A),!M){k.style.left=R+\"px\",k.style.top=m+\"px\";return}let le=X.clientX-g,Y=X.clientY-x,ee=S.scrollWidth||S.clientWidth||999999,ue=S.scrollHeight||S.clientHeight||999999,Re=Math.max(0,Math.min(ee-14,u.x+le)),We=Math.max(0,Math.min(ue-14,u.y+Y));p(u.id,Re,We,!0)};window.addEventListener(\"pointermove\",D),window.addEventListener(\"pointerup\",A)}}function Il(u){let c=document.getElementById(\"allo-annotation-move-status\");c||(c=document.createElement(\"div\"),c.id=\"allo-annotation-move-status\",c.className=\"sr-only\",c.style.cssText=\"position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0\",c.setAttribute(\"role\",\"status\"),c.setAttribute(\"aria-live\",\"polite\"),c.setAttribute(\"aria-atomic\",\"true\"),document.body.appendChild(c)),c.textContent=\"\",window.setTimeout(function(){c.textContent=u},0)}function Ol(u,c,p,w){return function(d){if((d.key===\"Enter\"||d.key===\" \")&&w){d.preventDefault(),w();return}let S={ArrowLeft:{x:-1,y:0,label:\"left\"},ArrowRight:{x:1,y:0,label:\"right\"},ArrowUp:{x:0,y:-1,label:\"up\"},ArrowDown:{x:0,y:1,label:\"down\"}}[d.key];if(!S||!p)return;let k=c?c(d.currentTarget):null;if(!k)return;d.preventDefault(),d.stopPropagation();let m=d.shiftKey?40:10,R=Math.max(0,Math.min(k.clientWidth-14,u.x+S.x*m)),z=Math.max(0,Math.min(k.clientHeight-14,u.y+S.y*m));p(u.id,R,z,!0),Il(`Annotation moved ${S.label}${d.shiftKey?\" by a larger step\":\"\"}.`)}}function zn(u){let c=u;for(;c&&c!==document.body;){if(c.getAttribute&&c.getAttribute(\"data-allo-anno-host\")===\"true\")return c;c=c.parentNode}return null}function aa({s:u,draggable:c,onMove:p}){if(!u)return null;let w=q(u),d=l[u.type]||\"\",S=u.author===\"teacher\"?\" ring-2 ring-indigo-400/70 rounded-full bg-white/80 p-0.5\":\"\",k=!!(c&&p),m=k?\"\":\" pointer-events-none\",R=k?\" cursor-grab active:cursor-grabbing\":\"\";return React.createElement(\"div\",{className:\"absolute text-3xl drop-shadow-md animate-[ping_0.4s_ease-out_reverse_forwards] motion-reduce:animate-none select-none z-50 hover:scale-110 transition-transform motion-reduce:transition-none motion-reduce:transform-none\"+m+R+S,style:{top:u.y-15,left:u.x-15,touchAction:k?\"none\":void 0},title:w||d,\"aria-label\":(w?d+\" \\u2014 \"+w:d)+(k?\". Use arrow keys to move; hold Shift for a larger step.\":\"\"),onPointerDown:k?ut(u,zn,p):void 0,onKeyDown:k?Ol(u,zn,p):void 0,tabIndex:k?0:void 0,role:k?\"button\":void 0},d)}function sa({a:u,onChange:c,onDelete:p,draggable:w,onMove:d}){if(!u)return null;let S=v[u.color]||v.yellow,[k,m]=React.useState(!u.content),[R,z]=React.useState(u.content||\"\");React.useEffect(function(){z(u.content||\"\")},[u.content]);let _=React.useRef(null),g=React.useRef(!1);React.useEffect(function(){if(k&&_.current)try{_.current.focus()}catch{}},[k]);let x=q(u)||\"Note\",M=function(){m(!1),R!==u.content&&typeof c==\"function\"&&c(u.id,{content:R})};if(!k){let D=!!(w&&d),A=D?ut(u,zn,d,g):void 0,X=function(){if(g.current){g.current=!1;return}m(!0)};return React.createElement(\"div\",{className:\"absolute z-50 select-none transition-transform motion-reduce:transition-none motion-reduce:transform-none \"+(D?\"cursor-grab active:cursor-grabbing hover:scale-110\":\"cursor-pointer hover:scale-110\"),style:{top:u.y-14,left:u.x-14,width:28,height:28,touchAction:D?\"none\":void 0},title:(u.content?u.content+\" \\u2014 \":\"\")+x,\"aria-label\":\"Sticky note from \"+x+(u.content?\": \"+u.content:\"\")+(D?\". Use arrow keys to move; hold Shift for a larger step.\":\"\"),onPointerDown:A,onClick:X,onKeyDown:Ol(u,zn,D?d:null,function(){m(!0)}),tabIndex:0,role:\"button\"},React.createElement(\"div\",{className:\"w-full h-full rounded-md flex items-center justify-center text-sm shadow-md\",style:{background:S.fill,border:\"2px solid \"+S.border,color:S.text}},\"\\u{1F4DD}\"))}return React.createElement(\"div\",{className:\"absolute z-50 select-text shadow-lg rounded-lg\",style:{top:u.y-14,left:u.x-14,minWidth:180,maxWidth:260,background:S.fill,border:\"2px solid \"+S.border,color:S.text},onClick:function(D){D.stopPropagation()}},React.createElement(\"div\",{className:\"flex items-center justify-between gap-2 px-2 py-1 text-[10px] font-bold uppercase tracking-wide rounded-t-lg\",style:{background:S.border,color:S.text}},React.createElement(\"span\",null,\"\\u{1F4DD} \",u.author===\"teacher\"?\"Teacher note\":u.authorName||\"Student note\"),React.createElement(\"div\",{className:\"flex items-center gap-1\"},React.createElement(\"button\",{type:\"button\",onClick:M,className:\"inline-flex min-h-6 min-w-6 items-center justify-center px-1.5 py-0.5 rounded bg-white/70 hover:bg-white text-[10px] font-bold\",\"aria-label\":E(\"a11y.save_note\"),title:\"Save & close\"},\"\\u2713\"),typeof p==\"function\"&&React.createElement(\"button\",{type:\"button\",onMouseDown:function(D){D.preventDefault()},onClick:function(){p(u.id)},className:\"inline-flex min-h-6 min-w-6 items-center justify-center px-1.5 py-0.5 rounded bg-white/70 hover:bg-red-100 text-[10px] font-bold\",\"aria-label\":E(\"a11y.delete_note\"),title:\"Delete\"},\"\\u2715\"))),React.createElement(\"textarea\",{ref:_,value:R,onChange:function(D){z(D.target.value)},onBlur:M,placeholder:E(\"placeholders.type_note\"),rows:3,className:\"w-full p-2 text-xs resize-y bg-transparent outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-600\",style:{color:S.text,minHeight:60},\"aria-label\":E(\"a11y.note_content\")}))}function ca({a:u,onDelete:c,draggable:p,onMove:w}){if(!u)return null;let[d,S]=React.useState(!1),k=React.useRef(!1),m=q(u)||\"Voice note\",R=typeof u.durationSec==\"number\"?Math.round(u.durationSec):null,z=!!u.audioBase64,_=u.author===\"teacher\",g=_?\"#6366f1\":\"#f59e0b\";if(!d){let x=!!(p&&w),M=x?ut(u,zn,w,k):void 0,D=function(){if(k.current){k.current=!1;return}S(!0)};return React.createElement(\"div\",{className:\"absolute z-50 select-none transition-transform motion-reduce:transition-none motion-reduce:transform-none \"+(x?\"cursor-grab active:cursor-grabbing hover:scale-110\":\"cursor-pointer hover:scale-110\"),style:{top:u.y-14,left:u.x-14,width:28,height:28,touchAction:x?\"none\":void 0},title:m+(R!=null?\" \\u2022 \"+R+\"s\":\"\"),\"aria-label\":\"Voice note from \"+m+(R!=null?\", \"+R+\" seconds\":\"\")+(x?\". Use arrow keys to move; hold Shift for a larger step.\":\"\"),onPointerDown:M,onClick:D,onKeyDown:Ol(u,zn,x?w:null,function(){S(!0)}),tabIndex:0,role:\"button\"},React.createElement(\"div\",{className:\"w-full h-full rounded-md flex items-center justify-center text-sm shadow-md\",style:{background:\"white\",border:\"2px solid \"+g,color:g}},\"\\u{1F3A4}\"))}return React.createElement(\"div\",{className:\"absolute z-50 select-text shadow-lg rounded-lg\",style:{top:u.y-14,left:u.x-14,minWidth:240,maxWidth:320,background:\"white\",border:\"2px solid \"+g,color:\"#1e293b\"},onClick:function(x){x.stopPropagation()}},React.createElement(\"div\",{className:\"flex items-center justify-between gap-2 px-2 py-1 text-[10px] font-bold uppercase tracking-wide rounded-t-lg\",style:{background:g,color:\"white\"}},React.createElement(\"span\",null,\"\\u{1F3A4} \",_?\"Teacher voice note\":u.authorName||\"Voice note\",R!=null?\" \\u2022 \"+R+\"s\":\"\"),React.createElement(\"div\",{className:\"flex items-center gap-1\"},React.createElement(\"button\",{type:\"button\",onClick:function(){S(!1)},className:\"inline-flex min-h-6 min-w-6 items-center justify-center px-1.5 py-0.5 rounded bg-white/70 hover:bg-white text-[10px] font-bold\",style:{color:g},\"aria-label\":E(\"a11y.close_voice_note\"),title:\"Close\"},\"\\u2713\"),typeof c==\"function\"&&React.createElement(\"button\",{type:\"button\",onClick:function(){c(u.id)},className:\"inline-flex min-h-6 min-w-6 items-center justify-center px-1.5 py-0.5 rounded bg-white/70 hover:bg-red-100 text-[10px] font-bold\",style:{color:g},\"aria-label\":E(\"a11y.delete_voice_note\"),title:\"Delete\"},\"\\u2715\"))),React.createElement(\"div\",{className:\"p-2\"},z?React.createElement(\"audio\",{controls:!0,preload:\"metadata\",src:\"data:\"+(u.mimeType||\"audio/webm\")+\";base64,\"+u.audioBase64,className:\"w-full\",style:{height:32}}):React.createElement(\"div\",{className:\"text-[11px] text-slate-500 italic px-1 py-2\"},\"No audio attached (recording may have failed).\")))}function fa({x:u,y:c,elapsedSec:p,onStop:w,onCancel:d}){let S=Math.min(100,(p||0)/h*100);return React.createElement(\"div\",{className:\"absolute z-[55] shadow-xl rounded-lg\",role:\"region\",\"aria-label\":\"Voice note recording in progress\",style:{top:(c||0)-14,left:(u||0)-14,minWidth:220,maxWidth:280,background:\"white\",border:\"2px solid #dc2626\"},onClick:function(k){k.stopPropagation()}},React.createElement(\"div\",{className:\"flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-t-lg\",style:{background:\"#dc2626\",color:\"white\"}},React.createElement(\"span\",{className:\"inline-block w-2 h-2 rounded-full bg-white animate-pulse motion-reduce:animate-none\",\"aria-hidden\":\"true\"}),React.createElement(\"span\",null,\"RECORDING\"),React.createElement(\"span\",{className:\"ms-auto font-mono\"},Math.floor(p||0),\"s / \",h,\"s\")),React.createElement(\"div\",{className:\"px-3 py-2\"},React.createElement(\"div\",{className:\"w-full h-1.5 rounded-full bg-slate-200 overflow-hidden\",role:\"progressbar\",\"aria-label\":\"Voice note recording time\",\"aria-valuemin\":0,\"aria-valuemax\":h,\"aria-valuenow\":Math.min(h,Math.floor(p||0))},React.createElement(\"div\",{className:\"h-full bg-red-500 transition-all motion-reduce:transition-none\",style:{width:S+\"%\"}})),React.createElement(\"div\",{className:\"flex items-center justify-end gap-2 mt-2\"},React.createElement(\"button\",{type:\"button\",onClick:d,className:\"min-h-6 px-2 py-1 rounded text-[11px] font-bold text-slate-700 bg-slate-100 hover:bg-slate-200\",\"aria-label\":E(\"a11y.cancel_recording\")},\"Cancel\"),React.createElement(\"button\",{type:\"button\",onClick:w,className:\"min-h-6 px-3 py-1 rounded text-[11px] font-bold text-white bg-red-600 hover:bg-red-700 flex items-center gap-1\",\"aria-label\":E(\"a11y.stop_save_recording\")},React.createElement(\"span\",{className:\"inline-block w-2 h-2 bg-white\"}),\" Stop\"))))}function da({a:u,onDelete:c}){if(!u||!Array.isArray(u.rects)||u.rects.length===0)return null;let p=B[u.color]||B.yellow,w=q(u)||\"Highlight\",d=(u.text?'\"'+u.text.slice(0,80)+(u.text.length>80?\"\\u2026\":\"\")+'\"  ':\"\")+w;return React.createElement(React.Fragment,null,u.rects.map(function(S,k){return React.createElement(\"div\",{role:\"img\",key:u.id+\":\"+k,className:\"absolute pointer-events-none z-40\",style:{top:S.y,left:S.x,width:S.w,height:S.h,background:p.fill,borderRadius:2,boxShadow:\"inset 0 -1px 0 \"+p.border},title:d,\"aria-label\":\"Highlight: \"+d})}),React.createElement(\"div\",{className:\"absolute pointer-events-auto z-30\",style:{top:u.rects[0].y,left:u.rects[0].x,width:u.rects[0].w,height:u.rects[0].h,background:\"transparent\"},onMouseEnter:function(S){let k=S.currentTarget.querySelector(\"button\");k&&(k.style.opacity=\"1\")},onMouseLeave:function(S){let k=S.currentTarget.querySelector(\"button\");k&&(k.style.opacity=\"0\")}},typeof c==\"function\"&&React.createElement(\"button\",{type:\"button\",onClick:function(S){S.stopPropagation(),c(u.id)},className:\"absolute pointer-events-auto opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity motion-reduce:transition-none\",style:{top:-12,right:-12,width:24,height:24,borderRadius:\"50%\",background:\"white\",border:\"1px solid \"+p.border,fontSize:12,fontWeight:700,cursor:\"pointer\",display:\"flex\",alignItems:\"center\",justifyContent:\"center\",color:\"#475569\",lineHeight:1,zIndex:50},\"aria-label\":E(\"a11y.delete_highlight\"),title:\"Delete highlight\"},\"\\u2715\")))}function pa({a:u,onDelete:c}){if(!u)return null;let p=u.shape||\"free\",w=N[u.color]||u.color||\"#dc2626\",d=typeof u.width==\"number\"?u.width:4,S=u.x,k=u.y,m=u.w,R=u.h;if(S==null||k==null||m==null||R==null)if(Array.isArray(u.points)&&u.points.length>0){let Y=1/0,ee=1/0,ue=-1/0,Re=-1/0;for(let We=0;We<u.points.length;We++){let Pe=u.points[We];Pe.x<Y&&(Y=Pe.x),Pe.y<ee&&(ee=Pe.y),Pe.x>ue&&(ue=Pe.x),Pe.y>Re&&(Re=Pe.y)}S=Y-d,k=ee-d,m=ue-Y+d*2,R=Re-ee+d*2}else return null;let z=d+6,_=S-z,g=k-z,x=m+z*2,M=R+z*2,D=Y=>(Y-_).toFixed(1),A=Y=>(Y-g).toFixed(1),X=null;if(p===\"free\"){if(!Array.isArray(u.points)||u.points.length<2)return null;let Y=\"\";for(let ee=0;ee<u.points.length;ee++)Y+=(ee===0?\"M\":\" L\")+D(u.points[ee].x)+\" \"+A(u.points[ee].y);X=React.createElement(\"path\",{d:Y,fill:\"none\",stroke:w,strokeWidth:d,strokeLinecap:\"round\",strokeLinejoin:\"round\"})}else if(p===\"line\"||p===\"arrow\"){let Y=u.start&&u.start.x!=null?u.start.x:S,ee=u.start&&u.start.y!=null?u.start.y:k,ue=u.end&&u.end.x!=null?u.end.x:S+m,Re=u.end&&u.end.y!=null?u.end.y:k+R,We=React.createElement(\"line\",{x1:D(Y),y1:A(ee),x2:D(ue),y2:A(Re),stroke:w,strokeWidth:d,strokeLinecap:\"round\"});if(p===\"arrow\"){let Pe=ue-Y,G=Re-ee,te=Math.sqrt(Pe*Pe+G*G)||1,Z=Pe/te,ne=G/te,ae=-ne,de=Z,Ee=Math.max(8,Math.min(24,d*3)),Ve=ue,U=Re,ge=ue-Z*Ee,Ne=Re-ne*Ee,at=ge+ae*(Ee*.5),mn=Ne+de*(Ee*.5),se=ge-ae*(Ee*.5),Je=Ne-de*(Ee*.5);X=React.createElement(React.Fragment,null,We,React.createElement(\"polygon\",{points:[D(Ve)+\",\"+A(U),D(at)+\",\"+A(mn),D(se)+\",\"+A(Je)].join(\" \"),fill:w,stroke:w,strokeWidth:1,strokeLinejoin:\"round\"}))}else X=We}else if(p===\"rect\")X=React.createElement(\"rect\",{x:D(S+d),y:A(k+d),width:Math.max(1,m-d*2),height:Math.max(1,R-d*2),fill:\"none\",stroke:w,strokeWidth:d,strokeLinejoin:\"round\"});else if(p===\"circle\"){let Y=S+m/2,ee=k+R/2,ue=Math.max(1,(m-d*2)/2),Re=Math.max(1,(R-d*2)/2);X=React.createElement(\"ellipse\",{cx:D(Y),cy:A(ee),rx:ue,ry:Re,fill:\"none\",stroke:w,strokeWidth:d})}let le=q(u)||F[p]||\"Drawing\";return React.createElement(\"div\",{role:\"group\",className:\"absolute pointer-events-none z-40\",style:{top:g,left:_,width:x,height:M},\"aria-label\":(F[p]||\"Drawing\")+\": \"+le,title:le},React.createElement(\"svg\",{width:x,height:M,style:{display:\"block\",overflow:\"visible\"},\"aria-hidden\":\"true\"},X),typeof c==\"function\"&&React.createElement(\"button\",{type:\"button\",onClick:function(Y){Y.stopPropagation(),c(u.id)},className:\"absolute pointer-events-auto opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity motion-reduce:transition-none\",style:{top:0,right:0,width:24,height:24,borderRadius:\"50%\",background:\"white\",border:\"1px solid \"+w,fontSize:12,fontWeight:700,cursor:\"pointer\",display:\"flex\",alignItems:\"center\",justifyContent:\"center\",color:\"#475569\",lineHeight:1},onMouseEnter:function(Y){Y.currentTarget.style.opacity=\"1\"},onMouseLeave:function(Y){Y.currentTarget.style.opacity=\"0\"},\"aria-label\":E(\"a11y.delete_drawing\"),title:\"Delete drawing\"},\"\\u2715\"))}let pn=18;function dd(u,c,p,w){if(!u)return!1;let d=w||pn;if(u.kind===\"draw\"&&(u.shape||\"free\")===\"free\"&&Array.isArray(u.points)){for(let k=0;k<u.points.length;k++){let m=u.points[k],R=c-m.x,z=p-m.y;if(R*R+z*z<=d*d)return!0}return!1}if(u.kind===\"highlight\"&&Array.isArray(u.rects)){for(let S=0;S<u.rects.length;S++){let k=u.rects[S];if(c>=k.x-d&&c<=k.x+k.w+d&&p>=k.y-d&&p<=k.y+k.h+d)return!0}return!1}if(u.kind===\"sticker\"||u.kind===\"note\"||u.kind===\"voice\"){let S=u.x||0,k=u.y||0,m=c-S,R=p-k;return Math.sqrt(m*m+R*R)<=18+d}return u.kind===\"draw\"&&u.x!=null&&u.y!=null&&u.w!=null&&u.h!=null?c>=u.x-d&&c<=u.x+u.w+d&&p>=u.y-d&&p<=u.y+u.h+d:!1}function ma({active:u,color:c,width:p,shape:w,onCommit:d,onErase:S,annotations:k}){let[m,R]=React.useState(null),[z,_]=React.useState(null),g=React.useRef(null),x=React.useRef(!1),M=w||\"free\",D=M===\"erase\";if(!u)return null;let A=N[c]||c||\"#dc2626\";function X(G,te){let Z=te.getBoundingClientRect();return{x:G.clientX-Z.left,y:G.clientY-Z.top}}function le(G,te){if(!(!Array.isArray(k)||typeof S!=\"function\"))for(let Z=0;Z<k.length;Z++){let ne=k[Z];dd(ne,G,te,pn)&&S(ne.id)}}function Y(G){if(G.button!==0&&G.pointerType===\"mouse\")return;G.preventDefault(),G.stopPropagation(),x.current=!0;let te=G.currentTarget,{x:Z,y:ne}=X(G,te);try{te.setPointerCapture(G.pointerId)}catch{}if(D){_({x:Z,y:ne}),le(Z,ne);return}R(M===\"free\"?{shape:\"free\",points:[{x:Z,y:ne}],color:c,width:p}:{shape:M,start:{x:Z,y:ne},end:{x:Z,y:ne},color:c,width:p})}function ee(G){x.current&&(G.preventDefault(),G.stopPropagation());let te=G.currentTarget,{x:Z,y:ne}=X(G,te);if(D){_({x:Z,y:ne}),x.current&&(G.preventDefault(),G.stopPropagation(),le(Z,ne));return}x.current&&R(function(ae){if(!ae)return ae;if(ae.shape===\"free\"){let de=ae.points[ae.points.length-1];return de&&Math.abs(de.x-Z)<1.2&&Math.abs(de.y-ne)<1.2?ae:Object.assign({},ae,{points:ae.points.concat([{x:Z,y:ne}])})}return Object.assign({},ae,{end:{x:Z,y:ne}})})}function ue(G){if(!x.current){D&&_(null);return}G.preventDefault(),G.stopPropagation(),x.current=!1;try{G.currentTarget.releasePointerCapture(G.pointerId)}catch{}if(D)return;let te=m;if(R(null),!(!te||typeof d!=\"function\"))if(te.shape===\"free\"){if(te.points.length<2)return;d(te)}else{let Z=te.end.x-te.start.x,ne=te.end.y-te.start.y;if(Math.abs(Z)<2&&Math.abs(ne)<2)return;d(te)}}function Re(){D&&_(null)}let We=()=>{if(!m)return null;if(m.shape===\"free\"){let ae=\"\";for(let de=0;de<m.points.length;de++){let Ee=m.points[de];ae+=(de===0?\"M\":\" L\")+Ee.x.toFixed(1)+\" \"+Ee.y.toFixed(1)}return React.createElement(\"path\",{d:ae,fill:\"none\",stroke:A,strokeWidth:p,strokeLinecap:\"round\",strokeLinejoin:\"round\"})}let G=m.start.x,te=m.start.y,Z=m.end.x,ne=m.end.y;if(m.shape===\"line\")return React.createElement(\"line\",{x1:G,y1:te,x2:Z,y2:ne,stroke:A,strokeWidth:p,strokeLinecap:\"round\"});if(m.shape===\"arrow\"){let ae=Z-G,de=ne-te,Ee=Math.sqrt(ae*ae+de*de)||1,Ve=ae/Ee,U=de/Ee,ge=-U,Ne=Ve,at=Math.max(8,Math.min(24,p*3)),mn=Z-Ve*at,se=ne-U*at,Je=mn+ge*(at*.5),et=se+Ne*(at*.5),Ct=mn-ge*(at*.5),hn=se-Ne*(at*.5);return React.createElement(React.Fragment,null,React.createElement(\"line\",{x1:G,y1:te,x2:Z,y2:ne,stroke:A,strokeWidth:p,strokeLinecap:\"round\"}),React.createElement(\"polygon\",{points:Z+\",\"+ne+\" \"+Je+\",\"+et+\" \"+Ct+\",\"+hn,fill:A,stroke:A,strokeWidth:1}))}if(m.shape===\"rect\"){let ae=Math.min(G,Z),de=Math.min(te,ne),Ee=Math.abs(Z-G),Ve=Math.abs(ne-te);return React.createElement(\"rect\",{x:ae,y:de,width:Ee,height:Ve,fill:\"none\",stroke:A,strokeWidth:p})}if(m.shape===\"circle\"){let ae=(G+Z)/2,de=(te+ne)/2,Ee=Math.abs(Z-G)/2,Ve=Math.abs(ne-te)/2;return React.createElement(\"ellipse\",{cx:ae,cy:de,rx:Ee,ry:Ve,fill:\"none\",stroke:A,strokeWidth:p})}return null},Pe=D?\"cell\":\"crosshair\";return React.createElement(\"div\",{role:\"group\",ref:g,className:\"absolute inset-0 z-[60]\",style:{cursor:Pe,touchAction:\"none\"},onPointerDown:Y,onPointerMove:ee,onPointerUp:ue,onPointerCancel:ue,onPointerLeave:Re,\"aria-label\":D?\"Eraser surface\":\"Drawing surface\"},m&&React.createElement(\"svg\",{width:\"100%\",height:\"100%\",style:{display:\"block\",position:\"absolute\",inset:0,overflow:\"visible\",pointerEvents:\"none\"},\"aria-hidden\":\"true\"},We()),D&&z?React.createElement(\"div\",{\"aria-hidden\":\"true\",style:{position:\"absolute\",top:z.y-pn,left:z.x-pn,width:pn*2,height:pn*2,border:\"2px dashed #ef4444\",borderRadius:\"50%\",background:\"rgba(239,68,68,0.08)\",pointerEvents:\"none\"}}):null)}function ha({annotations:u,mode:c,isTeacher:p,onNoteChange:w,onNoteDelete:d,onHighlightDelete:S,onVoiceDelete:k,onDrawDelete:m,onMove:R}){if(!Array.isArray(u)||u.length===0)return null;let z=ve(u),_=!c||c===\"off\";function g(x){return!_||!R?!1:p?!0:x&&x.author===\"student\"}return React.createElement(React.Fragment,null,z.map(function(x){return x?x.kind===\"note\"?React.createElement(sa,{key:x.id,a:x,onChange:w,onDelete:d,draggable:g(x),onMove:R}):x.kind===\"highlight\"?React.createElement(da,{key:x.id,a:x,onDelete:S}):x.kind===\"voice\"?x.pending?null:React.createElement(ca,{key:x.id,a:x,onDelete:k,draggable:g(x),onMove:R}):x.kind===\"draw\"?React.createElement(pa,{key:x.id,a:x,onDelete:m}):React.createElement(aa,{key:x.id,s:x,draggable:g(x),onMove:R}):null}))}function ga(u){let c=window.AlloIcons&&window.AlloIcons.Smile||null,p=window.AlloIcons&&window.AlloIcons.StickyNote||null,w=window.AlloIcons&&window.AlloIcons.Highlighter||null,d=window.AlloIcons&&window.AlloIcons.Mic||null,S=window.AlloIcons&&window.AlloIcons.Trash2||null,k=typeof u.t==\"function\"?u.t:U=>U;y(u);let m=u.mode;m==null&&(m=u.isStickerMode?\"sticker\":\"\");let R=u.stickerType||\"star\",z=u.noteColor||\"yellow\",_=u.highlightColor||\"yellow\",g=u.onSetMode||function(){},x=u.onPickType||function(){},M=u.onPickNoteColor||function(){},D=u.onPickHighlightColor||function(){},A=u.onClear||function(){},X=u.onPickTemplate||function(){},le=u.noteTemplate||\"\",Y=!!u.isTeacher,ee=u.drawColor||\"red\",ue=typeof u.drawWidth==\"number\"?u.drawWidth:4,Re=u.drawShape||\"free\",We=u.onPickDrawColor||function(){},Pe=u.onPickDrawWidth||function(){},G=u.onPickDrawShape||function(){},te=Y?H:W,Z=u.onToggleMode,ne=function(){if(Z){Z();return}g(m===\"sticker\"?\"\":\"sticker\")},ae=function(){g(m===\"note\"?\"\":\"note\")},de=function(){g(m===\"highlight\"?\"\":\"highlight\")},Ee=function(){g(m===\"voice\"?\"\":\"voice\")},Ve=function(){g(m===\"draw\"?\"\":\"draw\")};return React.createElement(React.Fragment,null,React.createElement(\"button\",{type:\"button\",onClick:ne,className:\"p-1.5 rounded-full transition-all motion-reduce:transition-none flex items-center gap-1 text-xs font-bold px-2 me-1 \"+(m===\"sticker\"?\"bg-indigo-100 text-indigo-700 ring-2 ring-indigo-200\":\"text-slate-600 hover:bg-slate-100\"),title:k(\"toolbar.stickers_tooltip\"),\"aria-pressed\":m===\"sticker\"},c?React.createElement(c,{size:14}):React.createElement(\"span\",null,\"\\u{1F642}\"),\" \",k(\"toolbar.stickers_label\")),React.createElement(\"button\",{type:\"button\",onClick:ae,className:\"p-1.5 rounded-full transition-all motion-reduce:transition-none flex items-center gap-1 text-xs font-bold px-2 me-1 \"+(m===\"note\"?\"bg-amber-100 text-amber-700 ring-2 ring-amber-200\":\"text-slate-600 hover:bg-slate-100\"),title:\"Sticky note: click anywhere to leave a note\",\"aria-pressed\":m===\"note\"},p?React.createElement(p,{size:14}):React.createElement(\"span\",null,\"\\u{1F4DD}\"),\" \",\"Note\"),React.createElement(\"button\",{type:\"button\",onClick:de,className:\"p-1.5 rounded-full transition-all motion-reduce:transition-none flex items-center gap-1 text-xs font-bold px-2 me-1 \"+(m===\"highlight\"?\"bg-yellow-100 text-yellow-800 ring-2 ring-yellow-300\":\"text-slate-600 hover:bg-slate-100\"),title:\"Highlighter: select text to highlight\",\"aria-pressed\":m===\"highlight\"},w?React.createElement(w,{size:14}):React.createElement(\"span\",null,\"\\u{1F58D}\"),\" \",\"Highlight\"),React.createElement(\"button\",{type:\"button\",onClick:Ee,className:\"p-1.5 rounded-full transition-all motion-reduce:transition-none flex items-center gap-1 text-xs font-bold px-2 me-1 \"+(m===\"voice\"?\"bg-red-100 text-red-700 ring-2 ring-red-200\":\"text-slate-600 hover:bg-slate-100\"),title:\"Voice note: click to start recording (max 60s, stays local)\",\"aria-pressed\":m===\"voice\"},d?React.createElement(d,{size:14}):React.createElement(\"span\",null,\"\\u{1F3A4}\"),\" \",\"Voice\"),React.createElement(\"button\",{type:\"button\",onClick:Ve,className:\"p-1.5 rounded-full transition-all motion-reduce:transition-none flex items-center gap-1 text-xs font-bold px-2 me-1 \"+(m===\"draw\"?\"bg-fuchsia-100 text-fuchsia-700 ring-2 ring-fuchsia-200\":\"text-slate-600 hover:bg-slate-100\"),title:\"Drawing: freehand pen overlay\",\"aria-pressed\":m===\"draw\"},React.createElement(\"span\",null,\"\\u270F\\uFE0F\"),\" \",\"Draw\"),m===\"sticker\"&&React.createElement(\"div\",{className:\"flex items-center gap-1 animate-in motion-reduce:animate-none slide-in-from-left-2 duration-200 border-s border-slate-200 ps-1\"},i.map(function(U){return React.createElement(\"button\",{type:\"button\",\"aria-label\":U,key:U,onClick:function(){x(U)},className:\"w-6 h-6 flex items-center justify-center rounded-full text-sm hover:scale-125 transition-transform motion-reduce:transition-none motion-reduce:transform-none \"+(R===U?\"bg-indigo-50 shadow-sm scale-110 ring-1 ring-indigo-200\":\"opacity-60 hover:opacity-100\")},l[U])}),React.createElement(\"div\",{className:\"w-px h-4 bg-slate-200 mx-1\"}),React.createElement(\"button\",{type:\"button\",onClick:A,className:\"w-6 h-6 inline-flex items-center justify-center text-slate-600 hover:text-red-500 rounded-full\",title:k(\"toolbar.clear_stickers\"),\"aria-label\":k(\"toolbar.clear_stickers\")},S?React.createElement(S,{size:12}):React.createElement(\"span\",null,\"\\u{1F5D1}\"))),m===\"note\"&&React.createElement(\"div\",{className:\"flex items-center gap-1 animate-in motion-reduce:animate-none slide-in-from-left-2 duration-200 border-s border-slate-200 ps-1\"},P.map(function(U){let ge=v[U];return React.createElement(\"button\",{type:\"button\",key:U,\"aria-label\":\"Note color \"+U,onClick:function(){M(U)},className:\"w-6 h-6 rounded transition-transform motion-reduce:transition-none motion-reduce:transform-none hover:scale-125 \"+(z===U?\"ring-2 ring-amber-500 scale-110\":\"opacity-70 hover:opacity-100\"),style:{background:ge.fill,border:\"2px solid \"+ge.border},title:U})}),React.createElement(\"div\",{className:\"w-px h-4 bg-slate-200 mx-1\"}),React.createElement(\"select\",{value:le,onChange:function(U){X(U.target.value)},className:\"text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-300 rounded px-1.5 py-0.5 cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-400 max-w-[150px]\",\"aria-label\":E(\"a11y.note_template\"),title:le?\"Template active: next note auto-fills\":\"Pick a template to auto-fill the next note\",style:{minHeight:24}},React.createElement(\"option\",{value:\"\"},\"Custom (type)\"),te.map(function(U){return React.createElement(\"option\",{key:U.label,value:U.content},U.label)})),React.createElement(\"div\",{className:\"w-px h-4 bg-slate-200 mx-1\"}),React.createElement(\"button\",{type:\"button\",onClick:A,className:\"w-6 h-6 inline-flex items-center justify-center text-slate-600 hover:text-red-500 rounded-full\",title:\"Clear all annotations\",\"aria-label\":E(\"a11y.clear_all_annotations\")},S?React.createElement(S,{size:12}):React.createElement(\"span\",null,\"\\u{1F5D1}\"))),m===\"highlight\"&&React.createElement(\"div\",{className:\"flex items-center gap-1 animate-in motion-reduce:animate-none slide-in-from-left-2 duration-200 border-s border-slate-200 ps-1\"},Q.map(function(U){let ge=B[U];return React.createElement(\"button\",{type:\"button\",key:U,\"aria-label\":\"Highlight color \"+U,onClick:function(){D(U)},className:\"w-6 h-6 rounded transition-transform motion-reduce:transition-none motion-reduce:transform-none hover:scale-125 \"+(_===U?\"ring-2 ring-yellow-500 scale-110\":\"opacity-70 hover:opacity-100\"),style:{background:ge.fill,border:\"2px solid \"+ge.border},title:U})}),React.createElement(\"div\",{className:\"w-px h-4 bg-slate-200 mx-1\"}),React.createElement(\"button\",{type:\"button\",onClick:A,className:\"w-6 h-6 inline-flex items-center justify-center text-slate-600 hover:text-red-500 rounded-full\",title:\"Clear all annotations\",\"aria-label\":E(\"a11y.clear_all_annotations\")},S?React.createElement(S,{size:12}):React.createElement(\"span\",null,\"\\u{1F5D1}\"))),m===\"draw\"&&React.createElement(\"div\",{className:\"flex items-center gap-1 animate-in motion-reduce:animate-none slide-in-from-left-2 duration-200 border-s border-slate-200 ps-1\"},O.map(function(U){let ge=U===\"erase\";return React.createElement(\"button\",{type:\"button\",key:U,\"aria-label\":F[U]||U,onClick:function(){G(U)},className:\"flex items-center justify-center rounded transition-transform motion-reduce:transition-none motion-reduce:transform-none hover:scale-125 \"+(Re===U?ge?\"ring-2 ring-red-500 scale-110 bg-red-50\":\"ring-2 ring-fuchsia-500 scale-110 bg-fuchsia-50\":\"opacity-70 hover:opacity-100\"),style:{width:24,height:24,fontSize:14},title:F[U]},React.createElement(\"span\",{\"aria-hidden\":\"true\"},he[U]))}),Re!==\"erase\"?React.createElement(React.Fragment,null,React.createElement(\"div\",{className:\"w-px h-4 bg-slate-200 mx-1\"}),C.map(function(U){let ge=N[U];return React.createElement(\"button\",{type:\"button\",key:U,\"aria-label\":\"Draw color \"+U,onClick:function(){We(U)},className:\"w-6 h-6 rounded-full transition-transform motion-reduce:transition-none motion-reduce:transform-none hover:scale-125 \"+(ee===U?\"ring-2 ring-fuchsia-500 scale-110\":\"opacity-70 hover:opacity-100\"),style:{background:ge,border:\"2px solid \"+ge},title:U})}),(function(){let U=C.indexOf(ee)===-1,ge=N[ee]||ee||\"#dc2626\";return React.createElement(\"label\",{className:\"relative w-6 h-6 rounded-full overflow-hidden transition-transform motion-reduce:transition-none motion-reduce:transform-none hover:scale-125 cursor-pointer \"+(U?\"ring-2 ring-fuchsia-500 scale-110\":\"opacity-70 hover:opacity-100\"),style:{background:\"conic-gradient(red, yellow, lime, cyan, blue, magenta, red)\",border:\"2px solid \"+(U?ge:\"#94a3b8\")},title:\"Pick any color\",\"aria-label\":\"Pick a custom draw color\"},U?React.createElement(\"span\",{\"aria-hidden\":\"true\",style:{position:\"absolute\",inset:0,background:ge,borderRadius:\"50%\"}}):null,React.createElement(\"input\",{type:\"color\",value:ge,onChange:function(Ne){We(Ne.target.value)},className:\"absolute inset-0 opacity-0 cursor-pointer\",style:{width:\"100%\",height:\"100%\"},\"aria-label\":\"Pick any color\"}))})(),React.createElement(\"div\",{className:\"w-px h-4 bg-slate-200 mx-1\"}),L.map(function(U){return React.createElement(\"button\",{type:\"button\",key:\"w\"+U,\"aria-label\":\"Line width \"+U+\"px\",onClick:function(){Pe(U)},className:\"flex items-center justify-center rounded transition-transform motion-reduce:transition-none motion-reduce:transform-none hover:scale-125 \"+(ue===U?\"ring-2 ring-fuchsia-500 scale-110 bg-fuchsia-50\":\"opacity-70 hover:opacity-100\"),style:{width:24,height:24},title:U+\"px\"},React.createElement(\"span\",{style:{display:\"inline-block\",width:12,height:U,borderRadius:U/2,background:\"#374151\"}}))})):null,React.createElement(\"div\",{className:\"w-px h-4 bg-slate-200 mx-1\"}),React.createElement(\"button\",{type:\"button\",onClick:A,className:\"w-6 h-6 inline-flex items-center justify-center text-slate-600 hover:text-red-500 rounded-full\",title:\"Clear all annotations\",\"aria-label\":E(\"a11y.clear_all_annotations\")},S?React.createElement(S,{size:12}):React.createElement(\"span\",null,\"\\u{1F5D1}\"))))}function ya(u,c,p){if(!u||!c)return null;let w=c.target;if(!w||w.tagName===\"BUTTON\"||w.tagName===\"INPUT\"||w.tagName===\"TEXTAREA\"||w.closest&&w.closest(\"button\"))return null;let d=u.getBoundingClientRect(),S=c.clientX-d.left+(u.scrollLeft||0),k=c.clientY-d.top+(u.scrollTop||0),m=p||{};return{id:Date.now(),kind:\"sticker\",type:m.stickerType||\"star\",x:S,y:k,author:m.isTeacher?\"teacher\":\"student\",authorName:m.isTeacher?\"\":m.authorName||\"\",createdAt:new Date().toISOString()}}function va(u,c,p){if(!u||!c)return null;let w=c.target;if(!w||w.tagName===\"BUTTON\"||w.tagName===\"INPUT\"||w.tagName===\"TEXTAREA\"||w.closest&&w.closest(\"button\")||w.closest&&w.closest(\"[data-allo-note-expanded]\"))return null;let d=u.getBoundingClientRect(),S=c.clientX-d.left+(u.scrollLeft||0),k=c.clientY-d.top+(u.scrollTop||0),m=p||{},R=v[m.color]?m.color:\"yellow\";return{id:Date.now(),kind:\"note\",x:S,y:k,content:typeof m.templateContent==\"string\"?m.templateContent:\"\",color:R,author:m.isTeacher?\"teacher\":\"student\",authorName:m.isTeacher?\"\":m.authorName||\"\",createdAt:new Date().toISOString()}}function wa(u,c){if(!u)return null;let p=c||{},w=u.shape||\"free\",d=typeof u.width==\"number\"?u.width:4,S=u.color||\"red\",k={id:Date.now(),kind:\"draw\",shape:w,color:S,width:d,author:p.isTeacher?\"teacher\":\"student\",authorName:p.isTeacher?\"\":p.authorName||\"\",createdAt:new Date().toISOString()};if(w===\"free\"){if(!Array.isArray(u.points)||u.points.length<2)return null;let A=1/0,X=1/0,le=-1/0,Y=-1/0;for(let ee=0;ee<u.points.length;ee++){let ue=u.points[ee];ue.x<A&&(A=ue.x),ue.y<X&&(X=ue.y),ue.x>le&&(le=ue.x),ue.y>Y&&(Y=ue.y)}return Object.assign(k,{points:u.points.slice(),x:A-d,y:X-d,w:le-A+d*2,h:Y-X+d*2})}if(!u.start||!u.end)return null;let m=u.start.x,R=u.start.y,z=u.end.x,_=u.end.y;if(Math.abs(z-m)<2&&Math.abs(_-R)<2)return null;let g=Math.min(m,z),x=Math.min(R,_),M=Math.max(m,z),D=Math.max(R,_);return Object.assign(k,{start:{x:m,y:R},end:{x:z,y:_},x:g-d,y:x-d,w:M-g+d*2,h:D-x+d*2})}function xa(u,c,p){if(!u||!c)return null;let w=c.target;if(!w||w.tagName===\"BUTTON\"||w.tagName===\"INPUT\"||w.tagName===\"TEXTAREA\"||w.closest&&w.closest(\"button\")||w.closest&&w.closest(\"[data-allo-anno]\"))return null;let d=u.getBoundingClientRect(),S=c.clientX-d.left+(u.scrollLeft||0),k=c.clientY-d.top+(u.scrollTop||0),m=p||{};return{id:Date.now(),kind:\"voice\",x:S,y:k,audioBase64:null,mimeType:null,durationSec:null,pending:!0,author:m.isTeacher?\"teacher\":\"student\",authorName:m.isTeacher?\"\":m.authorName||\"\",createdAt:new Date().toISOString()}}function Fl(u,c,p){if(!Array.isArray(u))return u;let w=p&&p.audioBase64||\"\";return w?w.length>f?{error:\"too-large\",size:w.length,list:u.filter(function(d){return d&&d.id!==c})}:u.map(function(d){return!d||d.id!==c?d:Object.assign({},d,{audioBase64:w,mimeType:p.mimeType||\"audio/webm\",durationSec:typeof p.durationSec==\"number\"?p.durationSec:null,pending:!1})}):u.filter(function(d){return d&&d.id!==c})}function ka(u,c,p){if(!u||!c||c.isCollapsed||c.rangeCount===0)return null;let w=(c.toString()||\"\").trim();if(!w)return null;let d=c.getRangeAt(0);if(!d)return null;let S=d.commonAncestorContainer;if(!S)return null;let k=S.nodeType===1?S:S.parentNode;if(!k||!u.contains(k))return null;let m=d.getClientRects();if(!m||m.length===0)return null;let R=u.getBoundingClientRect(),z=u.scrollLeft||0,_=u.scrollTop||0,g=[];for(let D=0;D<m.length;D++){let A=m[D];A.width<=1||A.height<=1||g.push({x:Math.round(A.left-R.left+z),y:Math.round(A.top-R.top+_),w:Math.round(A.width),h:Math.round(A.height)})}if(g.length===0)return null;let x=p||{},M=B[x.color]?x.color:\"yellow\";return{id:Date.now(),kind:\"highlight\",rects:g,text:w.slice(0,500),color:M,author:x.isTeacher?\"teacher\":\"student\",authorName:x.isTeacher?\"\":x.authorName||\"\",createdAt:new Date().toISOString()}}function Sa(u,c,p){let w=p||{},d={list:Array.isArray(u)?u.slice():[],added:0,skipped:0,error:null};if(!c)return d.error=\"no-payload\",d;let S=null;if(Array.isArray(c)?S=c:c&&Array.isArray(c.annotations)&&(S=c.annotations),!S)return d.error=\"bad-shape\",d;let k={};return d.list.forEach(function(m){m&&m.id!=null&&(k[String(m.id)]=!0)}),S.forEach(function(m){if(!m||typeof m!=\"object\"){d.skipped++;return}if(!m.kind&&!i.includes(m.type)){d.skipped++;return}let R=m.id;(R==null||k[String(R)])&&(R=Date.now()+Math.floor(Math.random()*1e3)),k[String(R)]=!0;let z=m.author||\"student\",_=m.authorName||\"\";w.forceAuthor&&(z=w.forceAuthor,w.forceAuthorName!=null&&(_=w.forceAuthorName));let g=Object.assign({},m,{id:R,author:z,authorName:_,importedFrom:c&&c.docTitle||m.importedFrom||\"unknown\",importedAt:new Date().toISOString()});d.list.push(g),d.added++}),d}function Ea(u,c){if(!u||!c)return;let p=c.x,w=c.y;if(c.kind===\"highlight\"&&Array.isArray(c.rects)&&c.rects.length>0&&(p=c.rects[0].x+(c.rects[0].w||0)/2,w=c.rects[0].y+(c.rects[0].h||0)/2),typeof w==\"number\"&&typeof u.scrollTo==\"function\"){let d=Math.max(0,w-(u.clientHeight||0)*.3);try{u.scrollTo({top:d,behavior:\"smooth\"})}catch{u.scrollTop=d}}try{let d=document.createElement(\"div\");d.style.cssText=\"position:absolute;top:\"+(w-24)+\"px;left:\"+(p-24)+\"px;width:48px;height:48px;border-radius:50%;border:3px solid #6366f1;pointer-events:none;z-index:60;animation:alloflow-anno-pulse 1.2s ease-out forwards;\",u.appendChild(d),setTimeout(function(){try{d.remove()}catch{}},1300)}catch{}}function Ca(u){let c={teacher:0,student:0,total:0};return Array.isArray(u)&&ve(u).forEach(function(w){w&&(c.total++,w.author===\"teacher\"?c.teacher++:c.student++)}),c}function uo(u){if(!u)return\"\";let c=u.kind||\"sticker\";if(c===\"sticker\")return(l[u.type]||\"\")+\" \"+(u.type||\"sticker\");if(c===\"note\"){let p=(u.content||\"\").trim();return\"\\u{1F4DD} \"+(p?p.length>60?p.slice(0,60)+\"\\u2026\":p:\"(empty note)\")}if(c===\"highlight\"){let p=(u.text||\"\").trim();return\"\\u{1F58D} \"+(p?'\"'+(p.length>60?p.slice(0,60)+\"\\u2026\":p)+'\"':\"(highlight)\")}if(c===\"voice\"){let p=typeof u.durationSec==\"number\"?Math.round(u.durationSec)+\"s\":\"\";return\"\\u{1F3A4} Voice note\"+(p?\" (\"+p+\")\":\"\")}return\"\"}function Ra(u){let c=window.AlloIcons&&window.AlloIcons.ChevronRight||null,p=window.AlloIcons&&window.AlloIcons.X||null,w=Array.isArray(u.annotations)?ve(u.annotations):[],d=!!u.isTeacher,S=u.onFocus||function(){},k=u.onDelete||function(){},m=u.onClose||function(){},R=typeof u.onImport==\"function\"?u.onImport:null,[z,_]=React.useState(\"all\"),g=Ca(w),x=w.filter(function(A){return A?z===\"teacher\"?A.author===\"teacher\":z===\"mine\"?d?A.author===\"teacher\":A.author===\"student\":!0:!1});x.sort(function(A,X){return A.author===\"teacher\"!=(X.author===\"teacher\")?A.author===\"teacher\"?-1:1:(X.createdAt||\"\").localeCompare(A.createdAt||\"\")});let M=function(A,X,le){let Y=z===A;return React.createElement(\"button\",{key:A,type:\"button\",onClick:function(){_(A)},className:\"min-h-6 px-2 py-0.5 rounded-full text-[10px] font-bold transition-colors motion-reduce:transition-none \"+(Y?\"bg-indigo-600 text-white\":\"bg-slate-100 text-slate-600 hover:bg-slate-200\"),\"aria-pressed\":Y},X,\" \",le>0?\"(\"+le+\")\":\"\")},D=d?g.teacher:g.student;return React.createElement(\"div\",{className:\"fixed top-16 right-3 z-[60] bg-white border border-slate-300 rounded-xl shadow-2xl flex flex-col\",style:{width:300,maxHeight:\"calc(100vh - 120px)\"},role:\"region\",\"aria-labelledby\":\"annotation-list-title\"},React.createElement(\"div\",{className:\"flex items-center justify-between gap-2 px-3 py-2 border-b border-slate-200 bg-slate-50 rounded-t-xl\"},React.createElement(\"h2\",{id:\"annotation-list-title\",className:\"text-xs font-bold text-slate-700\"},\"\\u{1F4CB} Annotations \",React.createElement(\"span\",{className:\"text-slate-600 font-normal\"},\"(\",g.total,\")\")),React.createElement(\"div\",{className:\"flex items-center gap-1\"},R&&React.createElement(\"button\",{type:\"button\",onClick:R,className:\"min-h-6 px-2 py-0.5 text-[10px] font-bold text-slate-600 hover:text-indigo-700 rounded hover:bg-white border border-slate-300\",\"aria-label\":\"Import annotations from a saved file\",title:\"Import annotations from a file (e.g., a student's downloaded annotations)\"},\"\\u{1F4C2} Import\"),React.createElement(\"button\",{type:\"button\",onClick:m,className:\"inline-flex min-h-6 min-w-6 items-center justify-center p-1 text-slate-500 hover:text-red-500 rounded-full hover:bg-white\",\"aria-label\":\"Close annotation list\",title:\"Close\"},p?React.createElement(p,{size:14}):React.createElement(\"span\",null,\"\\u2715\")))),React.createElement(\"div\",{className:\"flex items-center gap-1 px-3 py-2 border-b border-slate-200\",role:\"group\",\"aria-label\":\"Filter annotations\"},M(\"all\",\"All\",g.total),M(\"teacher\",\"Teacher\",g.teacher),M(\"mine\",d?\"Teacher\":\"Mine\",D)),React.createElement(\"div\",{className:\"overflow-y-auto flex-1 px-1 py-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-indigo-600\",style:{minHeight:100},role:\"list\",\"aria-label\":\"Annotations\",tabIndex:0},x.length===0&&React.createElement(\"div\",{role:\"listitem\",className:\"px-3 py-6 text-center text-[11px] text-slate-600 italic\"},\"No annotations match this filter.\"),x.map(function(A){let X=A.author===\"teacher\",le=d||A.author===\"student\",Y=q(A);return React.createElement(\"div\",{key:A.id,role:\"listitem\",className:\"group px-2 py-1.5 mb-0.5 rounded-md text-xs transition-colors motion-reduce:transition-none \"+(X?\"bg-indigo-50/60 hover:bg-indigo-100 border-s-2 border-indigo-400\":\"bg-amber-50/40 hover:bg-amber-100 border-s-2 border-amber-300\")},React.createElement(\"div\",{className:\"flex items-start justify-between gap-2\"},React.createElement(\"button\",{type:\"button\",onClick:function(){S(A.id)},className:\"min-h-6 flex-1 min-w-0 rounded text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600\",\"aria-label\":\"Jump to \"+uo(A)+\" from \"+Y},React.createElement(\"div\",{className:\"font-medium text-slate-800 truncate\"},uo(A)),React.createElement(\"div\",{className:\"text-[10px] text-slate-500 mt-0.5 truncate\"},Y||(X?\"Teacher\":\"Student\"))),le&&React.createElement(\"button\",{type:\"button\",onClick:function(ee){ee.stopPropagation(),k(A.id)},className:\"inline-flex min-h-6 min-w-6 items-center justify-center opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity motion-reduce:transition-none p-0.5 text-slate-600 hover:text-red-500 rounded\",\"aria-label\":\"Delete \"+uo(A),title:\"Delete\"},p?React.createElement(p,{size:12}):React.createElement(\"span\",null,\"\\u2715\"))))})))}function jl(u,c,p){return Array.isArray(u)?u.map(function(w){return!w||w.id!==c?w:Object.assign({},w,p||{})}):u}function Na(u,c){return Array.isArray(u)?u.filter(function(p){return p&&p.id!==c}):u}let ao=\"$card\";function _a(u){let c=u.ownerDocument,p=[],w=new Map,d=[];for(let _ of u.querySelectorAll(\"[data-allo-highlight-field]\")){let g=_.getAttribute(\"data-allo-highlight-field\");g&&g!==ao&&g.length<=160&&w.set(g,w.has(g)?null:{el:_,start:null,end:null})}let S=c.createTreeWalker(u,4),k,m=0;for(;k=S.nextNode();){if(!k.length)continue;let _=ao,g=m+k.length;for(let x=k.parentElement;x&&x!==u;x=x.parentElement){let M=x.getAttribute(\"data-allo-highlight-field\"),D=w.get(M);!D||D.el!==x||(_===ao&&(_=M),D.start===null&&(D.start=m),D.end=g)}p.push({node:k,start:m,end:g,field:_}),d.push(k.data),m=g}w.set(ao,{start:0,end:m});let R=(_,g)=>{let x=c.createRange();return x.selectNodeContents(u),x.setEnd(_,g),x.toString().length},z=(_,g)=>{let x=p.find(M=>g?M.start<_&&_<=M.end:M.start<=_&&_<M.end);return x?{field:x.field,offset:_-w.get(x.field).start}:null};return{text:d.join(\"\"),nodes:p,fields:w,offsetAt:R,endpoint:z}}function pr(u){let c=p=>p&&typeof p.field==\"string\"&&p.field.length>0&&p.field.length<=160&&Number.isInteger(p.offset)&&p.offset>=0&&p.offset<=2e5;return u&&u.version===1&&c(u.start)&&c(u.end)&&typeof u.quote==\"string\"&&u.quote.length<=65536&&!!u.quote.trim()}function pd(u,c,p){if(!u.contains(c.startContainer)||!u.contains(c.endContainer))return null;let w=p.offsetAt(c.startContainer,c.startOffset),d=p.offsetAt(c.endContainer,c.endOffset),S={version:1,start:p.endpoint(w,!1),end:p.endpoint(d,!0),quote:p.text.slice(w,d)};return pr(S)?S:null}function md(u,c){let p=u.fields.get(c.start.field),w=u.fields.get(c.end.field);if(!p||!w||p.start===null||w.start===null)return null;let d=p.start+c.start.offset,S=w.start+c.end.offset,k=(m,R)=>m>=p.start&&m<p.end&&R>w.start&&R<=w.end&&m<R;return k(d,S)&&u.text.slice(d,S)===c.quote?{start:d,end:S}:Ta(u.text,c.quote,p.start,w.end,k)}function Ta(u,c,p,w,d){if(w<=p||!c.trim())return null;let S=[],k=[];for(let _=p;_<w;_++){let g=/\\s/u.test(u[_])?\" \":u[_];g===\" \"&&S[S.length-1]===\" \"||(k.push(_),S.push(g))}k.push(w);let m=S.join(\"\"),R=c.replace(/\\s+/gu,\" \"),z=null;for(let _=m.indexOf(R);_>=0;_=m.indexOf(R,_+1)){let g=k[_],x=k[_+R.length];if(!(d&&!d(g,x))){if(z)return null;z={start:g,end:x}}}return z}function Ul(u,c,p){let w=md(c,p);if(!w)return[];let d=u.getBoundingClientRect(),S=d.left+u.clientLeft-u.scrollLeft,k=d.top+u.clientTop-u.scrollTop,m=u.ownerDocument.createRange(),R=[];for(let _ of c.nodes)if(!(_.end<=w.start)){if(_.start>=w.end)break;m.setStart(_.node,Math.max(w.start,_.start)-_.start),m.setEnd(_.node,Math.min(w.end,_.end)-_.start);for(let g of m.getClientRects())g.width>0&&g.height>0&&R.push({x:g.left-S,y:g.top-k,w:g.width,h:g.height})}R.sort((_,g)=>Math.abs(_.y-g.y)<1?_.x-g.x:_.y-g.y);let z=[];for(let _ of R){let g=z[z.length-1];g&&Math.abs(g.y-_.y)<1&&Math.abs(g.h-_.h)<1&&_.x<=g.x+g.w+1&&_.x>=g.x-1?g.w=Math.max(g.w,_.x+_.w-g.x):z.push(_)}return z}function hd(u){return u&&u.kind===\"highlight\"&&!u.anchor&&typeof u.text==\"string\"&&u.text.length<500&&!!u.text.trim()&&Array.isArray(u.rects)&&u.rects.length>0}function Hl(u){return u&&u.kind===\"highlight\"&&(pr(u.anchor)||hd(u))}function gd(u,c){if(!u.length||!c.length)return!1;let p=S=>S.reduce((k,m)=>[Math.min(k[0],m.x),Math.min(k[1],m.y),Math.max(k[2],m.x+m.w),Math.max(k[3],m.y+m.h)],[1/0,1/0,-1/0,-1/0]),w=p(u),d=p(c);return w.every((S,k)=>Math.abs(S-d[k])<=3)}function yd(u,c,p,w,d){if(d.has(w))return d.get(w);let S=Ta(p.text,w.text,0,p.text.length);if(!S)return null;let k={version:1,start:p.endpoint(S.start,!1),end:p.endpoint(S.end,!0),quote:p.text.slice(S.start,S.end)};if(!pr(k))return null;let m=Ul(c,p,k);return!m.length||u.dataset.alloHighlightComplete!==\"true\"&&!gd(w.rects,m)?null:(d.set(w,k),k)}function Bl(u,c,p,w,d){if(!u||!c||!p.some(Hl))return p;let S=_a(u),k=p.map(m=>{if(!Hl(m))return m;let R=pr(m.anchor)?m.anchor:yd(u,c,S,m,d);if(!R)return m;let z=Ul(c,S,R);return!z.length&&w?m.anchor?m:{...m,anchor:R}:m.anchor===R&&Array.isArray(m.rects)&&m.rects.length===z.length&&z.every((_,g)=>m.rects[g]&&[\"x\",\"y\",\"w\",\"h\"].every(x=>Math.abs(m.rects[g][x]-_[x])<.1))?m:{...m,anchor:R,rects:z}});return k.every((m,R)=>m===p[R])?p:k}function vd(u,c,p,w){let[d,S]=React.useState(null);return React.useLayoutEffect(()=>{if(!u||!c||!p.some(Hl)){S(null);return}let k=u.ownerDocument,m=k.defaultView,R=!1,z=0,_=()=>{z=0,R||S(Bl(u,c,p,!1,w))},g=()=>{!R&&!z&&(z=m.requestAnimationFrame(_))};_();let x=m.ResizeObserver?new m.ResizeObserver(g):null;x&&(x.observe(u),x.observe(c));let M=new m.MutationObserver(g);M.observe(u,{subtree:!0,childList:!0,characterData:!0,attributes:!0});for(let D=c;D;D=D.parentElement)M.observe(D,{attributes:!0,attributeFilter:[\"class\",\"style\",\"dir\",\"lang\",\"data-awp-reading-theme\"]});return m.addEventListener(\"resize\",g),u.addEventListener(\"load\",g,!0),k.fonts&&(k.fonts.ready.then(g),k.fonts.addEventListener(\"loadingdone\",g)),()=>{R=!0,z&&m.cancelAnimationFrame(z),x?.disconnect(),M.disconnect(),m.removeEventListener(\"resize\",g),u.removeEventListener(\"load\",g,!0),k.fonts?.removeEventListener(\"loadingdone\",g)}},[u,c,p,w]),d||p}function Pa(u){let c=u.hostEl||null,p=u.layerEl||c,w=Array.isArray(u.annotations)?u.annotations:[],d=u.contentEl||null,S=React.useRef(null);S.current||(S.current=new WeakMap);let k=u.recoveryCache||S.current,m=vd(d,c,w,k),R=u.isTeacher!==!1,z=u.authorName||\"\",_=typeof u.t==\"function\"?u.t:function(I){return I},g=function(I,$){let V;try{V=_(I)}catch{V=\"\"}return V&&V!==I?V:$},x=typeof u.onToast==\"function\"?u.onToast:function(){},[M,D]=React.useState(\"\"),[A,X]=React.useState(\"star\"),[le,Y]=React.useState(\"yellow\"),[ee,ue]=React.useState(\"yellow\"),[Re,We]=React.useState(\"\"),[Pe,G]=React.useState(\"red\"),[te,Z]=React.useState(4),[ne,ae]=React.useState(\"free\"),[de,Ee]=React.useState(!1),[Ve,U]=React.useState(null),ge=u.historyStore||new Map;ge.has(u.documentKey)||ge.set(u.documentKey,[]);let Ne=React.useRef(ge.get(u.documentKey)),[at,mn]=React.useState(Ne.current.length),se=React.useRef(w);se.current=w;let Je=React.useRef(!0),et=React.useRef(null),Ct=React.useRef(null),hn=React.useRef(null),gn=React.useRef({tick:null,cap:null}),so=function(I){se.current=I,typeof u.onChange==\"function\"&&u.onChange(I,u.documentKey)},co=function(I){return!!I&&(R||I.author===\"student\")},Lt=function(I){I===se.current||I.length===se.current.length&&I.every(function($,V){return $===se.current[V]})||(Ne.current.push(se.current),Ne.current.length>50&&Ne.current.shift(),mn(Ne.current.length),so(I))},xd=function(){if(et.current||Ct.current){x(g(\"toasts.cancel_active_recording_before_undoing\",\"Stop or cancel the recording before undoing.\"),\"warning\");return}let I=Ne.current.pop();mn(Ne.current.length),I&&so(I)},kd=function(){gn.current.tick&&clearInterval(gn.current.tick),gn.current.cap&&clearTimeout(gn.current.cap),gn.current={tick:null,cap:null}},mr=function(I){I&&I.getTracks().forEach(function($){$.stop()})},fo=function(I){let $=function(V){return V.filter(function(b){return b&&b.id!==I.id})};for(let V=0;V<Ne.current.length;V++)Ne.current[V]=$(Ne.current[V]);se.current.some(function(V){return V&&V.id===I.id})&&so($(se.current))},Mt=function(I){Ct.current=null;let $=et.current;if(kd(),Je.current&&U(null),!!$){if(I&&($.cancelled=!0,fo($),et.current=null),!$.stopping){$.stopping=!0,$.elapsed=Math.min(h,(Date.now()-$.started)/1e3);try{$.recorder.stop()}catch{$.cancelled=!0,fo($),et.current=null}}mr($.stream)}},Sd=async function(I){if(et.current||Ct.current)return;if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||typeof MediaRecorder>\"u\"){x(g(\"errors.microphone_access_denied\",\"The microphone is not available.\"),\"error\");return}let $={};Ct.current=$;let V;try{V=await navigator.mediaDevices.getUserMedia({audio:!0})}catch{Je.current&&Ct.current===$&&(Ct.current=null,x(g(\"errors.microphone_access_denied\",\"The microphone is not available.\"),\"error\"));return}if(!Je.current||Ct.current!==$){mr(V);return}Ct.current=null;let b;try{b=new MediaRecorder(V)}catch{mr(V),x(g(\"errors.microphone_access_denied\",\"The microphone is not available.\"),\"error\");return}let re={recorder:b,stream:V,chunks:[],id:I.id,started:Date.now(),cancelled:!1,stopping:!1};et.current=re,b.ondataavailable=function(we){!re.cancelled&&we.data&&we.data.size>0&&re.chunks.push(we.data)},b.onerror=function(){Mt(!0),x(g(\"toasts.voice_recording_failed_audio_captured\",\"The recording failed: no audio was captured.\"),\"error\")},b.onstop=function(){if(mr(V),re.cancelled||!Je.current)return;let we=b.mimeType||re.chunks[0]&&re.chunks[0].type||\"audio/webm\",Rt=new FileReader;Rt.onloadend=function(){if(re.cancelled||!Je.current)return;et.current=null;let On=String(Rt.result||\"\").split(\",\")[1];if(!On){fo(re),x(g(\"toasts.voice_recording_failed_audio_captured\",\"The recording failed: no audio was captured.\"),\"error\");return}let K={audioBase64:On,mimeType:we,durationSec:re.elapsed},zt=Fl(se.current,re.id,K);if(zt&&zt.error===\"too-large\"){fo(re),x(g(\"toasts.voice_note_too_long_save\",\"That voice note is too long to save.\"),\"warning\");return}for(let yn=0;yn<Ne.current.length;yn++)Ne.current[yn]=Fl(Ne.current[yn],re.id,K);so(zt)},Rt.readAsDataURL(new Blob(re.chunks,{type:we}))};try{b.start()}catch{et.current=null,mr(V),x(g(\"errors.microphone_access_denied\",\"The microphone is not available.\"),\"error\");return}Lt(se.current.concat([I])),U({id:I.id,x:I.x,y:I.y,elapsedSec:0}),gn.current.tick=setInterval(function(){U(function(we){return we&&Object.assign({},we,{elapsedSec:(Date.now()-re.started)/1e3})})},250),gn.current.cap=setTimeout(function(){Mt(!1)},h*1e3)};React.useEffect(function(){return Je.current=!0,function(){Je.current=!1,Mt(!0)}},[]),React.useEffect(function(){u.showTools||(D(\"\"),Ee(!1),Mt(!0))},[u.showTools]),React.useEffect(function(){typeof u.onModeChange==\"function\"&&u.onModeChange(M)},[M]);let Ed=function(I){M===\"voice\"&&I!==\"voice\"&&Mt(!0),D(I)},Cd=async function(I){let $=I.target.files&&I.target.files[0];if(I.target.value=\"\",!!$)try{if($.size>10*1024*1024)throw new Error(\"size\");let V=JSON.parse(await $.text());if(!Je.current)return;let b=Array.isArray(V)?V:V&&V.annotations;if(!Array.isArray(b)||b.length>1e3)throw new Error(\"shape\");let re=function(K){return K&&Number.isFinite(K.x)&&Number.isFinite(K.y)&&Math.abs(K.x)<=1e5&&Math.abs(K.y)<=1e5},we=function(K){return re(K)&&Number.isFinite(K.w)&&Number.isFinite(K.h)&&K.w>=0&&K.h>=0&&K.w<=1e5&&K.h<=1e5},Rt=b.filter(function(K){if(!K||typeof K!=\"object\"||Array.isArray(K))return!1;let zt=K.kind||(i.includes(K.type)?\"sticker\":\"\");return!a.includes(zt)||[\"content\",\"text\",\"authorName\",\"color\"].some(function(yn){return K[yn]!=null&&typeof K[yn]!=\"string\"})?!1:zt===\"highlight\"?Array.isArray(K.rects)&&(K.rects.length>0||pr(K.anchor))&&K.rects.length<=1e3&&K.rects.every(we):re(K)?zt===\"sticker\"?i.includes(K.type):zt===\"voice\"?!K.pending&&typeof K.audioBase64==\"string\"&&K.audioBase64.length<=f&&/^[A-Za-z0-9+/=]+$/.test(K.audioBase64)&&/^audio\\/[a-z0-9.+-]+(?:;codecs=[a-z0-9., -]+)?$/i.test(K.mimeType||\"audio/webm\"):zt===\"draw\"?we(K)&&O.includes(K.shape||\"free\")&&K.shape!==\"erase\"&&Number.isFinite(K.width)&&K.width>0&&K.width<=100&&((K.shape||\"free\")===\"free\"?Array.isArray(K.points)&&K.points.length>=2&&K.points.length<=2e4&&K.points.every(re):re(K.start)&&re(K.end)):!0:!1});if(b.length&&!Rt.length)throw new Error(\"shape\");let On=Sa(se.current,{docTitle:typeof V.docTitle==\"string\"?V.docTitle:\"\",annotations:Rt},R?{}:{forceAuthor:\"student\",forceAuthorName:z});if(On.error)throw new Error(On.error);Lt(On.list)}catch{Je.current&&x(g(\"annotation.import_error\",\"Choose a saved annotations JSON file under 10 MB.\"),\"error\")}},Rd=function(){let I;try{let $=Bl(d,c,se.current,!0,k),V={docTitle:u.title||String(u.documentKey||\"Card\"),documentKey:u.documentKey,annotations:$.filter(function(re){return re&&!re.pending})};if(typeof u.onExport==\"function\"){u.onExport(V);return}I=URL.createObjectURL(new Blob([JSON.stringify(V,null,2)],{type:\"application/json\"}));let b=document.createElement(\"a\");b.href=I,b.download=\"card-annotations.json\",b.click(),setTimeout(function(){URL.revokeObjectURL(I)},1e3)}catch{I&&URL.revokeObjectURL(I),x(g(\"toasts.could_not_save_annotations\",\"Could not save annotations. Try a different browser.\"),\"error\")}};React.useEffect(function(){if(!c||!M||M===\"draw\")return;let I={isTeacher:R,authorName:z},$=function(b){if(M===\"highlight\"||b.target&&b.target.closest&&b.target.closest(\"button,input,textarea,select,a,[contenteditable],audio,[data-allo-note-expanded]\")||p&&p!==c&&p.contains(b.target))return;let re=null;if(M===\"sticker\")re=ya(c,b,Object.assign({stickerType:A},I));else if(M===\"note\")re=va(c,b,Object.assign({color:le,templateContent:Re||void 0},I));else if(M===\"voice\"){if(et.current)return;let we=xa(c,b,I);we&&Sd(we);return}re&&Lt(se.current.concat([re]))},V=function(){if(M!==\"highlight\")return;let b=window.getSelection&&window.getSelection();if(!b||b.isCollapsed)return;let re=ka(c,b,Object.assign({color:ee},I));if(re){if(d){let we=_a(d),Rt=pd(d,b.getRangeAt(0),we);if(!Rt||(re.anchor=Rt,re.rects=Ul(c,we,Rt),!re.rects.length))return}Lt(se.current.concat([re]));try{b.removeAllRanges()}catch{}}};return c.addEventListener(\"click\",$),c.addEventListener(\"pointerup\",V),c.addEventListener(\"keyup\",V),function(){c.removeEventListener(\"click\",$),c.removeEventListener(\"pointerup\",V),c.removeEventListener(\"keyup\",V)}},[c,p,d,M,A,le,Re,ee,R,z]);let Wl=window.ReactDOM,Aa=function(I,$){return $&&Wl&&Wl.createPortal?Wl.createPortal(I,$):null},In=function(I){let $=se.current.find(function(V){return V&&V.id===I});co($)&&(et.current&&et.current.id===I?Mt(!0):Lt(Na(se.current,I)))},Da=w.length;return React.createElement(React.Fragment,null,u.showTools&&React.createElement(\"div\",{\"data-allo-anno-workspace\":!0,className:\"flex flex-wrap items-center gap-1\"},React.createElement(ga,{mode:M,stickerType:A,noteColor:le,highlightColor:ee,noteTemplate:Re,drawColor:Pe,drawWidth:te,drawShape:ne,isTeacher:R,onSetMode:Ed,onPickType:X,onPickNoteColor:Y,onPickHighlightColor:ue,onPickTemplate:We,onPickDrawColor:G,onPickDrawWidth:Z,onPickDrawShape:ae,onClear:function(){Mt(!0),Lt(se.current.filter(function(I){return!co(I)}))},t:_}),React.createElement(\"button\",{type:\"button\",\"data-allo-undo-btn\":\"true\",onClick:at?xd:void 0,disabled:!at,className:\"p-1.5 rounded-full flex items-center gap-1 text-xs font-bold px-2 \"+(at?\"text-slate-600 hover:bg-slate-100\":\"text-slate-300 cursor-not-allowed\"),\"aria-label\":g(\"annotation.undo_aria\",\"Undo last annotation\")},g(\"annotation.undo_button\",\"\\u21A9 Undo\")),React.createElement(\"button\",{type:\"button\",\"aria-pressed\":de,onClick:function(){Ee(function(I){return!I})},className:\"p-1.5 rounded-full flex items-center gap-1 text-xs font-bold px-2 \"+(de?\"bg-slate-200 text-slate-700\":\"text-slate-600 hover:bg-slate-100\"),\"aria-label\":g(\"annotation.toggle_list_aria\",\"Toggle annotation list\")},g(\"annotation.list_button\",\"\\u{1F4CB} List\"),Da>0&&React.createElement(\"span\",{className:\"ms-0.5 bg-indigo-600 text-white text-[9px] font-bold rounded-full px-1.5 py-0.5 leading-none\"},Da)),React.createElement(\"button\",{type:\"button\",onClick:Rd,className:\"p-1.5 text-xs font-bold rounded\",\"aria-label\":g(\"annotation.save_aria\",\"Save annotations\")},g(\"annotation.save_button\",\"Save annotations\")),React.createElement(\"button\",{type:\"button\",onClick:function(){hn.current&&hn.current.click()},className:\"p-1.5 text-xs font-bold rounded\",\"aria-label\":g(\"annotation.import_aria\",\"Import annotations\")},g(\"annotation.import_button\",\"Import\")),React.createElement(\"input\",{ref:hn,type:\"file\",accept:\".json,application/json\",hidden:!0,onChange:Cd,\"aria-label\":g(\"annotation.import_aria\",\"Import annotations\")})),Aa(React.createElement(React.Fragment,null,React.createElement(ha,{annotations:m,mode:M,isTeacher:R,onMove:function(I,$,V){co(se.current.find(function(b){return b&&b.id===I}))&&Lt(jl(se.current,I,{x:Math.max(0,$),y:Math.max(0,V)}))},onNoteChange:function(I,$){co(se.current.find(function(V){return V&&V.id===I}))&&Lt(jl(se.current,I,$))},onNoteDelete:In,onHighlightDelete:In,onVoiceDelete:In,onDrawDelete:In}),M===\"draw\"&&React.createElement(ma,{active:!0,color:Pe,width:te,shape:ne,annotations:m,onCommit:function(I){let $=wa(I,{isTeacher:R,authorName:z});$&&Lt(se.current.concat([$]))},onErase:In}),Ve&&React.createElement(fa,{x:Ve.x,y:Ve.y,elapsedSec:Ve.elapsedSec,onStop:function(){Mt(!1)},onCancel:function(){Mt(!0)}})),p),de&&Aa(React.createElement(Ra,{annotations:w,isTeacher:R,onClose:function(){Ee(!1)},onFocus:function(I){let $=m.find(function(V){return V&&V.id===I});$&&c&&($.kind!==\"highlight\"||$.rects?.length)&&Ea(c,$)},onImport:function(){hn.current&&hn.current.click()},onDelete:In}),u.sidebarEl||p))}function wd(u,c){let p=window.ReactDOM;if(!u||!p||!window.React)return null;let w=p.createRoot?p.createRoot(u):null,d=Object.assign({},c||{}),S=new Map,k=new Map,m=()=>(k.has(d.documentKey)||k.set(d.documentKey,new WeakMap),k.get(d.documentKey)),R=!1,z=function(_){if(R)return;let g=React.createElement(Pa,Object.assign({},d,{key:String(d.documentKey||\"\"),historyStore:S,recoveryCache:m()}));w&&_&&p.flushSync?p.flushSync(function(){w.render(g)}):w?w.render(g):p.render(g,u)};return z(),{snapshotAnnotations:function(){return Bl(d.contentEl,d.hostEl,Array.isArray(d.annotations)?d.annotations:[],!0,m())},update:function(_){let g=Object.assign({},d,_||{}),x=g.documentKey!==d.documentKey||d.showTools&&!g.showTools;d=g,z(x)},destroy:function(){if(!R){R=!0;try{w?w.unmount():p.unmountComponentAtNode(u)}catch{}S.clear(),k.clear()}}}}window.AlloModules=window.AlloModules||{},window.AlloModules.AnnotationSuite={InquiryBridge:window.AlloFlowAnnotationInquiryBridge||null,STICKER_ICONS:l,STICKER_TYPES:i,ANNOTATION_KINDS:a,NOTE_COLORS:v,NOTE_COLOR_KEYS:P,HIGHLIGHT_COLORS:B,HIGHLIGHT_COLOR_KEYS:Q,DRAW_COLORS:N,DRAW_COLOR_KEYS:C,DRAW_WIDTHS:L,DRAW_SHAPES:O,DRAW_SHAPE_LABELS:F,DRAW_SHAPE_ICONS:he,ERASER_RADIUS:pn,TEACHER_NOTE_TEMPLATES:H,STUDENT_NOTE_TEMPLATES:W,VOICE_MAX_SECONDS:h,VOICE_MAX_BYTES:f,StickerNode:aa,NoteBubble:sa,HighlightOverlay:da,VoiceNoteBubble:ca,RecordingOverlay:fa,DrawingOverlay:pa,DrawingCapture:ma,Overlay:ha,Toolbar:ga,Sidebar:Ra,Workspace:Pa,mountWorkspace:wd,createStickerFromClick:ya,createNoteFromClick:va,createHighlightFromSelection:ka,createVoicePlaceholder:xa,createDrawingFromStroke:wa,attachAudioToVoiceNote:Fl,importAnnotations:Sa,updateAnnotation:jl,removeAnnotation:Na,buildStickerTitle:q,migrateLegacyShape:ve,focusAnnotation:Ea,countByAuthor:Ca,annotationPreview:uo}}});n(),window.AlloModules=window.AlloModules||{},window.AlloModules.AnnotationSuiteModule=!0,console.log(\"[AnnotationSuite] Toolbar + Overlay + helpers registered\")})()});window.React=Xl();window.ReactDOM=cd();fd();})();\n","css":".allo-anno-scope{font:.875rem/1.5 system-ui,sans-serif;color:#334155;text-align:start}.allo-anno-scope button,.allo-anno-scope input,.allo-anno-scope select,.allo-anno-scope textarea{font:inherit;letter-spacing:normal;line-height:1.5;border:0 solid #cbd5e1}.allo-anno-scope button{cursor:pointer;background:transparent}.allo-anno-scope svg{display:block}.allo-anno-scope button:focus-visible{outline:3px solid #294fc3;outline-offset:2px}.allo-anno-scope p{margin:0}.allo-anno-scope textarea{background:white;color:#172554}.allo-anno-scope [data-allo-anno-workspace]{background:#fff;border:1px solid #cbd5e1;border-radius:12px;padding:8px}.allo-anno-scope .sr-only {\n    position: absolute;\n    width: 1px;\n    height: 1px;\n    padding: 0;\n    margin: -1px;\n    overflow: hidden;\n    clip: rect(0, 0, 0, 0);\n    white-space: nowrap;\n    border-width: 0\n}\n.allo-anno-scope .pointer-events-none {\n    pointer-events: none\n}\n.allo-anno-scope .pointer-events-auto {\n    pointer-events: auto\n}\n.allo-anno-scope .visible {\n    visibility: visible\n}\n.allo-anno-scope .invisible {\n    visibility: hidden\n}\n.allo-anno-scope .collapse {\n    visibility: collapse\n}\n.allo-anno-scope .fixed {\n    position: fixed\n}\n.allo-anno-scope .absolute {\n    position: absolute\n}\n.allo-anno-scope .relative {\n    position: relative\n}\n.allo-anno-scope .sticky {\n    position: sticky\n}\n.allo-anno-scope .inset-0 {\n    inset: 0px\n}\n.allo-anno-scope .right-3 {\n    right: 0.75rem\n}\n.allo-anno-scope .top-16 {\n    top: 4rem\n}\n.allo-anno-scope .z-30 {\n    z-index: 30\n}\n.allo-anno-scope .z-40 {\n    z-index: 40\n}\n.allo-anno-scope .z-50 {\n    z-index: 50\n}\n.allo-anno-scope .z-\\[55\\] {\n    z-index: 55\n}\n.allo-anno-scope .z-\\[60\\] {\n    z-index: 60\n}\n.allo-anno-scope .mx-1 {\n    margin-left: 0.25rem;\n    margin-right: 0.25rem\n}\n.allo-anno-scope .mb-0\\.5 {\n    margin-bottom: 0.125rem\n}\n.allo-anno-scope .me-1 {\n    margin-inline-end: 0.25rem\n}\n.allo-anno-scope .ms-0\\.5 {\n    margin-inline-start: 0.125rem\n}\n.allo-anno-scope .ms-auto {\n    margin-inline-start: auto\n}\n.allo-anno-scope .mt-0\\.5 {\n    margin-top: 0.125rem\n}\n.allo-anno-scope .mt-2 {\n    margin-top: 0.5rem\n}\n.allo-anno-scope .block {\n    display: block\n}\n.allo-anno-scope .inline-block {\n    display: inline-block\n}\n.allo-anno-scope .inline {\n    display: inline\n}\n.allo-anno-scope .flex {\n    display: flex\n}\n.allo-anno-scope .inline-flex {\n    display: inline-flex\n}\n.allo-anno-scope .hidden {\n    display: none\n}\n.allo-anno-scope .h-1\\.5 {\n    height: 0.375rem\n}\n.allo-anno-scope .h-2 {\n    height: 0.5rem\n}\n.allo-anno-scope .h-4 {\n    height: 1rem\n}\n.allo-anno-scope .h-6 {\n    height: 1.5rem\n}\n.allo-anno-scope .h-full {\n    height: 100%\n}\n.allo-anno-scope .min-h-6 {\n    min-height: 1.5rem\n}\n.allo-anno-scope .w-2 {\n    width: 0.5rem\n}\n.allo-anno-scope .w-6 {\n    width: 1.5rem\n}\n.allo-anno-scope .w-full {\n    width: 100%\n}\n.allo-anno-scope .w-px {\n    width: 1px\n}\n.allo-anno-scope .min-w-0 {\n    min-width: 0px\n}\n.allo-anno-scope .min-w-6 {\n    min-width: 1.5rem\n}\n.allo-anno-scope .max-w-\\[150px\\] {\n    max-width: 150px\n}\n.allo-anno-scope .flex-1 {\n    flex: 1 1 0%\n}\n.allo-anno-scope .scale-110 {\n    --tw-scale-x: 1.1;\n    --tw-scale-y: 1.1;\n    transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))\n}\n.allo-anno-scope .transform {\n    transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))\n}\n@keyframes ping {\n    75%, 100% {\n        transform: scale(2);\n        opacity: 0\n    }\n}\n.allo-anno-scope .animate-\\[ping_0\\.4s_ease-out_reverse_forwards\\] {\n    animation: ping 0.4s ease-out reverse forwards\n}\n@keyframes pulse {\n    50% {\n        opacity: .5\n    }\n}\n.allo-anno-scope .animate-pulse {\n    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite\n}\n.allo-anno-scope .cursor-grab {\n    cursor: grab\n}\n.allo-anno-scope .cursor-not-allowed {\n    cursor: not-allowed\n}\n.allo-anno-scope .cursor-pointer {\n    cursor: pointer\n}\n.allo-anno-scope .select-none {\n    user-select: none\n}\n.allo-anno-scope .select-text {\n    user-select: text\n}\n.allo-anno-scope .resize-y {\n    resize: vertical\n}\n.allo-anno-scope .resize {\n    resize: both\n}\n.allo-anno-scope .flex-col {\n    flex-direction: column\n}\n.allo-anno-scope .flex-wrap {\n    flex-wrap: wrap\n}\n.allo-anno-scope .items-start {\n    align-items: flex-start\n}\n.allo-anno-scope .items-center {\n    align-items: center\n}\n.allo-anno-scope .justify-end {\n    justify-content: flex-end\n}\n.allo-anno-scope .justify-center {\n    justify-content: center\n}\n.allo-anno-scope .justify-between {\n    justify-content: space-between\n}\n.allo-anno-scope .gap-1 {\n    gap: 0.25rem\n}\n.allo-anno-scope .gap-2 {\n    gap: 0.5rem\n}\n.allo-anno-scope .overflow-hidden {\n    overflow: hidden\n}\n.allo-anno-scope .overflow-y-auto {\n    overflow-y: auto\n}\n.allo-anno-scope .truncate {\n    overflow: hidden;\n    text-overflow: ellipsis;\n    white-space: nowrap\n}\n.allo-anno-scope .rounded {\n    border-radius: 0.25rem\n}\n.allo-anno-scope .rounded-full {\n    border-radius: 9999px\n}\n.allo-anno-scope .rounded-lg {\n    border-radius: 0.5rem\n}\n.allo-anno-scope .rounded-md {\n    border-radius: 0.375rem\n}\n.allo-anno-scope .rounded-xl {\n    border-radius: 0.75rem\n}\n.allo-anno-scope .rounded-t-lg {\n    border-top-left-radius: 0.5rem;\n    border-top-right-radius: 0.5rem\n}\n.allo-anno-scope .rounded-t-xl {\n    border-top-left-radius: 0.75rem;\n    border-top-right-radius: 0.75rem\n}\n.allo-anno-scope .border {\n    border-width: 1px\n}\n.allo-anno-scope .border-b {\n    border-bottom-width: 1px\n}\n.allo-anno-scope .border-s {\n    border-inline-start-width: 1px\n}\n.allo-anno-scope .border-s-2 {\n    border-inline-start-width: 2px\n}\n.allo-anno-scope .border-amber-300 {\n    --tw-border-opacity: 1;\n    border-color: rgb(252 211 77 / var(--tw-border-opacity, 1))\n}\n.allo-anno-scope .border-indigo-400 {\n    --tw-border-opacity: 1;\n    border-color: rgb(129 140 248 / var(--tw-border-opacity, 1))\n}\n.allo-anno-scope .border-slate-200 {\n    --tw-border-opacity: 1;\n    border-color: rgb(226 232 240 / var(--tw-border-opacity, 1))\n}\n.allo-anno-scope .border-slate-300 {\n    --tw-border-opacity: 1;\n    border-color: rgb(203 213 225 / var(--tw-border-opacity, 1))\n}\n.allo-anno-scope .bg-amber-100 {\n    --tw-bg-opacity: 1;\n    background-color: rgb(254 243 199 / var(--tw-bg-opacity, 1))\n}\n.allo-anno-scope .bg-amber-50 {\n    --tw-bg-opacity: 1;\n    background-color: rgb(255 251 235 / var(--tw-bg-opacity, 1))\n}\n.allo-anno-scope .bg-amber-50\\/40 {\n    background-color: rgb(255 251 235 / 0.4)\n}\n.allo-anno-scope .bg-fuchsia-100 {\n    --tw-bg-opacity: 1;\n    background-color: rgb(250 232 255 / var(--tw-bg-opacity, 1))\n}\n.allo-anno-scope .bg-fuchsia-50 {\n    --tw-bg-opacity: 1;\n    background-color: rgb(253 244 255 / var(--tw-bg-opacity, 1))\n}\n.allo-anno-scope .bg-indigo-100 {\n    --tw-bg-opacity: 1;\n    background-color: rgb(224 231 255 / var(--tw-bg-opacity, 1))\n}\n.allo-anno-scope .bg-indigo-50 {\n    --tw-bg-opacity: 1;\n    background-color: rgb(238 242 255 / var(--tw-bg-opacity, 1))\n}\n.allo-anno-scope .bg-indigo-50\\/60 {\n    background-color: rgb(238 242 255 / 0.6)\n}\n.allo-anno-scope .bg-indigo-600 {\n    --tw-bg-opacity: 1;\n    background-color: rgb(79 70 229 / var(--tw-bg-opacity, 1))\n}\n.allo-anno-scope .bg-red-100 {\n    --tw-bg-opacity: 1;\n    background-color: rgb(254 226 226 / var(--tw-bg-opacity, 1))\n}\n.allo-anno-scope .bg-red-50 {\n    --tw-bg-opacity: 1;\n    background-color: rgb(254 242 242 / var(--tw-bg-opacity, 1))\n}\n.allo-anno-scope .bg-red-500 {\n    --tw-bg-opacity: 1;\n    background-color: rgb(239 68 68 / var(--tw-bg-opacity, 1))\n}\n.allo-anno-scope .bg-red-600 {\n    --tw-bg-opacity: 1;\n    background-color: rgb(220 38 38 / var(--tw-bg-opacity, 1))\n}\n.allo-anno-scope .bg-slate-100 {\n    --tw-bg-opacity: 1;\n    background-color: rgb(241 245 249 / var(--tw-bg-opacity, 1))\n}\n.allo-anno-scope .bg-slate-200 {\n    --tw-bg-opacity: 1;\n    background-color: rgb(226 232 240 / var(--tw-bg-opacity, 1))\n}\n.allo-anno-scope .bg-slate-50 {\n    --tw-bg-opacity: 1;\n    background-color: rgb(248 250 252 / var(--tw-bg-opacity, 1))\n}\n.allo-anno-scope .bg-transparent {\n    background-color: transparent\n}\n.allo-anno-scope .bg-white {\n    --tw-bg-opacity: 1;\n    background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1))\n}\n.allo-anno-scope .bg-white\\/70 {\n    background-color: rgb(255 255 255 / 0.7)\n}\n.allo-anno-scope .bg-white\\/80 {\n    background-color: rgb(255 255 255 / 0.8)\n}\n.allo-anno-scope .bg-yellow-100 {\n    --tw-bg-opacity: 1;\n    background-color: rgb(254 249 195 / var(--tw-bg-opacity, 1))\n}\n.allo-anno-scope .p-0\\.5 {\n    padding: 0.125rem\n}\n.allo-anno-scope .p-1 {\n    padding: 0.25rem\n}\n.allo-anno-scope .p-1\\.5 {\n    padding: 0.375rem\n}\n.allo-anno-scope .p-2 {\n    padding: 0.5rem\n}\n.allo-anno-scope .px-1 {\n    padding-left: 0.25rem;\n    padding-right: 0.25rem\n}\n.allo-anno-scope .px-1\\.5 {\n    padding-left: 0.375rem;\n    padding-right: 0.375rem\n}\n.allo-anno-scope .px-2 {\n    padding-left: 0.5rem;\n    padding-right: 0.5rem\n}\n.allo-anno-scope .px-3 {\n    padding-left: 0.75rem;\n    padding-right: 0.75rem\n}\n.allo-anno-scope .py-0\\.5 {\n    padding-top: 0.125rem;\n    padding-bottom: 0.125rem\n}\n.allo-anno-scope .py-1 {\n    padding-top: 0.25rem;\n    padding-bottom: 0.25rem\n}\n.allo-anno-scope .py-1\\.5 {\n    padding-top: 0.375rem;\n    padding-bottom: 0.375rem\n}\n.allo-anno-scope .py-2 {\n    padding-top: 0.5rem;\n    padding-bottom: 0.5rem\n}\n.allo-anno-scope .py-6 {\n    padding-top: 1.5rem;\n    padding-bottom: 1.5rem\n}\n.allo-anno-scope .ps-1 {\n    padding-inline-start: 0.25rem\n}\n.allo-anno-scope .text-left {\n    text-align: left\n}\n.allo-anno-scope .text-center {\n    text-align: center\n}\n.allo-anno-scope .font-mono {\n    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace\n}\n.allo-anno-scope .text-3xl {\n    font-size: 1.875rem;\n    line-height: 2.25rem\n}\n.allo-anno-scope .text-\\[10px\\] {\n    font-size:0.625rem\n}\n.allo-anno-scope .text-\\[11px\\] {\n    font-size:0.6875rem\n}\n.allo-anno-scope .text-\\[9px\\] {\n    font-size:0.5625rem\n}\n.allo-anno-scope .text-sm {\n    font-size: 0.875rem;\n    line-height: 1.25rem\n}\n.allo-anno-scope .text-xs {\n    font-size: 0.75rem;\n    line-height: 1rem\n}\n.allo-anno-scope .font-bold {\n    font-weight: 700\n}\n.allo-anno-scope .font-medium {\n    font-weight: 500\n}\n.allo-anno-scope .font-normal {\n    font-weight: 400\n}\n.allo-anno-scope .uppercase {\n    text-transform: uppercase\n}\n.allo-anno-scope .italic {\n    font-style: italic\n}\n.allo-anno-scope .leading-none {\n    line-height: 1\n}\n.allo-anno-scope .tracking-wide {\n    letter-spacing: 0.025em\n}\n.allo-anno-scope .text-amber-700 {\n    --tw-text-opacity: 1;\n    color: rgb(180 83 9 / var(--tw-text-opacity, 1))\n}\n.allo-anno-scope .text-amber-800 {\n    --tw-text-opacity: 1;\n    color: rgb(146 64 14 / var(--tw-text-opacity, 1))\n}\n.allo-anno-scope .text-fuchsia-700 {\n    --tw-text-opacity: 1;\n    color: rgb(162 28 175 / var(--tw-text-opacity, 1))\n}\n.allo-anno-scope .text-indigo-700 {\n    --tw-text-opacity: 1;\n    color: rgb(67 56 202 / var(--tw-text-opacity, 1))\n}\n.allo-anno-scope .text-red-700 {\n    --tw-text-opacity: 1;\n    color: rgb(185 28 28 / var(--tw-text-opacity, 1))\n}\n.allo-anno-scope .text-slate-300 {\n    --tw-text-opacity: 1;\n    color: rgb(203 213 225 / var(--tw-text-opacity, 1))\n}\n.allo-anno-scope .text-slate-500 {\n    --tw-text-opacity: 1;\n    color: rgb(100 116 139 / var(--tw-text-opacity, 1))\n}\n.allo-anno-scope .text-slate-600 {\n    --tw-text-opacity: 1;\n    color: rgb(71 85 105 / var(--tw-text-opacity, 1))\n}\n.allo-anno-scope .text-slate-700 {\n    --tw-text-opacity: 1;\n    color: rgb(51 65 85 / var(--tw-text-opacity, 1))\n}\n.allo-anno-scope .text-slate-800 {\n    --tw-text-opacity: 1;\n    color: rgb(30 41 59 / var(--tw-text-opacity, 1))\n}\n.allo-anno-scope .text-white {\n    --tw-text-opacity: 1;\n    color: rgb(255 255 255 / var(--tw-text-opacity, 1))\n}\n.allo-anno-scope .text-yellow-800 {\n    --tw-text-opacity: 1;\n    color: rgb(133 77 14 / var(--tw-text-opacity, 1))\n}\n.allo-anno-scope .opacity-0 {\n    opacity: 0\n}\n.allo-anno-scope .opacity-60 {\n    opacity: 0.6\n}\n.allo-anno-scope .opacity-70 {\n    opacity: 0.7\n}\n.allo-anno-scope .shadow-2xl {\n    --tw-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);\n    --tw-shadow-colored: 0 25px 50px -12px var(--tw-shadow-color);\n    box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)\n}\n.allo-anno-scope .shadow-lg {\n    --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);\n    --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);\n    box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)\n}\n.allo-anno-scope .shadow-md {\n    --tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);\n    --tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);\n    box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)\n}\n.allo-anno-scope .shadow-sm {\n    --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);\n    --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);\n    box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)\n}\n.allo-anno-scope .shadow-xl {\n    --tw-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);\n    --tw-shadow-colored: 0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);\n    box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)\n}\n.allo-anno-scope .outline-none {\n    outline: 2px solid transparent;\n    outline-offset: 2px\n}\n.allo-anno-scope .ring {\n    --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n    --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(3px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n    box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)\n}\n.allo-anno-scope .ring-1 {\n    --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n    --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n    box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)\n}\n.allo-anno-scope .ring-2 {\n    --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n    --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n    box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)\n}\n.allo-anno-scope .ring-amber-200 {\n    --tw-ring-opacity: 1;\n    --tw-ring-color: rgb(253 230 138 / var(--tw-ring-opacity, 1))\n}\n.allo-anno-scope .ring-amber-500 {\n    --tw-ring-opacity: 1;\n    --tw-ring-color: rgb(245 158 11 / var(--tw-ring-opacity, 1))\n}\n.allo-anno-scope .ring-fuchsia-200 {\n    --tw-ring-opacity: 1;\n    --tw-ring-color: rgb(245 208 254 / var(--tw-ring-opacity, 1))\n}\n.allo-anno-scope .ring-fuchsia-500 {\n    --tw-ring-opacity: 1;\n    --tw-ring-color: rgb(217 70 239 / var(--tw-ring-opacity, 1))\n}\n.allo-anno-scope .ring-indigo-200 {\n    --tw-ring-opacity: 1;\n    --tw-ring-color: rgb(199 210 254 / var(--tw-ring-opacity, 1))\n}\n.allo-anno-scope .ring-indigo-400\\/70 {\n    --tw-ring-color: rgb(129 140 248 / 0.7)\n}\n.allo-anno-scope .ring-red-200 {\n    --tw-ring-opacity: 1;\n    --tw-ring-color: rgb(254 202 202 / var(--tw-ring-opacity, 1))\n}\n.allo-anno-scope .ring-red-500 {\n    --tw-ring-opacity: 1;\n    --tw-ring-color: rgb(239 68 68 / var(--tw-ring-opacity, 1))\n}\n.allo-anno-scope .ring-yellow-300 {\n    --tw-ring-opacity: 1;\n    --tw-ring-color: rgb(253 224 71 / var(--tw-ring-opacity, 1))\n}\n.allo-anno-scope .ring-yellow-500 {\n    --tw-ring-opacity: 1;\n    --tw-ring-color: rgb(234 179 8 / var(--tw-ring-opacity, 1))\n}\n.allo-anno-scope .blur {\n    --tw-blur: blur(8px);\n    filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)\n}\n.allo-anno-scope .drop-shadow-md {\n    --tw-drop-shadow: drop-shadow(0 4px 3px rgb(0 0 0 / 0.07)) drop-shadow(0 2px 2px rgb(0 0 0 / 0.06));\n    filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)\n}\n.allo-anno-scope .filter {\n    filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)\n}\n.allo-anno-scope .transition-all {\n    transition-property: all;\n    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n    transition-duration: 150ms\n}\n.allo-anno-scope .transition-colors {\n    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;\n    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n    transition-duration: 150ms\n}\n.allo-anno-scope .transition-opacity {\n    transition-property: opacity;\n    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n    transition-duration: 150ms\n}\n.allo-anno-scope .transition-transform {\n    transition-property: transform;\n    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n    transition-duration: 150ms\n}\n.allo-anno-scope .duration-200 {\n    transition-duration: 200ms\n}\n.allo-anno-scope .ease-out {\n    transition-timing-function: cubic-bezier(0, 0, 0.2, 1)\n}\n.allo-anno-scope .hover\\:scale-110:hover {\n    --tw-scale-x: 1.1;\n    --tw-scale-y: 1.1;\n    transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))\n}\n.allo-anno-scope .hover\\:scale-125:hover {\n    --tw-scale-x: 1.25;\n    --tw-scale-y: 1.25;\n    transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))\n}\n.allo-anno-scope .hover\\:bg-amber-100:hover {\n    --tw-bg-opacity: 1;\n    background-color: rgb(254 243 199 / var(--tw-bg-opacity, 1))\n}\n.allo-anno-scope .hover\\:bg-indigo-100:hover {\n    --tw-bg-opacity: 1;\n    background-color: rgb(224 231 255 / var(--tw-bg-opacity, 1))\n}\n.allo-anno-scope .hover\\:bg-red-100:hover {\n    --tw-bg-opacity: 1;\n    background-color: rgb(254 226 226 / var(--tw-bg-opacity, 1))\n}\n.allo-anno-scope .hover\\:bg-red-700:hover {\n    --tw-bg-opacity: 1;\n    background-color: rgb(185 28 28 / var(--tw-bg-opacity, 1))\n}\n.allo-anno-scope .hover\\:bg-slate-100:hover {\n    --tw-bg-opacity: 1;\n    background-color: rgb(241 245 249 / var(--tw-bg-opacity, 1))\n}\n.allo-anno-scope .hover\\:bg-slate-200:hover {\n    --tw-bg-opacity: 1;\n    background-color: rgb(226 232 240 / var(--tw-bg-opacity, 1))\n}\n.allo-anno-scope .hover\\:bg-white:hover {\n    --tw-bg-opacity: 1;\n    background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1))\n}\n.allo-anno-scope .hover\\:text-indigo-700:hover {\n    --tw-text-opacity: 1;\n    color: rgb(67 56 202 / var(--tw-text-opacity, 1))\n}\n.allo-anno-scope .hover\\:text-red-500:hover {\n    --tw-text-opacity: 1;\n    color: rgb(239 68 68 / var(--tw-text-opacity, 1))\n}\n.allo-anno-scope .hover\\:opacity-100:hover {\n    opacity: 1\n}\n.allo-anno-scope .focus\\:opacity-100:focus {\n    opacity: 1\n}\n.allo-anno-scope .focus\\:outline-none:focus {\n    outline: 2px solid transparent;\n    outline-offset: 2px\n}\n.allo-anno-scope .focus\\:ring-2:focus {\n    --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n    --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n    box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)\n}\n.allo-anno-scope .focus\\:ring-inset:focus {\n    --tw-ring-inset: inset\n}\n.allo-anno-scope .focus\\:ring-amber-400:focus {\n    --tw-ring-opacity: 1;\n    --tw-ring-color: rgb(251 191 36 / var(--tw-ring-opacity, 1))\n}\n.allo-anno-scope .focus\\:ring-indigo-600:focus {\n    --tw-ring-opacity: 1;\n    --tw-ring-color: rgb(79 70 229 / var(--tw-ring-opacity, 1))\n}\n.allo-anno-scope .focus-visible\\:outline:focus-visible {\n    outline-style: solid\n}\n.allo-anno-scope .focus-visible\\:outline-2:focus-visible {\n    outline-width: 2px\n}\n.allo-anno-scope .focus-visible\\:outline-offset-2:focus-visible {\n    outline-offset: 2px\n}\n.allo-anno-scope .focus-visible\\:outline-offset-\\[-2px\\]:focus-visible {\n    outline-offset: -2px\n}\n.allo-anno-scope .focus-visible\\:outline-indigo-600:focus-visible {\n    outline-color: #4f46e5\n}\n.allo-anno-scope .active\\:cursor-grabbing:active {\n    cursor: grabbing\n}\n.allo-anno-scope :is(.group:hover .group-hover\\:opacity-100) {\n    opacity: 1\n}\n@media (prefers-reduced-motion: reduce) {\n    .allo-anno-scope .motion-reduce\\:transform-none {\n        transform: none\n    }\n    .allo-anno-scope .motion-reduce\\:animate-none {\n        animation: none\n    }\n    .allo-anno-scope .motion-reduce\\:transition-none {\n        transition-property: none\n    }\n}","labels":{"a11y.save_note":"Save and close note","a11y.delete_note":"Delete note","placeholders.type_note":"Type your note…","a11y.note_content":"Note content","a11y.close_voice_note":"Close voice note","a11y.delete_voice_note":"Delete voice note","a11y.cancel_recording":"Cancel recording","a11y.stop_save_recording":"Stop recording and save","a11y.delete_highlight":"Delete highlight","a11y.delete_drawing":"Delete drawing","toolbar.stickers_tooltip":"Toggle Sticker Mode","toolbar.stickers_label":"Stickers","toolbar.clear_stickers":"Clear Stickers","a11y.note_template":"Note template","a11y.clear_all_annotations":"Clear all annotations","toasts.cancel_active_recording_before_undoing":"Cancel the active recording before undoing.","errors.microphone_access_denied":"Microphone access denied. Please check your browser permissions.","toasts.voice_recording_failed_audio_captured":"Voice recording failed — no audio captured.","toasts.voice_note_too_long_save":"Voice note too long to save (over 500KB). Try a shorter clip.","annotation.import_error":"Choose a saved annotations JSON file under 10 MB.","annotation.undo_aria":"Undo last annotation","annotation.undo_button":"↩ Undo","annotation.toggle_list_aria":"Toggle annotation list","annotation.list_button":"📋 List","annotation.save_aria":"Save annotations","annotation.save_button":"Save annotations","annotation.import_aria":"Import annotations","annotation.import_button":"Import"}};
 
 
+(function (root, factory) {
+  var api = factory(root);
+  if (typeof module === 'object' && module.exports) {
+    module.exports = api;
+  }
+  if (root && typeof root === 'object') {
+    root.AlloWordPictureMatcher = api;
+    root.AlloModules = root.AlloModules || {};
+    root.AlloModules.WordPictureMatcher = api;
+  }
+}(typeof globalThis !== 'undefined' ? globalThis : (typeof window !== 'undefined' ? window : this), function (root) {
+  'use strict';
+
+  var IRREGULAR_BASES = {
+    mice: 'mouse', geese: 'goose', feet: 'foot', teeth: 'tooth', children: 'child',
+    men: 'man', women: 'woman', people: 'person',
+    leaves: 'leaf', wolves: 'wolf', knives: 'knife', lives: 'life', halves: 'half',
+    calves: 'calf', loaves: 'loaf', thieves: 'thief', shelves: 'shelf', scarves: 'scarf',
+    ran: 'run', swam: 'swim', sang: 'sing', drank: 'drink', ate: 'eat', gave: 'give',
+    took: 'take', made: 'make', wrote: 'write', rode: 'ride', drove: 'drive', flew: 'fly',
+    grew: 'grow', threw: 'throw', knew: 'know', drew: 'draw', slept: 'sleep', swept: 'sweep',
+    kept: 'keep', fed: 'feed', dug: 'dig', sat: 'sit', stood: 'stand', caught: 'catch',
+    taught: 'teach', bought: 'buy', brought: 'bring', thought: 'think', fought: 'fight',
+    found: 'find', won: 'win', built: 'build', sent: 'send', spent: 'spend', bent: 'bend',
+    paid: 'pay', said: 'say', told: 'tell', sold: 'sell', held: 'hold', heard: 'hear',
+    felt: 'feel', left: 'leave', lost: 'lose', met: 'meet', shot: 'shoot', chose: 'choose',
+    froze: 'freeze', broke: 'break', spoke: 'speak', stole: 'steal', woke: 'wake',
+    wore: 'wear', tore: 'tear', fell: 'fall', forgotten: 'forget', forgot: 'forget',
+    begun: 'begin', began: 'begin', fallen: 'fall', taken: 'take', eaten: 'eat',
+    driven: 'drive', written: 'write', spoken: 'speak', chosen: 'choose', frozen: 'freeze',
+    broken: 'break', stolen: 'steal', worn: 'wear', torn: 'tear', shown: 'show',
+    grown: 'grow', thrown: 'throw', drawn: 'draw', flown: 'fly', known: 'know',
+    better: 'good', best: 'good', worse: 'bad', worst: 'bad'
+  };
+
+  var KNOWN_COMPOUND_PARTS = {
+    rain: 1, snow: 1, sun: 1, moon: 1, star: 1, wind: 1, fire: 1, ice: 1, water: 1,
+    earth: 1, sand: 1, rock: 1, wood: 1, tree: 1, leaf: 1, grass: 1, sea: 1, hill: 1,
+    land: 1, river: 1, back: 1, flash: 1, note: 1, text: 1, chalk: 1, lunch: 1,
+    play: 1, class: 1, bed: 1, home: 1, school: 1, book: 1, space: 1, flood: 1,
+    wet: 1, dry: 1, wild: 1, green: 1, blue: 1, black: 1, white: 1, gold: 1,
+    foot: 1, hand: 1, head: 1, ear: 1, eye: 1, tooth: 1, hair: 1, rail: 1
+  };
+
+  var CONCEPT_CUES = {
+    // Science / Ecology / Earth
+    photosynthesis: ['plant', 'leaf', 'sun', 'tree'],
+    ecosystem: ['forest', 'tree', 'plant', 'earth'],
+    habitat: ['tree', 'forest', 'nest', 'animal'],
+    evaporation: ['rain', 'cloud', 'sun', 'water'],
+    condensation: ['cloud', 'rain', 'water'],
+    precipitation: ['rain', 'snow', 'cloud'],
+    gravity: ['planet', 'earth', 'apple'],
+    friction: ['wheel', 'road', 'car'],
+    energy: ['sun', 'fire', 'battery', 'light'],
+    molecule: ['science', 'water'],
+    atom: ['science', 'star'],
+    cell: ['science', 'circle'],
+    organism: ['animal', 'plant', 'fish'],
+    pollination: ['bee', 'flower'],
+    germination: ['seed', 'plant', 'flower'],
+    metamorphosis: ['butterfly', 'caterpillar'],
+    migration: ['bird', 'fly'],
+    hibernation: ['bear', 'sleep'],
+    camouflage: ['frog', 'leaf'],
+    predator: ['lion', 'owl', 'wolf'],
+    prey: ['mouse', 'rabbit'],
+    fossil: ['bone', 'rock', 'dinosaur'],
+    mineral: ['rock', 'stone'],
+    magma: ['volcano', 'fire'],
+    lava: ['volcano', 'fire'],
+    erosion: ['rock', 'river', 'water'],
+    weathering: ['rock', 'rain', 'wind'],
+    sediment: ['rock', 'sand', 'river'],
+    glacier: ['ice', 'mountain', 'snow'],
+    climate: ['sun', 'cloud', 'earth'],
+    atmosphere: ['earth', 'sky', 'cloud'],
+    orbit: ['planet', 'moon', 'sun'],
+    solar: ['sun', 'planet'],
+    lunar: ['moon', 'night'],
+    eclipse: ['moon', 'sun'],
+    constellation: ['star', 'night'],
+    galaxy: ['star', 'moon', 'planet'],
+    telescope: ['star', 'eye'],
+    microscope: ['science', 'eye'],
+    magnet: ['iron', 'metal', 'horse'],
+    circuit: ['battery', 'light'],
+    electricity: ['light', 'battery'],
+    conductor: ['battery', 'light'],
+    insulator: ['coat', 'glove'],
+    thermometer: ['hot', 'cold'],
+    temperature: ['hot', 'cold', 'sun'],
+    density: ['water', 'rock'],
+    volume: ['cup', 'bottle', 'box', 'bucket', 'mug', 'glass'],
+    mass: ['rock', 'heavy'],
+    matter: ['water', 'ice', 'rock'],
+    solid: ['ice', 'rock', 'brick'],
+    liquid: ['water', 'milk'],
+    gas: ['cloud', 'balloon'],
+    nutrition: ['food', 'fruit', 'apple'],
+    digestion: ['food', 'eat'],
+    respiration: ['breathe', 'air', 'lungs'],
+    circulation: ['heart'],
+    skeleton: ['bone', 'skull'],
+    muscle: ['arm', 'strong'],
+    neuron: ['brain', 'think'],
+    vertebrate: ['bone', 'fish', 'dog'],
+    invertebrate: ['butterfly', 'worm', 'spider'],
+    amphibian: ['frog', 'water'],
+    reptile: ['snake', 'turtle'],
+    mammal: ['dog', 'cat', 'cow'],
+    herbivore: ['cow', 'rabbit', 'leaf'],
+    carnivore: ['lion', 'wolf', 'meat'],
+    omnivore: ['bear', 'pig'],
+    biodiversity: ['forest', 'animal', 'plant', 'earth'],
+    adaptation: ['animal', 'bird', 'beak'],
+    watershed: ['river', 'mountain', 'rain'],
+    glaciation: ['ice', 'mountain', 'snow'],
+    renewable: ['sun', 'wind', 'tree'],
+
+    // ELA / Reading / Writing
+    synonym: ['book', 'word', 'same'],
+    antonym: ['opposite', 'book'],
+    metaphor: ['book', 'write'],
+    simile: ['book', 'write'],
+    alliteration: ['letter', 'read'],
+    narrator: ['read', 'speak', 'book'],
+    character: ['person', 'face', 'book'],
+    setting: ['house', 'forest', 'map'],
+    conflict: ['fight', 'argue', 'shout', 'bad'],
+    resolution: ['agree', 'smile', 'friend'],
+    plot: ['book', 'story', 'read', 'write'],
+    theme: ['book', 'idea', 'think', 'read'],
+    summary: ['book', 'write', 'list'],
+    inference: ['think', 'question'],
+    evidence: ['book', 'tick', 'microscope', 'look'],
+    claim: ['speak', 'point'],
+    persuade: ['talk', 'speak'],
+    inform: ['read', 'newspaper', 'book'],
+    entertain: ['laugh', 'clown', 'smile', 'music'],
+    fiction: ['book', 'dragon', 'magic'],
+    nonfiction: ['book', 'globe', 'science'],
+    biography: ['person', 'book'],
+    autobiography: ['write', 'book'],
+    poetry: ['write', 'book'],
+    stanza: ['book', 'write'],
+    rhyme: ['sing', 'book'],
+    syllable: ['clap', 'speak', 'word', 'talk'],
+    phoneme: ['ear', 'mouth', 'speak'],
+    grapheme: ['letter', 'write'],
+    morpheme: ['word', 'puzzle', 'write', 'read'],
+    prefix: ['word', 'arrow', 'left', 'write'],
+    suffix: ['word', 'arrow', 'right', 'write'],
+    vocabulary: ['book', 'word', 'read'],
+    fluency: ['read', 'clock'],
+    comprehension: ['think', 'brain', 'read'],
+    glossary: ['book', 'dictionary', 'word'],
+    caption: ['picture', 'write'],
+    diagram: ['map', 'draw'],
+    illustration: ['paint', 'picture', 'draw'],
+    context: ['book', 'read'],
+    decode: ['read', 'letter', 'key'],
+    blending: ['letter', 'mix', 'stir', 'read'],
+
+    // Academic / Reasoning Verbs & Nouns
+    analyze: ['think', 'look'],
+    analyse: ['think', 'look'],
+    compare: ['same', 'different'],
+    contrast: ['different', 'opposite'],
+    describe: ['write', 'talk'],
+    explain: ['teach', 'talk'],
+    evaluate: ['think', 'tick'],
+    predict: ['think', 'question'],
+    observe: ['eye', 'look'],
+    measure: ['ruler', 'clock'],
+    classify: ['sort', 'box'],
+    categorize: ['sort', 'box'],
+    sequence: ['number', 'arrow', 'count', 'table'],
+    cause: ['arrow', 'fire'],
+    effect: ['arrow', 'star'],
+    solution: ['key', 'tick', 'light'],
+    problem: ['question', 'puzzle', 'ask', 'think'],
+    strategy: ['think', 'map'],
+    method: ['list', 'book', 'sort', 'write'],
+    hypothesis: ['think', 'question', 'science'],
+    experiment: ['science', 'water'],
+    conclusion: ['tick', 'book', 'answer', 'think'],
+    data: ['number', 'list', 'table', 'count'],
+    pattern: ['star', 'circle', 'square'],
+    criterion: ['tick', 'list', 'sort', 'good'],
+    criteria: ['tick', 'list', 'sort', 'good'],
+    concept: ['think', 'brain'],
+    factor: ['number', 'multiply', 'math', 'count'],
+    function: ['work', 'machine'],
+    process: ['arrow', 'work'],
+    structure: ['house', 'bridge', 'brick'],
+    system: ['earth', 'circle'],
+
+    // Math & Numeracy
+    addition: ['plus', 'add', 'number'],
+    subtraction: ['minus', 'number', 'math', 'count'],
+    multiplication: ['multiply', 'number', 'math', 'count'],
+    division: ['divide', 'share', 'number'],
+    fraction: ['half', 'cake', 'pie'],
+    denominator: ['half', 'number', 'divide', 'math'],
+    numerator: ['half', 'number', 'divide', 'math'],
+    equation: ['equal', 'number', 'math', 'add'],
+    perimeter: ['square', 'ruler'],
+    area: ['square', 'ruler'],
+    geometry: ['triangle', 'circle', 'square'],
+    polygon: ['triangle', 'square', 'star'],
+    angle: ['triangle', 'ruler', 'square', 'math'],
+    vertex: ['triangle', 'point'],
+    parallel: ['line', 'road'],
+    perpendicular: ['cross', 'square'],
+    symmetry: ['butterfly', 'mirror'],
+    estimate: ['think', 'number'],
+    average: ['number', 'middle'],
+    median: ['middle', 'number'],
+    probability: ['dice', 'coin'],
+    percent: ['number', 'money'],
+    decimal: ['point', 'number'],
+    integer: ['number', 'count', 'math'],
+    graph: ['line', 'number', 'table', 'math'],
+    subitize: ['dice', 'dot', 'count', 'eye'],
+    digit: ['number', 'count', 'math'],
+    numeral: ['number', 'count', 'math'],
+
+    // Social Studies & Civic Life
+    community: ['house', 'school', 'people'],
+    citizen: ['person', 'flag'],
+    democracy: ['vote', 'people'],
+    government: ['capitol', 'flag', 'vote'],
+    constitution: ['book', 'write'],
+    law: ['book', 'rule', 'judge', 'crown'],
+    rights: ['hand', 'tick', 'judge', 'good'],
+    responsibility: ['help', 'work'],
+    culture: ['globe', 'music', 'food'],
+    tradition: ['family', 'cake'],
+    history: ['clock', 'book', 'castle'],
+    timeline: ['clock', 'arrow', 'calendar'],
+    geography: ['globe', 'map', 'mountain'],
+    continent: ['globe', 'map'],
+    hemisphere: ['globe', 'earth'],
+    equator: ['globe', 'sun'],
+    compass: ['map', 'arrow', 'compass', 'globe'],
+    economy: ['money', 'shop'],
+    trade: ['money', 'ship', 'give'],
+    resource: ['tree', 'water'],
+    agriculture: ['farm', 'tractor', 'plant', 'cow'],
+    industry: ['factory', 'work'],
+    transportation: ['bus', 'train', 'car'],
+    communication: ['phone', 'talk', 'letter'],
+    urban: ['city', 'house'],
+    rural: ['farm', 'cow', 'tree'],
+    suburban: ['house', 'car'],
+    cardiovascular: ['heart', 'blood'],
+    respiratory: ['lungs', 'air'],
+    digestive: ['stomach', 'food'],
+    nervous: ['brain', 'nerve'],
+    skeletal: ['bone', 'skeleton'],
+    muscular: ['muscle', 'arm'],
+    meteorology: ['weather', 'cloud', 'wind'],
+    astronomy: ['star', 'planet', 'telescope'],
+    chemistry: ['beaker', 'atom', 'molecule', 'science'],
+    mechanics: ['gear', 'lever', 'wheel'],
+    landforms: ['mountain', 'river', 'valley']
+  };
+
+  var STOP_TOKENS = {
+    a: 1, an: 1, and: 1, are: 1, as: 1, at: 1, be: 1, been: 1, being: 1,
+    but: 1, by: 1, can: 1, did: 1, does: 1, each: 1, for: 1, form: 1,
+    from: 1, had: 1, has: 1, have: 1, having: 1, her: 1, here: 1, his: 1,
+    how: 1, in: 1, into: 1, is: 1, it: 1, its: 1, kind: 1, less: 1,
+    like: 1, made: 1, make: 1, many: 1, may: 1, more: 1, most: 1, much: 1,
+    must: 1, new: 1, no: 1, not: 1, now: 1, of: 1, often: 1, old: 1,
+    on: 1, one: 1, only: 1, or: 1, other: 1, our: 1, out: 1, over: 1,
+    part: 1, person: 1, place: 1, process: 1, quality: 1, said: 1, same: 1,
+    see: 1, she: 1, small: 1, large: 1, big: 1, some: 1, someone: 1,
+    something: 1, state: 1, such: 1, than: 1, that: 1, the: 1, their: 1,
+    them: 1, then: 1, there: 1, these: 1, they: 1, thing: 1, things: 1,
+    this: 1, those: 1, through: 1, to: 1, too: 1, two: 1, type: 1, under: 1,
+    use: 1, used: 1, using: 1, very: 1, was: 1, way: 1, we: 1, well: 1,
+    were: 1, what: 1, when: 1, where: 1, which: 1, who: 1, will: 1,
+    with: 1, without: 1, would: 1, you: 1, your: 1, act: 1, action: 1,
+    group: 1, able: 1, about: 1, above: 1, across: 1, after: 1, again: 1
+  };
+
+  function resolveSymbols(explicit) {
+    if (explicit && typeof explicit.get === 'function') return explicit;
+    if (root && root.AlloModules && root.AlloModules.WordSoundsSymbols && typeof root.AlloModules.WordSoundsSymbols.get === 'function') {
+      return root.AlloModules.WordSoundsSymbols;
+    }
+    if (root && root.AlloWordSoundsSymbols && typeof root.AlloWordSoundsSymbols.get === 'function') {
+      return root.AlloWordSoundsSymbols;
+    }
+    return null;
+  }
+
+  async function ensureSymbols(options) {
+    var bank = resolveSymbols(options && options.symbols);
+    if (!bank) return null;
+    if (typeof bank.ready === 'function') {
+      try { await bank.ready(); } catch (_) {}
+    }
+    return bank;
+  }
+
+  function creditFor(bank, setName, options) {
+    if (options && typeof options.creditForSet === 'function') {
+      return options.creditForSet(setName, bank) || '';
+    }
+    if (!bank) return '';
+    if (setName && bank.credits && bank.credits[setName]) return String(bank.credits[setName]);
+    return bank.credit ? String(bank.credit) : '';
+  }
+
+  function hasSymbol(bank, word) {
+    if (!bank || !word) return false;
+    if (typeof bank.has === 'function') return !!bank.has(word);
+    return !!bank.get(word);
+  }
+
+  function buildMatch(bank, rawWord, cand, tier, options, cueNote) {
+    if (!bank || !cand) return null;
+    var got = bank.get(cand);
+    if (!got || !got.svg) return null;
+    var label = got.label || cand;
+    var alt = tier === 'exact'
+      ? String(rawWord || label)
+      : (cueNote || (String(rawWord || cand) + ' (visual cue: ' + label + ')'));
+    return {
+      word: cand,
+      sourceWord: String(rawWord || cand),
+      file: got.file || '',
+      svg: got.svg,
+      label: label,
+      set: got.set || '',
+      credit: creditFor(bank, got.set, options),
+      matchTier: tier,
+      alt: alt
+    };
+  }
+
+  function normalizeWord(raw) {
+    return String(raw || '')
+      .trim()
+      .toLowerCase()
+      .replace(/['\u2019]s$/g, '')
+      .replace(/^[^a-z]+|[^a-z]+$/g, '');
+  }
+
+  function normalizePhrase(raw) {
+    return String(raw || '')
+      .trim()
+      .toLowerCase()
+      .replace(/['\u2019]s\b/g, '')
+      .replace(/[-_]+/g, ' ')
+      .replace(/[^a-z0-9\s]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function generateLemmaCandidates(w) {
+    var cands = [];
+    function push(s) {
+      if (s && s.length >= 2 && cands.indexOf(s) < 0) cands.push(s);
+    }
+    if (IRREGULAR_BASES[w]) push(IRREGULAR_BASES[w]);
+    if (w.length >= 5 && w.slice(-3) === 'ies') push(w.slice(0, -3) + 'y');
+    if (w.length >= 5 && w.slice(-3) === 'ves') {
+      push(w.slice(0, -3) + 'f');
+      push(w.slice(0, -3) + 'fe');
+    }
+    if (w.length >= 4 && w.slice(-2) === 'es') {
+      push(w.slice(0, -2));
+      push(w.slice(0, -1));
+    }
+    if (w.length >= 4 && w.slice(-1) === 's' && w.slice(-2) !== 'ss') {
+      push(w.slice(0, -1));
+    }
+    if (w.length >= 5 && w.slice(-3) === 'ied') push(w.slice(0, -3) + 'y');
+    if (w.length >= 5 && w.slice(-3) === 'ier') push(w.slice(0, -3) + 'y');
+    if (w.length >= 6 && w.slice(-4) === 'iest') push(w.slice(0, -4) + 'y');
+    if (w.length >= 5 && w.slice(-3) === 'ily') push(w.slice(0, -3) + 'y');
+    if (w.length >= 6 && w.slice(-3) === 'ing') {
+      var stemIng = w.slice(0, -3);
+      push(stemIng);
+      push(stemIng + 'e');
+      if (stemIng.length >= 4 && stemIng.slice(-1) === stemIng.slice(-2, -1)) {
+        push(stemIng.slice(0, -1));
+      }
+    }
+    if (w.length >= 5 && w.slice(-2) === 'ed') {
+      var stemEd = w.slice(0, -2);
+      push(stemEd);
+      push(stemEd + 'e');
+      if (stemEd.length >= 4 && stemEd.slice(-1) === stemEd.slice(-2, -1)) {
+        push(stemEd.slice(0, -1));
+      }
+    }
+    if (w.length >= 5 && w.slice(-2) === 'er') {
+      var stemEr = w.slice(0, -2);
+      push(stemEr);
+      push(stemEr + 'e');
+      if (stemEr.length >= 4 && stemEr.slice(-1) === stemEr.slice(-2, -1)) {
+        push(stemEr.slice(0, -1));
+      }
+    }
+    if (w.length >= 6 && w.slice(-3) === 'est') {
+      var stemEst = w.slice(0, -3);
+      push(stemEst);
+      push(stemEst + 'e');
+      if (stemEst.length >= 4 && stemEst.slice(-1) === stemEst.slice(-2, -1)) {
+        push(stemEst.slice(0, -1));
+      }
+    }
+    if (w.length >= 5 && w.slice(-2) === 'ly') push(w.slice(0, -2));
+    if (w.length >= 7 && w.slice(-4) === 'ness') push(w.slice(0, -4));
+    if (w.length >= 6 && w.slice(-3) === 'ful') push(w.slice(0, -3));
+
+    var DERIV_SUFFIXES = [
+      ['ily', 'y'], ['iness', 'y'], ['ally', 'al'], ['ally', ''], ['less', ''],
+      ['ment', ''], ['ment', 'e'], ['ation', ''], ['ation', 'e'], ['ition', ''], ['ition', 'e'],
+      ['tion', ''], ['tion', 'e'], ['sion', 'd'], ['sion', 'de'], ['sion', 's'],
+      ['ity', ''], ['ity', 'e'], ['ous', ''], ['ous', 'e'], ['ious', 'y'],
+      ['ative', ''], ['ative', 'e'], ['ive', ''], ['ive', 'e'],
+      ['ical', 'ic'], ['ical', ''], ['ical', 'y'], ['ial', ''], ['ial', 'y'],
+      ['al', ''], ['al', 'e'], ['ic', ''], ['ic', 'y'],
+      ['ize', ''], ['ize', 'e'], ['ise', ''], ['ise', 'e'],
+      ['ist', ''], ['ist', 'y'], ['ism', ''], ['ism', 'y'],
+      ['able', ''], ['able', 'e'], ['ible', ''], ['ible', 'e'],
+      ['ance', ''], ['ance', 'e'], ['ence', ''], ['ence', 'e'],
+      ['ant', ''], ['ant', 'e'], ['ent', ''], ['ent', 'e'],
+      ['or', ''], ['or', 'e'], ['ry', ''], ['ary', ''], ['ory', ''],
+      ['ward', ''], ['wards', '']
+    ];
+    function addDeriv(word) {
+      for (var d = 0; d < DERIV_SUFFIXES.length; d++) {
+        var suf = DERIV_SUFFIXES[d][0], rep = DERIV_SUFFIXES[d][1];
+        if (word.length - suf.length + rep.length >= 4 && word.slice(-suf.length) === suf) {
+          var st = word.slice(0, -suf.length) + rep;
+          push(st);
+          if (st.length >= 5 && st.slice(-1) === st.slice(-2, -1)) push(st.slice(0, -1));
+        }
+      }
+    }
+    addDeriv(w);
+
+    var PREFIXES = ['un', 're', 'dis', 'non', 'pre', 'mis', 'over', 'under', 'sub', 'inter', 'super', 'out', 'co', 'de'];
+    for (var p = 0; p < PREFIXES.length; p++) {
+      var pref = PREFIXES[p];
+      if (w.length - pref.length >= 4 && w.slice(0, pref.length) === pref) {
+        var rest = w.slice(pref.length);
+        push(rest);
+        addDeriv(rest);
+      }
+    }
+    return cands;
+  }
+
+  var SAFE_SHORT_DEF_NOUNS = {
+    pen: 1, dog: 1, cat: 1, cow: 1, pig: 1, fox: 1, owl: 1, ant: 1, bug: 1, bat: 1,
+    rat: 1, sun: 1, ice: 1, fog: 1, eye: 1, ear: 1, arm: 1, leg: 1, car: 1, bus: 1,
+    van: 1, saw: 1, key: 1, mug: 1, pot: 1, jar: 1, cap: 1, bed: 1, rug: 1, pie: 1,
+    jam: 1, tea: 1, egg: 1, ham: 1, ask: 1, add: 1, art: 1, bad: 1, boy: 1, box: 1,
+    cup: 1, day: 1, dry: 1, eat: 1, end: 1, far: 1, fat: 1, fly: 1, fun: 1, hot: 1,
+    hug: 1, ink: 1, job: 1, joy: 1, kid: 1, law: 1, lie: 1, lip: 1, low: 1, man: 1,
+    map: 1, max: 1, mix: 1, mud: 1, net: 1, new: 1, nut: 1, oil: 1, old: 1, pan: 1,
+    pay: 1, pet: 1, pin: 1, pull: 1, red: 1, run: 1, sad: 1, sea: 1, see: 1, sit: 1,
+    six: 1, sky: 1, ten: 1, tie: 1, toe: 1, top: 1, toy: 1, try: 1, two: 1, war: 1,
+    wet: 1, win: 1, zoo: 1
+  };
+
+  function matchCompound(bank, rawWord, clean, options) {
+    // Hyphenated or multi-word inputs
+    var spaced = String(rawWord || '').trim().toLowerCase().replace(/[-_]+/g, ' ');
+    if (spaced.indexOf(' ') >= 0) {
+      var parts = spaced.split(/\s+/).filter(Boolean);
+      for (var i = parts.length - 1; i >= 0; i--) {
+        if (parts[i].length >= 3 && hasSymbol(bank, parts[i])) {
+          return buildMatch(bank, rawWord, parts[i], 'compound', options);
+        }
+      }
+    }
+    // Joined compound words (length >= 6): require known left root or left root in bank + right head >= 4 in bank
+    if (clean.length >= 6) {
+      for (var split = 3; split <= clean.length - 4; split++) {
+        var left = clean.slice(0, split);
+        var right = clean.slice(split);
+        if ((KNOWN_COMPOUND_PARTS[left] || hasSymbol(bank, left)) && hasSymbol(bank, right)) {
+          return buildMatch(bank, rawWord, right, 'compound', options);
+        }
+      }
+      // Fallback: right head >= 4 with well-known left morpheme or left >= 4 in bank -> left
+      for (var split2 = 4; split2 <= clean.length - 3; split2++) {
+        var left2 = clean.slice(0, split2);
+        var right2 = clean.slice(split2);
+        if (hasSymbol(bank, left2) && (KNOWN_COMPOUND_PARTS[right2] || hasSymbol(bank, right2))) {
+          return buildMatch(bank, rawWord, left2, 'compound', options);
+        }
+      }
+    }
+    return null;
+  }
+
+  function matchConceptCue(bank, rawWord, clean, definition, options) {
+    function firstCueHit(list) {
+      if (!list) return null;
+      for (var i = 0; i < list.length; i++) {
+        if (hasSymbol(bank, list[i])) {
+          return buildMatch(bank, rawWord, list[i], 'concept', options);
+        }
+      }
+      return null;
+    }
+    var directCue = firstCueHit(CONCEPT_CUES[clean]);
+    if (directCue) return directCue;
+
+    var stemCands = generateLemmaCandidates(clean);
+    for (var s = 0; s < stemCands.length; s++) {
+      var stemCue = firstCueHit(CONCEPT_CUES[stemCands[s]]);
+      if (stemCue) return stemCue;
+    }
+
+    if (!definition) return null;
+    var tokens = String(definition).toLowerCase().split(/[^a-z]+/);
+    for (var t = 0; t < tokens.length; t++) {
+      var tok = tokens[t];
+      if (!tok || tok === clean || STOP_TOKENS[tok]) continue;
+      if ((tok.length >= 4 || SAFE_SHORT_DEF_NOUNS[tok]) && hasSymbol(bank, tok)) {
+        return buildMatch(bank, rawWord, tok, 'definition', options);
+      }
+    }
+    for (var t2 = 0; t2 < tokens.length; t2++) {
+      var tok2 = tokens[t2];
+      if (!tok2 || tok2.length < 4 || tok2 === clean || STOP_TOKENS[tok2]) continue;
+      if (CONCEPT_CUES[tok2]) {
+        var defCue = firstCueHit(CONCEPT_CUES[tok2]);
+        if (defCue) return defCue;
+      }
+      var tokStems = generateLemmaCandidates(tok2);
+      for (var ts = 0; ts < tokStems.length; ts++) {
+        var st = tokStems[ts];
+        if ((st.length >= 4 || SAFE_SHORT_DEF_NOUNS[st]) && !STOP_TOKENS[st] && hasSymbol(bank, st)) {
+          return buildMatch(bank, rawWord, st, 'definition', options);
+        }
+      }
+    }
+    return null;
+  }
+
+  function matchWord(entryOrWord, options) {
+    var bank = resolveSymbols(options && options.symbols);
+    var preferDiagrams = Boolean(options && options.preferDiagrams);
+    var isObj = entryOrWord && typeof entryOrWord === 'object';
+    var rawWord = isObj ? (entryOrWord.word || '') : String(entryOrWord || '');
+    var lemma = isObj ? normalizeWord(entryOrWord.lemma || '') : '';
+    var definition = isObj ? String(entryOrWord.definition || entryOrWord.meaning || '') : '';
+    var clean = normalizeWord(rawWord);
+    var phrase = normalizePhrase(rawWord);
+    if (!clean && !phrase) return null;
+
+    if (bank) {
+      // Tier 1: Exact match (single token or exact phrase in symbol bank)
+      if (clean && hasSymbol(bank, clean)) {
+        return buildMatch(bank, rawWord, clean, 'exact', options);
+      }
+      if (phrase && phrase !== clean && hasSymbol(bank, phrase)) {
+        return buildMatch(bank, rawWord, phrase, 'exact', options);
+      }
+
+      // Tier 2: Explicit lemma + morphological inflections
+      if (lemma && lemma !== clean && hasSymbol(bank, lemma)) {
+        return buildMatch(bank, rawWord, lemma, 'lemma', options, String(rawWord || lemma));
+      }
+      var morphCands = generateLemmaCandidates(clean || phrase);
+      for (var i = 0; i < morphCands.length; i++) {
+        if (hasSymbol(bank, morphCands[i])) {
+          return buildMatch(bank, rawWord, morphCands[i], 'lemma', options, String(rawWord || morphCands[i]));
+        }
+      }
+    }
+
+    // Multi-word curriculum phrase diagrams (e.g. "right angle", "food web", "states of matter")
+    // take priority over generic tail-noun compound splitting so "food web" does not become a spiderweb.
+    if (phrase && phrase.indexOf(' ') >= 0) {
+      var phraseDiag = getDiagram(phrase, lemma, rawWord);
+      if (phraseDiag) return phraseDiag;
+    }
+
+    if (bank) {
+      // Tier 3: Compound / head-noun split
+      var comp = matchCompound(bank, rawWord, clean || phrase, options);
+      if (comp) return comp;
+    }
+
+    // Tier 4a (when preferDiagrams): Built-in curriculum vector diagram
+    if (preferDiagrams) {
+      var prefDiag = getDiagram(phrase || clean, lemma, rawWord);
+      if (prefDiag) return prefDiag;
+    }
+
+    // Tier 4b: Curated curriculum/academic concept cues & concrete definition nouns
+    if (bank) {
+      var cueHit = matchConceptCue(bank, rawWord, clean || phrase, definition, options);
+      if (cueHit) return cueHit;
+    }
+
+    // Tier 5 (fallback or bank unavailable): Built-in curriculum vector diagram
+    return getDiagram(phrase || clean, lemma, rawWord);
+  }
+
+  async function searchSymbols(query, options) {
+    var opts = options || {};
+    var bank = await ensureSymbols(opts);
+    var q = String(query || '').trim().toLowerCase();
+    var limit = Math.max(1, Math.min(48, Number(opts.limit) || 24));
+    var hits = [];
+    var seen = {};
+
+    function pushHit(hit) {
+      if (!hit || !hit.word || seen[hit.word]) return;
+      seen[hit.word] = true;
+      hits.push(hit);
+    }
+
+    if (bank && typeof bank.words === 'function') {
+      // Exact or prefix matches first
+      var allWords = bank.words();
+      for (var i = 0; i < allWords.length && hits.length < limit; i++) {
+        var w = allWords[i];
+        if (q && w.toLowerCase().indexOf(q) !== 0) continue;
+        var entry = bank.get(w);
+        if (entry && entry.svg) {
+          pushHit({
+            word: w,
+            label: entry.label || w,
+            svg: entry.svg,
+            file: entry.file || '',
+            set: entry.set || '',
+            credit: creditFor(bank, entry.set, opts),
+            matchTier: q && w.toLowerCase() === q ? 'exact' : 'prefix'
+          });
+        }
+      }
+      // Substring matches
+      if (q && hits.length < limit) {
+        for (var j = 0; j < allWords.length && hits.length < limit; j++) {
+          var w2 = allWords[j];
+          if (w2.toLowerCase().indexOf(q) < 0) continue;
+          var entry2 = bank.get(w2);
+          if (entry2 && entry2.svg) {
+            pushHit({
+              word: w2,
+              label: entry2.label || w2,
+              svg: entry2.svg,
+              file: entry2.file || '',
+              set: entry2.set || '',
+              credit: creditFor(bank, entry2.set, opts),
+              matchTier: 'search'
+            });
+          }
+        }
+      }
+    }
+
+    // Also try cue match for the query itself
+    if (q && hits.length < limit && bank) {
+      var cued = matchWord({ word: q, definition: opts.definition || '' }, { symbols: bank, creditForSet: opts.creditForSet });
+      if (cued) {
+        pushHit({
+          word: cued.word,
+          label: cued.label + ' (cue for ' + q + ')',
+          svg: cued.svg,
+          file: cued.file || '',
+          set: cued.set || '',
+          credit: cued.credit || '',
+          matchTier: cued.matchTier
+        });
+      }
+    }
+
+    // Optional Global Symbols online fallback (main app only)
+    if (opts.allowOnlineGlobalSymbols && q && typeof fetch === 'function' && hits.length < limit) {
+      try {
+        var url = 'https://globalsymbols.com/api/v1/labels/search?query=' +
+          encodeURIComponent(q) +
+          '&symbolset=mulberry&language=eng&language_iso_format=639-3&limit=20';
+        var controller = typeof AbortController === 'function' ? new AbortController() : null;
+        var timer = controller ? setTimeout(function () { controller.abort(); }, 4500) : null;
+        var res = await fetch(url, controller ? { signal: controller.signal } : undefined);
+        if (timer) clearTimeout(timer);
+        if (res && res.ok) {
+          var payload = await res.json();
+          var list = Array.isArray(payload) ? payload : (Array.isArray(payload && payload.data) ? payload.data : []);
+          for (var g = 0; g < list.length && hits.length < limit; g++) {
+            var item = list[g] || {};
+            var pic = item.pic || item.symbol || {};
+            var imgUrl = pic.image_url || item.image_url || '';
+            var text = item.text || pic.name || q;
+            if (!imgUrl || seen['gs:' + imgUrl]) continue;
+            seen['gs:' + imgUrl] = true;
+            hits.push({
+              word: String(text),
+              label: String(text),
+              src: String(imgUrl),
+              set: 'globalsymbols',
+              credit: 'Global Symbols (Mulberry)',
+              matchTier: 'online'
+            });
+          }
+        }
+      } catch (_) {}
+    }
+
+    return hits;
+  }
+
+  function makeDiagramSvg(body, bg) {
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" role="img">' +
+      '<rect x="2" y="2" width="116" height="116" rx="14" fill="' + (bg || '#f8fafc') + '" stroke="#cbd5e1" stroke-width="2"/>' +
+      body +
+      '</svg>';
+  }
+
+  function diagLabel(x, y, text, fill, size) {
+    return '<text x="' + x + '" y="' + y + '" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="' + (size || 13) + '" fill="' + (fill || '#0f172a') + '">' + text + '</text>';
+  }
+
+  var DIAGRAM_SPECS = [
+    // Math: Fractions & Number Sense
+    ['fraction', 'Fraction (1/4 shaded)', 'math', 'math part whole equal slice',
+      '<circle cx="60" cy="54" r="34" fill="#ffffff" stroke="#0f172a" stroke-width="2.5"/><path d="M60 54 L60 20 A34 34 0 0 1 94 54 Z" fill="#2563eb" stroke="#0f172a" stroke-width="2"/><line x1="26" y1="54" x2="94" y2="54" stroke="#0f172a" stroke-width="2"/><line x1="60" y1="20" x2="60" y2="88" stroke="#0f172a" stroke-width="2"/>' + diagLabel(60, 108, '1/4', '#1d4ed8', 15)],
+    ['half', 'Half (1/2)', 'math', 'divide two equal parts',
+      '<rect x="20" y="30" width="80" height="44" rx="6" fill="#ffffff" stroke="#0f172a" stroke-width="2.5"/><rect x="20" y="30" width="40" height="44" rx="6" fill="#0284c7" stroke="#0f172a" stroke-width="2"/>' + diagLabel(60, 98, '1/2 = 1/2', '#0369a1', 14)],
+    ['third', 'Third (1/3)', 'math', 'three equal parts',
+      '<rect x="18" y="34" width="84" height="38" rx="5" fill="#ffffff" stroke="#0f172a" stroke-width="2.5"/><rect x="18" y="34" width="28" height="38" fill="#7c3aed" stroke="#0f172a" stroke-width="2"/><line x1="74" y1="34" x2="74" y2="72" stroke="#0f172a" stroke-width="2"/>' + diagLabel(60, 96, '1/3', '#6d28d9', 15)],
+    ['quarter', 'Quarter (1/4)', 'math', 'fourth four equal parts',
+      '<rect x="16" y="36" width="88" height="34" rx="4" fill="#ffffff" stroke="#0f172a" stroke-width="2.5"/><rect x="16" y="36" width="22" height="34" fill="#d97706" stroke="#0f172a" stroke-width="2"/><line x1="60" y1="36" x2="60" y2="70" stroke="#0f172a" stroke-width="2"/><line x1="82" y1="36" x2="82" y2="70" stroke="#0f172a" stroke-width="2"/>' + diagLabel(60, 96, '1/4', '#b45309', 15)],
+    ['numerator', 'Numerator (top count)', 'math', 'fraction top number parts shaded',
+      '<rect x="34" y="20" width="38" height="30" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2.5"/>' + diagLabel(53, 41, '3', '#1d4ed8', 19) + '<line x1="32" y1="58" x2="74" y2="58" stroke="#0f172a" stroke-width="3.5"/>' + diagLabel(53, 84, '4', '#475569', 19) + '<path d="M92 35 L78 35" stroke="#1d4ed8" stroke-width="3" stroke-linecap="round"/><polygon points="75,35 83,30 83,40" fill="#1d4ed8"/>' + diagLabel(60, 108, 'TOP PART', '#1d4ed8', 11)],
+    ['denominator', 'Denominator (equal whole)', 'math', 'fraction bottom number total parts',
+      diagLabel(53, 41, '3', '#475569', 19) + '<line x1="32" y1="54" x2="74" y2="54" stroke="#0f172a" stroke-width="3.5"/><rect x="34" y="62" width="38" height="30" rx="6" fill="#dcfce7" stroke="#047857" stroke-width="2.5"/>' + diagLabel(53, 83, '4', '#047857', 19) + '<path d="M92 77 L78 77" stroke="#047857" stroke-width="3" stroke-linecap="round"/><polygon points="75,77 83,72 83,82" fill="#047857"/>' + diagLabel(60, 108, 'WHOLE = 4', '#047857', 11)],
+    ['equivalent', 'Equivalent Fractions', 'math', 'equal value fraction bars',
+      '<rect x="18" y="24" width="84" height="22" fill="#ffffff" stroke="#0f172a" stroke-width="2"/><rect x="18" y="24" width="42" height="22" fill="#2563eb" stroke="#0f172a" stroke-width="2"/><rect x="18" y="60" width="84" height="22" fill="#ffffff" stroke="#0f172a" stroke-width="2"/><rect x="18" y="60" width="21" height="22" fill="#2563eb" stroke="#0f172a" stroke-width="2"/><rect x="39" y="60" width="21" height="22" fill="#2563eb" stroke="#0f172a" stroke-width="2"/><line x1="81" y1="60" x2="81" y2="82" stroke="#0f172a" stroke-width="2"/>' + diagLabel(60, 106, '1/2 = 2/4', '#1d4ed8', 14)],
+    ['percent', 'Percent (out of 100)', 'math', 'hundred grid rate',
+      '<rect x="22" y="20" width="48" height="48" fill="#ffffff" stroke="#0f172a" stroke-width="2"/><rect x="22" y="20" width="24" height="48" fill="#0d9488"/><line x1="34" y1="20" x2="34" y2="68" stroke="#94a3b8" stroke-width="1"/><line x1="46" y1="20" x2="46" y2="68" stroke="#0f172a" stroke-width="1.5"/><line x1="58" y1="20" x2="58" y2="68" stroke="#94a3b8" stroke-width="1"/><line x1="22" y1="32" x2="70" y2="32" stroke="#94a3b8" stroke-width="1"/><line x1="22" y1="44" x2="70" y2="44" stroke="#94a3b8" stroke-width="1"/><line x1="22" y1="56" x2="70" y2="56" stroke="#94a3b8" stroke-width="1"/>' + diagLabel(90, 52, '%', '#0f766e', 28) + diagLabel(60, 102, '50 / 100 = 50%', '#0f766e', 12)],
+    ['ratio', 'Ratio Comparison (2:3)', 'math', 'compare quantities proportional',
+      '<circle cx="28" cy="40" r="10" fill="#2563eb"/><circle cx="28" cy="66" r="10" fill="#2563eb"/><polygon points="82,22 93,40 71,40" fill="#d97706"/><polygon points="82,46 93,64 71,64" fill="#d97706"/><polygon points="82,70 93,88 71,88" fill="#d97706"/>' + diagLabel(54, 60, ':', '#0f172a', 26) + diagLabel(60, 106, '2 : 3', '#0f172a', 14)],
+    ['decimal', 'Decimal Place Value', 'math', 'tenths hundredths dot base ten',
+      '<rect x="18" y="30" width="28" height="36" rx="4" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>' + diagLabel(32, 54, '1', '#1d4ed8', 18) + '<circle cx="56" cy="62" r="5" fill="#be123c"/><rect x="66" y="30" width="28" height="36" rx="4" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>' + diagLabel(80, 54, '4', '#b45309', 18) + diagLabel(60, 98, 'ONES . TENTHS', '#334155', 11)],
+    ['equation', 'Equation (Balanced Scale)', 'math', 'equal algebra balance solve',
+      '<polygon points="60,64 48,88 72,88" fill="#475569"/><line x1="20" y1="62" x2="100" y2="62" stroke="#0f172a" stroke-width="4" stroke-linecap="round"/><rect x="18" y="34" width="30" height="24" rx="4" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>' + diagLabel(33, 51, 'x+2', '#1d4ed8', 12) + '<rect x="72" y="34" width="30" height="24" rx="4" fill="#dcfce7" stroke="#047857" stroke-width="2"/>' + diagLabel(87, 51, '7', '#047857', 14) + diagLabel(60, 106, 'x + 2 = 7', '#0f172a', 13)],
+    ['variable', 'Variable (Unknown Value)', 'math', 'algebra letter unknown x',
+      '<rect x="20" y="34" width="32" height="32" rx="6" fill="#ede9fe" stroke="#6d28d9" stroke-width="2.5" stroke-dasharray="4 3"/>' + diagLabel(36, 56, 'x', '#6d28d9', 20) + diagLabel(64, 56, '+ 3', '#0f172a', 16) + diagLabel(92, 56, '= 8', '#0f172a', 16) + diagLabel(60, 98, 'UNKNOWN x', '#6d28d9', 12)],
+    ['inequality', 'Inequality (< and >)', 'math', 'greater less compare not equal',
+      '<rect x="18" y="30" width="26" height="44" fill="#2563eb" rx="4"/><rect x="76" y="50" width="26" height="24" fill="#d97706" rx="4"/>' + diagLabel(60, 60, '>', '#be123c', 26) + diagLabel(60, 100, 'GREATER > LESS', '#334155', 11)],
+    ['estimate', 'Estimate (Round Near)', 'math', 'approximately round number line',
+      '<line x1="16" y1="62" x2="104" y2="62" stroke="#0f172a" stroke-width="2.5"/><line x1="24" y1="54" x2="24" y2="70" stroke="#0f172a" stroke-width="2"/><line x1="96" y1="54" x2="96" y2="70" stroke="#0f172a" stroke-width="2"/><circle cx="82" cy="62" r="5" fill="#2563eb"/><path d="M82 52 Q90 36 96 50" fill="none" stroke="#d97706" stroke-width="2.5" stroke-dasharray="3 2"/>' + diagLabel(24, 84, '30', '#475569', 12) + diagLabel(96, 84, '40', '#0f172a', 12) + diagLabel(60, 32, '38 ~ 40', '#d97706', 14)],
+    ['multiply', 'Multiply (Equal Groups Array)', 'math', 'times product array rows columns',
+      '<circle cx="30" cy="30" r="6" fill="#2563eb"/><circle cx="50" cy="30" r="6" fill="#2563eb"/><circle cx="70" cy="30" r="6" fill="#2563eb"/><circle cx="90" cy="30" r="6" fill="#2563eb"/><circle cx="30" cy="52" r="6" fill="#0d9488"/><circle cx="50" cy="52" r="6" fill="#0d9488"/><circle cx="70" cy="52" r="6" fill="#0d9488"/><circle cx="90" cy="52" r="6" fill="#0d9488"/><circle cx="30" cy="74" r="6" fill="#7c3aed"/><circle cx="50" cy="74" r="6" fill="#7c3aed"/><circle cx="70" cy="74" r="6" fill="#7c3aed"/><circle cx="90" cy="74" r="6" fill="#7c3aed"/>' + diagLabel(60, 102, '3 x 4 = 12', '#0f172a', 14)],
+    ['divide', 'Divide (Equal Share)', 'math', 'quotient split equal groups',
+      '<rect x="16" y="28" width="26" height="48" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/><rect x="47" y="28" width="26" height="48" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/><rect x="78" y="28" width="26" height="48" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/><circle cx="29" cy="44" r="5" fill="#1d4ed8"/><circle cx="29" cy="60" r="5" fill="#1d4ed8"/><circle cx="60" cy="44" r="5" fill="#1d4ed8"/><circle cx="60" cy="60" r="5" fill="#1d4ed8"/><circle cx="91" cy="44" r="5" fill="#1d4ed8"/><circle cx="91" cy="60" r="5" fill="#1d4ed8"/>' + diagLabel(60, 100, '6 / 3 = 2', '#1d4ed8', 14)],
+    ['pattern', 'Pattern (Repeating Rule)', 'math', 'sequence rule repeat shapes',
+      '<circle cx="24" cy="52" r="9" fill="#2563eb"/><polygon points="48,42 58,61 38,61" fill="#d97706"/><circle cx="72" cy="52" r="9" fill="#2563eb"/><polygon points="96,42 106,61 86,61" fill="#d97706"/>' + diagLabel(60, 96, 'A - B - A - B', '#0f172a', 13)],
+
+    // Geometry & Measurement
+    ['perimeter', 'Perimeter (Outside Distance)', 'geometry', 'border boundary sum sides',
+      '<rect x="24" y="28" width="72" height="50" fill="#ffffff" stroke="#be123c" stroke-width="5" stroke-dasharray="8 3"/>' + diagLabel(60, 22, '8', '#be123c', 13) + diagLabel(104, 57, '5', '#be123c', 13) + diagLabel(60, 58, 'OUTSIDE', '#475569', 12) + diagLabel(60, 102, 'ADD SIDES', '#be123c', 12)],
+    ['area', 'Area (Square Units Inside)', 'geometry', 'surface squares length width',
+      '<rect x="24" y="24" width="72" height="54" fill="#bbf7d0" stroke="#047857" stroke-width="2.5"/><line x1="48" y1="24" x2="48" y2="78" stroke="#047857" stroke-width="1.5"/><line x1="72" y1="24" x2="72" y2="78" stroke="#047857" stroke-width="1.5"/><line x1="24" y1="42" x2="96" y2="42" stroke="#047857" stroke-width="1.5"/><line x1="24" y1="60" x2="96" y2="60" stroke="#047857" stroke-width="1.5"/>' + diagLabel(60, 102, '3 x 3 = 9 sq u', '#047857', 12)],
+    ['volume', 'Volume (3D Cubic Space)', 'geometry', 'cube 3d space capacity',
+      '<polygon points="34,42 60,26 86,42 60,58" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/><polygon points="34,42 60,58 60,88 34,72" fill="#93c5fd" stroke="#1d4ed8" stroke-width="2"/><polygon points="86,42 60,58 60,88 86,72" fill="#60a5fa" stroke="#1d4ed8" stroke-width="2"/>' + diagLabel(60, 106, 'L x W x H', '#1d4ed8', 12)],
+    ['angle', 'Angle (Two Rays & Vertex)', 'geometry', 'vertex degree rotation arc',
+      '<line x1="26" y1="80" x2="96" y2="80" stroke="#0f172a" stroke-width="3.5" stroke-linecap="round"/><line x1="26" y1="80" x2="82" y2="28" stroke="#0f172a" stroke-width="3.5" stroke-linecap="round"/><circle cx="26" cy="80" r="5" fill="#be123c"/><path d="M54 80 A28 28 0 0 0 47 61" fill="none" stroke="#2563eb" stroke-width="3"/>' + diagLabel(66, 104, 'VERTEX + ARC', '#2563eb', 11)],
+    ['acute', 'Acute Angle (< 90 deg)', 'geometry', 'sharp small angle less than 90',
+      '<line x1="26" y1="80" x2="96" y2="80" stroke="#0f172a" stroke-width="3.5"/><line x1="26" y1="80" x2="80" y2="34" stroke="#0f172a" stroke-width="3.5"/><path d="M52 80 A26 26 0 0 0 45 63" fill="none" stroke="#047857" stroke-width="3"/>' + diagLabel(74, 68, '45°', '#047857', 14) + diagLabel(60, 104, '< 90 DEG', '#047857', 12)],
+    ['obtuse', 'Obtuse Angle (> 90 deg)', 'geometry', 'wide open angle greater than 90',
+      '<line x1="56" y1="78" x2="100" y2="78" stroke="#0f172a" stroke-width="3.5"/><line x1="56" y1="78" x2="22" y2="34" stroke="#0f172a" stroke-width="3.5"/><path d="M80 78 A24 24 0 0 0 41 59" fill="none" stroke="#d97706" stroke-width="3"/>' + diagLabel(76, 52, '130°', '#b45309', 14) + diagLabel(60, 104, '> 90 DEG', '#b45309', 12)],
+    ['perpendicular', 'Perpendicular (90 deg Cross)', 'geometry', 'right angle square intersect',
+      '<line x1="60" y1="20" x2="60" y2="88" stroke="#0f172a" stroke-width="3.5"/><line x1="22" y1="62" x2="98" y2="62" stroke="#0f172a" stroke-width="3.5"/><rect x="60" y="48" width="14" height="14" fill="none" stroke="#be123c" stroke-width="2.5"/>' + diagLabel(60, 106, '90° RIGHT', '#be123c', 12)],
+    ['parallel', 'Parallel Lines (Never Meet)', 'geometry', 'equal distance never cross',
+      '<line x1="20" y1="42" x2="100" y2="42" stroke="#2563eb" stroke-width="4"/><polyline points="56,36 65,42 56,48" fill="none" stroke="#1e40af" stroke-width="2.5"/><line x1="20" y1="70" x2="100" y2="70" stroke="#2563eb" stroke-width="4"/><polyline points="56,64 65,70 56,76" fill="none" stroke="#1e40af" stroke-width="2.5"/>' + diagLabel(60, 102, 'SAME GAP', '#1d4ed8', 12)],
+    ['symmetry', 'Line of Symmetry (Mirror)', 'geometry', 'fold mirror identical halves',
+      '<polygon points="60,24 94,54 78,86 60,78 42,86 26,54" fill="#ede9fe" stroke="#6d28d9" stroke-width="2.5"/><line x1="60" y1="16" x2="60" y2="94" stroke="#be123c" stroke-width="2.5" stroke-dasharray="5 3"/>' + diagLabel(60, 108, 'MIRROR FOLD', '#be123c', 11)],
+    ['radius', 'Radius (Center to Edge)', 'geometry', 'circle half diameter center',
+      '<circle cx="60" cy="54" r="34" fill="#eff6ff" stroke="#0f172a" stroke-width="2.5"/><circle cx="60" cy="54" r="4" fill="#be123c"/><line x1="60" y1="54" x2="94" y2="54" stroke="#be123c" stroke-width="3.5"/>' + diagLabel(77, 46, 'r', '#be123c', 15) + diagLabel(60, 106, 'CENTER TO EDGE', '#be123c', 11)],
+    ['diameter', 'Diameter (Full Width)', 'geometry', 'circle chord through center',
+      '<circle cx="60" cy="54" r="34" fill="#eff6ff" stroke="#0f172a" stroke-width="2.5"/><line x1="26" y1="54" x2="94" y2="54" stroke="#1d4ed8" stroke-width="3.5"/><circle cx="60" cy="54" r="4" fill="#0f172a"/>' + diagLabel(60, 44, 'd = 2r', '#1d4ed8', 13) + diagLabel(60, 106, 'ACROSS CENTER', '#1d4ed8', 11)],
+    ['circumference', 'Circumference (Circle Edge)', 'geometry', 'perimeter round circle pi',
+      '<circle cx="60" cy="54" r="30" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/><path d="M60 18 A36 36 0 1 1 26 42" fill="none" stroke="#047857" stroke-width="4"/><polygon points="26,42 20,33 32,33" fill="#047857"/>' + diagLabel(60, 58, 'C = pi d', '#047857', 12) + diagLabel(60, 106, 'OUTER RIM', '#047857', 11)],
+    ['polygon', 'Polygon (Closed Straight Sides)', 'geometry', 'pentagon hexagon sides vertices',
+      '<polygon points="60,20 94,44 80,82 40,82 26,44" fill="#fef3c7" stroke="#b45309" stroke-width="3"/><circle cx="60" cy="20" r="3.5" fill="#be123c"/><circle cx="94" cy="44" r="3.5" fill="#be123c"/><circle cx="80" cy="82" r="3.5" fill="#be123c"/><circle cx="40" cy="82" r="3.5" fill="#be123c"/><circle cx="26" cy="44" r="3.5" fill="#be123c"/>' + diagLabel(60, 104, 'CLOSED SIDES', '#b45309', 11)],
+    ['coordinate', 'Coordinate Plane (x, y)', 'geometry', 'ordered pair axis grid plot',
+      '<line x1="60" y1="18" x2="60" y2="90" stroke="#0f172a" stroke-width="2"/><line x1="20" y1="54" x2="100" y2="54" stroke="#0f172a" stroke-width="2"/><line x1="60" y1="34" x2="82" y2="34" stroke="#94a3b8" stroke-dasharray="3 2"/><line x1="82" y1="34" x2="82" y2="54" stroke="#94a3b8" stroke-dasharray="3 2"/><circle cx="82" cy="34" r="5" fill="#be123c"/>' + diagLabel(84, 27, '(x,y)', '#be123c', 12) + diagLabel(60, 106, 'ORDERED PAIR', '#334155', 11)],
+    ['graph', 'Bar Graph (Data Chart)', 'math', 'data chart axis bars',
+      '<line x1="24" y1="22" x2="24" y2="84" stroke="#0f172a" stroke-width="2.5"/><line x1="24" y1="84" x2="98" y2="84" stroke="#0f172a" stroke-width="2.5"/><rect x="32" y="54" width="14" height="30" fill="#2563eb"/><rect x="54" y="34" width="14" height="50" fill="#0d9488"/><rect x="76" y="44" width="14" height="40" fill="#d97706"/>' + diagLabel(60, 104, 'DATA CHART', '#334155', 11)],
+    ['mean', 'Mean (Fair-Share Average)', 'math', 'average statistics central tendency',
+      '<rect x="24" y="56" width="14" height="24" fill="#93c5fd"/><rect x="44" y="28" width="14" height="52" fill="#93c5fd"/><rect x="64" y="44" width="14" height="36" fill="#93c5fd"/><rect x="84" y="60" width="14" height="20" fill="#93c5fd"/><line x1="18" y1="47" x2="102" y2="47" stroke="#be123c" stroke-width="2.5" stroke-dasharray="5 3"/>' + diagLabel(60, 102, 'AVERAGE LINE', '#be123c', 11)],
+    ['median', 'Median (Ordered Middle)', 'math', 'middle ordered data',
+      '<rect x="20" y="64" width="12" height="16" fill="#cbd5e1"/><rect x="36" y="54" width="12" height="26" fill="#cbd5e1"/><rect x="54" y="42" width="12" height="38" fill="#7c3aed"/><rect x="72" y="32" width="12" height="48" fill="#cbd5e1"/><rect x="88" y="22" width="12" height="58" fill="#cbd5e1"/>' + diagLabel(60, 102, 'MIDDLE VALUE', '#6d28d9', 11)],
+    ['probability', 'Probability (Chance Spinner)', 'math', 'chance likely spinner odds',
+      '<circle cx="60" cy="52" r="32" fill="#fef3c7" stroke="#0f172a" stroke-width="2"/><path d="M60 52 L60 20 A32 32 0 0 1 92 52 Z" fill="#2563eb"/><line x1="60" y1="52" x2="80" y2="34" stroke="#be123c" stroke-width="3.5"/><circle cx="60" cy="52" r="4" fill="#0f172a"/>' + diagLabel(60, 104, '1 IN 4 CHANCE', '#1d4ed8', 11)],
+    ['measure', 'Measure (Ruler Units)', 'math', 'ruler inches centimeters length',
+      '<rect x="16" y="40" width="88" height="28" rx="3" fill="#fde68a" stroke="#b45309" stroke-width="2"/><line x1="28" y1="40" x2="28" y2="54" stroke="#0f172a" stroke-width="2"/><line x1="44" y1="40" x2="44" y2="49" stroke="#0f172a" stroke-width="1.5"/><line x1="60" y1="40" x2="60" y2="54" stroke="#0f172a" stroke-width="2"/><line x1="76" y1="40" x2="76" y2="49" stroke="#0f172a" stroke-width="1.5"/><line x1="92" y1="40" x2="92" y2="54" stroke="#0f172a" stroke-width="2"/>' + diagLabel(60, 96, 'UNITS ON RULER', '#92400e', 11)],
+
+    // Geography & Earth
+    ['compass', 'Compass Rose (Directions)', 'geography', 'north south east west map',
+      '<circle cx="60" cy="56" r="28" fill="#ffffff" stroke="#475569" stroke-width="2"/><polygon points="60,22 66,50 60,56 54,50" fill="#be123c"/><polygon points="60,90 66,62 60,56 54,62" fill="#334155"/>' + diagLabel(60, 18, 'N', '#be123c', 13) + diagLabel(60, 108, 'S', '#334155', 13) + diagLabel(18, 61, 'W', '#334155', 13) + diagLabel(102, 61, 'E', '#334155', 13)],
+    ['north', 'North (Up on Map)', 'geography', 'direction cardinal compass',
+      '<circle cx="60" cy="60" r="28" fill="#ffffff" stroke="#64748b" stroke-width="2"/><path d="M60 76 L60 24" stroke="#be123c" stroke-width="4"/><polygon points="60,16 50,34 70,34" fill="#be123c"/>' + diagLabel(60, 105, 'NORTH (N)', '#be123c', 12)],
+    ['south', 'South (Down on Map)', 'geography', 'direction cardinal compass',
+      '<circle cx="60" cy="52" r="28" fill="#ffffff" stroke="#64748b" stroke-width="2"/><path d="M60 36 L60 88" stroke="#1d4ed8" stroke-width="4"/><polygon points="60,96 50,78 70,78" fill="#1d4ed8"/>' + diagLabel(60, 110, 'SOUTH (S)', '#1d4ed8', 11)],
+    ['east', 'East (Right on Map)', 'geography', 'direction cardinal compass sunrise',
+      '<circle cx="52" cy="54" r="28" fill="#ffffff" stroke="#64748b" stroke-width="2"/><path d="M36 54 L88 54" stroke="#047857" stroke-width="4"/><polygon points="96,54 78,44 78,64" fill="#047857"/>' + diagLabel(60, 104, 'EAST (E)', '#047857', 12)],
+    ['west', 'West (Left on Map)', 'geography', 'direction cardinal compass sunset',
+      '<circle cx="68" cy="54" r="28" fill="#ffffff" stroke="#64748b" stroke-width="2"/><path d="M84 54 L32 54" stroke="#b45309" stroke-width="4"/><polygon points="24,54 42,44 42,64" fill="#b45309"/>' + diagLabel(60, 104, 'WEST (W)', '#b45309', 12)],
+    ['equator', 'Equator (0 deg Earth Belt)', 'geography', 'latitude globe tropical middle',
+      '<circle cx="60" cy="54" r="32" fill="#bae6fd" stroke="#0284c7" stroke-width="2"/><ellipse cx="60" cy="54" rx="32" ry="8" fill="none" stroke="#be123c" stroke-width="3.5"/><line x1="20" y1="54" x2="100" y2="54" stroke="#be123c" stroke-width="2" stroke-dasharray="4 3"/>' + diagLabel(60, 104, 'EQUATOR 0°', '#be123c', 12)],
+    ['hemisphere', 'Hemisphere (Half of Earth)', 'geography', 'northern southern globe half',
+      '<circle cx="60" cy="54" r="32" fill="#ffffff" stroke="#0f172a" stroke-width="2"/><path d="M28 54 A32 32 0 0 1 92 54 Z" fill="#0284c7" stroke="#0f172a" stroke-width="2"/>' + diagLabel(60, 44, 'NORTH', '#ffffff', 10) + diagLabel(60, 72, 'SOUTH', '#475569', 10) + diagLabel(60, 104, 'HALF GLOBE', '#0369a1', 11)],
+    ['latitude', 'Latitude (Flat Across Lines)', 'geography', 'parallels globe horizontal',
+      '<circle cx="60" cy="54" r="32" fill="#e0f2fe" stroke="#0369a1" stroke-width="2"/><line x1="34" y1="36" x2="86" y2="36" stroke="#1d4ed8" stroke-width="2.5"/><line x1="28" y1="54" x2="92" y2="54" stroke="#be123c" stroke-width="3"/><line x1="34" y1="72" x2="86" y2="72" stroke="#1d4ed8" stroke-width="2.5"/>' + diagLabel(60, 104, 'FLAT LINES (N/S)', '#1d4ed8', 10)],
+    ['longitude', 'Longitude (Pole-to-Pole Arcs)', 'geography', 'meridian globe vertical',
+      '<circle cx="60" cy="54" r="32" fill="#e0f2fe" stroke="#0369a1" stroke-width="2"/><line x1="60" y1="22" x2="60" y2="86" stroke="#be123c" stroke-width="2.5"/><ellipse cx="60" cy="54" rx="16" ry="32" fill="none" stroke="#1d4ed8" stroke-width="2"/>' + diagLabel(60, 104, 'LONG ARCS (E/W)', '#1d4ed8', 10)],
+    ['erosion', 'Erosion (Water Moves Soil)', 'geography', 'river sediment wear soil rock',
+      '<polygon points="16,44 50,44 64,76 16,76" fill="#d6d3d1" stroke="#57554e" stroke-width="2"/><polygon points="74,56 104,56 104,76 66,76" fill="#d6d3d1" stroke="#57554e" stroke-width="2"/><path d="M50 48 Q64 60 88 74" fill="none" stroke="#0284c7" stroke-width="4"/><circle cx="72" cy="70" r="2.5" fill="#78350f"/><circle cx="80" cy="74" r="2.5" fill="#78350f"/>' + diagLabel(60, 102, 'CARRIES ROCK/SOIL', '#0369a1', 10)],
+    ['weathering', 'Weathering (Rock Breaks Down)', 'geography', 'crack frost rain rock break',
+      '<polygon points="28,78 44,34 62,38 56,56 44,78" fill="#a8a29e" stroke="#44403c" stroke-width="2"/><polygon points="62,78 68,42 88,46 94,78" fill="#a8a29e" stroke="#44403c" stroke-width="2"/><line x1="60" y1="30" x2="60" y2="78" stroke="#be123c" stroke-width="2" stroke-dasharray="3 2"/>' + diagLabel(60, 102, 'BREAKS IN PLACE', '#57554e', 10)],
+    ['volcano', 'Volcano (Magma & Eruption)', 'geography', 'lava crust earth eruption mountain',
+      '<polygon points="20,84 48,40 72,40 100,84" fill="#78350f"/><polygon points="55,84 57,40 63,40 65,84" fill="#ef4444"/><path d="M60 40 C50 26 42 26 36 22 M60 40 C70 26 78 26 84 22" fill="none" stroke="#f97316" stroke-width="3"/><circle cx="60" cy="24" r="7" fill="#94a3b8"/>' + diagLabel(60, 104, 'MAGMA -> LAVA', '#b45309', 11)],
+    ['orbit', 'Orbit (Curved Path Around)', 'science', 'planet sun ellipse gravity path',
+      '<ellipse cx="60" cy="54" rx="38" ry="22" fill="none" stroke="#475569" stroke-width="2" stroke-dasharray="4 3"/><circle cx="48" cy="54" r="10" fill="#f59e0b"/><circle cx="94" cy="48" r="6" fill="#2563eb"/>' + diagLabel(60, 102, 'ORBIT PATH', '#334155', 11)],
+    ['eclipse', 'Eclipse (Shadow Alignment)', 'science', 'sun moon earth shadow',
+      '<circle cx="24" cy="54" r="13" fill="#f59e0b"/><polygon points="56,48 92,42 92,66 56,60" fill="#cbd5e1"/><circle cx="56" cy="54" r="6" fill="#475569"/><circle cx="94" cy="54" r="10" fill="#0284c7"/>' + diagLabel(60, 102, 'SHADOW CONE', '#334155', 11)],
+
+    // Physical & Life Science
+    ['evaporate', 'Evaporate (Liquid -> Vapor)', 'science', 'water cycle heat steam gas rise',
+      '<rect x="20" y="64" width="80" height="22" rx="4" fill="#38bdf8"/><path d="M38 58 Q33 46 38 34 M60 58 Q55 46 60 34 M82 58 Q77 46 82 34" fill="none" stroke="#0284c7" stroke-width="3" stroke-linecap="round"/><polygon points="60,26 54,36 66,36" fill="#0284c7"/>' + diagLabel(60, 104, 'LIQUID -> GAS', '#0369a1', 11)],
+    ['condense', 'Condense (Gas -> Droplets)', 'science', 'water cycle cloud cool droplet',
+      '<ellipse cx="60" cy="40" rx="28" ry="15" fill="#cbd5e1" stroke="#475569" stroke-width="2"/><path d="M46 62 Q40 72 46 76 Q52 72 46 62 Z" fill="#0284c7"/><path d="M62 66 Q56 76 62 80 Q68 76 62 66 Z" fill="#0284c7"/><path d="M76 60 Q70 70 76 74 Q82 70 76 60 Z" fill="#0284c7"/>' + diagLabel(60, 104, 'GAS -> LIQUID', '#0369a1', 11)],
+    ['precipitation', 'Precipitation (Rain/Snow Falls)', 'science', 'water cycle rain snow hail fall',
+      '<ellipse cx="60" cy="36" rx="28" ry="14" fill="#94a3b8"/><line x1="42" y1="54" x2="38" y2="74" stroke="#0284c7" stroke-width="3.5" stroke-linecap="round"/><line x1="60" y1="54" x2="56" y2="76" stroke="#0284c7" stroke-width="3.5" stroke-linecap="round"/><line x1="78" y1="54" x2="74" y2="74" stroke="#0284c7" stroke-width="3.5" stroke-linecap="round"/>' + diagLabel(60, 104, 'FALLING WATER', '#0369a1', 11)],
+    ['solid', 'Solid (Locked Particles)', 'science', 'matter state packed rigid',
+      '<rect x="28" y="24" width="64" height="58" rx="6" fill="#f1f5f9" stroke="#334155" stroke-width="2.5"/><circle cx="42" cy="38" r="6" fill="#1d4ed8"/><circle cx="60" cy="38" r="6" fill="#1d4ed8"/><circle cx="78" cy="38" r="6" fill="#1d4ed8"/><circle cx="42" cy="54" r="6" fill="#1d4ed8"/><circle cx="60" cy="54" r="6" fill="#1d4ed8"/><circle cx="78" cy="54" r="6" fill="#1d4ed8"/><circle cx="42" cy="70" r="6" fill="#1d4ed8"/><circle cx="60" cy="70" r="6" fill="#1d4ed8"/><circle cx="78" cy="70" r="6" fill="#1d4ed8"/>' + diagLabel(60, 104, 'FIXED SHAPE', '#1d4ed8', 11)],
+    ['liquid', 'Liquid (Sliding Particles)', 'science', 'matter state fluid flow beaker',
+      '<path d="M28 24 L28 80 L92 80 L92 24" fill="none" stroke="#334155" stroke-width="3"/><circle cx="42" cy="68" r="6" fill="#0284c7"/><circle cx="56" cy="70" r="6" fill="#0284c7"/><circle cx="70" cy="66" r="6" fill="#0284c7"/><circle cx="82" cy="70" r="6" fill="#0284c7"/><circle cx="48" cy="55" r="6" fill="#38bdf8"/><circle cx="64" cy="56" r="6" fill="#38bdf8"/><circle cx="78" cy="54" r="6" fill="#38bdf8"/>' + diagLabel(60, 104, 'TAKES CONTAINER', '#0369a1', 10)],
+    ['gas', 'Gas (Fast Spread Particles)', 'science', 'matter state vapor expand',
+      '<rect x="26" y="24" width="68" height="58" rx="6" fill="#f8fafc" stroke="#475569" stroke-width="2" stroke-dasharray="4 2"/><circle cx="38" cy="36" r="5" fill="#7c3aed"/><line x1="43" y1="36" x2="54" y2="30" stroke="#7c3aed" stroke-width="2"/><circle cx="76" cy="40" r="5" fill="#7c3aed"/><line x1="76" y1="45" x2="86" y2="56" stroke="#7c3aed" stroke-width="2"/><circle cx="52" cy="68" r="5" fill="#7c3aed"/><line x1="47" y1="68" x2="36" y2="62" stroke="#7c3aed" stroke-width="2"/>' + diagLabel(60, 104, 'SPREADS OUT', '#6d28d9', 11)],
+    ['magnet', 'Magnet (N & S Poles + Field)', 'science', 'attraction force iron magnetic',
+      '<path d="M36 74 L36 44 A24 24 0 0 1 84 44 L84 74" fill="none" stroke="#dc2626" stroke-width="12"/><rect x="30" y="64" width="12" height="14" fill="#94a3b8"/><rect x="78" y="64" width="12" height="14" fill="#1d4ed8"/><path d="M36 82 Q60 96 84 82" fill="none" stroke="#475569" stroke-width="2" stroke-dasharray="3 2"/>' + diagLabel(36, 75, 'N', '#0f172a', 10) + diagLabel(84, 75, 'S', '#ffffff', 10) + diagLabel(60, 108, 'MAGNETIC FIELD', '#dc2626', 10)],
+    ['circuit', 'Closed Circuit (Energy Flow)', 'science', 'electricity battery bulb wire',
+      '<rect x="26" y="34" width="68" height="44" rx="6" fill="none" stroke="#0f172a" stroke-width="3"/><rect x="20" y="46" width="12" height="20" fill="#d97706" stroke="#0f172a" stroke-width="2"/><circle cx="60" cy="34" r="10" fill="#fef08a" stroke="#ca8a04" stroke-width="2.5"/>' + diagLabel(60, 104, 'CLOSED LOOP', '#b45309', 11)],
+    ['thermometer', 'Thermometer (Temperature)', 'science', 'heat cold celsius fahrenheit',
+      '<rect x="52" y="20" width="16" height="54" rx="8" fill="#ffffff" stroke="#0f172a" stroke-width="2"/><circle cx="60" cy="76" r="12" fill="#dc2626" stroke="#0f172a" stroke-width="2"/><rect x="56" y="38" width="8" height="34" fill="#dc2626"/><line x1="72" y1="30" x2="80" y2="30" stroke="#0f172a" stroke-width="2"/><line x1="72" y1="44" x2="80" y2="44" stroke="#0f172a" stroke-width="2"/><line x1="72" y1="58" x2="80" y2="58" stroke="#0f172a" stroke-width="2"/>' + diagLabel(60, 106, 'TEMPERATURE', '#be123c', 11)],
+    ['gravity', 'Gravity (Downward Pull)', 'science', 'weight mass earth fall pull',
+      '<circle cx="60" cy="30" r="10" fill="#be123c"/><line x1="60" y1="44" x2="60" y2="74" stroke="#1d4ed8" stroke-width="4"/><polygon points="60,82 52,68 68,68" fill="#1d4ed8"/><path d="M18 86 Q60 78 102 86" fill="#047857"/>' + diagLabel(60, 106, 'PULLS DOWN', '#1d4ed8', 11)],
+    ['friction', 'Friction (Surface Drag Force)', 'science', 'force heat rough slide resist',
+      '<rect x="34" y="42" width="44" height="26" rx="4" fill="#2563eb"/><line x1="20" y1="70" x2="100" y2="70" stroke="#78350f" stroke-width="4"/><path d="M82 54 L98 54" stroke="#047857" stroke-width="3"/><polygon points="102,54 94,49 94,59" fill="#047857"/><path d="M44 76 L26 76" stroke="#dc2626" stroke-width="3"/><polygon points="20,76 28,71 28,81" fill="#dc2626"/>' + diagLabel(60, 102, 'OPPOSES MOTION', '#dc2626', 11)],
+    ['force', 'Force (Push or Pull Vector)', 'science', 'newton motion push pull arrow',
+      '<rect x="44" y="40" width="32" height="32" rx="4" fill="#f59e0b" stroke="#0f172a" stroke-width="2"/><path d="M16 56 L40 56" stroke="#1d4ed8" stroke-width="4"/><polygon points="44,56 35,50 35,62" fill="#1d4ed8"/><path d="M78 56 L102 56" stroke="#dc2626" stroke-width="4"/><polygon points="106,56 97,50 97,62" fill="#dc2626"/>' + diagLabel(60, 102, 'PUSH OR PULL', '#0f172a', 11)],
+    ['energy', 'Energy (Work & Motion)', 'science', 'kinetic potential power transfer',
+      '<polygon points="64,20 40,56 58,56 50,86 80,48 62,48" fill="#facc15" stroke="#b45309" stroke-width="2.5"/>' + diagLabel(60, 104, 'ABLE TO DO WORK', '#b45309', 10)],
+    ['photosynthesis', 'Photosynthesis (Light -> Sugar)', 'science', 'plant leaf sunlight water oxygen',
+      '<circle cx="30" cy="28" r="10" fill="#facc15"/><path d="M38 36 L50 48" stroke="#ca8a04" stroke-width="2.5"/><path d="M40 72 C40 46 80 42 84 62 C80 82 48 84 40 72 Z" fill="#16a34a" stroke="#14532d" stroke-width="2"/>' + diagLabel(60, 102, 'SUN + H2O -> FOOD', '#15803d', 10)],
+    ['cell', 'Cell (Nucleus & Membrane)', 'science', 'biology nucleus organelle',
+      '<ellipse cx="60" cy="54" rx="38" ry="28" fill="#dcfce7" stroke="#047857" stroke-width="3"/><circle cx="52" cy="52" r="12" fill="#7c3aed" stroke="#4c1d95" stroke-width="2"/><ellipse cx="78" cy="60" rx="8" ry="4" fill="#d97706"/>' + diagLabel(60, 104, 'BUILDING BLOCK', '#047857', 10)],
+    ['atom', 'Atom (Nucleus & Electrons)', 'science', 'proton neutron electron matter',
+      '<ellipse cx="60" cy="54" rx="34" ry="14" fill="none" stroke="#2563eb" stroke-width="2" transform="rotate(35 60 54)"/><ellipse cx="60" cy="54" rx="34" ry="14" fill="none" stroke="#2563eb" stroke-width="2" transform="rotate(-35 60 54)"/><circle cx="60" cy="54" r="8" fill="#dc2626"/><circle cx="32" cy="38" r="4" fill="#1d4ed8"/><circle cx="88" cy="38" r="4" fill="#1d4ed8"/>' + diagLabel(60, 104, 'NUCLEUS + ORBIT', '#1d4ed8', 10)],
+    ['molecule', 'Molecule (Bonded Atoms H2O)', 'science', 'chemistry bond atoms',
+      '<line x1="60" y1="44" x2="36" y2="66" stroke="#475569" stroke-width="4"/><line x1="60" y1="44" x2="84" y2="66" stroke="#475569" stroke-width="4"/><circle cx="60" cy="44" r="14" fill="#dc2626" stroke="#0f172a" stroke-width="2"/><circle cx="36" cy="66" r="9" fill="#e2e8f0" stroke="#0f172a" stroke-width="2"/><circle cx="84" cy="66" r="9" fill="#e2e8f0" stroke="#0f172a" stroke-width="2"/>' + diagLabel(60, 48, 'O', '#ffffff', 12) + diagLabel(36, 70, 'H', '#0f172a', 10) + diagLabel(84, 70, 'H', '#0f172a', 10) + diagLabel(60, 104, 'BONDED ATOMS', '#334155', 10)],
+    ['ecosystem', 'Ecosystem (Energy Cycle)', 'science', 'food web habitat living',
+      '<circle cx="60" cy="28" r="9" fill="#f59e0b"/><circle cx="30" cy="68" r="11" fill="#16a34a"/><circle cx="90" cy="68" r="11" fill="#2563eb"/><path d="M50 34 L34 56 M44 68 L76 68 M84 56 L68 34" stroke="#475569" stroke-width="2.5"/>' + diagLabel(60, 104, 'LIVING + NONLIVING', '#0f172a', 10)],
+    ['habitat', 'Habitat (Natural Home)', 'science', 'shelter food water ecosystem',
+      '<rect x="18" y="68" width="84" height="16" fill="#0284c7"/><polygon points="20,68 42,36 64,68" fill="#16a34a"/><rect x="74" y="48" width="24" height="20" fill="#a16207"/>' + diagLabel(60, 104, 'FOOD + SHELTER', '#047857', 10)],
+    ['fossil', 'Fossil (Rock Layer Imprint)', 'science', 'ancient layers trace rock',
+      '<rect x="20" y="26" width="80" height="58" rx="6" fill="#e7e5e4" stroke="#57554e" stroke-width="2"/><line x1="20" y1="44" x2="100" y2="44" stroke="#a8a29e" stroke-width="2"/><line x1="20" y1="68" x2="100" y2="68" stroke="#a8a29e" stroke-width="2"/><circle cx="60" cy="56" r="14" fill="none" stroke="#78350f" stroke-width="3"/><circle cx="60" cy="56" r="6" fill="none" stroke="#78350f" stroke-width="2.5"/>' + diagLabel(60, 104, 'ANCIENT TRACE', '#78350f', 11)],
+
+    // ELA / Word Parts / Reasoning
+    ['prefix', 'Prefix (Front Word Part)', 'ela', 'affix before root word',
+      '<rect x="16" y="40" width="38" height="28" rx="5" fill="#2563eb"/><rect x="60" y="40" width="44" height="28" rx="5" fill="#e2e8f0" stroke="#64748b" stroke-width="1.5"/>' + diagLabel(35, 59, 'pre-', '#ffffff', 13) + diagLabel(82, 59, 'heat', '#0f172a', 13) + diagLabel(60, 100, 'BEFORE ROOT', '#1d4ed8', 11)],
+    ['suffix', 'Suffix (End Word Part)', 'ela', 'affix after root word',
+      '<rect x="16" y="40" width="44" height="28" rx="5" fill="#e2e8f0" stroke="#64748b" stroke-width="1.5"/><rect x="66" y="40" width="38" height="28" rx="5" fill="#7c3aed"/>' + diagLabel(38, 59, 'help', '#0f172a', 13) + diagLabel(85, 59, '-ful', '#ffffff', 13) + diagLabel(60, 100, 'AFTER ROOT', '#6d28d9', 11)],
+    ['root_word', 'Root Word (Core Meaning)', 'ela', 'base morphology word part',
+      '<rect x="14" y="40" width="26" height="28" rx="4" fill="#cbd5e1"/><rect x="44" y="36" width="34" height="36" rx="5" fill="#047857"/><rect x="82" y="40" width="24" height="28" rx="4" fill="#cbd5e1"/>' + diagLabel(61, 59, 'port', '#ffffff', 13) + diagLabel(60, 100, 'CORE MEANING', '#047857', 11)],
+    ['syllable', 'Syllables (Beat Chunks)', 'ela', 'phonology vowel beat word chunks',
+      '<rect x="16" y="38" width="26" height="24" rx="4" fill="#dbeafe" stroke="#2563eb"/><rect x="47" y="38" width="26" height="24" rx="4" fill="#dbeafe" stroke="#2563eb"/><rect x="78" y="38" width="26" height="24" rx="4" fill="#dbeafe" stroke="#2563eb"/><path d="M20 72 Q29 82 38 72 M51 72 Q60 82 69 72 M82 72 Q91 82 100 72" fill="none" stroke="#be123c" stroke-width="2.5"/>' + diagLabel(29, 55, 'ba', '#1d4ed8', 12) + diagLabel(60, 55, 'na', '#1d4ed8', 12) + diagLabel(91, 55, 'na', '#1d4ed8', 12) + diagLabel(60, 104, 'WORD BEATS', '#be123c', 11)],
+    ['synonym', 'Synonym (Same Meaning)', 'ela', 'similar meaning words',
+      '<rect x="16" y="36" width="36" height="28" rx="12" fill="#dcfce7" stroke="#047857" stroke-width="2"/><rect x="68" y="36" width="36" height="28" rx="12" fill="#dcfce7" stroke="#047857" stroke-width="2"/>' + diagLabel(34, 54, 'big', '#047857', 12) + diagLabel(60, 55, '=', '#047857', 16) + diagLabel(86, 54, 'huge', '#047857', 12) + diagLabel(60, 98, 'SAME MEANING', '#047857', 11)],
+    ['antonym', 'Antonym (Opposite Meaning)', 'ela', 'opposite hot cold up down',
+      '<rect x="16" y="36" width="36" height="28" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/><rect x="68" y="36" width="36" height="28" rx="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>' + diagLabel(34, 54, 'hot', '#b91c1c', 12) + diagLabel(60, 54, '<>', '#334155', 14) + diagLabel(86, 54, 'cold', '#1d4ed8', 12) + diagLabel(60, 98, 'OPPOSITES', '#334155', 11)],
+    ['compare', 'Compare (Alike & Shared)', 'ela', 'venn similarity same alike',
+      '<circle cx="44" cy="52" r="24" fill="#bfdbfe" fill-opacity="0.65" stroke="#1d4ed8" stroke-width="2"/><circle cx="76" cy="52" r="24" fill="#fde68a" fill-opacity="0.65" stroke="#b45309" stroke-width="2"/><ellipse cx="60" cy="52" rx="8" ry="18" fill="#16a34a"/>' + diagLabel(60, 98, 'HOW ALIKE', '#15803d', 11)],
+    ['contrast', 'Contrast (Differences)', 'ela', 'venn differ different apart',
+      '<circle cx="44" cy="52" r="24" fill="#1d4ed8" stroke="#0f172a" stroke-width="2"/><circle cx="76" cy="52" r="24" fill="#dc2626" stroke="#0f172a" stroke-width="2"/><ellipse cx="60" cy="52" rx="8" ry="18" fill="#ffffff"/>' + diagLabel(60, 98, 'HOW DIFFERENT', '#be123c', 11)],
+    ['cause', 'Cause (Why It Happens)', 'ela', 'reason trigger action effect',
+      '<rect x="16" y="38" width="34" height="30" rx="5" fill="#2563eb"/><rect x="70" y="38" width="34" height="30" rx="5" fill="#e2e8f0" stroke="#64748b" stroke-width="1.5"/><path d="M52 53 L66 53" stroke="#0f172a" stroke-width="3"/><polygon points="70,53 62,48 62,58" fill="#0f172a"/>' + diagLabel(33, 57, 'WHY', '#ffffff', 12) + diagLabel(60, 100, 'FIRST ACTION', '#1d4ed8', 11)],
+    ['effect', 'Effect (What Happens Next)', 'ela', 'result outcome consequence',
+      '<rect x="16" y="38" width="34" height="30" rx="5" fill="#e2e8f0" stroke="#64748b" stroke-width="1.5"/><rect x="70" y="38" width="34" height="30" rx="5" fill="#d97706"/><path d="M52 53 L66 53" stroke="#0f172a" stroke-width="3"/><polygon points="70,53 62,48 62,58" fill="#0f172a"/>' + diagLabel(87, 57, 'END', '#ffffff', 12) + diagLabel(60, 100, 'RESULT', '#b45309', 11)],
+    ['sequence', 'Sequence (Order 1 -> 2 -> 3)', 'ela', 'first next last steps order',
+      '<rect x="16" y="40" width="22" height="28" rx="4" fill="#2563eb"/><rect x="49" y="40" width="22" height="28" rx="4" fill="#0d9488"/><rect x="82" y="40" width="22" height="28" rx="4" fill="#7c3aed"/>' + diagLabel(27, 59, '1', '#ffffff', 14) + diagLabel(60, 59, '2', '#ffffff', 14) + diagLabel(93, 59, '3', '#ffffff', 14) + diagLabel(60, 100, 'FIRST -> NEXT -> LAST', '#334155', 9)],
+    ['timeline', 'Timeline (Events Over Time)', 'ela', 'history dates order chronology',
+      '<line x1="16" y1="58" x2="104" y2="58" stroke="#0f172a" stroke-width="3"/><circle cx="30" cy="58" r="5" fill="#2563eb"/><circle cx="60" cy="58" r="5" fill="#0d9488"/><circle cx="90" cy="58" r="5" fill="#be123c"/><line x1="30" y1="53" x2="30" y2="38" stroke="#2563eb" stroke-width="2"/><line x1="60" y1="53" x2="60" y2="38" stroke="#0d9488" stroke-width="2"/><line x1="90" y1="53" x2="90" y2="38" stroke="#be123c" stroke-width="2"/>' + diagLabel(60, 98, 'EVENTS IN ORDER', '#334155', 11)],
+    ['summary', 'Summary (Short Key Retell)', 'ela', 'distill brief key points',
+      '<polygon points="24,26 96,26 70,60 50,60" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/><rect x="48" y="60" width="24" height="20" fill="#1d4ed8"/>' + diagLabel(60, 44, 'ALL TEXT', '#1e40af', 10) + diagLabel(60, 102, 'SHORT KEY POINTS', '#1d4ed8', 10)],
+    ['evidence', 'Evidence (Text Proof Clue)', 'ela', 'proof detail cite quote',
+      '<rect x="22" y="24" width="54" height="62" rx="4" fill="#ffffff" stroke="#64748b" stroke-width="2"/><rect x="28" y="42" width="38" height="10" fill="#fde047"/><circle cx="76" cy="58" r="14" fill="#e0f2fe" fill-opacity="0.7" stroke="#1d4ed8" stroke-width="3"/><line x1="86" y1="68" x2="98" y2="82" stroke="#1d4ed8" stroke-width="4" stroke-linecap="round"/>' + diagLabel(60, 104, 'FIND PROOF', '#1d4ed8', 11)],
+    ['inference', 'Inference (Clue + Know)', 'ela', 'deduce conclusion clue schema',
+      '<rect x="18" y="34" width="32" height="32" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>' + diagLabel(34, 54, 'CLUE', '#b45309', 10) + diagLabel(58, 54, '+', '#0f172a', 15) + '<circle cx="84" cy="48" r="14" fill="#fde047" stroke="#ca8a04" stroke-width="2"/>' + diagLabel(84, 52, 'IDEA', '#713f12', 10) + diagLabel(60, 102, 'CLUE + THINKING', '#b45309', 10)],
+    ['main_idea', 'Main Idea (Topic & Details)', 'ela', 'central idea supporting details',
+      '<rect x="20" y="24" width="80" height="22" rx="6" fill="#1d4ed8"/>' + diagLabel(60, 39, 'MAIN IDEA', '#ffffff', 11) + '<rect x="22" y="56" width="20" height="24" fill="#93c5fd"/><rect x="50" y="56" width="20" height="24" fill="#93c5fd"/><rect x="78" y="56" width="20" height="24" fill="#93c5fd"/>' + diagLabel(60, 102, 'SUPPORTED BY DETAILS', '#1e40af', 9)],
+    ['context', 'Context Clues (Nearby Words)', 'ela', 'meaning clues surrounding sentence',
+      '<rect x="16" y="42" width="22" height="20" rx="3" fill="#cbd5e1"/><rect x="44" y="38" width="32" height="28" rx="4" fill="#fef08a" stroke="#ca8a04" stroke-width="2.5"/><rect x="82" y="42" width="22" height="20" rx="3" fill="#cbd5e1"/>' + diagLabel(60, 56, 'WORD', '#713f12', 10) + '<path d="M27 36 Q40 24 54 34 M93 36 Q80 24 66 34" fill="none" stroke="#1d4ed8" stroke-width="2"/>' + diagLabel(60, 100, 'NEARBY CLUES', '#1d4ed8', 11)],
+
+    // Additional Curriculum Essentials (70+ total)
+    ['right_angle', 'Right Angle (90 deg Corner)', 'geometry', 'square corner perpendicular',
+      '<line x1="28" y1="78" x2="92" y2="78" stroke="#0f172a" stroke-width="4"/><line x1="28" y1="26" x2="28" y2="78" stroke="#0f172a" stroke-width="4"/><rect x="28" y="60" width="18" height="18" fill="#fee2e2" stroke="#be123c" stroke-width="2.5"/>' + diagLabel(66, 62, '90°', '#be123c', 16) + diagLabel(60, 104, 'SQUARE CORNER', '#be123c', 11)],
+    ['triangle', 'Triangle (3 Sides, 3 Angles)', 'geometry', 'polygon base height angle',
+      '<polygon points="60,24 94,80 26,80" fill="#dbeafe" stroke="#1d4ed8" stroke-width="3"/><line x1="60" y1="24" x2="60" y2="80" stroke="#be123c" stroke-width="2" stroke-dasharray="4 3"/>' + diagLabel(60, 104, '3 SIDES / 180°', '#1d4ed8', 11)],
+    ['rectangle', 'Rectangle (4 Right Angles)', 'geometry', 'quadrilateral length width opposite',
+      '<rect x="20" y="32" width="80" height="46" fill="#e0f2fe" stroke="#0284c7" stroke-width="3"/><rect x="20" y="66" width="12" height="12" fill="none" stroke="#be123c" stroke-width="2"/>' + diagLabel(60, 102, 'LENGTH x WIDTH', '#0369a1', 11)],
+    ['square', 'Square (4 Equal Sides)', 'geometry', 'quadrilateral equal right angles',
+      '<rect x="30" y="24" width="60" height="60" fill="#ede9fe" stroke="#6d28d9" stroke-width="3"/><line x1="56" y1="19" x2="64" y2="29" stroke="#be123c" stroke-width="2"/><line x1="56" y1="79" x2="64" y2="89" stroke="#be123c" stroke-width="2"/>' + diagLabel(60, 104, '4 EQUAL SIDES', '#6d28d9', 11)],
+    ['addition', 'Addition (Combine Parts)', 'math', 'add sum plus combine total',
+      '<circle cx="28" cy="52" r="8" fill="#2563eb"/><circle cx="46" cy="52" r="8" fill="#2563eb"/>' + diagLabel(62, 58, '+', '#0f172a', 20) + '<circle cx="80" cy="52" r="8" fill="#16a34a"/>' + diagLabel(60, 96, '2 + 1 = 3', '#0f172a', 14)],
+    ['subtraction', 'Subtraction (Take Away)', 'math', 'minus difference remain',
+      '<circle cx="28" cy="52" r="8" fill="#2563eb"/><circle cx="50" cy="52" r="8" fill="#2563eb"/><circle cx="72" cy="52" r="8" fill="#e2e8f0" stroke="#dc2626" stroke-width="2" stroke-dasharray="3 2"/><line x1="64" y1="42" x2="80" y2="62" stroke="#dc2626" stroke-width="3"/>' + diagLabel(60, 96, '3 - 1 = 2', '#dc2626', 14)],
+    ['number_line', 'Number Line (Equal Jumps)', 'math', 'interval order count jump',
+      '<line x1="14" y1="62" x2="106" y2="62" stroke="#0f172a" stroke-width="2.5"/><line x1="22" y1="54" x2="22" y2="70" stroke="#0f172a" stroke-width="2"/><line x1="47" y1="54" x2="47" y2="70" stroke="#0f172a" stroke-width="2"/><line x1="72" y1="54" x2="72" y2="70" stroke="#0f172a" stroke-width="2"/><line x1="97" y1="54" x2="97" y2="70" stroke="#0f172a" stroke-width="2"/><path d="M22 52 Q34 34 47 52 M47 52 Q59 34 72 52" fill="none" stroke="#2563eb" stroke-width="2.5"/>' + diagLabel(22, 84, '0', '#334155', 11) + diagLabel(47, 84, '1', '#334155', 11) + diagLabel(72, 84, '2', '#334155', 11) + diagLabel(97, 84, '3', '#334155', 11)],
+    ['place_value', 'Place Value (H - T - O)', 'math', 'hundreds tens ones digit base ten',
+      '<rect x="16" y="34" width="24" height="40" fill="#dbeafe" stroke="#1d4ed8"/><rect x="46" y="42" width="12" height="32" fill="#dcfce7" stroke="#047857"/><rect x="74" y="62" width="12" height="12" fill="#fef3c7" stroke="#b45309"/>' + diagLabel(28, 28, 'H', '#1d4ed8', 11) + diagLabel(52, 28, 'T', '#047857', 11) + diagLabel(80, 28, 'O', '#b45309', 11) + diagLabel(60, 100, 'BASE-10 BLOCKS', '#334155', 11)],
+    ['congruent', 'Congruent (Same Size & Shape)', 'geometry', 'identical match shape size',
+      '<polygon points="34,32 50,70 18,70" fill="#0d9488" stroke="#0f172a" stroke-width="2"/><polygon points="84,32 100,70 68,70" fill="#0d9488" stroke="#0f172a" stroke-width="2"/>' + diagLabel(60, 100, 'SAME SIZE + SHAPE', '#0f766e', 10)],
+    ['peninsula', 'Peninsula (Water on 3 Sides)', 'geography', 'landform coast water sea',
+      '<rect x="16" y="24" width="88" height="62" rx="6" fill="#38bdf8"/><path d="M16 40 L68 40 C80 40 80 68 68 68 L16 68 Z" fill="#84cc16" stroke="#3f6212" stroke-width="2"/>' + diagLabel(44, 58, 'LAND', '#1a2e05', 11) + diagLabel(60, 104, 'WATER ON 3 SIDES', '#0369a1', 10)],
+    ['plateau', 'Plateau (High Flat Land)', 'geography', 'landform mesa elevation plain',
+      '<polygon points="16,80 34,42 86,42 104,80" fill="#d97706" stroke="#78350f" stroke-width="2"/><line x1="34" y1="42" x2="86" y2="42" stroke="#15803d" stroke-width="5"/>' + diagLabel(60, 102, 'HIGH FLAT TOP', '#92400e', 11)],
+    ['island', 'Island (Water All Around)', 'geography', 'landform ocean sea',
+      '<rect x="16" y="24" width="88" height="62" rx="6" fill="#0284c7"/><ellipse cx="60" cy="54" rx="22" ry="15" fill="#fde047" stroke="#ca8a04" stroke-width="2"/><ellipse cx="60" cy="52" rx="14" ry="9" fill="#16a34a"/>' + diagLabel(60, 104, 'WATER ALL AROUND', '#0369a1', 10)],
+    ['axis', 'Axis (X & Y Reference Line)', 'math', 'graph coordinate line origin',
+      '<line x1="26" y1="22" x2="26" y2="82" stroke="#1d4ed8" stroke-width="3.5"/><line x1="26" y1="82" x2="96" y2="82" stroke="#be123c" stroke-width="3.5"/>' + diagLabel(18, 32, 'Y', '#1d4ed8', 13) + diagLabel(94, 74, 'X', '#be123c', 13) + diagLabel(60, 104, 'X & Y AXES', '#334155', 11)],
+    ['hypothesis', 'Hypothesis (Testable Claim)', 'science', 'experiment predict if then',
+      '<rect x="18" y="34" width="38" height="30" rx="5" fill="#ede9fe" stroke="#6d28d9"/><rect x="64" y="34" width="38" height="30" rx="5" fill="#dcfce7" stroke="#047857"/>' + diagLabel(37, 53, 'IF...', '#6d28d9', 12) + diagLabel(83, 53, 'THEN', '#047857', 12) + diagLabel(60, 100, 'TESTABLE IDEA', '#6d28d9', 11)],
+    ['spectrum', 'Spectrum (Light Wavelengths)', 'science', 'prism rainbow color light wave',
+      '<polygon points="48,30 72,72 24,72" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/><line x1="16" y1="54" x2="36" y2="54" stroke="#0f172a" stroke-width="3"/><line x1="64" y1="46" x2="100" y2="38" stroke="#dc2626" stroke-width="3"/><line x1="66" y1="54" x2="100" y2="54" stroke="#16a34a" stroke-width="3"/><line x1="68" y1="62" x2="100" y2="70" stroke="#2563eb" stroke-width="3"/>' + diagLabel(60, 102, 'WHITE LIGHT SPLIT', '#1d4ed8', 10)],
+    ['wavelength', 'Wavelength (Crest to Crest)', 'science', 'wave physics crest amplitude',
+      '<path d="M16 56 Q30 24 44 56 T72 56 T100 56" fill="none" stroke="#2563eb" stroke-width="3.5"/><line x1="30" y1="24" x2="86" y2="24" stroke="#be123c" stroke-width="2" stroke-dasharray="3 2"/><circle cx="30" cy="36" r="3" fill="#be123c"/><circle cx="86" cy="36" r="3" fill="#be123c"/>' + diagLabel(58, 19, 'WAVELENGTH', '#be123c', 10) + diagLabel(60, 102, 'CREST TO CREST', '#1d4ed8', 10)],
+    ['reflection', 'Reflection (Bounce Back)', 'science', 'mirror light ray angle',
+      '<line x1="18" y1="78" x2="102" y2="78" stroke="#334155" stroke-width="4"/><line x1="24" y1="28" x2="60" y2="76" stroke="#f59e0b" stroke-width="3.5"/><line x1="60" y1="76" x2="96" y2="28" stroke="#f59e0b" stroke-width="3.5"/><polygon points="96,28 86,33 93,39" fill="#f59e0b"/>' + diagLabel(60, 104, 'BOUNCES BACK', '#b45309', 11)],
+    ['refraction', 'Refraction (Light Bends)', 'science', 'lens water bend wave',
+      '<rect x="16" y="54" width="88" height="30" fill="#bae6fd"/><line x1="34" y1="24" x2="58" y2="54" stroke="#d97706" stroke-width="3.5"/><line x1="58" y1="54" x2="72" y2="82" stroke="#b45309" stroke-width="3.5"/>' + diagLabel(60, 104, 'BENDS IN MEDIUM', '#0369a1', 10)],
+    ['density', 'Density (Mass in Volume)', 'science', 'mass volume sink float',
+      '<rect x="20" y="34" width="32" height="32" rx="4" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/><circle cx="32" cy="48" r="3" fill="#1d4ed8"/><circle cx="44" cy="56" r="3" fill="#1d4ed8"/><rect x="68" y="34" width="32" height="32" rx="4" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/><circle cx="76" cy="44" r="3" fill="#dc2626"/><circle cx="84" cy="44" r="3" fill="#dc2626"/><circle cx="92" cy="44" r="3" fill="#dc2626"/><circle cx="76" cy="54" r="3" fill="#dc2626"/><circle cx="84" cy="54" r="3" fill="#dc2626"/><circle cx="92" cy="54" r="3" fill="#dc2626"/>' + diagLabel(60, 100, 'MASS / VOLUME', '#334155', 11)],
+    ['metamorphosis', 'Metamorphosis (Life Stages)', 'science', 'butterfly frog larva pupa cycle',
+      '<circle cx="32" cy="34" r="8" fill="#fde047" stroke="#ca8a04"/><rect x="76" y="28" width="22" height="10" rx="5" fill="#16a34a"/><ellipse cx="86" cy="70" rx="8" ry="12" fill="#a16207"/><path d="M22 66 C18 54 34 54 34 66 C34 78 18 78 22 66 Z M34 66 C50 54 50 78 34 66 Z" fill="#f97316"/>' + diagLabel(60, 104, 'LIFE CYCLE CHANGE', '#15803d', 10)],
+    ['herbivore', 'Herbivore (Plant Eater)', 'science', 'consumer leaf diet animal',
+      '<ellipse cx="52" cy="56" rx="28" ry="18" fill="#16a34a" stroke="#14532d" stroke-width="2"/><line x1="24" y1="56" x2="72" y2="56" stroke="#dcfce7" stroke-width="2"/>' + diagLabel(60, 100, 'EATS PLANTS', '#15803d', 12)],
+    ['carnivore', 'Carnivore (Meat Eater)', 'science', 'predator consumer teeth food web',
+      '<polygon points="30,42 40,66 50,42" fill="#ffffff" stroke="#0f172a" stroke-width="2"/><polygon points="50,42 60,72 70,42" fill="#ffffff" stroke="#0f172a" stroke-width="2"/><polygon points="70,42 80,66 90,42" fill="#ffffff" stroke="#0f172a" stroke-width="2"/>' + diagLabel(60, 100, 'EATS ANIMALS', '#be123c', 12)],
+    ['omnivore', 'Omnivore (Plants & Animals)', 'science', 'consumer diet both',
+      '<circle cx="38" cy="52" r="16" fill="#16a34a"/><circle cx="82" cy="52" r="16" fill="#dc2626"/>' + diagLabel(38, 56, 'LEAF', '#ffffff', 9) + diagLabel(82, 56, 'MEAT', '#ffffff', 9) + diagLabel(60, 100, 'EATS BOTH', '#334155', 12)],
+
+    // Math & Geometry Expansion (+32)
+    ['straight_angle', 'Straight Angle (180 deg Line)', 'geometry', 'line 180 degrees half turn',
+      '<line x1="18" y1="68" x2="102" y2="68" stroke="#0f172a" stroke-width="3.5"/><circle cx="60" cy="68" r="4.5" fill="#be123c"/><path d="M36 68 A24 24 0 0 1 84 68" fill="#fee2e2" fill-opacity="0.6" stroke="#be123c" stroke-width="2.5"/>' + diagLabel(60, 42, '180°', '#be123c', 15)],
+    ['intersect', 'Intersecting Lines (Cross at Point)', 'geometry', 'lines cross vertex point',
+      '<line x1="22" y1="28" x2="98" y2="84" stroke="#2563eb" stroke-width="3.5"/><line x1="22" y1="84" x2="98" y2="28" stroke="#0d9488" stroke-width="3.5"/><circle cx="60" cy="56" r="6" fill="#be123c"/>'],
+    ['similar', 'Similar Shapes (Same Shape, Scaled)', 'geometry', 'scale proportion angles equal',
+      '<polygon points="34,36 48,74 20,74" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2.5"/><polygon points="78,20 102,86 54,86" fill="#bfdbfe" stroke="#1d4ed8" stroke-width="2.5"/>'],
+    ['origin', 'Origin (0, 0 Center)', 'geometry', 'coordinate grid zero zero',
+      '<line x1="24" y1="22" x2="24" y2="86" stroke="#475569" stroke-width="2.5"/><line x1="24" y1="86" x2="96" y2="86" stroke="#475569" stroke-width="2.5"/><circle cx="24" cy="86" r="7" fill="#be123c"/>' + diagLabel(54, 98, '(0, 0)', '#be123c', 13)],
+    ['quadrant', 'Quadrant (4 Grid Regions)', 'geometry', 'coordinate grid four regions',
+      '<rect x="60" y="20" width="38" height="36" fill="#dbeafe"/><line x1="60" y1="18" x2="60" y2="94" stroke="#0f172a" stroke-width="2.5"/><line x1="20" y1="56" x2="100" y2="56" stroke="#0f172a" stroke-width="2.5"/>' + diagLabel(79, 43, 'I', '#1d4ed8', 13) + diagLabel(41, 43, 'II', '#475569', 12) + diagLabel(41, 80, 'III', '#475569', 12) + diagLabel(79, 80, 'IV', '#475569', 12)],
+    ['slope', 'Slope (Rise Over Run)', 'math', 'steep linear rate change graph',
+      '<line x1="22" y1="86" x2="98" y2="86" stroke="#475569" stroke-width="2"/><line x1="22" y1="22" x2="22" y2="86" stroke="#475569" stroke-width="2"/><line x1="30" y1="76" x2="86" y2="34" stroke="#1d4ed8" stroke-width="3.5"/><polyline points="30,76 86,76 86,34" fill="none" stroke="#be123c" stroke-width="2" stroke-dasharray="4 3"/>' + diagLabel(58, 99, 'm = y / x', '#be123c', 11)],
+    ['exponent', 'Exponent (Repeated Multiply Power)', 'math', 'power base squared cubed',
+      '<rect x="26" y="42" width="36" height="40" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>' + diagLabel(44, 69, '2', '#1d4ed8', 24) + '<rect x="66" y="24" width="24" height="24" rx="5" fill="#fee2e2" stroke="#be123c" stroke-width="2"/>' + diagLabel(78, 41, '3', '#be123c', 15) + diagLabel(60, 102, '2x2x2 = 8', '#334155', 12)],
+    ['square_root', 'Square Root (Side of Square)', 'math', 'radical area inverse',
+      '<rect x="26" y="34" width="38" height="38" fill="#dcfce7" stroke="#047857" stroke-width="2"/><path d="M72 60 L78 72 L86 38 L104 38" fill="none" stroke="#be123c" stroke-width="3"/>' + diagLabel(45, 58, '9', '#047857', 16) + diagLabel(95, 62, '9=3', '#be123c', 12)],
+    ['quadrilateral', 'Quadrilateral (4 Sides)', 'geometry', 'trapezoid rhombus kite polygon',
+      '<polygon points="30,30 84,26 98,78 22,74" fill="#fef3c7" stroke="#b45309" stroke-width="3"/><circle cx="30" cy="30" r="3" fill="#be123c"/><circle cx="84" cy="26" r="3" fill="#be123c"/><circle cx="98" cy="78" r="3" fill="#be123c"/><circle cx="22" cy="74" r="3" fill="#be123c"/>' + diagLabel(60, 102, '4 SIDES', '#92400e', 12)],
+    ['pentagon', 'Pentagon (5 Sides)', 'geometry', 'polygon five sides vertices',
+      '<polygon points="60,20 96,46 82,86 38,86 24,46" fill="#ede9fe" stroke="#6d28d9" stroke-width="3"/>' + diagLabel(60, 62, '5', '#6d28d9', 20)],
+    ['hexagon', 'Hexagon (6 Sides)', 'geometry', 'polygon six sides honeycomb',
+      '<polygon points="60,20 92,38 92,74 60,92 28,74 28,38" fill="#fef08a" stroke="#ca8a04" stroke-width="3"/>' + diagLabel(60, 62, '6', '#854d0e', 20)],
+    ['octagon', 'Octagon (8 Sides)', 'geometry', 'polygon eight sides stop',
+      '<polygon points="44,22 76,22 96,42 96,74 76,94 44,94 24,74 24,42" fill="#fee2e2" stroke="#dc2626" stroke-width="3"/>' + diagLabel(60, 64, '8', '#b91c1c', 20)],
+    ['prism', 'Triangular Prism (3D Shape)', 'geometry', 'solid bases flat faces',
+      '<polygon points="24,76 48,34 72,76" fill="#bae6fd" stroke="#0369a1" stroke-width="2.5"/><polygon points="48,34 72,76 98,64 74,22" fill="#7dd3fc" stroke="#0369a1" stroke-width="2.5"/><line x1="24" y1="76" x2="50" y2="64" stroke="#0369a1" stroke-dasharray="3 2"/><line x1="50" y1="64" x2="74" y2="22" stroke="#0369a1" stroke-dasharray="3 2"/>'],
+    ['pyramid', 'Pyramid (Pointed 3D Solid)', 'geometry', 'apex triangular faces base',
+      '<polygon points="60,20 26,82 64,90" fill="#fde68a" stroke="#b45309" stroke-width="2.5"/><polygon points="60,20 64,90 96,76" fill="#f59e0b" stroke="#b45309" stroke-width="2.5"/>'],
+    ['cylinder', 'Cylinder (2 Circular Bases)', 'geometry', '3d tube round circle height',
+      '<rect x="34" y="34" width="52" height="50" fill="#bfdbfe" stroke="#1d4ed8" stroke-width="2"/><ellipse cx="60" cy="84" rx="26" ry="10" fill="#93c5fd" stroke="#1d4ed8" stroke-width="2.5"/><ellipse cx="60" cy="34" rx="26" ry="10" fill="#eff6ff" stroke="#1d4ed8" stroke-width="2.5"/>'],
+    ['cone', 'Cone (Circular Base & Apex)', 'geometry', '3d pointed round base',
+      '<polygon points="60,20 32,78 88,78" fill="#ddd6fe" stroke="#6d28d9" stroke-width="2.5"/><ellipse cx="60" cy="78" rx="28" ry="10" fill="#c4b5fd" stroke="#6d28d9" stroke-width="2.5"/>'],
+    ['sphere', 'Sphere (3D Ball Surface)', 'geometry', '3d round globe ball',
+      '<circle cx="60" cy="56" r="34" fill="#93c5fd" stroke="#1d4ed8" stroke-width="2.5"/><ellipse cx="60" cy="56" rx="34" ry="10" fill="none" stroke="#1e40af" stroke-width="2" stroke-dasharray="4 3"/><circle cx="48" cy="44" r="8" fill="#eff6ff" fill-opacity="0.6"/>'],
+    ['range_math', 'Range (Max Minus Min Spread)', 'math', 'data spread statistics difference',
+      '<line x1="18" y1="62" x2="102" y2="62" stroke="#475569" stroke-width="2"/><circle cx="28" cy="62" r="5" fill="#1d4ed8"/><circle cx="54" cy="62" r="4" fill="#94a3b8"/><circle cx="92" cy="62" r="5" fill="#be123c"/><path d="M28 42 L92 42" stroke="#047857" stroke-width="3"/><line x1="28" y1="36" x2="28" y2="48" stroke="#047857" stroke-width="2"/><line x1="92" y1="36" x2="92" y2="48" stroke="#047857" stroke-width="2"/>' + diagLabel(60, 92, 'MAX - MIN', '#047857', 12)],
+    ['tally', 'Tally Marks (Groups of 5)', 'math', 'count five gate chart',
+      '<line x1="26" y1="30" x2="26" y2="70" stroke="#0f172a" stroke-width="3"/><line x1="36" y1="30" x2="36" y2="70" stroke="#0f172a" stroke-width="3"/><line x1="46" y1="30" x2="46" y2="70" stroke="#0f172a" stroke-width="3"/><line x1="56" y1="30" x2="56" y2="70" stroke="#0f172a" stroke-width="3"/><line x1="20" y1="62" x2="62" y2="38" stroke="#be123c" stroke-width="3.5"/><line x1="80" y1="30" x2="80" y2="70" stroke="#0f172a" stroke-width="3"/><line x1="92" y1="30" x2="92" y2="70" stroke="#0f172a" stroke-width="3"/>' + diagLabel(60, 98, '5 + 2 = 7', '#1d4ed8', 14)],
+    ['median_line', 'Line Graph (Change Over Time)', 'math', 'trend line chart plot data',
+      '<polyline points="22,82 22,22 22,82 98,82" fill="none" stroke="#475569" stroke-width="2"/><polyline points="28,70 48,46 68,54 90,28" fill="none" stroke="#1d4ed8" stroke-width="3.5"/><circle cx="28" cy="70" r="4" fill="#be123c"/><circle cx="48" cy="46" r="4" fill="#be123c"/><circle cx="68" cy="54" r="4" fill="#be123c"/><circle cx="90" cy="28" r="4" fill="#be123c"/>'],
+    ['pie_chart', 'Circle Graph (Parts of Whole)', 'math', 'pie chart percent sector',
+      '<circle cx="60" cy="56" r="32" fill="#e2e8f0" stroke="#0f172a" stroke-width="2"/><path d="M60 56 L60 24 A32 32 0 0 1 92 56 Z" fill="#2563eb"/><path d="M60 56 L92 56 A32 32 0 0 1 42 82 Z" fill="#16a34a"/>'],
+    ['venn_diagram', 'Venn Diagram (Sets & Overlap)', 'math', 'sets overlap union intersection',
+      '<circle cx="46" cy="56" r="26" fill="#93c5fd" fill-opacity="0.55" stroke="#1d4ed8" stroke-width="2.5"/><circle cx="74" cy="56" r="26" fill="#fde68a" fill-opacity="0.55" stroke="#b45309" stroke-width="2.5"/>'],
+    ['histogram', 'Histogram (Grouped Bars)', 'math', 'frequency intervals bars statistics',
+      '<line x1="20" y1="84" x2="100" y2="84" stroke="#475569" stroke-width="2"/><rect x="24" y="60" width="18" height="24" fill="#2563eb" stroke="#ffffff"/><rect x="42" y="34" width="18" height="50" fill="#1d4ed8" stroke="#ffffff"/><rect x="60" y="42" width="18" height="42" fill="#2563eb" stroke="#ffffff"/><rect x="78" y="68" width="18" height="16" fill="#3b82f6" stroke="#ffffff"/>'],
+    ['boxplot', 'Box Plot (Quartiles & Median)', 'math', 'whiskers quartiles iqr statistics',
+      '<line x1="20" y1="56" x2="100" y2="56" stroke="#475569" stroke-width="2.5"/><line x1="20" y1="44" x2="20" y2="68" stroke="#475569" stroke-width="2.5"/><line x1="100" y1="44" x2="100" y2="68" stroke="#475569" stroke-width="2.5"/><rect x="38" y="36" width="44" height="40" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2.5"/><line x1="64" y1="36" x2="64" y2="76" stroke="#be123c" stroke-width="3"/>'],
+    ['scatterplot', 'Scatter Plot (Trend Relationship)', 'math', 'correlation data points graph',
+      '<polyline points="22,22 22,86 98,86" fill="none" stroke="#475569" stroke-width="2"/><circle cx="32" cy="74" r="4" fill="#2563eb"/><circle cx="44" cy="64" r="4" fill="#2563eb"/><circle cx="58" cy="58" r="4" fill="#2563eb"/><circle cx="70" cy="42" r="4" fill="#2563eb"/><circle cx="86" cy="30" r="4" fill="#2563eb"/><line x1="28" y1="78" x2="92" y2="26" stroke="#be123c" stroke-width="2" stroke-dasharray="4 3"/>'],
+    ['reflection_geo', 'Reflection Flip (Geometry)', 'geometry', 'transform flip mirror axis',
+      '<line x1="60" y1="18" x2="60" y2="96" stroke="#be123c" stroke-width="2.5" stroke-dasharray="4 3"/><polygon points="24,38 48,54 24,74" fill="#2563eb"/><polygon points="96,38 72,54 96,74" fill="#93c5fd" stroke="#1d4ed8" stroke-width="2"/>'],
+    ['rotation_geo', 'Rotation Turn (Geometry)', 'geometry', 'transform turn pivot clockwise',
+      '<path d="M60 22 A34 34 0 0 1 92 66" fill="none" stroke="#be123c" stroke-width="3"/><polygon points="92,66 84,56 96,56" fill="#be123c"/><rect x="26" y="42" width="22" height="22" fill="#2563eb"/><rect x="64" y="64" width="22" height="22" fill="#93c5fd" stroke="#1d4ed8" stroke-width="2" transform="rotate(35 75 75)"/>'],
+    ['translation_geo', 'Translation Slide (Geometry)', 'geometry', 'transform slide shift vector',
+      '<polygon points="22,36 44,36 33,58" fill="#2563eb"/><line x1="48" y1="48" x2="72" y2="62" stroke="#047857" stroke-width="3"/><polygon points="76,64 66,64 71,56" fill="#047857"/><polygon points="74,64 96,64 85,86" fill="#86efac" stroke="#047857" stroke-width="2"/>'],
+    ['prime_number', 'Prime Number (Only 1 & Self)', 'math', 'factor array prime composite',
+      '<circle cx="24" cy="56" r="7" fill="#7c3aed"/><circle cx="42" cy="56" r="7" fill="#7c3aed"/><circle cx="60" cy="56" r="7" fill="#7c3aed"/><circle cx="78" cy="56" r="7" fill="#7c3aed"/><circle cx="96" cy="56" r="7" fill="#7c3aed"/>' + diagLabel(60, 96, '1 x 5', '#6d28d9', 15)],
+    ['factor_tree', 'Factor Tree (Prime Breakdown)', 'math', 'factors divisor multiply prime',
+      '<circle cx="60" cy="24" r="11" fill="#dbeafe" stroke="#1d4ed8"/><line x1="54" y1="33" x2="36" y2="54" stroke="#475569" stroke-width="2"/><line x1="66" y1="33" x2="84" y2="54" stroke="#475569" stroke-width="2"/><circle cx="36" cy="60" r="10" fill="#dcfce7" stroke="#047857"/><circle cx="84" cy="60" r="10" fill="#fef3c7" stroke="#b45309"/>' + diagLabel(60, 28, '12', '#1d4ed8', 11) + diagLabel(36, 64, '3', '#047857', 11) + diagLabel(84, 64, '4', '#b45309', 11)],
+    ['percent_bar', 'Double Number Line / Percent', 'math', 'proportion bar model percent',
+      '<rect x="18" y="34" width="84" height="18" rx="3" fill="#e2e8f0" stroke="#0f172a"/><rect x="18" y="34" width="63" height="18" rx="3" fill="#0d9488"/>' + diagLabel(60, 76, '75% = 3/4', '#0f766e', 14)],
+    ['absolute_value', 'Absolute Value (Distance from 0)', 'math', 'distance zero positive bars',
+      '<line x1="16" y1="64" x2="104" y2="64" stroke="#475569" stroke-width="2"/><circle cx="60" cy="64" r="4" fill="#0f172a"/><circle cx="28" cy="64" r="5" fill="#be123c"/><path d="M28 50 L60 50" stroke="#be123c" stroke-width="3"/>' + diagLabel(60, 86, '0', '#0f172a', 12) + diagLabel(28, 86, '-3', '#be123c', 12) + diagLabel(60, 34, '|-3| = 3', '#1d4ed8', 14)],
+
+    // Science — Life, Earth/Space & Physical Expansion (+46)
+    ['food_web', 'Food Web (Energy Flow)', 'science', 'producer consumer predator ecosystem',
+      '<circle cx="60" cy="24" r="9" fill="#facc15"/><circle cx="30" cy="58" r="11" fill="#16a34a"/><circle cx="90" cy="58" r="11" fill="#2563eb"/><circle cx="60" cy="88" r="10" fill="#be123c"/><line x1="54" y1="32" x2="36" y2="48" stroke="#475569" stroke-width="2.5"/><line x1="42" y1="58" x2="78" y2="58" stroke="#475569" stroke-width="2.5"/><line x1="84" y1="67" x2="68" y2="82" stroke="#475569" stroke-width="2.5"/><line x1="38" y1="66" x2="52" y2="82" stroke="#475569" stroke-width="2.5"/>'],
+    ['producer', 'Producer (Makes Own Food)', 'science', 'plant sun chlorophyl autotroph',
+      '<circle cx="28" cy="26" r="10" fill="#facc15"/><path d="M52 84 L52 48" stroke="#15803d" stroke-width="4"/><ellipse cx="68" cy="54" rx="18" ry="10" fill="#16a34a"/><ellipse cx="38" cy="64" rx="14" ry="8" fill="#22c55e"/>'],
+    ['consumer', 'Consumer (Eats Organisms)', 'science', 'animal heterotroph food web',
+      '<path d="M24 58 C34 38 66 38 78 58 L92 50 L92 66 L78 58 C66 78 34 78 24 58 Z" fill="#f97316"/><circle cx="42" cy="52" r="3" fill="#ffffff"/>'],
+    ['decomposer', 'Decomposer (Recycles Decay)', 'science', 'mushroom fungi bacteria soil',
+      '<rect x="18" y="76" width="84" height="14" rx="4" fill="#78350f"/><rect x="54" y="48" width="12" height="28" fill="#fef3c7" stroke="#92400e"/><path d="M36 48 A24 22 0 0 1 84 48 Z" fill="#d97706" stroke="#78350f" stroke-width="2"/><circle cx="50" cy="36" r="3" fill="#ffffff"/><circle cx="68" cy="40" r="3" fill="#ffffff"/>'],
+    ['camouflage', 'Camouflage (Blends Into Setting)', 'science', 'adaptation hide match background',
+      '<rect x="18" y="24" width="84" height="68" rx="8" fill="#4ade80"/><path d="M24 38 L44 38 M72 34 L94 34 M28 74 L56 74 M68 68 L94 68" stroke="#16a34a" stroke-width="4"/><ellipse cx="60" cy="56" rx="18" ry="11" fill="#22c55e" stroke="#16a34a" stroke-width="2"/>'],
+    ['migration', 'Migration (Seasonal Travel)', 'science', 'birds flock season arrow travel',
+      '<path d="M24 68 Q60 30 96 42" fill="none" stroke="#1d4ed8" stroke-width="3" stroke-dasharray="5 3"/><polygon points="98,42 88,35 90,47" fill="#1d4ed8"/><path d="M30 46 Q36 40 42 46 Q48 40 54 46" fill="none" stroke="#0f172a" stroke-width="2.5"/><path d="M56 36 Q62 30 68 36 Q74 30 80 36" fill="none" stroke="#0f172a" stroke-width="2.5"/>'],
+    ['hibernation', 'Hibernation (Winter Deep Rest)', 'science', 'winter cave bear sleep snow',
+      '<path d="M22 86 A38 38 0 0 1 98 86 Z" fill="#57554e"/><ellipse cx="60" cy="72" rx="18" ry="14" fill="#1e293b"/><text x="72" y="34" font-family="Arial,sans-serif" font-weight="700" font-size="14" fill="#0284c7">Z z</text>'],
+    ['life_cycle', 'Life Cycle (Repeating Circle)', 'science', 'stages egg growth adult',
+      '<circle cx="60" cy="54" r="28" fill="none" stroke="#16a34a" stroke-width="3" stroke-dasharray="14 6"/><circle cx="60" cy="26" r="8" fill="#facc15"/><circle cx="88" cy="54" r="8" fill="#38bdf8"/><circle cx="60" cy="82" r="8" fill="#22c55e"/><circle cx="32" cy="54" r="8" fill="#f97316"/>'],
+    ['pollination', 'Pollination (Pollen Between Flowers)', 'science', 'bee flower pollen reproduce',
+      '<circle cx="34" cy="64" r="14" fill="#f472b6"/><circle cx="34" cy="64" r="5" fill="#facc15"/><circle cx="86" cy="64" r="14" fill="#f472b6"/><circle cx="86" cy="64" r="5" fill="#facc15"/><path d="M36 44 Q60 22 84 44" fill="none" stroke="#ca8a04" stroke-width="2.5" stroke-dasharray="4 3"/><ellipse cx="60" cy="30" rx="8" ry="5" fill="#facc15" stroke="#0f172a" stroke-width="1.5"/>'],
+    ['germination', 'Germination (Seed Sprouts)', 'science', 'seed root shoot sprout soil',
+      '<rect x="18" y="64" width="84" height="24" rx="4" fill="#92400e"/><ellipse cx="60" cy="64" rx="10" ry="7" fill="#fde047" stroke="#ca8a04" stroke-width="2"/><path d="M60 60 Q60 40 72 30" fill="none" stroke="#16a34a" stroke-width="3.5"/><path d="M60 70 Q56 80 50 86 M60 70 Q66 80 72 86" fill="none" stroke="#fef3c7" stroke-width="2"/>'],
+    ['seedling', 'Seedling (Young Plant)', 'science', 'sprout leaves stem',
+      '<rect x="20" y="76" width="80" height="12" fill="#78350f"/><line x1="60" y1="76" x2="60" y2="40" stroke="#16a34a" stroke-width="4"/><ellipse cx="46" cy="46" rx="14" ry="8" fill="#22c55e" transform="rotate(-25 46 46)"/><ellipse cx="74" cy="46" rx="14" ry="8" fill="#22c55e" transform="rotate(25 74 46)"/>'],
+    ['cell_nucleus', 'Cell Nucleus (Control Center)', 'science', 'cell organelle dna brain',
+      '<ellipse cx="60" cy="56" rx="40" ry="28" fill="#ecfdf5" stroke="#047857" stroke-width="2.5"/><circle cx="56" cy="56" r="15" fill="#7c3aed" stroke="#4c1d95" stroke-width="2.5"/><circle cx="56" cy="56" r="6" fill="#c4b5fd"/>'],
+    ['cell_membrane', 'Cell Membrane (Outer Gate)', 'science', 'cell boundary gate barrier',
+      '<ellipse cx="60" cy="56" rx="40" ry="28" fill="#ecfdf5" stroke="#be123c" stroke-width="5" stroke-dasharray="10 3"/><circle cx="60" cy="56" r="11" fill="#94a3b8"/>'],
+    ['chloroplast', 'Chloroplast (Solar Cell Part)', 'science', 'plant cell green photosynthesis',
+      '<ellipse cx="60" cy="56" rx="34" ry="22" fill="#dcfce7" stroke="#15803d" stroke-width="3"/><rect x="38" y="46" width="16" height="5" rx="2" fill="#16a34a"/><rect x="38" y="54" width="16" height="5" rx="2" fill="#16a34a"/><rect x="38" y="62" width="16" height="5" rx="2" fill="#16a34a"/><rect x="64" y="48" width="16" height="5" rx="2" fill="#16a34a"/><rect x="64" y="56" width="16" height="5" rx="2" fill="#16a34a"/>'],
+    ['mitochondria', 'Mitochondria (Cell Power)', 'science', 'energy atp organelle cell',
+      '<ellipse cx="60" cy="56" rx="34" ry="20" fill="#fed7aa" stroke="#c2410c" stroke-width="3"/><path d="M32 56 Q40 42 48 56 T64 56 T80 56 T88 56" fill="none" stroke="#9a3412" stroke-width="2.5"/>'],
+    ['states_of_matter', 'States of Matter (S / L / G)', 'science', 'solid liquid gas phase',
+      '<rect x="14" y="34" width="24" height="44" rx="3" fill="#dbeafe" stroke="#1d4ed8"/><circle cx="22" cy="48" r="3" fill="#1d4ed8"/><circle cx="30" cy="48" r="3" fill="#1d4ed8"/><circle cx="22" cy="58" r="3" fill="#1d4ed8"/><circle cx="30" cy="58" r="3" fill="#1d4ed8"/><rect x="48" y="34" width="24" height="44" rx="3" fill="#bae6fd" stroke="#0284c7"/><circle cx="56" cy="64" r="3" fill="#0284c7"/><circle cx="64" cy="62" r="3" fill="#0284c7"/><circle cx="60" cy="70" r="3" fill="#0284c7"/><rect x="82" y="34" width="24" height="44" rx="3" fill="#f3e8ff" stroke="#7c3aed"/><circle cx="88" cy="44" r="3" fill="#7c3aed"/><circle cx="100" cy="68" r="3" fill="#7c3aed"/><circle cx="96" cy="48" r="3" fill="#7c3aed"/>'],
+    ['melting', 'Melting (Solid to Liquid)', 'science', 'heat phase ice water',
+      '<rect x="26" y="36" width="26" height="26" rx="3" fill="#bae6fd" stroke="#0284c7" stroke-width="2"/><polygon points="60,52 72,52 72,46 80,56 72,66 72,60 60,60" fill="#f97316"/><path d="M76 74 Q90 66 102 74 Q96 84 76 74 Z" fill="#0284c7"/>'],
+    ['freezing', 'Freezing (Liquid to Solid)', 'science', 'cold ice crystal water',
+      '<path d="M20 72 Q34 64 46 72 Q40 82 20 72 Z" fill="#38bdf8"/><polygon points="52,52 64,52 64,46 72,56 64,66 64,60 52,60" fill="#0284c7"/><rect x="76" y="42" width="24" height="24" rx="3" fill="#e0f2fe" stroke="#0369a1" stroke-width="2.5"/>'],
+    ['boiling', 'Boiling (Rapid Vapor Bubbles)', 'science', 'heat steam bubbles 100c',
+      '<path d="M26 42 L26 84 L94 84 L94 42" fill="#e0f2fe" stroke="#334155" stroke-width="3"/><circle cx="44" cy="72" r="4" fill="#ffffff" stroke="#0284c7"/><circle cx="60" cy="64" r="6" fill="#ffffff" stroke="#0284c7"/><circle cx="76" cy="70" r="5" fill="#ffffff" stroke="#0284c7"/><path d="M44 36 Q40 24 46 16 M64 36 Q60 24 66 16" fill="none" stroke="#64748b" stroke-width="2.5"/>'],
+    ['mixture', 'Mixture (Separate Parts Together)', 'science', 'combine trail mix matter',
+      '<path d="M24 38 L24 84 L96 84 L96 38" fill="#f8fafc" stroke="#475569" stroke-width="2.5"/><circle cx="42" cy="70" r="7" fill="#d97706"/><polygon points="62,62 72,76 52,76" fill="#2563eb"/><rect x="76" y="64" width="12" height="12" fill="#16a34a"/>'],
+    ['solution', 'Solution (Evenly Dissolved)', 'science', 'solvent solute water mix',
+      '<path d="M30 28 L30 84 L90 84 L90 28" fill="none" stroke="#334155" stroke-width="2.5"/><rect x="32" y="46" width="56" height="36" fill="#7dd3fc"/><circle cx="44" cy="58" r="2.5" fill="#1d4ed8"/><circle cx="58" cy="68" r="2.5" fill="#1d4ed8"/><circle cx="74" cy="56" r="2.5" fill="#1d4ed8"/><circle cx="62" cy="76" r="2.5" fill="#1d4ed8"/>'],
+    ['mass', 'Mass (Balance Scale Matter)', 'science', 'grams kilogram weight balance',
+      '<polygon points="60,64 50,88 70,88" fill="#475569"/><line x1="22" y1="54" x2="98" y2="54" stroke="#0f172a" stroke-width="3.5"/><rect x="20" y="34" width="22" height="16" fill="#d97706"/><rect x="78" y="34" width="22" height="16" fill="#2563eb"/>'],
+    ['buoyancy', 'Buoyancy (Upward Float Push)', 'science', 'float sink water force',
+      '<rect x="16" y="54" width="88" height="34" fill="#bae6fd"/><rect x="42" y="42" width="36" height="24" rx="4" fill="#f59e0b" stroke="#0f172a" stroke-width="2"/><line x1="60" y1="84" x2="60" y2="68" stroke="#047857" stroke-width="4"/><polygon points="60,62 54,71 66,71" fill="#047857"/>'],
+    ['conductor', 'Conductor (Lets Energy Flow)', 'science', 'metal copper electricity heat',
+      '<rect x="20" y="46" width="80" height="20" rx="4" fill="#fbbf24" stroke="#b45309" stroke-width="2"/><path d="M28 56 L92 56" stroke="#be123c" stroke-width="3.5"/><polygon points="96,56 86,50 86,62" fill="#be123c"/>'],
+    ['insulator', 'Insulator (Blocks Energy Flow)', 'science', 'rubber wood block heat electricity',
+      '<rect x="20" y="46" width="80" height="20" rx="4" fill="#64748b" stroke="#334155" stroke-width="2"/><line x1="56" y1="32" x2="56" y2="80" stroke="#dc2626" stroke-width="3.5"/><line x1="66" y1="32" x2="66" y2="80" stroke="#dc2626" stroke-width="3.5"/>'],
+    ['amplitude', 'Amplitude (Wave Height)', 'science', 'wave tall loud energy crest',
+      '<line x1="16" y1="56" x2="104" y2="56" stroke="#94a3b8" stroke-width="2" stroke-dasharray="3 2"/><path d="M18 56 Q34 18 50 56 T82 56 T104 56" fill="none" stroke="#2563eb" stroke-width="3"/><line x1="34" y1="22" x2="34" y2="56" stroke="#be123c" stroke-width="3"/>'],
+    ['frequency', 'Frequency (Waves Per Second)', 'science', 'pitch rapid hertz wave',
+      '<path d="M16 42 Q22 22 28 42 T40 42 T52 42 T64 42 T76 42 T88 42 T100 42" fill="none" stroke="#be123c" stroke-width="2.5"/><path d="M16 78 Q36 58 56 78 T96 78" fill="none" stroke="#2563eb" stroke-width="2.5"/>'],
+    ['sound_wave', 'Sound Wave (Vibration Air)', 'science', 'vibration speaker pitch',
+      '<polygon points="22,48 36,48 50,34 50,78 36,64 22,64" fill="#334155"/><path d="M62 42 A16 18 0 0 1 62 70 M74 34 A24 26 0 0 1 74 78 M86 26 A32 34 0 0 1 86 86" fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round"/>'],
+    ['rock_cycle', 'Rock Cycle (Transform Cycle)', 'science', 'igneous sedimentary metamorphic',
+      '<circle cx="60" cy="54" r="28" fill="none" stroke="#78350f" stroke-width="3" stroke-dasharray="14 6"/><polygon points="60,18 69,32 51,32" fill="#dc2626"/><rect x="78" y="60" width="16" height="14" fill="#d97706"/><polygon points="28,74 44,62 44,74" fill="#64748b"/>'],
+    ['igneous', 'Igneous Rock (Cooled Lava)', 'science', 'magma volcano lava rock',
+      '<polygon points="22,82 46,34 74,34 98,82" fill="#57554e"/><polygon points="56,82 58,34 62,34 64,82" fill="#ef4444"/><polygon points="34,84 48,66 64,74 78,84" fill="#1e293b"/>'],
+    ['sedimentary', 'Sedimentary Rock (Pressed Layers)', 'science', 'layers sand shale sandstone',
+      '<rect x="22" y="34" width="76" height="14" fill="#fde68a" stroke="#78350f"/><rect x="22" y="48" width="76" height="14" fill="#d97706" stroke="#78350f"/><rect x="22" y="62" width="76" height="16" fill="#92400e" stroke="#451a03"/>'],
+    ['metamorphic', 'Metamorphic Rock (Heat & Pressure)', 'science', 'pressure wavy fold rock',
+      '<rect x="24" y="34" width="72" height="44" rx="6" fill="#64748b" stroke="#1e293b" stroke-width="2"/><path d="M26 44 Q48 38 60 48 T94 44 M26 58 Q48 50 60 62 T94 58" fill="none" stroke="#e2e8f0" stroke-width="3"/>'],
+    ['deposition', 'Deposition (Sediment Drops)', 'geography', 'river delta sand settle',
+      '<path d="M16 32 Q50 56 96 70" fill="none" stroke="#0284c7" stroke-width="4"/><circle cx="72" cy="72" r="4" fill="#d97706"/><circle cx="82" cy="76" r="5" fill="#d97706"/><circle cx="92" cy="78" r="4" fill="#d97706"/>'],
+    ['tectonic_plate', 'Tectonic Plates (Crust Slabs)', 'geography', 'earth crust collide boundary',
+      '<rect x="14" y="44" width="42" height="22" fill="#78350f"/><polygon points="62,40 104,48 104,70 62,62" fill="#a8a29e"/><path d="M40 34 L54 34" stroke="#be123c" stroke-width="3"/><path d="M84 34 L70 34" stroke="#be123c" stroke-width="3"/>'],
+    ['earthquake', 'Earthquake (Seismic Waves)', 'geography', 'fault shake seismic epicenter',
+      '<circle cx="60" cy="64" r="6" fill="#dc2626"/><circle cx="60" cy="64" r="16" fill="none" stroke="#dc2626" stroke-width="2" stroke-dasharray="4 3"/><circle cx="60" cy="64" r="28" fill="none" stroke="#f97316" stroke-width="2" stroke-dasharray="4 3"/><polyline points="18,28 32,28 38,16 44,36 52,20 58,28 102,28" fill="none" stroke="#1d4ed8" stroke-width="2.5"/>'],
+    ['glacier', 'Glacier (Slow Moving Ice)', 'geography', 'ice valley frozen alpine',
+      '<polygon points="16,84 44,24 72,84" fill="#94a3b8"/><polygon points="48,84 78,30 104,84" fill="#64748b"/><path d="M44 44 L76 82 L44 82 Z" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>'],
+    ['canyon', 'Canyon (Deep River Gorge)', 'geography', 'cliff river valley erosion',
+      '<polygon points="14,30 44,30 52,82 14,82" fill="#b45309"/><polygon points="106,30 76,30 68,82 106,82" fill="#92400e"/><rect x="52" y="72" width="16" height="12" fill="#0284c7"/>'],
+    ['delta', 'Delta (Fan-Shaped River Mouth)', 'geography', 'river ocean deposit mouth',
+      '<rect x="16" y="64" width="88" height="24" fill="#0284c7"/><polygon points="44,64 60,24 76,64" fill="#16a34a"/><path d="M60 22 L60 44 M60 44 L48 64 M60 44 L60 64 M60 44 L72 64" fill="none" stroke="#38bdf8" stroke-width="3"/>'],
+    ['continent', 'Continent (Large Landmass)', 'geography', 'land ocean earth globe',
+      '<circle cx="60" cy="56" r="34" fill="#0284c7"/><polygon points="36,42 56,34 72,48 60,72 40,66" fill="#22c55e" stroke="#15803d" stroke-width="2"/><polygon points="74,56 84,52 84,72 74,76" fill="#22c55e"/>'],
+    ['valley', 'Valley (Low Land Between Hills)', 'geography', 'hills low basin river',
+      '<polygon points="14,84 36,30 58,84" fill="#15803d"/><polygon points="62,84 84,30 106,84" fill="#166534"/><ellipse cx="60" cy="84" rx="14" ry="6" fill="#0284c7"/>'],
+    ['phases_of_the_moon', 'Moon Phases (Shadow Cycle)', 'science', 'crescent full quarter lunar',
+      '<circle cx="24" cy="56" r="10" fill="#1e293b" stroke="#475569"/><path d="M46 46 A10 10 0 1 1 46 66 A6 10 0 1 0 46 46 Z" fill="#facc15"/><circle cx="72" cy="56" r="10" fill="#facc15"/><path d="M72 46 A10 10 0 0 1 72 66 Z" fill="#1e293b"/><circle cx="96" cy="56" r="10" fill="#fef08a" stroke="#ca8a04"/>'],
+    ['solar_system', 'Solar System (Sun & Orbiting Planets)', 'science', 'sun planet orbit mercury earth',
+      '<circle cx="24" cy="56" r="12" fill="#facc15"/><path d="M36 28 A42 42 0 0 1 36 84 M38 18 A56 56 0 0 1 38 94" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3 2"/><circle cx="60" cy="48" r="5" fill="#d97706"/><circle cx="80" cy="64" r="7" fill="#0284c7"/><circle cx="98" cy="40" r="6" fill="#b45309"/>'],
+    ['rotation', 'Rotation (Spins on Axis)', 'science', 'day night spin earth axis',
+      '<circle cx="60" cy="56" r="24" fill="#38bdf8" stroke="#0369a1" stroke-width="2"/><line x1="50" y1="22" x2="70" y2="90" stroke="#be123c" stroke-width="2.5"/><path d="M44 38 A18 8 0 0 1 76 38" fill="none" stroke="#0f172a" stroke-width="2.5"/>'],
+    ['revolution', 'Revolution (Orbits Around Sun)', 'science', 'year season orbit sun',
+      '<circle cx="60" cy="56" r="12" fill="#facc15"/><ellipse cx="60" cy="56" rx="38" ry="24" fill="none" stroke="#475569" stroke-width="2" stroke-dasharray="4 3"/><circle cx="98" cy="56" r="7" fill="#0284c7"/>'],
+    ['renewable', 'Renewable Energy (Sun & Wind)', 'science', 'solar wind turbine clean',
+      '<circle cx="34" cy="34" r="10" fill="#facc15"/><rect x="74" y="48" width="5" height="38" fill="#475569"/><line x1="76" y1="48" x2="76" y2="28" stroke="#0284c7" stroke-width="3"/><line x1="76" y1="48" x2="94" y2="58" stroke="#0284c7" stroke-width="3"/><line x1="76" y1="48" x2="58" y2="58" stroke="#0284c7" stroke-width="3"/>'],
+    ['constellation', 'Constellation (Star Pattern)', 'science', 'stars night sky dipper',
+      '<rect x="16" y="20" width="88" height="76" rx="10" fill="#0f172a"/><polyline points="28,36 44,44 56,56 76,54 88,40" fill="none" stroke="#94a3b8" stroke-width="1.5"/><circle cx="28" cy="36" r="3.5" fill="#fde047"/><circle cx="44" cy="44" r="3.5" fill="#fde047"/><circle cx="56" cy="56" r="3.5" fill="#fde047"/><circle cx="76" cy="54" r="3.5" fill="#fde047"/><circle cx="88" cy="40" r="4" fill="#fde047"/>'],
+
+    // Social Studies, Geography, Civics & Economics (+19)
+    ['map_scale', 'Map Scale (Distance Ratio)', 'geography', 'miles kilometers ruler map',
+      '<rect x="18" y="28" width="84" height="58" rx="4" fill="#ecfdf5" stroke="#047857" stroke-width="2"/><line x1="26" y1="68" x2="94" y2="68" stroke="#0f172a" stroke-width="3"/><line x1="26" y1="60" x2="26" y2="76" stroke="#0f172a" stroke-width="2"/><line x1="60" y1="60" x2="60" y2="76" stroke="#0f172a" stroke-width="2"/><line x1="94" y1="60" x2="94" y2="76" stroke="#0f172a" stroke-width="2"/>' + diagLabel(26, 54, '0', '#0f172a', 10) + diagLabel(60, 54, '50', '#0f172a', 10) + diagLabel(92, 54, '100', '#0f172a', 10)],
+    ['map_legend', 'Map Legend (Symbol Key)', 'geography', 'key symbols map chart',
+      '<rect x="24" y="24" width="72" height="68" rx="6" fill="#ffffff" stroke="#334155" stroke-width="2"/><circle cx="38" cy="42" r="5" fill="#be123c"/><line x1="50" y1="42" x2="84" y2="42" stroke="#475569" stroke-width="3"/><polygon points="38,54 44,64 32,64" fill="#15803d"/><line x1="50" y1="60" x2="84" y2="60" stroke="#475569" stroke-width="3"/><line x1="32" y1="76" x2="44" y2="76" stroke="#0284c7" stroke-width="3"/><line x1="50" y1="76" x2="84" y2="76" stroke="#475569" stroke-width="3"/>'],
+    ['prime_meridian', 'Prime Meridian (0 deg E/W)', 'geography', 'longitude greenwich globe',
+      '<circle cx="60" cy="56" r="32" fill="#e0f2fe" stroke="#0369a1" stroke-width="2"/><line x1="60" y1="24" x2="60" y2="88" stroke="#be123c" stroke-width="3.5"/>' + diagLabel(60, 102, '0°', '#be123c', 13)],
+    ['primary_source', 'Primary Source (Firsthand Record)', 'history', 'diary letter photo artifact',
+      '<rect x="24" y="22" width="54" height="68" rx="4" fill="#fef3c7" stroke="#92400e" stroke-width="2"/><line x1="34" y1="38" x2="68" y2="38" stroke="#78350f" stroke-width="2"/><line x1="34" y1="50" x2="68" y2="50" stroke="#78350f" stroke-width="2"/><circle cx="78" cy="68" r="14" fill="#be123c" stroke="#ffffff" stroke-width="2"/>'],
+    ['branches_of_government', 'Three Branches of Government', 'civics', 'legislative executive judicial',
+      '<rect x="46" y="22" width="28" height="18" rx="4" fill="#1d4ed8"/><rect x="16" y="64" width="24" height="22" rx="4" fill="#0d9488"/><rect x="48" y="64" width="24" height="22" rx="4" fill="#d97706"/><rect x="80" y="64" width="24" height="22" rx="4" fill="#be123c"/><line x1="60" y1="40" x2="28" y2="64" stroke="#475569" stroke-width="2"/><line x1="60" y1="40" x2="60" y2="64" stroke="#475569" stroke-width="2"/><line x1="60" y1="40" x2="92" y2="64" stroke="#475569" stroke-width="2"/>'],
+    ['constitution', 'Constitution (Founding Law Scroll)', 'civics', 'document laws charter rights',
+      '<rect x="26" y="24" width="68" height="68" rx="6" fill="#fef3c7" stroke="#92400e" stroke-width="2.5"/><path d="M36 42 Q48 36 60 42 T84 42 M36 54 H84 M36 66 H84 M36 78 H70" fill="none" stroke="#78350f" stroke-width="2.5"/>'],
+    ['amendment', 'Amendment (Added Change to Law)', 'civics', 'edit change constitution add',
+      '<rect x="24" y="26" width="54" height="66" rx="4" fill="#f8fafc" stroke="#475569" stroke-width="2"/><rect x="54" y="54" width="40" height="28" rx="4" fill="#dcfce7" stroke="#047857" stroke-width="2"/>' + diagLabel(74, 73, '+', '#047857', 20)],
+    ['ballot', 'Ballot (Vote Box)', 'civics', 'election vote choice democracy',
+      '<rect x="26" y="54" width="68" height="36" rx="4" fill="#1d4ed8"/><rect x="40" y="26" width="40" height="30" rx="2" fill="#ffffff" stroke="#0f172a" stroke-width="2"/><polyline points="50,42 57,49 70,34" fill="none" stroke="#16a34a" stroke-width="3.5"/>'],
+    ['supply_and_demand', 'Supply and Demand (Crossing Curves)', 'economics', 'price market equilibrium curves',
+      '<polyline points="22,22 22,86 98,86" fill="none" stroke="#475569" stroke-width="2"/><line x1="30" y1="30" x2="90" y2="78" stroke="#be123c" stroke-width="3"/><line x1="30" y1="78" x2="90" y2="30" stroke="#047857" stroke-width="3"/><circle cx="60" cy="54" r="5" fill="#0f172a"/>'],
+    ['scarcity', 'Scarcity (Limited Goods, High Want)', 'economics', 'shortage limited resources want',
+      '<rect x="20" y="54" width="22" height="26" fill="#be123c"/><circle cx="72" cy="38" r="8" fill="#94a3b8"/><circle cx="90" cy="38" r="8" fill="#94a3b8"/><circle cx="72" cy="58" r="8" fill="#94a3b8"/><circle cx="90" cy="58" r="8" fill="#94a3b8"/>' + diagLabel(54, 62, '<', '#0f172a', 18)],
+    ['surplus', 'Surplus (Extra Supply)', 'economics', 'excess extra over abundance',
+      '<rect x="20" y="28" width="24" height="54" fill="#047857"/><rect x="48" y="42" width="24" height="40" fill="#16a34a"/><rect x="76" y="62" width="24" height="20" fill="#94a3b8"/><line x1="16" y1="62" x2="104" y2="62" stroke="#be123c" stroke-width="2" stroke-dasharray="4 2"/>'],
+    ['import', 'Import (Goods Coming In)', 'economics', 'trade enter ship country',
+      '<rect x="54" y="34" width="44" height="48" rx="4" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/><path d="M18 58 L62 58" stroke="#047857" stroke-width="4"/><polygon points="68,58 58,50 58,66" fill="#047857"/>'],
+    ['export', 'Export (Goods Going Out)', 'economics', 'trade send ship country',
+      '<rect x="22" y="34" width="44" height="48" rx="4" fill="#fef3c7" stroke="#b45309" stroke-width="2"/><path d="M58 58 L98 58" stroke="#be123c" stroke-width="4"/><polygon points="104,58 94,50 94,66" fill="#be123c"/>'],
+    ['barter', 'Barter (Direct Swap Without Money)', 'economics', 'trade exchange goods',
+      '<circle cx="32" cy="56" r="14" fill="#f59e0b"/><rect x="74" y="42" width="26" height="26" rx="4" fill="#16a34a"/><path d="M46 42 Q60 32 74 42" fill="none" stroke="#0f172a" stroke-width="2.5"/><path d="M74 70 Q60 80 46 70" fill="none" stroke="#0f172a" stroke-width="2.5"/>'],
+    ['budget', 'Budget (Income vs Spending Plan)', 'economics', 'money plan save spend',
+      '<circle cx="60" cy="54" r="32" fill="#f1f5f9" stroke="#334155" stroke-width="2"/><path d="M60 54 L60 22 A32 32 0 1 1 32 70 Z" fill="#2563eb"/><path d="M60 54 L32 70 A32 32 0 0 1 60 22 Z" fill="#16a34a"/>' + diagLabel(60, 102, '$$$', '#047857', 13)],
+    ['urban', 'Urban (Dense City Skyline)', 'geography', 'city buildings community',
+      '<rect x="20" y="46" width="16" height="40" fill="#475569"/><rect x="40" y="26" width="20" height="60" fill="#334155"/><rect x="64" y="36" width="16" height="50" fill="#64748b"/><rect x="84" y="52" width="16" height="34" fill="#475569"/>'],
+    ['rural', 'Rural (Open Farm & Fields)', 'geography', 'country farm fields open',
+      '<rect x="16" y="64" width="88" height="24" fill="#84cc16"/><polygon points="34,64 52,42 70,64" fill="#dc2626"/><rect x="40" y="56" width="24" height="16" fill="#b91c1c"/>'],
+    ['suburban', 'Suburban (Neighborhood Houses)', 'geography', 'town houses neighborhood',
+      '<polygon points="22,60 36,44 50,60" fill="#b45309"/><rect x="26" y="60" width="20" height="18" fill="#fef3c7" stroke="#92400e"/><polygon points="62,60 76,44 90,60" fill="#1d4ed8"/><rect x="66" y="60" width="20" height="18" fill="#dbeafe" stroke="#1d4ed8"/><rect x="16" y="78" width="88" height="10" fill="#94a3b8"/>'],
+    ['citizen', 'Citizen (Community Member)', 'civics', 'person rights vote community',
+      '<circle cx="60" cy="40" r="14" fill="#2563eb"/><path d="M36 84 C36 62 84 62 84 84 Z" fill="#1d4ed8"/><circle cx="88" cy="44" r="8" fill="#facc15"/>'],
+
+    // ELA, Reading, Literary & Rhetoric Structures (+22)
+    ['supporting_detail', 'Supporting Detail (Legs Under Topic)', 'ela', 'evidence details table topic',
+      '<rect x="20" y="28" width="80" height="16" rx="4" fill="#1d4ed8"/><rect x="26" y="46" width="14" height="34" fill="#60a5fa"/><rect x="53" y="46" width="14" height="34" fill="#60a5fa"/><rect x="80" y="46" width="14" height="34" fill="#60a5fa"/>'],
+    ['cause_and_effect', 'Cause and Effect (Domino Chain)', 'ela', 'reason trigger outcome',
+      '<rect x="22" y="38" width="18" height="44" rx="2" fill="#2563eb" transform="rotate(20 31 60)"/><path d="M48 56 L66 56" stroke="#be123c" stroke-width="3"/><polygon points="72,56 62,50 62,62" fill="#be123c"/><rect x="78" y="44" width="18" height="44" rx="2" fill="#d97706" transform="rotate(42 87 66)"/>'],
+    ['compare_and_contrast', 'Compare and Contrast (Double Venn)', 'ela', 'alike different venn',
+      '<circle cx="44" cy="56" r="24" fill="#bfdbfe" fill-opacity="0.7" stroke="#1d4ed8" stroke-width="2.5"/><circle cx="76" cy="56" r="24" fill="#fecaca" fill-opacity="0.7" stroke="#be123c" stroke-width="2.5"/>'],
+    ['plot_arc', 'Plot Arc (Story Mountain)', 'ela', 'rising action climax falling',
+      '<polyline points="18,80 40,80 68,26 84,78 102,78" fill="none" stroke="#7c3aed" stroke-width="3.5"/><circle cx="68" cy="26" r="5" fill="#be123c"/>'],
+    ['climax', 'Climax (Highest Turning Point)', 'ela', 'peak story tension',
+      '<polyline points="20,82 60,24 100,82" fill="none" stroke="#475569" stroke-width="2.5"/><circle cx="60" cy="24" r="8" fill="#be123c"/>'],
+    ['resolution', 'Resolution (Ending & Tie-Up)', 'ela', 'solve ending story conclusion',
+      '<polyline points="20,40 50,74 100,74" fill="none" stroke="#047857" stroke-width="3.5"/><circle cx="96" cy="74" r="6" fill="#16a34a"/>'],
+    ['conflict', 'Conflict (Opposing Forces)', 'ela', 'clash problem character struggle',
+      '<line x1="20" y1="56" x2="54" y2="56" stroke="#2563eb" stroke-width="4"/><polygon points="58,56 48,48 48,64" fill="#2563eb"/><line x1="100" y1="56" x2="66" y2="56" stroke="#dc2626" stroke-width="4"/><polygon points="62,56 72,48 72,64" fill="#dc2626"/>'],
+    ['setting', 'Setting (Place & Time)', 'ela', 'time place scene story',
+      '<rect x="18" y="28" width="84" height="58" rx="6" fill="#bae6fd" stroke="#0369a1" stroke-width="2"/><circle cx="36" cy="42" r="7" fill="#facc15"/><polygon points="18,86 48,50 74,86" fill="#15803d"/><polygon points="54,86 78,44 102,86" fill="#166534"/>'],
+    ['character', 'Character (Person or Being)', 'ela', 'story person hero',
+      '<circle cx="60" cy="40" r="14" fill="#7c3aed"/><path d="M36 86 C36 62 84 62 84 86 Z" fill="#8b5cf6"/>'],
+    ['narrator', 'Narrator (Storytelling Voice)', 'ela', 'speaker voice story teller',
+      '<rect x="26" y="28" width="68" height="44" rx="10" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2.5"/><polygon points="44,72 58,72 42,88" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/><line x1="40" y1="44" x2="80" y2="44" stroke="#1d4ed8" stroke-width="3"/><line x1="40" y1="56" x2="72" y2="56" stroke="#1d4ed8" stroke-width="3"/>'],
+    ['theme', 'Theme (Core Lesson Message)', 'ela', 'message lesson moral central',
+      '<circle cx="60" cy="46" r="20" fill="#fde047" stroke="#ca8a04" stroke-width="2.5"/><rect x="52" y="66" width="16" height="12" rx="3" fill="#64748b"/>'],
+    ['metaphor', 'Metaphor (Direct Is Comparison)', 'ela', 'figurative comparison is',
+      '<circle cx="32" cy="56" r="15" fill="#2563eb"/><rect x="72" y="41" width="30" height="30" rx="4" fill="#f59e0b"/>' + diagLabel(60, 61, '=', '#0f172a', 20)],
+    ['simile', 'Simile (Like or As Comparison)', 'ela', 'figurative like as',
+      '<circle cx="32" cy="56" r="14" fill="#0d9488"/><polygon points="88,40 102,70 74,70" fill="#7c3aed"/>' + diagLabel(60, 60, '~', '#be123c', 22)],
+    ['personification', 'Personification (Human Traits)', 'ela', 'figurative tree face speak',
+      '<circle cx="60" cy="52" r="24" fill="#16a34a" stroke="#14532d" stroke-width="2"/><circle cx="52" cy="48" r="3" fill="#ffffff"/><circle cx="68" cy="48" r="3" fill="#ffffff"/><path d="M50 60 Q60 68 70 60" fill="none" stroke="#ffffff" stroke-width="2.5"/><rect x="55" y="76" width="10" height="14" fill="#78350f"/>'],
+    ['hyperbole', 'Hyperbole (Extreme Exaggeration)', 'ela', 'figurative stretch extreme',
+      '<circle cx="28" cy="60" r="8" fill="#64748b"/><path d="M40 58 L54 58" stroke="#be123c" stroke-width="3"/><circle cx="82" cy="56" r="22" fill="#dc2626"/>' + diagLabel(82, 62, '10x', '#ffffff', 12)],
+    ['fact', 'Fact (Verified True)', 'ela', 'true prove check evidence',
+      '<circle cx="60" cy="56" r="28" fill="#dcfce7" stroke="#16a34a" stroke-width="3"/><polyline points="44,56 55,68 76,42" fill="none" stroke="#15803d" stroke-width="5" stroke-linecap="round"/>'],
+    ['opinion', 'Opinion (Personal Belief)', 'ela', 'think feel viewpoint believe',
+      '<circle cx="60" cy="50" r="24" fill="#ede9fe" stroke="#6d28d9" stroke-width="2.5"/><circle cx="44" cy="80" r="6" fill="#ddd6fe" stroke="#6d28d9"/><circle cx="34" cy="90" r="3.5" fill="#ddd6fe" stroke="#6d28d9"/>' + diagLabel(60, 56, '?', '#6d28d9', 22)],
+    ['dialogue', 'Dialogue (Characters Speaking)', 'ela', 'quotes speech conversation',
+      '<rect x="18" y="28" width="44" height="30" rx="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/><rect x="58" y="52" width="44" height="30" rx="8" fill="#dcfce7" stroke="#047857" stroke-width="2"/>' + diagLabel(40, 48, '"..."', '#1d4ed8', 13) + diagLabel(80, 72, '"..."', '#047857', 13)],
+    ['stanza', 'Stanza (Grouped Poem Lines)', 'ela', 'poetry verse lines group',
+      '<line x1="28" y1="30" x2="88" y2="30" stroke="#1d4ed8" stroke-width="3"/><line x1="28" y1="40" x2="78" y2="40" stroke="#1d4ed8" stroke-width="3"/><line x1="28" y1="50" x2="84" y2="50" stroke="#1d4ed8" stroke-width="3"/><line x1="28" y1="70" x2="88" y2="70" stroke="#7c3aed" stroke-width="3"/><line x1="28" y1="80" x2="74" y2="80" stroke="#7c3aed" stroke-width="3"/>'],
+    ['affix', 'Affix (Front or End Word Part)', 'ela', 'prefix suffix morphology',
+      '<rect x="14" y="42" width="24" height="28" rx="4" fill="#2563eb"/><rect x="42" y="42" width="36" height="28" rx="4" fill="#e2e8f0" stroke="#475569"/><rect x="82" y="42" width="24" height="28" rx="4" fill="#7c3aed"/>'],
+    ['homophone', 'Homophone (Same Sound, Different Word)', 'ela', 'sound pair spelling',
+      '<circle cx="34" cy="56" r="16" fill="#fef08a" stroke="#ca8a04" stroke-width="2"/><circle cx="86" cy="56" r="16" fill="#bae6fd" stroke="#0284c7" stroke-width="2"/>' + diagLabel(34, 61, '2', '#854d0e', 14) + diagLabel(86, 61, 'II', '#0369a1', 14) + diagLabel(60, 60, '=', '#0f172a', 14)],
+    ['idiom', 'Idiom (Figurative Phrase)', 'ela', 'expression figurative phrase',
+      '<circle cx="40" cy="48" r="16" fill="#e2e8f0" stroke="#64748b"/><polygon points="78,34 98,58 64,66" fill="#facc15" stroke="#b45309" stroke-width="2"/>' + diagLabel(60, 96, '!= LITERAL', '#be123c', 11)],
+    ['point_of_view', 'Point of View (Viewer Perspective)', 'ela', 'angle narrator first third',
+      '<ellipse cx="34" cy="56" rx="16" ry="10" fill="#ffffff" stroke="#0f172a" stroke-width="2.5"/><circle cx="34" cy="56" r="5" fill="#1d4ed8"/><polygon points="54,56 96,30 96,82" fill="#dbeafe" fill-opacity="0.7" stroke="#2563eb" stroke-width="1.5"/>'],
+    ['chronological', 'Chronological (Time Sequence)', 'ela', 'clock order timeline dates',
+      '<circle cx="60" cy="52" r="28" fill="#ffffff" stroke="#0f172a" stroke-width="2.5"/><line x1="60" y1="52" x2="60" y2="34" stroke="#be123c" stroke-width="3"/><line x1="60" y1="52" x2="76" y2="52" stroke="#1d4ed8" stroke-width="2.5"/><line x1="20" y1="92" x2="100" y2="92" stroke="#047857" stroke-width="3"/><polygon points="104,92 94,86 94,98" fill="#047857"/>'],
+    ['heart_organ', 'Heart (Circulatory Organ)', 'science', 'cardiovascular pump blood pulse',
+      '<path d="M60 92 C32 74 22 52 32 36 C40 24 54 28 60 38 C66 28 80 24 88 36 C98 52 88 74 60 92 Z" fill="#fecdd3" stroke="#be123c" stroke-width="2.5"/><line x1="52" y1="30" x2="52" y2="18" stroke="#be123c" stroke-width="4"/><line x1="68" y1="32" x2="74" y2="18" stroke="#1d4ed8" stroke-width="4"/>'],
+    ['lungs', 'Lungs (Breathing Organs)', 'science', 'respiratory trachea inhale exhale',
+      '<line x1="60" y1="18" x2="60" y2="44" stroke="#0f172a" stroke-width="4"/><line x1="60" y1="44" x2="44" y2="54" stroke="#0f172a" stroke-width="3"/><line x1="60" y1="44" x2="76" y2="54" stroke="#0f172a" stroke-width="3"/><path d="M46 38 C30 38 22 56 26 78 C30 92 48 92 50 76 Z" fill="#fda4af" stroke="#be123c" stroke-width="2"/><path d="M74 38 C90 38 98 56 94 78 C90 92 72 92 70 76 Z" fill="#fda4af" stroke="#be123c" stroke-width="2"/>'],
+    ['brain', 'Brain (Nervous System Control)', 'science', 'thinking mind cerebrum lobes',
+      '<path d="M36 68 C24 64 24 44 36 38 C38 26 54 22 60 28 C66 22 82 26 84 38 C96 44 96 64 84 68 C82 80 68 84 60 76 C52 84 38 80 36 68 Z" fill="#fbcfe8" stroke="#9d174d" stroke-width="2.5"/><line x1="60" y1="28" x2="60" y2="76" stroke="#9d174d" stroke-width="2"/><path d="M40 48 Q48 42 54 50 M66 50 Q72 42 80 48 M42 64 Q50 58 56 64" fill="none" stroke="#9d174d" stroke-width="2"/>'],
+    ['skeleton', 'Skeleton (Bones & Frame)', 'science', 'skull ribs bones structure',
+      '<circle cx="60" cy="26" r="10" fill="#f8fafc" stroke="#0f172a" stroke-width="2.5"/><line x1="60" y1="36" x2="60" y2="72" stroke="#0f172a" stroke-width="3"/><line x1="42" y1="44" x2="78" y2="44" stroke="#0f172a" stroke-width="2.5"/><line x1="46" y1="52" x2="74" y2="52" stroke="#0f172a" stroke-width="2.5"/><line x1="48" y1="60" x2="72" y2="60" stroke="#0f172a" stroke-width="2.5"/><line x1="46" y1="72" x2="74" y2="72" stroke="#0f172a" stroke-width="3"/><line x1="48" y1="72" x2="44" y2="96" stroke="#0f172a" stroke-width="3"/><line x1="72" y1="72" x2="76" y2="96" stroke="#0f172a" stroke-width="3"/>'],
+    ['muscle', 'Muscle (Movement Tissue)', 'science', 'bicep contract tendon strength',
+      '<line x1="22" y1="58" x2="98" y2="58" stroke="#cbd5e1" stroke-width="4"/><ellipse cx="60" cy="58" rx="28" ry="15" fill="#fb7185" stroke="#9f1239" stroke-width="2.5"/><line x1="36" y1="54" x2="84" y2="54" stroke="#ffe4e6" stroke-width="1.5"/><line x1="36" y1="62" x2="84" y2="62" stroke="#ffe4e6" stroke-width="1.5"/>'],
+    ['stomach', 'Stomach (Digestive Organ)', 'science', 'digestion food enzymes acid',
+      '<path d="M52 22 L52 38 C36 42 32 66 44 80 C58 92 84 86 86 68 C88 54 74 44 64 52 C60 44 62 32 62 22 Z" fill="#fed7aa" stroke="#c2410c" stroke-width="2.5"/>'],
+    ['neuron', 'Neuron (Nerve Cell)', 'science', 'axon dendrite synapse signal',
+      '<circle cx="38" cy="56" r="14" fill="#ddd6fe" stroke="#5b21b6" stroke-width="2.5"/><circle cx="38" cy="56" r="5" fill="#5b21b6"/><line x1="24" y1="48" x2="14" y2="40" stroke="#5b21b6" stroke-width="2"/><line x1="24" y1="64" x2="14" y2="72" stroke="#5b21b6" stroke-width="2"/><line x1="52" y1="56" x2="90" y2="56" stroke="#5b21b6" stroke-width="3"/><rect x="58" y="51" width="10" height="10" rx="2" fill="#ede9fe" stroke="#5b21b6" stroke-width="1.5"/><rect x="72" y="51" width="10" height="10" rx="2" fill="#ede9fe" stroke="#5b21b6" stroke-width="1.5"/><line x1="90" y1="56" x2="104" y2="46" stroke="#5b21b6" stroke-width="2"/><line x1="90" y1="56" x2="104" y2="66" stroke="#5b21b6" stroke-width="2"/>'],
+    ['blood_vessel', 'Blood Vessel (Artery & Vein)', 'science', 'capillary red blood cell circulation',
+      '<rect x="16" y="40" width="88" height="32" rx="8" fill="#ffe4e6" stroke="#be123c" stroke-width="2.5"/><circle cx="34" cy="56" r="7" fill="#e11d48"/><circle cx="58" cy="50" r="7" fill="#e11d48"/><circle cx="80" cy="60" r="7" fill="#1d4ed8"/>'],
+    ['immune_system', 'Immune System (Defense Cells)', 'science', 'antibody white blood cell pathogen shield',
+      '<path d="M60 22 L88 32 L84 64 C80 82 60 94 60 94 C60 94 40 82 36 64 L32 32 Z" fill="#dcfce7" stroke="#047857" stroke-width="2.5"/><line x1="60" y1="42" x2="60" y2="74" stroke="#047857" stroke-width="4"/><line x1="46" y1="58" x2="74" y2="58" stroke="#047857" stroke-width="4"/>'],
+    ['nutrition', 'Nutrition (Balanced Plate)', 'science', 'diet protein grain vegetable fruit',
+      '<circle cx="56" cy="58" r="32" fill="#ffffff" stroke="#0f172a" stroke-width="2.5"/><line x1="56" y1="26" x2="56" y2="90" stroke="#475569" stroke-width="2"/><line x1="24" y1="58" x2="88" y2="58" stroke="#475569" stroke-width="2"/><path d="M56 58 L56 26 A32 32 0 0 1 88 58 Z" fill="#86efac"/><path d="M56 58 L88 58 A32 32 0 0 1 56 90 Z" fill="#fde68a"/><path d="M56 58 L56 90 A32 32 0 0 1 24 58 Z" fill="#fca5a5"/><path d="M56 58 L24 58 A32 32 0 0 1 56 26 Z" fill="#93c5fd"/><circle cx="96" cy="40" r="10" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>'],
+    ['spine', 'Spine (Vertebral Column)', 'science', 'vertebrae backbone posture discs',
+      '<rect x="46" y="18" width="28" height="12" rx="4" fill="#f1f5f9" stroke="#0f172a" stroke-width="2"/><rect x="46" y="34" width="28" height="12" rx="4" fill="#cbd5e1" stroke="#0f172a" stroke-width="2"/><rect x="46" y="50" width="28" height="12" rx="4" fill="#f1f5f9" stroke="#0f172a" stroke-width="2"/><rect x="46" y="66" width="28" height="12" rx="4" fill="#cbd5e1" stroke="#0f172a" stroke-width="2"/><rect x="46" y="82" width="28" height="12" rx="4" fill="#f1f5f9" stroke="#0f172a" stroke-width="2"/>'],
+    ['eardrum', 'Eardrum (Hearing Vibration)', 'science', 'ear sound wave canal cochlea',
+      '<path d="M22 44 L54 44 L54 70 L22 70" fill="none" stroke="#0f172a" stroke-width="2.5"/><ellipse cx="60" cy="57" rx="5" ry="18" fill="#fde68a" stroke="#b45309" stroke-width="2.5"/><path d="M72 57 C72 44 92 44 92 57 C92 68 78 68 78 58 C78 52 86 52 86 57" fill="none" stroke="#1d4ed8" stroke-width="2.5"/>'],
+    ['respiration', 'Respiration (Gas Exchange)', 'science', 'oxygen carbon dioxide lungs alveoli',
+      '<circle cx="40" cy="56" r="18" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/><circle cx="80" cy="56" r="18" fill="#fee2e2" stroke="#be123c" stroke-width="2"/><line x1="20" y1="36" x2="54" y2="36" stroke="#1d4ed8" stroke-width="3"/><polygon points="58,36 50,31 50,41" fill="#1d4ed8"/><line x1="100" y1="76" x2="66" y2="76" stroke="#be123c" stroke-width="3"/><polygon points="62,76 70,71 70,81" fill="#be123c"/><text x="40" y="61" text-anchor="middle" font-size="13" font-weight="800" fill="#1e3a8a">O2</text><text x="80" y="61" text-anchor="middle" font-size="12" font-weight="800" fill="#881337">CO2</text>'],
+    ['tornado', 'Tornado (Spinning Vortex)', 'science', 'funnel cloud storm wind spiral',
+      '<ellipse cx="60" cy="24" rx="34" ry="10" fill="#94a3b8" stroke="#334155" stroke-width="2"/><polygon points="34,30 86,30 66,94 54,94" fill="#cbd5e1" stroke="#334155" stroke-width="2"/><ellipse cx="60" cy="46" rx="18" ry="4" fill="none" stroke="#334155" stroke-width="1.5"/><ellipse cx="60" cy="64" rx="11" ry="3" fill="none" stroke="#334155" stroke-width="1.5"/><ellipse cx="60" cy="80" rx="6" ry="2" fill="none" stroke="#334155" stroke-width="1.5"/>'],
+    ['hurricane', 'Hurricane (Cyclone Eye)', 'science', 'typhoon spiral storm eyewall',
+      '<circle cx="60" cy="56" r="10" fill="#ffffff" stroke="#1d4ed8" stroke-width="2.5"/><path d="M60 46 C86 30 100 50 86 72 C72 90 42 88 30 68 C20 48 36 24 62 24" fill="none" stroke="#1d4ed8" stroke-width="4"/><path d="M60 66 C34 82 20 62 34 40 C48 22 78 24 90 44 C100 64 84 88 58 88" fill="none" stroke="#0ea5e9" stroke-width="4"/>'],
+    ['lightning', 'Lightning (Static Discharge)', 'science', 'bolt thunder electricity storm',
+      '<polygon points="66,16 38,58 58,58 48,98 84,50 62,50" fill="#facc15" stroke="#b45309" stroke-width="2.5"/>'],
+    ['rainbow', 'Rainbow (Light Spectrum)', 'science', 'prism colors arc refraction',
+      '<path d="M18 82 A42 42 0 0 1 102 82" fill="none" stroke="#ef4444" stroke-width="6"/><path d="M26 82 A34 34 0 0 1 94 82" fill="none" stroke="#f59e0b" stroke-width="6"/><path d="M34 82 A26 26 0 0 1 86 82" fill="none" stroke="#22c55e" stroke-width="6"/><path d="M42 82 A18 18 0 0 1 78 82" fill="none" stroke="#3b82f6" stroke-width="6"/>'],
+    ['barometer', 'Barometer (Air Pressure)', 'science', 'weather dial atmosphere millibars',
+      '<circle cx="60" cy="56" r="34" fill="#ffffff" stroke="#0f172a" stroke-width="3"/><circle cx="60" cy="56" r="26" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/><line x1="60" y1="56" x2="78" y2="40" stroke="#be123c" stroke-width="3"/><circle cx="60" cy="56" r="4" fill="#0f172a"/><text x="38" y="64" font-size="9" font-weight="700" fill="#1d4ed8">L</text><text x="78" y="64" font-size="9" font-weight="700" fill="#047857">H</text>'],
+    ['anemometer', 'Anemometer (Wind Speed)', 'science', 'weather cups spin breeze',
+      '<line x1="60" y1="44" x2="60" y2="96" stroke="#0f172a" stroke-width="3"/><line x1="26" y1="44" x2="94" y2="44" stroke="#0f172a" stroke-width="2.5"/><path d="M18 36 A10 10 0 1 0 34 36 Z" fill="#60a5fa" stroke="#1e3a8a" stroke-width="2"/><path d="M86 52 A10 10 0 1 1 102 52 Z" fill="#60a5fa" stroke="#1e3a8a" stroke-width="2"/><circle cx="60" cy="44" r="5" fill="#0f172a"/>'],
+    ['compass_rose', 'Compass Rose (Directions)', 'social', 'north south east west cardinal',
+      '<circle cx="60" cy="56" r="28" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/><polygon points="60,20 67,50 60,56 53,50" fill="#be123c"/><polygon points="60,92 67,62 60,56 53,62" fill="#cbd5e1" stroke="#0f172a" stroke-width="1"/><polygon points="96,56 66,63 60,56 66,49" fill="#1d4ed8"/><polygon points="24,56 54,63 60,56 54,49" fill="#cbd5e1" stroke="#0f172a" stroke-width="1"/><text x="60" y="15" text-anchor="middle" font-size="11" font-weight="800" fill="#be123c">N</text>'],
+    ['water_table', 'Water Table (Groundwater)', 'science', 'aquifer soil saturated zone well',
+      '<rect x="16" y="28" width="88" height="24" fill="#d6d3d1" stroke="#57534e" stroke-width="2"/><rect x="16" y="52" width="88" height="40" fill="#60a5fa" stroke="#1d4ed8" stroke-width="2"/><line x1="16" y1="52" x2="104" y2="52" stroke="#1e3a8a" stroke-width="3" stroke-dasharray="5,3"/><rect x="54" y="20" width="12" height="58" fill="#e2e8f0" stroke="#0f172a" stroke-width="2"/>'],
+    ['tide', 'Tides (Moon Gravity Bulge)', 'science', 'high low ocean bulge moon',
+      '<circle cx="46" cy="56" r="20" fill="#16a34a" stroke="#0f172a" stroke-width="2"/><ellipse cx="46" cy="56" rx="30" ry="22" fill="none" stroke="#2563eb" stroke-width="3" stroke-dasharray="4,2"/><circle cx="96" cy="56" r="10" fill="#e2e8f0" stroke="#475569" stroke-width="2"/>'],
+    ['asteroid', 'Asteroid (Rocky Space Body)', 'science', 'belt crater rock space orbit',
+      '<polygon points="44,28 74,24 92,46 84,78 52,88 28,68 30,42" fill="#a8a29e" stroke="#44403c" stroke-width="2.5"/><circle cx="52" cy="46" r="6" fill="#78716c"/><circle cx="70" cy="64" r="8" fill="#78716c"/><circle cx="46" cy="70" r="4" fill="#78716c"/>'],
+    ['comet', 'Comet (Ice & Dust Tail)', 'science', 'coma tail orbit ice space',
+      '<polygon points="34,76 96,24 88,48" fill="#bae6fd" opacity="0.8"/><polygon points="34,76 102,42 78,66" fill="#e0f2fe" opacity="0.9"/><circle cx="34" cy="76" r="12" fill="#e2e8f0" stroke="#0284c7" stroke-width="2.5"/>'],
+    ['satellite', 'Satellite (Orbiting Relay)', 'science', 'solar panels antenna orbit space',
+      '<rect x="46" y="42" width="28" height="28" rx="3" fill="#cbd5e1" stroke="#0f172a" stroke-width="2.5"/><rect x="14" y="46" width="30" height="20" fill="#2563eb" stroke="#0f172a" stroke-width="2"/><rect x="76" y="46" width="30" height="20" fill="#2563eb" stroke="#0f172a" stroke-width="2"/><line x1="60" y1="70" x2="60" y2="86" stroke="#0f172a" stroke-width="2.5"/><path d="M50 86 A10 10 0 0 1 70 86" fill="none" stroke="#be123c" stroke-width="2.5"/>'],
+    ['seasons', 'Seasons (Earth Axial Tilt)', 'science', 'spring summer autumn winter orbit',
+      '<circle cx="60" cy="56" r="10" fill="#facc15" stroke="#b45309" stroke-width="2"/><ellipse cx="60" cy="56" rx="40" ry="24" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,3"/><circle cx="20" cy="56" r="7" fill="#3b82f6"/><circle cx="100" cy="56" r="7" fill="#22c55e"/><circle cx="60" cy="32" r="7" fill="#f97316"/><circle cx="60" cy="80" r="7" fill="#cbd5e1"/>'],
+    ['atmosphere_layers', 'Atmosphere Layers', 'science', 'troposphere stratosphere mesosphere thermosphere',
+      '<rect x="20" y="18" width="80" height="18" fill="#1e3a8a"/><rect x="20" y="36" width="80" height="18" fill="#2563eb"/><rect x="20" y="54" width="80" height="18" fill="#60a5fa"/><rect x="20" y="72" width="80" height="18" fill="#bae6fd"/><rect x="20" y="90" width="80" height="10" fill="#22c55e"/>'],
+    ['watershed', 'Watershed (Drainage Basin)', 'science', 'tributaries river basin divide runoff',
+      '<polygon points="16,28 52,20 104,28 96,92 24,92" fill="#dcfce7" stroke="#15803d" stroke-width="2"/><path d="M60 24 L60 92" fill="none" stroke="#2563eb" stroke-width="4"/><path d="M32 36 L60 52 M88 38 L60 56 M36 66 L60 78" fill="none" stroke="#3b82f6" stroke-width="2.5"/>'],
+    ['climate_zone', 'Climate Zones (Polar, Temperate, Tropical)', 'science', 'equator polar temperate latitude',
+      '<circle cx="60" cy="56" r="34" fill="#dcfce7" stroke="#0f172a" stroke-width="2.5"/><path d="M36 32 Q60 36 84 32" fill="none" stroke="#1d4ed8" stroke-width="3"/><line x1="26" y1="56" x2="94" y2="56" stroke="#dc2626" stroke-width="3"/><path d="M36 80 Q60 76 84 80" fill="none" stroke="#1d4ed8" stroke-width="3"/>'],
+    ['beaker', 'Beaker (Lab Container)', 'science', 'chemistry liquid volume measure',
+      '<path d="M34 26 L86 26 L82 90 C82 94 78 96 74 96 L46 96 C42 96 38 94 38 90 Z" fill="#e0f2fe" stroke="#0f172a" stroke-width="2.5"/><rect x="38" y="56" width="44" height="38" rx="4" fill="#38bdf8" opacity="0.6"/><line x1="42" y1="42" x2="54" y2="42" stroke="#0f172a" stroke-width="2"/><line x1="42" y1="56" x2="54" y2="56" stroke="#0f172a" stroke-width="2"/><line x1="42" y1="70" x2="54" y2="70" stroke="#0f172a" stroke-width="2"/>'],
+    ['flask', 'Erlenmeyer Flask', 'science', 'chemistry lab mixture solution',
+      '<polygon points="48,22 72,22 72,40 94,90 26,90 48,40" fill="#f0fdf4" stroke="#0f172a" stroke-width="2.5"/><polygon points="36,68 84,68 91,88 29,88" fill="#34d399" opacity="0.75"/><rect x="46" y="18" width="28" height="6" rx="2" fill="#cbd5e1" stroke="#0f172a" stroke-width="1.5"/>'],
+    ['graduated_cylinder', 'Graduated Cylinder (Meniscus)', 'science', 'milliliters volume measure lab',
+      '<rect x="46" y="18" width="28" height="72" fill="#f8fafc" stroke="#0f172a" stroke-width="2.5"/><rect x="48" y="48" width="24" height="40" fill="#60a5fa" opacity="0.7"/><rect x="36" y="90" width="48" height="8" rx="2" fill="#64748b" stroke="#0f172a" stroke-width="2"/><line x1="46" y1="30" x2="58" y2="30" stroke="#0f172a" stroke-width="1.5"/><line x1="46" y1="42" x2="56" y2="42" stroke="#0f172a" stroke-width="1.5"/><line x1="46" y1="54" x2="58" y2="54" stroke="#0f172a" stroke-width="1.5"/><line x1="46" y1="66" x2="56" y2="66" stroke="#0f172a" stroke-width="1.5"/>'],
+    ['balance_scale', 'Balance Scale (Mass)', 'science', 'grams compare equal weight',
+      '<polygon points="60,34 50,90 70,90" fill="#cbd5e1" stroke="#0f172a" stroke-width="2"/><line x1="22" y1="38" x2="98" y2="38" stroke="#0f172a" stroke-width="3"/><line x1="26" y1="38" x2="18" y2="64" stroke="#475569" stroke-width="2"/><line x1="26" y1="38" x2="34" y2="64" stroke="#475569" stroke-width="2"/><rect x="14" y="64" width="24" height="6" rx="2" fill="#64748b"/><line x1="94" y1="38" x2="86" y2="64" stroke="#475569" stroke-width="2"/><line x1="94" y1="38" x2="102" y2="64" stroke="#475569" stroke-width="2"/><rect x="82" y="64" width="24" height="6" rx="2" fill="#64748b"/>'],
+    ['microscope', 'Microscope (Magnify Cells)', 'science', 'lens slide biology specimen',
+      '<rect x="36" y="88" width="52" height="10" rx="2" fill="#334155"/><path d="M68 88 C86 80 86 44 64 36" fill="none" stroke="#334155" stroke-width="7"/><rect x="44" y="20" width="14" height="34" transform="rotate(-18 51 37)" fill="#94a3b8" stroke="#0f172a" stroke-width="2"/><rect x="34" y="68" width="38" height="5" fill="#0f172a"/>'],
+    ['telescope', 'Telescope (Observe Space)', 'science', 'astronomy lens stars tripod',
+      '<polygon points="22,48 88,24 94,40 28,58" fill="#60a5fa" stroke="#0f172a" stroke-width="2.5"/><line x1="56" y1="50" x2="36" y2="96" stroke="#0f172a" stroke-width="3"/><line x1="56" y1="50" x2="76" y2="96" stroke="#0f172a" stroke-width="3"/><line x1="56" y1="50" x2="56" y2="96" stroke="#0f172a" stroke-width="2.5"/>'],
+    ['pulley', 'Pulley (Simple Machine)', 'science', 'rope wheel lift load',
+      '<line x1="20" y1="20" x2="100" y2="20" stroke="#0f172a" stroke-width="4"/><line x1="60" y1="20" x2="60" y2="42" stroke="#475569" stroke-width="3"/><circle cx="60" cy="46" r="14" fill="#e2e8f0" stroke="#0f172a" stroke-width="3"/><line x1="46" y1="46" x2="46" y2="86" stroke="#b45309" stroke-width="3"/><line x1="74" y1="46" x2="74" y2="76" stroke="#b45309" stroke-width="3"/><rect x="64" y="76" width="20" height="18" fill="#f59e0b" stroke="#0f172a" stroke-width="2"/>'],
+    ['lever', 'Lever & Fulcrum (Simple Machine)', 'science', 'fulcrum effort load bar',
+      '<polygon points="56,64 44,88 68,88" fill="#f59e0b" stroke="#0f172a" stroke-width="2"/><line x1="18" y1="70" x2="102" y2="50" stroke="#0f172a" stroke-width="5"/><rect x="20" y="54" width="16" height="14" fill="#3b82f6" stroke="#0f172a" stroke-width="2"/>'],
+    ['inclined_plane', 'Inclined Plane (Ramp)', 'science', 'ramp slope work simple machine',
+      '<polygon points="18,86 98,86 98,42" fill="#fde68a" stroke="#0f172a" stroke-width="2.5"/><rect x="44" y="54" width="16" height="14" transform="rotate(-28 52 61)" fill="#3b82f6" stroke="#0f172a" stroke-width="2"/>'],
+    ['wedge', 'Wedge (Splitting Machine)', 'science', 'axe blade split simple machine',
+      '<polygon points="36,24 84,24 60,92" fill="#cbd5e1" stroke="#0f172a" stroke-width="2.5"/><line x1="60" y1="12" x2="60" y2="22" stroke="#be123c" stroke-width="3"/>'],
+    ['wheel_and_axle', 'Wheel and Axle (Simple Machine)', 'science', 'rotate turn shaft gear',
+      '<circle cx="60" cy="56" r="32" fill="#e0f2fe" stroke="#0284c7" stroke-width="4"/><circle cx="60" cy="56" r="10" fill="#475569" stroke="#0f172a" stroke-width="2"/><line x1="28" y1="56" x2="92" y2="56" stroke="#0284c7" stroke-width="2.5"/><line x1="60" y1="24" x2="60" y2="88" stroke="#0284c7" stroke-width="2.5"/>'],
+    ['screw_machine', 'Screw (Spiral Simple Machine)', 'science', 'threads incline spiral fastener',
+      '<rect x="38" y="20" width="44" height="10" rx="3" fill="#94a3b8" stroke="#0f172a" stroke-width="2"/><polygon points="50,30 70,30 68,84 60,96 52,84" fill="#cbd5e1" stroke="#0f172a" stroke-width="2"/><line x1="48" y1="42" x2="72" y2="38" stroke="#0f172a" stroke-width="2.5"/><line x1="48" y1="54" x2="72" y2="50" stroke="#0f172a" stroke-width="2.5"/><line x1="49" y1="66" x2="71" y2="62" stroke="#0f172a" stroke-width="2.5"/><line x1="50" y1="78" x2="70" y2="74" stroke="#0f172a" stroke-width="2.5"/>'],
+    ['ph_scale', 'pH Scale (Acid, Neutral, Base)', 'science', 'acid alkaline neutral indicator',
+      '<rect x="14" y="46" width="30" height="22" fill="#ef4444"/><rect x="44" y="46" width="32" height="22" fill="#22c55e"/><rect x="76" y="46" width="30" height="22" fill="#3b82f6"/><text x="29" y="61" text-anchor="middle" font-size="10" font-weight="800" fill="#ffffff">ACID</text><text x="60" y="61" text-anchor="middle" font-size="10" font-weight="800" fill="#ffffff">7</text><text x="91" y="61" text-anchor="middle" font-size="10" font-weight="800" fill="#ffffff">BASE</text>'],
+    ['periodic_table', 'Periodic Table (Elements)', 'science', 'elements atomic number groups',
+      '<rect x="18" y="28" width="12" height="14" fill="#fca5a5" stroke="#0f172a" stroke-width="1"/><rect x="90" y="28" width="12" height="14" fill="#c4b5fd" stroke="#0f172a" stroke-width="1"/><rect x="18" y="42" width="24" height="14" fill="#fdba74" stroke="#0f172a" stroke-width="1"/><rect x="66" y="42" width="36" height="14" fill="#93c5fd" stroke="#0f172a" stroke-width="1"/><rect x="18" y="56" width="84" height="28" fill="#fde68a" stroke="#0f172a" stroke-width="1.5"/>'],
+    ['chemical_reaction', 'Chemical Reaction (Reactants to Products)', 'science', 'equation change bond molecule',
+      '<circle cx="28" cy="56" r="10" fill="#3b82f6"/><circle cx="48" cy="56" r="10" fill="#ef4444"/><line x1="62" y1="56" x2="78" y2="56" stroke="#0f172a" stroke-width="3"/><polygon points="82,56 74,51 74,61" fill="#0f172a"/><circle cx="94" cy="48" r="9" fill="#3b82f6"/><circle cx="94" cy="66" r="9" fill="#ef4444"/>'],
+    ['pendulum', 'Pendulum (Swinging Period)', 'science', 'swing gravity kinetic potential',
+      '<line x1="30" y1="20" x2="90" y2="20" stroke="#0f172a" stroke-width="4"/><line x1="60" y1="20" x2="36" y2="76" stroke="#94a3b8" stroke-width="2" stroke-dasharray="3,3"/><circle cx="36" cy="78" r="10" fill="#cbd5e1" stroke="#64748b" stroke-width="2"/><line x1="60" y1="20" x2="84" y2="76" stroke="#0f172a" stroke-width="2.5"/><circle cx="84" cy="78" r="10" fill="#ef4444" stroke="#0f172a" stroke-width="2"/>'],
+    ['battery', 'Battery (Voltage Cell)', 'science', 'positive negative energy circuit',
+      '<rect x="34" y="34" width="52" height="60" rx="5" fill="#1e293b" stroke="#0f172a" stroke-width="2.5"/><rect x="48" y="24" width="24" height="10" rx="2" fill="#94a3b8" stroke="#0f172a" stroke-width="2"/><rect x="34" y="34" width="52" height="20" rx="3" fill="#f59e0b"/><text x="60" y="49" text-anchor="middle" font-size="14" font-weight="800" fill="#0f172a">+</text><text x="60" y="84" text-anchor="middle" font-size="16" font-weight="800" fill="#ffffff">-</text>'],
+    ['sound_pitch', 'Pitch & Frequency (Sound Waves)', 'science', 'high low wave hertz vibration',
+      '<path d="M18 36 Q28 20 38 36 T58 36 T78 36 T98 36" fill="none" stroke="#be123c" stroke-width="3"/><path d="M18 76 Q38 56 58 76 T98 76" fill="none" stroke="#1d4ed8" stroke-width="3"/>'],
+    ['coordinate_plane', 'Coordinate Plane (Ordered Pair)', 'math', 'axes origin x y plot quadrant',
+      '<line x1="60" y1="16" x2="60" y2="98" stroke="#0f172a" stroke-width="2.5"/><line x1="16" y1="58" x2="104" y2="58" stroke="#0f172a" stroke-width="2.5"/><line x1="82" y1="58" x2="82" y2="34" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3,2"/><line x1="60" y1="34" x2="82" y2="34" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3,2"/><circle cx="82" cy="34" r="5" fill="#be123c"/><text x="90" y="28" font-size="10" font-weight="700" fill="#be123c">(x,y)</text>'],
+    ['bar_graph', 'Bar Graph (Compare Categories)', 'math', 'data bars chart height frequency',
+      '<line x1="22" y1="20" x2="22" y2="90" stroke="#0f172a" stroke-width="2.5"/><line x1="22" y1="90" x2="102" y2="90" stroke="#0f172a" stroke-width="2.5"/><rect x="30" y="54" width="16" height="36" fill="#3b82f6"/><rect x="54" y="30" width="16" height="60" fill="#ef4444"/><rect x="78" y="44" width="16" height="46" fill="#22c55e"/>'],
+    ['line_plot', 'Line Plot (Frequency Dots)', 'math', 'dot plot number line frequency',
+      '<line x1="16" y1="82" x2="104" y2="82" stroke="#0f172a" stroke-width="3"/><line x1="30" y1="78" x2="30" y2="86" stroke="#0f172a" stroke-width="2"/><line x1="50" y1="78" x2="50" y2="86" stroke="#0f172a" stroke-width="2"/><line x1="70" y1="78" x2="70" y2="86" stroke="#0f172a" stroke-width="2"/><line x1="90" y1="78" x2="90" y2="86" stroke="#0f172a" stroke-width="2"/><circle cx="30" cy="68" r="5" fill="#2563eb"/><circle cx="50" cy="68" r="5" fill="#2563eb"/><circle cx="50" cy="54" r="5" fill="#2563eb"/><circle cx="50" cy="40" r="5" fill="#2563eb"/><circle cx="70" cy="68" r="5" fill="#2563eb"/><circle cx="90" cy="68" r="5" fill="#2563eb"/><circle cx="90" cy="54" r="5" fill="#2563eb"/>'],
+    ['table_data', 'Data Table (Rows & Columns)', 'math', 'grid chart values tally input output',
+      '<rect x="20" y="24" width="80" height="68" fill="#ffffff" stroke="#0f172a" stroke-width="2.5"/><rect x="20" y="24" width="80" height="18" fill="#dbeafe" stroke="#0f172a" stroke-width="2"/><line x1="60" y1="24" x2="60" y2="92" stroke="#0f172a" stroke-width="2"/><line x1="20" y1="58" x2="100" y2="58" stroke="#94a3b8" stroke-width="1.5"/><line x1="20" y1="75" x2="100" y2="75" stroke="#94a3b8" stroke-width="1.5"/>'],
+    ['unit_rate', 'Unit Rate (Per 1 Unit)', 'math', 'ratio speed per hour price',
+      '<rect x="18" y="34" width="84" height="22" rx="4" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/><text x="60" y="49" text-anchor="middle" font-size="11" font-weight="800" fill="#1e3a8a">60 mi / 1 hr</text><rect x="30" y="64" width="60" height="20" rx="4" fill="#dcfce7" stroke="#15803d" stroke-width="2"/><text x="60" y="78" text-anchor="middle" font-size="10" font-weight="800" fill="#166534">PER 1</text>'],
+    ['proportion', 'Proportion (Equal Ratios)', 'math', 'equivalent scale cross product',
+      '<text x="34" y="46" text-anchor="middle" font-size="14" font-weight="800" fill="#1d4ed8">1</text><line x1="22" y1="54" x2="46" y2="54" stroke="#0f172a" stroke-width="2.5"/><text x="34" y="74" text-anchor="middle" font-size="14" font-weight="800" fill="#1d4ed8">2</text><text x="60" y="59" text-anchor="middle" font-size="16" font-weight="800" fill="#0f172a">=</text><text x="86" y="46" text-anchor="middle" font-size="14" font-weight="800" fill="#047857">3</text><line x1="74" y1="54" x2="98" y2="54" stroke="#0f172a" stroke-width="2.5"/><text x="86" y="74" text-anchor="middle" font-size="14" font-weight="800" fill="#047857">6</text>'],
+    ['area_grid', 'Area Grid (Square Units)', 'math', 'length width multiply tiles squares',
+      '<rect x="24" y="28" width="72" height="54" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2.5"/><line x1="42" y1="28" x2="42" y2="82" stroke="#1d4ed8" stroke-width="1.5"/><line x1="60" y1="28" x2="60" y2="82" stroke="#1d4ed8" stroke-width="1.5"/><line x1="78" y1="28" x2="78" y2="82" stroke="#1d4ed8" stroke-width="1.5"/><line x1="24" y1="46" x2="96" y2="46" stroke="#1d4ed8" stroke-width="1.5"/><line x1="24" y1="64" x2="96" y2="64" stroke="#1d4ed8" stroke-width="1.5"/>'],
+    ['volume_cube', 'Volume (Cubic Units)', 'math', 'length width height 3d capacity',
+      '<polygon points="34,42 74,42 74,82 34,82" fill="#93c5fd" stroke="#0f172a" stroke-width="2"/><polygon points="34,42 52,26 92,26 74,42" fill="#dbeafe" stroke="#0f172a" stroke-width="2"/><polygon points="74,42 92,26 92,66 74,82" fill="#60a5fa" stroke="#0f172a" stroke-width="2"/>'],
+    ['surface_area', 'Surface Area (Box Net)', 'math', 'faces unfold net 3d cover',
+      '<rect x="48" y="20" width="24" height="20" fill="#fde68a" stroke="#0f172a" stroke-width="2"/><rect x="24" y="40" width="24" height="20" fill="#fed7aa" stroke="#0f172a" stroke-width="2"/><rect x="48" y="40" width="24" height="20" fill="#fef08a" stroke="#0f172a" stroke-width="2"/><rect x="72" y="40" width="24" height="20" fill="#fed7aa" stroke="#0f172a" stroke-width="2"/><rect x="48" y="60" width="24" height="20" fill="#fde68a" stroke="#0f172a" stroke-width="2"/><rect x="48" y="80" width="24" height="20" fill="#fef08a" stroke="#0f172a" stroke-width="2"/>'],
+    ['parallel_lines', 'Parallel Lines (Never Meet)', 'math', 'equal distance geometry arrows',
+      '<line x1="20" y1="42" x2="100" y2="42" stroke="#1d4ed8" stroke-width="4"/><line x1="20" y1="70" x2="100" y2="70" stroke="#1d4ed8" stroke-width="4"/><polygon points="62,42 54,37 54,47" fill="#be123c"/><polygon points="62,70 54,65 54,75" fill="#be123c"/>'],
+    ['perpendicular_lines', 'Perpendicular Lines (90 Degrees)', 'math', 'right angle intersect square corner',
+      '<line x1="20" y1="74" x2="100" y2="74" stroke="#0f172a" stroke-width="4"/><line x1="60" y1="24" x2="60" y2="90" stroke="#0f172a" stroke-width="4"/><rect x="60" y="60" width="14" height="14" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>'],
+    ['acute_angle', 'Acute Angle (Less than 90)', 'math', 'sharp narrow degrees small angle',
+      '<line x1="28" y1="76" x2="96" y2="76" stroke="#0f172a" stroke-width="3.5"/><line x1="28" y1="76" x2="82" y2="34" stroke="#0f172a" stroke-width="3.5"/><path d="M56 76 A28 28 0 0 0 50 58" fill="none" stroke="#16a34a" stroke-width="3"/>'],
+    ['obtuse_angle', 'Obtuse Angle (Greater than 90)', 'math', 'wide open degrees angle',
+      '<line x1="56" y1="76" x2="100" y2="76" stroke="#0f172a" stroke-width="3.5"/><line x1="56" y1="76" x2="22" y2="38" stroke="#0f172a" stroke-width="3.5"/><path d="M76 76 A20 20 0 0 0 42 61" fill="none" stroke="#be123c" stroke-width="3"/>'],
+    ['isosceles_triangle', 'Isosceles Triangle (2 Equal Sides)', 'math', 'triangle congruent sides tick marks',
+      '<polygon points="60,22 30,86 90,86" fill="#e0f2fe" stroke="#0284c7" stroke-width="2.5"/><line x1="40" y1="52" x2="50" y2="56" stroke="#be123c" stroke-width="2.5"/><line x1="80" y1="52" x2="70" y2="56" stroke="#be123c" stroke-width="2.5"/>'],
+    ['equilateral_triangle', 'Equilateral Triangle (3 Equal Sides)', 'math', 'regular triangle sixty degrees congruent',
+      '<polygon points="60,24 26,84 94,84" fill="#dcfce7" stroke="#047857" stroke-width="2.5"/><line x1="38" y1="52" x2="48" y2="58" stroke="#0f172a" stroke-width="2"/><line x1="82" y1="52" x2="72" y2="58" stroke="#0f172a" stroke-width="2"/><line x1="60" y1="78" x2="60" y2="90" stroke="#0f172a" stroke-width="2"/>'],
+    ['trapezoid', 'Trapezoid (1 Pair Parallel Sides)', 'math', 'quadrilateral bases parallel polygon',
+      '<polygon points="36,34 84,34 100,82 20,82" fill="#fef3c7" stroke="#b45309" stroke-width="2.5"/>'],
+    ['rhombus', 'Rhombus (4 Equal Sides Diamond)', 'math', 'quadrilateral diamond parallelogram congruent',
+      '<polygon points="60,20 96,56 60,92 24,56" fill="#ede9fe" stroke="#6d28d9" stroke-width="2.5"/>'],
+    ['decimal_grid', 'Decimal Grid (Hundredths)', 'math', 'tenths hundredths 0.25 percent model',
+      '<rect x="24" y="24" width="72" height="72" fill="#ffffff" stroke="#0f172a" stroke-width="2"/><rect x="24" y="24" width="36" height="36" fill="#60a5fa"/><line x1="24" y1="42" x2="96" y2="42" stroke="#94a3b8" stroke-width="1"/><line x1="24" y1="60" x2="96" y2="60" stroke="#94a3b8" stroke-width="1"/><line x1="24" y1="78" x2="96" y2="78" stroke="#94a3b8" stroke-width="1"/><line x1="42" y1="24" x2="42" y2="96" stroke="#94a3b8" stroke-width="1"/><line x1="60" y1="24" x2="60" y2="96" stroke="#94a3b8" stroke-width="1"/><line x1="78" y1="24" x2="78" y2="96" stroke="#94a3b8" stroke-width="1"/>'],
+    ['archipelago', 'Archipelago (Chain of Islands)', 'social', 'islands ocean geography chain',
+      '<rect x="16" y="24" width="88" height="68" rx="6" fill="#bae6fd" stroke="#0284c7" stroke-width="2"/><ellipse cx="34" cy="42" rx="10" ry="7" fill="#22c55e" stroke="#14532d" stroke-width="1.5"/><ellipse cx="58" cy="54" rx="13" ry="8" fill="#22c55e" stroke="#14532d" stroke-width="1.5"/><ellipse cx="82" cy="70" rx="11" ry="7" fill="#22c55e" stroke="#14532d" stroke-width="1.5"/>'],
+    ['isthmus', 'Isthmus (Narrow Land Bridge)', 'social', 'land strip connect two landmasses sea',
+      '<rect x="16" y="24" width="88" height="68" rx="4" fill="#60a5fa" stroke="#1d4ed8" stroke-width="2"/><path d="M16 24 L104 24 L104 42 Q66 44 66 56 Q66 68 104 72 L104 92 L16 92 L16 72 Q52 68 52 56 Q52 44 16 42 Z" fill="#4ade80" stroke="#14532d" stroke-width="2"/>'],
+    ['strait', 'Strait (Narrow Water Channel)', 'social', 'channel sea connect ocean',
+      '<rect x="16" y="24" width="88" height="68" rx="4" fill="#4ade80" stroke="#15803d" stroke-width="2"/><path d="M16 30 Q46 46 46 56 Q46 66 16 86 L16 92 L104 92 L104 86 Q74 66 74 56 Q74 46 104 30 L104 24 L16 24 Z" fill="#38bdf8" stroke="#0369a1" stroke-width="2"/>'],
+    ['gulf', 'Gulf (Deep Bay in Coastline)', 'social', 'bay sea inlet coast ocean',
+      '<rect x="16" y="24" width="88" height="68" rx="4" fill="#4ade80" stroke="#15803d" stroke-width="2"/><path d="M36 92 C32 54 44 38 60 38 C76 38 88 54 84 92 Z" fill="#38bdf8" stroke="#0369a1" stroke-width="2"/>'],
+    ['mountain_range', 'Mountain Range (Peaks Chain)', 'social', 'alps rockies andes peaks altitude',
+      '<polygon points="16,88 38,38 58,88" fill="#64748b" stroke="#0f172a" stroke-width="2"/><polygon points="40,88 66,28 92,88" fill="#94a3b8" stroke="#0f172a" stroke-width="2"/><polygon points="68,88 88,44 106,88" fill="#64748b" stroke="#0f172a" stroke-width="2"/><polygon points="58,46 66,28 74,46" fill="#ffffff"/>'],
+    ['desert', 'Desert (Arid Sand Dunes & Cactus)', 'social', 'dry climate biome sand dune',
+      '<rect x="16" y="22" width="88" height="72" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="2"/><circle cx="84" cy="38" r="10" fill="#f59e0b"/><path d="M16 74 Q42 58 68 74 T104 70 L104 94 L16 94 Z" fill="#fbbf24"/><rect x="36" y="48" width="8" height="32" rx="4" fill="#16a34a"/>'],
+    ['wetland', 'Wetland (Marsh & Swamp)', 'social', 'marsh reeds water ecosystem filter',
+      '<rect x="16" y="58" width="88" height="32" rx="4" fill="#38bdf8" stroke="#0369a1" stroke-width="2"/><line x1="34" y1="30" x2="34" y2="68" stroke="#15803d" stroke-width="3"/><line x1="48" y1="26" x2="48" y2="68" stroke="#15803d" stroke-width="3"/><rect x="45" y="26" width="6" height="14" rx="3" fill="#78350f"/><line x1="78" y1="34" x2="78" y2="68" stroke="#15803d" stroke-width="3"/>'],
+    ['tundra', 'Tundra (Permafrost & Ice)', 'social', 'arctic frozen biome cold',
+      '<rect x="16" y="24" width="88" height="68" rx="6" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/><polygon points="16,74 44,50 74,74 104,58 104,92 16,92" fill="#ffffff" stroke="#64748b" stroke-width="2"/><line x1="20" y1="84" x2="100" y2="84" stroke="#94a3b8" stroke-width="2" stroke-dasharray="4,3"/>'],
+    ['democracy', 'Democracy (Citizens Vote)', 'social', 'civic voters majority voice',
+      '<circle cx="38" cy="40" r="8" fill="#3b82f6"/><circle cx="60" cy="40" r="8" fill="#22c55e"/><circle cx="82" cy="40" r="8" fill="#f59e0b"/><rect x="28" y="64" width="64" height="24" rx="3" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/><line x1="48" y1="68" x2="72" y2="68" stroke="#0f172a" stroke-width="3"/>'],
+    ['republic', 'Republic (Elected Representatives)', 'social', 'capitol law citizens representation',
+      '<polygon points="60,22 24,42 96,42" fill="#e2e8f0" stroke="#0f172a" stroke-width="2.5"/><rect x="32" y="42" width="8" height="36" fill="#cbd5e1" stroke="#0f172a" stroke-width="1.5"/><rect x="56" y="42" width="8" height="36" fill="#cbd5e1" stroke="#0f172a" stroke-width="1.5"/><rect x="80" y="42" width="8" height="36" fill="#cbd5e1" stroke="#0f172a" stroke-width="1.5"/><rect x="22" y="78" width="76" height="10" fill="#475569"/>'],
+    ['checks_and_balances', 'Checks and Balances (Power Triangle)', 'social', 'executive legislative judicial limits',
+      '<circle cx="60" cy="28" r="14" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2.5"/><circle cx="30" cy="80" r="14" fill="#dcfce7" stroke="#15803d" stroke-width="2.5"/><circle cx="90" cy="80" r="14" fill="#fef3c7" stroke="#b45309" stroke-width="2.5"/><line x1="48" y1="40" x2="36" y2="66" stroke="#0f172a" stroke-width="2.5"/><line x1="72" y1="40" x2="84" y2="66" stroke="#0f172a" stroke-width="2.5"/><line x1="44" y1="80" x2="76" y2="80" stroke="#0f172a" stroke-width="2.5"/>'],
+    ['trade_route', 'Trade Route (Exchange Path)', 'social', 'commerce silk road ship caravan',
+      '<rect x="16" y="24" width="88" height="68" rx="6" fill="#fef9c3" stroke="#ca8a04" stroke-width="2"/><path d="M26 74 Q58 30 94 42" fill="none" stroke="#be123c" stroke-width="3" stroke-dasharray="6,4"/><circle cx="26" cy="74" r="6" fill="#1d4ed8"/><circle cx="94" cy="42" r="6" fill="#047857"/>'],
+    ['story_map', 'Story Map (Characters, Setting, Plot)', 'ela', 'graphic organizer narrative beginning middle end',
+      '<rect x="20" y="20" width="36" height="28" rx="4" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/><rect x="64" y="20" width="36" height="28" rx="4" fill="#dcfce7" stroke="#15803d" stroke-width="2"/><rect x="20" y="64" width="80" height="28" rx="4" fill="#fef3c7" stroke="#b45309" stroke-width="2"/><line x1="38" y1="48" x2="38" y2="64" stroke="#0f172a" stroke-width="2"/><line x1="82" y1="48" x2="82" y2="64" stroke="#0f172a" stroke-width="2"/>'],
+    ['glossary_entry', 'Glossary Entry (Word & Definition)', 'ela', 'dictionary meaning pronunciation back of book',
+      '<rect x="22" y="22" width="76" height="72" rx="4" fill="#ffffff" stroke="#0f172a" stroke-width="2.5"/><rect x="30" y="32" width="28" height="8" rx="2" fill="#1d4ed8"/><line x1="30" y1="50" x2="90" y2="50" stroke="#475569" stroke-width="2.5"/><line x1="30" y1="62" x2="86" y2="62" stroke="#94a3b8" stroke-width="2.5"/><line x1="30" y1="74" x2="72" y2="74" stroke="#94a3b8" stroke-width="2.5"/>'],
+    ['text_feature', 'Text Feature (Heading & Caption)', 'ela', 'nonfiction bold caption photo index sidebar',
+      '<rect x="20" y="20" width="80" height="76" rx="4" fill="#ffffff" stroke="#0f172a" stroke-width="2"/><rect x="28" y="28" width="46" height="10" rx="2" fill="#be123c"/><rect x="28" y="44" width="32" height="26" fill="#bae6fd" stroke="#0284c7" stroke-width="1.5"/><line x1="66" y1="48" x2="92" y2="48" stroke="#334155" stroke-width="2"/><line x1="66" y1="58" x2="92" y2="58" stroke="#334155" stroke-width="2"/><rect x="28" y="76" width="32" height="6" fill="#cbd5e1"/>'],
+
+    // Wave 5 Math & Operations
+    ['simplify', 'Simplify Fraction (4/8 = 1/2)', 'math', 'reduce equivalent numerator denominator',
+      '<rect x="16" y="28" width="34" height="34" fill="#fff" stroke="#0f172a" stroke-width="2"/><rect x="16" y="28" width="17" height="34" fill="#3b82f6"/><line x1="33" y1="28" x2="33" y2="62" stroke="#0f172a" stroke-width="1.5"/><line x1="16" y1="45" x2="50" y2="45" stroke="#0f172a" stroke-width="1.5"/><rect x="70" y="28" width="34" height="34" fill="#fff" stroke="#0f172a" stroke-width="2"/><rect x="70" y="28" width="17" height="34" fill="#2563eb"/>' + diagLabel(60, 50, '=', '#0f172a', 18) + diagLabel(60, 96, '2/4 = 1/2', '#1d4ed8', 14)],
+    ['equality', 'Equality (Balanced Values)', 'math', 'equal balance same amount',
+      '<polygon points="60,54 48,84 72,84" fill="#475569"/><line x1="20" y1="52" x2="100" y2="52" stroke="#0f172a" stroke-width="3.5"/><circle cx="32" cy="40" r="10" fill="#2563eb"/><circle cx="88" cy="40" r="10" fill="#16a34a"/>' + diagLabel(60, 102, 'A = B', '#0f172a', 15)],
+    ['coefficient', 'Coefficient (Multiplier Before x)', 'math', 'algebra term constant multiply variable',
+      '<rect x="20" y="34" width="36" height="34" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2.5"/>' + diagLabel(38, 58, '3', '#1d4ed8', 22) + '<rect x="64" y="34" width="32" height="34" rx="6" fill="#ede9fe" stroke="#6d28d9" stroke-width="2"/>' + diagLabel(80, 58, 'x', '#6d28d9', 22) + diagLabel(60, 96, '3 TIMES x', '#1d4ed8', 12)],
+    ['mode', 'Mode (Most Frequent Value)', 'math', 'statistics frequency peak data',
+      '<rect x="22" y="64" width="14" height="20" fill="#94a3b8"/><rect x="42" y="30" width="14" height="54" fill="#be123c"/><rect x="62" y="56" width="14" height="28" fill="#94a3b8"/><rect x="82" y="68" width="14" height="16" fill="#94a3b8"/>' + diagLabel(60, 104, 'MOST OFTEN', '#be123c', 11)],
+    ['multiple', 'Multiple (Skip Counting Jumps)', 'math', 'product skip count times table',
+      '<line x1="16" y1="74" x2="104" y2="74" stroke="#0f172a" stroke-width="2"/><path d="M22 72 Q38 40 54 72" fill="none" stroke="#2563eb" stroke-width="2.5"/><path d="M54 72 Q70 40 86 72" fill="none" stroke="#2563eb" stroke-width="2.5"/>' + diagLabel(22, 92, '4', '#1d4ed8', 13) + diagLabel(54, 92, '8', '#1d4ed8', 13) + diagLabel(86, 92, '12', '#1d4ed8', 13)],
+    ['survey', 'Survey (Collect Votes & Tally)', 'math', 'poll questionnaire data gather',
+      '<rect x="26" y="22" width="68" height="76" rx="6" fill="#ffffff" stroke="#0f172a" stroke-width="2.5"/><rect x="44" y="16" width="32" height="12" rx="4" fill="#64748b"/><polyline points="36,46 42,52 52,40" fill="none" stroke="#16a34a" stroke-width="3"/><line x1="60" y1="46" x2="84" y2="46" stroke="#475569" stroke-width="2.5"/><rect x="36" y="64" width="12" height="12" fill="none" stroke="#0f172a" stroke-width="2"/><line x1="60" y1="70" x2="84" y2="70" stroke="#475569" stroke-width="2.5"/>'],
+    ['dividend', 'Dividend (Total Being Shared)', 'math', 'division whole split amount',
+      '<path d="M46 72 L46 36 L98 36" fill="none" stroke="#0f172a" stroke-width="3"/><rect x="52" y="42" width="40" height="28" rx="4" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>' + diagLabel(72, 62, '24', '#1d4ed8', 18) + diagLabel(30, 62, '4', '#64748b', 16) + diagLabel(60, 102, 'DIVIDEND', '#1d4ed8', 12)],
+    ['divisor', 'Divisor (Number Dividing By)', 'math', 'division groups size',
+      '<path d="M48 72 L48 36 L96 36" fill="none" stroke="#0f172a" stroke-width="3"/><rect x="18" y="42" width="26" height="28" rx="4" fill="#dcfce7" stroke="#047857" stroke-width="2"/>' + diagLabel(31, 62, '4', '#047857', 18) + diagLabel(72, 62, '24', '#64748b', 18) + diagLabel(60, 102, 'DIVISOR', '#047857', 12)],
+    ['remainder', 'Remainder (Leftover After Equal Groups)', 'math', 'division leftover mod rest',
+      '<rect x="18" y="30" width="28" height="38" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/><circle cx="27" cy="44" r="4" fill="#1d4ed8"/><circle cx="37" cy="56" r="4" fill="#1d4ed8"/><rect x="52" y="30" width="28" height="38" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/><circle cx="61" cy="44" r="4" fill="#1d4ed8"/><circle cx="71" cy="56" r="4" fill="#1d4ed8"/><circle cx="94" cy="49" r="6" fill="#be123c"/>' + diagLabel(60, 98, '5 / 2 = 2 R1', '#be123c', 13)],
+    ['addend', 'Addend (Numbers Joined in Sum)', 'math', 'addition term combine plus',
+      '<rect x="16" y="36" width="24" height="28" rx="4" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>' + diagLabel(28, 56, '3', '#1d4ed8', 16) + diagLabel(47, 56, '+', '#0f172a', 18) + '<rect x="54" y="36" width="24" height="28" rx="4" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>' + diagLabel(66, 56, '5', '#1d4ed8', 16) + diagLabel(92, 56, '= 8', '#0f172a', 15) + diagLabel(48, 96, 'ADDENDS', '#1d4ed8', 12)],
+    ['factor', 'Factor (Parts Multiplied Together)', 'math', 'multiply divisor integer product',
+      '<rect x="16" y="36" width="24" height="28" rx="4" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>' + diagLabel(28, 56, '3', '#b45309', 16) + diagLabel(47, 56, 'x', '#0f172a', 16) + '<rect x="54" y="36" width="24" height="28" rx="4" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>' + diagLabel(66, 56, '4', '#b45309', 16) + diagLabel(93, 56, '=12', '#0f172a', 14) + diagLabel(48, 96, 'FACTORS', '#b45309', 12)],
+    ['reciprocal', 'Reciprocal (Flipped Fraction)', 'math', 'multiplicative inverse flip divide',
+      '<rect x="18" y="30" width="28" height="40" rx="4" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>' + diagLabel(32, 46, '2', '#1d4ed8', 14) + '<line x1="22" y1="50" x2="42" y2="50" stroke="#0f172a" stroke-width="2"/>' + diagLabel(32, 65, '3', '#047857', 14) + '<rect x="74" y="30" width="28" height="40" rx="4" fill="#dcfce7" stroke="#047857" stroke-width="2"/>' + diagLabel(88, 46, '3', '#047857', 14) + '<line x1="78" y1="50" x2="98" y2="50" stroke="#0f172a" stroke-width="2"/>' + diagLabel(88, 65, '2', '#1d4ed8', 14) + '<path d="M50 42 L68 42" stroke="#0f172a" stroke-width="2.5"/><polygon points="70,42 63,37 63,47" fill="#0f172a"/><path d="M70 58 L52 58" stroke="#0f172a" stroke-width="2.5"/><polygon points="50,58 57,53 57,63" fill="#0f172a"/>' + diagLabel(60, 98, 'PRODUCT = 1', '#334155', 12)],
+    ['integer', 'Integer (Whole Negative, Zero, Positive)', 'math', 'number line whole negative positive',
+      '<line x1="14" y1="56" x2="106" y2="56" stroke="#0f172a" stroke-width="2.5"/><polygon points="106,56 99,51 99,61" fill="#0f172a"/><polygon points="14,56 21,51 21,61" fill="#0f172a"/><circle cx="30" cy="56" r="4" fill="#be123c"/><circle cx="45" cy="56" r="4" fill="#be123c"/><circle cx="60" cy="56" r="5" fill="#0f172a"/><circle cx="75" cy="56" r="4" fill="#1d4ed8"/><circle cx="90" cy="56" r="4" fill="#1d4ed8"/>' + diagLabel(30, 80, '-2', '#be123c', 12) + diagLabel(45, 80, '-1', '#be123c', 12) + diagLabel(60, 80, '0', '#0f172a', 12) + diagLabel(75, 80, '+1', '#1d4ed8', 12) + diagLabel(90, 80, '+2', '#1d4ed8', 12)],
+    ['capacity', 'Capacity (Liquid Holding Volume)', 'math', 'liter gallon cup beaker measure',
+      '<path d="M36 28 L84 28 L78 88 L42 88 Z" fill="#ffffff" stroke="#0f172a" stroke-width="2.5"/><path d="M39 54 L81 54 L78 88 L42 88 Z" fill="#38bdf8"/><line x1="68" y1="42" x2="80" y2="42" stroke="#0f172a" stroke-width="2"/><line x1="68" y1="58" x2="79" y2="58" stroke="#0f172a" stroke-width="2"/><line x1="68" y1="74" x2="77" y2="74" stroke="#0f172a" stroke-width="2"/>' + diagLabel(60, 106, '1 LITER', '#0369a1', 12)],
+    ['parallelogram', 'Parallelogram (2 Parallel Pairs)', 'math', 'quadrilateral slanted geometry polygon',
+      '<polygon points="36,34 96,34 84,82 24,82" fill="#e0f2fe" stroke="#0369a1" stroke-width="2.5"/><polyline points="62,30 68,34 62,38" fill="none" stroke="#be123c" stroke-width="2"/><polyline points="50,78 56,82 50,86" fill="none" stroke="#be123c" stroke-width="2"/>' + diagLabel(60, 104, 'A = b x h', '#0369a1', 13)],
+    ['formula', 'Formula (Rule with Variables)', 'math', 'equation rule area perimeter geometry',
+      '<rect x="18" y="34" width="84" height="44" rx="8" fill="#f5f3ff" stroke="#6d28d9" stroke-width="2.5"/>' + diagLabel(60, 62, 'A = l x w', '#5b21b6', 17) + diagLabel(60, 98, 'RULE', '#6d28d9', 12)],
+    ['outlier', 'Outlier (Distant Data Point)', 'math', 'scatter data extreme statistic',
+      '<line x1="20" y1="84" x2="100" y2="84" stroke="#0f172a" stroke-width="2"/><line x1="20" y1="22" x2="20" y2="84" stroke="#0f172a" stroke-width="2"/><circle cx="34" cy="70" r="4.5" fill="#2563eb"/><circle cx="42" cy="64" r="4.5" fill="#2563eb"/><circle cx="48" cy="72" r="4.5" fill="#2563eb"/><circle cx="54" cy="66" r="4.5" fill="#2563eb"/><circle cx="88" cy="30" r="6" fill="#be123c" stroke="#0f172a" stroke-width="1.5"/>' + diagLabel(84, 48, 'OUTLIER', '#be123c', 10)],
+    ['scale', 'Scale (Balance Weight & Ratio)', 'math', 'measure mass map proportion balance',
+      '<polygon points="60,84 48,96 72,96" fill="#475569"/><line x1="60" y1="30" x2="60" y2="84" stroke="#334155" stroke-width="3"/><line x1="24" y1="38" x2="96" y2="38" stroke="#0f172a" stroke-width="3"/><path d="M18 64 Q30 74 42 64 Z" fill="#94a3b8" stroke="#0f172a" stroke-width="1.5"/><path d="M78 64 Q90 74 102 64 Z" fill="#94a3b8" stroke="#0f172a" stroke-width="1.5"/><line x1="30" y1="38" x2="18" y2="64" stroke="#475569" stroke-width="1.5"/><line x1="30" y1="38" x2="42" y2="64" stroke="#475569" stroke-width="1.5"/><line x1="90" y1="38" x2="78" y2="64" stroke="#475569" stroke-width="1.5"/><line x1="90" y1="38" x2="102" y2="64" stroke="#475569" stroke-width="1.5"/>'],
+    ['rate', 'Rate (Compare Different Units)', 'math', 'ratio speed unit per hour',
+      '<circle cx="42" cy="48" r="20" fill="#eff6ff" stroke="#1d4ed8" stroke-width="2.5"/><polyline points="42,36 42,48 52,54" fill="none" stroke="#be123c" stroke-width="2.5"/><path d="M68 48 L96 48" stroke="#047857" stroke-width="3"/><polygon points="100,48 90,42 90,54" fill="#047857"/>' + diagLabel(60, 94, 'DISTANCE / TIME', '#0f172a', 11)],
+    ['profit', 'Profit (Revenue Above Cost)', 'economics', 'earn gain business income money',
+      '<rect x="24" y="60" width="22" height="28" fill="#94a3b8"/><rect x="74" y="32" width="22" height="56" fill="#16a34a"/><polyline points="28,54 56,42 86,24" fill="none" stroke="#15803d" stroke-width="3"/>' + diagLabel(35, 102, 'COST', '#475569', 10) + diagLabel(85, 102, 'GAIN', '#15803d', 10)],
+    ['base', 'Base (Bottom Side & pH 8-14)', 'math', 'triangle bottom power chemistry alkali',
+      '<polygon points="60,26 24,78 96,78" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/><line x1="22" y1="80" x2="98" y2="80" stroke="#be123c" stroke-width="5" stroke-linecap="round"/>' + diagLabel(60, 100, 'BASE', '#be123c', 13)],
+    ['speed', 'Speed (How Fast Distance Changes)', 'science', 'fast velocity distance time meter',
+      '<path d="M24 72 A36 36 0 1 1 96 72" fill="#ffffff" stroke="#0f172a" stroke-width="3"/><line x1="60" y1="72" x2="82" y2="46" stroke="#be123c" stroke-width="3.5" stroke-linecap="round"/><circle cx="60" cy="72" r="5" fill="#0f172a"/>' + diagLabel(60, 102, 'd / t', '#0369a1', 14)],
+    ['velocity', 'Velocity (Speed + Direction)', 'science', 'vector arrow motion direction speed',
+      '<rect x="20" y="42" width="28" height="24" rx="4" fill="#2563eb"/><line x1="54" y1="54" x2="96" y2="54" stroke="#be123c" stroke-width="4"/><polygon points="104,54 90,46 90,62" fill="#be123c"/>' + diagLabel(60, 94, 'SPEED + DIR', '#be123c', 11)],
+    ['acceleration', 'Acceleration (Speeding Up)', 'science', 'change velocity force motion curve',
+      '<line x1="20" y1="84" x2="100" y2="84" stroke="#0f172a" stroke-width="2"/><line x1="20" y1="24" x2="20" y2="84" stroke="#0f172a" stroke-width="2"/><path d="M22 82 Q60 76 92 26" fill="none" stroke="#be123c" stroke-width="3.5"/>' + diagLabel(64, 104, 'FASTER CHANGE', '#be123c', 11)],
+
+    // Wave 5 Physical, Life & Earth Science
+    ['motion', 'Motion (Changing Position Over Time)', 'science', 'move distance arrow physics',
+      '<circle cx="28" cy="54" r="10" fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="3,2"/><circle cx="56" cy="54" r="10" fill="none" stroke="#64748b" stroke-width="2" stroke-dasharray="3,2"/><circle cx="88" cy="54" r="11" fill="#2563eb"/><line x1="38" y1="34" x2="88" y2="34" stroke="#047857" stroke-width="3"/><polygon points="94,34 84,29 84,39" fill="#047857"/>'],
+    ['inertia', 'Inertia (Resist Motion Change)', 'science', 'newton first law rest move force',
+      '<rect x="34" y="42" width="38" height="32" rx="4" fill="#cbd5e1" stroke="#0f172a" stroke-width="2.5"/><path d="M84 58 L100 58" stroke="#be123c" stroke-width="3"/><polygon points="104,58 96,53 96,63" fill="#be123c"/>' + diagLabel(60, 100, 'STAYS AT REST', '#334155', 11)],
+    ['transparent', 'Transparent (Clear Light Passes)', 'science', 'glass window clear see through light',
+      '<rect x="52" y="24" width="16" height="68" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/><line x1="18" y1="40" x2="98" y2="40" stroke="#f59e0b" stroke-width="3"/><polygon points="104,40 94,35 94,45" fill="#f59e0b"/><line x1="18" y1="68" x2="98" y2="68" stroke="#f59e0b" stroke-width="3"/><polygon points="104,68 94,63 94,73" fill="#f59e0b"/>'],
+    ['translucent', 'Translucent (Some Light Scatters)', 'science', 'frosted blurry wax paper scatter',
+      '<rect x="52" y="24" width="16" height="68" fill="#bae6fd" stroke="#0369a1" stroke-width="2"/><line x1="18" y1="54" x2="52" y2="54" stroke="#f59e0b" stroke-width="3"/><line x1="68" y1="54" x2="98" y2="36" stroke="#fbbf24" stroke-width="2"/><line x1="68" y1="54" x2="100" y2="54" stroke="#fbbf24" stroke-width="2"/><line x1="68" y1="54" x2="98" y2="72" stroke="#fbbf24" stroke-width="2"/>'],
+    ['opaque', 'Opaque (Blocks Light & Makes Shadow)', 'science', 'solid dark shadow block light',
+      '<rect x="52" y="24" width="18" height="68" fill="#334155" stroke="#0f172a" stroke-width="2"/><line x1="18" y1="44" x2="50" y2="44" stroke="#f59e0b" stroke-width="3"/><line x1="18" y1="68" x2="50" y2="68" stroke="#f59e0b" stroke-width="3"/><line x1="44" y1="36" x2="48" y2="76" stroke="#be123c" stroke-width="2.5"/>' + diagLabel(88, 60, 'SHADOW', '#475569', 10)],
+    ['convection', 'Convection (Heat Loop Current)', 'science', 'warm rise cool sink fluid heat',
+      '<path d="M36 74 Q36 30 60 30 Q84 30 84 68" fill="none" stroke="#be123c" stroke-width="3.5"/><polygon points="84,74 78,64 90,64" fill="#be123c"/><path d="M80 80 Q60 94 40 78" fill="none" stroke="#2563eb" stroke-width="3.5"/><polygon points="34,74 37,84 46,77" fill="#2563eb"/>' + diagLabel(60, 60, 'HEAT LOOP', '#334155', 11)],
+    ['radiation', 'Radiation (Heat & Light Waves)', 'science', 'sun infrared wave thermal energy',
+      '<circle cx="28" cy="54" r="14" fill="#f59e0b"/><path d="M46 40 Q56 32 66 40 T86 40" fill="none" stroke="#ea580c" stroke-width="2.5"/><path d="M46 56 Q56 48 66 56 T86 56" fill="none" stroke="#ea580c" stroke-width="2.5"/><path d="M46 72 Q56 64 66 72 T86 72" fill="none" stroke="#ea580c" stroke-width="2.5"/>'],
+    ['conduction', 'Conduction (Direct Touch Heat Transfer)', 'science', 'metal spoon thermal contact atoms',
+      '<rect x="18" y="48" width="84" height="14" rx="4" fill="#94a3b8" stroke="#0f172a" stroke-width="2"/><circle cx="26" cy="55" r="5" fill="#dc2626"/><circle cx="44" cy="55" r="5" fill="#f97316"/><circle cx="62" cy="55" r="5" fill="#fbbf24"/><circle cx="80" cy="55" r="5" fill="#60a5fa"/><polygon points="22,82 28,66 34,82" fill="#f97316"/>'],
+    ['crystal', 'Crystal (Ordered Repeating Lattice)', 'science', 'mineral facet solid lattice symmetry',
+      '<polygon points="60,20 84,38 78,86 42,86 36,38" fill="#7dd3fc" stroke="#0369a1" stroke-width="2.5"/><polygon points="60,20 60,86 78,86 84,38" fill="#38bdf8" opacity="0.65"/><line x1="36" y1="38" x2="84" y2="38" stroke="#0369a1" stroke-width="2"/>'],
+    ['compound', 'Compound (Two Different Atoms Bonded)', 'science', 'molecule H2O elements chemical bond',
+      '<line x1="60" y1="42" x2="34" y2="70" stroke="#0f172a" stroke-width="4"/><line x1="60" y1="42" x2="86" y2="70" stroke="#0f172a" stroke-width="4"/><circle cx="60" cy="40" r="16" fill="#dc2626" stroke="#0f172a" stroke-width="2"/><circle cx="34" cy="70" r="12" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/><circle cx="86" cy="70" r="12" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>' + diagLabel(60, 45, 'O', '#ffffff', 13)],
+    ['element', 'Element (One Pure Kind of Atom)', 'science', 'periodic table symbol pure substance',
+      '<rect x="30" y="24" width="60" height="66" rx="6" fill="#dcfce7" stroke="#15803d" stroke-width="2.5"/>' + diagLabel(44, 42, '6', '#15803d', 13) + diagLabel(60, 68, 'C', '#0f172a', 26) + diagLabel(60, 84, 'CARBON', '#166534', 10)],
+    ['neutron', 'Neutron (Zero Charge Center)', 'science', 'atom nucleus neutral particle proton',
+      '<circle cx="52" cy="48" r="12" fill="#94a3b8" stroke="#0f172a" stroke-width="2"/><circle cx="70" cy="56" r="12" fill="#dc2626" stroke="#0f172a" stroke-width="2"/><circle cx="54" cy="68" r="12" fill="#94a3b8" stroke="#0f172a" stroke-width="2"/>' + diagLabel(52, 53, '0', '#0f172a', 14) + diagLabel(70, 61, '+', '#ffffff', 14) + diagLabel(60, 102, 'NEUTRAL = 0', '#334155', 11)],
+    ['plasma', 'Plasma (Superheated Charged Gas)', 'science', 'state matter sun lightning ions',
+      '<rect x="20" y="24" width="80" height="62" rx="10" fill="#312e81"/><polyline points="42,26 56,50 44,54 66,84" fill="none" stroke="#facc15" stroke-width="3.5"/><circle cx="32" cy="42" r="4" fill="#c084fc"/><circle cx="84" cy="66" r="4" fill="#38bdf8"/>' + diagLabel(60, 104, 'IONIZED GAS', '#6d28d9', 11)],
+    ['voltage', 'Voltage (Electric Push in Volts)', 'science', 'circuit potential difference volts battery',
+      '<rect x="26" y="42" width="58" height="34" rx="4" fill="#facc15" stroke="#0f172a" stroke-width="2.5"/><rect x="84" y="51" width="8" height="16" rx="2" fill="#475569"/>' + diagLabel(40, 65, '-', '#0f172a', 18) + diagLabel(70, 65, '+', '#be123c', 18) + diagLabel(60, 98, '9V PUSH', '#0f172a', 12)],
+    ['electromagnet', 'Electromagnet (Wire Coil Around Iron)', 'science', 'coil iron nail current magnetic',
+      '<rect x="26" y="50" width="68" height="12" rx="4" fill="#94a3b8" stroke="#0f172a" stroke-width="2"/><path d="M36 44 Q42 68 48 44 Q54 68 60 44 Q66 68 72 44 Q78 68 84 44" fill="none" stroke="#d97706" stroke-width="3"/>' + diagLabel(24, 38, 'N', '#be123c', 13) + diagLabel(96, 38, 'S', '#1d4ed8', 13)],
+    ['bacteria', 'Bacteria (Single Cell Microbe)', 'science', 'microorganism prokaryotic flagella germ',
+      '<rect x="30" y="42" width="56" height="28" rx="14" fill="#86efac" stroke="#15803d" stroke-width="2.5"/><path d="M86 56 Q96 46 104 56 T112 52" fill="none" stroke="#15803d" stroke-width="2.5"/><path d="M44 56 Q52 48 60 56 T76 56" fill="none" stroke="#166534" stroke-width="2"/>'],
+    ['fungus', 'Fungus (Decomposer Mushroom Cap)', 'science', 'mushroom mold hyphae spores',
+      '<path d="M30 60 C30 30 90 30 90 60 Z" fill="#d97706" stroke="#78350f" stroke-width="2.5"/><rect x="52" y="60" width="16" height="30" rx="4" fill="#fef3c7" stroke="#78350f" stroke-width="2"/><circle cx="48" cy="46" r="4" fill="#fef3c7"/><circle cx="70" cy="42" r="5" fill="#fef3c7"/>'],
+    ['virus', 'Virus (Spiked Microbe Particle)', 'science', 'infection pathogen host capsid',
+      '<circle cx="60" cy="56" r="22" fill="#c084fc" stroke="#581c87" stroke-width="2.5"/><line x1="60" y1="22" x2="60" y2="34" stroke="#581c87" stroke-width="3"/><line x1="60" y1="78" x2="60" y2="90" stroke="#581c87" stroke-width="3"/><line x1="26" y1="56" x2="38" y2="56" stroke="#581c87" stroke-width="3"/><line x1="82" y1="56" x2="94" y2="56" stroke="#581c87" stroke-width="3"/><circle cx="60" cy="20" r="4" fill="#9333ea"/><circle cx="60" cy="92" r="4" fill="#9333ea"/><circle cx="24" cy="56" r="4" fill="#9333ea"/><circle cx="96" cy="56" r="4" fill="#9333ea"/>'],
+    ['vaccine', 'Vaccine (Immune Protection Shield)', 'science', 'immunity syringe medicine antibody defense',
+      '<path d="M60 22 L90 34 V60 C90 78 60 94 60 94 C60 94 30 78 30 60 V34 Z" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2.5"/><rect x="55" y="42" width="10" height="30" rx="2" fill="#16a34a"/><rect x="45" y="52" width="30" height="10" rx="2" fill="#16a34a"/>'],
+    ['algae', 'Algae (Green Aquatic Producers)', 'science', 'pond water seaweed oxygen plantlike',
+      '<rect x="18" y="34" width="84" height="58" rx="6" fill="#bae6fd" stroke="#0284c7" stroke-width="2"/><path d="M36 90 Q28 68 38 48" fill="none" stroke="#15803d" stroke-width="5" stroke-linecap="round"/><path d="M60 90 Q68 64 58 44" fill="none" stroke="#16a34a" stroke-width="5" stroke-linecap="round"/><path d="M84 90 Q76 68 86 50" fill="none" stroke="#15803d" stroke-width="5" stroke-linecap="round"/>'],
+    ['fern', 'Fern (Curled Fronds & Spores)', 'science', 'nonseed plant spores vascular leaves',
+      '<line x1="60" y1="90" x2="60" y2="28" stroke="#15803d" stroke-width="3"/><path d="M60 76 L32 68 M60 62 L30 52 M60 48 L36 38 M60 76 L88 68 M60 62 L90 52 M60 48 L84 38" stroke="#16a34a" stroke-width="4" stroke-linecap="round"/>'],
+    ['conifer', 'Conifer (Evergreen Pine Tree & Cone)', 'science', 'pine needles cone seed evergreen',
+      '<polygon points="60,20 34,54 86,54" fill="#15803d" stroke="#0f172a" stroke-width="1.5"/><polygon points="60,38 28,74 92,74" fill="#166534" stroke="#0f172a" stroke-width="1.5"/><rect x="54" y="74" width="12" height="18" fill="#78350f"/>'],
+    ['deciduous', 'Deciduous (Leaves Change & Drop)', 'science', 'oak maple autumn seasonal tree',
+      '<circle cx="48" cy="46" r="18" fill="#f97316"/><circle cx="72" cy="48" r="16" fill="#eab308"/><circle cx="60" cy="34" r="16" fill="#dc2626"/><rect x="55" y="60" width="10" height="32" fill="#78350f"/>'],
+    ['spore', 'Spore (Single Dispersing Seedless Cell)', 'science', 'fern moss fungus reproduce wind',
+      '<path d="M30 80 Q60 60 90 80" fill="none" stroke="#15803d" stroke-width="4"/><circle cx="44" cy="44" r="5" fill="#d97706"/><circle cx="62" cy="34" r="5" fill="#d97706"/><circle cx="78" cy="48" r="5" fill="#d97706"/><circle cx="54" cy="56" r="4" fill="#d97706"/>'],
+    ['seed', 'Seed (Embryo & Food Stored Inside)', 'science', 'plant sprout germination bean kernel',
+      '<path d="M36 62 C36 32 82 30 82 56 C82 78 48 86 36 62 Z" fill="#fef3c7" stroke="#92400e" stroke-width="3"/><path d="M46 58 Q56 44 64 54" fill="none" stroke="#16a34a" stroke-width="3.5" stroke-linecap="round"/>'],
+    ['stem', 'Stem (Supports Leaves & Carries Water)', 'science', 'plant trunk stalk xylem vascular',
+      '<rect x="54" y="34" width="12" height="58" rx="4" fill="#16a34a" stroke="#14532d" stroke-width="2"/><ellipse cx="40" cy="46" rx="14" ry="7" fill="#22c55e"/><ellipse cx="80" cy="60" rx="14" ry="7" fill="#22c55e"/>'],
+    ['organ', 'Organ (Heart & Kidneys Work Together)', 'science', 'body system structure function tissues',
+      '<path d="M60 82 C60 82 32 62 32 42 C32 30 46 26 60 38 C74 26 88 30 88 42 C88 62 60 82 60 82 Z" fill="#ef4444" stroke="#7f1d1d" stroke-width="2.5"/>' + diagLabel(60, 102, 'TISSUES UNIT', '#7f1d1d', 11)],
+    ['tissue', 'Tissue (Layer of Similar Cells)', 'science', 'muscle skin organ cells group',
+      '<rect x="26" y="32" width="22" height="22" rx="4" fill="#fecdd3" stroke="#be123c" stroke-width="2"/><rect x="49" y="32" width="22" height="22" rx="4" fill="#fecdd3" stroke="#be123c" stroke-width="2"/><rect x="72" y="32" width="22" height="22" rx="4" fill="#fecdd3" stroke="#be123c" stroke-width="2"/><rect x="26" y="55" width="22" height="22" rx="4" fill="#fecdd3" stroke="#be123c" stroke-width="2"/><rect x="49" y="55" width="22" height="22" rx="4" fill="#fecdd3" stroke="#be123c" stroke-width="2"/><rect x="72" y="55" width="22" height="22" rx="4" fill="#fecdd3" stroke="#be123c" stroke-width="2"/>'],
+    ['vacuole', 'Vacuole (Water Storage Organelle)', 'science', 'plant cell organelle storage sac',
+      '<rect x="22" y="24" width="76" height="66" rx="12" fill="#dcfce7" stroke="#15803d" stroke-width="2.5"/><path d="M36 42 C36 30 78 32 76 58 C74 78 38 78 36 42 Z" fill="#7dd3fc" stroke="#0284c7" stroke-width="2"/>' + diagLabel(60, 104, 'WATER SAC', '#0369a1', 11)],
+    ['cytoplasm', 'Cytoplasm (Jelly Fluid Filling Cell)', 'science', 'cell gel interior cytosol organelle',
+      '<ellipse cx="60" cy="56" rx="40" ry="30" fill="#fef08a" stroke="#ca8a04" stroke-width="3"/><circle cx="52" cy="56" r="10" fill="#c084fc"/><circle cx="76" cy="48" r="5" fill="#16a34a"/><circle cx="38" cy="48" r="4" fill="#0284c7"/>' + diagLabel(60, 102, 'CELL FLUID', '#854d0e', 11)],
+    ['genetics', 'Genetics (DNA & Trait Inheritance)', 'science', 'dna heredity parent offspring genes',
+      '<path d="M40 24 Q80 42 40 60 T40 94" fill="none" stroke="#2563eb" stroke-width="3.5"/><path d="M80 24 Q40 42 80 60 T80 94" fill="none" stroke="#16a34a" stroke-width="3.5"/><line x1="46" y1="36" x2="74" y2="36" stroke="#475569" stroke-width="2"/><line x1="46" y1="58" x2="74" y2="58" stroke="#475569" stroke-width="2"/><line x1="46" y1="80" x2="74" y2="80" stroke="#475569" stroke-width="2"/>'],
+    ['chromosome', 'Chromosome (X-Shaped Packed DNA)', 'science', 'nucleus dna genetics chromatid',
+      '<line x1="38" y1="26" x2="82" y2="88" stroke="#7c3aed" stroke-width="10" stroke-linecap="round"/><line x1="82" y1="26" x2="38" y2="88" stroke="#7c3aed" stroke-width="10" stroke-linecap="round"/><circle cx="60" cy="57" r="7" fill="#facc15"/>'],
+    ['gene', 'Gene (Segment of DNA Coding a Trait)', 'science', 'dna heredity instruction unit',
+      '<rect x="20" y="42" width="80" height="24" rx="6" fill="#e2e8f0" stroke="#0f172a" stroke-width="2"/><rect x="44" y="42" width="32" height="24" fill="#2563eb" stroke="#0f172a" stroke-width="2"/>' + diagLabel(60, 92, 'DNA SEGMENT', '#1d4ed8', 11)],
+    ['allele', 'Allele (Dominant A & Recessive a)', 'science', 'trait dominant recessive punnett square',
+      '<rect x="26" y="28" width="34" height="34" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>' + diagLabel(43, 52, 'A', '#1d4ed8', 18) + '<rect x="60" y="28" width="34" height="34" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>' + diagLabel(77, 52, 'a', '#b45309', 18) + diagLabel(60, 88, 'GENE VARIANT', '#334155', 11)],
+    ['mutation', 'Mutation (Altered Base in DNA)', 'science', 'dna change evolution variance',
+      '<rect x="20" y="42" width="24" height="24" fill="#bbf7d0" stroke="#15803d" stroke-width="2"/><rect x="48" y="42" width="24" height="24" fill="#fecaca" stroke="#dc2626" stroke-width="2.5"/><rect x="76" y="42" width="24" height="24" fill="#bbf7d0" stroke="#15803d" stroke-width="2"/>' + diagLabel(60, 60, '*', '#dc2626', 20) + diagLabel(60, 92, 'BASE CHANGE', '#dc2626', 11)],
+    ['mitosis', 'Mitosis (1 Cell Splits into 2 Identical)', 'science', 'cell division growth identical clone',
+      '<circle cx="28" cy="54" r="14" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2.5"/><path d="M46 54 L64 54" stroke="#0f172a" stroke-width="2.5"/><polygon points="68,54 60,49 60,59" fill="#0f172a"/><circle cx="84" cy="38" r="11" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/><circle cx="84" cy="70" r="11" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>'],
+    ['meiosis', 'Meiosis (Cell Divides into 4 Gametes)', 'science', 'gamete egg sperm half chromosome',
+      '<circle cx="26" cy="54" r="13" fill="#ede9fe" stroke="#6d28d9" stroke-width="2.5"/><path d="M42 54 L58 54" stroke="#0f172a" stroke-width="2"/><circle cx="76" cy="34" r="8" fill="#ede9fe" stroke="#6d28d9" stroke-width="2"/><circle cx="96" cy="34" r="8" fill="#ede9fe" stroke="#6d28d9" stroke-width="2"/><circle cx="76" cy="74" r="8" fill="#ede9fe" stroke="#6d28d9" stroke-width="2"/><circle cx="96" cy="74" r="8" fill="#ede9fe" stroke="#6d28d9" stroke-width="2"/>'],
+    ['homeostasis', 'Homeostasis (Steady Internal Balance)', 'science', 'temperature regulation equilibrium steady body',
+      '<line x1="20" y1="68" x2="100" y2="68" stroke="#15803d" stroke-width="3"/><polygon points="60,68 50,86 70,86" fill="#475569"/><circle cx="34" cy="54" r="9" fill="#0284c7"/><circle cx="86" cy="54" r="9" fill="#0284c7"/>' + diagLabel(60, 34, 'STEADY STATE', '#15803d', 11)],
+    ['symbiosis', 'Symbiosis (Two Species Living Close)', 'science', 'mutualism commensalism parasitism host partner',
+      '<circle cx="46" cy="54" r="22" fill="#dbeafe" fill-opacity="0.7" stroke="#1d4ed8" stroke-width="2.5"/><circle cx="74" cy="54" r="22" fill="#dcfce7" fill-opacity="0.7" stroke="#15803d" stroke-width="2.5"/>' + diagLabel(60, 96, 'CO-LIVING', '#0f172a', 11)],
+    ['evolution', 'Evolution (Gradual Change Over Time)', 'science', 'natural selection adaptation fossil ancestors',
+      '<circle cx="28" cy="72" r="9" fill="#94a3b8"/><path d="M38 66 L54 54" stroke="#0f172a" stroke-width="2.5"/><circle cx="60" cy="52" r="10" fill="#38bdf8"/><path d="M70 46 L86 34" stroke="#0f172a" stroke-width="2.5"/><circle cx="92" cy="32" r="11" fill="#16a34a"/>'],
+
+    // Wave 5 Earth, Space & Ecology
+    ['extinct', 'Extinct (Species Gone Forever)', 'science', 'dinosaur fossil endangered lost',
+      '<circle cx="60" cy="54" r="28" fill="#f1f5f9" stroke="#64748b" stroke-width="2.5"/><line x1="40" y1="34" x2="80" y2="74" stroke="#be123c" stroke-width="4"/><line x1="80" y1="34" x2="40" y2="74" stroke="#be123c" stroke-width="4"/>' + diagLabel(60, 98, 'NONE LEFT', '#be123c', 11)],
+    ['fertile', 'Fertile Soil (Rich Growing Layer)', 'science', 'loam topsoil crop farm growth',
+      '<rect x="20" y="66" width="80" height="24" rx="4" fill="#78350f"/><path d="M60 66 L60 40" stroke="#15803d" stroke-width="3.5"/><ellipse cx="48" cy="48" rx="12" ry="6" fill="#22c55e"/><ellipse cx="72" cy="42" rx="12" ry="6" fill="#22c55e"/>'],
+    ['dormant', 'Dormant (Resting Through Winter)', 'science', 'sleep winter tree inactive volcano',
+      '<rect x="54" y="54" width="12" height="36" fill="#78350f"/><path d="M60 56 L36 38 M60 50 L84 36 M60 44 L44 26 M60 44 L76 26" stroke="#78350f" stroke-width="3.5" stroke-linecap="round"/>' + diagLabel(88, 32, 'Zzz', '#2563eb', 14)],
+    ['transpiration', 'Transpiration (Vapor From Leaves)', 'science', 'water cycle leaf stomata evaporation',
+      '<ellipse cx="60" cy="70" rx="28" ry="12" fill="#22c55e" stroke="#15803d" stroke-width="2"/><path d="M44 54 Q38 42 44 30" fill="none" stroke="#0284c7" stroke-width="2.5"/><path d="M60 52 Q54 40 60 28" fill="none" stroke="#0284c7" stroke-width="2.5"/><path d="M76 54 Q70 42 76 30" fill="none" stroke="#0284c7" stroke-width="2.5"/>'],
+    ['dissolve', 'Dissolve (Sugar Spreads in Liquid)', 'science', 'solution solute solvent mix water',
+      '<rect x="34" y="28" width="52" height="58" rx="4" fill="#e0f2fe" stroke="#0284c7" stroke-width="2.5"/><circle cx="48" cy="52" r="3.5" fill="#d97706"/><circle cx="64" cy="46" r="3.5" fill="#d97706"/><circle cx="72" cy="64" r="3.5" fill="#d97706"/><circle cx="52" cy="72" r="3.5" fill="#d97706"/>'],
+    ['reaction', 'Reaction (Reactants Form New Product)', 'science', 'chemical change bond products',
+      '<circle cx="28" cy="54" r="10" fill="#2563eb"/>' + diagLabel(44, 59, '+', '#0f172a', 14) + '<circle cx="58" cy="54" r="10" fill="#f59e0b"/><path d="M70 54 L82 54" stroke="#0f172a" stroke-width="2.5"/><polygon points="84,54 78,49 78,59" fill="#0f172a"/><polygon points="98,42 108,64 88,64" fill="#16a34a"/>'],
+    ['crust', 'Crust (Thin Outer Rocky Layer)', 'science', 'earth layers plates rock surface',
+      '<circle cx="60" cy="54" r="34" fill="#fed7aa" stroke="#78350f" stroke-width="6"/><circle cx="60" cy="54" r="14" fill="#facc15"/>' + diagLabel(60, 104, 'OUTER CRUST', '#78350f', 11)],
+    ['mantle', 'Mantle (Hot Flowing Middle Layer)', 'science', 'earth interior magma convection',
+      '<circle cx="60" cy="54" r="34" fill="#ea580c" stroke="#78350f" stroke-width="3"/><circle cx="60" cy="54" r="14" fill="#facc15"/>' + diagLabel(60, 104, 'MANTLE LAYER', '#c2410c', 11)],
+    ['core', 'Core (Central Hot Center Sphere)', 'science', 'earth center fruit nucleus sun',
+      '<circle cx="60" cy="54" r="34" fill="#e2e8f0" stroke="#64748b" stroke-width="2"/><circle cx="60" cy="54" r="15" fill="#dc2626" stroke="#7f1d1d" stroke-width="2"/>' + diagLabel(60, 104, 'INNER CORE', '#b91c1c', 11)],
+    ['meteor', 'Meteor (Shooting Space Rock Streak)', 'science', 'asteroid space atmosphere shooting star',
+      '<rect x="16" y="22" width="88" height="68" rx="8" fill="#0f172a"/><line x1="28" y1="34" x2="74" y2="66" stroke="#facc15" stroke-width="4" stroke-linecap="round"/><circle cx="78" cy="68" r="8" fill="#f97316"/>'],
+    ['universe', 'Universe (All Galaxies & Space)', 'science', 'galaxy cosmos stars astronomy space',
+      '<rect x="16" y="22" width="88" height="68" rx="8" fill="#0f172a"/><ellipse cx="60" cy="56" rx="28" ry="12" fill="none" stroke="#c084fc" stroke-width="3"/><circle cx="60" cy="56" r="6" fill="#facc15"/><circle cx="30" cy="36" r="2.5" fill="#fff"/><circle cx="88" cy="38" r="2.5" fill="#fff"/><circle cx="38" cy="76" r="2.5" fill="#fff"/>'],
+    ['ocean', 'Ocean (Deep Blue Sea Waves)', 'science', 'marine saltwater sea currents waves',
+      '<rect x="16" y="24" width="88" height="68" rx="6" fill="#0284c7"/><path d="M16 48 Q30 38 44 48 T72 48 T104 48" fill="none" stroke="#ffffff" stroke-width="3"/><path d="M16 68 Q30 58 44 68 T72 68 T104 68" fill="none" stroke="#bae6fd" stroke-width="3"/>'],
+    ['estuary', 'Estuary (River Meets Ocean Saltwater)', 'science', 'brackish delta bay tide habitat',
+      '<rect x="16" y="26" width="88" height="64" rx="6" fill="#4ade80"/><path d="M18 46 Q46 46 58 58 L90 36 L104 36 L104 90 L88 90 L58 64 Q42 54 18 54 Z" fill="#38bdf8"/>'],
+    ['tributary', 'Tributary (Side Streams Join River)', 'science', 'watershed creek river branch stream',
+      '<rect x="16" y="24" width="88" height="68" rx="6" fill="#dcfce7"/><path d="M64 24 Q60 56 64 92" fill="none" stroke="#0284c7" stroke-width="7"/><path d="M26 36 Q46 44 60 56" fill="none" stroke="#38bdf8" stroke-width="4"/><path d="M94 52 Q78 58 64 68" fill="none" stroke="#38bdf8" stroke-width="4"/>'],
+    ['flood', 'Flood (Rising Water Over Land)', 'science', 'rainstorm overflow river disaster water',
+      '<rect x="16" y="54" width="88" height="36" fill="#0284c7"/><polygon points="60,28 38,46 82,46" fill="#b91c1c"/><rect x="44" y="46" width="32" height="16" fill="#fef3c7" stroke="#0f172a" stroke-width="1.5"/>'],
+    ['drought', 'Drought (Dry Cracked Ground)', 'science', 'arid dry climate rainless soil',
+      '<rect x="16" y="24" width="88" height="66" rx="6" fill="#fde68a"/><circle cx="82" cy="40" r="11" fill="#f59e0b"/><rect x="16" y="64" width="88" height="26" fill="#d97706"/><polyline points="30,66 42,78 36,88" fill="none" stroke="#78350f" stroke-width="2"/><polyline points="68,66 76,80 86,88" fill="none" stroke="#78350f" stroke-width="2"/>'],
+    ['humidity', 'Humidity (Water Vapor in the Air)', 'science', 'moisture weather damp hygrometer',
+      '<path d="M60 24 C60 24 80 50 80 64 A20 20 0 1 1 40 64 C40 50 60 24 60 24 Z" fill="#38bdf8" stroke="#0369a1" stroke-width="2.5"/>' + diagLabel(60, 68, '%', '#ffffff', 16)],
+    ['monsoon', 'Monsoon (Seasonal Heavy Wind Rain)', 'science', 'wind rain climate asia storm',
+      '<ellipse cx="60" cy="42" rx="28" ry="14" fill="#64748b"/><path d="M22 46 Q36 38 48 46" fill="none" stroke="#0284c7" stroke-width="2.5"/><line x1="44" y1="60" x2="36" y2="82" stroke="#2563eb" stroke-width="3"/><line x1="60" y1="60" x2="52" y2="82" stroke="#2563eb" stroke-width="3"/><line x1="76" y1="60" x2="68" y2="82" stroke="#2563eb" stroke-width="3"/>'],
+    ['geyser', 'Geyser (Hot Underground Steam Jet)', 'science', 'geothermal steam spring yellowstone heat',
+      '<rect x="20" y="74" width="80" height="16" fill="#78350f"/><path d="M56 74 L50 30 L70 30 L64 74 Z" fill="#7dd3fc" stroke="#0284c7" stroke-width="2"/><circle cx="48" cy="24" r="8" fill="#e2e8f0"/><circle cx="62" cy="20" r="10" fill="#f1f5f9"/><circle cx="74" cy="26" r="7" fill="#e2e8f0"/>'],
+    ['savanna', 'Savanna (Grassland with Scattered Trees)', 'science', 'biome grassland africa acacia ecosystem',
+      '<rect x="16" y="24" width="88" height="68" rx="6" fill="#fef3c7"/><rect x="16" y="64" width="88" height="28" fill="#ca8a04"/><line x1="50" y1="68" x2="50" y2="42" stroke="#78350f" stroke-width="4"/><ellipse cx="50" cy="40" rx="22" ry="7" fill="#15803d"/>'],
+    ['biome', 'Biome (Major Climate & Life Zone)', 'science', 'desert tundra forest ecosystem region',
+      '<rect x="20" y="24" width="38" height="32" fill="#22c55e" stroke="#0f172a" stroke-width="1.5"/><rect x="62" y="24" width="38" height="32" fill="#facc15" stroke="#0f172a" stroke-width="1.5"/><rect x="20" y="58" width="38" height="32" fill="#38bdf8" stroke="#0f172a" stroke-width="1.5"/><rect x="62" y="58" width="38" height="32" fill="#a8a29e" stroke="#0f172a" stroke-width="1.5"/>'],
+    ['humus', 'Humus (Rich Organic Soil Layer)', 'science', 'compost soil nutrient decay',
+      '<rect x="20" y="34" width="80" height="18" fill="#451a03"/><rect x="20" y="52" width="80" height="18" fill="#92400e"/><rect x="20" y="70" width="80" height="18" fill="#cbd5e1"/>' + diagLabel(60, 47, 'RICH HUMUS', '#fde68a', 10)],
+    ['nonrenewable', 'Nonrenewable (Limited Fossil Fuel)', 'science', 'coal oil finite energy resource',
+      '<polygon points="34,76 48,42 74,40 88,74" fill="#334155" stroke="#0f172a" stroke-width="2.5"/><path d="M60 22 L60 36" stroke="#be123c" stroke-width="3"/>' + diagLabel(60, 98, 'FINITE SUPPLY', '#be123c', 11)],
+
+    // Wave 5 Social Studies, Civics, History & Economics
+    ['colony', 'Colony (Distant Ruled Settlement)', 'social', 'empire settlers charter history',
+      '<rect x="20" y="66" width="80" height="22" fill="#86efac"/><polygon points="36,66 48,48 60,66" fill="#d97706" stroke="#78350f" stroke-width="2"/><polygon points="60,66 72,48 84,66" fill="#d97706" stroke="#78350f" stroke-width="2"/><line x1="92" y1="30" x2="92" y2="66" stroke="#0f172a" stroke-width="2.5"/><rect x="92" y="30" width="16" height="10" fill="#be123c"/>'],
+    ['immigrant', 'Immigrant (Moving to a New Country)', 'social', 'migration citizen border home travel',
+      '<circle cx="30" cy="48" r="14" fill="#bfdbfe" stroke="#1d4ed8" stroke-width="2"/><circle cx="90" cy="48" r="14" fill="#bbf7d0" stroke="#15803d" stroke-width="2"/><path d="M46 48 L72 48" stroke="#be123c" stroke-width="3"/><polygon points="76,48 68,43 68,53" fill="#be123c"/>'],
+    ['ancestor', 'Ancestor (Earlier Generations Above)', 'social', 'family tree heritage past history',
+      '<circle cx="40" cy="28" r="9" fill="#f59e0b"/><circle cx="80" cy="28" r="9" fill="#f59e0b"/><line x1="40" y1="37" x2="60" y2="56" stroke="#475569" stroke-width="2.5"/><line x1="80" y1="37" x2="60" y2="56" stroke="#475569" stroke-width="2.5"/><circle cx="60" cy="64" r="10" fill="#2563eb"/><line x1="60" y1="74" x2="60" y2="88" stroke="#475569" stroke-width="2.5"/>'],
+    ['region', 'Region (Shared Map Area)', 'social', 'geography climate boundary states',
+      '<rect x="18" y="24" width="84" height="66" rx="6" fill="#e2e8f0" stroke="#0f172a" stroke-width="2"/><path d="M28 36 Q58 26 78 44 Q86 70 52 78 Q24 68 28 36 Z" fill="#fbbf24" stroke="#b45309" stroke-width="2.5"/>'],
+    ['landform', 'Landform (Natural Earth Shapes)', 'social', 'mountain valley plain plateau relief',
+      '<polygon points="18,84 42,36 66,84" fill="#64748b"/><path d="M62 84 Q78 60 102 74 L102 84 Z" fill="#22c55e"/><rect x="18" y="84" width="84" height="8" fill="#78350f"/>'],
+    ['settlement', 'Settlement (Village Founded Together)', 'social', 'town pioneer colony houses',
+      '<rect x="20" y="68" width="80" height="22" fill="#86efac"/><polygon points="34,42 22,54 46,54" fill="#b91c1c"/><rect x="25" y="54" width="18" height="14" fill="#fef3c7"/><polygon points="82,42 70,54 94,54" fill="#b91c1c"/><rect x="73" y="54" width="18" height="14" fill="#fef3c7"/>'],
+    ['artifact', 'Artifact (Old Human-Made Object)', 'social', 'pottery history museum archaeology',
+      '<path d="M44 30 L76 30 L70 40 C84 52 84 74 72 86 L48 86 C36 74 36 52 50 40 Z" fill="#d97706" stroke="#78350f" stroke-width="2.5"/><polyline points="44,58 54,50 64,58 76,50" fill="none" stroke="#fef3c7" stroke-width="2"/>'],
+    ['monument', 'Monument (Memorial Obelisk / Arch)', 'social', 'memorial statue landmark history',
+      '<polygon points="60,18 50,36 70,36" fill="#cbd5e1" stroke="#0f172a" stroke-width="2"/><polygon points="50,36 70,36 74,82 46,82" fill="#e2e8f0" stroke="#0f172a" stroke-width="2"/><rect x="34" y="82" width="52" height="10" fill="#475569"/>'],
+    ['archaeology', 'Archaeology (Excavation Dig & Layers)', 'social', 'excavate fossils ancient brush soil',
+      '<rect x="20" y="34" width="80" height="18" fill="#d6d3d1"/><rect x="20" y="52" width="80" height="18" fill="#a8a29e"/><rect x="20" y="70" width="80" height="18" fill="#78716c"/><circle cx="62" cy="79" r="6" fill="#d97706" stroke="#fef3c7" stroke-width="1.5"/>'],
+    ['civilization', 'Civilization (Cities, Writing & Law)', 'social', 'empire culture society ancient cities',
+      '<rect x="24" y="52" width="16" height="36" fill="#94a3b8" stroke="#0f172a" stroke-width="1.5"/><rect x="48" y="36" width="24" height="52" fill="#cbd5e1" stroke="#0f172a" stroke-width="2"/><rect x="80" y="48" width="16" height="40" fill="#94a3b8" stroke="#0f172a" stroke-width="1.5"/>'],
+    ['market', 'Market (Buyers & Sellers Exchange)', 'economics', 'shop trade goods price commerce',
+      '<polygon points="24,44 96,44 90,30 30,30" fill="#dc2626" stroke="#0f172a" stroke-width="2"/><rect x="28" y="44" width="64" height="40" fill="#fef3c7" stroke="#0f172a" stroke-width="2"/><rect x="44" y="56" width="32" height="16" fill="#86efac" stroke="#15803d" stroke-width="1.5"/>'],
+    ['currency', 'Currency (Coins & Paper Money)', 'economics', 'money dollar cash coin pay',
+      '<rect x="20" y="34" width="60" height="32" rx="4" fill="#dcfce7" stroke="#15803d" stroke-width="2.5"/>' + diagLabel(50, 56, '$', '#15803d', 20) + '<circle cx="84" cy="72" r="14" fill="#facc15" stroke="#b45309" stroke-width="2"/>'],
+    ['tax', 'Tax (Public Contribution for Services)', 'economics', 'government road school revenue fee',
+      '<rect x="22" y="30" width="34" height="44" rx="4" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>' + diagLabel(39, 58, '$', '#15803d', 20) + '<path d="M60 52 L74 52" stroke="#0f172a" stroke-width="2.5"/><polygon points="78,52 70,47 70,57" fill="#0f172a"/><rect x="80" y="34" width="22" height="36" fill="#e2e8f0" stroke="#0f172a" stroke-width="2"/>'],
+    ['tariff', 'Tariff (Tax on Imported Goods)', 'economics', 'trade border duty import custom fee',
+      '<rect x="18" y="44" width="28" height="24" fill="#3b82f6"/><line x1="60" y1="24" x2="60" y2="88" stroke="#be123c" stroke-width="3" stroke-dasharray="5,3"/><circle cx="82" cy="56" r="14" fill="#facc15" stroke="#b45309" stroke-width="2"/>' + diagLabel(82, 61, '$', '#78350f', 16)],
+    ['inflation', 'Inflation (Prices Rising Higher)', 'economics', 'cost money increase economy price',
+      '<rect x="26" y="64" width="16" height="20" fill="#94a3b8"/><rect x="52" y="50" width="16" height="34" fill="#f59e0b"/><rect x="78" y="32" width="16" height="52" fill="#dc2626"/>' + diagLabel(60, 102, 'PRICES UP', '#dc2626', 11)],
+    ['protest', 'Protest (Public March & Voices)', 'social', 'civic rights petition speech dissent',
+      '<rect x="34" y="22" width="52" height="30" rx="4" fill="#fef3c7" stroke="#0f172a" stroke-width="2.5"/><line x1="60" y1="52" x2="60" y2="88" stroke="#0f172a" stroke-width="4"/><line x1="42" y1="36" x2="78" y2="36" stroke="#be123c" stroke-width="3"/>'],
+    ['freedom', 'Freedom (Rights & Open Opportunity)', 'social', 'liberty rights bill of rights dove',
+      '<path d="M60 58 C42 40 24 44 22 30 C38 30 50 40 60 48 C70 40 82 30 98 30 C96 44 78 40 60 58 Z" fill="#38bdf8" stroke="#0369a1" stroke-width="2"/><circle cx="60" cy="40" r="6" fill="#0369a1"/>' + diagLabel(60, 96, 'RIGHTS', '#0369a1', 12)],
+    ['justice', 'Justice (Fair Balanced Law Scales)', 'social', 'court fair equal law judge',
+      '<line x1="60" y1="24" x2="60" y2="86" stroke="#0f172a" stroke-width="3"/><line x1="26" y1="36" x2="94" y2="36" stroke="#0f172a" stroke-width="3"/><path d="M20 62 Q30 72 40 62 Z" fill="#facc15" stroke="#0f172a" stroke-width="1.5"/><path d="M80 62 Q90 72 100 62 Z" fill="#facc15" stroke="#0f172a" stroke-width="1.5"/>'],
+    ['trial', 'Trial (Courtroom Hearing & Jury)', 'social', 'court judge verdict law',
+      '<rect x="28" y="34" width="38" height="18" rx="4" fill="#92400e" stroke="#451a03" stroke-width="2"/><line x1="62" y1="48" x2="88" y2="74" stroke="#78350f" stroke-width="6" stroke-linecap="round"/><rect x="26" y="76" width="44" height="10" rx="2" fill="#451a03"/>'],
+    ['bill', 'Bill (Proposed Law Draft)', 'social', 'legislature congress draft law vote',
+      '<rect x="30" y="22" width="60" height="72" rx="4" fill="#ffffff" stroke="#0f172a" stroke-width="2.5"/><line x1="40" y1="38" x2="80" y2="38" stroke="#1d4ed8" stroke-width="3"/><line x1="40" y1="52" x2="80" y2="52" stroke="#64748b" stroke-width="2"/><line x1="40" y1="66" x2="72" y2="66" stroke="#64748b" stroke-width="2"/>'],
+    ['veto', 'Veto (Executive Rejection of Bill)', 'social', 'president reject bill checks balance',
+      '<rect x="26" y="30" width="68" height="44" rx="6" fill="#fee2e2" stroke="#b91c1c" stroke-width="2.5"/>' + diagLabel(60, 58, 'VETO', '#b91c1c', 18) + diagLabel(60, 96, 'REJECTED BILL', '#b91c1c', 10)],
+    ['monarchy', 'Monarchy (Crown & Royal Rule)', 'social', 'king queen crown throne kingdom',
+      '<polygon points="26,70 26,38 44,54 60,32 76,54 94,38 94,70" fill="#facc15" stroke="#b45309" stroke-width="2.5"/><rect x="26" y="70" width="68" height="12" fill="#d97706" stroke="#b45309" stroke-width="2"/>'],
+    ['empire', 'Empire (Large Territory Under One Rule)', 'social', 'rome conquest kingdom provinces territory',
+      '<circle cx="60" cy="54" r="32" fill="#fde68a" stroke="#b45309" stroke-width="2.5"/><circle cx="60" cy="54" r="9" fill="#be123c"/><line x1="60" y1="22" x2="60" y2="44" stroke="#b45309" stroke-width="2"/><line x1="28" y1="54" x2="50" y2="54" stroke="#b45309" stroke-width="2"/><line x1="70" y1="54" x2="92" y2="54" stroke="#b45309" stroke-width="2"/>'],
+    ['border', 'Border (Line Separating Regions)', 'social', 'boundary frontier country state map',
+      '<rect x="18" y="24" width="42" height="66" fill="#bfdbfe" stroke="#1d4ed8" stroke-width="1.5"/><rect x="60" y="24" width="42" height="66" fill="#bbf7d0" stroke="#15803d" stroke-width="1.5"/><line x1="60" y1="24" x2="60" y2="90" stroke="#be123c" stroke-width="4" stroke-dasharray="6,4"/>'],
+    ['population', 'Population (Total Group Count)', 'social', 'people census density residents',
+      '<circle cx="38" cy="40" r="8" fill="#1d4ed8"/><circle cx="60" cy="40" r="8" fill="#1d4ed8"/><circle cx="82" cy="40" r="8" fill="#1d4ed8"/><circle cx="48" cy="64" r="8" fill="#047857"/><circle cx="72" cy="64" r="8" fill="#047857"/>' + diagLabel(60, 96, 'TOTAL COUNT', '#0f172a', 11)],
+    ['census', 'Census (Official People Count)', 'social', 'count population survey government',
+      '<rect x="24" y="24" width="72" height="72" rx="6" fill="#ffffff" stroke="#0f172a" stroke-width="2.5"/><circle cx="42" cy="44" r="7" fill="#2563eb"/><line x1="56" y1="44" x2="84" y2="44" stroke="#334155" stroke-width="3"/><circle cx="42" cy="68" r="7" fill="#16a34a"/><line x1="56" y1="68" x2="84" y2="68" stroke="#334155" stroke-width="3"/>'],
+
+    // Wave 5 ELA, Grammar & Literature
+    ['poem', 'Poem (Rhythmic Stanzas & Verses)', 'ela', 'poetry rhyme stanza verse line',
+      '<rect x="24" y="22" width="72" height="72" rx="6" fill="#fffbeb" stroke="#b45309" stroke-width="2"/><line x1="36" y1="36" x2="78" y2="36" stroke="#b45309" stroke-width="3"/><line x1="42" y1="48" x2="74" y2="48" stroke="#d97706" stroke-width="2.5"/><line x1="36" y1="64" x2="80" y2="64" stroke="#b45309" stroke-width="3"/><line x1="42" y1="76" x2="70" y2="76" stroke="#d97706" stroke-width="2.5"/>'],
+    ['genre', 'Genre (Story Categories Shelf)', 'ela', 'fiction nonfiction mystery poetry biography',
+      '<rect x="22" y="28" width="22" height="54" rx="3" fill="#2563eb"/><rect x="49" y="24" width="22" height="58" rx="3" fill="#16a34a"/><rect x="76" y="32" width="22" height="50" rx="3" fill="#be123c"/><line x1="16" y1="84" x2="104" y2="84" stroke="#0f172a" stroke-width="3"/>'],
+    ['legend', 'Legend (Key Box or Hero Tale)', 'ela', 'map key folk myth story',
+      '<rect x="22" y="26" width="76" height="64" rx="6" fill="#fef9c3" stroke="#ca8a04" stroke-width="2.5"/><circle cx="38" cy="46" r="6" fill="#2563eb"/><line x1="52" y1="46" x2="84" y2="46" stroke="#0f172a" stroke-width="2.5"/><polygon points="38,62 32,74 44,74" fill="#16a34a"/><line x1="52" y1="68" x2="84" y2="68" stroke="#0f172a" stroke-width="2.5"/>'],
+    ['fable', 'Fable (Animal Tale with a Lesson)', 'ela', 'moral story aesop folktale lesson',
+      '<rect x="22" y="26" width="76" height="64" rx="6" fill="#ecfeff" stroke="#0891b2" stroke-width="2.5"/>' + diagLabel(60, 52, 'STORY', '#0e7490', 14) + '<line x1="36" y1="64" x2="84" y2="64" stroke="#0e7490" stroke-width="2"/>' + diagLabel(60, 80, 'MORAL LESSON', '#155e75', 10)],
+    ['thesis', 'Thesis (Central Claim Supported)', 'ela', 'essay claim argument topic sentence',
+      '<rect x="22" y="24" width="76" height="22" rx="4" fill="#1d4ed8"/>' + diagLabel(60, 39, 'CLAIM', '#ffffff', 12) + '<rect x="24" y="60" width="20" height="24" fill="#93c5fd"/><rect x="50" y="60" width="20" height="24" fill="#93c5fd"/><rect x="76" y="60" width="20" height="24" fill="#93c5fd"/>'],
+    ['vowel', 'Vowel (A E I O U Open Voice)', 'ela', 'phonics syllable short long letter',
+      '<rect x="18" y="34" width="84" height="44" rx="8" fill="#fce7f3" stroke="#be185d" stroke-width="2.5"/>' + diagLabel(60, 62, 'A E I O U', '#9d174d', 16)],
+    ['consonant', 'Consonant (Articulated Letter Sounds)', 'ela', 'phonics letter blend digraph sound',
+      '<rect x="18" y="34" width="84" height="44" rx="8" fill="#e0f2fe" stroke="#0369a1" stroke-width="2.5"/>' + diagLabel(60, 62, 'B C D F', '#0369a1', 16)],
+    ['rhythm', 'Rhythm (Steady Beat Pattern)', 'ela', 'meter poetry beat music pulse',
+      '<path d="M18 68 Q28 36 38 68 Q48 52 58 68 Q68 36 78 68 Q88 52 98 68" fill="none" stroke="#be123c" stroke-width="3.5"/>' + diagLabel(60, 94, 'BEAT PATTERN', '#be123c', 11)],
+    ['tone', 'Tone (Author Attitude & Voice)', 'ela', 'mood voice feeling sound music',
+      '<circle cx="42" cy="52" r="14" fill="#fef3c7" stroke="#d97706" stroke-width="2"/><circle cx="78" cy="52" r="14" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>' + diagLabel(60, 94, 'VOICE ATTITUDE', '#334155', 11)],
+    ['phrase', 'Phrase (Group of Connected Words)', 'ela', 'words expression without verb',
+      '<rect x="18" y="38" width="84" height="32" rx="14" fill="#e0e7ff" stroke="#4338ca" stroke-width="2.5"/>' + diagLabel(60, 59, 'in the park', '#312e81', 13)],
+    ['clause', 'Clause (Subject Plus Verb)', 'ela', 'sentence independent dependent grammar',
+      '<rect x="18" y="36" width="38" height="32" rx="4" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>' + diagLabel(37, 57, 'SUBJ', '#1d4ed8', 11) + '<rect x="64" y="36" width="38" height="32" rx="4" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>' + diagLabel(83, 57, 'VERB', '#15803d', 11)],
+    ['predicate', 'Predicate (Action Part After Subject)', 'ela', 'verb sentence grammar object',
+      '<rect x="18" y="38" width="32" height="30" rx="4" fill="#e2e8f0" stroke="#64748b" stroke-width="1.5"/>' + diagLabel(34, 57, 'Dogs', '#475569', 11) + '<rect x="54" y="38" width="48" height="30" rx="4" fill="#dcfce7" stroke="#15803d" stroke-width="2.5"/>' + diagLabel(78, 57, 'run fast', '#15803d', 11)],
+    ['noun', 'Noun (Person, Place, or Thing)', 'ela', 'grammar part of speech object',
+      '<circle cx="34" cy="48" r="10" fill="#2563eb"/><rect x="52" y="38" width="20" height="20" fill="#16a34a"/><polygon points="90,36 78,58 102,58" fill="#d97706"/>' + diagLabel(60, 90, 'PERSON PLACE THING', '#0f172a', 9)],
+    ['verb', 'Verb (Action or State Word)', 'ela', 'action move do grammar predicate',
+      '<path d="M22 54 L84 54" stroke="#be123c" stroke-width="5" stroke-linecap="round"/><polygon points="98,54 78,42 78,66" fill="#be123c"/>' + diagLabel(60, 92, 'ACTION WORD', '#be123c', 11)],
+    ['adjective', 'Adjective (Describes a Noun)', 'ela', 'modify color size shape grammar',
+      '<rect x="18" y="38" width="38" height="28" rx="4" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>' + diagLabel(37, 56, 'BLUE', '#b45309', 11) + '<rect x="64" y="38" width="38" height="28" rx="4" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>' + diagLabel(83, 56, 'sky', '#1d4ed8', 12)],
+    ['adverb', 'Adverb (How, When, Where Action)', 'ela', 'modify verb quickly ly grammar',
+      '<rect x="18" y="38" width="34" height="28" rx="4" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>' + diagLabel(35, 56, 'ran', '#15803d', 12) + '<rect x="58" y="38" width="44" height="28" rx="4" fill="#ede9fe" stroke="#6d28d9" stroke-width="2"/>' + diagLabel(80, 56, 'swiftly', '#6d28d9', 11)],
+    ['pronoun', 'Pronoun (Stands in for a Noun)', 'ela', 'he she they we it replace',
+      '<rect x="20" y="34" width="32" height="28" rx="4" fill="#e2e8f0" stroke="#64748b" stroke-width="2"/>' + diagLabel(36, 52, 'Maya', '#475569', 11) + '<path d="M55 48 L67 48" stroke="#0f172a" stroke-width="2"/><rect x="70" y="34" width="30" height="28" rx="4" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>' + diagLabel(85, 52, 'she', '#1d4ed8', 13)],
+    ['preposition', 'Preposition (Position: On, In, Under)', 'ela', 'location spatial relation grammar',
+      '<rect x="34" y="54" width="52" height="10" rx="2" fill="#78350f"/><circle cx="60" cy="40" r="10" fill="#2563eb"/>' + diagLabel(60, 90, 'ON / UNDER', '#0f172a', 11)],
+    ['conjunction', 'Conjunction (Bridge Joining Words)', 'ela', 'and but or because connect',
+      '<rect x="16" y="42" width="26" height="24" rx="4" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/><rect x="44" y="46" width="32" height="16" rx="8" fill="#facc15" stroke="#b45309" stroke-width="2"/><rect x="78" y="42" width="26" height="24" rx="4" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>' + diagLabel(60, 58, 'AND', '#78350f', 9)],
+    ['interjection', 'Interjection (Sudden Feeling Callout)', 'ela', 'emotion oh wow expression speech',
+      '<polygon points="60,20 70,38 92,34 80,52 96,68 74,68 72,90 56,74 36,86 42,64 22,58 40,44 30,26 50,36" fill="#fef08a" stroke="#ca8a04" stroke-width="2"/>' + diagLabel(60, 60, 'OH', '#991b1b', 14)],
+    ['imagery', 'Imagery (Sensory Picture Details)', 'ela', 'sight sound smell taste touch',
+      '<ellipse cx="60" cy="50" rx="34" ry="18" fill="#ffffff" stroke="#0f172a" stroke-width="2.5"/><circle cx="60" cy="50" r="10" fill="#0284c7"/><circle cx="60" cy="50" r="4" fill="#0f172a"/>' + diagLabel(60, 92, '5 SENSES SCENE', '#0369a1', 10)],
+    ['onomatopoeia', 'Onomatopoeia (Sound Effect Words)', 'ela', 'buzz bang hiss sound word',
+      '<polygon points="60,22 72,38 94,36 82,54 96,72 74,72 62,90 50,72 28,74 40,56 26,38 48,40" fill="#fde047" stroke="#b45309" stroke-width="2.5"/>' + diagLabel(60, 62, 'BUZZ', '#be123c', 15)],
+    ['symbolism', 'Symbolism (Object Stands for Idea)', 'ela', 'meaning olive branch peace metaphor',
+      '<path d="M60 32 C42 32 30 46 30 60 C30 78 60 88 60 88 C60 88 90 78 90 60 C90 46 78 32 60 32 Z" fill="#fef3c7" stroke="#b45309" stroke-width="2.5"/>' + diagLabel(60, 62, '=', '#78350f', 20) + diagLabel(60, 104, 'DEEPER IDEA', '#78350f', 11)],
+    ['irony', 'Irony (Opposite of Expected Outcome)', 'ela', 'contrast twist unexpected humor',
+      '<rect x="20" y="34" width="32" height="32" rx="4" fill="#dcfce7" stroke="#15803d" stroke-width="2"/><path d="M56 50 L66 50" stroke="#0f172a" stroke-width="2.5"/><rect x="68" y="34" width="32" height="32" rx="4" fill="#fee2e2" stroke="#be123c" stroke-width="2"/>' + diagLabel(36, 54, 'PLAN', '#15803d', 10) + diagLabel(84, 54, 'TWIST', '#be123c', 10)],
+    ['protagonist', 'Protagonist (Main Leading Character)', 'ela', 'hero main character story arc',
+      '<polygon points="60,24 68,46 92,46 72,60 80,82 60,68 40,82 48,60 28,46 52,46" fill="#facc15" stroke="#b45309" stroke-width="2.5"/>' + diagLabel(60, 102, 'MAIN HERO', '#b45309', 11)],
+    ['antagonist', 'Antagonist (Opposing Character/Force)', 'ela', 'rival conflict opposition obstacle',
+      '<polygon points="36,34 84,82 74,90 26,42" fill="#be123c"/><polygon points="84,34 36,82 26,74 74,26" fill="#be123c"/>' + diagLabel(60, 104, 'OPPOSING FORCE', '#9f1239', 10)],
+    ['foreshadowing', 'Foreshadowing (Early Clue of Future)', 'ela', 'hint future story clue suspense',
+      '<circle cx="34" cy="48" r="14" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2.5"/><line x1="44" y1="58" x2="60" y2="74" stroke="#1d4ed8" stroke-width="4"/><path d="M68 54 L96 54" stroke="#0f172a" stroke-width="3"/><polygon points="100,54 90,48 90,60" fill="#0f172a"/>'],
+    ['citation', 'Citation (Named Source Credit)', 'ela', 'quote author evidence bibliography reference',
+      '<rect x="22" y="26" width="76" height="64" rx="4" fill="#ffffff" stroke="#0f172a" stroke-width="2.5"/>' + diagLabel(40, 50, '"..."', '#1d4ed8', 18) + '<line x1="36" y1="68" x2="84" y2="68" stroke="#047857" stroke-width="3"/>' + diagLabel(60, 82, 'SOURCE', '#047857', 10)],
+    ['memoir', 'Memoir (True Personal Memory Book)', 'ela', 'autobiography journal life story',
+      '<rect x="28" y="24" width="64" height="72" rx="4" fill="#fef3c7" stroke="#92400e" stroke-width="2.5"/><rect x="28" y="24" width="12" height="72" fill="#b45309"/>' + diagLabel(66, 58, 'MY', '#78350f', 14) + diagLabel(66, 74, 'STORY', '#78350f', 11)],
+    ['revision', 'Revision (Rewriting & Improving Draft)', 'ela', 'edit improve rewrite writing process',
+      '<rect x="22" y="26" width="54" height="68" rx="4" fill="#ffffff" stroke="#0f172a" stroke-width="2"/><line x1="32" y1="44" x2="64" y2="44" stroke="#94a3b8" stroke-width="2"/><line x1="32" y1="58" x2="64" y2="58" stroke="#16a34a" stroke-width="3"/><polygon points="80,26 92,34 74,66 64,60" fill="#facc15" stroke="#b45309" stroke-width="1.5"/>'],
+    ['topography', 'Topography (Land Elevation & Contours)', 'social', 'elevation contour hills valley map',
+      '<ellipse cx="60" cy="56" rx="40" ry="28" fill="#bbf7d0" stroke="#15803d" stroke-width="2"/><ellipse cx="60" cy="56" rx="28" ry="18" fill="#fde68a" stroke="#b45309" stroke-width="2"/><ellipse cx="60" cy="56" rx="14" ry="8" fill="#fca5a5" stroke="#b91c1c" stroke-width="2"/>'],
+    ['entrepreneur', 'Entrepreneur (Starts & Runs Business)', 'economics', 'founder business innovation shop startup',
+      '<circle cx="60" cy="36" r="14" fill="#facc15" stroke="#b45309" stroke-width="2"/><rect x="40" y="60" width="40" height="28" rx="4" fill="#2563eb"/>' + diagLabel(60, 78, 'IDEA', '#ffffff', 11)],
+
+    // Wave 6 Tier-2 Academic & Cross-Curricular Diagrams
+    ['direction', 'Direction (Compass Path & Arrow)', 'social', 'route guide north path orientation',
+      '<circle cx="60" cy="56" r="32" fill="#eff6ff" stroke="#1d4ed8" stroke-width="2.5"/><polygon points="60,28 70,56 60,48 50,56" fill="#be123c"/><polygon points="60,84 70,56 60,64 50,56" fill="#94a3b8"/>'],
+    ['distance', 'Distance (Span Between Points A & B)', 'math', 'length space span far measurement',
+      '<circle cx="24" cy="56" r="8" fill="#1d4ed8"/><circle cx="96" cy="56" r="8" fill="#15803d"/><line x1="34" y1="56" x2="86" y2="56" stroke="#0f172a" stroke-width="3" stroke-dasharray="5,3"/>' + diagLabel(60, 84, 'A TO B', '#334155', 12)],
+    ['position', 'Position (Exact Location Marker)', 'math', 'place coordinate location spot pin',
+      '<path d="M60 22 C44 22 36 34 36 48 C36 66 60 90 60 90 C60 90 84 66 84 48 C84 34 76 22 60 22 Z" fill="#dc2626" stroke="#7f1d1d" stroke-width="2"/><circle cx="60" cy="48" r="9" fill="#ffffff"/>'],
+    ['balance', 'Balance (Equilibrium Scale)', 'science', 'steady equal weight stability',
+      '<polygon points="60,64 48,88 72,88" fill="#475569"/><line x1="20" y1="56" x2="100" y2="56" stroke="#0f172a" stroke-width="4"/><rect x="22" y="34" width="22" height="18" rx="3" fill="#2563eb"/><rect x="76" y="34" width="22" height="18" rx="3" fill="#2563eb"/>'],
+    ['system', 'System (Connected Working Parts)', 'science', 'network cycle organization parts',
+      '<circle cx="34" cy="38" r="14" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2.5"/><circle cx="86" cy="38" r="14" fill="#dcfce7" stroke="#15803d" stroke-width="2.5"/><circle cx="60" cy="78" r="14" fill="#fef3c7" stroke="#b45309" stroke-width="2.5"/><line x1="48" y1="38" x2="72" y2="38" stroke="#0f172a" stroke-width="2"/><line x1="40" y1="50" x2="52" y2="66" stroke="#0f172a" stroke-width="2"/><line x1="80" y1="50" x2="68" y2="66" stroke="#0f172a" stroke-width="2"/>'],
+    ['process', 'Process (Step-by-Step Sequence)', 'science', 'steps workflow method order',
+      '<rect x="16" y="42" width="24" height="28" rx="4" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/><path d="M42 56 L48 56" stroke="#0f172a" stroke-width="2.5"/><rect x="48" y="42" width="24" height="28" rx="4" fill="#dcfce7" stroke="#15803d" stroke-width="2"/><path d="M74 56 L80 56" stroke="#0f172a" stroke-width="2.5"/><rect x="80" y="42" width="24" height="28" rx="4" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>' + diagLabel(28, 60, '1', '#1d4ed8', 13) + diagLabel(60, 60, '2', '#15803d', 13) + diagLabel(92, 60, '3', '#b45309', 13)],
+    ['structure', 'Structure (Frame & Support Beams)', 'science', 'build truss skeleton design support',
+      '<polygon points="22,84 60,26 98,84" fill="#e2e8f0" stroke="#0f172a" stroke-width="2.5"/><line x1="40" y1="56" x2="80" y2="56" stroke="#1d4ed8" stroke-width="2.5"/><line x1="60" y1="26" x2="60" y2="84" stroke="#1d4ed8" stroke-width="2.5"/>'],
+    ['function_math', 'Function Machine (Input to Output Rule)', 'math', 'algebra rule input output table',
+      '<rect x="34" y="34" width="52" height="44" rx="6" fill="#e0e7ff" stroke="#4338ca" stroke-width="2.5"/>' + diagLabel(60, 62, 'f(x)', '#312e81', 18) + '<line x1="14" y1="56" x2="34" y2="56" stroke="#15803d" stroke-width="3"/><line x1="86" y1="56" x2="106" y2="56" stroke="#be123c" stroke-width="3"/>'],
+    ['input_output', 'Input & Output (Enter and Exit Flow)', 'math', 'function rule productivity transform',
+      '<rect x="18" y="40" width="32" height="28" rx="4" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>' + diagLabel(34, 58, 'IN', '#15803d', 13) + '<path d="M52 54 L66 54" stroke="#0f172a" stroke-width="3"/><polygon points="70,54 62,48 62,60" fill="#0f172a"/><rect x="72" y="40" width="32" height="28" rx="4" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>' + diagLabel(88, 58, 'OUT', '#1d4ed8', 12)],
+    ['network', 'Network (Nodes Linked Together)', 'social', 'web internet nodes link connect',
+      '<line x1="60" y1="54" x2="28" y2="30" stroke="#475569" stroke-width="2.5"/><line x1="60" y1="54" x2="92" y2="30" stroke="#475569" stroke-width="2.5"/><line x1="60" y1="54" x2="28" y2="82" stroke="#475569" stroke-width="2.5"/><line x1="60" y1="54" x2="92" y2="82" stroke="#475569" stroke-width="2.5"/><circle cx="60" cy="54" r="10" fill="#be123c"/><circle cx="28" cy="30" r="8" fill="#2563eb"/><circle cx="92" cy="30" r="8" fill="#2563eb"/><circle cx="28" cy="82" r="8" fill="#16a34a"/><circle cx="92" cy="82" r="8" fill="#16a34a"/>'],
+    ['cycle', 'Cycle (Repeating Circular Loop)', 'science', 'repeat season loop life water carbon',
+      '<path d="M60 24 A32 32 0 1 1 28 56" fill="none" stroke="#1d4ed8" stroke-width="4"/><polygon points="28,46 20,60 36,60" fill="#1d4ed8"/><path d="M28 56 A32 32 0 0 1 54 24" fill="none" stroke="#16a34a" stroke-width="4"/>'],
+    ['layer', 'Layer (Stacked Horizontal Strata)', 'science', 'tier stratum crust atmosphere sheet',
+      '<rect x="20" y="26" width="80" height="16" rx="3" fill="#93c5fd" stroke="#1d4ed8" stroke-width="1.5"/><rect x="20" y="46" width="80" height="16" rx="3" fill="#fde68a" stroke="#b45309" stroke-width="1.5"/><rect x="20" y="66" width="80" height="16" rx="3" fill="#a8a29e" stroke="#44403c" stroke-width="1.5"/>'],
+    ['boundary', 'Boundary (Dividing Edge & Limit)', 'social', 'limit edge frame zone border',
+      '<rect x="22" y="26" width="76" height="62" rx="6" fill="#f1f5f9" stroke="#be123c" stroke-width="4" stroke-dasharray="8,4"/><circle cx="60" cy="57" r="14" fill="#2563eb"/>'],
+    ['resource', 'Resource (Water, Wood & Energy Supply)', 'economics', 'natural supply raw materials',
+      '<polygon points="36,78 24,52 48,52" fill="#15803d"/><rect x="33" y="78" width="6" height="12" fill="#78350f"/><path d="M78 30 C78 30 92 50 92 60 A14 14 0 1 1 64 60 C64 50 78 30 78 30 Z" fill="#0284c7"/>'],
+    ['shelter', 'Shelter (Protective Roof & Walls)', 'social', 'home house cover refuge',
+      '<polygon points="60,24 22,52 98,52" fill="#b91c1c" stroke="#0f172a" stroke-width="2"/><rect x="30" y="52" width="60" height="36" fill="#fef3c7" stroke="#0f172a" stroke-width="2"/><rect x="52" y="64" width="16" height="24" fill="#78350f"/>'],
+    ['transport', 'Transport (Moving Goods & People)', 'social', 'truck bus travel cargo move',
+      '<rect x="20" y="42" width="52" height="30" rx="4" fill="#2563eb"/><rect x="72" y="50" width="26" height="22" rx="4" fill="#3b82f6"/><circle cx="34" cy="76" r="8" fill="#0f172a"/><circle cx="84" cy="76" r="8" fill="#0f172a"/>'],
+    ['signal', 'Signal (Broadcasting Waves & Beacon)', 'science', 'radio pulse cue message alert',
+      '<circle cx="60" cy="72" r="8" fill="#be123c"/><path d="M44 58 A22 22 0 0 1 76 58" fill="none" stroke="#1d4ed8" stroke-width="3"/><path d="M32 46 A38 38 0 0 1 88 46" fill="none" stroke="#1d4ed8" stroke-width="3"/>'],
+    ['memory', 'Memory (Stored Brain Recall)', 'science', 'recall memorize remember mind store',
+      '<path d="M40 72 C26 70 24 46 38 38 C42 26 62 24 72 32 C88 32 94 52 84 66 C80 74 68 76 60 74 Z" fill="#fbcfe8" stroke="#9d174d" stroke-width="2.5"/><circle cx="52" cy="48" r="6" fill="#2563eb"/><circle cx="70" cy="48" r="6" fill="#16a34a"/>'],
+    ['attention', 'Attention (Spotlight Focus)', 'ela', 'notice aware conscious focus',
+      '<polygon points="60,24 24,84 96,84" fill="#fef08a" stroke="#ca8a04" stroke-width="2"/><circle cx="60" cy="64" r="12" fill="#1d4ed8"/>'],
+    ['focus', 'Focus (Crosshair Center Target)', 'ela', 'concentrate aim center target',
+      '<circle cx="60" cy="56" r="30" fill="#ffffff" stroke="#0f172a" stroke-width="2"/><circle cx="60" cy="56" r="16" fill="#fee2e2" stroke="#dc2626" stroke-width="2.5"/><circle cx="60" cy="56" r="6" fill="#dc2626"/><line x1="60" y1="18" x2="60" y2="34" stroke="#0f172a" stroke-width="2"/><line x1="60" y1="78" x2="60" y2="94" stroke="#0f172a" stroke-width="2"/>'],
+    ['strategy', 'Strategy (Mapped Game Plan Arrows)', 'math', 'plan route solve step tactic',
+      '<rect x="20" y="24" width="80" height="66" rx="6" fill="#ecfdf5" stroke="#047857" stroke-width="2"/><circle cx="34" cy="72" r="7" fill="#be123c"/><path d="M42 70 Q56 44 82 38" fill="none" stroke="#1d4ed8" stroke-width="3" stroke-dasharray="4,3"/><polyline points="74,34 86,38 78,48" fill="none" stroke="#1d4ed8" stroke-width="3"/>'],
+    ['goal', 'Goal (Flag at Summit Finish)', 'social', 'target aim objective purpose finish',
+      '<polygon points="22,88 54,32 82,88" fill="#cbd5e1" stroke="#475569" stroke-width="2"/><line x1="54" y1="22" x2="54" y2="48" stroke="#0f172a" stroke-width="3"/><polygon points="54,22 82,30 54,38" fill="#16a34a"/>'],
+    ['progress', 'Progress (Climbing Growth Stairs)', 'math', 'advance improve step growth upward',
+      '<rect x="22" y="70" width="18" height="18" fill="#93c5fd"/><rect x="44" y="54" width="18" height="34" fill="#3b82f6"/><rect x="66" y="34" width="18" height="54" fill="#16a34a"/><polyline points="24,62 50,42 84,22" fill="none" stroke="#be123c" stroke-width="3"/>'],
+    ['mistake_fix', 'Fix & Correction (X to Checkmark)', 'ela', 'correct edit error feedback improve',
+      '<line x1="24" y1="42" x2="44" y2="62" stroke="#dc2626" stroke-width="4"/><line x1="44" y1="42" x2="24" y2="62" stroke="#dc2626" stroke-width="4"/><path d="M52 52 L66 52" stroke="#0f172a" stroke-width="2.5"/><polyline points="74,54 84,64 100,40" fill="none" stroke="#16a34a" stroke-width="4.5" stroke-linecap="round"/>'],
+    ['cooperation', 'Cooperation (Joined Puzzle Pieces)', 'social', 'teamwork partner collaborate together',
+      '<rect x="22" y="36" width="38" height="38" rx="4" fill="#3b82f6"/><circle cx="62" cy="55" r="10" fill="#3b82f6"/><rect x="60" y="36" width="38" height="38" rx="4" fill="#16a34a" opacity="0.9"/>'],
+    ['debate', 'Debate (Two Perspectives Facing)', 'ela', 'argue discuss view discussion',
+      '<rect x="18" y="30" width="36" height="26" rx="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>' + diagLabel(36, 47, 'A', '#1d4ed8', 15) + '<rect x="66" y="52" width="36" height="26" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>' + diagLabel(84, 69, 'B', '#b45309', 15)],
+    ['rule_law', 'Rule & Protocol (Checklist Document)', 'social', 'regulation policy law guideline order',
+      '<rect x="26" y="22" width="68" height="72" rx="4" fill="#ffffff" stroke="#0f172a" stroke-width="2.5"/><line x1="38" y1="42" x2="82" y2="42" stroke="#1d4ed8" stroke-width="3"/><line x1="38" y1="58" x2="82" y2="58" stroke="#475569" stroke-width="2.5"/><line x1="38" y1="74" x2="72" y2="74" stroke="#475569" stroke-width="2.5"/>'],
+    ['fairness', 'Fairness (Equal Portions Shared)', 'social', 'equal justice impartial honest share',
+      '<rect x="20" y="42" width="34" height="30" rx="4" fill="#bfdbfe" stroke="#1d4ed8" stroke-width="2"/><rect x="66" y="42" width="34" height="30" rx="4" fill="#bfdbfe" stroke="#1d4ed8" stroke-width="2"/>' + diagLabel(60, 62, '=', '#15803d', 20) + diagLabel(60, 94, 'EQUAL SHARE', '#15803d', 11)],
+    ['choice', 'Choice (Forking Decision Path)', 'ela', 'decide option pick branch choose',
+      '<line x1="60" y1="86" x2="60" y2="56" stroke="#0f172a" stroke-width="4"/><line x1="60" y1="56" x2="30" y2="30" stroke="#2563eb" stroke-width="4"/><line x1="60" y1="56" x2="90" y2="30" stroke="#16a34a" stroke-width="4"/><circle cx="30" cy="28" r="6" fill="#2563eb"/><circle cx="90" cy="28" r="6" fill="#16a34a"/>'],
+    ['consequence', 'Consequence (Action Ripple Result)', 'ela', 'result outcome effect cause impact',
+      '<circle cx="60" cy="56" r="8" fill="#be123c"/><circle cx="60" cy="56" r="20" fill="none" stroke="#f59e0b" stroke-width="2.5"/><circle cx="60" cy="56" r="34" fill="none" stroke="#0284c7" stroke-width="2"/>'],
+    ['categorize', 'Categorize (Sort Into Labeled Bins)', 'science', 'group sort classify bucket type',
+      '<rect x="20" y="30" width="34" height="54" rx="4" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/><rect x="66" y="30" width="34" height="54" rx="4" fill="#dcfce7" stroke="#15803d" stroke-width="2"/><circle cx="37" cy="64" r="6" fill="#1d4ed8"/><polygon points="83,56 75,70 91,70" fill="#15803d"/>'],
+    ['classify', 'Classify (Branching Group Tree)', 'science', 'taxonomy category sort kind group',
+      '<rect x="44" y="20" width="32" height="18" rx="4" fill="#e0e7ff" stroke="#4338ca" stroke-width="2"/><line x1="60" y1="38" x2="34" y2="62" stroke="#0f172a" stroke-width="2"/><line x1="60" y1="38" x2="86" y2="62" stroke="#0f172a" stroke-width="2"/><rect x="18" y="62" width="32" height="18" rx="4" fill="#dcfce7" stroke="#15803d" stroke-width="2"/><rect x="70" y="62" width="32" height="18" rx="4" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>'],
+    ['observe', 'Observe (Magnifier Examining Detail)', 'science', 'inspect notice look study detail',
+      '<circle cx="52" cy="50" r="22" fill="#e0f2fe" stroke="#0369a1" stroke-width="3.5"/><line x1="68" y1="66" x2="90" y2="88" stroke="#0f172a" stroke-width="6" stroke-linecap="round"/><circle cx="52" cy="50" r="7" fill="#16a34a"/>'],
+    ['measure_tool', 'Measure Tool (Marked Meter Stick)', 'math', 'length centimeter ruler metric',
+      '<rect x="18" y="42" width="84" height="28" rx="4" fill="#fde047" stroke="#ca8a04" stroke-width="2"/><line x1="34" y1="42" x2="34" y2="56" stroke="#0f172a" stroke-width="2"/><line x1="50" y1="42" x2="50" y2="60" stroke="#0f172a" stroke-width="2"/><line x1="66" y1="42" x2="66" y2="56" stroke="#0f172a" stroke-width="2"/><line x1="82" y1="42" x2="82" y2="60" stroke="#0f172a" stroke-width="2"/>'],
+    ['record_data', 'Record Data (Chart Clipboard)', 'science', 'log write track table numbers',
+      '<rect x="26" y="22" width="68" height="72" rx="6" fill="#ffffff" stroke="#0f172a" stroke-width="2.5"/><rect x="44" y="16" width="32" height="10" rx="3" fill="#475569"/><line x1="36" y1="42" x2="84" y2="42" stroke="#2563eb" stroke-width="3"/><line x1="36" y1="58" x2="84" y2="58" stroke="#16a34a" stroke-width="3"/><line x1="36" y1="74" x2="72" y2="74" stroke="#d97706" stroke-width="3"/>'],
+    ['reflect_think', 'Reflect & Analyze (Thought Cloud)', 'ela', 'think analyze consider reason wonder',
+      '<ellipse cx="62" cy="48" rx="28" ry="18" fill="#e0f2fe" stroke="#0284c7" stroke-width="2.5"/><circle cx="36" cy="72" r="6" fill="#bae6fd" stroke="#0284c7" stroke-width="1.5"/><circle cx="24" cy="84" r="4" fill="#bae6fd" stroke="#0284c7" stroke-width="1.5"/>'],
+    ['question_ask', 'Question & Inquiry (Question Badge)', 'ela', 'ask wonder inquire hypothesis prompt',
+      '<circle cx="60" cy="56" r="30" fill="#fef3c7" stroke="#b45309" stroke-width="2.5"/>' + diagLabel(60, 68, '?', '#b45309', 36)],
+    ['connect_link', 'Connect (Interlocked Chain Links)', 'ela', 'link relate join association match',
+      '<rect x="22" y="42" width="42" height="24" rx="12" fill="none" stroke="#1d4ed8" stroke-width="5"/><rect x="56" y="42" width="42" height="24" rx="12" fill="none" stroke="#15803d" stroke-width="5"/>'],
+    ['transform', 'Transform (Square Morphs to Circle)', 'math', 'change convert morph adapt alter',
+      '<rect x="18" y="38" width="28" height="28" rx="3" fill="#2563eb"/><path d="M52 52 L66 52" stroke="#0f172a" stroke-width="3"/><polygon points="70,52 62,46 62,58" fill="#0f172a"/><circle cx="88" cy="52" r="15" fill="#16a34a"/>'],
+    ['expand', 'Expand (Arrows Growing Outward)', 'science', 'enlarge inflate grow spread increase',
+      '<circle cx="60" cy="56" r="12" fill="#38bdf8"/><circle cx="60" cy="56" r="28" fill="none" stroke="#0284c7" stroke-width="2.5" stroke-dasharray="5,3"/><line x1="60" y1="22" x2="60" y2="34" stroke="#be123c" stroke-width="3"/><line x1="60" y1="78" x2="60" y2="90" stroke="#be123c" stroke-width="3"/>'],
+    ['shrink', 'Shrink (Arrows Moving Inward)', 'math', 'contract decrease reduce smaller',
+      '<rect x="26" y="26" width="68" height="60" rx="6" fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="4,3"/><rect x="44" y="42" width="32" height="28" rx="4" fill="#2563eb"/>' + diagLabel(60, 102, 'SMALLER', '#475569', 11)],
+    ['combine', 'Combine (Pieces Joining Together)', 'math', 'merge mix unite add synthesize',
+      '<circle cx="34" cy="40" r="12" fill="#3b82f6"/><circle cx="34" cy="72" r="12" fill="#f59e0b"/><path d="M52 56 L68 56" stroke="#0f172a" stroke-width="3"/><rect x="74" y="38" width="28" height="36" rx="6" fill="#16a34a"/>'],
+    ['separate', 'Separate (Divided Left & Right Groups)', 'science', 'split isolate divide sort apart',
+      '<circle cx="28" cy="44" r="9" fill="#2563eb"/><circle cx="28" cy="68" r="9" fill="#2563eb"/><line x1="60" y1="26" x2="60" y2="88" stroke="#be123c" stroke-width="3" stroke-dasharray="5,3"/><circle cx="92" cy="44" r="9" fill="#d97706"/><circle cx="92" cy="68" r="9" fill="#d97706"/>'],
+    ['protect', 'Protect (Guard Shield & Core)', 'social', 'defend shield safety guard cover',
+      '<path d="M60 22 L92 34 V58 C92 78 60 94 60 94 C60 94 28 78 28 58 V34 Z" fill="#dbeafe" stroke="#1d4ed8" stroke-width="3"/><circle cx="60" cy="56" r="11" fill="#16a34a"/>'],
+    ['repair', 'Repair (Wrench Fixing Gear)', 'science', 'fix mend maintain restore tool',
+      '<circle cx="46" cy="56" r="18" fill="#cbd5e1" stroke="#334155" stroke-width="2.5"/><circle cx="46" cy="56" r="7" fill="#f8fafc"/><line x1="58" y1="44" x2="90" y2="76" stroke="#b45309" stroke-width="7" stroke-linecap="round"/>'],
+    ['discover', 'Discover (Telescope & Starlight)', 'science', 'explore find research reveal',
+      '<line x1="34" y1="74" x2="78" y2="42" stroke="#1d4ed8" stroke-width="8" stroke-linecap="round"/><line x1="56" y1="58" x2="56" y2="88" stroke="#475569" stroke-width="3"/><polygon points="88,24 91,32 99,32 93,37 95,45 88,40 81,45 83,37 77,32 85,32" fill="#facc15"/>'],
+    ['invent', 'Invent (Bright Idea Gear & Bulb)', 'science', 'create design innovate build new',
+      '<circle cx="60" cy="46" r="18" fill="#fef08a" stroke="#ca8a04" stroke-width="2.5"/><rect x="52" y="64" width="16" height="12" rx="2" fill="#64748b"/>' + diagLabel(60, 94, 'NEW DESIGN', '#b45309', 11)],
+    ['communicate', 'Communicate (Two-Way Speech Exchange)', 'ela', 'talk message express share converse',
+      '<rect x="18" y="28" width="46" height="28" rx="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/><rect x="56" y="54" width="46" height="28" rx="8" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>'],
+    ['celebrate', 'Celebrate (Gold Ribbon Award)', 'social', 'festival honor achievement award',
+      '<circle cx="60" cy="46" r="20" fill="#facc15" stroke="#b45309" stroke-width="2.5"/><polygon points="48,64 42,92 54,84 60,92" fill="#dc2626"/><polygon points="72,64 60,92 66,84 78,92" fill="#dc2626"/>'],
+    ['persevere', 'Persevere (Climbing Effort Arrows)', 'social', 'persist keep trying grit determination',
+      '<line x1="22" y1="84" x2="94" y2="28" stroke="#0f172a" stroke-width="3"/><polygon points="98,24 84,26 94,38" fill="#16a34a"/><circle cx="48" cy="64" r="7" fill="#2563eb"/>'],
+    ['ratio_table', 'Ratio Table (Paired Proportional Columns)', 'math', 'proportion rate scaling columns',
+      '<rect x="22" y="26" width="76" height="62" rx="4" fill="#ffffff" stroke="#0f172a" stroke-width="2"/><line x1="60" y1="26" x2="60" y2="88" stroke="#0f172a" stroke-width="2"/><line x1="22" y1="46" x2="98" y2="46" stroke="#0f172a" stroke-width="2"/>' + diagLabel(41, 41, '2', '#1d4ed8', 13) + diagLabel(79, 41, '3', '#15803d', 13) + diagLabel(41, 66, '4', '#1d4ed8', 13) + diagLabel(79, 66, '6', '#15803d', 13)],
+    ['coordinate_grid', 'Coordinate Grid (X & Y Graph Lines)', 'math', 'ordered pair axis quadrants plot',
+      '<line x1="24" y1="24" x2="24" y2="88" stroke="#cbd5e1" stroke-width="1"/><line x1="42" y1="24" x2="42" y2="88" stroke="#cbd5e1" stroke-width="1"/><line x1="60" y1="24" x2="60" y2="88" stroke="#0f172a" stroke-width="2.5"/><line x1="78" y1="24" x2="78" y2="88" stroke="#cbd5e1" stroke-width="1"/><line x1="24" y1="56" x2="96" y2="56" stroke="#0f172a" stroke-width="2.5"/><circle cx="78" cy="40" r="5" fill="#be123c"/>'],
+    ['number_pattern', 'Number Pattern (2, 4, 6, 8 Sequence)', 'math', 'arithmetic rule skip series sequence',
+      '<circle cx="24" cy="54" r="11" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/><circle cx="48" cy="54" r="11" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/><circle cx="72" cy="54" r="11" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/><circle cx="96" cy="54" r="11" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>' + diagLabel(24, 59, '2', '#1d4ed8', 12) + diagLabel(48, 59, '4', '#1d4ed8', 12) + diagLabel(72, 59, '6', '#1d4ed8', 12) + diagLabel(96, 59, '8', '#15803d', 12)],
+    ['concept', 'Concept (Core Idea Bubble & Links)', 'ela', 'idea mental general theory thought',
+      '<circle cx="60" cy="54" r="24" fill="#fef08a" stroke="#ca8a04" stroke-width="2.5"/>' + diagLabel(60, 59, 'IDEA', '#78350f', 13)],
+    ['method', 'Method (Ordered Toolbox Procedure)', 'science', 'procedure way step technique process',
+      '<rect x="24" y="34" width="72" height="50" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2.5"/><line x1="36" y1="50" x2="84" y2="50" stroke="#0f172a" stroke-width="3"/><line x1="36" y1="64" x2="72" y2="64" stroke="#475569" stroke-width="3"/>'],
+    ['problem', 'Problem (Challenge Seeking Answer)', 'math', 'question dilemma puzzle solve issue',
+      '<rect x="22" y="28" width="76" height="58" rx="8" fill="#fee2e2" stroke="#b91c1c" stroke-width="2.5"/>' + diagLabel(60, 64, '? =', '#b91c1c', 22)],
+    ['solution_math', 'Solution (Checked Correct Result)', 'math', 'answer solve resolved conclusion',
+      '<rect x="22" y="28" width="76" height="58" rx="8" fill="#dcfce7" stroke="#15803d" stroke-width="2.5"/><polyline points="42,58 54,70 78,42" fill="none" stroke="#15803d" stroke-width="5" stroke-linecap="round"/>'],
+    ['value', 'Value (Measured Coin & Quantity)', 'math', 'worth price number amount numeral',
+      '<circle cx="60" cy="54" r="28" fill="#fde047" stroke="#b45309" stroke-width="3"/>' + diagLabel(60, 62, '10', '#78350f', 22)],
+    ['truth', 'Truth (Verified Fact Check Badge)', 'ela', 'fact real definite accurate verify',
+      '<circle cx="60" cy="54" r="28" fill="#dcfce7" stroke="#15803d" stroke-width="3"/><polyline points="46,56 56,66 76,42" fill="none" stroke="#15803d" stroke-width="5" stroke-linecap="round"/>'],
+    ['change', 'Change (Before to After Delta)', 'science', 'delta transform shift vary alter',
+      '<polygon points="60,26 92,82 28,82" fill="#e0f2fe" stroke="#0284c7" stroke-width="3"/>' + diagLabel(60, 74, 'SHIFT', '#0369a1', 11)],
+
+    // Wave 7 Tier-1, Tier-2 & Curriculum Enrichment Diagrams (+50 -> 566 total)
+    ['paraphrase', 'Paraphrase (Same Meaning, Own Words)', 'ela', 'restate rewrite reword summary',
+      '<rect x="16" y="30" width="38" height="36" rx="4" fill="#e0f2fe" stroke="#0369a1" stroke-width="2"/>' + diagLabel(35, 52, 'TEXT', '#0369a1', 10) + '<path d="M56 48 L66 48" stroke="#0f172a" stroke-width="2.5"/><rect x="68" y="30" width="38" height="36" rx="4" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>' + diagLabel(87, 52, 'OWN', '#b45309', 10)],
+    ['perspective', 'Perspective (Point of View Lens)', 'ela', 'viewpoint outlook angle opinion stand',
+      '<circle cx="42" cy="54" r="16" fill="#e0f2fe" stroke="#0284c7" stroke-width="2.5"/><line x1="58" y1="46" x2="96" y2="30" stroke="#1d4ed8" stroke-width="2.5"/><line x1="58" y1="62" x2="96" y2="78" stroke="#1d4ed8" stroke-width="2.5"/><circle cx="42" cy="54" r="6" fill="#0f172a"/>'],
+    ['context_clue', 'Context Clue (Surrounding Text Hints)', 'ela', 'meaning surrounding hint unknown word',
+      '<rect x="14" y="42" width="24" height="24" rx="4" fill="#dcfce7" stroke="#15803d" stroke-width="2"/><rect x="42" y="38" width="36" height="32" rx="4" fill="#fef08a" stroke="#b45309" stroke-width="2.5"/><rect x="82" y="42" width="24" height="24" rx="4" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>' + diagLabel(60, 59, '?', '#b45309', 16)],
+    ['alliteration', 'Alliteration (Repeated Starting Sound)', 'ela', 'poetry sound repetition tongue twister',
+      '<rect x="16" y="36" width="88" height="36" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>' + diagLabel(60, 59, 'Six Silly Seals', '#92400e', 11)],
+    ['chronology', 'Chronology (Ordered First Next Last)', 'ela', 'sequence time order timeline events',
+      '<rect x="14" y="42" width="26" height="24" rx="4" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>' + diagLabel(27, 58, '1ST', '#1d4ed8', 10) + '<rect x="47" y="42" width="26" height="24" rx="4" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>' + diagLabel(60, 58, '2ND', '#15803d', 10) + '<rect x="80" y="42" width="26" height="24" rx="4" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>' + diagLabel(93, 58, '3RD', '#b45309', 10)],
+    ['prime_factor', 'Factor Tree (Breaking Into Primes)', 'math', 'composite divisor product split',
+      '<circle cx="60" cy="28" r="12" fill="#e2e8f0" stroke="#0f172a" stroke-width="2"/>' + diagLabel(60, 33, '12', '#0f172a', 12) + '<line x1="54" y1="39" x2="40" y2="60" stroke="#0f172a" stroke-width="2"/><line x1="66" y1="39" x2="80" y2="60" stroke="#0f172a" stroke-width="2"/><circle cx="40" cy="70" r="11" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>' + diagLabel(40, 75, '3', '#15803d', 12) + '<circle cx="80" cy="70" r="11" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>' + diagLabel(80, 75, '4', '#1d4ed8', 12)],
+    ['punnett_square', 'Punnett Square (Trait Inheritance Grid)', 'science', 'genetics heredity dominant recessive trait',
+      '<rect x="28" y="28" width="64" height="60" fill="#ffffff" stroke="#0f172a" stroke-width="2.5"/><line x1="60" y1="28" x2="60" y2="88" stroke="#0f172a" stroke-width="2"/><line x1="28" y1="58" x2="92" y2="58" stroke="#0f172a" stroke-width="2"/>' + diagLabel(44, 48, 'AA', '#1d4ed8', 13) + diagLabel(76, 48, 'Aa', '#15803d', 13) + diagLabel(44, 78, 'Aa', '#15803d', 13) + diagLabel(76, 78, 'aa', '#be123c', 13)],
+    ['timeline_history', 'Timeline (Dated Historical Milestones)', 'social', 'history century era past dates',
+      '<line x1="18" y1="56" x2="102" y2="56" stroke="#0f172a" stroke-width="3"/><circle cx="30" cy="56" r="6" fill="#2563eb"/><circle cx="60" cy="56" r="6" fill="#16a34a"/><circle cx="90" cy="56" r="6" fill="#dc2626"/>' + diagLabel(30, 80, '1800', '#334155', 10) + diagLabel(60, 80, '1900', '#334155', 10) + diagLabel(90, 80, '2000', '#334155', 10)],
+    ['equal_sign', 'Equals Sign (Same Value On Both Sides)', 'math', 'alike identical balanced match uniform',
+      '<rect x="26" y="38" width="68" height="12" rx="4" fill="#1d4ed8"/><rect x="26" y="62" width="68" height="12" rx="4" fill="#1d4ed8"/>'],
+    ['choice_option', 'Choice & Option (Pick Between A, B, C)', 'ela', 'select prefer decide alternative option',
+      '<rect x="18" y="32" width="24" height="28" rx="4" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/><rect x="48" y="32" width="24" height="28" rx="4" fill="#dcfce7" stroke="#15803d" stroke-width="2.5"/><rect x="78" y="32" width="24" height="28" rx="4" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>' + diagLabel(30, 51, 'A', '#1d4ed8', 13) + diagLabel(60, 51, 'B', '#15803d', 13) + diagLabel(90, 51, 'C', '#64748b', 13)],
+    ['schedule_plan', 'Schedule & Routine (Calendar Grid Blocks)', 'social', 'plan agenda routine time slot table',
+      '<rect x="22" y="26" width="76" height="62" rx="6" fill="#ffffff" stroke="#0f172a" stroke-width="2.5"/><rect x="22" y="26" width="76" height="16" fill="#2563eb"/><line x1="48" y1="42" x2="48" y2="88" stroke="#cbd5e1" stroke-width="2"/><line x1="72" y1="42" x2="72" y2="88" stroke="#cbd5e1" stroke-width="2"/><line x1="22" y1="64" x2="98" y2="64" stroke="#cbd5e1" stroke-width="2"/>'],
+    ['natural_disaster', 'Volcanic Eruption (Pressure & Ash Plume)', 'science', 'erupt volcano lava blast explosion hazard',
+      '<polygon points="22,86 48,46 72,46 98,86" fill="#78716c" stroke="#292524" stroke-width="2"/><polygon points="48,46 60,24 72,46" fill="#ef4444"/><ellipse cx="60" cy="24" rx="22" ry="10" fill="#cbd5e1"/>'],
+    ['marine_ocean', 'Marine Zone (Deep Sea & Horizon Waves)', 'science', 'ocean sea coastal cove coral underwater',
+      '<rect x="18" y="48" width="84" height="38" rx="4" fill="#0284c7"/><path d="M18 48 Q32 38 46 48 T74 48 T102 48" fill="none" stroke="#bae6fd" stroke-width="3"/><circle cx="76" cy="30" r="10" fill="#fde047"/>'],
+    ['synthetic_material', 'Synthetic Material (Lab Flask & Fiber)', 'science', 'artificial man-made chemical polymer plastic',
+      '<polygon points="42,32 58,24 74,32 74,52 58,60 42,52" fill="#e0e7ff" stroke="#4338ca" stroke-width="2.5"/><circle cx="60" cy="74" r="12" fill="#fca5a5" stroke="#be123c" stroke-width="2"/>' + diagLabel(58, 46, 'SYN', '#312e81', 10)],
+    ['tolerance_respect', 'Tolerance & Respect (Welcoming Circle)', 'social', 'accept kindness fairness patience open',
+      '<circle cx="44" cy="54" r="18" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/><circle cx="76" cy="54" r="18" fill="#dcfce7" stroke="#15803d" stroke-width="2"/><rect x="44" y="46" width="32" height="16" rx="8" fill="#fde047"/>'],
+    ['terminology_terms', 'Terminology (Subject Glossary & Labels)', 'ela', 'vocabulary jargon glossary words specialty',
+      '<rect x="20" y="24" width="80" height="68" rx="6" fill="#ffffff" stroke="#0f172a" stroke-width="2.5"/><rect x="28" y="34" width="26" height="12" rx="3" fill="#dbeafe"/><line x1="60" y1="40" x2="90" y2="40" stroke="#475569" stroke-width="3"/><rect x="28" y="54" width="26" height="12" rx="3" fill="#dcfce7"/><line x1="60" y1="60" x2="90" y2="60" stroke="#475569" stroke-width="3"/>'],
+    ['wilderness_nature', 'Wilderness (Untamed Mountains & Woods)', 'science', 'forest mountains untouched wild outdoors',
+      '<polygon points="18,86 48,36 78,86" fill="#94a3b8" stroke="#475569" stroke-width="2"/><polygon points="56,86 80,44 104,86" fill="#64748b" stroke="#334155" stroke-width="2"/><polygon points="36,86 24,66 48,66" fill="#15803d"/>'],
+    ['creek_stream', 'Creek & Brook (Winding Freshwater Stream)', 'science', 'stream brook river winding bend cove',
+      '<rect x="16" y="24" width="88" height="66" rx="8" fill="#bbf7d0"/><path d="M24 28 Q70 48 40 66 T88 86" fill="none" stroke="#0284c7" stroke-width="12" stroke-linecap="round"/>'],
+    ['waterfall_cascade', 'Waterfall (Water Dropping Over Cliff)', 'science', 'cascade river cliff drop plunge water',
+      '<rect x="18" y="36" width="36" height="52" fill="#78716c"/><path d="M20 36 H54 C66 36 68 50 68 86" fill="none" stroke="#0284c7" stroke-width="14"/><ellipse cx="72" cy="84" rx="22" ry="6" fill="#7dd3fc"/>'],
+    ['shield_guard', 'Shield & Guard (Protective Armor Emblem)', 'social', 'protect armor defense safety shelter',
+      '<path d="M60 22 L92 34 V58 C92 78 60 92 60 92 C60 92 28 78 28 58 V34 Z" fill="#fef08a" stroke="#b45309" stroke-width="3"/><line x1="60" y1="26" x2="60" y2="88" stroke="#1d4ed8" stroke-width="4"/><line x1="34" y1="54" x2="86" y2="54" stroke="#1d4ed8" stroke-width="4"/>'],
+    ['uniform_outfit', 'Uniform (Matching Team Outfit Badge)', 'social', 'clothing badge suit matching dress',
+      '<polygon points="38,28 82,28 96,46 84,56 76,48 76,88 44,88 44,48 36,56 24,46" fill="#2563eb" stroke="#1e3a8a" stroke-width="2"/><circle cx="68" cy="48" r="5" fill="#facc15"/>'],
+    ['festival_ceremony', 'Ceremony & Feast (Banner & Gathering)', 'social', 'celebration parade banquet event feast',
+      '<polygon points="20,24 38,40 52,24" fill="#ef4444"/><polygon points="52,24 68,40 84,24" fill="#3b82f6"/><polygon points="84,24 98,40 106,24" fill="#16a34a"/><rect x="26" y="64" width="68" height="12" rx="2" fill="#92400e"/><line x1="36" y1="76" x2="36" y2="90" stroke="#78350f" stroke-width="4"/><line x1="84" y1="76" x2="84" y2="90" stroke="#78350f" stroke-width="4"/>'],
+    ['theater_stage', 'Theater Stage (Curtains & Spotlight)', 'ela', 'drama play act scene performance cinema',
+      '<rect x="20" y="26" width="80" height="60" rx="4" fill="#fef3c7" stroke="#0f172a" stroke-width="2"/><path d="M20 26 H42 C38 52 28 66 20 86 Z" fill="#be123c"/><path d="M100 26 H78 C82 52 92 66 100 86 Z" fill="#be123c"/>'],
+    ['commander_leader', 'Leadership (Commander Banner at Front)', 'social', 'leader captain officer chief direct',
+      '<polygon points="60,22 72,44 60,44" fill="#facc15"/><circle cx="48" cy="42" r="10" fill="#1d4ed8"/><rect x="34" y="54" width="28" height="30" rx="6" fill="#2563eb"/><line x1="76" y1="24" x2="76" y2="86" stroke="#0f172a" stroke-width="3"/><polygon points="76,24 102,32 76,40" fill="#dc2626"/>'],
+    ['council_meeting', 'Council (Group Around Table)', 'social', 'committee board assembly discuss agreement',
+      '<ellipse cx="60" cy="56" rx="28" ry="18" fill="#d97706" stroke="#78350f" stroke-width="2"/><circle cx="32" cy="40" r="7" fill="#2563eb"/><circle cx="88" cy="40" r="7" fill="#16a34a"/><circle cx="32" cy="72" r="7" fill="#dc2626"/><circle cx="88" cy="72" r="7" fill="#7c3aed"/>'],
+    ['apprentice_learner', 'Apprentice (Mentor Guiding Student)', 'social', 'trainee intern novice learn skill practice',
+      '<circle cx="42" cy="40" r="11" fill="#2563eb"/><circle cx="78" cy="48" r="9" fill="#16a34a"/><rect x="28" y="54" width="28" height="30" rx="6" fill="#3b82f6"/><rect x="66" y="60" width="24" height="24" rx="5" fill="#22c55e"/>'],
+    ['disguise_mask', 'Disguise (Theatrical Costume Mask)', 'ela', 'mask pretend hide costume secret',
+      '<path d="M24 44 C36 32 52 38 60 44 C68 38 84 32 96 44 C96 66 78 72 60 64 C42 72 24 66 24 44 Z" fill="#6366f1" stroke="#312e81" stroke-width="2"/><ellipse cx="44" cy="50" rx="8" ry="5" fill="#ffffff"/><ellipse cx="76" cy="50" rx="8" ry="5" fill="#ffffff"/>'],
+    ['cluster_group', 'Cluster (Tightly Grouped Bunch)', 'math', 'bunch swarm clump collection group',
+      '<circle cx="52" cy="46" r="11" fill="#3b82f6"/><circle cx="68" cy="46" r="11" fill="#2563eb"/><circle cx="44" cy="62" r="11" fill="#60a5fa"/><circle cx="60" cy="64" r="11" fill="#1d4ed8"/><circle cx="74" cy="62" r="11" fill="#3b82f6"/>'],
+    ['billion_number', 'Large Place Value (Billion 1,000,000,000)', 'math', 'million billion magnitude powers ten',
+      '<rect x="14" y="36" width="92" height="40" rx="6" fill="#ecfdf5" stroke="#047857" stroke-width="2.5"/>' + diagLabel(60, 61, '1,000,000,000', '#065f46', 11)],
+    ['grain_barley', 'Barley & Grain (Ripening Wheat Stalks)', 'science', 'crop harvest agriculture cereal stalk',
+      '<line x1="60" y1="88" x2="60" y2="28" stroke="#ca8a04" stroke-width="3"/><ellipse cx="52" cy="42" rx="6" ry="10" fill="#fde047" stroke="#ca8a04" stroke-width="1.5" transform="rotate(-30 52 42)"/><ellipse cx="68" cy="42" rx="6" ry="10" fill="#fde047" stroke="#ca8a04" stroke-width="1.5" transform="rotate(30 68 42)"/><ellipse cx="52" cy="58" rx="6" ry="10" fill="#fde047" stroke="#ca8a04" stroke-width="1.5" transform="rotate(-30 52 58)"/><ellipse cx="68" cy="58" rx="6" ry="10" fill="#fde047" stroke="#ca8a04" stroke-width="1.5" transform="rotate(30 68 58)"/>'],
+    ['atlas_map', 'Atlas (Bound Book of World Maps)', 'social', 'geography globe book continent',
+      '<rect x="24" y="24" width="72" height="68" rx="4" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2.5"/><rect x="24" y="24" width="12" height="68" fill="#1d4ed8"/><circle cx="66" cy="58" r="18" fill="#86efac" stroke="#15803d" stroke-width="2"/>'],
+    ['emotion_joy', 'Joy & Cheerful (Smiling Sun Face)', 'social', 'glad happy cheerful pleased merry joy',
+      '<circle cx="60" cy="56" r="32" fill="#fde047" stroke="#b45309" stroke-width="2.5"/><circle cx="48" cy="48" r="4" fill="#0f172a"/><circle cx="72" cy="48" r="4" fill="#0f172a"/><path d="M44 62 Q60 76 76 62" fill="none" stroke="#0f172a" stroke-width="3.5" stroke-linecap="round"/>'],
+    ['emotion_sorrow', 'Sorrow & Tears (Drooping Cloud Face)', 'social', 'sad unhappy gloom mourn weep sobbing',
+      '<circle cx="60" cy="56" r="32" fill="#cbd5e1" stroke="#475569" stroke-width="2.5"/><circle cx="48" cy="48" r="4" fill="#0f172a"/><circle cx="72" cy="48" r="4" fill="#0f172a"/><path d="M44 70 Q60 58 76 70" fill="none" stroke="#0f172a" stroke-width="3.5" stroke-linecap="round"/>'],
+    ['emotion_anger', 'Anger & Furious (Frowning Flame Face)', 'social', 'mad furious temper wrath exasperated',
+      '<circle cx="60" cy="56" r="32" fill="#fca5a5" stroke="#b91c1c" stroke-width="2.5"/><line x1="42" y1="40" x2="54" y2="46" stroke="#7f1d1d" stroke-width="3.5"/><line x1="78" y1="40" x2="66" y2="46" stroke="#7f1d1d" stroke-width="3.5"/><path d="M44 70 H76" stroke="#7f1d1d" stroke-width="3.5" stroke-linecap="round"/>'],
+    ['emotion_fear', 'Alarm & Shock (Wide Eyes Alert)', 'social', 'afraid fearful horrified dread panic',
+      '<circle cx="60" cy="56" r="32" fill="#e0e7ff" stroke="#4338ca" stroke-width="2.5"/><circle cx="48" cy="48" r="6" fill="#ffffff" stroke="#0f172a" stroke-width="2"/><circle cx="72" cy="48" r="6" fill="#ffffff" stroke="#0f172a" stroke-width="2"/><ellipse cx="60" cy="68" rx="8" ry="6" fill="#0f172a"/>'],
+    ['story_book', 'Book & Novel (Open Pages Reading)', 'ela', 'classic edition novel chapter reading',
+      '<path d="M18 32 Q38 26 60 36 Q82 26 102 32 V84 Q82 78 60 88 Q38 78 18 84 Z" fill="#fef3c7" stroke="#92400e" stroke-width="2.5"/><line x1="60" y1="36" x2="60" y2="88" stroke="#92400e" stroke-width="2.5"/>'],
+    ['news_press', 'Newspaper & Headline (Columns Print)', 'social', 'media article report journal press',
+      '<rect x="20" y="24" width="80" height="68" rx="4" fill="#f8fafc" stroke="#0f172a" stroke-width="2.5"/><rect x="28" y="32" width="64" height="14" fill="#0f172a"/><rect x="28" y="54" width="28" height="28" fill="#cbd5e1"/><line x1="62" y1="56" x2="90" y2="56" stroke="#475569" stroke-width="3"/><line x1="62" y1="68" x2="90" y2="68" stroke="#475569" stroke-width="3"/>'],
+    ['boat_sail', 'Sailboat & Voyage (Triangle Sail)', 'social', 'ship sailing vessel harbor boat sea',
+      '<polygon points="60,22 60,68 92,68" fill="#fef08a" stroke="#b45309" stroke-width="2"/><polygon points="22,72 98,72 86,88 34,88" fill="#1d4ed8" stroke="#1e3a8a" stroke-width="2"/>'],
+    ['weather_storm', 'Storm & Lightning (Rain & Bolt Cloud)', 'science', 'stormy thunder breeze cyclone weather',
+      '<ellipse cx="60" cy="44" rx="34" ry="18" fill="#64748b"/><polygon points="62,56 50,74 60,74 52,92 74,68 62,68" fill="#facc15" stroke="#ca8a04" stroke-width="1.5"/>'],
+    ['shadow_dark', 'Darkness & Shadow (Blocked Light Cone)', 'science', 'dark gloomy shade dim night eclipse',
+      '<circle cx="28" cy="36" r="10" fill="#facc15"/><rect x="46" y="42" width="12" height="34" fill="#334155"/><polygon points="58,42 96,28 96,88 58,76" fill="#0f172a" opacity="0.75"/>'],
+    ['sunlight_ray', 'Sunlight & Glow (Bright Radiating Rays)', 'science', 'brighten dawn glow solar warm shine',
+      '<circle cx="60" cy="56" r="20" fill="#facc15" stroke="#ca8a04" stroke-width="2.5"/><line x1="60" y1="20" x2="60" y2="30" stroke="#ca8a04" stroke-width="3"/><line x1="60" y1="82" x2="60" y2="92" stroke="#ca8a04" stroke-width="3"/><line x1="24" y1="56" x2="34" y2="56" stroke="#ca8a04" stroke-width="3"/><line x1="86" y1="56" x2="96" y2="56" stroke="#ca8a04" stroke-width="3"/>'],
+    ['water_wave', 'Ripple & Water Wave (Rolling Crest)', 'science', 'ripple surge ocean tide liquid flow',
+      '<path d="M16 64 Q36 38 56 64 T96 64" fill="none" stroke="#0284c7" stroke-width="6" stroke-linecap="round"/><path d="M24 80 Q44 62 64 80 T104 80" fill="none" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"/>'],
+    ['music_harmony', 'Music & Harmony (Note Pair)', 'ela', 'anthem song melody rhythm chorus tune',
+      '<circle cx="40" cy="74" r="10" fill="#be123c"/><circle cx="78" cy="68" r="10" fill="#be123c"/><line x1="48" y1="74" x2="48" y2="32" stroke="#0f172a" stroke-width="3.5"/><line x1="86" y1="68" x2="86" y2="26" stroke="#0f172a" stroke-width="3.5"/><polygon points="48,30 86,24 86,34 48,40" fill="#0f172a"/>'],
+    ['art_palette', 'Art & Illustration (Painter Palette)', 'ela', 'paint cartoon drawing sketch color stain',
+      '<ellipse cx="60" cy="56" rx="36" ry="26" fill="#fde68a" stroke="#92400e" stroke-width="2.5"/><circle cx="42" cy="48" r="6" fill="#ef4444"/><circle cx="60" cy="40" r="6" fill="#2563eb"/><circle cx="78" cy="48" r="6" fill="#16a34a"/><circle cx="70" cy="68" r="6" fill="#ffffff" stroke="#92400e" stroke-width="2"/>'],
+    ['bandage_care', 'First Aid & Healing (Protective Cross Patch)', 'science', 'heal injury wound cure sling nurse',
+      '<rect x="24" y="42" width="72" height="28" rx="12" fill="#fed7aa" stroke="#9a3412" stroke-width="2.5"/><rect x="44" y="42" width="32" height="28" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/><line x1="60" y1="48" x2="60" y2="64" stroke="#dc2626" stroke-width="4"/><line x1="52" y1="56" x2="68" y2="56" stroke="#dc2626" stroke-width="4"/>'],
+    ['person_figure', 'Person & Human (Individual Silhouette)', 'social', 'human individual someone man woman character',
+      '<circle cx="60" cy="36" r="14" fill="#2563eb"/><path d="M36 88 C36 62 84 62 84 88 Z" fill="#1d4ed8"/>'],
+    ['family_home', 'Family & Household (Group Inside Home)', 'social', 'parents siblings dad mom together kin',
+      '<polygon points="60,20 20,50 100,50" fill="#fca5a5" stroke="#991b1b" stroke-width="2"/><rect x="28" y="50" width="64" height="40" fill="#fef3c7" stroke="#991b1b" stroke-width="2"/><circle cx="48" cy="66" r="7" fill="#2563eb"/><circle cx="72" cy="66" r="7" fill="#16a34a"/>'],
+    ['clock_time', 'Clock & Moment (Hands Marking Hour)', 'math', 'hour minute schedule later recent moment',
+      '<circle cx="60" cy="56" r="32" fill="#ffffff" stroke="#0f172a" stroke-width="3"/><line x1="60" y1="56" x2="60" y2="34" stroke="#0f172a" stroke-width="3.5" stroke-linecap="round"/><line x1="60" y1="56" x2="78" y2="56" stroke="#dc2626" stroke-width="3" stroke-linecap="round"/>'],
+    ['warning_hazard', 'Caution & Hazard (Alert Triangle)', 'social', 'danger risk urgent warning alarm careful',
+      '<polygon points="60,22 98,86 22,86" fill="#facc15" stroke="#b45309" stroke-width="3"/>' + diagLabel(60, 74, 'WARN', '#0f172a', 12)],
+    ['question_unknown', 'Mystery & Unknown (Puzzle Silhouette)', 'ela', 'unfamiliar peculiar mystery strange puzzle',
+      '<rect x="26" y="26" width="68" height="62" rx="10" fill="#e0e7ff" stroke="#4338ca" stroke-width="2.5"/>' + diagLabel(60, 70, '???', '#312e81', 26)],
+    ["introduce_greeting","Introduce & Greet (Two Figures)","social","introduce greeting welcome meet hi hello goodbye farewell","<circle cx=\"38\" cy=\"48\" r=\"10\" fill=\"#bae6fd\" stroke=\"#0284c7\" stroke-width=\"2.5\"/><path d=\"M24,84 Q38,62 52,84 Z\" fill=\"#38bdf8\" stroke=\"#0284c7\" stroke-width=\"2\"/><circle cx=\"82\" cy=\"48\" r=\"10\" fill=\"#fde68a\" stroke=\"#d97706\" stroke-width=\"2.5\"/><path d=\"M68,84 Q82,62 96,84 Z\" fill=\"#fbbf24\" stroke=\"#d97706\" stroke-width=\"2\"/><rect x=\"44\" y=\"20\" width=\"32\" height=\"18\" rx=\"7\" fill=\"#ecfeff\" stroke=\"#0891b2\" stroke-width=\"2\"/><text x=\"60\" y=\"33\" text-anchor=\"middle\" font-size=\"11\" font-weight=\"700\" fill=\"#0e7490\">HI</text>"],
+    ["agreement_handshake","Agree & Confirm (Check + Clasp)","social","agree insist confirm acknowledge approval assure consent","<circle cx=\"60\" cy=\"56\" r=\"32\" fill=\"#d1fae5\" stroke=\"#059669\" stroke-width=\"2.5\"/><path d=\"M44,56 L55,67 L78,44\" fill=\"none\" stroke=\"#047857\" stroke-width=\"5.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>"],
+    ["choice_decision","Decide & Choose (Forked Path)","social","decide determined choice intention intend plan option","<path d=\"M60,90 L60,58 L36,34\" fill=\"none\" stroke=\"#94a3b8\" stroke-width=\"5\" stroke-linecap=\"round\"/><path d=\"M60,58 L84,34\" fill=\"none\" stroke=\"#16a34a\" stroke-width=\"6\" stroke-linecap=\"round\"/><polygon points=\"84,24 91,38 77,38\" fill=\"#16a34a\"/>"],
+    ["courage_shield","Courage & Bravery (Heart Crest)","social","courage dare confident brave boldly fearless","<path d=\"M30,28 L90,28 L90,56 Q90,82 60,92 Q30,82 30,56 Z\" fill=\"#fef3c7\" stroke=\"#d97706\" stroke-width=\"2.5\"/><path d=\"M60,72 L44,56 Q40,44 52,44 Q60,44 60,52 Q60,44 68,44 Q80,44 76,56 Z\" fill=\"#ef4444\" stroke=\"#b91c1c\" stroke-width=\"2\"/>"],
+    ["imagination_spark","Imagination & Ideas (Glowing Bulb)","ela","imagination imaginary create creator invention inspire muse","<circle cx=\"60\" cy=\"48\" r=\"22\" fill=\"#fef08a\" stroke=\"#ca8a04\" stroke-width=\"2.5\"/><rect x=\"50\" y=\"70\" width=\"20\" height=\"12\" rx=\"3\" fill=\"#cbd5e1\" stroke=\"#475569\" stroke-width=\"2\"/><line x1=\"60\" y1=\"16\" x2=\"60\" y2=\"23\" stroke=\"#ca8a04\" stroke-width=\"2.5\"/><line x1=\"30\" y1=\"36\" x2=\"36\" y2=\"40\" stroke=\"#ca8a04\" stroke-width=\"2.5\"/><line x1=\"90\" y1=\"36\" x2=\"84\" y2=\"40\" stroke=\"#ca8a04\" stroke-width=\"2.5\"/>"],
+    ["wisdom_owl","Knowledge & Wisdom (Scholar Owl)","ela","knowledge wisdom smart genius wise philosopher muse cunning","<ellipse cx=\"60\" cy=\"58\" rx=\"26\" ry=\"28\" fill=\"#e0e7ff\" stroke=\"#4338ca\" stroke-width=\"2.5\"/><circle cx=\"50\" cy=\"48\" r=\"8\" fill=\"#ffffff\" stroke=\"#312e81\" stroke-width=\"2\"/><circle cx=\"70\" cy=\"48\" r=\"8\" fill=\"#ffffff\" stroke=\"#312e81\" stroke-width=\"2\"/><circle cx=\"50\" cy=\"48\" r=\"3\" fill=\"#1e1b4b\"/><circle cx=\"70\" cy=\"48\" r=\"3\" fill=\"#1e1b4b\"/><polygon points=\"56,57 64,57 60,64\" fill=\"#f59e0b\"/>"],
+    ["memory_recall","Recognize & Memory (Bookmark Ribbon)","ela","recognize familiar memory recall reminder note","<rect x=\"34\" y=\"24\" width=\"52\" height=\"64\" rx=\"8\" fill=\"#f5f3ff\" stroke=\"#6d28d9\" stroke-width=\"2.5\"/><polygon points=\"50,24 70,24 70,66 60,57 50,66\" fill=\"#f59e0b\" stroke=\"#b45309\" stroke-width=\"2\"/>"],
+    ["comedy_masks","Humor & Comedy (Laughing Face)","ela","joke comedy comic humor wit laugh laughter delight amused","<circle cx=\"60\" cy=\"56\" r=\"30\" fill=\"#fef9c3\" stroke=\"#ca8a04\" stroke-width=\"2.5\"/><path d=\"M44,47 Q48,41 52,47\" fill=\"none\" stroke=\"#713f12\" stroke-width=\"2.5\" stroke-linecap=\"round\"/><path d=\"M68,47 Q72,41 76,47\" fill=\"none\" stroke=\"#713f12\" stroke-width=\"2.5\" stroke-linecap=\"round\"/><path d=\"M44,61 Q60,77 76,61 Z\" fill=\"#ef4444\" stroke=\"#991b1b\" stroke-width=\"2\"/>"],
+    ["speech_bubble","Speech & Message (Talking Bubble)","ela","speech message tell report explain exclamation murmur proclamation","<rect x=\"22\" y=\"26\" width=\"76\" height=\"48\" rx=\"14\" fill=\"#e0f2fe\" stroke=\"#0284c7\" stroke-width=\"2.5\"/><polygon points=\"40,74 52,74 36,90\" fill=\"#e0f2fe\" stroke=\"#0284c7\" stroke-width=\"2.5\"/><line x1=\"36\" y1=\"43\" x2=\"84\" y2=\"43\" stroke=\"#0369a1\" stroke-width=\"3\" stroke-linecap=\"round\"/><line x1=\"36\" y1=\"56\" x2=\"70\" y2=\"56\" stroke=\"#0369a1\" stroke-width=\"3\" stroke-linecap=\"round\"/>"],
+    ["media_broadcast","Media & Broadcast (Screen + Waves)","social","media broadcast news screen advertisement recording movie","<rect x=\"22\" y=\"34\" width=\"56\" height=\"44\" rx=\"6\" fill=\"#e2e8f0\" stroke=\"#334155\" stroke-width=\"2.5\"/><rect x=\"30\" y=\"42\" width=\"40\" height=\"28\" rx=\"3\" fill=\"#38bdf8\"/><path d=\"M84,32 Q94,42 84,52\" fill=\"none\" stroke=\"#f97316\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M90,26 Q104,42 90,58\" fill=\"none\" stroke=\"#f97316\" stroke-width=\"3\" stroke-linecap=\"round\"/>"],
+    ["community_village","Community & Village (Linked Homes)","social","society community social socialize public village neighbor","<polygon points=\"24,52 38,38 52,52\" fill=\"#f87171\" stroke=\"#b91c1c\" stroke-width=\"2\"/><rect x=\"27\" y=\"52\" width=\"22\" height=\"24\" fill=\"#fee2e2\" stroke=\"#b91c1c\" stroke-width=\"2\"/><polygon points=\"66,52 80,38 94,52\" fill=\"#60a5fa\" stroke=\"#1d4ed8\" stroke-width=\"2\"/><rect x=\"69\" y=\"52\" width=\"22\" height=\"24\" fill=\"#dbeafe\" stroke=\"#1d4ed8\" stroke-width=\"2\"/><path d=\"M22,82 Q60,72 98,82\" fill=\"none\" stroke=\"#16a34a\" stroke-width=\"3\" stroke-linecap=\"round\"/>"],
+    ["campus_hall","Campus & Hall (Pillars + Roof)","social","campus academy college university school hall grounds","<polygon points=\"22,42 60,22 98,42\" fill=\"#fed7aa\" stroke=\"#c2410c\" stroke-width=\"2.5\"/><rect x=\"26\" y=\"42\" width=\"68\" height=\"40\" fill=\"#ffedd5\" stroke=\"#c2410c\" stroke-width=\"2\"/><rect x=\"34\" y=\"46\" width=\"8\" height=\"32\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"1.5\"/><rect x=\"56\" y=\"46\" width=\"8\" height=\"32\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"1.5\"/><rect x=\"78\" y=\"46\" width=\"8\" height=\"32\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"1.5\"/>"],
+    ["adventure_compass","Adventure & Explorer (Compass Dial)","social","adventure explore explorer quest mission expedition discover","<circle cx=\"60\" cy=\"56\" r=\"32\" fill=\"#f0fdf4\" stroke=\"#15803d\" stroke-width=\"2.5\"/><polygon points=\"60,30 68,56 60,82 52,56\" fill=\"#94a3b8\" stroke=\"#334155\" stroke-width=\"1.5\"/><polygon points=\"60,30 68,56 52,56\" fill=\"#ef4444\"/><circle cx=\"60\" cy=\"56\" r=\"4\" fill=\"#0f172a\"/>"],
+    ["staircase_ascend","Ascend & Climb (Stepped Stairs)","math","stair stairs ascend climb step upward rise mount","<polygon points=\"24,86 24,72 42,72 42,58 60,58 60,44 78,44 78,30 96,30 96,86\" fill=\"#cbd5e1\" stroke=\"#334155\" stroke-width=\"2.5\"/><path d=\"M32,58 L74,24\" fill=\"none\" stroke=\"#16a34a\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><polygon points=\"78,20 65,23 72,33\" fill=\"#16a34a\"/>"],
+    ["puzzle_piece","Puzzle & Solve (Jigsaw Piece)","ela","puzzle jigsaw riddle solve clue fit match","<path d=\"M32,36 L52,36 Q60,24 68,36 L84,36 L84,54 Q96,60 84,68 L84,84 L32,84 L32,68 Q44,60 32,54 Z\" fill=\"#bae6fd\" stroke=\"#0369a1\" stroke-width=\"2.5\"/>"],
+    ["repair_wrench","Repair & Craft (Wrench + Gear)","science","fix repair reconstruct reinforce build craft tool manual","<circle cx=\"72\" cy=\"46\" r=\"18\" fill=\"#fed7aa\" stroke=\"#c2410c\" stroke-width=\"2.5\"/><circle cx=\"72\" cy=\"46\" r=\"7\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"2\"/><path d=\"M28,82 L56,54\" stroke=\"#334155\" stroke-width=\"8\" stroke-linecap=\"round\"/><circle cx=\"30\" cy=\"80\" r=\"8\" fill=\"#cbd5e1\" stroke=\"#334155\" stroke-width=\"2\"/>"],
+    ["weave_fabric","Weave & Textile (Crisscross Strands)","ela","weave loom thread cloth fabric sew stitch texture","<rect x=\"28\" y=\"34\" width=\"64\" height=\"10\" rx=\"2\" fill=\"#38bdf8\" stroke=\"#0284c7\" stroke-width=\"1.5\"/><rect x=\"28\" y=\"54\" width=\"64\" height=\"10\" rx=\"2\" fill=\"#38bdf8\" stroke=\"#0284c7\" stroke-width=\"1.5\"/><rect x=\"28\" y=\"74\" width=\"64\" height=\"10\" rx=\"2\" fill=\"#38bdf8\" stroke=\"#0284c7\" stroke-width=\"1.5\"/><rect x=\"38\" y=\"26\" width=\"10\" height=\"64\" rx=\"2\" fill=\"#fb7185\" stroke=\"#be123c\" stroke-width=\"1.5\"/><rect x=\"66\" y=\"26\" width=\"10\" height=\"64\" rx=\"2\" fill=\"#fb7185\" stroke=\"#be123c\" stroke-width=\"1.5\"/>"],
+    ["arrow_target","Target & Arrow (Bullseye)","math","arrow target aim missile dart shoot hit score","<circle cx=\"60\" cy=\"56\" r=\"30\" fill=\"#fee2e2\" stroke=\"#dc2626\" stroke-width=\"2.5\"/><circle cx=\"60\" cy=\"56\" r=\"20\" fill=\"#ffffff\" stroke=\"#dc2626\" stroke-width=\"2\"/><circle cx=\"60\" cy=\"56\" r=\"9\" fill=\"#dc2626\"/><line x1=\"60\" y1=\"56\" x2=\"92\" y2=\"24\" stroke=\"#1e293b\" stroke-width=\"3\" stroke-linecap=\"round\"/>"],
+    ["bubble_sphere","Bubble & Air Sphere (Floating Bubbles)","science","bubble foam float sphere soap airy fizzy","<circle cx=\"54\" cy=\"58\" r=\"26\" fill=\"#e0f2fe\" stroke=\"#0284c7\" stroke-width=\"2.5\"/><path d=\"M40,46 Q46,38 56,40\" fill=\"none\" stroke=\"#ffffff\" stroke-width=\"3\" stroke-linecap=\"round\"/><circle cx=\"84\" cy=\"36\" r=\"11\" fill=\"#bae6fd\" stroke=\"#0284c7\" stroke-width=\"2\"/><circle cx=\"84\" cy=\"76\" r=\"7\" fill=\"#bae6fd\" stroke=\"#0284c7\" stroke-width=\"2\"/>"],
+    ["clasp_buckle","Clasp & Latch (Interlocking Links)","ela","clasp buckle fasten latch clip hook hold grip","<rect x=\"24\" y=\"42\" width=\"42\" height=\"28\" rx=\"14\" fill=\"none\" stroke=\"#2563eb\" stroke-width=\"6\"/><rect x=\"54\" y=\"42\" width=\"42\" height=\"28\" rx=\"14\" fill=\"none\" stroke=\"#059669\" stroke-width=\"6\"/>"],
+    ["bead_necklace","Beads & Strand (Threaded Beads)","ela","bead beads string strand jewel necklace pearl","<path d=\"M22,58 Q60,36 98,58\" fill=\"none\" stroke=\"#475569\" stroke-width=\"2.5\"/><circle cx=\"32\" cy=\"53\" r=\"8\" fill=\"#f43f5e\" stroke=\"#9f1239\" stroke-width=\"1.5\"/><circle cx=\"46\" cy=\"48\" r=\"8\" fill=\"#f59e0b\" stroke=\"#b45309\" stroke-width=\"1.5\"/><circle cx=\"60\" cy=\"46\" r=\"9\" fill=\"#10b981\" stroke=\"#047857\" stroke-width=\"1.5\"/><circle cx=\"74\" cy=\"48\" r=\"8\" fill=\"#3b82f6\" stroke=\"#1d4ed8\" stroke-width=\"1.5\"/><circle cx=\"88\" cy=\"53\" r=\"8\" fill=\"#a855f7\" stroke=\"#6b21a8\" stroke-width=\"1.5\"/>"],
+    ["commotion_noise","Commotion & Clamor (Burst Waves)","ela","commotion fuss racket noise clamor chaos burst","<polygon points=\"60,22 69,41 90,34 78,52 94,66 74,70 78,90 60,77 42,90 46,70 26,66 42,52 30,34 51,41\" fill=\"#fed7aa\" stroke=\"#ea580c\" stroke-width=\"2.5\"/>"],
+    ["damage_crack","Damage & Ruin (Split Block)","ela","ruin ruined destroy tear rip ripped break crack","<rect x=\"26\" y=\"28\" width=\"68\" height=\"58\" rx=\"6\" fill=\"#cbd5e1\" stroke=\"#334155\" stroke-width=\"2.5\"/><path d=\"M58,28 L50,48 L66,58 L54,86\" fill=\"none\" stroke=\"#dc2626\" stroke-width=\"3.5\" stroke-linecap=\"round\"/>"],
+    ["fragile_glass","Fragile & Delicate (Cracked Cup)","science","fragile delicate brittle breakable thin gentle","<path d=\"M36,28 L84,28 L76,62 Q60,72 44,62 Z\" fill=\"#e0f2fe\" stroke=\"#0284c7\" stroke-width=\"2.5\"/><line x1=\"60\" y1=\"67\" x2=\"60\" y2=\"86\" stroke=\"#0284c7\" stroke-width=\"3\"/><line x1=\"46\" y1=\"86\" x2=\"74\" y2=\"86\" stroke=\"#0284c7\" stroke-width=\"3\"/><path d=\"M56,28 L52,43 L62,50\" fill=\"none\" stroke=\"#dc2626\" stroke-width=\"2.5\"/>"],
+    ["blur_focus","Blur vs Focus (Hazy & Sharp)","science","blur blurred fuzzy hazy clear focus crisp vision","<circle cx=\"40\" cy=\"56\" r=\"18\" fill=\"#bae6fd\" opacity=\"0.45\"/><circle cx=\"44\" cy=\"54\" r=\"12\" fill=\"#7dd3fc\" opacity=\"0.55\"/><circle cx=\"82\" cy=\"56\" r=\"18\" fill=\"#ffffff\" stroke=\"#0369a1\" stroke-width=\"3\"/><circle cx=\"82\" cy=\"56\" r=\"8\" fill=\"#0369a1\"/>"],
+    ["jagged_edge","Jagged & Sawtooth (Spiky Ridge)","math","jagged rough sharp spiky torn uneven edge","<rect x=\"24\" y=\"68\" width=\"72\" height=\"14\" fill=\"#e2e8f0\" stroke=\"#475569\" stroke-width=\"2\"/><polygon points=\"24,68 34,34 44,68 54,32 64,68 74,36 84,68 96,34 96,68\" fill=\"#fca5a5\" stroke=\"#b91c1c\" stroke-width=\"2.5\"/>"],
+    ["lighting_lamp","Lighting & Glow (Pendant Cone)","science","lighting lamp glow beam bright illuminate flicker","<line x1=\"60\" y1=\"16\" x2=\"60\" y2=\"30\" stroke=\"#334155\" stroke-width=\"3\"/><polygon points=\"44,48 76,48 68,30 52,30\" fill=\"#f59e0b\" stroke=\"#b45309\" stroke-width=\"2\"/><polygon points=\"44,48 76,48 94,88 26,88\" fill=\"#fef08a\" opacity=\"0.75\"/>"],
+    ["cricket_insect","Cricket & Hopper (Jumping Insect)","science","cricket grasshopper chirp insect bug wings hop","<ellipse cx=\"56\" cy=\"60\" rx=\"22\" ry=\"10\" fill=\"#4ade80\" stroke=\"#15803d\" stroke-width=\"2.5\"/><circle cx=\"32\" cy=\"58\" r=\"7\" fill=\"#22c55e\" stroke=\"#15803d\" stroke-width=\"2\"/><path d=\"M58,62 L74,38 L88,78\" fill=\"none\" stroke=\"#15803d\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"28\" y1=\"53\" x2=\"18\" y2=\"42\" stroke=\"#15803d\" stroke-width=\"2\"/>"],
+    ["cobweb_spider","Cobweb & Web (Radial Silk)","science","cobweb spider web net silk corner dusty trap","<circle cx=\"60\" cy=\"56\" r=\"30\" fill=\"none\" stroke=\"#94a3b8\" stroke-width=\"2\"/><circle cx=\"60\" cy=\"56\" r=\"20\" fill=\"none\" stroke=\"#94a3b8\" stroke-width=\"1.5\"/><circle cx=\"60\" cy=\"56\" r=\"10\" fill=\"none\" stroke=\"#94a3b8\" stroke-width=\"1.5\"/><line x1=\"30\" y1=\"56\" x2=\"90\" y2=\"56\" stroke=\"#64748b\" stroke-width=\"1.5\"/><line x1=\"60\" y1=\"26\" x2=\"60\" y2=\"86\" stroke=\"#64748b\" stroke-width=\"1.5\"/><line x1=\"39\" y1=\"35\" x2=\"81\" y2=\"77\" stroke=\"#64748b\" stroke-width=\"1.5\"/><line x1=\"81\" y1=\"35\" x2=\"39\" y2=\"77\" stroke=\"#64748b\" stroke-width=\"1.5\"/>"],
+    ["smell_scent","Smell & Aroma (Rising Plumes)","science","smell smelly scent odor fragrance aroma sniff stink","<rect x=\"44\" y=\"64\" width=\"32\" height=\"24\" rx=\"5\" fill=\"#d8b4fe\" stroke=\"#6b21a8\" stroke-width=\"2.5\"/><path d=\"M48,56 Q42,42 50,30\" fill=\"none\" stroke=\"#16a34a\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M60,56 Q66,40 58,24\" fill=\"none\" stroke=\"#16a34a\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M72,56 Q66,42 74,30\" fill=\"none\" stroke=\"#16a34a\" stroke-width=\"3\" stroke-linecap=\"round\"/>"],
+    ["habit_cycle","Habit & Routine (Cycle Arrows)","social","habit routine practice custom tend tendency regular","<circle cx=\"60\" cy=\"56\" r=\"28\" fill=\"none\" stroke=\"#2563eb\" stroke-width=\"5\" stroke-dasharray=\"36 12\"/><polygon points=\"86,44 92,58 76,56\" fill=\"#2563eb\"/><circle cx=\"60\" cy=\"56\" r=\"10\" fill=\"#dbeafe\" stroke=\"#1d4ed8\" stroke-width=\"2\"/>"],
+    ["condition_check","Condition & Rule (IF Check Card)","ela","condition require required prerequisite circumstance state status","<rect x=\"24\" y=\"28\" width=\"72\" height=\"58\" rx=\"8\" fill=\"#f8fafc\" stroke=\"#334155\" stroke-width=\"2.5\"/><rect x=\"32\" y=\"38\" width=\"22\" height=\"16\" rx=\"4\" fill=\"#6366f1\"/><text x=\"43\" y=\"50\" text-anchor=\"middle\" font-size=\"10\" font-weight=\"700\" fill=\"#ffffff\">IF</text><path d=\"M36,68 L45,76 L62,59\" fill=\"none\" stroke=\"#16a34a\" stroke-width=\"3.5\" stroke-linecap=\"round\"/>"],
+    ["advantage_scale","Advantage & Benefit (Winner Podium)","math","advantage benefit favor gain superior worthy best","<rect x=\"24\" y=\"58\" width=\"22\" height=\"28\" fill=\"#cbd5e1\" stroke=\"#475569\" stroke-width=\"2\"/><rect x=\"49\" y=\"34\" width=\"22\" height=\"52\" fill=\"#fde047\" stroke=\"#ca8a04\" stroke-width=\"2.5\"/><rect x=\"74\" y=\"66\" width=\"22\" height=\"20\" fill=\"#cbd5e1\" stroke=\"#475569\" stroke-width=\"2\"/><polygon points=\"60,18 63,25 70,25 65,29 67,35 60,31 53,35 55,29 50,25 57,25\" fill=\"#f59e0b\"/>"],
+    ["score_tally","Score & Tally (Five-Bar Tally)","math","score tally points count total mark rank","<rect x=\"24\" y=\"30\" width=\"72\" height=\"54\" rx=\"8\" fill=\"#ecfdf5\" stroke=\"#059669\" stroke-width=\"2.5\"/><line x1=\"38\" y1=\"42\" x2=\"38\" y2=\"72\" stroke=\"#065f46\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"48\" y1=\"42\" x2=\"48\" y2=\"72\" stroke=\"#065f46\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"58\" y1=\"42\" x2=\"58\" y2=\"72\" stroke=\"#065f46\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"68\" y1=\"42\" x2=\"68\" y2=\"72\" stroke=\"#065f46\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><line x1=\"32\" y1=\"68\" x2=\"74\" y2=\"46\" stroke=\"#dc2626\" stroke-width=\"3.5\" stroke-linecap=\"round\"/>"],
+    ["contain_jar","Contain & Include (Filled Jar)","science","contain contained include encompass hold inside inner","<rect x=\"36\" y=\"32\" width=\"48\" height=\"56\" rx=\"10\" fill=\"#f0f9ff\" stroke=\"#0284c7\" stroke-width=\"2.5\"/><rect x=\"42\" y=\"22\" width=\"36\" height=\"10\" rx=\"3\" fill=\"#94a3b8\" stroke=\"#334155\" stroke-width=\"2\"/><circle cx=\"50\" cy=\"54\" r=\"7\" fill=\"#f97316\"/><circle cx=\"68\" cy=\"60\" r=\"8\" fill=\"#10b981\"/><circle cx=\"54\" cy=\"74\" r=\"7\" fill=\"#eab308\"/>"],
+    ["version_draft","Version & Copy (V1 / V2 Sheets)","ela","version edition copy draft variant form revision","<rect x=\"40\" y=\"24\" width=\"48\" height=\"54\" rx=\"5\" fill=\"#e2e8f0\" stroke=\"#64748b\" stroke-width=\"2\"/><rect x=\"28\" y=\"34\" width=\"48\" height=\"54\" rx=\"5\" fill=\"#ffffff\" stroke=\"#2563eb\" stroke-width=\"2.5\"/><text x=\"52\" y=\"66\" text-anchor=\"middle\" font-size=\"16\" font-weight=\"700\" fill=\"#1d4ed8\">V2</text>"],
+    ["property_estate","Property & Ownership (Key + Lot)","social","property belong own estate possession land parcel","<rect x=\"24\" y=\"48\" width=\"44\" height=\"36\" rx=\"4\" fill=\"#dcfce7\" stroke=\"#15803d\" stroke-width=\"2\"/><circle cx=\"76\" cy=\"44\" r=\"12\" fill=\"#fde047\" stroke=\"#b45309\" stroke-width=\"2.5\"/><line x1=\"66\" y1=\"53\" x2=\"48\" y2=\"71\" stroke=\"#b45309\" stroke-width=\"4\" stroke-linecap=\"round\"/>"],
+    ["courtesy_gift","Courtesy & Kindness (Ribbon Heart)","social","polite courtesy kindly friendly gracious warm gentle","<rect x=\"30\" y=\"42\" width=\"60\" height=\"44\" rx=\"6\" fill=\"#fce7f3\" stroke=\"#db2777\" stroke-width=\"2.5\"/><line x1=\"60\" y1=\"42\" x2=\"60\" y2=\"86\" stroke=\"#be185d\" stroke-width=\"4\"/><line x1=\"30\" y1=\"62\" x2=\"90\" y2=\"62\" stroke=\"#be185d\" stroke-width=\"4\"/><circle cx=\"50\" cy=\"36\" r=\"8\" fill=\"none\" stroke=\"#be185d\" stroke-width=\"2.5\"/><circle cx=\"70\" cy=\"36\" r=\"8\" fill=\"none\" stroke=\"#be185d\" stroke-width=\"2.5\"/>"],
+    ["conflict_dispute","Dispute & Clash (Opposing Arrows)","social","dispute conflict revenge spite adverse injustice unfair oppose","<line x1=\"22\" y1=\"56\" x2=\"54\" y2=\"56\" stroke=\"#dc2626\" stroke-width=\"5\" stroke-linecap=\"round\"/><polygon points=\"58,56 46,48 46,64\" fill=\"#dc2626\"/><line x1=\"98\" y1=\"56\" x2=\"66\" y2=\"56\" stroke=\"#2563eb\" stroke-width=\"5\" stroke-linecap=\"round\"/><polygon points=\"62,56 74,48 74,64\" fill=\"#2563eb\"/><polygon points=\"60,36 64,46 56,46\" fill=\"#f59e0b\"/>"],
+    ["support_helping","Support & Aid (Safety Ring)","social","support comfort rescue welfare relieve ease aid help","<circle cx=\"60\" cy=\"56\" r=\"28\" fill=\"none\" stroke=\"#f97316\" stroke-width=\"12\"/><circle cx=\"60\" cy=\"56\" r=\"28\" fill=\"none\" stroke=\"#ffffff\" stroke-width=\"12\" stroke-dasharray=\"18 26\"/>"],
+    ["adjacent_neighbors","Adjacent & Touching (Side by Side)","math","adjacent beside next adjoining side neighbor near","<rect x=\"26\" y=\"38\" width=\"34\" height=\"38\" rx=\"4\" fill=\"#93c5fd\" stroke=\"#1d4ed8\" stroke-width=\"2.5\"/><rect x=\"60\" y=\"38\" width=\"34\" height=\"38\" rx=\"4\" fill=\"#fde68a\" stroke=\"#d97706\" stroke-width=\"2.5\"/><line x1=\"60\" y1=\"34\" x2=\"60\" y2=\"80\" stroke=\"#16a34a\" stroke-width=\"4\"/>"],
+    ["widespread_reach","Widespread & Reach (Radiating Web)","science","widespread spread global expand scatter extend vast","<circle cx=\"60\" cy=\"56\" r=\"10\" fill=\"#2563eb\"/><line x1=\"60\" y1=\"56\" x2=\"28\" y2=\"30\" stroke=\"#38bdf8\" stroke-width=\"3\"/><line x1=\"60\" y1=\"56\" x2=\"92\" y2=\"30\" stroke=\"#38bdf8\" stroke-width=\"3\"/><line x1=\"60\" y1=\"56\" x2=\"28\" y2=\"82\" stroke=\"#38bdf8\" stroke-width=\"3\"/><line x1=\"60\" y1=\"56\" x2=\"92\" y2=\"82\" stroke=\"#38bdf8\" stroke-width=\"3\"/><circle cx=\"28\" cy=\"30\" r=\"6\" fill=\"#0284c7\"/><circle cx=\"92\" cy=\"30\" r=\"6\" fill=\"#0284c7\"/><circle cx=\"28\" cy=\"82\" r=\"6\" fill=\"#0284c7\"/><circle cx=\"92\" cy=\"82\" r=\"6\" fill=\"#0284c7\"/>"],
+    ["activate_switch","Activate & Power ON (Toggle Switch)","science","activate start operate trigger switch power turn on","<rect x=\"24\" y=\"38\" width=\"72\" height=\"36\" rx=\"18\" fill=\"#22c55e\" stroke=\"#15803d\" stroke-width=\"2.5\"/><circle cx=\"78\" cy=\"56\" r=\"13\" fill=\"#ffffff\" stroke=\"#15803d\" stroke-width=\"2\"/><text x=\"44\" y=\"61\" text-anchor=\"middle\" font-size=\"13\" font-weight=\"700\" fill=\"#ffffff\">ON</text>"],
+    ["sustainable_recycle","Sustainable & Reuse (Green Loop)","science","sustainable reuse recycle green earth resource conserve","<path d=\"M60,26 L86,70 L34,70 Z\" fill=\"none\" stroke=\"#16a34a\" stroke-width=\"6\" stroke-linejoin=\"round\"/><circle cx=\"60\" cy=\"55\" r=\"10\" fill=\"#bbf7d0\" stroke=\"#15803d\" stroke-width=\"2\"/>"],
+    ["prefix_multi","Prefix MULTI- (Many Dots)","ela","multi many multiple numerous several crowd plural","<rect x=\"22\" y=\"24\" width=\"76\" height=\"24\" rx=\"6\" fill=\"#6366f1\"/><text x=\"60\" y=\"41\" text-anchor=\"middle\" font-size=\"13\" font-weight=\"700\" fill=\"#ffffff\">MULTI</text><circle cx=\"36\" cy=\"66\" r=\"7\" fill=\"#ec4899\"/><circle cx=\"60\" cy=\"66\" r=\"7\" fill=\"#f59e0b\"/><circle cx=\"84\" cy=\"66\" r=\"7\" fill=\"#10b981\"/><circle cx=\"48\" cy=\"82\" r=\"7\" fill=\"#3b82f6\"/><circle cx=\"72\" cy=\"82\" r=\"7\" fill=\"#8b5cf6\"/>"],
+    ["prefix_semi","Prefix SEMI- (Half Circle)","ela","semi half partial partly semicircle split","<rect x=\"22\" y=\"24\" width=\"76\" height=\"24\" rx=\"6\" fill=\"#0891b2\"/><text x=\"60\" y=\"41\" text-anchor=\"middle\" font-size=\"13\" font-weight=\"700\" fill=\"#ffffff\">SEMI</text><path d=\"M34,78 A26,26 0 0,1 86,78 Z\" fill=\"#38bdf8\" stroke=\"#0369a1\" stroke-width=\"2.5\"/>"],
+    ["prefix_micro","Prefix MICRO- (Tiny Spot + Lens)","ela","micro tiny microscopic small miniature minute","<rect x=\"22\" y=\"24\" width=\"76\" height=\"24\" rx=\"6\" fill=\"#7c3aed\"/><text x=\"60\" y=\"41\" text-anchor=\"middle\" font-size=\"13\" font-weight=\"700\" fill=\"#ffffff\">MICRO</text><circle cx=\"54\" cy=\"68\" r=\"14\" fill=\"#f3e8ff\" stroke=\"#6d28d9\" stroke-width=\"2.5\"/><circle cx=\"54\" cy=\"68\" r=\"3\" fill=\"#dc2626\"/><line x1=\"65\" y1=\"78\" x2=\"78\" y2=\"88\" stroke=\"#4c1d95\" stroke-width=\"4\" stroke-linecap=\"round\"/>"],
+    ["prefix_anti","Prefix ANTI- (Block Circle)","ela","anti against oppose opposite block prevent","<rect x=\"22\" y=\"24\" width=\"76\" height=\"24\" rx=\"6\" fill=\"#dc2626\"/><text x=\"60\" y=\"41\" text-anchor=\"middle\" font-size=\"13\" font-weight=\"700\" fill=\"#ffffff\">ANTI</text><circle cx=\"60\" cy=\"69\" r=\"17\" fill=\"#fee2e2\" stroke=\"#b91c1c\" stroke-width=\"3\"/><line x1=\"48\" y1=\"81\" x2=\"72\" y2=\"57\" stroke=\"#b91c1c\" stroke-width=\"3.5\"/>"],
+    ["prefix_non","Prefix NON- & Null (Zero / None)","ela","non null zero none nothing empty void not","<rect x=\"22\" y=\"24\" width=\"76\" height=\"24\" rx=\"6\" fill=\"#475569\"/><text x=\"60\" y=\"41\" text-anchor=\"middle\" font-size=\"13\" font-weight=\"700\" fill=\"#ffffff\">NON</text><circle cx=\"60\" cy=\"69\" r=\"16\" fill=\"#f1f5f9\" stroke=\"#334155\" stroke-width=\"2.5\"/><line x1=\"47\" y1=\"82\" x2=\"73\" y2=\"56\" stroke=\"#334155\" stroke-width=\"3\"/>"],
+    ["prefix_neo","Prefix NEO- & Fresh (New Tag)","ela","neo new fresh modern novel crisp anew","<rect x=\"22\" y=\"24\" width=\"76\" height=\"24\" rx=\"6\" fill=\"#0d9488\"/><text x=\"60\" y=\"41\" text-anchor=\"middle\" font-size=\"13\" font-weight=\"700\" fill=\"#ffffff\">NEW</text><polygon points=\"60,52 65,63 77,63 67,70 71,82 60,75 49,82 53,70 43,63 55,63\" fill=\"#fde047\" stroke=\"#ca8a04\" stroke-width=\"2\"/>"],
+    ["zoo_enclosure","Zoo & Wildlife Park (Arch + Animal Habitat)","science","zoo wildlife park animal exhibit cage safari","<path d=\"M22,86 L22,48 Q60,16 98,48 L98,86 Z\" fill=\"#dcfce7\" stroke=\"#15803d\" stroke-width=\"2.5\"/><rect x=\"34\" y=\"34\" width=\"52\" height=\"16\" rx=\"4\" fill=\"#fde047\" stroke=\"#ca8a04\" stroke-width=\"2\"/><text x=\"60\" y=\"46\" text-anchor=\"middle\" font-size=\"11\" font-weight=\"800\" fill=\"#713f12\">ZOO</text><line x1=\"40\" y1=\"54\" x2=\"40\" y2=\"86\" stroke=\"#166534\" stroke-width=\"3\"/><line x1=\"60\" y1=\"54\" x2=\"60\" y2=\"86\" stroke=\"#166534\" stroke-width=\"3\"/><line x1=\"80\" y1=\"54\" x2=\"80\" y2=\"86\" stroke=\"#166534\" stroke-width=\"3\"/>"],
+    ["stage_platform","Platform & Stage (Raised Podium)","social","platform stage raised deck podium terrace steps","<rect x=\"20\" y=\"64\" width=\"80\" height=\"22\" rx=\"4\" fill=\"#93c5fd\" stroke=\"#1d4ed8\" stroke-width=\"2.5\"/><rect x=\"36\" y=\"48\" width=\"48\" height=\"16\" rx=\"3\" fill=\"#dbeafe\" stroke=\"#2563eb\" stroke-width=\"2\"/><line x1=\"60\" y1=\"48\" x2=\"60\" y2=\"26\" stroke=\"#334155\" stroke-width=\"3\"/><circle cx=\"60\" cy=\"24\" r=\"6\" fill=\"#f59e0b\"/>"],
+    ["mail_post","Mail & Post (Envelope + Mailbox)","social","mail post letter envelope delivery parcel stamp","<rect x=\"22\" y=\"34\" width=\"76\" height=\"50\" rx=\"6\" fill=\"#fef3c7\" stroke=\"#d97706\" stroke-width=\"2.5\"/><polyline points=\"22,36 60,64 98,36\" fill=\"none\" stroke=\"#b45309\" stroke-width=\"2.5\"/>"],
+    ["skill_badge","Skill & Mastery (Trophy Star)","social","skill master mastery expert talent craft ability","<polygon points=\"60,20 71,44 96,47 78,65 82,90 60,78 38,90 42,65 24,47 49,44\" fill=\"#fde047\" stroke=\"#ca8a04\" stroke-width=\"2.5\"/><circle cx=\"60\" cy=\"57\" r=\"11\" fill=\"#f97316\"/>"],
+    ["law_gavel","Lawyer & Court (Judge Gavel)","social","lawyer court legal judge trial rule justice","<rect x=\"34\" y=\"28\" width=\"40\" height=\"20\" rx=\"4\" fill=\"#b45309\" stroke=\"#78350f\" stroke-width=\"2.5\" transform=\"rotate(-25 54 38)\"/><line x1=\"56\" y1=\"42\" x2=\"88\" y2=\"74\" stroke=\"#92400e\" stroke-width=\"7\" stroke-linecap=\"round\"/><rect x=\"24\" y=\"78\" width=\"52\" height=\"10\" rx=\"3\" fill=\"#cbd5e1\" stroke=\"#334155\" stroke-width=\"2\"/>"],
+    ["athlete_runner","Athlete & Sport (Sprint Track)","social","athlete sport race sprint track run runner stadium","<circle cx=\"68\" cy=\"28\" r=\"9\" fill=\"#fb923c\" stroke=\"#c2410c\" stroke-width=\"2\"/><path d=\"M44,58 L64,42 L78,52 M60,44 L50,74 L32,80 M56,64 L76,72 L86,86\" fill=\"none\" stroke=\"#1d4ed8\" stroke-width=\"5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>"],
+    ["oath_promise","Oath & Promise (Sealed Scroll)","social","oath promise pledge swear vow treaty contract","<rect x=\"30\" y=\"24\" width=\"60\" height=\"68\" rx=\"8\" fill=\"#fefce8\" stroke=\"#ca8a04\" stroke-width=\"2.5\"/><line x1=\"42\" y1=\"40\" x2=\"78\" y2=\"40\" stroke=\"#713f12\" stroke-width=\"2.5\"/><line x1=\"42\" y1=\"54\" x2=\"74\" y2=\"54\" stroke=\"#713f12\" stroke-width=\"2.5\"/><circle cx=\"70\" cy=\"74\" r=\"10\" fill=\"#dc2626\" stroke=\"#991b1b\" stroke-width=\"2\"/>"],
+    ["rank_chevrons","Rank & Order (Triple Chevrons)","math","rank order tier level grade status hierarchy","<polyline points=\"32,42 60,26 88,42\" fill=\"none\" stroke=\"#2563eb\" stroke-width=\"6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><polyline points=\"32,62 60,46 88,62\" fill=\"none\" stroke=\"#2563eb\" stroke-width=\"6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><polyline points=\"32,82 60,66 88,82\" fill=\"none\" stroke=\"#2563eb\" stroke-width=\"6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>"],
+    ["exhibit_display","Exhibit & Museum (Display Frame)","social","exhibit display museum gallery show present statue","<rect x=\"24\" y=\"24\" width=\"72\" height=\"50\" rx=\"4\" fill=\"#f8fafc\" stroke=\"#334155\" stroke-width=\"3\"/><rect x=\"34\" y=\"34\" width=\"52\" height=\"30\" fill=\"#bae6fd\" stroke=\"#0284c7\" stroke-width=\"2\"/><line x1=\"44\" y1=\"74\" x2=\"40\" y2=\"90\" stroke=\"#475569\" stroke-width=\"4\"/><line x1=\"76\" y1=\"74\" x2=\"80\" y2=\"90\" stroke=\"#475569\" stroke-width=\"4\"/>"],
+    ["silence_mute","Silent & Mute (Crossed Speaker)","ela","silent hush quiet mute stillness calm pause","<polygon points=\"28,48 44,48 64,30 64,82 44,64 28,64\" fill=\"#cbd5e1\" stroke=\"#334155\" stroke-width=\"2.5\"/><line x1=\"74\" y1=\"44\" x2=\"94\" y2=\"68\" stroke=\"#dc2626\" stroke-width=\"4\" stroke-linecap=\"round\"/><line x1=\"94\" y1=\"44\" x2=\"74\" y2=\"68\" stroke=\"#dc2626\" stroke-width=\"4\" stroke-linecap=\"round\"/>"],
+    ["reveal_curtain","Reveal & Curtains (Parted Stage)","ela","reveal curtain scene uncover show open expose","<rect x=\"22\" y=\"24\" width=\"76\" height=\"62\" rx=\"4\" fill=\"#fef08a\" stroke=\"#ca8a04\" stroke-width=\"2\"/><path d=\"M22,24 Q42,52 22,86 Z\" fill=\"#dc2626\" stroke=\"#991b1b\" stroke-width=\"2\"/><path d=\"M98,24 Q78,52 98,86 Z\" fill=\"#dc2626\" stroke=\"#991b1b\" stroke-width=\"2\"/><circle cx=\"60\" cy=\"56\" r=\"10\" fill=\"#2563eb\"/>"],
+    ["unity_circle","United & Cooperation (Linked Circle)","social","united unity bond join fellowship group team club","<circle cx=\"60\" cy=\"56\" r=\"28\" fill=\"none\" stroke=\"#0ea5e9\" stroke-width=\"6\"/><circle cx=\"60\" cy=\"28\" r=\"8\" fill=\"#f97316\"/><circle cx=\"36\" cy=\"70\" r=\"8\" fill=\"#10b981\"/><circle cx=\"84\" cy=\"70\" r=\"8\" fill=\"#6366f1\"/>"],
+    ["suspense_cliff","Cliff & Suspense (Edge Overlook)","ela","cliff suspense edge ledge dramatic peak drop","<polygon points=\"20,88 20,42 74,42 58,88\" fill=\"#94a3b8\" stroke=\"#334155\" stroke-width=\"2.5\"/><path d=\"M62,42 L74,42\" stroke=\"#dc2626\" stroke-width=\"4\"/><circle cx=\"84\" cy=\"30\" r=\"7\" fill=\"#fde047\" stroke=\"#ca8a04\" stroke-width=\"2\"/>"],
+    ["technique_gears","Technique & Machine (Meshed Gears)","science","technique machine mechanical gear engine process","<circle cx=\"44\" cy=\"52\" r=\"20\" fill=\"#cbd5e1\" stroke=\"#334155\" stroke-width=\"3\" stroke-dasharray=\"7 4\"/><circle cx=\"44\" cy=\"52\" r=\"7\" fill=\"#ffffff\" stroke=\"#334155\" stroke-width=\"2\"/><circle cx=\"78\" cy=\"64\" r=\"16\" fill=\"#fed7aa\" stroke=\"#c2410c\" stroke-width=\"3\" stroke-dasharray=\"6 4\"/><circle cx=\"78\" cy=\"64\" r=\"6\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"2\"/>"],
+    ["rope_knot","Rope & Tie (Tied Cord Loop)","ela","rope cord knot tie bind chain wire twine","<path d=\"M22,56 C38,32 58,80 60,56 C62,32 82,80 98,56\" fill=\"none\" stroke=\"#b45309\" stroke-width=\"7\" stroke-linecap=\"round\"/><circle cx=\"60\" cy=\"56\" r=\"11\" fill=\"none\" stroke=\"#78350f\" stroke-width=\"5\"/>"],
+    ["sword_blade","Sword & Warrior (Crossed Hilt)","social","sword blade knight warrior guard weapon lance","<polygon points=\"60,18 66,28 65,68 55,68 54,28\" fill=\"#e2e8f0\" stroke=\"#475569\" stroke-width=\"2\"/><rect x=\"44\" y=\"68\" width=\"32\" height=\"7\" rx=\"3\" fill=\"#ca8a04\"/><rect x=\"57\" y=\"75\" width=\"6\" height=\"16\" rx=\"2\" fill=\"#78350f\"/>"],
+    ["lab_flasks","Lab & Experiment (Bench Beakers)","science","lab laboratory chemical test solution trial mixture","<polygon points=\"36,34 52,34 62,82 26,82\" fill=\"#bae6fd\" stroke=\"#0284c7\" stroke-width=\"2.5\"/><rect x=\"38\" y=\"24\" width=\"12\" height=\"10\" fill=\"#e2e8f0\" stroke=\"#475569\" stroke-width=\"2\"/><rect x=\"68\" y=\"40\" width=\"22\" height=\"42\" rx=\"4\" fill=\"#bbf7d0\" stroke=\"#15803d\" stroke-width=\"2.5\"/>"],
+    ["box_crate","Box & Carton (3D Cube Crate)","math","box crate carton package container bin chest bag","<rect x=\"28\" y=\"40\" width=\"48\" height=\"44\" fill=\"#fed7aa\" stroke=\"#9a3412\" stroke-width=\"2.5\"/><polygon points=\"28,40 44,26 92,26 76,40\" fill=\"#fdba74\" stroke=\"#9a3412\" stroke-width=\"2.5\"/><polygon points=\"76,40 92,26 92,70 76,84\" fill=\"#fb923c\" stroke=\"#9a3412\" stroke-width=\"2.5\"/>"],
+    ["kitchen_pot","Kitchen & Cooking (Simmering Pot)","science","kitchen boil cook pot supper meal recipe","<rect x=\"30\" y=\"44\" width=\"60\" height=\"40\" rx=\"8\" fill=\"#cbd5e1\" stroke=\"#334155\" stroke-width=\"2.5\"/><rect x=\"20\" y=\"50\" width=\"10\" height=\"8\" rx=\"3\" fill=\"#475569\"/><rect x=\"90\" y=\"50\" width=\"10\" height=\"8\" rx=\"3\" fill=\"#475569\"/><path d=\"M46,34 Q52,24 46,18 M60,34 Q66,24 60,18 M74,34 Q80,24 74,18\" fill=\"none\" stroke=\"#94a3b8\" stroke-width=\"2.5\" stroke-linecap=\"round\"/>"],
+    ["cinema_reel","Cinema & Film (Film Strip Frames)","ela","cinema film video movie scene camera theater screen","<rect x=\"22\" y=\"34\" width=\"76\" height=\"46\" rx=\"4\" fill=\"#1e293b\" stroke=\"#0f172a\" stroke-width=\"2\"/><rect x=\"34\" y=\"42\" width=\"22\" height=\"30\" rx=\"2\" fill=\"#38bdf8\"/><rect x=\"64\" y=\"42\" width=\"22\" height=\"30\" rx=\"2\" fill=\"#fde047\"/>"],
+    ["jazz_notes","Jazz & Song (Musical Notes)","ela","jazz song tune rhythm melody band whistle choir","<circle cx=\"42\" cy=\"74\" r=\"9\" fill=\"#6366f1\"/><circle cx=\"74\" cy=\"68\" r=\"9\" fill=\"#ec4899\"/><line x1=\"50\" y1=\"74\" x2=\"50\" y2=\"30\" stroke=\"#312e81\" stroke-width=\"3.5\"/><line x1=\"82\" y1=\"68\" x2=\"82\" y2=\"24\" stroke=\"#831843\" stroke-width=\"3.5\"/><polygon points=\"48,26 84,20 84,30 48,36\" fill=\"#4338ca\"/>"],
+    ["marble_sphere","Marble & Gem (Glossy Stone)","science","marble stone jewel amber gem mineral crystal rock","<circle cx=\"60\" cy=\"56\" r=\"28\" fill=\"#38bdf8\" stroke=\"#0369a1\" stroke-width=\"2.5\"/><path d=\"M42,48 Q56,36 74,48 Q58,64 42,48 Z\" fill=\"#fef08a\"/><circle cx=\"48\" cy=\"40\" r=\"5\" fill=\"#ffffff\"/>"],
+    ["light_beam","Beam & Flash (Bright Ray Cone)","science","beam flash spark shine spotlight laser ray illuminate","<rect x=\"20\" y=\"48\" width=\"24\" height=\"16\" rx=\"4\" fill=\"#334155\"/><polygon points=\"44,48 98,28 98,84 44,64\" fill=\"#fef08a\" opacity=\"0.85\" stroke=\"#eab308\" stroke-width=\"2\"/>"],
+    ["drain_funnel","Drain & Funnel (Liquid Pour)","science","drain funnel pour flow liquid filter spill drip","<polygon points=\"24,26 96,26 68,58 52,58\" fill=\"#bae6fd\" stroke=\"#0284c7\" stroke-width=\"2.5\"/><rect x=\"54\" y=\"58\" width=\"12\" height=\"26\" fill=\"#bae6fd\" stroke=\"#0284c7\" stroke-width=\"2\"/><circle cx=\"60\" cy=\"91\" r=\"4\" fill=\"#0284c7\"/>"],
+    ["gauge_dial","Gauge & Meter (Dial Indicator)","math","gauge meter dial speed level weight scale","<circle cx=\"60\" cy=\"60\" r=\"30\" fill=\"#f8fafc\" stroke=\"#334155\" stroke-width=\"3\"/><path d=\"M36,60 A24,24 0 0,1 84,60\" fill=\"none\" stroke=\"#16a34a\" stroke-width=\"6\"/><line x1=\"60\" y1=\"60\" x2=\"77\" y2=\"41\" stroke=\"#dc2626\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><circle cx=\"60\" cy=\"60\" r=\"5\" fill=\"#0f172a\"/>"],
+    ["polar_ice","Polar & Arctic (Iceberg Peaks)","science","polar arctic ice glacier cold freeze tundra winter","<rect x=\"18\" y=\"64\" width=\"84\" height=\"22\" fill=\"#0284c7\"/><polygon points=\"24,64 46,24 64,46 78,28 96,64\" fill=\"#e0f2fe\" stroke=\"#0369a1\" stroke-width=\"2.5\"/>"],
+    ["tropical_palm","Tropical & Island (Palm + Sun)","science","tropical palm jungle rainforest island beach coast","<path d=\"M58,86 Q56,62 60,42\" fill=\"none\" stroke=\"#92400e\" stroke-width=\"7\" stroke-linecap=\"round\"/><path d=\"M60,42 Q34,30 26,44 Q44,44 60,42 Q84,26 94,42 Q76,44 60,42\" fill=\"#22c55e\" stroke=\"#15803d\" stroke-width=\"2\"/><circle cx=\"84\" cy=\"24\" r=\"8\" fill=\"#fde047\"/>"],
+    ["fracture_bone","Fracture & Break (Split Bone)","science","fracture break crack split skeleton injured hurt","<rect x=\"24\" y=\"48\" width=\"32\" height=\"16\" rx=\"6\" fill=\"#f8fafc\" stroke=\"#475569\" stroke-width=\"2.5\"/><rect x=\"64\" y=\"48\" width=\"32\" height=\"16\" rx=\"6\" fill=\"#f8fafc\" stroke=\"#475569\" stroke-width=\"2.5\"/><path d=\"M58,36 L64,48 L56,62 L62,74\" fill=\"none\" stroke=\"#dc2626\" stroke-width=\"3\" stroke-linecap=\"round\"/>"],
+    ["overlap_rings","Overlap & Shared (Two Circles)","math","overlap shared common intersection blend mix","<circle cx=\"46\" cy=\"56\" r=\"24\" fill=\"#93c5fd\" opacity=\"0.65\" stroke=\"#1d4ed8\" stroke-width=\"2.5\"/><circle cx=\"74\" cy=\"56\" r=\"24\" fill=\"#fca5a5\" opacity=\"0.65\" stroke=\"#b91c1c\" stroke-width=\"2.5\"/>"],
+    ["loop_ring","Loop & Cycle (Circular Ring)","math","loop ring coil curl roll twist spin whirl","<circle cx=\"60\" cy=\"56\" r=\"26\" fill=\"none\" stroke=\"#7c3aed\" stroke-width=\"9\"/><circle cx=\"60\" cy=\"56\" r=\"14\" fill=\"none\" stroke=\"#ddd6fe\" stroke-width=\"2\"/>"],
+    ["chunk_block","Chunk & Slab (Heavy Block)","math","chunk slab lump block piece solid weight brick","<rect x=\"26\" y=\"34\" width=\"68\" height=\"46\" rx=\"8\" fill=\"#d97706\" stroke=\"#78350f\" stroke-width=\"3\"/><line x1=\"26\" y1=\"54\" x2=\"94\" y2=\"54\" stroke=\"#78350f\" stroke-width=\"2\"/>"],
+    ["paper_clip","Clip & Fastener (Wire Loop)","ela","clip fastener pin attach hook bind join","<path d=\"M44,34 L44,74 A12,12 0 0,0 68,74 L68,28 A8,8 0 0,0 52,28 L52,66 A4,4 0 0,0 60,66 L60,38\" fill=\"none\" stroke=\"#475569\" stroke-width=\"4\" stroke-linecap=\"round\"/>"],
+    ["magic_wand","Magic & Wonder (Sparkling Wand)","ela","magic enchanted wonder miracle dream spell charm","<line x1=\"28\" y1=\"84\" x2=\"72\" y2=\"40\" stroke=\"#4c1d95\" stroke-width=\"7\" stroke-linecap=\"round\"/><polygon points=\"78,22 82,32 92,32 84,38 87,48 78,42 69,48 72,38 64,32 74,32\" fill=\"#fde047\" stroke=\"#ca8a04\" stroke-width=\"2\"/>"],
+    ["crown_king","King & Queen (Royal Crown)","social","king queen royal crown throne kingdom prince princess ruler","<polygon points=\"24,78 24,38 42,56 60,28 78,56 96,38 96,78\" fill=\"#facc15\" stroke=\"#b45309\" stroke-width=\"2.5\"/><rect x=\"24\" y=\"72\" width=\"72\" height=\"10\" rx=\"2\" fill=\"#ca8a04\"/>"],
+    ["sky_clouds","Sky & Breeze (Soft Clouds)","science","sky heaven cloud clouds airy dawn horizon twilight","<rect x=\"18\" y=\"20\" width=\"84\" height=\"68\" rx=\"12\" fill=\"#bae6fd\"/><circle cx=\"48\" cy=\"54\" r=\"16\" fill=\"#ffffff\"/><circle cx=\"68\" cy=\"52\" r=\"18\" fill=\"#ffffff\"/><rect x=\"34\" y=\"54\" width=\"52\" height=\"16\" rx=\"8\" fill=\"#ffffff\"/>"],
+    ["sea_horizon","Sea & Shore (Rolling Coast)","science","sea ocean coast bay shore wave waves harbor tide beach","<rect x=\"18\" y=\"22\" width=\"84\" height=\"36\" fill=\"#fef3c7\"/><path d=\"M18,58 Q38,48 60,58 T102,58 L102,88 L18,88 Z\" fill=\"#0284c7\"/><path d=\"M22,72 Q42,64 60,72 T98,72\" fill=\"none\" stroke=\"#bae6fd\" stroke-width=\"3\" stroke-linecap=\"round\"/>"],
+    ["breath_lungs","Breath & Airway (Inhale Lungs)","science","breath breathe inhale gasp sigh yawn smell","<rect x=\"56\" y=\"20\" width=\"8\" height=\"24\" fill=\"#94a3b8\"/><path d=\"M56,42 Q32,42 28,68 Q28,84 44,84 Q56,84 56,64 Z\" fill=\"#fda4af\" stroke=\"#be123c\" stroke-width=\"2\"/><path d=\"M64,42 Q88,42 92,68 Q92,84 76,84 Q64,84 64,64 Z\" fill=\"#fda4af\" stroke=\"#be123c\" stroke-width=\"2\"/>"],
+    ["mind_gears","Mind & Sense (Head Outline + Spark)","ela","mind sense mental imagine suppose wonder reckon recall","<circle cx=\"60\" cy=\"52\" r=\"28\" fill=\"#e0e7ff\" stroke=\"#4338ca\" stroke-width=\"2.5\"/><path d=\"M48,54 Q60,36 72,54\" fill=\"none\" stroke=\"#f59e0b\" stroke-width=\"4\" stroke-linecap=\"round\"/><circle cx=\"60\" cy=\"58\" r=\"7\" fill=\"#fde047\" stroke=\"#ca8a04\" stroke-width=\"2\"/>"],
+    ["cold_snowflake","Cold & Frost (Crystal Snowflake)","science","cold chill freeze frost icy winter chill shiver cool","<line x1=\"60\" y1=\"22\" x2=\"60\" y2=\"90\" stroke=\"#0284c7\" stroke-width=\"4\" stroke-linecap=\"round\"/><line x1=\"30\" y1=\"39\" x2=\"90\" y2=\"73\" stroke=\"#0284c7\" stroke-width=\"4\" stroke-linecap=\"round\"/><line x1=\"90\" y1=\"39\" x2=\"30\" y2=\"73\" stroke=\"#0284c7\" stroke-width=\"4\" stroke-linecap=\"round\"/><circle cx=\"60\" cy=\"56\" r=\"8\" fill=\"#e0f2fe\" stroke=\"#0369a1\" stroke-width=\"2\"/>"],
+    ["bare_branch","Bare & Empty (Winter Twig)","science","bare naked plain simple empty branch stick wooden","<line x1=\"24\" y1=\"78\" x2=\"94\" y2=\"34\" stroke=\"#78350f\" stroke-width=\"6\" stroke-linecap=\"round\"/><line x1=\"56\" y1=\"58\" x2=\"46\" y2=\"32\" stroke=\"#78350f\" stroke-width=\"4\" stroke-linecap=\"round\"/><line x1=\"72\" y1=\"48\" x2=\"88\" y2=\"56\" stroke=\"#78350f\" stroke-width=\"4\" stroke-linecap=\"round\"/>"],
+    ["mixed_bowl","Mixed & Blends (Swirled Dots)","science","mixed blend swirl stir bowl assorted combined","<path d=\"M24,52 Q24,84 60,84 Q96,84 96,52 Z\" fill=\"#fef3c7\" stroke=\"#d97706\" stroke-width=\"2.5\"/><circle cx=\"44\" cy=\"48\" r=\"8\" fill=\"#ef4444\"/><circle cx=\"60\" cy=\"45\" r=\"8\" fill=\"#22c55e\"/><circle cx=\"76\" cy=\"48\" r=\"8\" fill=\"#3b82f6\"/>"],
+    ["amaze_burst","Amazement & Surprise (Starburst)","ela","amazement amazing surprise shock startled astonishment wow","<polygon points=\"60,18 68,42 94,32 76,54 96,70 70,70 76,92 60,74 44,92 50,70 24,70 44,54 26,32 52,42\" fill=\"#fef08a\" stroke=\"#f59e0b\" stroke-width=\"2.5\"/><text x=\"60\" y=\"62\" text-anchor=\"middle\" font-size=\"14\" font-weight=\"900\" fill=\"#9a3412\">WOW</text>"],
+    ["chosen_ribbon","Chosen & Prize (Blue Award Ribbon)","social","chosen select pick prize win victory honor honour","<circle cx=\"60\" cy=\"44\" r=\"20\" fill=\"#3b82f6\" stroke=\"#1d4ed8\" stroke-width=\"2.5\"/><polygon points=\"48,60 40,90 54,80 60,92\" fill=\"#ef4444\"/><polygon points=\"72,60 80,90 66,80 60,92\" fill=\"#ef4444\"/><circle cx=\"60\" cy=\"44\" r=\"9\" fill=\"#fde047\"/>"],
+    ["allied_flags","Allied & Pact (Crossed Flags)","social","allied ally united partner truce treaty","<line x1=\"34\" y1=\"86\" x2=\"72\" y2=\"28\" stroke=\"#334155\" stroke-width=\"4\"/><polygon points=\"64,40 94,34 86,54 56,54\" fill=\"#22c55e\" stroke=\"#15803d\" stroke-width=\"2\"/><line x1=\"86\" y1=\"86\" x2=\"48\" y2=\"28\" stroke=\"#334155\" stroke-width=\"4\"/><polygon points=\"56,40 26,34 34,54 64,54\" fill=\"#3b82f6\" stroke=\"#1d4ed8\" stroke-width=\"2\"/>"],
+    ["fidelity_anchor","Fidelity & Loyal (Steadfast Anchor)","social","fidelity loyal firm firmly steady steadfast abide","<circle cx=\"60\" cy=\"28\" r=\"8\" fill=\"none\" stroke=\"#1e293b\" stroke-width=\"4\"/><line x1=\"60\" y1=\"36\" x2=\"60\" y2=\"80\" stroke=\"#1e293b\" stroke-width=\"5\"/><line x1=\"40\" y1=\"48\" x2=\"80\" y2=\"48\" stroke=\"#1e293b\" stroke-width=\"4\"/><path d=\"M32,68 Q60,92 88,68\" fill=\"none\" stroke=\"#1e293b\" stroke-width=\"5\" stroke-linecap=\"round\"/>"],
+    ["compel_push","Compel & Drive (Forceful Arrows)","science","compel push force drive shove thrust urge","<rect x=\"24\" y=\"44\" width=\"24\" height=\"24\" rx=\"4\" fill=\"#94a3b8\" stroke=\"#334155\" stroke-width=\"2.5\"/><line x1=\"52\" y1=\"56\" x2=\"84\" y2=\"56\" stroke=\"#dc2626\" stroke-width=\"6\" stroke-linecap=\"round\"/><polygon points=\"94,56 78,44 78,68\" fill=\"#dc2626\"/>"],
+    ["objective_bullseye","Objective & Goal (Centered Dart)","social","objective goal aim target plan intention purpose","<circle cx=\"60\" cy=\"56\" r=\"28\" fill=\"#dbeafe\" stroke=\"#1d4ed8\" stroke-width=\"2.5\"/><circle cx=\"60\" cy=\"56\" r=\"16\" fill=\"#ffffff\" stroke=\"#2563eb\" stroke-width=\"2\"/><circle cx=\"60\" cy=\"56\" r=\"7\" fill=\"#dc2626\"/>"],
+    ["assign_clipboard","Assign & Task (Task Clipboard)","social","assign task chore duty role checklist job application","<rect x=\"28\" y=\"28\" width=\"64\" height=\"62\" rx=\"6\" fill=\"#fef3c7\" stroke=\"#b45309\" stroke-width=\"2.5\"/><rect x=\"44\" y=\"20\" width=\"32\" height=\"14\" rx=\"4\" fill=\"#64748b\"/><line x1=\"40\" y1=\"48\" x2=\"80\" y2=\"48\" stroke=\"#475569\" stroke-width=\"3\"/><line x1=\"40\" y1=\"62\" x2=\"80\" y2=\"62\" stroke=\"#475569\" stroke-width=\"3\"/><line x1=\"40\" y1=\"76\" x2=\"68\" y2=\"76\" stroke=\"#475569\" stroke-width=\"3\"/>"],
+    ["arrangement_grid","Arrangement & Pattern (Organized Grid)","math","arrangement organize layout grid structure composition array","<rect x=\"26\" y=\"28\" width=\"20\" height=\"20\" rx=\"3\" fill=\"#60a5fa\"/><rect x=\"50\" y=\"28\" width=\"20\" height=\"20\" rx=\"3\" fill=\"#34d399\"/><rect x=\"74\" y=\"28\" width=\"20\" height=\"20\" rx=\"3\" fill=\"#fbbf24\"/><rect x=\"26\" y=\"52\" width=\"20\" height=\"20\" rx=\"3\" fill=\"#fbbf24\"/><rect x=\"50\" y=\"52\" width=\"20\" height=\"20\" rx=\"3\" fill=\"#60a5fa\"/><rect x=\"74\" y=\"52\" width=\"20\" height=\"20\" rx=\"3\" fill=\"#34d399\"/>"],
+    ["convenient_bolt","Convenient & Quick (Fast Spark)","social","convenient quick handy smooth instant rapid easy","<circle cx=\"60\" cy=\"56\" r=\"30\" fill=\"#fef9c3\" stroke=\"#ca8a04\" stroke-width=\"2.5\"/><polygon points=\"64,28 44,58 58,58 52,84 78,52 62,52\" fill=\"#eab308\" stroke=\"#a16207\" stroke-width=\"1.5\"/>"],
+    ["osmosis","Osmosis (Water Across Membrane)","science","osmosis water membrane cell diffusion balance","<rect x=\"20\" y=\"24\" width=\"80\" height=\"60\" rx=\"6\" fill=\"#e0f2fe\" stroke=\"#0284c7\" stroke-width=\"2\"/><line x1=\"60\" y1=\"24\" x2=\"60\" y2=\"84\" stroke=\"#0f766e\" stroke-width=\"4\" stroke-dasharray=\"5 4\"/><circle cx=\"36\" cy=\"42\" r=\"6\" fill=\"#0284c7\"/><circle cx=\"42\" cy=\"66\" r=\"6\" fill=\"#0284c7\"/><circle cx=\"80\" cy=\"54\" r=\"6\" fill=\"#0284c7\"/><path d=\"M48,54 L72,54\" stroke=\"#be123c\" stroke-width=\"3\"/><polygon points=\"74,54 66,49 66,59\" fill=\"#be123c\"/>"],
+    ["biosphere","Biosphere (Living Earth Zone)","science","biosphere earth life land ocean sky ecosystem","<circle cx=\"60\" cy=\"54\" r=\"32\" fill=\"#bae6fd\" stroke=\"#0284c7\" stroke-width=\"2.5\"/><path d=\"M34,54 Q52,32 76,46 Q68,72 40,70 Z\" fill=\"#22c55e\" stroke=\"#15803d\" stroke-width=\"2\"/><circle cx=\"60\" cy=\"54\" r=\"37\" fill=\"none\" stroke=\"#16a34a\" stroke-width=\"2\" stroke-dasharray=\"5 3\"/>"],
+    ["hydrosphere","Hydrosphere (Earth Water Cycles)","science","hydrosphere ocean river glacier water earth","<circle cx=\"60\" cy=\"54\" r=\"32\" fill=\"#0284c7\" stroke=\"#0369a1\" stroke-width=\"2.5\"/><path d=\"M34,58 Q48,48 62,58 T88,58\" fill=\"none\" stroke=\"#e0f2fe\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><polygon points=\"42,36 60,26 78,36\" fill=\"#e0f2fe\"/>"],
+    ["lithosphere","Lithosphere (Crust & Upper Mantle)","science","lithosphere crust rock tectonic mantle earth","<rect x=\"22\" y=\"34\" width=\"76\" height=\"16\" rx=\"3\" fill=\"#78716c\" stroke=\"#44403c\" stroke-width=\"2\"/><rect x=\"22\" y=\"50\" width=\"76\" height=\"22\" rx=\"3\" fill=\"#b45309\" stroke=\"#78350f\" stroke-width=\"2\"/><rect x=\"22\" y=\"72\" width=\"76\" height=\"14\" rx=\"3\" fill=\"#ef4444\"/>"],
+    ["aurora","Aurora (Polar Light Ribbons)","science","aurora sky polar north glow night magnetic","<rect x=\"20\" y=\"22\" width=\"80\" height=\"64\" rx=\"8\" fill=\"#0f172a\"/><path d=\"M26,64 Q44,28 60,52 T94,30\" fill=\"none\" stroke=\"#22c55e\" stroke-width=\"6\" stroke-linecap=\"round\" opacity=\"0.85\"/><path d=\"M28,72 Q48,42 64,62 T92,42\" fill=\"none\" stroke=\"#38bdf8\" stroke-width=\"4\" stroke-linecap=\"round\" opacity=\"0.85\"/>"],
+    ["autotroph","Autotroph (Makes Own Food)","science","autotroph producer plant sunlight photosynthesis","<circle cx=\"30\" cy=\"30\" r=\"10\" fill=\"#fde047\" stroke=\"#ca8a04\" stroke-width=\"2\"/><line x1=\"38\" y1=\"38\" x2=\"52\" y2=\"50\" stroke=\"#ca8a04\" stroke-width=\"3\"/><path d=\"M40,74 Q58,40 84,54 Q74,80 40,74 Z\" fill=\"#22c55e\" stroke=\"#15803d\" stroke-width=\"2.5\"/>"],
+    ["heterotroph","Heterotroph (Eats Other Food)","science","heterotroph consumer animal eat feed energy","<circle cx=\"42\" cy=\"58\" r=\"16\" fill=\"#22c55e\"/><path d=\"M62,58 L78,58\" stroke=\"#475569\" stroke-width=\"3\"/><polygon points=\"82,58 74,52 74,64\" fill=\"#475569\"/><rect x=\"74\" y=\"42\" width=\"24\" height=\"32\" rx=\"8\" fill=\"#fb923c\" stroke=\"#c2410c\" stroke-width=\"2\"/>"],
+    ["genotype","Genotype (Gene Allele Code)","science","genotype alleles DNA genetics gene code","<rect x=\"26\" y=\"34\" width=\"30\" height=\"42\" rx=\"6\" fill=\"#dbeafe\" stroke=\"#1d4ed8\" stroke-width=\"2.5\"/><rect x=\"64\" y=\"34\" width=\"30\" height=\"42\" rx=\"6\" fill=\"#ede9fe\" stroke=\"#6d28d9\" stroke-width=\"2.5\"/><text x=\"41\" y=\"61\" text-anchor=\"middle\" font-size=\"18\" font-weight=\"800\" fill=\"#1e40af\">B</text><text x=\"79\" y=\"61\" text-anchor=\"middle\" font-size=\"18\" font-weight=\"800\" fill=\"#5b21b6\">b</text>"],
+    ["phenotype","Phenotype (Visible Trait)","science","phenotype physical observable trait color height","<circle cx=\"40\" cy=\"54\" r=\"16\" fill=\"#7c3aed\" stroke=\"#4c1d95\" stroke-width=\"2.5\"/><circle cx=\"80\" cy=\"54\" r=\"16\" fill=\"#f8fafc\" stroke=\"#475569\" stroke-width=\"2.5\"/><path d=\"M24,84 L96,84\" stroke=\"#15803d\" stroke-width=\"3\"/>"],
+    ["diffraction","Diffraction (Waves Bend & Spread)","science","diffraction slit wave light sound bend spread","<line x1=\"46\" y1=\"22\" x2=\"46\" y2=\"44\" stroke=\"#334155\" stroke-width=\"5\"/><line x1=\"46\" y1=\"64\" x2=\"46\" y2=\"86\" stroke=\"#334155\" stroke-width=\"5\"/><line x1=\"24\" y1=\"34\" x2=\"24\" y2=\"74\" stroke=\"#0284c7\" stroke-width=\"2.5\"/><line x1=\"34\" y1=\"34\" x2=\"34\" y2=\"74\" stroke=\"#0284c7\" stroke-width=\"2.5\"/><path d=\"M56,42 A14,14 0 0,1 56,66 M66,34 A22,22 0 0,1 66,74 M76,26 A30,30 0 0,1 76,82\" fill=\"none\" stroke=\"#2563eb\" stroke-width=\"2.5\"/>"],
+    ["hypotenuse","Hypotenuse (Longest Right Side)","math","hypotenuse right triangle geometry pythagorean side","<polygon points=\"28,82 28,28 92,82\" fill=\"#dbeafe\" stroke=\"#334155\" stroke-width=\"2.5\"/><rect x=\"28\" y=\"70\" width=\"12\" height=\"12\" fill=\"none\" stroke=\"#334155\" stroke-width=\"2\"/><line x1=\"28\" y1=\"28\" x2=\"92\" y2=\"82\" stroke=\"#dc2626\" stroke-width=\"5\" stroke-linecap=\"round\"/>"],
+    ["scalene","Scalene Triangle (Three Unequal Sides)","math","scalene triangle sides angles unequal geometry","<polygon points=\"24,82 42,26 98,74\" fill=\"#fef3c7\" stroke=\"#b45309\" stroke-width=\"3\"/><line x1=\"30\" y1=\"52\" x2=\"36\" y2=\"54\" stroke=\"#dc2626\" stroke-width=\"2.5\"/><line x1=\"66\" y1=\"46\" x2=\"71\" y2=\"42\" stroke=\"#1d4ed8\" stroke-width=\"2.5\"/><line x1=\"70\" y1=\"50\" x2=\"75\" y2=\"46\" stroke=\"#1d4ed8\" stroke-width=\"2.5\"/>"],
+    ["tessellation","Tessellation (No-Gap Shape Tile)","math","tessellation tile pattern hexagons mosaic fit","<polygon points=\"38,34 52,26 66,34 66,50 52,58 38,50\" fill=\"#93c5fd\" stroke=\"#1d4ed8\" stroke-width=\"2\"/><polygon points=\"66,34 80,26 94,34 94,50 80,58 66,50\" fill=\"#fde68a\" stroke=\"#b45309\" stroke-width=\"2\"/><polygon points=\"52,58 66,50 80,58 80,74 66,82 52,74\" fill=\"#a7f3d0\" stroke=\"#047857\" stroke-width=\"2\"/>"],
+    ["polynomial","Polynomial (Multi-Term Expression)","math","polynomial algebra terms exponent variable expression","<rect x=\"18\" y=\"36\" width=\"84\" height=\"38\" rx=\"8\" fill=\"#eef2ff\" stroke=\"#4f46e5\" stroke-width=\"2.5\"/><text x=\"60\" y=\"61\" text-anchor=\"middle\" font-size=\"16\" font-weight=\"800\" fill=\"#312e81\">x^2 + 3x + 2</text>"],
+    ["dilation","Dilation (Scale Bigger or Smaller)","math","dilation scale transform similar resize geometry","<polygon points=\"24,78 44,46 64,78\" fill=\"#bfdbfe\" stroke=\"#1d4ed8\" stroke-width=\"2\"/><polygon points=\"42,84 70,26 98,84\" fill=\"none\" stroke=\"#be123c\" stroke-width=\"3\" stroke-dasharray=\"5 3\"/>"],
+    ["bicameral","Bicameral Legislature (Two Chambers)","social","bicameral legislature senate house two chambers law","<rect x=\"22\" y=\"34\" width=\"32\" height=\"46\" rx=\"4\" fill=\"#dbeafe\" stroke=\"#1d4ed8\" stroke-width=\"2.5\"/><rect x=\"66\" y=\"34\" width=\"32\" height=\"46\" rx=\"4\" fill=\"#fde68a\" stroke=\"#b45309\" stroke-width=\"2.5\"/><line x1=\"54\" y1=\"56\" x2=\"66\" y2=\"56\" stroke=\"#334155\" stroke-width=\"3\"/>"],
+    ["legislative","Legislative Branch (Lawmaking Capitol)","social","legislative branch congress law bill pass statute","<path d=\"M30,78 L90,78 L90,54 L76,54 A16,16 0 0,0 44,54 L30,54 Z\" fill=\"#e2e8f0\" stroke=\"#1e293b\" stroke-width=\"2.5\"/><line x1=\"60\" y1=\"24\" x2=\"60\" y2=\"38\" stroke=\"#1e293b\" stroke-width=\"3\"/><circle cx=\"60\" cy=\"22\" r=\"3\" fill=\"#b45309\"/>"],
+    ["embargo","Embargo (Blocked Trade Route)","social","embargo trade stop ban ship barrier tariff","<polygon points=\"26,64 62,64 56,78 32,78\" fill=\"#3b82f6\" stroke=\"#1d4ed8\" stroke-width=\"2\"/><polygon points=\"42,60 42,36 58,48\" fill=\"#f8fafc\" stroke=\"#475569\" stroke-width=\"2\"/><line x1=\"74\" y1=\"36\" x2=\"96\" y2=\"78\" stroke=\"#dc2626\" stroke-width=\"5\"/><line x1=\"96\" y1=\"36\" x2=\"74\" y2=\"78\" stroke=\"#dc2626\" stroke-width=\"5\"/>"],
+    ["monologue","Monologue (One Speaker Stage)","ela","monologue speaker speech solo drama theater","<circle cx=\"42\" cy=\"42\" r=\"10\" fill=\"#4f46e5\"/><path d=\"M30,78 Q42,56 54,78\" fill=\"#6366f1\"/><rect x=\"58\" y=\"32\" width=\"42\" height=\"26\" rx=\"8\" fill=\"#fef3c7\" stroke=\"#d97706\" stroke-width=\"2\"/><line x1=\"66\" y1=\"42\" x2=\"92\" y2=\"42\" stroke=\"#92400e\" stroke-width=\"2.5\"/><line x1=\"66\" y1=\"50\" x2=\"86\" y2=\"50\" stroke=\"#92400e\" stroke-width=\"2.5\"/>"],
+    ["oxymoron","Oxymoron (Opposite Word Pair)","ela","oxymoron figure speech opposite paradox phrase","<rect x=\"18\" y=\"40\" width=\"38\" height=\"30\" rx=\"6\" fill=\"#0f172a\"/><rect x=\"64\" y=\"40\" width=\"38\" height=\"30\" rx=\"6\" fill=\"#f8fafc\" stroke=\"#334155\" stroke-width=\"2\"/><text x=\"37\" y=\"59\" text-anchor=\"middle\" font-size=\"10\" font-weight=\"800\" fill=\"#ffffff\">HOT</text><text x=\"83\" y=\"59\" text-anchor=\"middle\" font-size=\"10\" font-weight=\"800\" fill=\"#0284c7\">ICE</text>"],
+    ["allegory","Allegory (Story & Deeper Meaning)","ela","allegory symbolic story moral civic meaning","<rect x=\"22\" y=\"32\" width=\"32\" height=\"46\" rx=\"4\" fill=\"#fde68a\" stroke=\"#b45309\" stroke-width=\"2\"/><path d=\"M58,55 L70,55\" stroke=\"#334155\" stroke-width=\"3\"/><polygon points=\"74,55 66,50 66,60\" fill=\"#334155\"/><circle cx=\"86\" cy=\"55\" r=\"14\" fill=\"#c7d2fe\" stroke=\"#4338ca\" stroke-width=\"2.5\"/>"],
+    ["sonnet","Sonnet (14-Line Formal Poem)","ela","sonnet poem 14 lines rhyme meter stanza","<rect x=\"28\" y=\"24\" width=\"64\" height=\"64\" rx=\"6\" fill=\"#fffbeb\" stroke=\"#b45309\" stroke-width=\"2.5\"/><line x1=\"40\" y1=\"38\" x2=\"80\" y2=\"38\" stroke=\"#78350f\" stroke-width=\"2\"/><line x1=\"40\" y1=\"48\" x2=\"76\" y2=\"48\" stroke=\"#78350f\" stroke-width=\"2\"/><line x1=\"40\" y1=\"58\" x2=\"80\" y2=\"58\" stroke=\"#78350f\" stroke-width=\"2\"/><text x=\"60\" y=\"78\" text-anchor=\"middle\" font-size=\"12\" font-weight=\"800\" fill=\"#be123c\">14 LINES</text>"],
+    ["haiku","Haiku (5-7-5 Syllable Poem)","ela","haiku poem three lines syllables nature 5-7-5","<rect x=\"26\" y=\"28\" width=\"68\" height=\"58\" rx=\"6\" fill=\"#ecfdf5\" stroke=\"#047857\" stroke-width=\"2.5\"/><text x=\"60\" y=\"46\" text-anchor=\"middle\" font-size=\"12\" font-weight=\"800\" fill=\"#065f46\">5 beats</text><text x=\"60\" y=\"60\" text-anchor=\"middle\" font-size=\"12\" font-weight=\"800\" fill=\"#047857\">7 beats</text><text x=\"60\" y=\"74\" text-anchor=\"middle\" font-size=\"12\" font-weight=\"800\" fill=\"#065f46\">5 beats</text>"],
+    ["soliloquy","Soliloquy (Inner Thoughts Aloud)","ela","soliloquy thoughts solo theater speech character","<circle cx=\"46\" cy=\"68\" r=\"10\" fill=\"#334155\"/><circle cx=\"56\" cy=\"54\" r=\"4\" fill=\"#bae6fd\" stroke=\"#0284c7\" stroke-width=\"1.5\"/><ellipse cx=\"74\" cy=\"36\" rx=\"22\" ry=\"14\" fill=\"#e0f2fe\" stroke=\"#0284c7\" stroke-width=\"2\"/>"],
+    ["climate","Climate (Long-Term Weather Pattern)","science","climate weather temperature rainfall region desert","<circle cx=\"38\" cy=\"38\" r=\"12\" fill=\"#facc15\" stroke=\"#ca8a04\" stroke-width=\"2\"/><path d=\"M62,46 Q74,34 88,46 Q94,58 76,58 L58,58 Q50,50 62,46 Z\" fill=\"#cbd5e1\" stroke=\"#475569\" stroke-width=\"2\"/><rect x=\"24\" y=\"68\" width=\"72\" height=\"14\" rx=\"4\" fill=\"#22c55e\"/>"],
+    ["magma","Magma (Molten Underground Rock)","science","magma lava crust earth molten heat volcano","<polygon points=\"22,82 48,42 72,42 98,82\" fill=\"#57554e\"/><path d=\"M52,82 L55,44 L65,44 L68,82 Z\" fill=\"#ef4444\"/><ellipse cx=\"60\" cy=\"80\" rx=\"22\" ry=\"8\" fill=\"#f97316\"/>"],
+    ["subtrahend","Subtrahend (Number Subtracted)","math","subtrahend subtract difference take away math","<rect x=\"20\" y=\"40\" width=\"24\" height=\"26\" rx=\"4\" fill=\"#e2e8f0\"/><rect x=\"50\" y=\"40\" width=\"24\" height=\"26\" rx=\"4\" fill=\"#fee2e2\" stroke=\"#dc2626\" stroke-width=\"2.5\"/><text x=\"62\" y=\"58\" text-anchor=\"middle\" font-size=\"14\" font-weight=\"800\" fill=\"#b91c1c\">-3</text><rect x=\"80\" y=\"40\" width=\"22\" height=\"26\" rx=\"4\" fill=\"#dcfce7\"/>"],
+    ["denouement","Denouement (Story Ending Unravel)","ela","denouement ending plot resolution story conclusion","<path d=\"M22,74 L48,36 L68,58 L98,74\" fill=\"none\" stroke=\"#4f46e5\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"94\" cy=\"74\" r=\"7\" fill=\"#10b981\" stroke=\"#047857\" stroke-width=\"2\"/>"],
+    ["asymptote","Asymptote (Line Never Touched)","math","asymptote curve graph approach limit function","<line x1=\"24\" y1=\"76\" x2=\"96\" y2=\"76\" stroke=\"#dc2626\" stroke-width=\"2.5\" stroke-dasharray=\"5 4\"/><path d=\"M28,26 Q42,68 96,72\" fill=\"none\" stroke=\"#2563eb\" stroke-width=\"3.5\"/>"],
+    ["pythagorean","Pythagorean Theorem (a^2 + b^2 = c^2)","math","pythagorean theorem right triangle hypotenuse legs","<polygon points=\"32,76 32,36 80,76\" fill=\"#bfdbfe\" stroke=\"#1d4ed8\" stroke-width=\"2.5\"/><text x=\"60\" y=\"96\" text-anchor=\"middle\" font-size=\"11\" font-weight=\"800\" fill=\"#1e40af\">a^2+b^2=c^2</text>"]
+  ];
+
+  var CURRICULUM_DIAGRAMS = {};
+  for (var di = 0; di < DIAGRAM_SPECS.length; di++) {
+    var sp = DIAGRAM_SPECS[di];
+    CURRICULUM_DIAGRAMS[sp[0]] = {
+      word: sp[0],
+      label: sp[1],
+      category: sp[2],
+      tags: sp[3],
+      set: 'diagram',
+      matchType: 'diagram',
+      matchedKey: sp[0],
+      alt: sp[1],
+      credit: 'AlloFlow Curriculum Diagram (offline SVG)',
+      svg: makeDiagramSvg(sp[4])
+    };
+  }
+
+  var DIAGRAM_ALIASES = {
+    'fractions': 'fraction',
+    'fractional': 'fraction',
+    'halves': 'half',
+    'thirds': 'third',
+    'quarters': 'quarter',
+    'fourths': 'quarter',
+    'fourth': 'quarter',
+    'percentage': 'percent',
+    'percentages': 'percent',
+    'ratios': 'ratio',
+    'decimals': 'decimal',
+    'equations': 'equation',
+    'equals': 'equation',
+    'variables': 'variable',
+    'inequalities': 'inequality',
+    'estimation': 'estimate',
+    'round': 'estimate',
+    'rounding': 'estimate',
+    'multiplication': 'multiply',
+    'times': 'multiply',
+    'product': 'multiply',
+    'division': 'divide',
+    'quotient': 'divide',
+    'patterns': 'pattern',
+    'perimeters': 'perimeter',
+    'areas': 'area',
+    'volumes': 'volume',
+    'angles': 'angle',
+    'right angle': 'right_angle',
+    'right-angle': 'right_angle',
+    'symmetrical': 'symmetry',
+    'symmetric': 'symmetry',
+    'radii': 'radius',
+    'diameters': 'diameter',
+    'circumferences': 'circumference',
+    'polygons': 'polygon',
+    'triangles': 'triangle',
+    'rectangles': 'rectangle',
+    'squares': 'square',
+    'coordinates': 'coordinate',
+    'coordinate plane': 'coordinate',
+    'ordered pair': 'coordinate',
+    'graphs': 'graph',
+    'bar graph': 'graph',
+    'average': 'mean',
+    'probable': 'probability',
+    'ruler': 'measure',
+    'measurement': 'measure',
+    'compass rose': 'compass',
+    'northern': 'north',
+    'southern': 'south',
+    'eastern': 'east',
+    'western': 'west',
+    'hemispheres': 'hemisphere',
+    'parrallel': 'parallel',
+    'erode': 'erosion',
+    'weather': 'weathering',
+    'volcanoes': 'volcano',
+    'orbits': 'orbit',
+    'eclipses': 'eclipse',
+    'evaporation': 'evaporate',
+    'evaporates': 'evaporate',
+    'evaporating': 'evaporate',
+    'vapor': 'evaporate',
+    'water cycle': 'evaporate',
+    'condensation': 'condense',
+    'condenses': 'condense',
+    'condensing': 'condense',
+    'precipitate': 'precipitation',
+    'solids': 'solid',
+    'liquids': 'liquid',
+    'gases': 'gas',
+    'magnets': 'magnet',
+    'magnetic': 'magnet',
+    'magnetism': 'magnet',
+    'circuits': 'circuit',
+    'electricity': 'circuit',
+    'thermometers': 'thermometer',
+    'temperature': 'thermometer',
+    'gravitational': 'gravity',
+    'forces': 'force',
+    'kinetic': 'energy',
+    'potential': 'energy',
+    'cells': 'cell',
+    'atoms': 'atom',
+    'atomic': 'atom',
+    'molecules': 'molecule',
+    'molecular': 'molecule',
+    'ecosystems': 'ecosystem',
+    'habitats': 'habitat',
+    'fossils': 'fossil',
+    'prefixes': 'prefix',
+    'suffixes': 'suffix',
+    'root': 'root_word',
+    'root word': 'root_word',
+    'syllables': 'syllable',
+    'synonyms': 'synonym',
+    'antonyms': 'antonym',
+    'comparing': 'compare',
+    'comparison': 'compare',
+    'contrasting': 'contrast',
+    'causes': 'cause',
+    'effects': 'effect',
+    'sequences': 'sequence',
+    'timelines': 'timeline',
+    'summarize': 'summary',
+    'summaries': 'summary',
+    'infer': 'inference',
+    'inferences': 'inference',
+    'main idea': 'main_idea',
+    'central idea': 'main_idea',
+    'context clues': 'context',
+    'add': 'addition',
+    'plus': 'addition',
+    'sum': 'addition',
+    'subtract': 'subtraction',
+    'minus': 'subtraction',
+    'difference': 'subtraction',
+    'number line': 'number_line',
+    'place value': 'place_value',
+    'congruence': 'congruent',
+    'peninsulas': 'peninsula',
+    'plateaus': 'plateau',
+    'islands': 'island',
+    'axes': 'axis',
+    'hypotheses': 'hypothesis',
+    'wavelengths': 'wavelength',
+    'reflect': 'reflection',
+    'refract': 'refraction',
+    'dense': 'density',
+    'herbivores': 'herbivore',
+    'carnivores': 'carnivore',
+    'omnivores': 'omnivore',
+    'straight angle': 'straight_angle',
+    'intersecting': 'intersect',
+    'intersection': 'intersect',
+    'intersecting lines': 'intersect',
+    'similarity': 'similar',
+    'similar figures': 'similar',
+    'similar shapes': 'similar',
+    'origins': 'origin',
+    'quadrants': 'quadrant',
+    'exponents': 'exponent',
+    'power': 'exponent',
+    'square root': 'square_root',
+    'quadrilaterals': 'quadrilateral',
+    'pentagons': 'pentagon',
+    'hexagons': 'hexagon',
+    'octagons': 'octagon',
+    'prisms': 'prism',
+    'pyramids': 'pyramid',
+    'cylinders': 'cylinder',
+    'cones': 'cone',
+    'spheres': 'sphere',
+    'range': 'range_math',
+    'tally marks': 'tally',
+    'line graph': 'median_line',
+    'circle graph': 'pie_chart',
+    'pie chart': 'pie_chart',
+    'venn diagram': 'venn_diagram',
+    'histograms': 'histogram',
+    'box plot': 'boxplot',
+    'scatter plot': 'scatterplot',
+    'rotation transform': 'rotation_geo',
+    'translation': 'translation_geo',
+    'prime': 'prime_number',
+    'prime number': 'prime_number',
+    'factor tree': 'factor_tree',
+    'factors': 'factor_tree',
+    'absolute value': 'absolute_value',
+    'food web': 'food_web',
+    'food chain': 'food_web',
+    'producers': 'producer',
+    'consumers': 'consumer',
+    'decomposers': 'decomposer',
+    'migrate': 'migration',
+    'hibernate': 'hibernation',
+    'life cycle': 'life_cycle',
+    'pollinate': 'pollination',
+    'germinate': 'germination',
+    'sprout': 'seedling',
+    'seedlings': 'seedling',
+    'cell nucleus': 'cell_nucleus',
+    'nucleus': 'cell_nucleus',
+    'cell membrane': 'cell_membrane',
+    'membrane': 'cell_membrane',
+    'chloroplasts': 'chloroplast',
+    'mitochondrion': 'mitochondria',
+    'states of matter': 'states_of_matter',
+    'melt': 'melting',
+    'freeze': 'freezing',
+    'boil': 'boiling',
+    'mixtures': 'mixture',
+    'solutions': 'solution',
+    'buoyant': 'buoyancy',
+    'conductors': 'conductor',
+    'insulators': 'insulator',
+    'amplitudes': 'amplitude',
+    'frequencies': 'frequency',
+    'sound wave': 'sound_wave',
+    'rock cycle': 'rock_cycle',
+    'igneous rock': 'igneous',
+    'sedimentary rock': 'sedimentary',
+    'metamorphic rock': 'metamorphic',
+    'deposit': 'deposition',
+    'tectonic plate': 'tectonic_plate',
+    'plate tectonics': 'tectonic_plate',
+    'earthquakes': 'earthquake',
+    'glaciers': 'glacier',
+    'canyons': 'canyon',
+    'deltas': 'delta',
+    'continents': 'continent',
+    'valleys': 'valley',
+    'phases of the moon': 'phases_of_the_moon',
+    'moon phases': 'phases_of_the_moon',
+    'solar system': 'solar_system',
+    'rotate': 'rotation',
+    'revolve': 'revolution',
+    'renewable energy': 'renewable',
+    'constellations': 'constellation',
+    'map scale': 'map_scale',
+    'map legend': 'map_legend',
+    'map key': 'map_legend',
+    'prime meridian': 'prime_meridian',
+    'primary source': 'primary_source',
+    'branches of government': 'branches_of_government',
+    'three branches': 'branches_of_government',
+    'amendments': 'amendment',
+    'ballots': 'ballot',
+    'vote': 'ballot',
+    'supply and demand': 'supply_and_demand',
+    'scarce': 'scarcity',
+    'imports': 'import',
+    'exports': 'export',
+    'budgets': 'budget',
+    'citizens': 'citizen',
+    'supporting detail': 'supporting_detail',
+    'supporting details': 'supporting_detail',
+    'cause and effect': 'cause_and_effect',
+    'compare and contrast': 'compare_and_contrast',
+    'plot arc': 'plot_arc',
+    'plot diagram': 'plot_arc',
+    'story arc': 'plot_arc',
+    'resolutions': 'resolution',
+    'conflicts': 'conflict',
+    'settings': 'setting',
+    'characters': 'character',
+    'narrators': 'narrator',
+    'themes': 'theme',
+    'metaphors': 'metaphor',
+    'similes': 'simile',
+    'personify': 'personification',
+    'facts': 'fact',
+    'opinions': 'opinion',
+    'stanzas': 'stanza',
+    'affixes': 'affix',
+    'homophones': 'homophone',
+    'idioms': 'idiom',
+    'point of view': 'point_of_view',
+    'base word': 'root_word',
+    'heart': 'heart_organ',
+    'cardiovascular': 'heart_organ',
+    'lung': 'lungs',
+    'breathe': 'lungs',
+    'breathing': 'lungs',
+    'nervous system': 'neuron',
+    'spinal cord': 'spine',
+    'backbone': 'spine',
+    'vertebra': 'spine',
+    'vertebrae': 'spine',
+    'digestive system': 'stomach',
+    'digestion': 'stomach',
+    'circulatory system': 'blood_vessel',
+    'artery': 'blood_vessel',
+    'vein': 'blood_vessel',
+    'immune': 'immune_system',
+    'antibody': 'immune_system',
+    'balanced diet': 'nutrition',
+    'hearing': 'eardrum',
+    'inhale': 'respiration',
+    'exhale': 'respiration',
+    'cyclone': 'hurricane',
+    'typhoon': 'hurricane',
+    'thunderstorm': 'lightning',
+    'air pressure': 'barometer',
+    'wind speed': 'anemometer',
+    'compass': 'compass_rose',
+    'cardinal directions': 'compass_rose',
+    'groundwater': 'water_table',
+    'aquifer': 'water_table',
+    'tides': 'tide',
+    'high tide': 'tide',
+    'low tide': 'tide',
+    'season': 'seasons',
+    'atmosphere': 'atmosphere_layers',
+    'troposphere': 'atmosphere_layers',
+    'stratosphere': 'atmosphere_layers',
+    'drainage basin': 'watershed',
+    'climate zone': 'climate_zone',
+    'graduated cylinder': 'graduated_cylinder',
+    'balance scale': 'balance_scale',
+    'simple machine': 'lever',
+    'simple machines': 'pulley',
+    'inclined plane': 'inclined_plane',
+    'wheel and axle': 'wheel_and_axle',
+    'screw': 'screw_machine',
+    'ph scale': 'ph_scale',
+    'periodic table': 'periodic_table',
+    'chemical reaction': 'chemical_reaction',
+    'pitch': 'sound_pitch',
+    'frequency': 'sound_pitch',
+    'bar chart': 'bar_graph',
+    'line plot': 'line_plot',
+    'dot plot': 'line_plot',
+    'data table': 'table_data',
+    'unit rate': 'unit_rate',
+    'proportional': 'proportion',
+    'area model': 'area_grid',
+    'cubic units': 'volume_cube',
+    'surface area': 'surface_area',
+    'parallel lines': 'parallel_lines',
+    'perpendicular lines': 'perpendicular_lines',
+    'acute angle': 'acute_angle',
+    'obtuse angle': 'obtuse_angle',
+    'isosceles': 'isosceles_triangle',
+    'equilateral': 'equilateral_triangle',
+    'decimal grid': 'decimal_grid',
+    'mountain range': 'mountain_range',
+    'marsh': 'wetland',
+    'swamp': 'wetland',
+    'permafrost': 'tundra',
+    'checks and balances': 'checks_and_balances',
+    'trade route': 'trade_route',
+    'story map': 'story_map',
+    'text feature': 'text_feature',
+    'text features': 'text_feature',
+    'vibration': 'sound_wave',
+    'vibrations': 'sound_wave',
+    'nutrient': 'nutrition',
+    'nutrients': 'nutrition',
+    'decompose': 'decomposer',
+    'decomposes': 'decomposer',
+    'custom': 'civilization',
+    'customs': 'civilization',
+    'ancient': 'archaeology',
+    'plot': 'plot_arc',
+    'detail': 'supporting_detail',
+    'details': 'supporting_detail',
+    'acid': 'ph_scale',
+    'acids': 'ph_scale',
+    'myth': 'fable',
+    'myths': 'fable',
+    'indigenous': 'ancestor',
+    'trait': 'allele',
+    'traits': 'allele',
+    'solvent': 'dissolve',
+    'solute': 'dissolve',
+    'map': 'compass_rose',
+    'cartography': 'compass_rose',
+    'location': 'compass_rose',
+    'navigation': 'compass_rose',
+    'demand': 'supply_and_demand',
+    'supply': 'supply_and_demand',
+    'service': 'market',
+    'services': 'market',
+    'species': 'evolution',
+    'selection': 'evolution',
+    'current': 'ocean',
+    'loss': 'profit',
+    'century': 'timeline',
+    'decade': 'timeline',
+    'era': 'timeline',
+    'afterward': 'sequence',
+    'source': 'primary_source',
+    'symbol': 'symbolism',
+    'symbols': 'symbolism',
+    'allusion': 'symbolism',
+    'liberty': 'freedom',
+    'abolition': 'freedom',
+    'emancipation': 'freedom',
+    'sovereignty': 'freedom',
+    'chlorophyll': 'chloroplast',
+    'colonization': 'colony',
+    'colonies': 'colony',
+    'commensalism': 'symbiosis',
+    'mutualism': 'symbiosis',
+    'parasitism': 'symbiosis',
+    'parasite': 'symbiosis',
+    'compromise': 'equality',
+    'equity': 'equality',
+    'congress': 'branches_of_government',
+    'senate': 'branches_of_government',
+    'legislature': 'branches_of_government',
+    'executive': 'branches_of_government',
+    'judicial': 'branches_of_government',
+    'representative': 'republic',
+    'descendant': 'ancestor',
+    'heritage': 'ancestor',
+    'dictatorship': 'monarchy',
+    'feudalism': 'monarchy',
+    'election': 'ballot',
+    'suffrage': 'ballot',
+    'referendum': 'ballot',
+    'majority': 'ballot',
+    'minority': 'ballot',
+    'emigration': 'immigrant',
+    'immigration': 'immigrant',
+    'evergreen': 'conifer',
+    'extinction': 'extinct',
+    'forecast': 'barometer',
+    'heredity': 'genetics',
+    'inherit': 'genetics',
+    'inherited': 'genetics',
+    'infiltration': 'water_table',
+    'jurisdiction': 'justice',
+    'verdict': 'justice',
+    'jury': 'trial',
+    'labor': 'market',
+    'meteorite': 'meteor',
+    'mimicry': 'camouflage',
+    'municipal': 'urban',
+    'ordinance': 'constitution',
+    'federalism': 'constitution',
+    'ratify': 'constitution',
+    'charter': 'constitution',
+    'petition': 'protest',
+    'boycott': 'protest',
+    'phase': 'phases_of_the_moon',
+    'pollen': 'pollination',
+    'runoff': 'watershed',
+    'scavenger': 'food_web',
+    'tectonic': 'tectonic_plate',
+    'fault': 'tectonic_plate',
+    'subduction': 'tectonic_plate',
+    'epicenter': 'earthquake',
+    'planet': 'solar_system',
+    'variation': 'allele',
+    'recessive': 'allele',
+    'equinox': 'seasons',
+    'solstice': 'seasons',
+    'ozone': 'atmosphere_layers',
+    'reactant': 'reaction',
+    'fulcrum': 'lever',
+    'impeach': 'checks_and_balances',
+    'secession': 'border',
+    'territory': 'border',
+    'settler': 'settlement',
+    'pioneer': 'settlement',
+    'nomad': 'migration',
+    'trader': 'trade_route',
+    'renaissance': 'civilization',
+    'famine': 'drought',
+    'plain': 'landform',
+    'plains': 'landform',
+    'verse': 'poem',
+    'moral': 'fable',
+    'folktale': 'fable',
+    'homograph': 'homophone',
+    'counterclaim': 'thesis',
+    'reasoning': 'evidence',
+    'entertain': 'story_map',
+    'plagiarism': 'citation',
+    'credible': 'citation',
+    'artistic': 'imagery',
+    'computation': 'addition',
+    'calculation': 'addition',
+    'calculator': 'addition',
+    'mathematical': 'formula',
+    'quotation': 'citation',
+    'quotations': 'citation',
+    'accelerate': 'acceleration',
+    'acidic': 'ph_scale',
+    'historically': 'timeline',
+    'economist': 'market',
+    'economically': 'market',
+    'characterization': 'character',
+    'periodic': 'periodic_table',
+    'reactive': 'reaction',
+    'reactor': 'reaction',
+    'variability': 'allele',
+    'variance': 'allele',
+    'variant': 'allele',
+    'selective': 'evolution',
+    'connector': 'conjunction',
+    'ray': 'angle',
+    'kilometer': 'measure',
+    'accuracy': 'estimate',
+    'accurately': 'estimate',
+    'absorb': 'cell_membrane',
+    'absorption': 'cell_membrane',
+    'accumulate': 'deposition',
+    'accumulation': 'deposition',
+    'partial': 'fraction',
+    'partially': 'fraction',
+    'subset': 'venn_diagram',
+    'rewrite': 'revision',
+    'pronounce': 'syllable',
+    'politically': 'branches_of_government',
+    'socially': 'citizen',
+    'nationalism': 'citizen',
+    'industrialization': 'urban',
+    'industrialize': 'urban',
+    'machinery': 'lever',
+    'slavery': 'freedom',
+    'authority': 'branches_of_government',
+    'clue': 'evidence',
+    'commentary': 'inference',
+    'bang': 'onomatopoeia',
+    'tense': 'verb',
+    'traditionally': 'civilization',
+    'physically': 'muscle',
+    'observer': 'microscope',
+    'detection': 'microscope',
+    'adolescent': 'life_cycle',
+    'parental': 'ancestor',
+    'backward': 'antonym',
+    'underneath': 'preposition',
+    'continuity': 'timeline',
+    'progression': 'sequence',
+    'conditional': 'clause',
+    'likelihood': 'probability',
+    'unemployed': 'market',
+    'agriculture': 'fertile',
+    'bacterial': 'bacteria',
+    'colonial': 'colony',
+    'cyclic': 'rock_cycle',
+    'damp': 'humidity',
+    'demonstrator': 'protest',
+    'dimensional': 'volume_cube',
+    'dominant': 'allele',
+    'elevation': 'topography',
+    'evolutionary': 'evolution',
+    'fertility': 'fertile',
+    'formulation': 'formula',
+    'genetically': 'genetics',
+    'globalization': 'trade_route',
+    'infect': 'virus',
+    'infectious': 'virus',
+    'inject': 'vaccine',
+    'injection': 'vaccine',
+    'interact': 'symbiosis',
+    'mechanic': 'lever',
+    'mechanical': 'lever',
+    'morality': 'fable',
+    'neutral': 'neutron',
+    'prediction': 'inference',
+    'correlate': 'scatterplot',
+    'correlation': 'scatterplot',
+    'contradict': 'antonym',
+    'contradiction': 'antonym',
+    'contradictory': 'antonym',
+    'approximate': 'estimate',
+    'approximation': 'estimate',
+    'circulate': 'convection',
+    'clinic': 'vaccine',
+    'dose': 'vaccine',
+    'conservation': 'renewable',
+    'conserve': 'renewable',
+    'consumption': 'consumer',
+    'cattle': 'herbivore',
+    'architect': 'polygon',
+    'assignment': 'revision',
+    'bargain': 'market',
+    'composer': 'rhythm',
+    'distribution': 'histogram',
+    'lecturer': 'dialogue',
+    'oral': 'tone',
+    'criteria': 'compare',
+    'criterion': 'compare',
+    'aspect': 'point_of_view',
+    'assert': 'thesis',
+    'integration': 'addition',
+    'methodology': 'hypothesis',
+    'orient': 'compass_rose',
+    'orientation': 'compass_rose',
+    'precede': 'sequence',
+    'derivative': 'slope',
+    'dimension': 'volume_cube',
+    'domination': 'empire',
+    'emission': 'radiation',
+    'emit': 'radiation',
+    'legitimate': 'justice',
+    'justification': 'evidence',
+    'motive': 'protagonist',
+    'objection': 'thesis',
+    'powder': 'sedimentary',
+    'stability': 'homeostasis',
+    'stabilize': 'homeostasis',
+    'standardize': 'equality',
+    'bodily': 'skeleton',
+    'flesh': 'muscle',
+    'limb': 'muscle',
+    'liver': 'organ',
+    'kidney': 'organ',
+    'insect': 'metamorphosis',
+    'definite': 'truth',
+    'certain': 'truth',
+    'affirm': 'truth',
+    'realism': 'truth',
+    'realistic': 'truth',
+    'freely': 'freedom',
+    'consent': 'ballot',
+    'liberty_right': 'freedom',
+    'autonomy': 'freedom',
+    'generalization': 'concept',
+    'generalize': 'concept',
+    'conceive': 'concept',
+    'conception': 'concept',
+    'conceptual': 'concept',
+    'locally': 'position',
+    'nearby': 'position',
+    'destination': 'position',
+    'horizon': 'landform',
+    'horizontal': 'parallel_lines',
+    'marker': 'revision',
+    'blank': 'revision',
+    'manuscript': 'memoir',
+    'diary': 'memoir',
+    'publish': 'text_feature',
+    'meaningful': 'goal',
+    'purpose': 'goal',
+    'importantly': 'goal',
+    'necessity': 'resource',
+    'painful': 'immune_system',
+    'cure': 'vaccine',
+    'bleed': 'blood_vessel',
+    'disability': 'immune_system',
+    'fever': 'thermometer',
+    'diagnose': 'microscope',
+    'diagnosis': 'microscope',
+    'donor': 'heart_organ',
+    'surgical': 'immune_system',
+    'hepatitis': 'virus',
+    'tumor': 'cell',
+    'syndrome': 'immune_system',
+    'fatigue': 'hibernation',
+    'physician': 'immune_system',
+    'pardon': 'fairness',
+    'alliance': 'cooperation',
+    'unity': 'cooperation',
+    'consensus': 'democracy',
+    'photographic': 'imagery',
+    'depict': 'imagery',
+    'illustration': 'imagery',
+    'aesthetic': 'imagery',
+    'planner': 'strategy',
+    'allocate': 'divide',
+    'allocation': 'divide',
+    'curriculum': 'glossary_entry',
+    'mentor': 'cooperation',
+    'problematic': 'problem',
+    'complication': 'problem',
+    'tricky': 'problem',
+    'dilemma': 'choice',
+    'confound': 'problem',
+    'specialty': 'brain',
+    'competent': 'brain',
+    'competence': 'brain',
+    'wisdom': 'brain',
+    'clever': 'brain',
+    'expertise': 'brain',
+    'systematic': 'system',
+    'coordination': 'system',
+    'hierarchy': 'branches_of_government',
+    'configuration': 'structure',
+    'accent': 'syllable',
+    'grammatical': 'clause',
+    'phonological': 'syllable',
+    'lexical': 'glossary_entry',
+    'semantic': 'context',
+    'bilingual': 'communicate',
+    'discourse': 'dialogue',
+    'articulate': 'communicate',
+    'connotation': 'symbolism',
+    'adaptive': 'transform',
+    'adapt': 'evolution',
+    'flexibility': 'transform',
+    'modification': 'change',
+    'availability': 'resource',
+    'obtain': 'resource',
+    'commodity': 'market',
+    'bundle': 'combine',
+    'cheat': 'justice',
+    'corrupt': 'justice',
+    'corruption': 'justice',
+    'prejudice': 'fairness',
+    'bias': 'fairness',
+    'deceive': 'irony',
+    'conscious': 'attention',
+    'consciousness': 'attention',
+    'cognitive': 'brain',
+    'psychology': 'brain',
+    'psychologist': 'brain',
+    'psychiatric': 'brain',
+    'container': 'capacity',
+    'barrel': 'capacity',
+    'basin': 'watershed',
+    'correction': 'mistake_fix',
+    'feedback': 'mistake_fix',
+    'defect': 'mistake_fix',
+    'deficiency': 'mistake_fix',
+    'developmental': 'progress',
+    'growth': 'progress',
+    'progressive': 'progress',
+    'advance': 'progress',
+    'directive': 'direction',
+    'route': 'direction',
+    'orientation_nav': 'direction',
+    'disturbance': 'conflict',
+    'interrupt': 'conflict',
+    'interfere': 'conflict',
+    'intervene': 'conflict',
+    'invade': 'conflict',
+    'invasion': 'conflict',
+    'identification': 'observe',
+    'identify': 'observe',
+    'detect': 'observe',
+    'probe': 'observe',
+    'indicator': 'signal',
+    'cue': 'signal',
+    'denote': 'signal',
+    'individually': 'separate',
+    'separation': 'separate',
+    'confine': 'boundary',
+    'constrain': 'boundary',
+    'peripheral': 'boundary',
+    'influential': 'consequence',
+    'impact': 'force',
+    'instability': 'balance',
+    'equilibrium': 'balance',
+    'steady': 'homeostasis',
+    'intensity': 'amplitude',
+    'intensive': 'amplitude',
+    'magnitude': 'scale',
+    'amplitude_wave': 'amplitude',
+    'interviewer': 'debate',
+    'controversy': 'debate',
+    'oppose': 'antagonist',
+    'contrary': 'antonym',
+    'memorize': 'memory',
+    'recall': 'memory',
+    'instinct': 'brain',
+    'occurrence': 'timeline',
+    'timeline_event': 'timeline',
+    'temporal': 'timeline',
+    'duration': 'timeline',
+    'interval': 'number_line',
+    'productivity': 'input_output',
+    'productive': 'input_output',
+    'transform_io': 'input_output',
+    'projection': 'inference',
+    'anticipate': 'foreshadowing',
+    'plausible': 'hypothesis',
+    'punish': 'rule_law',
+    'punishment': 'rule_law',
+    'enforce': 'rule_law',
+    'enforcement': 'rule_law',
+    'protocol': 'rule_law',
+    'norm': 'rule_law',
+    'reliability': 'equality',
+    'standardized': 'equality',
+    'identical': 'congruent',
+    'equality_set': 'equality',
+    'replacement': 'barter',
+    'transaction': 'market',
+    'auction': 'market',
+    'resistant': 'protect',
+    'defend': 'protect',
+    'shelter_home': 'shelter',
+    'specification': 'record_data',
+    'parameter': 'measure',
+    'criterion_item': 'compare',
+    'clarify': 'transparent',
+    'explicit': 'transparent',
+    'explicitly': 'transparent',
+    'vague': 'translucent',
+    'implicit': 'inference',
+    'client': 'market',
+    'capitalism': 'market',
+    'capitalist': 'market',
+    'monopoly': 'market',
+    'communist': 'civilization',
+    'socialist': 'civilization',
+    'civic': 'citizen',
+    'forum': 'debate',
+    'compensate': 'currency',
+    'bonus': 'profit',
+    'utility': 'resource',
+    'critique': 'reflect_think',
+    'critically': 'reflect_think',
+    'theory': 'hypothesis',
+    'theorist': 'hypothesis',
+    'theorem': 'formula',
+    'axiom': 'formula',
+    'deliberately': 'choice',
+    'volition': 'choice',
+    'arbitrary': 'probability',
+    'dictate': 'monarchy',
+    'emperor': 'empire',
+    'regime': 'branches_of_government',
+    'treaty': 'constitution',
+    'tribe': 'settlement',
+    'diverse': 'combine',
+    'diversity': 'combine',
+    'merge': 'combine',
+    'aggregate': 'combine',
+    'synthesize': 'combine',
+    'synthesis': 'combine',
+    'expand_grow': 'expand',
+    'maximize': 'expand',
+    'swell': 'expand',
+    'enlarge': 'expand',
+    'uplift': 'expand',
+    'shrink_less': 'shrink',
+    'minimize': 'shrink',
+    'decline': 'shrink',
+    'elimination': 'subtraction',
+    'discover_find': 'discover',
+    'invent_make': 'invent',
+    'repair_fix': 'repair',
+    'celebrate_win': 'celebrate',
+    'persevere_try': 'persevere',
+    'biological': 'ecosystem',
+    'biology': 'cell',
+    'biologist': 'cell',
+    'ecological': 'ecosystem',
+    'hormone': 'organ',
+    'reproduce': 'life_cycle',
+    'reproduction': 'life_cycle',
+    'clone': 'mitosis',
+    'decay': 'decomposer',
+    'toxic': 'ph_scale',
+    'soluble': 'dissolve',
+    'fluid': 'liquid',
+    'electron': 'atom',
+    'hydrogen': 'element',
+    'oxygen': 'element',
+    'sodium': 'element',
+    'dioxide': 'molecule',
+    'aluminum': 'element',
+    'calcium': 'element',
+    'particle': 'atom',
+    'fusion': 'atom',
+    'grid': 'coordinate_plane',
+    'array': 'multiply',
+    'matrix': 'table_data',
+    'binary': 'pattern',
+    'algebra': 'equation',
+    'gradient': 'slope',
+    'integral': 'area_grid',
+    'linear': 'line_plot',
+    'infinite': 'number_line',
+    'finite': 'number_line',
+    'millimeter': 'measure_tool',
+    'gram': 'balance_scale',
+    'incline': 'inclined_plane',
+    'impulse': 'force',
+    'displacement': 'motion',
+    'statistical': 'histogram',
+    'statistics': 'histogram',
+    'statistically': 'histogram',
+    'randomize': 'probability',
+    'randomly': 'probability',
+    'scatter_plot': 'scatterplot',
+    'quantitative': 'table_data',
+    'qualitative': 'observe',
+    'credibility': 'citation',
+    'valid': 'evidence',
+    'validity': 'evidence',
+    'rational': 'brain',
+    'rationality': 'brain',
+    'logic': 'brain',
+    'logical': 'brain',
+    'anthropology': 'archaeology',
+    'civilization_era': 'civilization',
+    'ideology': 'thesis',
+    'ethics': 'justice',
+    'ethical': 'justice',
+    'virtue': 'fairness',
+    'plural': 'noun',
+    'singular': 'noun',
+    'syllable_unit': 'syllable',
+    'layout': 'area_grid',
+    'lifestyle': 'settlement',
+    'altitude': 'mountain_range',
+    'contour': 'topography',
+    'optical': 'reflection',
+    'magnet_induction': 'electromagnet',
+    'induction': 'electromagnet',
+    'pest': 'herbivore',
+    'audio': 'sound_pitch',
+    'spatial': 'coordinate_plane',
+    'differentiate': 'compare_and_contrast',
+    'differentiation': 'compare_and_contrast',
+    'empirical': 'observe',
+    'ton': 'balance_scale',
+    'noble': 'monarchy',
+    'paradox': 'irony',
+    'ritual': 'celebrate',
+    'tutor': 'cooperation',
+    'transmit': 'signal',
+    'transmission': 'signal',
+    'scatter': 'scatterplot',
+    'substitution': 'variable',
+    'comply': 'rule_law',
+    'liable': 'justice',
+    'mortality': 'extinct',
+    'linguistic': 'communicate',
+    'linguistics': 'communicate',
+    'par': 'equality',
+    'replicate': 'mitosis',
+    'elevate': 'progress',
+    'inclusion': 'combine',
+    'initiate': 'goal',
+    'initiation': 'goal',
+    'manipulate': 'lever',
+    'manipulation': 'lever',
+    'rejection': 'veto',
+    'stance': 'point_of_view',
+    'proposition': 'thesis',
+    'subjective': 'opinion',
+    'dominance': 'allele',
+    'onset': 'timeline',
+    'artificial': 'invent',
+    'applause': 'celebrate',
+    'marginal': 'border',
+    'simultaneously': 'parallel',
+    'sensitivity': 'homeostasis',
+    'disadvantage': 'antagonist',
+    'utilize': 'resource',
+    'essence': 'core',
+    'incidence': 'frequency',
+    'inhibit': 'shrink',
+    'induce': 'cause',
+    'elaborate': 'supporting_detail',
+    'fundamentally': 'base',
+    'essentially': 'core',
+    'formally': 'rule_law',
+    'inevitably': 'consequence',
+    'technically': 'method',
+    'irrelevant': 'outlier',
+    'viable': 'progress',
+    'sensation': 'neuron',
+    'subtle': 'foreshadowing',
+    'crude': 'nonrenewable',
+    'insert': 'input_output',
+    'occupation': 'market',
+    'neat': 'symmetry',
+    'undermine': 'erosion',
+
+    // Wave 7 Tier-1 & Tier-2 Zero-Displacement Aliases
+    'alike': 'equal_sign', 'equal': 'equal_sign', 'equally': 'equal_sign', 'exact': 'equality',
+    'uniform': 'uniform_outfit', 'outfit': 'uniform_outfit', 'clothing': 'uniform_outfit',
+    'garment': 'uniform_outfit', 'laundry': 'uniform_outfit', 'trouser': 'uniform_outfit',
+    'shirt': 'uniform_outfit', 'bonnet': 'uniform_outfit', 'badge': 'uniform_outfit',
+    'clog': 'uniform_outfit', 'mitt': 'uniform_outfit',
+    'schedule': 'schedule_plan', 'routine': 'schedule_plan', 'occasion': 'schedule_plan',
+    'option': 'choice_option', 'prefer': 'choice_option', 'preferred': 'choice_option',
+    'select': 'choice_option', 'selected': 'choice_option', 'deciding': 'choice_option',
+    'creek': 'creek_stream', 'brook': 'creek_stream', 'streaming': 'creek_stream',
+    'waterfall': 'waterfall_cascade', 'gush': 'waterfall_cascade',
+    'cove': 'marine_ocean', 'marine': 'marine_ocean', 'shrimp': 'marine_ocean', 'clam': 'marine_ocean',
+    'wilderness': 'wilderness_nature',
+    'shield': 'shield_guard', 'safe': 'protect', 'survival': 'protect', 'exposed': 'protect',
+    'vulnerable': 'shield_guard', 'fort': 'shield_guard', 'brave': 'shield_guard',
+    'bravely': 'shield_guard', 'bravery': 'shield_guard',
+    'ceremony': 'festival_ceremony', 'feast': 'festival_ceremony', 'event': 'festival_ceremony',
+    'rejoice': 'celebrate', 'clown': 'festival_ceremony', 'clapping': 'celebrate',
+    'theater': 'theater_stage', 'dramatic': 'theater_stage', 'role': 'theater_stage',
+    'perform': 'theater_stage', 'cartoon': 'art_palette', 'acrobat': 'theater_stage',
+    'commander': 'commander_leader', 'leadership': 'commander_leader', 'officer': 'commander_leader',
+    'governor': 'branches_of_government', 'official': 'branches_of_government',
+    'almighty': 'commander_leader',
+    'council': 'council_meeting', 'agreement': 'cooperation',
+    'apprentice': 'apprentice_learner', 'teaching': 'apprentice_learner', 'instruct': 'apprentice_learner',
+    'academy': 'apprentice_learner', 'class': 'apprentice_learner', 'junior': 'apprentice_learner',
+    'disguise': 'disguise_mask', 'secret': 'disguise_mask', 'conceal': 'disguise_mask',
+    'concealed': 'disguise_mask', 'unseen': 'disguise_mask', 'mock': 'disguise_mask',
+    'cluster': 'cluster_group', 'piles': 'cluster_group', 'group': 'cluster_group',
+    'crowd': 'cluster_group', 'squad': 'cluster_group', 'several': 'cluster_group',
+    'numerous': 'cluster_group', 'abundant': 'cluster_group', 'variety': 'cluster_group',
+    'suite': 'cluster_group', 'stacked': 'layer',
+    'billion': 'billion_number', 'triple': 'triangle', 'single': 'place_value', 'twice': 'multiply',
+    'barley': 'grain_barley', 'atlas': 'atlas_map', 'site': 'position',
+    'doorstep': 'shelter', 'doormat': 'shelter', 'interior': 'shelter',
+    'home': 'family_home', 'comfy': 'shelter', 'railing': 'boundary',
+    'synthetic': 'synthetic_material', 'chemical': 'chemical_reaction', 'oxide': 'molecule',
+    'tolerance': 'tolerance_respect', 'kindness': 'tolerance_respect', 'forgive': 'tolerance_respect',
+    'mercy': 'tolerance_respect', 'sympathy': 'tolerance_respect', 'loving': 'tolerance_respect',
+    'welcome': 'tolerance_respect', 'welcoming': 'tolerance_respect', 'console': 'tolerance_respect',
+    'trust': 'cooperation', 'loyal': 'cooperation', 'loyalty': 'cooperation', 'promise': 'cooperation',
+    'pledge': 'cooperation', 'vow': 'cooperation', 'sworn': 'cooperation', 'rely': 'cooperation',
+    'engage': 'cooperation', 'engaged': 'cooperation',
+    'apology': 'communicate', 'apologize': 'communicate', 'admire': 'celebrate',
+    'admiration': 'celebrate', 'honor': 'celebrate',
+    'terminology': 'terminology_terms', 'word': 'terminology_terms', 'name': 'terminology_terms',
+    'nickname': 'terminology_terms', 'usage': 'terminology_terms',
+    'erupt': 'natural_disaster', 'explosion': 'natural_disaster', 'volcanic': 'natural_disaster',
+    'blasted': 'natural_disaster', 'wreckage': 'natural_disaster', 'wrecked': 'natural_disaster',
+    'shattered': 'natural_disaster', 'destroyed': 'natural_disaster', 'smash': 'natural_disaster',
+    'glad': 'emotion_joy', 'joyful': 'emotion_joy', 'joyfully': 'emotion_joy',
+    'merry': 'emotion_joy', 'merrily': 'emotion_joy', 'cheerful': 'emotion_joy',
+    'pleased': 'emotion_joy', 'pleasant': 'emotion_joy', 'thrilled': 'emotion_joy',
+    'thrill': 'emotion_joy', 'thrilling': 'emotion_joy', 'excitement': 'emotion_joy',
+    'amused': 'emotion_joy', 'hooray': 'emotion_joy', 'hurrah': 'emotion_joy',
+    'sweetly': 'emotion_joy', 'sweetheart': 'emotion_joy', 'fond': 'emotion_joy',
+    'charming': 'emotion_joy', 'whoop': 'emotion_joy', 'giddy': 'emotion_joy',
+    'humour': 'emotion_joy', 'rosy': 'emotion_joy', 'feel': 'emotion_joy', 'emotion': 'emotion_joy',
+    'sadness': 'emotion_sorrow', 'sorrow': 'emotion_sorrow', 'unhappy': 'emotion_sorrow',
+    'weep': 'emotion_sorrow', 'weeping': 'emotion_sorrow', 'sobbing': 'emotion_sorrow',
+    'glum': 'emotion_sorrow', 'gloom': 'emotion_sorrow', 'gloomy': 'emotion_sorrow',
+    'regret': 'emotion_sorrow', 'pity': 'emotion_sorrow', 'heartbreak': 'emotion_sorrow',
+    'grumpy': 'emotion_sorrow', 'ashamed': 'emotion_sorrow', 'disgrace': 'emotion_sorrow',
+    'angry': 'emotion_anger', 'furious': 'emotion_anger', 'mad': 'emotion_anger',
+    'madly': 'emotion_anger', 'temper': 'emotion_anger', 'tantrum': 'emotion_anger',
+    'frantic': 'emotion_anger', 'fiercely': 'emotion_anger', 'bully': 'emotion_anger',
+    'harsh': 'emotion_anger', 'violent': 'emotion_anger', 'violence': 'emotion_anger',
+    'outrage': 'emotion_anger', 'raging': 'emotion_anger', 'frenzy': 'emotion_anger',
+    'roaring': 'emotion_anger', 'snarl': 'emotion_anger', 'vicious': 'emotion_anger',
+    'insult': 'emotion_anger',
+    'fearful': 'emotion_fear', 'fearsome': 'emotion_fear', 'alarmed': 'emotion_fear',
+    'horrified': 'emotion_fear', 'horrid': 'emotion_fear', 'horribly': 'emotion_fear',
+    'dreaded': 'emotion_fear', 'shudder': 'emotion_fear', 'agitated': 'emotion_fear',
+    'distress': 'emotion_fear', 'hysterical': 'emotion_fear', 'dazed': 'emotion_fear',
+    'stun': 'emotion_fear', 'quiver': 'emotion_fear', 'quivering': 'emotion_fear',
+    'shivering': 'emotion_fear', 'shy': 'emotion_fear', 'shyly': 'emotion_fear',
+    'bewildered': 'question_unknown', 'baffled': 'question_unknown',
+    'attitude': 'perspective', 'view': 'perspective',
+    'novel': 'story_book', 'classic': 'story_book', 'edition': 'story_book', 'title': 'story_book',
+    'headline': 'news_press', 'reporter': 'news_press', 'news': 'news_press', 'blog': 'news_press',
+    'sailboat': 'boat_sail', 'sailing': 'boat_sail', 'rowing': 'boat_sail', 'paddle': 'boat_sail',
+    'overboard': 'boat_sail',
+    'stormy': 'weather_storm', 'thundering': 'weather_storm', 'breezy': 'weather_storm',
+    'raindrop': 'precipitation', 'drenched': 'precipitation', 'misty': 'condense',
+    'dark': 'shadow_dark', 'darkness': 'shadow_dark', 'shadowy': 'shadow_dark',
+    'shades': 'shadow_dark', 'dimly': 'shadow_dark', 'eerie': 'shadow_dark',
+    'sinister': 'shadow_dark', 'blackened': 'shadow_dark', 'fade': 'shadow_dark', 'fading': 'shadow_dark',
+    'brighten': 'sunlight_ray', 'brilliant': 'sunlight_ray', 'glint': 'sunlight_ray',
+    'twinkle': 'sunlight_ray', 'dawned': 'sunlight_ray',
+    'warmth': 'thermometer', 'warming': 'thermometer', 'warmly': 'thermometer',
+    'laser': 'wavelength', 'silvery': 'reflection', 'reappear': 'reflection',
+    'ripple': 'water_wave', 'surge': 'water_wave', 'muddy': 'sedimentary', 'rust': 'erosion',
+    'anthem': 'music_harmony', 'squawk': 'sound_wave', 'crackle': 'sound_wave', 'boom': 'sound_wave',
+    'buzz': 'sound_wave', 'whirring': 'sound_wave', 'creak': 'sound_wave', 'hissing': 'sound_wave',
+    'howling': 'sound_wave', 'wail': 'sound_wave', 'croak': 'sound_wave', 'snorting': 'respiration',
+    'chattering': 'communicate', 'mutter': 'communicate', 'muttering': 'communicate',
+    'murmuring': 'communicate', 'speaker': 'communicate',
+    'stain': 'art_palette', 'appearance': 'art_palette', 'gorgeous': 'art_palette',
+    'splendid': 'art_palette', 'elegant': 'art_palette', 'shabby': 'art_palette',
+    'messy': 'art_palette', 'snapshot': 'art_palette', 'dainty': 'art_palette',
+    'injured': 'bandage_care', 'hurt': 'bandage_care', 'hurting': 'bandage_care',
+    'aching': 'bandage_care', 'healing': 'bandage_care', 'sling': 'bandage_care',
+    'limp': 'bandage_care', 'sick': 'immune_system', 'breathless': 'respiration',
+    'sweating': 'respiration', 'sweaty': 'respiration', 'puffing': 'respiration',
+    'drained': 'energy', 'weary': 'energy', 'feeble': 'energy', 'weakness': 'energy',
+    'man': 'person_figure', 'she': 'person_figure', 'he': 'person_figure', 'being': 'person_figure',
+    'folks': 'person_figure', 'nobody': 'person_figure', 'someone': 'person_figure',
+    'pal': 'person_figure', 'mate': 'person_figure', 'companion': 'person_figure',
+    'girlfriend': 'person_figure', 'rider': 'person_figure', 'mortal': 'person_figure',
+    'elderly': 'ancestor', 'kneeling': 'person_figure', 'pose': 'person_figure',
+    'alone': 'person_figure', 'lone': 'person_figure', 'solitary': 'person_figure',
+    'dad': 'family_home', 'marriage': 'family_home', 'marry': 'family_home',
+    'late': 'clock_time', 'later': 'clock_time', 'latest': 'clock_time',
+    'suddenly': 'clock_time', 'once': 'clock_time', 'ever': 'clock_time', 'eternity': 'clock_time',
+    'nowadays': 'clock_time', 'ticking': 'clock_time', 'prompt': 'clock_time', 'promptly': 'clock_time',
+    'rarely': 'clock_time', 'period': 'timeline_history', 'generation': 'timeline_history',
+    'antique': 'timeline_history', 'modern': 'invent', 'constantly': 'cycle',
+    'haste': 'speed', 'hasten': 'speed', 'rapid': 'speed', 'rapidly': 'speed',
+    'dashing': 'speed', 'sprint': 'speed',
+    'danger': 'warning_hazard', 'risky': 'warning_hazard', 'urgent': 'warning_hazard',
+    'urgently': 'warning_hazard', 'ominous': 'warning_hazard', 'menacing': 'warning_hazard',
+    'doom': 'warning_hazard', 'robbery': 'warning_hazard',
+    'unfamiliar': 'question_unknown', 'unknown': 'question_unknown', 'peculiar': 'question_unknown',
+    'strange': 'question_unknown', 'weird': 'question_unknown', 'bizarre': 'question_unknown',
+    'exotic': 'question_unknown', 'unsure': 'question_unknown', 'doubtful': 'question_unknown',
+    'surprised': 'question_unknown', 'astonished': 'question_unknown', 'unexpected': 'question_unknown',
+    'miracle': 'question_unknown', 'awe': 'question_unknown', 'goggle': 'observe',
+    'replication': 'mitosis', 'related': 'connect_link', 'relate': 'connect_link',
+    'connect': 'connect_link', 'relative': 'compare', 'response': 'communicate', 'respond': 'communicate',
+    'provide': 'resource', 'available': 'resource',
+    'capable': 'invent', 'ability': 'invent', 'talent': 'invent',
+    'basic': 'structure', 'crucial': 'evidence', 'vital': 'heart_organ', 'main': 'main_idea',
+    'standard': 'rule_law', 'legal': 'rule_law', 'illegal': 'rule_law', 'duty': 'rule_law',
+    'obey': 'rule_law', 'doctrine': 'rule_law', 'status': 'bar_graph', 'civil': 'citizen',
+    'warrant': 'rule_law', 'candidate': 'ballot', 'independence': 'freedom', 'necessarily': 'rule_law',
+    'accomplish': 'goal', 'attain': 'goal', 'victory': 'celebrate', 'glory': 'celebrate',
+    'fame': 'celebrate', 'celebrity': 'celebrate', 'famous': 'celebrate', 'winning': 'celebrate',
+    'successful': 'goal', 'failure': 'mistake_fix', 'mistaken': 'mistake_fix',
+    'careless': 'mistake_fix', 'undone': 'mistake_fix', 'fib': 'mistake_fix', 'false': 'mistake_fix', 'liar': 'mistake_fix',
+    'improvement': 'progress',
+    'believe': 'concept', 'believing': 'concept', 'faith': 'concept', 'hopeful': 'goal',
+    'know': 'memory', 'minded': 'memory', 'supposedly': 'hypothesis',
+    'real': 'truth', 'reality': 'truth', 'genuine': 'truth', 'honestly': 'truth',
+    'certainty': 'truth', 'sure': 'truth', 'literally': 'truth', 'confess': 'truth',
+    'sale': 'market', 'credit': 'market', 'purchase': 'market', 'stock': 'market', 'booth': 'market',
+    'job': 'entrepreneur', 'career': 'entrepreneur', 'employ': 'entrepreneur', 'belongings': 'market',
+    'huge': 'expand', 'enormous': 'expand', 'enormously': 'expand', 'immense': 'expand', 'swollen': 'expand',
+    'tiny': 'shrink', 'small': 'shrink', 'trivial': 'shrink', 'less': 'inequality',
+    'reduction': 'shrink', 'slash': 'fraction', 'fragment': 'fraction',
+    'join': 'combine', 'together': 'combine', 'blend': 'mixture', 'split': 'separate',
+    'splitting': 'separate', 'unique': 'prime_number', 'fuse': 'combine',
+    'size': 'measure', 'sized': 'measure', 'degree': 'thermometer', 'mile': 'distance',
+    'dot': 'atom', 'dotted': 'atom', 'speck': 'atom', 'elsewhere': 'distance',
+    'repeat': 'cycle', 'repeating': 'cycle', 'rerun': 'cycle', 'nonstop': 'cycle', 'often': 'frequency',
+    'typical': 'mean', 'usual': 'mean', 'unusually': 'outlier', 'generally': 'mean',
+    'regularly': 'pattern', 'irregular': 'pattern', 'roughly': 'estimate', 'precisely': 'measure_tool',
+    'feature': 'text_feature', 'outline': 'text_feature', 'tab': 'text_feature', 'highlight': 'text_feature',
+    'designed': 'invent', 'device': 'wheel_and_axle', 'mobile': 'transport', 'rig': 'pulley',
+    'drill': 'screw_machine', 'cam': 'wheel_and_axle',
+    'notice': 'attention', 'sight': 'observe', 'visible': 'observe', 'magnify': 'microscope',
+    'microscopic': 'microscope', 'scope': 'telescope', 'curiosity': 'discover', 'fascinated': 'discover',
+    'recognise': 'observe',
+    'hint': 'context_clue', 'suggest': 'concept', 'suggestion': 'concept',
+    'remark': 'dialogue', 'announce': 'signal', 'declare': 'dialogue', 'express': 'dialogue',
+    'convince': 'debate', 'arguing': 'debate', 'argument': 'debate', 'disbelief': 'debate',
+    'criticism': 'debate', 'cheeky': 'dialogue', 'gab': 'dialogue', 'brag': 'dialogue', 'tease': 'dialogue',
+    'deny': 'veto', 'ban': 'veto', 'banned': 'veto', 'prevent': 'boundary', 'blocking': 'boundary',
+    'limit': 'boundary', 'limited': 'boundary', 'rim': 'circumference', 'imprison': 'boundary',
+    'framed': 'structure', 'folding': 'symmetry', 'coiled': 'chromosome', 'chained': 'connect_link',
+    'bonds': 'molecule', 'attachment': 'connect_link',
+    'carbon': 'atom', 'creature': 'ecosystem', 'beast': 'ecosystem', 'goblin': 'fable',
+    'ogre': 'fable', 'gnome': 'fable', 'alive': 'life_cycle', 'rot': 'decomposer', 'rotting': 'decomposer',
+    'archway': 'continent', 'den': 'habitat', 'lair': 'habitat', 'tame': 'habitat', 'stray': 'migration',
+    'trash': 'nonrenewable', 'dump': 'nonrenewable', 'wasting': 'nonrenewable',
+    'guided': 'compass_rose', 'path': 'direction', 'wandering': 'direction', 'steering': 'wheel_and_axle',
+    'departure': 'translation_geo', 'trip': 'migration',
+    'nook': 'angle', 'hoist': 'pulley', 'heave': 'force', 'pounded': 'force', 'whack': 'force',
+    'exert': 'force', 'tension': 'force', 'scrape': 'friction', 'grinding': 'friction',
+    'tighten': 'screw_machine', 'loosened': 'screw_machine', 'padded': 'insulator', 'sleek': 'friction',
+    'slimy': 'liquid', 'juicy': 'liquid', 'doughnut': 'circumference', 'hotdog': 'nutrition',
+    'cinnamon': 'nutrition', 'napkin': 'square', 'dine': 'nutrition', 'graze': 'herbivore',
+    'simple': 'simplify', 'simplicity': 'simplify', 'neighboring': 'border',
+    'indifferent': 'balance', 'excess': 'surplus', 'behaviour': 'cooperation',
+    'competition': 'compare', 'couple': 'equal_sign', 'pair': 'equal_sign',
+    "introduce": "introduce_greeting", "greeting": "introduce_greeting", "farewell": "introduce_greeting", "goodbye": "introduce_greeting", "hi": "introduce_greeting", "reception": "introduce_greeting",
+    "agree": "agreement_handshake", "insist": "agreement_handshake", "confirm": "agreement_handshake", "acknowledge": "agreement_handshake", "approval": "agreement_handshake", "assure": "agreement_handshake",
+    "assured": "agreement_handshake", "permission": "agreement_handshake", "allow": "agreement_handshake", "let": "agreement_handshake", "yes": "agreement_handshake", "decide": "choice_decision",
+    "determined": "choice_decision", "intention": "choice_decision", "intended": "choice_decision", "intend": "choice_decision", "decidedly": "choice_decision", "manage": "choice_decision",
+    "easy": "choice_decision", "easily": "choice_decision", "courage": "courage_shield", "dare": "courage_shield", "confident": "courage_shield", "boldly": "courage_shield",
+    "coward": "courage_shield", "cowardly": "courage_shield", "hesitate": "courage_shield", "hesitation": "courage_shield", "able": "courage_shield", "imagination": "imagination_spark",
+    "imaginary": "imagination_spark", "create": "imagination_spark", "creator": "imagination_spark", "invention": "imagination_spark", "inspired": "imagination_spark", "marvel": "imagination_spark",
+    "muse": "imagination_spark", "contrive": "imagination_spark", "hope": "imagination_spark", "wish": "imagination_spark", "knowledge": "wisdom_owl", "genius": "wisdom_owl",
+    "smart": "wisdom_owl", "wise": "wisdom_owl", "cunning": "wisdom_owl", "sensible": "wisdom_owl", "philosopher": "wisdom_owl", "philosophical": "wisdom_owl",
+    "thoughtfully": "wisdom_owl", "ignorance": "wisdom_owl", "wit": "wisdom_owl", "recognize": "memory_recall", "familiar": "memory_recall", "familiarity": "memory_recall",
+    "reminder": "memory_recall", "noted": "memory_recall", "recording": "memory_recall", "asleep": "memory_recall", "doze": "memory_recall", "remember": "memory_recall",
+    "forget": "memory_recall", "note": "memory_recall", "joke": "comedy_masks", "comedy": "comedy_masks", "comic": "comedy_masks", "humor": "comedy_masks",
+    "laughter": "comedy_masks", "delight": "comedy_masks", "delighted": "comedy_masks", "ridiculous": "comedy_masks", "fun": "comedy_masks", "speech": "speech_bubble",
+    "message": "speech_bubble", "tell": "speech_bubble", "report": "speech_bubble", "explanation": "speech_bubble", "exclamation": "speech_bubble", "murmur": "speech_bubble",
+    "proclamation": "speech_bubble", "spoken": "speech_bubble", "frankly": "speech_bubble", "say": "speech_bubble", "utterance": "speech_bubble", "rhetoric": "speech_bubble",
+    "call": "speech_bubble", "voice": "speech_bubble", "speak": "speech_bubble", "reply": "speech_bubble", "excuse": "speech_bubble", "media": "media_broadcast",
+    "advertisement": "media_broadcast", "movie": "media_broadcast", "broadcast": "media_broadcast", "poster": "media_broadcast", "society": "community_village", "social": "community_village",
+    "socialize": "community_village", "public": "community_village", "village": "community_village", "inhabitant": "community_village", "acquaintance": "community_village", "associated": "community_village",
+    "association": "community_village", "mob": "community_village", "common": "community_village", "popular": "community_village", "campus": "campus_hall", "headquarter": "campus_hall",
+    "library": "story_book", "librarian": "story_book", "textbook": "story_book", "book": "story_book", "story": "story_book", "tale": "story_book",
+    "lesson": "story_book", "syllabus": "story_book", "passage": "story_book", "transcribe": "story_book", "transcription": "story_book", "scholarship": "story_book",
+    "dissertation": "story_book", "scripture": "story_book", "semester": "schedule_plan", "year": "clock_time", "adventure": "adventure_compass", "explorer": "adventure_compass",
+    "mission": "adventure_compass", "tracking": "adventure_compass", "seeking": "adventure_compass", "journey": "atlas_map", "pathway": "atlas_map", "way": "atlas_map",
+    "place": "atlas_map", "wherever": "atlas_map", "nowhere": "atlas_map", "anywhere": "atlas_map", "stair": "staircase_ascend", "ascend": "staircase_ascend",
+    "climb": "staircase_ascend", "mount": "staircase_ascend", "mounted": "staircase_ascend", "clamber": "staircase_ascend", "rise": "staircase_ascend", "risen": "staircase_ascend",
+    "towering": "staircase_ascend", "upward": "staircase_ascend", "vertical": "staircase_ascend", "puzzle": "puzzle_piece", "riddle": "puzzle_piece", "fit": "puzzle_piece",
+    "fitted": "puzzle_piece", "matching": "puzzle_piece", "match": "puzzle_piece", "solve": "puzzle_piece", "impossible": "puzzle_piece", "impossibly": "puzzle_piece",
+    "game": "puzzle_piece", "piece": "puzzle_piece", "maze": "puzzle_piece", "fix": "repair_wrench", "reconstruct": "repair_wrench", "reinforce": "repair_wrench",
+    "manual": "repair_wrench", "equipment": "repair_wrench", "kit": "repair_wrench", "craft": "repair_wrench", "manageable": "repair_wrench", "workman": "repair_wrench",
+    "use": "repair_wrench", "weave": "weave_fabric", "sew": "weave_fabric", "cloth": "weave_fabric", "tattered": "weave_fabric", "tuck": "weave_fabric",
+    "strand": "weave_fabric", "wear": "uniform_outfit", "arrow": "arrow_target", "missile": "arrow_target", "target": "arrow_target", "reach": "arrow_target",
+    "aim": "arrow_target", "bubble": "bubble_sphere", "foam": "bubble_sphere", "airy": "bubble_sphere", "clasp": "clasp_buckle", "buckle": "clasp_buckle",
+    "fasten": "clasp_buckle", "grip": "clasp_buckle", "handy": "clasp_buckle", "hand": "clasp_buckle", "bead": "bead_necklace", "pearl": "bead_necklace",
+    "dollar": "currency", "wealthy": "currency", "cost": "currency", "sponsorship": "currency", "earned": "currency", "gross": "currency",
+    "commotion": "commotion_noise", "noise": "commotion_noise", "crashing": "commotion_noise", "groan": "commotion_noise", "scoff": "commotion_noise", "sneer": "commotion_noise",
+    "flurry": "commotion_noise", "jumble": "commotion_noise", "nuisance": "commotion_noise", "thunder": "weather_storm", "turbulent": "weather_storm", "wind": "weather_storm",
+    "ruin": "damage_crack", "ruined": "damage_crack", "destroy": "damage_crack", "rip": "damage_crack", "ripped": "damage_crack", "crumpled": "damage_crack",
+    "harm": "damage_crack", "accident": "damage_crack", "incident": "damage_crack", "emergency": "warning_hazard", "fragile": "fragile_glass", "delicate": "fragile_glass",
+    "brittle": "fragile_glass", "graceful": "fragile_glass", "blur": "blur_focus", "blurred": "blur_focus", "clear": "blur_focus", "clearly": "blur_focus",
+    "obviously": "blur_focus", "invisible": "blur_focus", "visual": "blur_focus", "spectacles": "blur_focus", "peer": "blur_focus", "glaring": "blur_focus",
+    "jagged": "jagged_edge", "streaked": "jagged_edge", "carved": "jagged_edge", "pierce": "jagged_edge", "pierced": "jagged_edge", "piercing": "jagged_edge",
+    "lighting": "lighting_lamp", "flicker": "lighting_lamp", "light": "lighting_lamp", "glow": "lighting_lamp", "cricket": "cricket_insect", "grasshopper": "cricket_insect",
+    "hawk": "wilderness_nature", "yak": "herbivore", "bull": "herbivore", "fur": "herbivore", "shaggy": "herbivore", "hairy": "herbivore",
+    "pesticide": "warning_hazard", "herbicide": "warning_hazard", "cobweb": "cobweb_spider", "web": "cobweb_spider", "dusty": "cobweb_spider", "smell": "smell_scent",
+    "smelly": "smell_scent", "smelling": "smell_scent", "scent": "smell_scent", "fragrance": "smell_scent", "sniff": "smell_scent", "sneeze": "smell_scent",
+    "odor": "smell_scent", "habit": "habit_cycle", "practice": "habit_cycle", "practise": "habit_cycle", "practitioner": "habit_cycle", "tendency": "habit_cycle",
+    "tend": "habit_cycle", "regular": "habit_cycle", "ordinary": "habit_cycle", "behave": "habit_cycle", "behavior": "habit_cycle", "conventional": "habit_cycle",
+    "repeatedly": "habit_cycle", "condition": "condition_check", "require": "condition_check", "required": "condition_check", "rule": "condition_check", "regulation": "condition_check",
+    "procedure": "condition_check", "formal": "condition_check", "strictly": "condition_check", "necessary": "condition_check", "unnecessary": "condition_check", "restricted": "condition_check",
+    "prohibited": "condition_check", "detention": "condition_check", "advantage": "advantage_scale", "superior": "advantage_scale", "worthy": "advantage_scale", "supreme": "advantage_scale",
+    "grand": "advantage_scale", "majesty": "advantage_scale", "prominent": "advantage_scale", "profound": "advantage_scale", "tremendous": "advantage_scale", "favorite": "advantage_scale",
+    "special": "advantage_scale", "prize": "advantage_scale", "optimal": "advantage_scale", "optimum": "advantage_scale", "score": "score_tally", "dozen": "score_tally",
+    "thousand": "score_tally", "total": "score_tally", "totally": "score_tally", "quantity": "score_tally", "bulk": "score_tally", "portion": "fraction",
+    "lot": "score_tally", "abundance": "score_tally", "plentiful": "score_tally", "sufficiently": "score_tally", "insufficient": "score_tally", "bullet": "score_tally",
+    "mark": "score_tally", "marked": "score_tally", "contain": "contain_jar", "contained": "contain_jar", "include": "contain_jar", "involve": "contain_jar",
+    "involved": "contain_jar", "collection": "contain_jar", "bin": "contain_jar", "parcel": "contain_jar", "embed": "contain_jar", "within": "contain_jar",
+    "inside": "contain_jar", "bunch": "cluster_group", "handful": "cluster_group", "set": "cluster_group", "among": "cluster_group", "section": "fraction",
+    "series": "sequence", "version": "version_draft", "form": "version_draft", "copy": "version_draft", "description": "version_draft", "article": "news_press",
+    "signature": "version_draft", "signed": "version_draft", "token": "version_draft", "topic": "main_idea", "property": "property_estate", "belong": "property_estate",
+    "own": "property_estate", "estate": "property_estate", "possession": "property_estate", "private": "property_estate", "vault": "property_estate", "portal": "property_estate",
+    "palace": "family_home", "habitable": "family_home", "snug": "family_home", "mall": "market", "polite": "courtesy_gift", "courtesy": "courtesy_gift",
+    "kindly": "courtesy_gift", "friendly": "courtesy_gift", "amiable": "courtesy_gift", "affection": "courtesy_gift", "beloved": "courtesy_gift", "humane": "courtesy_gift",
+    "honest": "courtesy_gift", "sincere": "courtesy_gift", "innocent": "courtesy_gift", "innocently": "courtesy_gift", "gratefully": "courtesy_gift", "thankfully": "courtesy_gift",
+    "thankful": "courtesy_gift", "please": "courtesy_gift", "treat": "courtesy_gift", "offering": "courtesy_gift", "like": "courtesy_gift", "love": "courtesy_gift",
+    "sorry": "courtesy_gift", "thank": "courtesy_gift", "dispute": "conflict_dispute", "revenge": "conflict_dispute", "spite": "conflict_dispute", "adverse": "conflict_dispute",
+    "injustice": "conflict_dispute", "unfair": "conflict_dispute", "offensive": "conflict_dispute", "insolent": "conflict_dispute", "resent": "conflict_dispute", "complaint": "conflict_dispute",
+    "accused": "conflict_dispute", "censor": "conflict_dispute", "sin": "conflict_dispute", "wicked": "conflict_dispute", "guilty": "conflict_dispute", "brutal": "conflict_dispute",
+    "threaten": "conflict_dispute", "hinder": "conflict_dispute", "support": "support_helping", "comfort": "support_helping", "comforting": "support_helping", "reassuring": "support_helping",
+    "encouraged": "support_helping", "rescue": "support_helping", "safety": "support_helping", "welfare": "support_helping", "relieve": "support_helping", "relief": "support_helping",
+    "depend": "support_helping", "survive": "support_helping", "aid": "support_helping", "helplessly": "support_helping", "adjacent": "adjacent_neighbors", "beside": "adjacent_neighbors",
+    "midway": "adjacent_neighbors", "beyond": "adjacent_neighbors", "beneath": "adjacent_neighbors", "exterior": "adjacent_neighbors", "along": "adjacent_neighbors", "widespread": "widespread_reach",
+    "vast": "widespread_reach", "broadly": "widespread_reach", "extension": "widespread_reach", "endless": "widespread_reach", "increasingly": "widespread_reach", "span": "widespread_reach",
+    "longitudinal": "widespread_reach", "wide": "widespread_reach", "forever": "clock_time", "prolonged": "clock_time", "continual": "clock_time", "continually": "clock_time",
+    "time": "clock_time", "moment": "clock_time", "soon": "clock_time", "recently": "clock_time", "formerly": "clock_time", "former": "clock_time",
+    "latter": "clock_time", "then": "sequence", "initially": "clock_time", "ultimate": "clock_time", "ultimately": "clock_time", "temporary": "clock_time",
+    "already": "clock_time", "seldom": "clock_time", "rare": "clock_time", "instantaneous": "clock_time", "aged": "clock_time", "linger": "clock_time",
+    "always": "clock_time", "sometimes": "clock_time", "chronic": "bandage_care", "surgeon": "bandage_care", "chemotherapy": "bandage_care", "antibiotic": "bandage_care",
+    "diagnostic": "bandage_care", "trauma": "bandage_care", "symptom": "bandage_care", "discomfort": "bandage_care", "ill": "bandage_care", "pain": "bandage_care",
+    "numb": "bandage_care", "care": "bandage_care", "activate": "activate_switch", "operate": "activate_switch", "launch": "activate_switch", "start": "activate_switch",
+    "begin": "activate_switch", "wake": "activate_switch", "woke": "activate_switch", "react": "activate_switch", "stop": "warning_hazard", "halt": "warning_hazard",
+    "cease": "warning_hazard", "quit": "warning_hazard", "end": "warning_hazard", "cautious": "warning_hazard", "sustainable": "sustainable_recycle", "clean": "sustainable_recycle",
+    "natural": "wilderness_nature", "naturally": "wilderness_nature", "vegetation": "wilderness_nature", "bracken": "wilderness_nature", "ecology": "ecosystem", "wheat": "grain_barley",
+    "ravine": "valley", "stream": "creek_stream", "breeze": "atmosphere_layers", "rainfall": "precipitation", "sprinkle": "precipitation", "multi": "prefix_multi",
+    "multinational": "prefix_multi", "many": "prefix_multi", "semi": "prefix_semi", "halfway": "prefix_semi", "micro": "prefix_micro", "bit": "prefix_micro",
+    "inch": "measure_tool", "anti": "prefix_anti", "unlike": "prefix_anti", "different": "prefix_anti", "uncommon": "question_unknown", "abnormal": "question_unknown",
+    "quiz": "question_unknown", "exam": "question_unknown", "doubt": "question_unknown", "unaware": "question_unknown", "non": "prefix_non", "null": "prefix_non",
+    "none": "prefix_non", "nothing": "prefix_non", "absence": "prefix_non", "inability": "prefix_non", "unable": "prefix_non", "useless": "prefix_non",
+    "never": "prefix_non", "without": "prefix_non", "neo": "prefix_neo", "new": "prefix_neo", "fresh": "prefix_neo", "anew": "prefix_neo",
+    "contemporary": "prefix_neo", "friend": "person_figure", "friends": "person_figure", "adult": "person_figure", "somebody": "person_figure", "member": "person_figure",
+    "staff": "person_figure", "face": "person_figure", "hair": "person_figure", "father": "family_home", "daddy": "family_home", "papa": "family_home",
+    "grandfather": "family_home", "uncle": "family_home", "maternal": "family_home", "air": "atmosphere_layers", "airplane": "transport", "shuttle": "transport",
+    "radar": "signal", "send": "signal", "sent": "signal", "encode": "signal", "questionnaire": "survey", "vitamin": "nutrition",
+    "yeast": "fungus", "enzyme": "cell", "amino": "molecule", "protein": "molecule", "phosphate": "periodic_table", "potassium": "periodic_table",
+    "chloride": "periodic_table", "proton": "atom", "ion": "atom", "nitrogen": "periodic_table", "epidemic": "virus", "epidemiology": "virus",
+    "fetal": "life_cycle", "marrow": "skeleton", "abdominal": "stomach", "coronary": "heart_organ", "pulse": "heart_organ", "cortex": "brain",
+    "neural": "neuron", "sensory": "brain", "receptor": "neuron", "physiological": "heart_organ", "metabolism": "stomach", "secrete": "cell",
+    "urine": "liquid", "infinity": "number_line", "pi": "circumference", "calculus": "coordinate_plane", "algorithm": "pattern", "binomial": "equation",
+    "deviation": "boxplot", "regression": "scatterplot", "convergence": "intersect", "converge": "intersect", "deflection": "reflection_geo", "oscillation": "sound_wave",
+    "flux": "water_wave", "inversion": "reflection_geo", "invert": "reflection_geo", "discrete": "integer", "numerical": "number_line", "preliminary": "sequence",
+    "residual": "remainder", "residue": "remainder", "static": "inertia", "quantum": "atom", "thermal": "thermometer", "elastic": "motion",
+    "elasticity": "motion", "valve": "circuit", "filtration": "dissolve", "dilute": "solution", "diffusion": "dissolve", "dye": "art_palette",
+    "aerosol": "gas", "helix": "chromosome", "capillary": "blood_vessel", "syntax": "phrase", "syntactic": "phrase", "dialect": "dialogue",
+    "analogy": "compare", "comma": "phrase", "parenthesis": "phrase", "bracket": "symbolism", "erase": "mistake_fix", "sketch": "art_palette",
+    "motif": "pattern", "repertoire": "music_harmony", "novice": "apprentice_learner", "undergraduate": "apprentice_learner", "postgraduate": "apprentice_learner", "seminar": "council_meeting",
+    "stereotype": "categorize", "paradigm": "concept", "pragmatic": "choice_decision", "retrieve": "memory_recall", "simulate": "hypothesis", "simulation": "hypothesis",
+    "specimen": "microscope", "morphology": "classify", "morphological": "classify", "niche": "habitat", "degrade": "decomposer", "reservoir": "water_table",
+    "irrigation": "water_table", "slab": "solid", "rack": "table_data", "slot": "table_data", "stack": "table_data", "stripe": "pattern",
+    "node": "network", "locus": "coordinate_plane", "facet": "polygon", "vector": "force", "trajectory": "motion", "liter": "graduated_cylinder",
+    "pound": "balance_scale", "happy": "emotion_joy", "happily": "emotion_joy", "happiness": "emotion_joy", "mood": "emotion_joy", "eager": "emotion_joy",
+    "sad": "emotion_sorrow", "sadly": "emotion_sorrow", "cry": "emotion_sorrow", "grieve": "emotion_sorrow", "exhausted": "emotion_sorrow", "bored": "emotion_sorrow",
+    "shame": "emotion_sorrow", "solemn": "emotion_sorrow", "solemnly": "emotion_sorrow", "gravely": "emotion_sorrow", "longingly": "emotion_sorrow", "frowning": "emotion_anger",
+    "moody": "emotion_anger", "impatient": "emotion_anger", "impatiently": "emotion_anger", "afraid": "emotion_fear", "wary": "emotion_fear", "worrying": "emotion_fear",
+    "anxiously": "emotion_fear", "stressed": "emotion_fear", "shocked": "emotion_fear", "shocking": "emotion_fear", "aghast": "emotion_fear", "embarrassed": "emotion_fear",
+    "uneasily": "emotion_fear", "desperately": "emotion_fear", "fear": "emotion_fear", "curiously": "question_ask", "question": "question_ask", "hide": "disguise_mask",
+    "mask": "disguise_mask", "spy": "disguise_mask", "trick": "disguise_mask", "secrecy": "disguise_mask", "suspicious": "disguise_mask", "suspected": "disguise_mask",
+    "probably": "probability", "possibly": "probability", "possibility": "probability", "chance": "probability", "likely": "probability", "unlikely": "probability",
+    "bound": "probability", "maybe": "probability", "perhaps": "probability", "possible": "probability", "gigantic": "expand", "plump": "expand",
+    "big": "expand", "narrow": "shrink", "narrowly": "shrink", "cramped": "shrink", "double": "multiply", "resemble": "similar",
+    "vary": "change", "become": "change", "distinguished": "compare", "inferior": "compare", "absolute": "absolute_value", "drop": "gravity",
+    "dropping": "gravity", "dangling": "gravity", "suspended": "gravity", "lowering": "gravity", "fall": "gravity", "low": "gravity",
+    "tilt": "inclined_plane", "tilted": "inclined_plane", "lift": "pulley", "hurl": "force", "squash": "force", "beat": "motion",
+    "stalked": "motion", "stumble": "motion", "dodging": "motion", "whipping": "motion", "swish": "motion", "dash": "speed",
+    "dashed": "speed", "quick": "speed", "quickly": "speed", "twisting": "rotation_geo", "curl": "rotation_geo", "winding": "rotation_geo",
+    "stiffly": "solid", "grind": "friction", "scratching": "friction", "mill": "wheel_and_axle", "brushing": "sustainable_recycle", "actually": "truth",
+    "example": "concept", "instance": "concept", "particular": "concept", "particularly": "concept", "specific": "concept", "thing": "concept",
+    "notion": "concept", "idea": "concept", "primary": "main_idea", "chiefly": "main_idea", "chief": "commander_leader", "principal": "commander_leader",
+    "command": "commander_leader", "control": "commander_leader", "controlled": "commander_leader", "lead": "commander_leader", "guide": "commander_leader", "guidance": "commander_leader",
+    "govern": "branches_of_government", "follow": "sequence", "following": "sequence", "continue": "sequence", "independent": "freedom", "independently": "freedom",
+    "free": "freedom", "leave": "migration", "abandoned": "migration", "remains": "remainder", "remaining": "remainder", "again": "cycle",
+    "attempt": "persevere", "attempted": "persevere", "try": "persevere", "seek": "discover", "search": "discover", "learn": "apprentice_learner",
+    "teach": "apprentice_learner", "reason": "reflect_think", "reasonable": "reflect_think", "watch": "observe", "see": "observe", "appear": "observe",
+    "appearing": "observe", "seem": "observe", "seemingly": "observe", "show": "observe", "listen": "sound_wave", "sound": "sound_wave",
+    "record": "record_data", "sign": "signal", "number": "number_line", "line": "number_line", "all": "universe", "each": "unit_rate",
+    "only": "unit_rate", "mere": "unit_rate", "merely": "unit_rate", "purely": "unit_rate", "just": "fairness", "fair": "fairness",
+    "wrong": "mistake_fix", "live": "life_cycle", "old": "ancestor", "far": "distance", "here": "coordinate", "there": "coordinate",
+    "front": "position", "bottom": "position", "stay": "position", "center": "origin", "edge": "border", "barrier": "border",
+    "shape": "polygon", "sentence": "clause", "wedding": "celebrate", "bronze": "compound", "tin": "element", "grease": "liquid",
+    "need": "scarcity", "few": "scarcity", "done": "goal", "complete": "goal", "another": "addend", "much": "surplus",
+    "least": "subtraction", "except": "subtraction", "other": "contrast", "thus": "cause_and_effect", "therefore": "cause_and_effect", "thereby": "cause_and_effect",
+    "since": "timeline", "though": "contrast", "although": "contrast", "however": "contrast", "despite": "contrast", "instead": "contrast",
+    "rather": "contrast", "nonetheless": "contrast", "regardless": "contrast", "apart": "separate", "about": "estimate", "almost": "estimate",
+    "quite": "expand", "otherwise": "choice_option", "chess": "puzzle_piece", "slow": "inertia", "slowly": "inertia", "difficult": "problem",
+    "general": "universe",
+    "zoo": "zoo_enclosure", "safari": "zoo_enclosure", "platform": "stage_platform", "stage": "stage_platform", "deck": "stage_platform", "post": "mail_post",
+    "bag": "mail_post", "handout": "mail_post", "page": "mail_post", "list": "mail_post", "skill": "skill_badge", "master": "skill_badge",
+    "excellent": "skill_badge", "impressive": "skill_badge", "fabulous": "skill_badge", "wonderful": "skill_badge", "success": "skill_badge", "win": "skill_badge",
+    "won": "skill_badge", "proud": "skill_badge", "proudly": "skill_badge", "pride": "skill_badge", "honour": "chosen_ribbon", "lawyer": "law_gavel",
+    "court": "law_gavel", "minister": "law_gavel", "policeman": "law_gavel", "athlete": "athlete_runner", "sport": "athlete_runner", "race": "athlete_runner",
+    "coach": "athlete_runner", "expedition": "athlete_runner", "leap": "athlete_runner", "kicking": "athlete_runner", "march": "athlete_runner", "marching": "athlete_runner",
+    "oath": "oath_promise", "swear": "oath_promise", "alleged": "oath_promise", "chapter": "oath_promise", "rank": "rank_chevrons", "grade": "rank_chevrons",
+    "level": "rank_chevrons", "tier": "rank_chevrons", "incumbent": "rank_chevrons", "intermediate": "rank_chevrons", "prevalence": "rank_chevrons", "descendent": "rank_chevrons",
+    "exhibit": "exhibit_display", "museum": "exhibit_display", "statue": "exhibit_display", "portray": "exhibit_display", "portrayal": "exhibit_display", "frame": "exhibit_display",
+    "image": "exhibit_display", "photo": "exhibit_display", "model": "exhibit_display", "silent": "silence_mute", "silently": "silence_mute", "hushed": "silence_mute",
+    "pause": "silence_mute", "calm": "silence_mute", "calmly": "silence_mute", "tranquil": "silence_mute", "mumble": "silence_mute", "grumble": "silence_mute",
+    "reveal": "reveal_curtain", "curtain": "reveal_curtain", "scene": "reveal_curtain", "unintelligible": "question_unknown", "evident": "reveal_curtain", "united": "unity_circle",
+    "team": "unity_circle", "club": "unity_circle", "company": "unity_circle", "crew": "unity_circle", "band": "unity_circle", "gathering": "unity_circle",
+    "flock": "unity_circle", "suspense": "suspense_cliff", "cliff": "suspense_cliff", "ledge": "suspense_cliff", "corner": "suspense_cliff", "tip": "suspense_cliff",
+    "brim": "suspense_cliff", "threshold": "objective_bullseye", "fringe": "suspense_cliff", "technique": "technique_gears", "machine": "technique_gears", "action": "technique_gears",
+    "acting": "technique_gears", "act": "technique_gears", "execute": "technique_gears", "execution": "technique_gears", "facilitate": "technique_gears", "mechanism": "technique_gears",
+    "rope": "rope_knot", "cord": "rope_knot", "tie": "rope_knot", "chain": "rope_knot", "wire": "rope_knot", "trail": "rope_knot",
+    "sword": "sword_blade", "warrior": "sword_blade", "blade": "sword_blade", "fierce": "sword_blade", "lab": "lab_flasks", "oil": "lab_flasks",
+    "goo": "lab_flasks", "cup": "lab_flasks", "bottle": "lab_flasks", "juice": "lab_flasks", "tube": "lab_flasks", "box": "box_crate",
+    "chest": "box_crate", "pile": "box_crate", "heap": "box_crate", "pack": "box_crate", "trunk": "box_crate", "tank": "box_crate",
+    "kitchen": "kitchen_pot", "supper": "kitchen_pot", "meal": "kitchen_pot", "sugar": "kitchen_pot", "biscuit": "kitchen_pot", "cream": "kitchen_pot",
+    "jelly": "kitchen_pot", "sweet": "kitchen_pot", "delicious": "kitchen_pot", "cinema": "cinema_reel", "film": "cinema_reel", "video": "cinema_reel",
+    "screen": "cinema_reel", "jazz": "jazz_notes", "song": "jazz_notes", "whistle": "jazz_notes", "echo": "jazz_notes", "horn": "jazz_notes",
+    "roar": "jazz_notes", "giggle": "jazz_notes", "laugh": "jazz_notes", "chuckle": "jazz_notes", "cheer": "jazz_notes", "bark": "jazz_notes",
+    "yell": "jazz_notes", "scream": "jazz_notes", "hiss": "jazz_notes", "shriek": "jazz_notes", "snort": "jazz_notes", "bellow": "jazz_notes",
+    "sigh": "jazz_notes", "gasp": "jazz_notes", "marble": "marble_sphere", "jewel": "marble_sphere", "amber": "marble_sphere", "silver": "marble_sphere",
+    "gold": "marble_sphere", "golden": "marble_sphere", "metal": "marble_sphere", "rocky": "marble_sphere", "stony": "marble_sphere", "flint": "marble_sphere",
+    "pod": "marble_sphere", "beam": "light_beam", "flash": "light_beam", "spark": "light_beam", "shine": "light_beam", "sunlight": "light_beam",
+    "sunshine": "light_beam", "neon": "light_beam", "dawn": "light_beam", "shadow": "light_beam", "shade": "light_beam", "glare": "emotion_anger",
+    "drain": "drain_funnel", "dipped": "drain_funnel", "mud": "drain_funnel", "dirt": "drain_funnel", "wash": "drain_funnel", "pool": "drain_funnel",
+    "plop": "drain_funnel", "gauge": "gauge_dial", "weight": "gauge_dial", "audit": "gauge_dial", "check": "gauge_dial", "compensation": "gauge_dial",
+    "polar": "polar_ice", "icy": "polar_ice", "shiver": "polar_ice", "tropical": "tropical_palm", "jungle": "tropical_palm", "forest": "tropical_palm",
+    "meadow": "tropical_palm", "oak": "tropical_palm", "moss": "tropical_palm", "seaweed": "tropical_palm", "hay": "tropical_palm", "garden": "tropical_palm",
+    "farm": "tropical_palm", "lawn": "tropical_palm", "yard": "tropical_palm", "park": "tropical_palm", "fracture": "fracture_bone", "break": "fracture_bone",
+    "cracked": "fracture_bone", "tore": "fracture_bone", "cut": "fracture_bone", "snap": "fracture_bone", "tough": "fracture_bone", "rough": "fracture_bone",
+    "stiff": "fracture_bone", "overlap": "overlap_rings", "complement": "overlap_rings", "correspondence": "overlap_rings", "equivalence": "overlap_rings", "unify": "overlap_rings",
+    "loop": "loop_ring", "roll": "loop_ring", "scramble": "loop_ring", "scrambled": "loop_ring", "tumble": "loop_ring", "chunk": "chunk_block",
+    "lump": "chunk_block", "block": "chunk_block", "board": "chunk_block", "shelf": "chunk_block", "wooden": "chunk_block", "hole": "chunk_block",
+    "pit": "chunk_block", "gap": "chunk_block", "clip": "paper_clip", "patch": "paper_clip", "handle": "paper_clip", "lock": "paper_clip",
+    "attach": "paper_clip", "magic": "magic_wand", "enchanted": "magic_wand", "wonder": "magic_wand", "fake": "magic_wand", "pretended": "magic_wand",
+    "illusion": "magic_wand", "fortune": "magic_wand", "king": "crown_king", "queen": "crown_king", "royal": "crown_king", "throne": "crown_king",
+    "kingdom": "crown_king", "capital": "crown_king", "sky": "sky_clouds", "mist": "sky_clouds", "sea": "sea_horizon", "shore": "sea_horizon",
+    "coast": "sea_horizon", "bay": "sea_horizon", "lake": "sea_horizon", "river": "sea_horizon", "sand": "sea_horizon", "land": "sea_horizon",
+    "surface": "sea_horizon", "breath": "breath_lungs", "panting": "breath_lungs", "gulp": "breath_lungs", "swallow": "breath_lungs", "mind": "mind_gears",
+    "sense": "mind_gears", "suppose": "mind_gears", "imagine": "mind_gears", "expect": "mind_gears", "expected": "mind_gears", "reckon": "mind_gears",
+    "aware": "mind_gears", "unconsciously": "mind_gears", "interestingly": "mind_gears", "interested": "mind_gears", "interest": "mind_gears", "curious": "mind_gears",
+    "concerned": "mind_gears", "concern": "mind_gears", "worry": "mind_gears", "worried": "mind_gears", "confused": "mind_gears", "distracted": "mind_gears",
+    "ego": "mind_gears", "cold": "cold_snowflake", "cool": "cold_snowflake", "warm": "cold_snowflake", "burn": "cold_snowflake", "sweat": "cold_snowflake",
+    "bare": "bare_branch", "dull": "bare_branch", "pale": "bare_branch", "faint": "bare_branch", "poor": "bare_branch", "weak": "bare_branch",
+    "weakly": "bare_branch", "mixed": "mixed_bowl", "mess": "mixed_bowl", "chaos": "mixed_bowl", "trouble": "mixed_bowl", "troubled": "mixed_bowl",
+    "disaster": "mixed_bowl", "upset": "emotion_anger", "panic": "mixed_bowl", "amazement": "amaze_burst", "amazing": "amaze_burst", "surprise": "amaze_burst",
+    "shock": "amaze_burst", "startled": "amaze_burst", "surprisingly": "amaze_burst", "exciting": "amaze_burst", "excited": "amaze_burst", "wow": "amaze_burst",
+    "chosen": "chosen_ribbon", "elite": "chosen_ribbon", "grace": "chosen_ribbon", "beauty": "chosen_ribbon", "beautiful": "chosen_ribbon", "fine": "chosen_ribbon",
+    "nice": "chosen_ribbon", "nicely": "chosen_ribbon", "charm": "chosen_ribbon", "precious": "chosen_ribbon", "allied": "allied_flags", "fellow": "allied_flags",
+    "national": "allied_flags", "state": "allied_flags", "city": "allied_flags", "town": "allied_flags", "street": "allied_flags", "fidelity": "fidelity_anchor",
+    "firm": "fidelity_anchor", "firmly": "fidelity_anchor", "abide": "fidelity_anchor", "true": "fidelity_anchor", "truly": "fidelity_anchor", "indeed": "fidelity_anchor",
+    "properly": "fidelity_anchor", "proper": "fidelity_anchor", "compel": "compel_push", "shove": "compel_push", "press": "compel_push", "pressing": "compel_push",
+    "poke": "compel_push", "poking": "compel_push", "drag": "compel_push", "tug": "compel_push", "throw": "compel_push", "fling": "compel_push",
+    "toss": "compel_push", "rush": "compel_push", "hurry": "compel_push", "slam": "compel_push", "crash": "compel_push", "punch": "compel_push",
+    "blast": "compel_push", "thud": "compel_push", "efforts": "compel_push", "effort": "compel_push", "momentum": "force", "objective": "objective_bullseye",
+    "plan": "objective_bullseye", "situation": "objective_bullseye", "fate": "objective_bullseye", "project": "objective_bullseye", "scenario": "objective_bullseye", "deadline": "objective_bullseye",
+    "assign": "assign_clipboard", "assigned": "assign_clipboard", "chore": "assign_clipboard", "application": "assign_clipboard", "agenda": "assign_clipboard", "due": "assign_clipboard",
+    "advice": "assign_clipboard", "arrangement": "arrangement_grid", "arranged": "arrangement_grid", "composition": "arrangement_grid", "classification": "arrangement_grid", "composite": "arrangement_grid",
+    "format": "arrangement_grid", "portfolio": "arrangement_grid", "convenient": "convenient_bolt", "convenience": "convenient_bolt", "instant": "convenient_bolt", "instantly": "convenient_bolt",
+    "sudden": "convenient_bolt", "spontaneous": "convenient_bolt", "electric": "convenient_bolt", "dynamic": "convenient_bolt", "might": "convenient_bolt", "predominantly": "advantage_scale",
+    "likewise": "equal_sign", "susceptible": "fragile_glass", "innate": "life_cycle", "something": "concept", "doing": "compel_push", "anyway": "choice_decision",
+    "lose": "question_unknown", "prove": "evidence", "warn": "warning_hazard", "nonsense": "comedy_masks", "annoying": "conflict_dispute", "actual": "truth",
+    "according": "agreement_handshake", "flapping": "motion", "click": "activate_switch", "covering": "shield_guard", "foolish": "comedy_masks", "fashion": "uniform_outfit",
+    "keen": "focus", "awkward": "question_unknown", "settle": "fidelity_anchor", "fashioned": "repair_wrench", "bothered": "conflict_dispute", "exist": "truth",
+    "stern": "rule_law", "occur": "cause_and_effect", "huddled": "cluster_group", "content": "emotion_joy", "flushed": "emotion_anger", "utterly": "advantage_scale",
+    "growling": "emotion_anger", "thoroughly": "focus", "intently": "focus", "ruffled": "commotion_noise", "utter": "speech_bubble", "addressed": "speech_bubble",
+    "casually": "courtesy_gift", "unison": "unity_circle", "adopted": "family_home", "casting": "compel_push", "monstrous": "expand", "brute": "conflict_dispute",
+    "identity": "person_figure", "loading": "transport", "vent": "gas", "muzzle": "shield_guard", "anyhow": "choice_decision", "oddly": "question_unknown",
+    "odd": "question_unknown", "drooping": "gravity", "lure": "disguise_mask", "romantic": "courtesy_gift", "admiringly": "chosen_ribbon", "pleading": "support_helping",
+    "influence": "widespread_reach", "severely": "warning_hazard", "surrender": "support_helping", "gingerly": "fragile_glass", "absurd": "comedy_masks", "itching": "convenient_bolt",
+    "remarkably": "amaze_burst", "staggering": "amaze_burst", "tingle": "convenient_bolt", "tragic": "emotion_sorrow", "sarcastic": "conflict_dispute", "cop": "law_gavel",
+    "craze": "commotion_noise", "jut": "jagged_edge", "rut": "jagged_edge", "distinctly": "blur_focus", "unfortunately": "emotion_sorrow", "bass": "jazz_notes",
+    "dearly": "courtesy_gift", "refined": "chosen_ribbon", "hazard": "warning_hazard", "articular": "skeleton", "prodigious": "expand", "posture": "person_figure",
+    "avail": "support_helping", "imitate": "similar", "sinus": "breath_lungs", "consuming": "focus", "challenging": "problem", "disdain": "conflict_dispute",
+    "cherished": "courtesy_gift", "relish": "emotion_joy", "coolly": "silence_mute", "acceptable": "agreement_handshake", "meek": "courtesy_gift", "aversion": "conflict_dispute",
+    "incessant": "habit_cycle", "termination": "warning_hazard", "senseless": "question_unknown", "gratification": "emotion_joy", "defined": "glossary_entry", "regard": "courtesy_gift",
+    "external": "boundary", "extraordinary": "amaze_burst", "appropriate": "agreement_handshake", "existing": "truth", "virtually": "similar", "haggard": "emotion_sorrow",
+    "life": "life_cycle", "human": "person_figure", "parent": "family_home", "mom": "family_home", "mama": "family_home", "aunt": "family_home",
+    "auntie": "family_home", "cousin": "family_home", "grandpa": "family_home", "grandma": "family_home", "granny": "family_home", "kid": "person_figure",
+    "lady": "person_figure", "gentleman": "person_figure", "sir": "person_figure", "madam": "person_figure", "guest": "introduce_greeting", "audience": "community_village",
+    "passenger": "transport", "hero": "courage_shield", "captain": "commander_leader", "professor": "wisdom_owl", "mayor": "commander_leader", "boss": "commander_leader",
+    "agent": "person_figure", "assistant": "support_helping", "body": "person_figure", "forehead": "person_figure", "lip": "person_figure", "beard": "person_figure",
+    "toe": "person_figure", "tail": "herbivore", "waist": "person_figure", "lap": "person_figure", "sleep": "memory_recall", "tired": "emotion_sorrow",
+    "anger": "emotion_anger", "rage": "emotion_anger", "fury": "emotion_anger", "frown": "emotion_anger", "horror": "emotion_fear", "terrified": "emotion_fear",
+    "terrifying": "emotion_fear", "frightened": "emotion_fear", "dreadful": "emotion_fear", "horrible": "emotion_fear", "awful": "emotion_sorrow", "evil": "conflict_dispute",
+    "joy": "emotion_joy", "pleasure": "emotion_joy", "enjoy": "emotion_joy", "grin": "comedy_masks", "funny": "comedy_masks", "silly": "comedy_masks",
+    "stare": "observe", "gaze": "observe", "glance": "observe", "vision": "blur_focus", "wink": "courtesy_gift", "shrug": "question_unknown",
+    "mention": "speech_bubble", "admit": "agreement_handshake", "remind": "memory_recall", "ignore": "silence_mute", "complain": "conflict_dispute", "beg": "support_helping",
+    "blame": "conflict_dispute", "avoid": "prefix_anti", "phone": "media_broadcast", "address": "mail_post", "store": "market", "buy": "currency",
+    "sell": "currency", "pay": "currency", "paid": "currency", "spend": "currency", "worth": "advantage_scale", "baggage": "box_crate",
+    "hat": "uniform_outfit", "suit": "uniform_outfit", "boot": "uniform_outfit", "shoe": "uniform_outfit", "sock": "uniform_outfit", "pants": "uniform_outfit",
+    "sleeve": "uniform_outfit", "leather": "weave_fabric", "silk": "weave_fabric", "violet": "art_palette", "gray": "art_palette", "cottage": "family_home",
+    "cabin": "family_home", "hall": "campus_hall", "hallway": "campus_hall", "attic": "family_home", "porch": "family_home", "doorway": "family_home",
+    "gate": "family_home", "entrance": "family_home", "roof": "family_home", "fence": "border", "couch": "family_home", "sofa": "family_home",
+    "pillow": "family_home", "carpet": "weave_fabric", "staircase": "staircase_ascend", "bridge": "transport", "tower": "campus_hall", "tunnel": "transport",
+    "railway": "transport", "bike": "transport", "wagon": "transport", "carriage": "transport", "flight": "transport", "plane": "transport",
+    "trolley": "transport", "traffic": "transport", "sail": "boat_sail", "driveway": "transport", "parked": "transport", "aboard": "boat_sail",
+    "landing": "transport", "hound": "carnivore", "pony": "herbivore", "chicken": "herbivore", "raven": "wilderness_nature", "furry": "herbivore",
+    "animal": "wilderness_nature", "cave": "canyon", "cavern": "canyon", "hill": "landform", "holiday": "celebrate", "birthday": "celebrate",
+    "party": "celebrate", "gift": "courtesy_gift", "treasure": "currency", "hour": "clock_time", "second": "clock_time", "evening": "clock_time",
+    "midnight": "clock_time", "tonight": "clock_time", "month": "schedule_plan", "age": "clock_time", "finally": "sequence", "eventually": "sequence",
+    "earlier": "clock_time", "meanwhile": "clock_time", "sometime": "clock_time", "carefully": "focus", "gently": "fragile_glass", "tightly": "rope_knot",
+    "tight": "rope_knot", "loose": "rope_knot", "directly": "arrow_target", "sideways": "adjacent_neighbors", "alongside": "adjacent_neighbors", "arrive": "adventure_compass",
+    "pass": "motion", "step": "staircase_ascend", "footstep": "motion", "pace": "speed", "wander": "adventure_compass", "creep": "motion",
+    "slip": "motion", "cling": "clasp_buckle", "fetch": "support_helping", "save": "shield_guard", "saving": "currency", "raise": "staircase_ascend",
+    "deal": "agreement_handshake", "exchange": "barter", "risk": "warning_hazard", "alarm": "warning_hazard", "security": "shield_guard", "mystery": "question_unknown",
+    "mysterious": "question_unknown", "hidden": "disguise_mask", "rid": "mistake_fix", "space": "universe", "nature": "wilderness_nature", "storm": "weather_storm",
+    "language": "speech_bubble", "code": "signal", "row": "arrangement_grid", "spot": "coordinate", "height": "measure_tool", "amount": "score_tally",
+    "plenty": "surplus", "entire": "universe", "entirely": "universe", "fully": "capacity", "simply": "simplify", "slightly": "prefix_micro",
+    "barely": "prefix_micro", "extremely": "expand", "perfect": "skill_badge", "perfectly": "skill_badge", "terrible": "warning_hazard", "serious": "rule_law",
+    "seriously": "rule_law", "boring": "emotion_sorrow", "broad": "widespread_reach", "pure": "sustainable_recycle", "rusty": "damage_crack", "crisp": "fragile_glass",
+    "physics": "force", "monetary": "currency", "domain": "property_estate", "entity": "concept", "closure": "boundary", "compact": "shrink",
+    "minimal": "shrink", "indirect": "prefix_anti", "indifference": "balance", "inhibition": "warning_hazard", "obscure": "blur_focus", "outlet": "circuit",
+    "mediate": "agreement_handshake", "stimulus": "activate_switch", "terminal": "warning_hazard", "transplant": "seedling", "appendix": "story_book", "messenger": "mail_post",
+    "nominal": "glossary_entry", "swap": "barter", "tract": "property_estate", "corpus": "story_book", "mole": "atom", "onwards": "arrow_target",
+    "entrant": "introduce_greeting", "phenomenal": "amaze_burst", "substrate": "layer", "transparency": "transparent", "circa": "estimate", "splice": "combine",
+    "descriptor": "glossary_entry", "mid": "median", "breakdown": "damage_crack", "lifetime": "life_cycle", "pole": "north", "chamber": "campus_hall",
+    "circus": "comedy_masks", "dome": "campus_hall", "dart": "arrow_target", "net": "cobweb_spider", "rod": "measure_tool", "cane": "support_helping",
+    "pirate": "boat_sail", "miss": "emotion_sorrow", "kind": "courtesy_gift", "course": "adventure_compass"
+  };
+
+  function resolveDiagramKey(clean, lemma) {
+    var checks = [];
+    function pushForm(rawForm) {
+      if (!rawForm) return;
+      checks.push(rawForm, rawForm.replace(/\s+/g, '_'));
+      if (rawForm.indexOf(' ') >= 0) {
+        var words = rawForm.split(/\s+/);
+        var last = words[words.length - 1];
+        var tailCands = generateLemmaCandidates(last);
+        for (var t = 0; t < tailCands.length; t++) {
+          var joined = words.slice(0, -1).concat([tailCands[t]]).join(' ');
+          checks.push(joined, joined.replace(/\s+/g, '_'));
+        }
+      }
+    }
+    pushForm(clean);
+    pushForm(normalizePhrase(clean));
+    pushForm(lemma);
+    pushForm(normalizePhrase(lemma));
+    var morph = clean && clean.indexOf(' ') < 0 ? generateLemmaCandidates(clean) : [];
+    for (var m = 0; m < morph.length; m++) {
+      checks.push(morph[m]);
+    }
+    for (var i = 0; i < checks.length; i++) {
+      var k = checks[i];
+      if (!k) continue;
+      if (Object.prototype.hasOwnProperty.call(CURRICULUM_DIAGRAMS, k)) return k;
+      if (Object.prototype.hasOwnProperty.call(DIAGRAM_ALIASES, k)) return DIAGRAM_ALIASES[k];
+    }
+    return '';
+  }
+
+  function getDiagram(wordOrClean, lemma, rawWord) {
+    var clean = normalizePhrase(wordOrClean || '') || normalizeWord(wordOrClean || '');
+    var cleanLemma = normalizePhrase(lemma || '') || normalizeWord(lemma || '');
+    var key = resolveDiagramKey(clean, cleanLemma);
+    if (!key) return null;
+    var entry = CURRICULUM_DIAGRAMS[key];
+    if (!entry) return null;
+    return {
+      word: rawWord || clean || key,
+      matchedKey: key,
+      matchType: 'diagram',
+      svg: entry.svg,
+      label: entry.label,
+      set: 'diagram',
+      alt: entry.label,
+      credit: entry.credit
+    };
+  }
+
+  function searchSymbolsWithDiagrams(query, options) {
+    var limit = Math.max(1, Number((options && options.limit) || 24));
+    var preferDiagrams = Boolean(options && options.preferDiagrams);
+    var q = normalizePhrase(query || '') || normalizeWord(query || '');
+    var qUnderscore = q.replace(/\s+/g, '_');
+    var diagHits = [];
+    var seen = {};
+    if (q) {
+      var directKey = resolveDiagramKey(q, '');
+      var keys = Object.keys(CURRICULUM_DIAGRAMS);
+      for (var i = 0; i < keys.length; i++) {
+        var k = keys[i];
+        var item = CURRICULUM_DIAGRAMS[k];
+        var hay = (k + ' ' + k.replace(/_/g, ' ') + ' ' + item.label + ' ' + item.category + ' ' + item.tags).toLowerCase();
+        if (k === directKey || k.indexOf(qUnderscore) !== -1 || hay.indexOf(q) !== -1) {
+          var score = k === directKey ? 3 : (k.indexOf(qUnderscore) === 0 || k.replace(/_/g, ' ').indexOf(q) === 0) ? 2 : 1;
+          diagHits.push({ score: score, entry: { word: k, matchedKey: k, matchType: 'diagram', svg: item.svg, label: item.label, set: 'diagram', alt: item.label, credit: item.credit } });
+        }
+      }
+      diagHits.sort(function (a, b) { return b.score - a.score; });
+    }
+    var baseHits = [];
+    try {
+      if (resolveSymbols(options && options.symbols)) {
+        baseHits = searchSymbols(query, options) || [];
+      }
+    } catch (_e) {
+      baseHits = [];
+    }
+    var out = [];
+    var diagList = diagHits.map(function (h) { return h.entry; });
+    var ordered = preferDiagrams ? diagList.concat(baseHits) : baseHits.concat(diagList);
+    for (var j = 0; j < ordered.length && out.length < limit; j++) {
+      var hit = ordered[j];
+      if (!hit || !hit.word) continue;
+      var uniq = String(hit.word).toLowerCase() + '::' + String(hit.set || '');
+      if (seen[uniq]) continue;
+      seen[uniq] = true;
+      out.push(hit);
+    }
+    return out;
+  }
+
+  return {
+    CONCEPT_CUES: CONCEPT_CUES,
+    CURRICULUM_DIAGRAMS: CURRICULUM_DIAGRAMS,
+    ensureSymbols: ensureSymbols,
+    getDiagram: getDiagram,
+    matchWord: matchWord,
+    searchSymbols: searchSymbolsWithDiagrams
+  };
+}));
+
+
 /* Shared, data-only word practice contract. No AI, storage, or network calls. */
 (function (root) {
   'use strict';
@@ -317,6 +3871,7 @@ window.AlloWordPracticeAnnotationAssets = {"runtime":"(()=>{var vn=(e,t)=>()=>{t
         intervalSeconds: bounded(options.intervalSeconds == null ? 3 : options.intervalSeconds, 3, 1, 30),
         includeAudio: options.includeAudio !== false,
         includePictures: options.includePictures !== false,
+        pictureSlides: options.pictureSlides === true,
         vocabularyFirst: options.vocabularyFirst === 'meaning' ? 'meaning' : 'word',
         translationLanguages: normalizeTranslationLanguages(options.translationLanguages),
         cardFont: ['default', 'arial', 'verdana', 'georgia'].includes(options.cardFont) ? options.cardFont : 'default',
@@ -1006,6 +4561,7 @@ window.AlloWordPracticeAnnotationAssets = {"runtime":"(()=>{var vn=(e,t)=>()=>{t
     return 'data:audio/wav;base64,' + bytesToBase64(bytes);
   }
   async function buildPptx(input, rawOptions = {}, sequence, context = {}) {
+    const pictureSlidesOnly = !!(rawOptions && rawOptions.pictureSlidesOnly);
     const core = getCore(), pack = core.normalizeInput(input), options = core.normalizeOptions({ ...pack.options, ...rawOptions });
     const appearance = core.cardAppearance(options, context.readerSettings);
     const cardType = { italic: appearance.fontStyle === 'italic', bold: appearance.fontWeight === 700 };
@@ -1574,7 +5130,21 @@ window.AlloWordPracticeAnnotationAssets = {"runtime":"(()=>{var vn=(e,t)=>()=>{t
         const modeNames = { popup: 'Word Fluency Pop-Up', blend: 'Sound & Blend', vocabulary: 'Word Meaning', spelling: 'Listen & Spell', sentence: 'Finish the Sentence' };
         const footer = [localized('card_progress', 'Card {n} of {total}', { n: index + 1, total: cards.length }), localized('mode_' + options.mode, modeNames[options.mode])];
         const answerFooter = () => [...footer, localized('pptx_answer', 'Answer')];
-        if (options.mode === 'sentence') {
+        if (pictureSlidesOnly) {
+          const pictureAudio = options.includeAudio && (item.wordAudio || (item.phonemes.length && item.phonemes.every(sound => sound.audio)));
+          const picSlide = addPictureSlide(item, footer, null, !!pictureAudio);
+          if (picSlide) {
+            await addAudio(picSlide, item, footer);
+          } else {
+            const slide = slideBase(footer);
+            mainWord(slide, item.word, card, item, true);
+            if (item.definition) {
+              const defBox = { x: 1.0, y: 5.05, w: 11.3, h: 1.15, margin: 0.05 };
+              slide.addText(item.definition, { ...defBox, fontFace: appearance.fontFace, ...cardType, fontSize: fittedFont(item.definition, defBox, 22 * meaningScale), color: appearance.muted, align: 'center', valign: 'top', ...textLanguage(itemLanguage(item, 'definition')) });
+            }
+            await addAudio(slide, item, footer);
+          }
+        } else if (options.mode === 'sentence') {
           if (!item.sentenceActivity) throw new Error(L('pptx_sentence_missing', 'A prepared sentence activity is missing.'));
           const activity = item.sentenceActivity;
           const choiceText = activity.choices.map((choice, n) => String.fromCharCode(65 + n) + '. ' + choice).join('\n');
@@ -1669,6 +5239,9 @@ window.AlloWordPracticeAnnotationAssets = {"runtime":"(()=>{var vn=(e,t)=>()=>{t
           if (caption) await addInstruction(slide, caption, footer);
           await addAudio(slide, item, footer);
         }
+        if (!pictureSlidesOnly && options.includePictures && options.pictureSlides === true && options.mode !== 'vocabulary' && item.picture) {
+          addPictureSlide(item, footer, null, false);
+        }
         await addAnnotationSlides(item, footer);
         if (typeof context.onProgress === 'function') context.onProgress({ completed: index + 1, total: cards.length });
         if ((index + 1) % 10 === 0) { await new Promise(resolve => setTimeout(resolve, 0)); checkAbort(context); }
@@ -1739,7 +5312,660 @@ window.AlloWordPracticeAnnotationAssets = {"runtime":"(()=>{var vn=(e,t)=>()=>{t
       return pack.items.some(item => convertible(item.wordAudio) || (item.phonemes || []).some(sound => convertible(sound.audio)));
     } catch (_) { return false; }
   }
-  root.AlloWordPracticeMedia = { prepareAudio, buildPptx, everyDeviceAudio, needsEveryDeviceAudio };
+  async function buildPictureSlidesPptx(input, rawOptions = {}, context = {}) {
+    const core = getCore(), pack = core.normalizeInput(input);
+    const opts = core.normalizeOptions({ ...pack.options, ...rawOptions, repetitions: rawOptions.repetitions ?? 1, shuffle: rawOptions.shuffle === true, includePictures: true });
+    const sequence = Array.isArray(context.sequence) ? context.sequence : core.createSequence(pack, { ...opts, mode: 'vocabulary' });
+    return buildPptx(pack, { ...opts, pictureSlidesOnly: true }, sequence, context);
+  }
+  function escHtml(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+  function safeHtmlImg(source) {
+    const raw = source && typeof source === 'object' ? (source.src || source.dataUri || '') : source;
+    const s = String(raw || '').trim();
+    if (!/^data:image\/(png|jpeg|jpg|gif|webp|svg\+xml)[;,]/i.test(s)) return '';
+    if (/svg\+xml/i.test(s)) {
+      let decoded = s;
+      const comma = s.indexOf(',');
+      if (comma > -1) {
+        const body = s.slice(comma + 1);
+        if (/;base64/i.test(s.slice(0, comma))) {
+          try { decoded = atob(body); } catch (_) { return ''; }
+        } else {
+          try { decoded = decodeURIComponent(body); } catch (_) { decoded = body; }
+        }
+      }
+      if (/<script|<foreignObject|\bon[a-z]+\s*=|javascript:/i.test(decoded)) return '';
+    }
+    return s;
+  }
+  function rawPictureLookup(input) {
+    const core = getCore();
+    const list = Array.isArray(input && input.items) ? input.items : (Array.isArray(input && input.words) ? input.words : []);
+    const byId = new Map(), byWord = new Map();
+    list.forEach(entry => {
+      if (!entry || typeof entry !== 'object') return;
+      const src = safeHtmlImg(entry.image) || safeHtmlImg(entry.picture);
+      if (!src) return;
+      const alt = (entry.picture && entry.picture.alt) || entry.imageAlt || entry.word || '';
+      const credit = (entry.picture && (entry.picture.credit || entry.picture.attribution)) || entry.imageCredit || entry.credit || entry.attribution || '';
+      const info = { src, alt: String(alt || '').trim(), credit: String(credit || '').trim() };
+      if (entry.id) byId.set(String(entry.id), info);
+      const k = core.key(entry.word);
+      if (k && !byWord.has(k)) byWord.set(k, info);
+    });
+    return { byId, byWord };
+  }
+  function printableBoxes(item) {
+    const list = Array.isArray(item && item.phonemes) && item.phonemes.length
+      ? item.phonemes
+      : (typeof (item && item.word) === 'string' ? item.word.trim().split('') : []);
+    return list.map(p => {
+      if (typeof p === 'string') return p.trim();
+      if (p && typeof p === 'object') return String(p.label || p.grapheme || p.soundKey || p.phoneme || p.sound || p.text || '').trim();
+      return '';
+    }).filter(Boolean);
+  }
+  function blankedSentence(example, word) {
+    const ex = String(example || '').trim(), w = String(word || '').trim();
+    if (!ex || !w) return ex;
+    const escaped = w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return ex.replace(new RegExp('\\b' + escaped + '\\b', 'gi'), '_______');
+  }
+  function printableCardsData(input, rawOptions = {}, fallbackTitle = 'Word Cards') {
+    const core = getCore(), pack = core.normalizeInput(input);
+    const opts = core.normalizeOptions({ ...pack.options, ...rawOptions });
+    const rawPics = rawPictureLookup(input);
+    const showPics = opts.includePictures !== false;
+    const items = (pack.items || []).map(item => {
+      const normalizedSrc = safeHtmlImg(item.picture);
+      const rawHit = rawPics.byId.get(String(item.id || '')) || rawPics.byWord.get(core.key(item.word));
+      const imgSrc = showPics ? (normalizedSrc || (rawHit ? rawHit.src : '')) : '';
+      const imgAlt = (item.picture && item.picture.alt) || (rawHit && rawHit.alt) || item.word;
+      const imgCredit = (item.picture && (item.picture.credit || item.picture.attribution)) || (rawHit && rawHit.credit) || '';
+      return {
+        word: item.word,
+        boxes: printableBoxes(item),
+        definition: item.definition || '',
+        example: item.example || item.contextSentence || '',
+        imgSrc,
+        imgAlt,
+        imgCredit: String(imgCredit || '').trim(),
+      };
+    });
+    const title = String((pack && pack.title) || (input && input.title) || fallbackTitle).trim() || fallbackTitle;
+    return { title, items };
+  }
+  function buildFlashcardsHtml(input, rawOptions = {}) {
+    const data = printableCardsData(input, rawOptions, 'Word Flashcards');
+    const rows = data.items.map(it => {
+      const boxes = it.boxes.map(b => '<span class="elkonin-box">' + escHtml(b) + '</span>').join('');
+      const picHtml = it.imgSrc ? '<img class="card-pic" src="' + escHtml(it.imgSrc) + '" alt="' + escHtml(it.imgAlt || it.word) + '">' : '';
+      const defHtml = it.definition ? '<p class="def"><strong>Meaning:</strong> ' + escHtml(it.definition) + '</p>' : '';
+      const blanked = blankedSentence(it.example, it.word);
+      const exHtml = blanked ? '<p class="ex"><strong>Sentence:</strong> ' + escHtml(blanked) + '</p>' : '';
+      return '<article class="fc-row">'
+        + '<div class="fc-side fc-front"><div class="side-tag">Front</div><div class="word">' + escHtml(it.word) + '</div><div class="elkonin">' + boxes + '</div></div>'
+        + '<div class="fc-side fc-back"><div class="side-tag">Back</div>' + picHtml + '<div class="back-text">' + defHtml + exHtml + '</div></div>'
+        + '</article>';
+    }).join('\n');
+    return [
+      '<!doctype html>',
+      '<html lang="en">',
+      '<head>',
+      '<meta charset="utf-8">',
+      '<meta name="viewport" content="width=device-width,initial-scale=1">',
+      '<title>' + escHtml(data.title) + ' — 2-Sided Flashcards</title>',
+      '<style>',
+      'body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;margin:20px;max-width:980px}',
+      'h1{font-size:20px;margin:0 0 6px}',
+      '.directions{font-size:13px;color:#334155;margin:0 0 14px}',
+      '.fc-row{display:grid;grid-template-columns:1fr 1fr;gap:0;border:2px solid #0f172a;margin-bottom:14px;page-break-inside:avoid;break-inside:avoid}',
+      '.fc-side{padding:14px;min-height:140px;box-sizing:border-box}',
+      '.fc-front{border-right:2px dashed #475569;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}',
+      '.fc-back{display:flex;gap:12px;align-items:center}',
+      '.side-tag{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#64748b;margin-bottom:6px}',
+      '.word{font-size:28px;font-weight:800;margin-bottom:10px}',
+      '.elkonin{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}',
+      '.elkonin-box{border:2px solid #334155;min-width:28px;height:30px;padding:0 6px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;border-radius:4px}',
+      '.card-pic{width:76px;height:76px;object-fit:contain;border:1px solid #cbd5e1;border-radius:6px;background:#fff;flex-shrink:0}',
+      '.back-text p{margin:0 0 6px;font-size:14px;line-height:1.4}',
+      '@media print{body{margin:10mm} .noprint{display:none}}',
+      '</style>',
+      '</head>',
+      '<body>',
+      '<h1>' + escHtml(data.title) + ' — Cut-and-Fold Flashcards</h1>',
+      '<p class="directions">Cut across each card row, fold along the dashed line, and tape or glue the front and back together.</p>',
+      rows,
+      '</body>',
+      '</html>',
+    ].join('\n');
+  }
+  function buildFrayerHtml(input, rawOptions = {}) {
+    const data = printableCardsData(input, rawOptions, 'Frayer Study Sheets');
+    const cards = data.items.map(it => {
+      const boxes = it.boxes.map(b => '<span class="elkonin-box">' + escHtml(b) + '</span>').join('');
+      const picBlock = it.imgSrc
+        ? '<img class="card-pic" src="' + escHtml(it.imgSrc) + '" alt="' + escHtml(it.imgAlt || it.word) + '">'
+        : '<div class="sketch-space">Draw a quick sketch here</div>';
+      return '<section class="frayer-card">'
+        + '<header class="frayer-head"><h2 class="frayer-word">' + escHtml(it.word) + '</h2><div class="elkonin">' + boxes + '</div></header>'
+        + '<div class="frayer-grid">'
+        + '<div class="frayer-box"><h3>Meaning</h3><p>' + escHtml(it.definition || 'Write a meaning in your own words.') + '</p></div>'
+        + '<div class="frayer-box"><h3>Picture or sketch</h3>' + picBlock + '</div>'
+        + '<div class="frayer-box"><h3>Example sentence</h3><p>' + escHtml(it.example || '') + '</p></div>'
+        + '<div class="frayer-box"><h3>Write your own sentence</h3><div class="write-lines"><div></div><div></div></div></div>'
+        + '</div></section>';
+    }).join('\n');
+    return [
+      '<!doctype html>',
+      '<html lang="en">',
+      '<head>',
+      '<meta charset="utf-8">',
+      '<meta name="viewport" content="width=device-width,initial-scale=1">',
+      '<title>' + escHtml(data.title) + ' — Frayer Study Sheets</title>',
+      '<style>',
+      'body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;margin:20px;max-width:960px}',
+      'h1{font-size:20px;margin:0 0 12px}',
+      '.frayer-card{border:2px solid #0f172a;border-radius:8px;padding:12px;margin-bottom:18px;page-break-inside:avoid;break-inside:avoid}',
+      '.frayer-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;border-bottom:2px solid #0f172a;padding-bottom:8px;margin-bottom:10px}',
+      '.frayer-word{margin:0;font-size:24px;font-weight:800}',
+      '.elkonin{display:flex;flex-wrap:wrap;gap:6px}',
+      '.elkonin-box{border:2px solid #334155;min-width:26px;height:28px;padding:0 5px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;border-radius:4px}',
+      '.frayer-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}',
+      '.frayer-box{border:1px solid #475569;border-radius:6px;padding:10px;min-height:96px}',
+      '.frayer-box h3{margin:0 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:#334155}',
+      '.frayer-box p{margin:0;font-size:14px;line-height:1.4}',
+      '.card-pic{max-width:86px;max-height:86px;object-fit:contain;display:block}',
+      '.sketch-space{height:64px;border:1px dashed #94a3b8;border-radius:4px;display:grid;place-items:center;font-size:12px;color:#64748b}',
+      '.write-lines div{border-bottom:1px solid #94a3b8;height:26px}',
+      '@media print{body{margin:10mm} .frayer-card{page-break-inside:avoid;break-inside:avoid}}',
+      '</style>',
+      '</head>',
+      '<body>',
+      '<h1>' + escHtml(data.title) + ' — Frayer Study Sheets</h1>',
+      cards,
+      '</body>',
+      '</html>',
+    ].join('\n');
+  }
+  function sortingOrder(count, salt) {
+    const out = [];
+    for (let i = 0; i < count; i++) out.push(i);
+    if (count < 2) return out;
+    let seed = (salt >>> 0) || 1;
+    for (let i = count - 1; i > 0; i--) {
+      seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+      const j = seed % (i + 1);
+      const tmp = out[i];
+      out[i] = out[j];
+      out[j] = tmp;
+    }
+    if (out[0] === 0 && count > 1) {
+      const swap = out[0];
+      out[0] = out[1];
+      out[1] = swap;
+    }
+    return out;
+  }
+  function buildSortingCardsHtml(input, rawOptions = {}) {
+    const data = printableCardsData(input, rawOptions, 'Word Sorting Cards');
+    const items = data.items || [];
+    const wordTiles = items.map(it => {
+      const boxes = it.boxes.map(b => '<span class="elkonin-box">' + escHtml(b) + '</span>').join('');
+      return '<article class="sort-tile sort-word">'
+        + '<div class="tile-tag">Word</div>'
+        + '<div class="sort-word-text">' + escHtml(it.word) + '</div>'
+        + '<div class="elkonin">' + boxes + '</div>'
+        + '</article>';
+    }).join('\n');
+    const meaningOrder = sortingOrder(items.length, 37);
+    const meaningTiles = meaningOrder.map(idx => {
+      const it = items[idx];
+      const defBlank = blankedSentence(it.definition, it.word);
+      const exBlank = blankedSentence(it.example, it.word);
+      const defHtml = defBlank
+        ? '<p class="sort-def"><strong>Meaning:</strong> ' + escHtml(defBlank) + '</p>'
+        : '<p class="sort-def"><strong>Word clue:</strong> ' + escHtml(it.boxes.length + ' sounds') + '</p>';
+      const exHtml = exBlank ? '<p class="sort-ex"><strong>Sentence:</strong> ' + escHtml(exBlank) + '</p>' : '';
+      return '<article class="sort-tile sort-meaning">'
+        + '<div class="tile-tag">Meaning</div>'
+        + defHtml
+        + exHtml
+        + '</article>';
+    }).join('\n');
+    const picEntries = [];
+    sortingOrder(items.length, 91).forEach(idx => {
+      const it = items[idx];
+      if (!it.imgSrc) return;
+      picEntries.push('<article class="sort-tile sort-picture">'
+        + '<div class="tile-tag">Picture</div>'
+        + '<img class="sort-pic" src="' + escHtml(it.imgSrc) + '" alt="Sorting picture card">'
+        + '</article>');
+    });
+    const pictureSection = picEntries.length
+      ? '<section class="sort-group"><h2>Picture cards (unlabeled)</h2><div class="sort-grid sort-grid-pics">' + picEntries.join('\n') + '</div></section>'
+      : '';
+    const keyRows = items.map((it, idx) => {
+      const picInfo = it.imgSrc
+        ? ('Yes' + (it.imgCredit ? ' (' + escHtml(it.imgCredit) + ')' : ''))
+        : 'None attached';
+      return '<tr>'
+        + '<td>' + (idx + 1) + '</td>'
+        + '<td><strong>' + escHtml(it.word) + '</strong></td>'
+        + '<td>' + escHtml(it.definition || '') + (it.example ? '<br><em>' + escHtml(it.example) + '</em>' : '') + '</td>'
+        + '<td>' + picInfo + '</td>'
+        + '</tr>';
+    }).join('\n');
+    return [
+      '<!doctype html>',
+      '<html lang="en">',
+      '<head>',
+      '<meta charset="utf-8">',
+      '<meta name="viewport" content="width=device-width,initial-scale=1">',
+      '<title>' + escHtml(data.title) + ' — Cut-Out Sorting Cards</title>',
+      '<style>',
+      'body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;margin:20px;max-width:980px}',
+      'h1{font-size:20px;margin:0 0 6px}',
+      'h2{font-size:15px;margin:14px 0 8px;color:#1e293b}',
+      '.directions{font-size:13px;color:#334155;margin:0 0 12px}',
+      '.sort-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}',
+      '.sort-tile{border:2px dashed #334155;border-radius:8px;padding:12px;min-height:92px;box-sizing:border-box;background:#fff;page-break-inside:avoid;break-inside:avoid}',
+      '.tile-tag{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#64748b;margin-bottom:6px}',
+      '.sort-word{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}',
+      '.sort-word-text{font-size:24px;font-weight:800;margin-bottom:8px}',
+      '.elkonin{display:flex;flex-wrap:wrap;gap:5px;justify-content:center}',
+      '.elkonin-box{border:2px solid #334155;min-width:24px;height:26px;padding:0 5px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;border-radius:4px}',
+      '.sort-meaning p{margin:0 0 6px;font-size:13px;line-height:1.4}',
+      '.sort-picture{display:flex;flex-direction:column;align-items:center;justify-content:center}',
+      '.sort-pic{width:92px;height:92px;object-fit:contain;display:block}',
+      '.teacher-key{margin-top:24px;padding-top:14px;border-top:2px solid #0f172a;page-break-before:always;break-before:page}',
+      '.key-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}',
+      '.key-table th,.key-table td{border:1px solid #cbd5e1;padding:6px 8px;text-align:left;vertical-align:top}',
+      '.key-table th{background:#f1f5f9}',
+      '.attr-note{font-size:12px;color:#475569;margin-top:10px}',
+      '@media print{body{margin:10mm} .noprint{display:none} .sort-tile{page-break-inside:avoid;break-inside:avoid} .teacher-key{page-break-before:always;break-before:page}}',
+      '</style>',
+      '</head>',
+      '<body>',
+      '<h1>' + escHtml(data.title) + ' — Cut-Out Sorting Cards</h1>',
+      '<p class="directions">Cut along the dashed lines and mix the piles. Match each word card with its meaning card' + (picEntries.length ? ' and picture card' : '') + '.</p>',
+      '<section class="sort-group"><h2>Word cards</h2><div class="sort-grid">' + wordTiles + '</div></section>',
+      '<section class="sort-group"><h2>Meaning cards (target word blanked)</h2><div class="sort-grid">' + meaningTiles + '</div></section>',
+      pictureSection,
+      '<section class="teacher-key">',
+      '<h2>Teacher Answer &amp; Attribution Key</h2>',
+      '<table class="key-table"><thead><tr><th>#</th><th>Word</th><th>Meaning &amp; Example</th><th>Picture</th></tr></thead><tbody>',
+      keyRows,
+      '</tbody></table>',
+      '<p class="attr-note">Built-in picture artwork may use Mulberry Symbols or OpenMoji under CC BY-SA 4.0 unless a custom credit is shown above.</p>',
+      '</section>',
+      '</body>',
+      '</html>',
+    ].join('\n');
+  }
+  function buildWorksheetHtml(input, rawOptions = {}) {
+    const data = printableCardsData(input, rawOptions, 'Vocabulary Study Worksheet');
+    const items = data.items || [];
+    const bankOrder = sortingOrder(items.length, 53);
+    const bankChips = bankOrder.map(idx => {
+      const it = items[idx];
+      const boxes = it.boxes.map(b => '<span class="elkonin-box">' + escHtml(b) + '</span>').join('');
+      return '<span class="bank-chip"><span class="bank-word">' + escHtml(it.word) + '</span>' + (boxes ? '<span class="elkonin">' + boxes + '</span>' : '') + '</span>';
+    }).join('\n');
+    const matchOrder = sortingOrder(items.length, 79);
+    const matchRows = matchOrder.map((idx, pos) => {
+      const it = items[idx];
+      const defBlank = blankedSentence(it.definition, it.word);
+      const picHtml = it.imgSrc
+        ? '<img class="ws-pic" src="' + escHtml(it.imgSrc) + '" alt="Worksheet clue picture">'
+        : '';
+      return '<li class="ws-match-item">'
+        + '<span class="ws-num">' + (pos + 1) + '.</span>'
+        + '<span class="ws-blank">______________</span>'
+        + '<span class="ws-def">' + escHtml(defBlank || ('Matches sound pattern: ' + it.boxes.join(' / '))) + '</span>'
+        + picHtml
+        + '</li>';
+    }).join('\n');
+    const clozeOrder = sortingOrder(items.length, 107);
+    const clozeRows = clozeOrder.map((idx, pos) => {
+      const it = items[idx];
+      const exBlank = blankedSentence(it.example, it.word);
+      const lineText = exBlank
+        ? escHtml(exBlank)
+        : 'Write a sentence using one word from the Word Bank: ______________________________';
+      return '<li class="ws-cloze-item"><span class="ws-num">' + (pos + 1) + '.</span><span>' + lineText + '</span></li>';
+    }).join('\n');
+    const matchKeyRows = matchOrder.map((idx, pos) => {
+      const it = items[idx];
+      return '<tr><td>' + (pos + 1) + '</td><td><strong>' + escHtml(it.word) + '</strong></td><td>' + escHtml(it.definition || '') + '</td><td>' + (it.imgSrc ? (it.imgCredit ? escHtml(it.imgCredit) : 'Included') : 'None') + '</td></tr>';
+    }).join('\n');
+    const clozeKeyRows = clozeOrder.map((idx, pos) => {
+      const it = items[idx];
+      return '<li><strong>' + (pos + 1) + '. ' + escHtml(it.word) + '</strong>' + (it.example ? ' — ' + escHtml(it.example) : ' — (Student sentence)') + '</li>';
+    }).join('\n');
+    return [
+      '<!doctype html>',
+      '<html lang="en">',
+      '<head>',
+      '<meta charset="utf-8">',
+      '<meta name="viewport" content="width=device-width,initial-scale=1">',
+      '<title>' + escHtml(data.title) + ' — Cloze and Matching Worksheet</title>',
+      '<style>',
+      'body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;margin:20px;max-width:960px}',
+      'h1{font-size:20px;margin:0 0 8px}',
+      'h2{font-size:15px;margin:16px 0 8px;color:#1e293b}',
+      '.ws-meta{display:flex;flex-wrap:wrap;gap:20px;font-size:14px;border-bottom:2px solid #0f172a;padding-bottom:8px;margin-bottom:12px}',
+      '.ws-word-bank{border:2px solid #334155;border-radius:8px;padding:10px 12px;background:#f8fafc;margin-bottom:14px}',
+      '.bank-list{display:flex;flex-wrap:wrap;gap:8px}',
+      '.bank-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid #475569;border-radius:6px;padding:4px 8px;background:#fff}',
+      '.bank-word{font-weight:700;font-size:15px}',
+      '.elkonin{display:inline-flex;gap:3px}',
+      '.elkonin-box{border:1px solid #64748b;min-width:16px;height:18px;padding:0 3px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border-radius:3px}',
+      '.ws-matching ol,.ws-cloze ol{margin:0;padding-left:0;list-style:none}',
+      '.ws-match-item,.ws-cloze-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #e2e8f0;font-size:14px;line-height:1.45;page-break-inside:avoid;break-inside:avoid}',
+      '.ws-num{font-weight:700;min-width:22px}',
+      '.ws-blank{font-weight:700;color:#334155;white-space:nowrap}',
+      '.ws-def{flex:1}',
+      '.ws-pic{width:54px;height:54px;object-fit:contain;border:1px solid #cbd5e1;border-radius:4px;background:#fff;flex-shrink:0}',
+      '.teacher-key{margin-top:24px;padding-top:14px;border-top:2px solid #0f172a;page-break-before:always;break-before:page}',
+      '.key-table{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0 12px}',
+      '.key-table th,.key-table td{border:1px solid #cbd5e1;padding:6px 8px;text-align:left;vertical-align:top}',
+      '.key-table th{background:#f1f5f9}',
+      '.key-cloze{margin:6px 0 0 18px;font-size:13px;line-height:1.5}',
+      '.attr-note{font-size:12px;color:#475569;margin-top:10px}',
+      '@media print{body{margin:10mm} .noprint{display:none} .ws-match-item,.ws-cloze-item{page-break-inside:avoid;break-inside:avoid} .teacher-key{page-break-before:always;break-before:page}}',
+      '</style>',
+      '</head>',
+      '<body>',
+      '<h1>' + escHtml(data.title) + ' — Cloze and Matching Worksheet</h1>',
+      '<div class="ws-meta"><span>Name: ______________________________</span><span>Date: ________________</span></div>',
+      '<section class="ws-word-bank"><h2>Word Bank</h2><div class="bank-list">' + bankChips + '</div></section>',
+      '<section class="ws-matching"><h2>Part 1 — Match Each Meaning and Picture</h2><ol>' + matchRows + '</ol></section>',
+      '<section class="ws-cloze"><h2>Part 2 — Fill in the Blank Sentences</h2><ol>' + clozeRows + '</ol></section>',
+      '<section class="teacher-key">',
+      '<h2>Teacher Answer &amp; Attribution Key</h2>',
+      '<table class="key-table"><thead><tr><th>#</th><th>Word</th><th>Meaning</th><th>Picture</th></tr></thead><tbody>' + matchKeyRows + '</tbody></table>',
+      '<h3>Part 2 Answers</h3>',
+      '<ol class="key-cloze">' + clozeKeyRows + '</ol>',
+      '<p class="attr-note">Built-in picture artwork may use Mulberry Symbols or OpenMoji under CC BY-SA 4.0 unless a custom credit is shown above.</p>',
+      '</section>',
+      '</body>',
+      '</html>',
+    ].join('\n');
+  }
+  function buildBingoHtml(input, rawOptions = {}) {
+    const data = printableCardsData(input, rawOptions, 'Vocabulary Classroom Bingo');
+    const items = data.items || [];
+    const boardCount = 6;
+    const gridSize = items.length >= 16 ? 4 : 3;
+    const cellCount = gridSize * gridSize;
+    const hasFree = gridSize === 3;
+    const needed = hasFree ? cellCount - 1 : cellCount;
+    const boardsHtml = [];
+    for (let b = 0; b < boardCount; b++) {
+      const pool = [];
+      if (items.length > 0) {
+        let pass = 0;
+        while (pool.length < needed) {
+          sortingOrder(items.length, 37 + b * 97 + pass * 131).forEach(idx => pool.push(items[idx]));
+          pass++;
+        }
+      }
+      let poolCursor = 0;
+      const rows = [];
+      for (let r = 0; r < gridSize; r++) {
+        const cells = [];
+        for (let c = 0; c < gridSize; c++) {
+          const pos = r * gridSize + c;
+          if (hasFree && pos === 4) {
+            cells.push('<td class="bingo-cell bingo-free"><div class="bingo-word">FREE</div><div class="bingo-sub">Center space</div></td>');
+            continue;
+          }
+          const it = pool[poolCursor++];
+          if (!it) {
+            cells.push('<td class="bingo-cell"><div class="bingo-word">____</div></td>');
+            continue;
+          }
+          const picHtml = it.imgSrc
+            ? '<img class="bingo-pic" src="' + escHtml(it.imgSrc) + '" alt="Bingo picture cue">'
+            : '';
+          cells.push('<td class="bingo-cell"><div class="bingo-word">' + escHtml(it.word) + '</div>' + picHtml + '</td>');
+        }
+        rows.push('<tr>' + cells.join('') + '</tr>');
+      }
+      boardsHtml.push(
+        '<section class="bingo-board" data-board="' + (b + 1) + '">'
+        + '<h2>' + escHtml(data.title) + ' — Board ' + (b + 1) + '</h2>'
+        + '<table class="bingo-grid" data-grid-size="' + gridSize + '"><tbody>' + rows.join('') + '</tbody></table>'
+        + '</section>'
+      );
+    }
+    const callerOrder = sortingOrder(items.length, 211);
+    const callerRows = callerOrder.map((idx, pos) => {
+      const it = items[idx];
+      const defBlank = blankedSentence(it.definition, it.word);
+      const exBlank = blankedSentence(it.example, it.word);
+      const parts = [];
+      if (defBlank) parts.push(escHtml(defBlank));
+      if (exBlank) parts.push('<em>' + escHtml(exBlank) + '</em>');
+      if (!parts.length) parts.push('Sound pattern: ' + escHtml(it.boxes.join(' / ')));
+      const picInfo = it.imgSrc
+        ? ('Yes' + (it.imgCredit ? ' (' + escHtml(it.imgCredit) + ')' : ''))
+        : 'None';
+      return '<tr><td>' + (pos + 1) + '</td><td><strong>' + escHtml(it.word) + '</strong></td><td>' + parts.join('<br>') + '</td><td>' + picInfo + '</td></tr>';
+    }).join('\n');
+    return [
+      '<!doctype html>',
+      '<html lang="en">',
+      '<head>',
+      '<meta charset="utf-8">',
+      '<meta name="viewport" content="width=device-width,initial-scale=1">',
+      '<title>' + escHtml(data.title) + ' — Classroom Bingo Boards</title>',
+      '<style>',
+      'body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;margin:20px;max-width:1020px}',
+      'h1{font-size:20px;margin:0 0 6px}',
+      'h2{font-size:15px;margin:0 0 8px;color:#1e293b}',
+      '.directions{font-size:13px;color:#334155;margin:0 0 14px}',
+      '.bingo-boards{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:14px}',
+      '.bingo-board{border:2px solid #0f172a;border-radius:8px;padding:10px;background:#fff;page-break-inside:avoid;break-inside:avoid}',
+      '.bingo-grid{width:100%;border-collapse:collapse;table-layout:fixed}',
+      '.bingo-cell{border:2px solid #334155;height:86px;padding:6px;text-align:center;vertical-align:middle}',
+      '.bingo-free{background:#f1f5f9}',
+      '.bingo-word{font-size:15px;font-weight:800;line-height:1.2;word-break:break-word}',
+      '.bingo-sub{font-size:11px;color:#475569;margin-top:3px}',
+      '.bingo-pic{width:38px;height:38px;object-fit:contain;display:block;margin:4px auto 0}',
+      '.teacher-key{margin-top:24px;padding-top:14px;border-top:2px solid #0f172a;page-break-before:always;break-before:page}',
+      '.key-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}',
+      '.key-table th,.key-table td{border:1px solid #cbd5e1;padding:6px 8px;text-align:left;vertical-align:top}',
+      '.key-table th{background:#f1f5f9}',
+      '.attr-note{font-size:12px;color:#475569;margin-top:10px}',
+      '@media print{body{margin:10mm} .noprint{display:none} .bingo-board{page-break-inside:avoid;break-inside:avoid} .teacher-key{page-break-before:always;break-before:page}}',
+      '</style>',
+      '</head>',
+      '<body>',
+      '<h1>' + escHtml(data.title) + ' — Classroom Bingo Boards</h1>',
+      '<p class="directions">Print one board per student or pair. Call the meaning or fill-in-the-blank clue from the Teacher Caller Sheet on the last page.</p>',
+      '<div class="bingo-boards">' + boardsHtml.join('\n') + '</div>',
+      '<section class="teacher-key">',
+      '<h2>Teacher Caller Clues &amp; Attribution Key</h2>',
+      '<p class="directions">Read the meaning or fill-in-the-blank clue aloud without saying the target word. Check the caller row as you go.</p>',
+      '<table class="key-table"><thead><tr><th>Call #</th><th>Target Word</th><th>Caller Clue (target word blanked)</th><th>Picture</th></tr></thead><tbody>' + callerRows + '</tbody></table>',
+      '<p class="attr-note">Built-in picture artwork may use Mulberry Symbols or OpenMoji under CC BY-SA 4.0 unless a custom credit is shown above.</p>',
+      '</section>',
+      '</body>',
+      '</html>',
+    ].join('\n');
+  }
+  function buildLoopGameHtml(input, rawOptions = {}) {
+    const data = printableCardsData(input, rawOptions, 'I Have, Who Has Loop Cards');
+    const items = data.items || [];
+    const order = sortingOrder(items.length, 313);
+    const chain = order.map(idx => items[idx]);
+    const cardsHtml = chain.length
+      ? chain.map((cur, i) => {
+          const next = chain[(i + 1) % chain.length];
+          const boxes = cur.boxes.map(b => '<span class="elkonin-box">' + escHtml(b) + '</span>').join('');
+          const picHtml = cur.imgSrc
+            ? '<img class="loop-pic" src="' + escHtml(cur.imgSrc) + '" alt="I have picture cue">'
+            : '';
+          const nextDef = blankedSentence(next.definition, next.word);
+          const nextEx = blankedSentence(next.example, next.word);
+          const whoClue = nextDef || nextEx || ('the word with sound boxes: ' + next.boxes.join(' / '));
+          const roleTag = i === 0
+            ? 'Card 1 — Start Card'
+            : (i === chain.length - 1 && chain.length > 1 ? ('Card ' + (i + 1) + ' — Loops to Card 1') : ('Card ' + (i + 1)));
+          return '<article class="loop-card" data-step="' + (i + 1) + '">'
+            + '<div class="loop-tag">' + escHtml(roleTag) + '</div>'
+            + '<div class="loop-have"><div class="loop-label">I have</div><div class="loop-word">' + escHtml(cur.word) + '</div>'
+            + (boxes ? '<div class="elkonin">' + boxes + '</div>' : '')
+            + picHtml + '</div>'
+            + '<div class="loop-who"><div class="loop-label">Who has...</div><p class="loop-clue">' + escHtml(whoClue) + '</p></div>'
+            + '</article>';
+        }).join('\n')
+      : '<article class="loop-card"><div class="loop-have"><div class="loop-label">Add words</div><p class="loop-clue">Add at least two words before printing loop cards.</p></div></article>';
+    const keyRows = chain.map((cur, i) => {
+      const next = chain[(i + 1) % chain.length];
+      const nextDef = blankedSentence(next.definition, next.word);
+      const nextEx = blankedSentence(next.example, next.word);
+      const whoClue = nextDef || nextEx || ('Sound boxes: ' + next.boxes.join(' / '));
+      const picInfo = cur.imgSrc
+        ? ('Yes' + (cur.imgCredit ? ' (' + escHtml(cur.imgCredit) + ')' : ''))
+        : 'None';
+      return '<tr><td>' + (i + 1) + '</td><td><strong>' + escHtml(cur.word) + '</strong></td><td>' + escHtml(whoClue) + '</td><td><strong>' + escHtml(next.word) + '</strong></td><td>' + picInfo + '</td></tr>';
+    }).join('\n');
+    return [
+      '<!doctype html>',
+      '<html lang="en">',
+      '<head>',
+      '<meta charset="utf-8">',
+      '<meta name="viewport" content="width=device-width,initial-scale=1">',
+      '<title>' + escHtml(data.title) + ' — I Have, Who Has Cards</title>',
+      '<style>',
+      'body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;margin:20px;max-width:980px}',
+      'h1{font-size:20px;margin:0 0 6px}',
+      'h2{font-size:15px;margin:0 0 8px;color:#1e293b}',
+      '.directions{font-size:13px;color:#334155;margin:0 0 14px}',
+      '.loop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}',
+      '.loop-card{border:2px dashed #334155;border-radius:10px;padding:12px;background:#fff;display:flex;flex-direction:column;justify-content:space-between;min-height:190px;page-break-inside:avoid;break-inside:avoid}',
+      '.loop-tag{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#475569;margin-bottom:6px}',
+      '.loop-have{border-bottom:2px solid #cbd5e1;padding-bottom:10px;margin-bottom:10px;text-align:center}',
+      '.loop-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#334155;margin-bottom:4px}',
+      '.loop-word{font-size:24px;font-weight:800;margin-bottom:6px}',
+      '.elkonin{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-bottom:6px}',
+      '.elkonin-box{border:1px solid #334155;min-width:20px;height:22px;padding:0 4px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;border-radius:4px}',
+      '.loop-pic{width:54px;height:54px;object-fit:contain;display:block;margin:4px auto 0}',
+      '.loop-who{text-align:left}',
+      '.loop-clue{margin:0;font-size:13px;line-height:1.4}',
+      '.teacher-key{margin-top:24px;padding-top:14px;border-top:2px solid #0f172a;page-break-before:always;break-before:page}',
+      '.key-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}',
+      '.key-table th,.key-table td{border:1px solid #cbd5e1;padding:6px 8px;text-align:left;vertical-align:top}',
+      '.key-table th{background:#f1f5f9}',
+      '.attr-note{font-size:12px;color:#475569;margin-top:10px}',
+      '@media print{body{margin:10mm} .noprint{display:none} .loop-card{page-break-inside:avoid;break-inside:avoid} .teacher-key{page-break-before:always;break-before:page}}',
+      '</style>',
+      '</head>',
+      '<body>',
+      '<h1>' + escHtml(data.title) + ' — I Have, Who Has Cards</h1>',
+      '<p class="directions">Cut along the dashed borders and deal one or more cards to each student. Card 1 reads "Who has..." to start the closed chain back to Card 1.</p>',
+      '<div class="loop-grid">' + cardsHtml + '</div>',
+      '<section class="teacher-key">',
+      '<h2>Teacher Chain Sequence &amp; Attribution Key</h2>',
+      '<table class="key-table"><thead><tr><th>Step #</th><th>Student Says "I have..."</th><th>Student Reads "Who has..." Clue</th><th>Next Card Answer</th><th>Picture</th></tr></thead><tbody>' + keyRows + '</tbody></table>',
+      '<p class="attr-note">Built-in picture artwork may use Mulberry Symbols or OpenMoji under CC BY-SA 4.0 unless a custom credit is shown above.</p>',
+      '</section>',
+      '</body>',
+      '</html>',
+    ].join('\n');
+  }
+  function buildWordWallHtml(input, rawOptions = {}) {
+    const data = printableCardsData(input, rawOptions, 'Classroom Word Wall Cards');
+    const items = data.items || [];
+    const rawPics = rawPictureLookup(input);
+    const cleanBang = s => escHtml(String(s == null ? '' : s).replace(/!/g, '.'));
+    const rawDecoMap = new Map();
+    const rawList = Array.isArray(input && input.items) ? input.items : (Array.isArray(input && input.words) ? input.words : []);
+    rawList.forEach(entry => {
+      if (!entry || typeof entry !== 'object') return;
+      const wKey = getCore().key(entry.word);
+      const deco = !!(entry.imageDecorative || (entry.picture && entry.picture.decorative));
+      if (wKey && deco) rawDecoMap.set(wKey, true);
+    });
+    const wallCardsHtml = items.length
+      ? items.map((it, idx) => {
+          const boxes = it.boxes.map(b => '<span class="elkonin-box">' + cleanBang(b) + '</span>').join('');
+          const isDeco = rawDecoMap.has(getCore().key(it.word));
+          const picAlt = isDeco ? '' : cleanBang(it.imgAlt || it.word);
+          const picHtml = it.imgSrc
+            ? '<img class="wall-pic" src="' + escHtml(it.imgSrc) + '" alt="' + picAlt + '">'
+            : '';
+          const defText = it.definition || 'Meaning to discuss in class.';
+          const exHtml = it.example ? '<p class="wall-ex"><em>' + cleanBang(it.example) + '</em></p>' : '';
+          return '<article class="wall-card" data-card="' + (idx + 1) + '">'
+            + '<div class="wall-top"><div class="wall-word">' + cleanBang(it.word) + '</div>'
+            + (boxes ? '<div class="elkonin">' + boxes + '</div>' : '') + '</div>'
+            + '<div class="wall-body">' + picHtml
+            + '<div class="wall-text"><p class="wall-def">' + cleanBang(defText) + '</p>' + exHtml + '</div></div>'
+            + '</article>';
+        }).join('\n')
+      : '<article class="wall-card"><div class="wall-top"><div class="wall-word">Add words</div></div><div class="wall-body"><div class="wall-text"><p class="wall-def">Add words before printing classroom Word Wall cards.</p></div></div></article>';
+    const keyRows = items.map((it, idx) => {
+      const picInfo = it.imgSrc
+        ? ('Yes' + (it.imgCredit ? ' (' + cleanBang(it.imgCredit) + ')' : ''))
+        : 'None';
+      return '<tr><td>' + (idx + 1) + '</td><td><strong>' + cleanBang(it.word) + '</strong></td><td>' + cleanBang(it.boxes.join(' / ')) + '</td><td>' + cleanBang(it.definition || '') + '</td><td>' + picInfo + '</td></tr>';
+    }).join('\n');
+    const titleSafe = cleanBang(data.title);
+    return [
+      '<!doctype html>',
+      '<html lang="en">',
+      '<head>',
+      '<meta charset="utf-8">',
+      '<meta name="viewport" content="width=device-width,initial-scale=1">',
+      '<title>' + titleSafe + ' — Classroom Word Wall Cards</title>',
+      '<style>',
+      'body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;margin:20px;max-width:980px}',
+      'h1{font-size:20px;margin:0 0 6px}',
+      'h2{font-size:15px;margin:0 0 8px;color:#1e293b}',
+      '.directions{font-size:13px;color:#334155;margin:0 0 14px}',
+      '.wall-list{display:grid;grid-template-columns:1fr;gap:14px}',
+      '.wall-card{border:2px solid #0f172a;border-radius:10px;padding:14px 16px;background:#fff;page-break-inside:avoid;break-inside:avoid}',
+      '.wall-top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;border-bottom:2px solid #cbd5e1;padding-bottom:10px;margin-bottom:10px}',
+      '.wall-word{font-size:40px;font-weight:900;letter-spacing:.01em;line-height:1.1}',
+      '.elkonin{display:flex;flex-wrap:wrap;gap:5px;align-items:center}',
+      '.elkonin-box{border:2px solid #334155;min-width:26px;height:28px;padding:0 6px;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;border-radius:5px}',
+      '.wall-body{display:flex;gap:14px;align-items:flex-start}',
+      '.wall-pic{width:88px;height:88px;object-fit:contain;border:1px solid #cbd5e1;border-radius:8px;background:#fff;flex-shrink:0}',
+      '.wall-text{flex:1;min-width:0}',
+      '.wall-def{margin:0 0 6px;font-size:15px;line-height:1.45}',
+      '.wall-ex{margin:0;font-size:13px;color:#334155;line-height:1.4}',
+      '.teacher-key{margin-top:24px;padding-top:14px;border-top:2px solid #0f172a;page-break-before:always;break-before:page}',
+      '.key-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}',
+      '.key-table th,.key-table td{border:1px solid #cbd5e1;padding:6px 8px;text-align:left;vertical-align:top}',
+      '.key-table th{background:#f1f5f9}',
+      '.attr-note{font-size:12px;color:#475569;margin-top:10px}',
+      '@media print{body{margin:10mm} .noprint{display:none} .wall-card{page-break-inside:avoid;break-inside:avoid} .teacher-key{page-break-before:always;break-before:page}}',
+      '</style>',
+      '</head>',
+      '<body>',
+      '<h1>' + titleSafe + ' — Classroom Word Wall Cards</h1>',
+      '<p class="directions">Display on your classroom Word Wall or anchor chart so students can reference spelling patterns, sound boxes, and kid-friendly meanings during reading and writing.</p>',
+      '<div class="wall-list">' + wallCardsHtml + '</div>',
+      '<section class="teacher-key">',
+      '<h2>Teacher Unit Word Wall Reference &amp; Attribution Key</h2>',
+      '<table class="key-table"><thead><tr><th>#</th><th>Word</th><th>Sound Boxes</th><th>Meaning</th><th>Picture</th></tr></thead><tbody>' + keyRows + '</tbody></table>',
+      '<p class="attr-note">Built-in picture artwork may use Mulberry Symbols or OpenMoji under CC BY-SA 4.0 unless a custom credit is shown above.</p>',
+      '</section>',
+      '</body>',
+      '</html>',
+    ].join('\n');
+  }
+  root.AlloWordPracticeMedia = { prepareAudio, buildPptx, buildPictureSlidesPptx, buildFlashcardsHtml, buildFrayerHtml, buildSortingCardsHtml, buildWorksheetHtml, buildBingoHtml, buildLoopGameHtml, buildWordWallHtml, everyDeviceAudio, needsEveryDeviceAudio };
 })(typeof window !== 'undefined' ? window : globalThis);
 
 
@@ -1791,6 +6017,24 @@ window.AlloWordPracticeAnnotationAssets = {"runtime":"(()=>{var vn=(e,t)=>()=>{t
 .awp-stage .awp-choices button,.awp-card-preview .awp-preview-choice{background:var(--awp-card-background,#fff);color:var(--awp-card-heading,#14213d)}
 .awp [data-awp-reading-theme=dark] :focus-visible,.awp [data-awp-reading-theme=highContrast] :focus-visible{outline-color:var(--awp-card-accent)}
 .awp [data-awp-bionic=true]:is(.awp-word,.awp-preview-word):has(b[data-awp-bionic]){font-weight:400}.awp b[data-awp-bionic]{font-weight:800}
+.awp-inline{background:transparent}.awp-inline-dialog{width:100%;max-height:none;box-shadow:none;border:1px solid #bdc8da}
+.awp-picture-manager{min-width:0;margin:.25rem 0 0;padding:.75rem;border:1px solid #bdc8da;border-radius:9px;background:#fff}
+.awp-picture-manager>summary{min-height:44px;cursor:pointer;font-weight:650;display:flex;align-items:center}
+.awp-picture-toolbar{display:flex;flex-wrap:wrap;gap:.5rem;margin:.5rem 0}
+.awp-picture-list{display:grid;gap:.5rem;max-height:18rem;overflow:auto;overscroll-behavior:contain;margin-top:.5rem}
+.awp-picture-row{display:grid;grid-template-columns:56px minmax(0,1fr);gap:.625rem;align-items:start;padding:.5rem;border:1px solid #d5deeb;border-radius:8px;background:#f8fafc}
+.awp-picture-thumb{width:56px;height:56px;object-fit:contain;border:1px solid #cbd5e1;border-radius:6px;background:#fff}
+.awp-picture-empty{width:56px;height:56px;display:flex;align-items:center;justify-content:center;border:1px dashed #94a3b8;border-radius:6px;font-size:.75rem;color:#45536a;text-align:center;background:#fff;padding:.125rem}
+.awp-picture-meta{min-width:0;display:grid;gap:.375rem}
+.awp-picture-word-row{display:flex;flex-wrap:wrap;align-items:center;gap:.375rem;justify-content:space-between}
+.awp-picture-word{font-weight:700;overflow-wrap:anywhere}
+.awp-picture-actions{display:flex;flex-wrap:wrap;gap:.375rem}
+.awp .awp-picture-actions button,.awp .awp-picture-toolbar button{min-height:40px;padding:.3125rem .625rem;font-size:.875rem}
+.awp-picture-alt{font-size:.875rem}
+.awp-symbol-picker{display:grid;gap:.5rem;margin-top:.5rem;padding:.625rem;border:1px solid #cbd5e1;border-radius:8px;background:#fff}
+.awp-symbol-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(5.5rem,1fr));gap:.375rem;max-height:11rem;overflow:auto}
+.awp .awp-symbol-grid button{min-height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.2rem;padding:.35rem;font-size:.75rem}
+.awp-symbol-grid img{width:28px;height:28px;object-fit:contain}
 @media(prefers-reduced-motion:reduce){.awp *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}`;
 
   // This factory is embedded verbatim in the offline file; keep it dependency-free.
@@ -2717,17 +6961,142 @@ PLAYER_STRINGS.push(['word_practice.annotations_not_saved', 'This card could not
 PLAYER_STRINGS.push(['word_practice.meaning_first_prompt', 'Which word matches this meaning?']);
 PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to reveal, tap again for the next card, or swipe to move.']);
   [['appearance', 'Card appearance'], ['card_font', 'Card font'], ['font_default', 'Default font'], ['card_text_size', 'Card text size'], ['card_style', 'Card style'], ['style_paper', 'Plain'], ['style_cream', 'Warm'], ['style_mist', 'Blue tint'], ['card_preview', 'Card preview']].forEach(([key, fallback]) => PLAYER_STRINGS.push(['word_practice.' + key, fallback]));
+  function sanitizeSvgMarkup(raw) {
+    const text = String(raw || '').trim();
+    if (!/<svg[\s>]/i.test(text) || text.length > 600000) return '';
+    if (/<\s*(script|foreignobject|iframe|object|embed)\b|\bon[a-z]+\s*=|javascript:|(?:src|href|xlink:href)\s*=\s*["']\s*https?:/i.test(text)) return '';
+    return text;
+  }
+  function parseSvgDimensions(svgText) {
+    const open = (svgText.match(/<svg\b[^>]*>/i) || [''])[0];
+    const vb = /\bviewBox\s*=\s*["']\s*[-0-9.]+\s+[-0-9.]+\s+([0-9.]+)\s+([0-9.]+)/i.exec(open);
+    const wMatch = /\bwidth\s*=\s*["']\s*([0-9.]+)/i.exec(open);
+    const hMatch = /\bheight\s*=\s*["']\s*([0-9.]+)/i.exec(open);
+    const w = Number(wMatch ? wMatch[1] : vb ? vb[1] : 256) || 256;
+    const h = Number(hMatch ? hMatch[1] : vb ? vb[2] : 256) || 256;
+    return { w: Math.max(1, Math.min(2048, w)), h: Math.max(1, Math.min(2048, h)) };
+  }
+  function minimalPngDataUrl(width, height) {
+    const w = Math.max(1, Math.min(256, Math.round(width || 64))), h = Math.max(1, Math.min(256, Math.round(height || 64)));
+    const rowLen = 1 + w * 4, raw = new Uint8Array(rowLen * h);
+    for (let y = 0; y < h; y++) {
+      const off = y * rowLen;
+      raw[off] = 0;
+      for (let x = 0; x < w; x++) { raw[off + 1 + x * 4] = 248; raw[off + 2 + x * 4] = 250; raw[off + 3 + x * 4] = 252; raw[off + 4 + x * 4] = 255; }
+    }
+    let a = 1, b = 0;
+    for (let i = 0; i < raw.length; i++) { a = (a + raw[i]) % 65521; b = (b + a) % 65521; }
+    const adler = ((b << 16) | a) >>> 0;
+    const zblocks = [];
+    for (let offset = 0; offset < raw.length; offset += 65535) {
+      const len = Math.min(65535, raw.length - offset), last = offset + len >= raw.length ? 1 : 0;
+      const head = new Uint8Array(5); head[0] = last; head[1] = len & 255; head[2] = (len >>> 8) & 255;
+      const nlen = (~len) & 65535; head[3] = nlen & 255; head[4] = (nlen >>> 8) & 255;
+      zblocks.push(head, raw.subarray(offset, offset + len));
+    }
+    const zLen = 2 + zblocks.reduce((s, p) => s + p.length, 0) + 4, z = new Uint8Array(zLen);
+    z[0] = 0x78; z[1] = 0x01; let p = 2;
+    zblocks.forEach(part => { z.set(part, p); p += part.length; });
+    z[p] = (adler >>> 24) & 255; z[p + 1] = (adler >>> 16) & 255; z[p + 2] = (adler >>> 8) & 255; z[p + 3] = adler & 255;
+    const crcTable = new Uint32Array(256);
+    for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = (c & 1) ? (0xedb88320 ^ (c >>> 1)) : (c >>> 1); crcTable[n] = c >>> 0; }
+    const chunk = (tag, data) => {
+      const out = new Uint8Array(12 + data.length), view = new DataView(out.buffer);
+      view.setUint32(0, data.length); for (let i = 0; i < 4; i++) out[4 + i] = tag.charCodeAt(i);
+      out.set(data, 8); let crc = 0xffffffff;
+      for (let i = 4; i < 8 + data.length; i++) crc = crcTable[(crc ^ out[i]) & 255] ^ (crc >>> 8);
+      view.setUint32(8 + data.length, (crc ^ 0xffffffff) >>> 0);
+      return out;
+    };
+    const ihdr = new Uint8Array(13), iv = new DataView(ihdr.buffer);
+    iv.setUint32(0, w); iv.setUint32(4, h); ihdr[8] = 8; ihdr[9] = 6;
+    const sig = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 13, 10, 26, 10]);
+    const c1 = chunk('IHDR', ihdr), c2 = chunk('IDAT', z), c3 = chunk('IEND', new Uint8Array(0));
+    const png = new Uint8Array(sig.length + c1.length + c2.length + c3.length);
+    png.set(sig, 0); png.set(c1, sig.length); png.set(c2, sig.length + c1.length); png.set(c3, sig.length + c1.length + c2.length);
+    let bin = ''; for (let i = 0; i < png.length; i += 8192) bin += String.fromCharCode.apply(null, png.subarray(i, i + 8192));
+    return 'data:image/png;base64,' + root.btoa(bin);
+  }
+  async function rasterizeImageToPng(source, doc = root.document, opts = {}) {
+    const core = root.AlloWordPracticeCore, maxDim = Number(opts.maxDim) || 512;
+    let raw = '';
+    if (typeof source === 'string') raw = source.trim();
+    else if (source && typeof source === 'object') {
+      if (Number(source.size) > 10 * 1024 * 1024) throw new Error('Choose an image smaller than 10 MB.');
+      const isSvg = /svg/i.test(String(source.type || '')) || /\.svg$/i.test(String(source.name || ''));
+      if (isSvg) {
+        if (typeof source.text === 'function') raw = await source.text();
+        else raw = await new Promise((resolve, reject) => { const r = new root.FileReader(); r.onload = () => resolve(String(r.result || '')); r.onerror = () => reject(new Error('Unable to read image.')); r.readAsText(source); });
+      } else {
+        if (typeof source.arrayBuffer === 'function') {
+          const bytes = new Uint8Array(await source.arrayBuffer()), mime = String(source.type || 'image/png').toLowerCase().replace(/^image\/jpg$/, 'image/jpeg');
+          let bin = ''; for (let i = 0; i < bytes.length; i += 8192) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 8192));
+          raw = 'data:' + mime + ';base64,' + root.btoa(bin);
+        } else {
+          raw = await new Promise((resolve, reject) => { const r = new root.FileReader(); r.onload = () => resolve(String(r.result || '')); r.onerror = () => reject(new Error('Unable to read image.')); r.readAsDataURL(source); });
+        }
+      }
+    }
+    let svgText = '';
+    if (/^<svg[\s>]/i.test(raw) || /^<\?xml/i.test(raw)) {
+      svgText = sanitizeSvgMarkup(raw);
+      if (!svgText) throw new Error('That SVG file contains unsupported markup.');
+      raw = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgText);
+    } else if (/^data:image\/svg\+xml/i.test(raw)) {
+      const comma = raw.indexOf(',');
+      const payload = comma >= 0 ? raw.slice(comma + 1) : '';
+      const decoded = /;base64/i.test(raw.slice(0, comma)) ? root.atob(payload) : decodeURIComponent(payload);
+      svgText = sanitizeSvgMarkup(decoded);
+      if (!svgText) throw new Error('That SVG image contains unsupported markup.');
+      raw = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgText);
+    }
+    const alreadySafe = core && core.safePicture ? core.safePicture(raw) : '';
+    const isRaster = /^data:image\/(png|jpeg|gif);base64,/i.test(alreadySafe);
+    if (isRaster && alreadySafe.length <= 350000) return alreadySafe;
+    const win = doc && doc.defaultView ? doc.defaultView : root;
+    const canvas = doc && typeof doc.createElement === 'function' ? doc.createElement('canvas') : null;
+    const ctx = canvas && typeof canvas.getContext === 'function' ? (() => { try { return canvas.getContext('2d'); } catch (_) { return null; } })() : null;
+    if (ctx && typeof win.Image === 'function') {
+      try {
+        const rendered = await new Promise((resolve, reject) => {
+          const img = new win.Image();
+          const timer = win.setTimeout(() => reject(new Error('timeout')), 1500);
+          img.onload = () => {
+            win.clearTimeout(timer);
+            const natW = img.naturalWidth || img.width || (svgText ? parseSvgDimensions(svgText).w : 256);
+            const natH = img.naturalHeight || img.height || (svgText ? parseSvgDimensions(svgText).h : 256);
+            const scale = Math.min(1, maxDim / Math.max(natW, natH));
+            canvas.width = Math.max(1, Math.round(natW * scale)); canvas.height = Math.max(1, Math.round(natH * scale));
+            ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            const out = canvas.toDataURL('image/png');
+            resolve(core && core.safePicture ? core.safePicture(out) : out);
+          };
+          img.onerror = () => { win.clearTimeout(timer); reject(new Error('decode')); };
+          img.src = raw;
+        });
+        if (rendered) return rendered;
+      } catch (_) {}
+    }
+    if (alreadySafe) return alreadySafe;
+    if (svgText) {
+      const dims = parseSvgDimensions(svgText);
+      const scale = Math.min(1, 96 / Math.max(dims.w, dims.h));
+      return minimalPngDataUrl(Math.max(16, Math.round(dims.w * scale)), Math.max(16, Math.round(dims.h * scale)));
+    }
+    throw new Error('Choose a valid PNG, JPEG, GIF, WebP, or SVG image.');
+  }
   let active = null, nextDialogId = 0;
   function open(context = {}) {
     if (context.signal && context.signal.aborted) return { close() {} };
-    if (active) active.close();
-    const core = root.AlloWordPracticeCore, doc = root.document, previousFocus = doc.activeElement;
+    const inlineHost = context.container && context.container.nodeType === 1 ? context.container : null;
+    if (!inlineHost && active) active.close();
+    const core = root.AlloWordPracticeCore, doc = root.document, previousFocus = inlineHost ? null : doc.activeElement;
     const fieldPrefix = 'awp-' + (++nextDialogId) + '-'; let nextFieldId = 0;
     let pack = core.normalizeInput(context), player = null, closed = false, busy = false, operation = null;
     // A fresh launch starts from the teacher's last setup on this device. A launch that
     // brings its own options (a saved set, Word Sounds) keeps them.
     const SETUP_KEY = 'alloflow_word_practice_setup';
-    const SETUP_FIELDS = ['mode', 'repetitions', 'autoAdvance', 'intervalSeconds', 'shuffle', 'varyPosition', 'varySize', 'includeAudio', 'includePictures', 'vocabularyFirst', 'cardFont', 'cardTextStyle', 'cardTextScale', 'wordTextScale', 'meaningTextScale', 'translationTextScale', 'cardTheme'];
+    const SETUP_FIELDS = ['mode', 'repetitions', 'autoAdvance', 'intervalSeconds', 'shuffle', 'varyPosition', 'varySize', 'includeAudio', 'includePictures', 'pictureSlides', 'vocabularyFirst', 'cardFont', 'cardTextStyle', 'cardTextScale', 'wordTextScale', 'meaningTextScale', 'translationTextScale', 'cardTheme'];
     if (!context.options) {
       try {
         const saved = JSON.parse(root.localStorage.getItem(SETUP_KEY) || 'null'), chosen = {};
@@ -2780,13 +7149,17 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
       const annotations = {}; Object.entries((root.AlloWordPracticeAnnotationAssets || {}).labels || {}).forEach(([key, fallback]) => { annotations[key] = tx(key, fallback); });
       return { ...labels, __uiLanguage: uiLanguageName, __languages: languages, __annotations: annotations };
     };
-    const overlay = doc.createElement('div'); overlay.className = 'awp awp-overlay';
+    const overlay = doc.createElement('div'); overlay.className = inlineHost ? 'awp awp-inline' : 'awp awp-overlay';
     const style = doc.createElement('style'); style.textContent = CSS + ((root.AlloWordPracticeAnnotationAssets || {}).css || ''); overlay.appendChild(style);
-    const dialog = doc.createElement('section'); dialog.className = 'awp-dialog'; dialog.setAttribute('role', 'dialog'); dialog.setAttribute('aria-modal', 'true'); dialog.setAttribute('aria-label', tx('word_practice.title', 'Present & Export')); overlay.appendChild(dialog);
+    const dialog = doc.createElement('section'); dialog.className = inlineHost ? 'awp-dialog awp-inline-dialog' : 'awp-dialog';
+    if (!inlineHost) { dialog.setAttribute('role', 'dialog'); dialog.setAttribute('aria-modal', 'true'); }
+    dialog.setAttribute('aria-label', tx('word_practice.title', 'Present & Export')); overlay.appendChild(dialog);
     setLanguage(dialog, uiLanguage);
-    const hiddenSiblings = Array.from(doc.body.children).filter(node => node !== overlay && !['SCRIPT', 'STYLE'].includes(node.tagName)).map(node => ({ node, inert: node.inert }));
+    const hiddenSiblings = inlineHost ? [] : Array.from(doc.body.children).filter(node => node !== overlay && !['SCRIPT', 'STYLE'].includes(node.tagName)).map(node => ({ node, inert: node.inert }));
     hiddenSiblings.forEach(({ node }) => { node.inert = true; });
-    const priorOverflow = doc.body.style.overflow; doc.body.style.overflow = 'hidden'; doc.body.appendChild(overlay);
+    const priorOverflow = inlineHost ? '' : doc.body.style.overflow;
+    if (inlineHost) inlineHost.replaceChildren(overlay);
+    else { doc.body.style.overflow = 'hidden'; doc.body.appendChild(overlay); }
     const make = (tag, text, parent, cls) => { const node = doc.createElement(tag); if (text != null) { node.textContent = text; if (dialogTextLanguages.has(text)) setLanguage(node, dialogTextLanguages.get(text)); } if (cls) node.className = cls; (parent || dialog).appendChild(node); return node; };
     const header = make('div', null, dialog, 'awp-head'); make('h1', tx('word_practice.title', 'Present & Export'), header);
     const headerActions = make('div', null, header, 'awp-row');
@@ -2796,7 +7169,7 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
     const closeReading = () => { const lib = root.AlloModules && root.AlloModules.UIFontLibrary; if (lib && typeof lib.closeReadingSettings === 'function' && overlay.querySelector('[data-allo-reading-settings]')) lib.closeReadingSettings(); };
     const readingButton = readingLibrary() ? make('button', 'Aa', headerActions, 'awp-aa') : null;
     if (readingButton) { readingButton.type = 'button'; readingButton.setAttribute('aria-label', tx('reading_settings.title', 'Reading settings')); readingButton.setAttribute('aria-haspopup', 'dialog'); readingButton.onclick = event => openReading(event.currentTarget); }
-    const closeButton = make('button', tx('word_practice.close', 'Close'), headerActions); closeButton.type = 'button'; closeButton.onclick = requestClose;
+    const closeButton = make('button', tx('word_practice.close', 'Close'), headerActions); closeButton.type = 'button'; closeButton.onclick = requestClose; closeButton.hidden = !!inlineHost;
     const setup = make('div', null, dialog), playerHost = make('div', null, dialog); playerHost.hidden = true;
     make('p', tx('word_practice.intro', 'Turn a word list into a short class practice routine. Use prepared audio and activities when they are available.'), setup, 'awp-note');
     const grid = make('div', null, setup, 'awp-grid');
@@ -2812,6 +7185,13 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
     setLanguage(wordsInput, '');
     make('p', tx('word_practice.words_note', 'Up to 200 words or short phrases. Existing meanings, activities and recordings stay with words you keep.'), left, 'awp-note');
     const meaningChoices = make('fieldset', null, left, 'awp-meaning-choices'); meaningChoices.hidden = true;
+    const pictureDetails = make('details', null, left, 'awp-picture-manager');
+    make('summary', tx('word_practice.pictures_manage', 'Card pictures (import or switch)'), pictureDetails);
+    const pictureToolbar = make('div', null, pictureDetails, 'awp-picture-toolbar');
+    const autoFillPicturesBtn = make('button', tx('word_practice.auto_fill_pictures', 'Auto-fill missing pictures'), pictureToolbar); autoFillPicturesBtn.type = 'button'; autoFillPicturesBtn.dataset.awpAutoFillPictures = 'true';
+    const batchImportBtn = make('button', tx('word_practice.import_matching_images', 'Import images…'), pictureToolbar); batchImportBtn.type = 'button';
+    const exportPictureSlidesBtn = make('button', tx('word_practice.download_picture_slides', 'Export individual picture slides (.pptx)'), pictureToolbar); exportPictureSlidesBtn.type = 'button'; exportPictureSlidesBtn.dataset.awpPicturePptx = 'true';
+    const pictureList = make('div', null, pictureDetails, 'awp-picture-list');
     const right = make('div', null, grid, 'awp-fields');
     const activityOptions = make('div', null, right, 'awp-options');
     const mode = field(activityOptions, tx('word_practice.activity', 'Practice activity'), 'select');
@@ -2833,6 +7213,7 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
     const size = checkbox(tx('word_practice.vary_size', 'Vary word size'));
     const includeAudio = checkbox(tx('word_practice.include_audio', 'Include prepared audio'));
     const includePictures = checkbox(tx('word_practice.include_pictures', 'Show pictures on Word Meaning cards'));
+    const pictureSlides = checkbox(tx('word_practice.picture_slides', 'Include individual picture slides in PowerPoint'));
     const useReading = readingButton ? checkbox(tx('reading_settings.use_mine', 'Use my reading settings')) : null;
     if (useReading) {
       const help = make('p', tx('word_practice.use_mine_help', 'The HTML file uses your font, text size and spacing.'), right, 'awp-note');
@@ -2895,7 +7276,9 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
     const cancelButton = make('button', tx('word_practice.cancel_preparation', 'Cancel preparation'), operationPanel); cancelButton.type = 'button'; cancelButton.hidden = true; cancelButton.onclick = cancelOperation;
     const operationProgress = make('progress', null, operationPanel); operationProgress.hidden = true; operationProgress.setAttribute('aria-label', tx('word_practice.preparation_progress', 'Preparation progress'));
     const fileInput = make('input', null, setup); fileInput.type = 'file'; fileInput.accept = '.json,application/json'; fileInput.hidden = true;
-    function options() { return core.normalizeOptions({ mode: mode.value, repetitions: repetitions.value, autoAdvance: pacing.value === 'timed', intervalSeconds: interval.value, shuffle: shuffle.checked, varyPosition: position.checked, varySize: size.checked, includeAudio: includeAudio.checked, includePictures: includePictures.checked, vocabularyFirst: vocabularyFirst.value, ...appearance.read(), translationLanguages: translationSettings.read() }); }
+    const batchImageInput = make('input', null, setup); batchImageInput.type = 'file'; batchImageInput.accept = 'image/png,image/jpeg,image/gif,image/webp,image/svg+xml'; batchImageInput.multiple = true; batchImageInput.hidden = true; batchImageInput.setAttribute('aria-label', tx('word_practice.import_matching_images', 'Import images…'));
+    const rowImageInput = make('input', null, setup); rowImageInput.type = 'file'; rowImageInput.accept = 'image/png,image/jpeg,image/gif,image/webp,image/svg+xml'; rowImageInput.hidden = true; rowImageInput.setAttribute('aria-label', tx('word_practice.import_word_image', 'Import image for word'));
+    function options() { return core.normalizeOptions({ mode: mode.value, repetitions: repetitions.value, autoAdvance: pacing.value === 'timed', intervalSeconds: interval.value, shuffle: shuffle.checked, varyPosition: position.checked, varySize: size.checked, includeAudio: includeAudio.checked, includePictures: includePictures.checked, pictureSlides: pictureSlides.checked, vocabularyFirst: vocabularyFirst.value, ...appearance.read(), translationLanguages: translationSettings.read() }); }
     function updateAppearancePreview(current) {
       if (previewReadingNote) {
         if (useReading.checked) updateLabel(previewReadingNote, tx('word_practice.preview_reading_export_on', 'Reading settings are enabled for downloads.'));
@@ -3032,7 +7415,13 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
       const words = core.parseWords(wordsInput.value, { lineSeparated: true }).map(word => {
         const key = core.key(word), choices = candidates.get(key) || [], index = used.get(key) || 0; used.set(key, index + 1);
         if (choices.length) return index < choices.length ? { ...choices[index], word, ...(annotationStore.has(choices[index].id) ? { annotations: annotationStore.get(choices[index].id) } : {}) } : null;
-        if (!newWords.has(key)) newWords.set(key, { id: newEntryId(), word });
+        if (!newWords.has(key)) {
+          let extra = null;
+          if (typeof context.resolveEntry === 'function') {
+            try { extra = context.resolveEntry(word); } catch (_) { extra = null; }
+          }
+          newWords.set(key, { ...(extra && typeof extra === 'object' ? extra : {}), id: newEntryId(), word });
+        }
         return { ...newWords.get(key), word };
       }).filter(Boolean);
       pack = core.normalizeInput({ title: titleInput.value, language: pack.language, words, reviewItemIds: [...review], options: options(), phonemeBank: inheritedBanks().phonemeBank });
@@ -3165,18 +7554,214 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
     // left out: pictures over the size budget, and links or WebP that slides cannot embed.
     function updatePictureNote(current) {
       const withPictures = current.items.filter(item => item.picture), omitted = current.picturesOmitted || 0;
-      includePictures.closest('label').hidden = !withPictures.length && !omitted;
+      const hasPictures = !!(withPictures.length || omitted);
+      includePictures.closest('label').hidden = !hasPictures;
+      pictureSlides.closest('label').hidden = !hasPictures;
       const notes = [];
       if (includePictures.checked && omitted) notes.push(tx('word_practice.pictures_left_out', 'Pictures left out to keep this set a manageable size: {count}.', { count: omitted }));
       const notInSlides = withPictures.filter(item => !/^data:image\/(png|jpeg|gif);/i.test(item.picture.src)).length;
       if (includePictures.checked && notInSlides) notes.push(tx('word_practice.pictures_not_in_pptx', 'Pictures that are web links or WebP images, which PowerPoint cannot include: {count}. They still show when presenting and in the HTML file.', { count: notInSlides }));
       pictureNote.hidden = !notes.length; updateLabel(pictureNote, notes.join(' '));
     }
+    let activeSymbolRowId = '', symbolSearchQuery = '', symbolTargetId = '', lastPictureKey = '';
+    const getPictureMatcher = () => root.AlloWordPictureMatcher || (root.AlloModules && root.AlloModules.WordPictureMatcher) || null;
+    const hasSymbolSource = () => typeof context.searchSymbols === 'function' || !!(root.AlloModules && root.AlloModules.WordSoundsSymbols) || !!getPictureMatcher();
+    async function findSymbols(query) {
+      if (typeof context.searchSymbols === 'function') return (await context.searchSymbols(query)) || [];
+      const matcher = getPictureMatcher();
+      const bank = root.AlloModules && root.AlloModules.WordSoundsSymbols;
+      if (matcher && typeof matcher.searchSymbols === 'function') {
+        return await matcher.searchSymbols(query, { symbols: bank, allowOnlineGlobalSymbols: !!context.allowOnlineSymbols });
+      }
+      if (!bank || typeof bank.words !== 'function') return [];
+      if (typeof bank.ready === 'function') { try { await bank.ready(); } catch (_) {} }
+      const q = String(query || '').trim().toLowerCase(), hits = [];
+      for (const word of bank.words()) {
+        if (q && !word.toLowerCase().includes(q)) continue;
+        const entry = bank.get(word);
+        if (entry && entry.svg) hits.push({ word, label: entry.label || word, svg: entry.svg, set: entry.set, credit: bank.credits && bank.credits[entry.set] });
+        if (hits.length >= 24) break;
+      }
+      return hits;
+    }
+    function applyWordPicture(entryId, src, alt, attribution) {
+      const safe = core.safePicture(src);
+      if (!safe) throw new Error(tx('word_practice.picture_invalid', 'That image could not be added. Choose a PNG, JPEG, GIF, WebP, or SVG image.'));
+      const updateItem = entry => {
+        if (!entry) return entry;
+        const cleanAlt = core.text(alt || entry.word, 1000);
+        const credit = typeof attribution === 'string' ? core.text(attribution, 400) : attribution && typeof attribution === 'object' ? ['set', 'author', 'license'].map(k => core.text(attribution[k], 160)).filter(Boolean).join(' · ') : '';
+        return { ...entry, image: safe, imageAlt: cleanAlt, imageDecorative: false, imageAltHash: '', imageAttribution: attribution || { set: credit || 'Custom image' }, picture: { src: safe, alt: cleanAlt, decorative: false, credit } };
+      };
+      if (catalogue.has(entryId)) catalogue.set(entryId, updateItem(catalogue.get(entryId)));
+      pack = core.normalizeInput({ ...pack, words: pack.items.map(item => item.id === entryId ? updateItem(item) : item), options: options() });
+      remember(pack); includePictures.checked = true; lastPictureKey = ''; previewContentKey = ''; updateCoverage();
+    }
+    function clearWordPicture(entryId) {
+      const stripItem = entry => entry ? { ...entry, image: '', imageAlt: '', imageDecorative: false, imageAltHash: '', imageAttribution: null, picture: null } : entry;
+      if (catalogue.has(entryId)) catalogue.set(entryId, stripItem(catalogue.get(entryId)));
+      pack = core.normalizeInput({ ...pack, words: pack.items.map(item => item.id === entryId ? stripItem(item) : item), options: options() });
+      remember(pack); lastPictureKey = ''; previewContentKey = ''; updateCoverage();
+    }
+    async function populateSymbolGrid(gridNode, row, query) {
+      gridNode.replaceChildren();
+      const empty = make('p', tx('word_practice.searching_symbols', 'Loading symbols…'), gridNode, 'awp-note');
+      try {
+        const list = await findSymbols(query);
+        gridNode.replaceChildren();
+        if (!list.length) { make('p', tx('word_practice.no_symbols_found', 'No built-in symbols matched that search. Try Import image… to use your own picture.'), gridNode, 'awp-note'); return; }
+        list.slice(0, 24).forEach(sym => {
+          const btn = make('button', null, gridNode); btn.type = 'button';
+          if (sym.src || sym.svg) {
+            const img = make('img', null, btn);
+            img.src = sym.src || ('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(sym.svg));
+            img.alt = '';
+          }
+          make('span', sym.label || sym.word || '', btn);
+          btn.onclick = () => action(async () => {
+            const png = await rasterizeImageToPng(sym.svg || sym.src, doc);
+            const fallbackCredit = sym.set === 'openmoji' ? { set: 'OpenMoji', license: 'CC BY-SA 4.0' } : { set: 'Mulberry Symbols', author: 'Steve Lee', license: 'CC BY-SA 4.0' };
+            applyWordPicture(row.id, png, sym.label || row.word, sym.credit || fallbackCredit);
+            activeSymbolRowId = '';
+            status.textContent = tx('word_practice.picture_updated', 'Picture updated for {word}.', { word: row.word });
+          }, btn);
+        });
+      } catch (err) {
+        gridNode.replaceChildren(); empty.textContent = (err && err.message) || 'Could not load symbols.'; gridNode.appendChild(empty);
+      }
+    }
+    function renderPictureManager(current) {
+      pictureDetails.hidden = !current.items.length;
+      const key = JSON.stringify([activeSymbolRowId, current.items.map(item => [item.id, item.word, item.picture ? [item.picture.src.length, item.picture.alt, item.picture.credit] : null])]);
+      if (key === lastPictureKey) return;
+      lastPictureKey = key;
+      pictureList.replaceChildren();
+      const symbolsAvailable = hasSymbolSource();
+      autoFillPicturesBtn.hidden = !symbolsAvailable;
+      current.items.forEach(item => {
+        const row = make('div', null, pictureList, 'awp-picture-row'); row.dataset.wordId = item.id;
+        if (item.picture) {
+          const thumb = make('img', null, row, 'awp-picture-thumb');
+          thumb.src = item.picture.src; thumb.alt = item.picture.alt || item.word;
+        } else {
+          make('div', tx('word_practice.no_picture', 'None'), row, 'awp-picture-empty');
+        }
+        const meta = make('div', null, row, 'awp-picture-meta');
+        const top = make('div', null, meta, 'awp-picture-word-row');
+        setLanguage(make('span', item.word, top, 'awp-picture-word'), core.fieldLanguage(item, 'term', current.language));
+        if (item.picture && item.picture.credit) make('span', item.picture.credit, top, 'awp-note');
+        const rowBtns = make('div', null, meta, 'awp-picture-actions');
+        const importBtn = make('button', item.picture ? tx('word_practice.replace_image', 'Switch image…') : tx('word_practice.import_image', 'Import image…'), rowBtns); importBtn.type = 'button';
+        importBtn.onclick = () => { if (!busy) { symbolTargetId = item.id; rowImageInput.value = ''; rowImageInput.click(); } };
+        if (symbolsAvailable) {
+          const symBtn = make('button', tx('word_practice.switch_symbol', 'Choose symbol…'), rowBtns); symBtn.type = 'button';
+          symBtn.setAttribute('aria-expanded', String(activeSymbolRowId === item.id));
+          symBtn.onclick = () => { activeSymbolRowId = activeSymbolRowId === item.id ? '' : item.id; symbolSearchQuery = item.word; lastPictureKey = ''; renderPictureManager(pack); };
+        }
+        if (item.picture) {
+          const clearBtn = make('button', tx('word_practice.remove_image', 'Remove'), rowBtns); clearBtn.type = 'button';
+          clearBtn.onclick = () => { clearWordPicture(item.id); status.textContent = tx('word_practice.picture_removed', 'Picture removed from {word}.', { word: item.word }); };
+          const altInput = make('input', null, meta, 'awp-picture-alt'); altInput.type = 'text'; altInput.value = item.picture.alt || '';
+          altInput.placeholder = tx('word_practice.alt_placeholder', 'Describe this picture');
+          altInput.setAttribute('aria-label', tx('word_practice.alt_label', 'Image description for {word}', { word: item.word }));
+          altInput.addEventListener('change', event => {
+            event.stopPropagation();
+            const nextAlt = core.text(altInput.value, 1000) || item.word;
+            applyWordPicture(item.id, item.picture.src, nextAlt, item.imageAttribution || item.picture.credit);
+          });
+        }
+        if (symbolsAvailable && activeSymbolRowId === item.id) {
+          const picker = make('div', null, meta, 'awp-symbol-picker');
+          const searchRow = make('div', null, picker, 'awp-row');
+          const searchInput = make('input', null, searchRow, 'awp-symbol-search'); searchInput.type = 'search';
+          searchInput.value = symbolSearchQuery || item.word;
+          searchInput.setAttribute('aria-label', tx('word_practice.search_symbols', 'Search built-in symbols'));
+          searchInput.placeholder = tx('word_practice.search_symbols_hint', 'Search symbols (e.g. cat, apple, sun)');
+          const symGrid = make('div', null, picker, 'awp-symbol-grid');
+          searchInput.addEventListener('input', () => { symbolSearchQuery = searchInput.value; populateSymbolGrid(symGrid, item, symbolSearchQuery); });
+          const closeSym = make('button', tx('word_practice.close', 'Close'), searchRow); closeSym.type = 'button';
+          closeSym.onclick = () => { activeSymbolRowId = ''; lastPictureKey = ''; renderPictureManager(pack); };
+          populateSymbolGrid(symGrid, item, symbolSearchQuery || item.word);
+        }
+      });
+    }
+    batchImportBtn.onclick = () => { if (!busy) { batchImageInput.value = ''; batchImageInput.click(); } };
+    autoFillPicturesBtn.onclick = () => action(async run => {
+      const current = readPack();
+      const missing = current.items.filter(it => !it.picture && !it.image);
+      if (!missing.length) {
+        status.textContent = tx('word_practice.pictures_already_complete', 'Every word in this set already has a picture.');
+        return;
+      }
+      const matcher = getPictureMatcher();
+      const rawBank = root.AlloModules && root.AlloModules.WordSoundsSymbols;
+      const bank = matcher && typeof matcher.ensureSymbols === 'function'
+        ? await matcher.ensureSymbols({ symbols: rawBank })
+        : rawBank;
+      if (bank && !matcher && typeof bank.ready === 'function') { try { await bank.ready(); } catch (_) {} }
+      let matched = 0;
+      for (const item of missing) {
+        if (!isCurrentOperation(run)) return;
+        let hit = null;
+        if (matcher && typeof matcher.matchWord === 'function') {
+          hit = matcher.matchWord({ word: item.word, lemma: item.lemma, definition: item.definition }, { symbols: bank, preferDiagrams: true });
+        }
+        if (!hit && bank && typeof bank.get === 'function') {
+          const exact = bank.get(String(item.word || '').toLowerCase());
+          if (exact && exact.svg) hit = { word: item.word, svg: exact.svg, label: exact.label || item.word, set: exact.set, alt: exact.label || item.word, credit: bank.credits && bank.credits[exact.set] };
+        }
+        if (!hit && typeof context.searchSymbols === 'function') {
+          const list = await context.searchSymbols(item.word) || [];
+          const cleanWord = String(item.word || '').trim().toLowerCase();
+          hit = list.find(s => s && (s.svg || s.src) && String(s.word || '').trim().toLowerCase() === cleanWord) || list[0] || null;
+        }
+        if (!hit || (!hit.svg && !hit.src)) continue;
+        const png = await rasterizeImageToPng(hit.svg || hit.src, doc);
+        const fallbackCredit = hit.set === 'openmoji' ? { set: 'OpenMoji', license: 'CC BY-SA 4.0' } : { set: 'Mulberry Symbols', author: 'Steve Lee', license: 'CC BY-SA 4.0' };
+        applyWordPicture(item.id, png, hit.alt || hit.label || item.word, hit.credit || fallbackCredit);
+        matched++;
+      }
+      if (matched) {
+        status.textContent = tx('word_practice.pictures_auto_filled', 'Added pictures to {count} word(s).', { count: matched });
+      } else {
+        status.textContent = tx('word_practice.no_symbols_found', 'No built-in symbols matched that search. Try Import image… to use your own picture.');
+      }
+    }, autoFillPicturesBtn);
+    rowImageInput.addEventListener('change', event => {
+      event.stopPropagation();
+      const file = rowImageInput.files && rowImageInput.files[0], targetId = symbolTargetId;
+      if (!file || !targetId) return;
+      action(async () => {
+        const currentItem = pack.items.find(it => it.id === targetId) || catalogue.get(targetId);
+        const png = await rasterizeImageToPng(file, doc);
+        applyWordPicture(targetId, png, (currentItem && currentItem.word) || file.name.replace(/\.[^.]+$/, ''), { set: 'Custom imported image' });
+        status.textContent = tx('word_practice.picture_updated', 'Picture updated for {word}.', { word: currentItem ? currentItem.word : 'word' });
+      }, rowImageInput);
+    });
+    batchImageInput.addEventListener('change', event => {
+      event.stopPropagation();
+      const files = Array.from(batchImageInput.files || []);
+      if (!files.length) return;
+      action(async () => {
+        const current = readPack(); let matched = 0;
+        for (const file of files) {
+          const stem = file.name.replace(/\.[^.]+$/, '').replace(/^[0-9]+[-_\s]+/, '').trim().toLowerCase();
+          const target = current.items.find(it => core.key(it.word) === core.key(stem)) || (current.items.length === 1 && files.length === 1 ? current.items[0] : null);
+          if (!target) continue;
+          const png = await rasterizeImageToPng(file, doc);
+          applyWordPicture(target.id, png, target.word, { set: 'Custom imported image' });
+          matched++;
+        }
+        status.textContent = matched
+          ? tx('word_practice.batch_pictures_imported', 'Added custom pictures to {count} word(s).', { count: matched })
+          : tx('word_practice.batch_pictures_none', 'No filenames matched the words in your list. Name image files after words (for example, cat.png) or use Import image on a word row.');
+      }, batchImportBtn);
+    });
     function updateCoverage() {
       try { const current = readPack(), counts = core.audioCoverage(current), sentences = current.items.filter(item => item.sentenceActivity).length; coverage.textContent = tx('word_practice.coverage', '{count} words · Word audio: {audio}/{total} · Complete sound sequences: {complete}/{total} · Sentence activities: {sentences}', { count: current.items.length, audio: counts.words, total: counts.totalWords, complete: counts.completePhonemeWords, sentences: sentences }); setLanguage(coverage, dialogTextLanguages.get(coverage.textContent));
         const stale = includeAudio.checked ? core.audioIssueCounts(current).staleLanguage : 0; audioWarning.hidden = !stale;
         if (stale) { audioWarning.textContent = tx(stale === 1 ? 'word_practice.audio_language_omitted_one' : 'word_practice.audio_language_omitted', stale === 1 ? '{count} saved recording uses a different language and is not played. Prepare replacement audio in Present & Export.' : '{count} saved recordings use a different language and are not played. Prepare replacement audio in Present & Export.', { count: stale }); setLanguage(audioWarning, dialogTextLanguages.get(audioWarning.textContent)); }
-        updatePictureNote(current); updatePlan(current); renderMeaningChoices(); updateAppearancePreview(current); }
+        updatePictureNote(current); renderPictureManager(current); updatePlan(current); renderMeaningChoices(); updateAppearancePreview(current); }
       catch (error) { coverage.textContent = error.message; setLanguage(coverage, 'English'); planCount.textContent = ''; planNote.hidden = false; updateLabel(planNote, error.message); plan.dataset.needsReview = 'true'; reviewDetails.hidden = true; preview.hidden = true; previewToolbar.hidden = true; previewPicker.hidden = true; }
       interval.disabled = pacing.value !== 'timed';
       interval.parentElement.hidden = pacing.value !== 'timed';
@@ -3186,7 +7771,7 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
     function fill() {
       titleInput.value = pack.title; wordsInput.value = pack.items.map(item => item.word).join('\n');
       const opts = pack.options; mode.value = opts.mode; repetitions.value = opts.repetitions; pacing.value = opts.autoAdvance ? 'timed' : 'manual'; interval.value = opts.intervalSeconds;
-      shuffle.checked = opts.shuffle; position.checked = opts.varyPosition; size.checked = opts.varySize; includeAudio.checked = opts.includeAudio; includePictures.checked = opts.includePictures; vocabularyFirst.value = opts.vocabularyFirst;
+      shuffle.checked = opts.shuffle; position.checked = opts.varyPosition; size.checked = opts.varySize; includeAudio.checked = opts.includeAudio; includePictures.checked = opts.includePictures; pictureSlides.checked = opts.pictureSlides === true; vocabularyFirst.value = opts.vocabularyFirst;
       appearance.setOptions(opts);
       translationSettings.update(pack.items, opts);
       updateCoverage();
@@ -3287,18 +7872,68 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
       download(buildHtml(fileInput, opts, undefined, labels, reader, uiLanguageName), 'text/html;charset=utf-8', '.html');
       status.textContent = tx('word_practice.html_downloaded', 'HTML downloaded. Open the file in a browser to practice offline.') + (fontMissing ? ' ' + tx('word_practice.font_not_embedded', 'Your font could not be added to the file, so it uses the system font.') : '') + audioNote;
     });
-    actionButton(tx('word_practice.download_pptx', 'Download PowerPoint'), async run => {
+    async function exportPptxDeck(run, pictureSlidesOnly = false) {
       const current = ready(), opts = options();
-      const media = root.AlloWordPracticeMedia; if (!media || !media.buildPptx) throw new Error(tx('word_practice.pptx_unavailable', 'The PowerPoint exporter is unavailable. Try reopening Present & Export.'));
+      const media = root.AlloWordPracticeMedia;
+      if (!media || !media.buildPptx) throw new Error(tx('word_practice.pptx_unavailable', 'The PowerPoint exporter is unavailable. Try reopening Present & Export.'));
+      if (typeof context.ensurePptx === 'function') await context.ensurePptx();
+      if (!isCurrentOperation(run)) return;
       status.textContent = tx('word_practice.building_pptx', 'Building PowerPoint…');
-      const pptx = await media.buildPptx(current, opts, core.createSequence(current, opts), { ...context, readerSettings: useReading && useReading.checked && root.__alloReadingSettings ? root.__alloReadingSettings.get() : null, labels: playerLabels(), signal: run.controller.signal, onProgress: progress => reportProgress(run, tx('word_practice.building_pptx_progress', 'Building PowerPoint. Cards: {completed} of {total}.', progress), progress) });
+      const pptxCtx = { ...context, readerSettings: useReading && useReading.checked && root.__alloReadingSettings ? root.__alloReadingSettings.get() : null, labels: playerLabels(), signal: run.controller.signal, onProgress: progress => reportProgress(run, tx('word_practice.building_pptx_progress', 'Building PowerPoint. Cards: {completed} of {total}.', progress), progress) };
+      const pptx = pictureSlidesOnly && typeof media.buildPictureSlidesPptx === 'function'
+        ? await media.buildPictureSlidesPptx(current, opts, pptxCtx)
+        : await media.buildPptx(current, opts, core.createSequence(current, opts), pptxCtx);
       if (!isCurrentOperation(run)) return;
       reportProgress(run, tx('word_practice.finishing_pptx', 'Finishing PowerPoint file…'));
       // Serialize without downloading: late compression results from a cancelled run are discarded.
       const blob = await pptx.write({ outputType: 'blob' });
       if (!isCurrentOperation(run)) return;
-      download(blob, 'application/vnd.openxmlformats-officedocument.presentationml.presentation', '.pptx');
+      download(blob, 'application/vnd.openxmlformats-officedocument.presentationml.presentation', pictureSlidesOnly ? '-picture-slides.pptx' : '.pptx');
       status.textContent = tx('word_practice.pptx_downloaded', 'PowerPoint downloaded.') + (pptx.wordPracticeWarnings && pptx.wordPracticeWarnings.length ? ' ' + pptx.wordPracticeWarnings.join(' ') : '');
+    }
+    actionButton(tx('word_practice.download_pptx', 'Download PowerPoint'), run => exportPptxDeck(run, false));
+    exportPictureSlidesBtn.onclick = () => action(run => exportPptxDeck(run, true), exportPictureSlidesBtn);
+    actionButton(tx('word_practice.download_flashcards', 'Download 2-sided flashcards'), () => {
+      const current = ready(), opts = options(), media = root.AlloWordPracticeMedia;
+      if (!media || typeof media.buildFlashcardsHtml !== 'function') throw new Error(tx('word_practice.flashcards_unavailable', 'Flashcards export is unavailable. Try reopening Present & Export.'));
+      download(media.buildFlashcardsHtml(current, opts), 'text/html;charset=utf-8', '-flashcards.html');
+      status.textContent = tx('word_practice.flashcards_downloaded', '2-sided flashcards downloaded.');
+    });
+    actionButton(tx('word_practice.download_frayer', 'Download Frayer study sheets'), () => {
+      const current = ready(), opts = options(), media = root.AlloWordPracticeMedia;
+      if (!media || typeof media.buildFrayerHtml !== 'function') throw new Error(tx('word_practice.frayer_unavailable', 'Frayer study sheets export is unavailable. Try reopening Present & Export.'));
+      download(media.buildFrayerHtml(current, opts), 'text/html;charset=utf-8', '-frayer.html');
+      status.textContent = tx('word_practice.frayer_downloaded', 'Frayer study sheets downloaded.');
+    });
+    actionButton(tx('word_practice.download_sorting_cards', 'Download cut-out sorting cards'), () => {
+      const current = ready(), opts = options(), media = root.AlloWordPracticeMedia;
+      if (!media || typeof media.buildSortingCardsHtml !== 'function') throw new Error(tx('word_practice.sorting_cards_unavailable', 'Sorting cards export is unavailable. Try reopening Present & Export.'));
+      download(media.buildSortingCardsHtml(current, opts), 'text/html;charset=utf-8', '-sorting-cards.html');
+      status.textContent = tx('word_practice.sorting_cards_downloaded', 'Cut-out sorting cards downloaded.');
+    });
+    actionButton(tx('word_practice.download_worksheet', 'Download cloze and matching worksheet'), () => {
+      const current = ready(), opts = options(), media = root.AlloWordPracticeMedia;
+      if (!media || typeof media.buildWorksheetHtml !== 'function') throw new Error(tx('word_practice.worksheet_unavailable', 'Worksheet export is unavailable. Try reopening Present & Export.'));
+      download(media.buildWorksheetHtml(current, opts), 'text/html;charset=utf-8', '-worksheet.html');
+      status.textContent = tx('word_practice.worksheet_downloaded', 'Cloze and matching worksheet downloaded.');
+    });
+    actionButton(tx('word_practice.download_bingo', 'Download classroom Bingo boards'), () => {
+      const current = ready(), opts = options(), media = root.AlloWordPracticeMedia;
+      if (!media || typeof media.buildBingoHtml !== 'function') throw new Error(tx('word_practice.bingo_unavailable', 'Bingo boards export is unavailable. Try reopening Present & Export.'));
+      download(media.buildBingoHtml(current, opts), 'text/html;charset=utf-8', '-bingo.html');
+      status.textContent = tx('word_practice.bingo_downloaded', 'Classroom Bingo boards downloaded.');
+    });
+    actionButton(tx('word_practice.download_loop_cards', 'Download I Have, Who Has cards'), () => {
+      const current = ready(), opts = options(), media = root.AlloWordPracticeMedia;
+      if (!media || typeof media.buildLoopGameHtml !== 'function') throw new Error(tx('word_practice.loop_cards_unavailable', 'Loop cards export is unavailable. Try reopening Present & Export.'));
+      download(media.buildLoopGameHtml(current, opts), 'text/html;charset=utf-8', '-loop-cards.html');
+      status.textContent = tx('word_practice.loop_cards_downloaded', 'I Have, Who Has loop cards downloaded.');
+    });
+    actionButton(tx('word_practice.download_word_wall', 'Download classroom Word Wall cards'), () => {
+      const current = ready(), opts = options(), media = root.AlloWordPracticeMedia;
+      if (!media || typeof media.buildWordWallHtml !== 'function') throw new Error(tx('word_practice.word_wall_unavailable', 'Word Wall export is unavailable. Try reopening Present & Export.'));
+      download(media.buildWordWallHtml(current, opts), 'text/html;charset=utf-8', '-word-wall.html');
+      status.textContent = tx('word_practice.word_wall_downloaded', 'Classroom Word Wall cards downloaded.');
     });
     const prepareAudioButton = actionButton(tx('word_practice.prepare_audio', 'Prepare audio'), async run => {
       run.keepAudioOnStop = true; updateLabel(cancelButton, tx('word_practice.stop_keep_audio', 'Stop and keep completed audio')); 
@@ -3358,13 +7993,14 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
       preparedAudioRevision = 0; preparedAudioPending = false;
       pack = imported; catalogue.clear(); annotationStore.clear(); glossaryEntryIds.clear(); pack.items.forEach(item => annotationStore.set(item.id, item.annotations || [])); remember(pack); previewId = ''; previewIndex = 0; previewMode = ''; previewRevealed = false; previewPickerKey = ''; fill(); editGuard.saved(); status.textContent = tx('word_practice.set_opened', 'Word set opened.');
     }));
-    setup.addEventListener('change', updateCoverage);
+    setup.addEventListener('change', event => { if (event.target === batchImageInput || event.target === rowImageInput || (event.target && event.target.classList && (event.target.classList.contains('awp-picture-alt') || event.target.classList.contains('awp-symbol-search')))) return; updateCoverage(); });
     // Only a teacher's own change is remembered, not the settings a saved set arrives with.
-    setup.addEventListener('change', event => { if (event.target !== fileInput) rememberSetup(options()); });
+    setup.addEventListener('change', event => { if (event.target !== fileInput && event.target !== batchImageInput && event.target !== rowImageInput) rememberSetup(options()); });
     let coverageTimer = null;
     const scheduleCoverage = () => { root.clearTimeout(coverageTimer); coverageTimer = root.setTimeout(() => { coverageTimer = null; if (!closed && !busy) updateCoverage(); }, 180); };
     wordsInput.addEventListener('input', scheduleCoverage); repetitions.addEventListener('input', scheduleCoverage);
     function trap(event) {
+      if (inlineHost) return;
       if (event.key === 'Escape' && !doc.fullscreenElement) { event.preventDefault(); requestClose(); return; }
       if (event.key !== 'Tab') return;
       const scope = doc.fullscreenElement && doc.fullscreenElement.contains(playerHost) ? doc.fullscreenElement : dialog;
@@ -3377,7 +8013,7 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
     const unwatchPreviewReading = watchCardReading(preview, options, core);
     let closingRequest = null, closeError = null;
     async function requestClose() {
-      if (closed || closingRequest) return;
+      if (closed || closingRequest || inlineHost) return;
       if (operation?.keepAudioOnStop) { cancelOperation(); return; }
       const request = new root.AbortController(); closingRequest = request;
       try {
@@ -3386,24 +8022,45 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
         if (!closed) { closeError = closeError || make('p', '', dialog, 'awp-note'); closeError.setAttribute('role', 'alert'); closeError.textContent = error.message || tx('word_practice.save_failed', 'The word set could not be saved. Your changes are still open.'); }
       } finally { if (closingRequest === request) closingRequest = null; }
     }
-    const warnUnsaved = event => { if (operation?.keepAudioOnStop || editGuard.dirty()) { event.preventDefault(); event.returnValue = ''; } };
+    const warnUnsaved = event => { if (operation?.keepAudioOnStop || (!inlineHost && editGuard.dirty())) { event.preventDefault(); event.returnValue = ''; } };
     root.addEventListener('beforeunload', warnUnsaved);
     function close() {
       if (closed) return; closed = true; closingRequest?.abort(); root.removeEventListener('beforeunload', warnUnsaved); unwatchPreviewReading(); root.clearTimeout(coverageTimer); if (operation) { operation.controller.abort(); operation = null; } if (player) player.destroy(); overlay.removeEventListener('keydown', trap);
       if (context.signal) context.signal.removeEventListener('abort', close);
       closeReading(); overlay.remove();
-      hiddenSiblings.forEach(({ node, inert }) => { if (node.isConnected) node.inert = inert; }); doc.body.style.overflow = priorOverflow;
-      if (previousFocus && previousFocus.isConnected && previousFocus.focus) previousFocus.focus(); if (active === controller) active = null;
+      hiddenSiblings.forEach(({ node, inert }) => { if (node.isConnected) node.inert = inert; });
+      if (!inlineHost) doc.body.style.overflow = priorOverflow;
+      if (previousFocus && previousFocus.isConnected && previousFocus.focus) previousFocus.focus(); if (!inlineHost && active === controller) active = null;
     }
     overlay.addEventListener('keydown', trap); fill();
     editGuard.watchContent(() => JSON.stringify([titleInput.value.trim(), core.parseWords(wordsInput.value, { lineSeparated: true }), preparedAudioRevision]));
-    titleInput.focus();
-    const controller = { close }; active = controller;
+    if (!inlineHost) titleInput.focus();
+    const controller = {
+      close,
+      getPack() { try { return readPack(); } catch (_) { return pack; } },
+      setPack(next = {}) { pack = core.normalizeInput(next); catalogue.clear(); remember(pack); fill(); },
+    };
+    if (!inlineHost) active = controller;
     if (context.signal) context.signal.addEventListener('abort', close, { once: true });
     return controller;
   }
+  function mount(container, context = {}) { return open({ ...context, container }); }
+  const buildFlashcardsHtml = (...args) => root.AlloWordPracticeMedia && typeof root.AlloWordPracticeMedia.buildFlashcardsHtml === 'function'
+    ? root.AlloWordPracticeMedia.buildFlashcardsHtml(...args) : '';
+  const buildFrayerHtml = (...args) => root.AlloWordPracticeMedia && typeof root.AlloWordPracticeMedia.buildFrayerHtml === 'function'
+    ? root.AlloWordPracticeMedia.buildFrayerHtml(...args) : '';
+  const buildSortingCardsHtml = (...args) => root.AlloWordPracticeMedia && typeof root.AlloWordPracticeMedia.buildSortingCardsHtml === 'function'
+    ? root.AlloWordPracticeMedia.buildSortingCardsHtml(...args) : '';
+  const buildWorksheetHtml = (...args) => root.AlloWordPracticeMedia && typeof root.AlloWordPracticeMedia.buildWorksheetHtml === 'function'
+    ? root.AlloWordPracticeMedia.buildWorksheetHtml(...args) : '';
+  const buildBingoHtml = (...args) => root.AlloWordPracticeMedia && typeof root.AlloWordPracticeMedia.buildBingoHtml === 'function'
+    ? root.AlloWordPracticeMedia.buildBingoHtml(...args) : '';
+  const buildLoopGameHtml = (...args) => root.AlloWordPracticeMedia && typeof root.AlloWordPracticeMedia.buildLoopGameHtml === 'function'
+    ? root.AlloWordPracticeMedia.buildLoopGameHtml(...args) : '';
+  const buildWordWallHtml = (...args) => root.AlloWordPracticeMedia && typeof root.AlloWordPracticeMedia.buildWordWallHtml === 'function'
+    ? root.AlloWordPracticeMedia.buildWordWallHtml(...args) : '';
   root.AlloModules = root.AlloModules || {};
-  root.AlloModules.WordPractice = { open, buildHtml };
+  root.AlloModules.WordPractice = { open, mount, buildHtml, buildFlashcardsHtml, buildFrayerHtml, buildSortingCardsHtml, buildWorksheetHtml, buildBingoHtml, buildLoopGameHtml, buildWordWallHtml, rasterizeImage: rasterizeImageToPng };
 })(typeof window !== 'undefined' ? window : globalThis);
 
 })();

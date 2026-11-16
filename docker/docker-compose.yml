@@ -34,6 +34,11 @@ services:
     container_name: alloflow-frontend
     ports:
       - "${ALLOFLOW_BIND_ADDRESS:-127.0.0.1}:${WEB_PORT:-3000}:80"
+    volumes:
+      - ../word_audio_shards:/usr/share/nginx/html/word_audio_shards:ro
+      - ../word_audio_kokoro_bank.json:/usr/share/nginx/html/word_audio_kokoro_bank.json:ro
+      - ../packets_vocab:/usr/share/nginx/html/packets_vocab:ro
+      - ../packets_vocab_bank_en.js:/usr/share/nginx/html/packets_vocab_bank_en.js:ro
     depends_on:
       pocketbase:
         condition: service_healthy

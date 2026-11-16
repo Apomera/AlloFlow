@@ -119,12 +119,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
       var _qqT = (ctx && ctx.theme) || {};
       var _qqHC = !!_qqT.isContrast, _qqL = !_qqHC && !_qqT.isDark;
       var _qq_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _qq_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#7c3aed':'#000000'};
-      var _qq_FGL = {'#cbd5e1':'#334155','#c4b5fd':'#5b21b6','#94a3b8':'#64748b','#a78bfa':'#6d28d9','#e9d5ff':'#581c87','#e2e8f0':'#1e293b'}, _qq_FGH = {'#cbd5e1':'#ffff00','#c4b5fd':'#ffff00','#94a3b8':'#ffff00','#fff':'#ffff00','#a78bfa':'#ffff00','#e9d5ff':'#ffff00','#64748b':'#ffff00','#e2e8f0':'#ffff00','#bbf7d0':'#ffff00','#22c55e':'#ffff00'};
+      var _qq_FGL = {'#cbd5e1':'#334155','#c4b5fd':'#5b21b6','#94a3b8':'#64748b','#a78bfa':'#6d28d9','#e9d5ff':'#581c87','#e2e8f0':'#1e293b','#0ea5e9':'#0369a1','#a855f7':'#7e22ce','#f59e0b':'#b45309','#16a34a':'#15803d','#ec4899':'#be185d'}, _qq_FGH = {'#cbd5e1':'#ffff00','#c4b5fd':'#ffff00','#94a3b8':'#ffff00','#fff':'#ffff00','#a78bfa':'#ffff00','#e9d5ff':'#ffff00','#64748b':'#ffff00','#e2e8f0':'#ffff00','#bbf7d0':'#ffff00','#22c55e':'#ffff00','#0ea5e9':'#ffff00','#a855f7':'#ffff00','#f59e0b':'#ffff00','#16a34a':'#ffff00','#ec4899':'#ffff00'};
       var _qq_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _qq_BDH = {'#334155':'#ffff00','#a78bfa':'#ffff00','#1e293b':'#ffff00','#22c55e':'#ffff00','#475569':'#ffff00','#a855f7':'#ffff00'};
       var _qqBg = function(h){ return _qqHC ? (_qq_BGH[h]||h) : (_qqL ? (_qq_BGL[h]||h) : h); };
       // Dark-mode foreground map. These accents are readable as TEXT only when
       // lightened; the surface and border maps are untouched.
-      var _qq_FGD = {'#64748b':'#94a3b8'};
+      var _qq_FGD = {'#64748b':'#94a3b8','#ec4899':'#f472b6','#a855f7':'#c084fc','#16a34a':'#4ade80'};
       var _qqFg = function(h){ return _qqHC ? (_qq_FGH[h]||h) : (_qqL ? (_qq_FGL[h]||h) : (_qq_FGD[h]||h)); };
       var _qqBd = function(h){ return _qqHC ? (_qq_BDH[h]||h) : (_qqL ? (_qq_BDL[h]||h) : h); };
       var React = ctx.React;
@@ -229,7 +229,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
         return h('div', null,
           // The query itself, big
           h('div', { style: { padding: 28, borderRadius: 14, marginBottom: 16, background: 'linear-gradient(135deg, ' + q.themeColor + '20 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid ' + q.themeColor + '88', borderLeft: '4px solid ' + q.themeColor, textAlign: 'center' } },
-            h('div', { style: { fontSize: 11, color: q.themeColor, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 12 } }, q.themeLabel),
+            h('div', { style: { fontSize: 11, color: _qqFg(q.themeColor), fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 12 } }, q.themeLabel),
             h('p', { style: { margin: 0, color: _qqFg('#fff'), fontSize: 22, lineHeight: 1.6, fontWeight: 500, fontStyle: 'italic' } }, q.text),
             h('div', { style: { marginTop: 14, fontSize: 11, color: _qqFg('#94a3b8') } },
               'Question ' + (currentIdx + 1) + ' of ' + QUERIES.length,
@@ -305,7 +305,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
             h('button', { onClick: function() { setQQ({ browseId: null }); }, 'aria-label': 'Back to all questions',
               style: { marginBottom: 12, background: 'transparent', border: '1px solid #334155', color: _qqFg('#cbd5e1'), borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 12 } }, '← All questions'),
             h('div', { style: { padding: 24, borderRadius: 14, background: 'linear-gradient(135deg, ' + browsed.themeColor + '20 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid ' + browsed.themeColor + '88', borderLeft: '4px solid ' + browsed.themeColor, marginBottom: 14 } },
-              h('div', { style: { fontSize: 11, color: browsed.themeColor, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 10 } }, browsed.themeLabel),
+              h('div', { style: { fontSize: 11, color: _qqFg(browsed.themeColor), fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 10 } }, browsed.themeLabel),
               h('p', { style: { margin: 0, color: _qqFg('#fff'), fontSize: 18, lineHeight: 1.6, fontStyle: 'italic' } }, browsed.text)
             ),
             h('button', { onClick: function() {
@@ -340,13 +340,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
           Object.keys(themes).map(function(tkey) {
             var t = themes[tkey];
             return h('div', { key: tkey, style: { marginBottom: 18 } },
-              h('div', { style: { fontSize: 12, color: t.color, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, t.label),
+              h('div', { style: { fontSize: 12, color: _qqFg(t.color), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, t.label),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 8 } },
                 t.queries.map(function(q) {
                   var hasResponse = ((Array.isArray(d.responses) ? d.responses : [])).some(function(r) { return r.queryId === q.id; });
                   return h('button', { key: q.id, onClick: function() { setQQ({ browseId: q.id }); },
                     style: { padding: 12, borderRadius: 8, border: '1px solid ' + t.color + '44', background: _qqBg('#0f172a'), cursor: 'pointer', textAlign: 'left', color: _qqFg('#e2e8f0') } },
-                    h('div', { style: { fontSize: 10, color: t.color, fontWeight: 700, marginBottom: 4 } }, hasResponse ? '✓ Visited' : 'Unvisited'),
+                    h('div', { style: { fontSize: 10, color: _qqFg(t.color), fontWeight: 700, marginBottom: 4 } }, hasResponse ? '✓ Visited' : 'Unvisited'),
                     h('div', { style: { fontSize: 12.5, lineHeight: 1.55, fontStyle: 'italic' } }, q.text)
                   );
                 })
@@ -388,7 +388,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
             var q = QUERIES.find(function(qq) { return qq.id === r.queryId; }) || { themeLabel: '', themeColor: _qqFg('#64748b'), text: '(question not found)' };
             return h('div', { key: ri, style: { padding: 12, borderRadius: 10, background: _qqBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + q.themeColor, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' } },
-                h('div', { style: { fontSize: 10, color: q.themeColor, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, q.themeLabel),
+                h('div', { style: { fontSize: 10, color: _qqFg(q.themeColor), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, q.themeLabel),
                 h('div', { style: { fontSize: 10, color: _qqFg('#94a3b8'), fontFamily: 'ui-monospace, monospace' } }, r.date),
                 h('button', { onClick: function() { deleteResp(ri); }, 'aria-label': 'Delete response',
                   style: { marginLeft: 'auto', background: 'transparent', border: '1px solid #475569', color: _qqFg('#94a3b8'), borderRadius: 6, padding: '2px 8px', cursor: 'pointer', fontSize: 10 } }, '✕')

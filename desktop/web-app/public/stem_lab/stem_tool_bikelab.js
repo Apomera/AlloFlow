@@ -2378,7 +2378,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 h('span', { className: 'text-xs font-bold text-slate-600' }, Object.keys(gcSolved).length + ' of ' + GEAR_CHALLENGES.length + ' picked correctly')),
               h('p', { className: 'text-sm text-slate-800 mt-1' }, gearCh.q),
               h('p', { className: 'text-xs text-slate-600 mt-1' }, 'Bike: ' + gcResult.bike.name + '. Rider power: ' + gearCh.power + ' watts.'),
-              h('div', { role: 'group', 'aria-label': 'Your prediction', className: 'mt-2 flex flex-wrap gap-2' },
+              h('div', { role: 'group', 'aria-label': __alloT('stem.bikelab.yourPrediction', 'Your prediction'), className: 'mt-2 flex flex-wrap gap-2' },
                 gcResult.gears.map(function(g) {
                   var on = gcPick === g.key;
                   return h('button', { key: g.key, type: 'button', 'data-gear-option': g.key, 'aria-pressed': on, disabled: gcTested,
@@ -3170,7 +3170,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 h('h3', { id: 'bikelab-brake-challenge-title', className: 'text-sm font-black text-slate-800' }, 'Predict, then test (' + ((chIdx % BRAKE_CHALLENGES.length) + 1) + ' of ' + BRAKE_CHALLENGES.length + ')'),
                 h('span', { className: 'text-xs font-bold text-slate-600' }, Object.keys(chSolved).length + ' of ' + BRAKE_CHALLENGES.length + ' predicted correctly')),
               h('p', { className: 'text-sm text-slate-800 mt-1' }, challenge.q),
-              h('div', { role: 'group', 'aria-label': 'Your prediction', className: 'mt-2 flex flex-wrap gap-2' },
+              h('div', { role: 'group', 'aria-label': __alloT('stem.bikelab.yourPrediction', 'Your prediction'), className: 'mt-2 flex flex-wrap gap-2' },
                 challenge.options.map(function(opt) {
                   var on = chPick === opt[0];
                   return h('button', { key: opt[0], type: 'button', 'aria-pressed': on, disabled: chTested,
@@ -4178,7 +4178,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
               h('div', { className: 'lg:col-span-3 bg-white rounded-xl shadow border border-slate-400 p-4' },
                 h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-2' },
                   h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600' }, t('stem.bikelab.click_any_part_of_the_bike', 'Click any part of the bike')),
-                  h('div', { role: 'group', 'aria-label': 'Diagram or 3D model', className: 'flex gap-1' },
+                  h('div', { role: 'group', 'aria-label': __alloT('stem.bikelab.diagramOr3d', 'Diagram or 3D model'), className: 'flex gap-1' },
                     [[false, 'Diagram'], [true, '3D model']].map(function(opt) {
                       return h('button', { key: String(opt[0]), type: 'button', 'data-bikelab-parts-view': opt[0] ? '3d' : '2d', 'aria-pressed': view3d === opt[0] ? 'true' : 'false',
                         onClick: function() { setView3d(opt[0]); },
@@ -4657,7 +4657,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                     h('button', { type: 'button', 'data-winter-retry': 'true', onClick: retryCases, className: 'mt-3 px-4 py-2 rounded-lg font-bold text-sm bg-sky-800 hover:bg-sky-900 text-white' }, 'Try again'))
                 : h('div', null,
                     h('p', { className: 'text-base text-slate-800 leading-relaxed' }, cur.scene),
-                    h('div', { role: 'group', 'aria-label': 'Your choice', className: 'mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2' },
+                    h('div', { role: 'group', 'aria-label': __alloT('stem.bikelab.yourChoice', 'Your choice'), className: 'mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2' },
                       WINTER_CHOICES.map(function(c) {
                         var isPick = curPick === c.id, isAnswer = cur.answer === c.id;
                         var look = !curPick ? 'border-slate-300 bg-white hover:border-slate-500' : isAnswer ? 'border-emerald-500 bg-emerald-50' : isPick ? 'border-rose-500 bg-rose-50' : 'border-slate-200 bg-white';

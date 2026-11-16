@@ -16128,8 +16128,8 @@ var createDocPipeline = function(deps) {
           const _rowCount = Array.isArray(block.rows) ? block.rows.length : 0;
           out.push(block);
           _legendDiag({ phase: 'fallback-kept-original-table', pageRange, rows: _rowCount });
-          warnLog('[Legend repair] re-extraction returned nothing for "' + String(block.caption || '(untitled)').slice(0, 60)
-            + '" — keeping the original ' + _rowCount + '-row table rather than replacing it with an image stub.');
+          warnLog('[Legend repair] re-extraction returned nothing (captionChars=' + String(block.caption || '').length
+            + ') — keeping the original ' + _rowCount + '-row table rather than replacing it with an image stub.');
         } else {
           out.push(block);
         }
@@ -16945,7 +16945,7 @@ var createDocPipeline = function(deps) {
         // below; same risk class (Gemini-emitted directive with unvalidated string params
         // gets blindly substituted into the document).
         if (!/^[a-zA-Z]{2,3}(-[A-Za-z0-9]{2,8})?$/.test(String(p.lang).trim())) {
-          try { warnLog('[fix_lang_span] rejected non-BCP47 lang: ' + JSON.stringify(p.lang).slice(0, 100)); } catch (_) {}
+          try { warnLog('[fix_lang_span] rejected non-BCP47 lang (len=' + String(p.lang ?? '').length + ')'); } catch (_) {}
           return html;
         }
         if (String(p.text).length < 2) return html;
@@ -16962,7 +16962,7 @@ var createDocPipeline = function(deps) {
         // scribbled across body text. Require oldColor to LOOK like a CSS color before
         // executing the substitution. #hex / rgb(a) / hsl(a) / named (letters only, 3-30).
         if (!/^(#[0-9a-fA-F]{3,8}|rgba?\([^)]+\)|hsla?\([^)]+\)|[a-zA-Z]{3,30})$/.test(String(p.oldColor).trim())) {
-          try { warnLog('[fix_contrast] rejected non-color oldColor: ' + JSON.stringify(p.oldColor).slice(0, 100)); } catch (_) {}
+          try { warnLog('[fix_contrast] rejected non-color oldColor (len=' + String(p.oldColor ?? '').length + ')'); } catch (_) {}
           return html;
         }
         return html.replace(new RegExp(escapeForRegex(p.oldColor), 'gi'), p.newColor);
@@ -21405,7 +21405,7 @@ var createDocPipeline = function(deps) {
         if (_dd.collapsed.length) {
           chosen.text = _dd.text;
           _dupeCollapses.push({ pageNum: _pn, words: _dd.collapsed });
-          warnLog('[OCR Reconcile] page ' + _pn + ': collapsed ' + _dd.collapsed.length + ' adjacent duplicate token(s) (' + _dd.collapsed.slice(0, 5).join(', ') + ') — the echo is absent from the other engine\'s read');
+          warnLog('[OCR Reconcile] page ' + _pn + ': collapsed ' + _dd.collapsed.length + ' adjacent duplicate token(s) — the echo is absent from the other engine\'s read');
         }
       }
       // H-5's scanned half (2026-07-13): the text-layer path repairs multi-column
@@ -23597,7 +23597,7 @@ var createDocPipeline = function(deps) {
           // users read a cache hit as "the modal just exited and never ran").
           if (!cached.documentDigest) { try { _writeAuditCache(_cacheKey, { ...cached, documentDigest: _runDocumentDigest }); } catch (_) {} }
           const cachedForDocument = { ...cached, documentDigest: _runDocumentDigest, _fromAuditCache: true, _auditCachedAt: (_cachedRec.savedAt || null) };
-          warnLog(`[PDF Audit] Cache hit for ${_cacheKey.slice(0, 24)}... — skipping ${_auditorCount} audit calls`);
+          warnLog(`[PDF Audit] Cache hit (keyChars=${_cacheKey.length}) — skipping ${_auditorCount} audit calls`);
           if (_auditUiCurrent()) {
             addToast && addToast('♿ Audit loaded from cache (identical document seen recently)', 'info');
             setPdfAuditResult(cachedForDocument);
@@ -25550,7 +25550,7 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
     // error are raw strings that previously concatenated into the HTML report
     // (stored XSS) and the CSV (cell-break + spreadsheet formula injection).
     const _escRpt = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    const _csvCell = (s) => { let v = String(s == null ? '' : s); if (/^[=+\-@\t\r]/.test(v)) v = "'" + v; return '"' + v.replace(/"/g, '""') + '"'; };
+    const _csvCell = (s) => { let v = String(s == null ? '' : s); if (/^(?:[\t\r\n ]*[=+\-@|]|[\t\r\n])/.test(v)) v = "'" + v; return '"' + v.replace(/"/g, '""') + '"'; };
     const csvRows = ['File,Before Score,After Score,Improvement,Fix Passes,Axe Violations,EA Fails,EA Potentials,EA Manual,EA Score,Time (s),Verification State,Fully Verified,Manual Review,Review Finding Count,AI Coverage,Axe Coverage,EA Coverage,Expert Review,Tagged PDF,Processing Status'];
     _zipQueue.forEach(f => {
       const r = f.result;
@@ -25558,7 +25558,7 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
       const vc = v.verificationCoverage || {};
       csvRows.push(`${_csvCell(f.fileName)},${r?.beforeScore ?? ''},${r?.afterScore ?? ''},${r && r.afterScore != null && r.beforeScore != null ? (r.afterScore - r.beforeScore) : ''},${r?.autoFixPasses ?? ''},${r?.axeViolations ?? ''},${r?.secondEngineAudit?.failViolations ?? ''},${r?.secondEngineAudit?.potentialViolations ?? ''},${r?.secondEngineAudit?.manualViolations ?? ''},${r?.secondEngineAudit?.score ?? ''},${r?.elapsed ?? ''},${_csvCell(v.verificationState)},${v.afterScoreVerified ? 'Yes' : 'No'},${v.requiresManualReview ? 'Yes' : 'No'},${v.reviewCount},${_csvCell(vc.ai || '')},${_csvCell(vc.axe || '')},${_csvCell(vc.equalAccess || '')},${r?.needsExpertReview ? 'Yes' : 'No'},${_csvCell(_taggedNotes.get(f.id) || '')},${f.status}`);
     });
-    zip.file('batch_accessibility_report.csv', csvRows.join('\n'));
+    zip.file('batch_accessibility_report.csv', '\uFEFF' + csvRows.join('\n'));
 
     // Structured telemetry JSON for research validation
     const telemetry = {
@@ -29595,7 +29595,8 @@ Return ONLY the complete fixed HTML.`, true));
             const _pct = _singlePassDecision.textRatio != null
               ? Math.round((1 - _singlePassDecision.textRatio) * 100)
               : null;
-            warnLog(`[Auto-fix] Single-pass rejected (reason=${_singlePassDecision.reason}${_pct != null ? `, ${_pct}% text loss` : ''}): output ${fixedHtml.length} chars (text=${textCharCount(fixedHtml)}) vs source ${currentHtml.length} chars (text=${textCharCount(currentHtml)})`);
+            const _fixedTextChars = textCharCount(fixedHtml), _srcTextChars = textCharCount(currentHtml);
+            warnLog('[Auto-fix] Single-pass rejected (reason=' + _singlePassDecision.reason + (_pct != null ? ', ' + _pct + '% text loss' : '') + '): output ' + fixedHtml.length + ' chars (textChars=' + _fixedTextChars + ') vs source ' + currentHtml.length + ' chars (textChars=' + _srcTextChars + ')');
             if (_singlePassDecision.reason === 'text-shrink' && typeof addToast === 'function') {
               addToast(`Remediation rejected: ${_pct}% text loss detected. Falling back to chunked fix.`, 'warning');
             }
@@ -37196,7 +37197,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       try {
         altQualityReport = _alloScanAltQuality(accessibleHtml);
         if (altQualityReport && altQualityReport.flaggedCount > 0) {
-          warnLog('[AltQuality] ' + altQualityReport.flaggedCount + '/' + altQualityReport.total + ' image description(s) flagged (' + altQualityReport.highCount + ' high): ' + altQualityReport.flagged.slice(0, 5).map(f => '"' + f.alt.slice(0, 40) + '" [' + f.issues.join(',') + ']').join('; '));
+          warnLog('[AltQuality] ' + altQualityReport.flaggedCount + '/' + altQualityReport.total + ' image description(s) flagged (' + altQualityReport.highCount + ' high)');
           if (altQualityReport.highCount > 0) {
             _aqNote = { kind: 'altQuality', msg: _aqNoteMsg(altQualityReport) };
             _structuralFidelityNotes.push(_aqNote);
@@ -44901,7 +44902,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       return;
     }
     if (!sanitizedHtml) return;
-    const printWindow = window.open('', '_blank');
+    const printWindow = window.open('', '_blank'); if (printWindow) { try { printWindow.opener = null; } catch (_) {} }
     if (!printWindow) { addToast(t('toasts.pop_up_blocked_allow_pop_2'), 'error'); return; }
     try {
       printWindow.document.open();
@@ -47592,7 +47593,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           }
           const first = raw.match(/^\s*#{1,3}[ \t]+([^\n]+)(?:\r?\n|$)/);
           if (first) {
-            const norm = (value) => String(value || '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+            const norm = (value) => String(value || '').normalize('NFC').toLowerCase().replace(/[^\p{L}\p{M}\p{N}]+/gu, ' ').trim();
             const heading = norm(first[1]), st = norm(sectionTitle);
             if (heading && st && (heading === st || st.includes(heading) || heading.includes(st))) {
               raw = raw.slice(first[0].length);
@@ -47633,7 +47634,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           let pattern;
           try {
               const branches = [];
-              if (boundaried.length) branches.push(`(?<![\\p{L}\\p{N}])(?:${boundaried.join('|')})(?![\\p{L}\\p{N}])`);
+              if (boundaried.length) branches.push(`(?<![\\p{L}\\p{M}\\p{N}])(?:${boundaried.join('|')})(?![\\p{L}\\p{M}\\p{N}])`);
               if (substringy.length) branches.push(`(?:${substringy.join('|')})`);
               pattern = new RegExp(`(${branches.join('|')})([.,;:!?'"\u201d\u2019)\\]]*)`, 'giu');
           } catch (_) {
@@ -47946,6 +47947,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               + 'syncDirState();'
               + '});}'
               + 'syncDirState();'
+              + 'window.addEventListener("alloflow-responses-restored",syncDirState);'
               + 'document.addEventListener("DOMContentLoaded",syncDirState);'
               + 'setTimeout(syncDirState,0);'
               + '})();<\/script>'
@@ -48010,7 +48012,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               if (_built.answers.length > 0) {
                   const _bankHtml = _clozeWordBankHTML(_built.answers);
                   const _bankOnTop = cfg.clozeWordBankPosition === 'top';
-                  const _clozeTransHtml = _normPassage.translationText
+                  const _clozeTransHtml = (isTeacher && _normPassage.translationText)
                       ? `<div class="alloflow-bilingual-split" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;"><div>${_built.html}</div><div dir="ltr" style="border-left:2px solid #cbd5e1;padding-left:14px;color:#475569;"><div style="font-size:0.8em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;margin-bottom:6px;">${_uiL('output.english_translation', 'English Translation')}</div>${parseMarkdownToHTML(_normPassage.translationText)}</div></div>`
                       : _built.html;
                   return `
@@ -48103,7 +48105,10 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           item = { ...item, data: (() => {
               let list = item.data;
               if (typeof list === 'string') { try { list = JSON.parse(list); } catch (_) { list = []; } }
-              return Array.isArray(list) ? list.filter(entry => entry && typeof entry === 'object').map(entry => (
+              if (list && typeof list === 'object' && !Array.isArray(list)) {
+                  list = list.terms || list.items || list.entries || list.words || list.cards || [];
+              }
+              return Array.isArray(list) ? list.filter(entry => entry && typeof entry === 'object' && entry.isSelected !== false && entry.selected !== false).map(entry => (
                   entry.translations && (typeof entry.translations !== 'object' || Array.isArray(entry.translations)) ? { ...entry, translations: {} } : entry)) : [];
           })() };
           const wordSearchHtml = (item.gameData && item.gameData.grid && cfg.assessmentMode !== true && (!isTeacher || cfg.includeTeacherKey !== false)) ? (() => {
@@ -48761,16 +48766,82 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               { border: '#c2410c', bg: '#fff7ed', accent: '#7c2d12', soft: '#fed7aa' }, // orange
           ];
           const _pairColor = (i) => _PAIR_PALETTE[i % _PAIR_PALETTE.length];
+          const _resolveVennConfig = () => {
+               const _vData = item.data || {};
+               const _normVennBranch = (val, fallbackTitle) => {
+                   if (!val) return { title: fallbackTitle, items: [] };
+                   if (Array.isArray(val)) return { title: fallbackTitle, items: val };
+                   if (typeof val === 'object') {
+                       return {
+                           title: String(val.title || val.label || fallbackTitle),
+                           title_en: val.title_en,
+                           items: Array.isArray(val.items) ? val.items : [],
+                           items_en: val.items_en,
+                       };
+                   }
+                   return { title: String(val), items: [] };
+               };
+               const _explicit3 = _vData.vennCircles === 3 || _vData.circleCount === 3 || _vData.setsCount === 3
+                   || Boolean(_vData.setC || _vData.overlapAB || _vData.overlapBC || _vData.overlapAC);
+               const _zoneTagged3 = branches.some(b => /^(setC|overlapAB|overlapBC|overlapAC)$/i.test(String(b?.zone || b?.id || '')));
+               const isThreeCircle = _explicit3 || branches.length >= 4 || _zoneTagged3;
+               if (!isThreeCircle) {
+                   const _vennOverlapIdx = branches.length === 3
+                     ? branches.findIndex(b => /both|overlap|shared|common|similar|middle|center/i.test(String(b?.title || '')))
+                     : -1;
+                   const _vennSides = _vennOverlapIdx !== -1 ? [0, 1, 2].filter(idx => idx !== _vennOverlapIdx) : [0, 1];
+                   return {
+                       isThreeCircle: false,
+                       setA: branches[_vennSides[0]] || { title: 'Set A', items: [] },
+                       setB: branches[_vennSides[1]] || { title: 'Set B', items: [] },
+                       shared: (_vennOverlapIdx !== -1 ? branches[_vennOverlapIdx] : branches[2]) || { title: 'Shared', items: [] },
+                   };
+               }
+               const byZone = Object.create(null);
+               const unassigned = [];
+               branches.forEach((b) => {
+                   if (!b || typeof b !== 'object') return;
+                   const zRaw = String(b.zone || b.id || '').trim();
+                   const tRaw = String(b.title || '').trim();
+                   let key = '';
+                   if (/^(set[-_\s]?a|only[-_\s]?a)$/i.test(zRaw)) key = 'setA';
+                   else if (/^(set[-_\s]?b|only[-_\s]?b)$/i.test(zRaw)) key = 'setB';
+                   else if (/^(set[-_\s]?c|only[-_\s]?c)$/i.test(zRaw)) key = 'setC';
+                   else if (/^(overlap[-_\s]?ab|a\s*[&∩+]\s*b)$/i.test(zRaw || tRaw)) key = 'overlapAB';
+                   else if (/^(overlap[-_\s]?bc|b\s*[&∩+]\s*c)$/i.test(zRaw || tRaw)) key = 'overlapBC';
+                   else if (/^(overlap[-_\s]?ac|a\s*[&∩+]\s*c)$/i.test(zRaw || tRaw)) key = 'overlapAC';
+                   else if (/^(shared|overlap[-_\s]?abc|all[-_\s]?three|center|both|common)$/i.test(zRaw)) key = 'shared';
+                   if (key && !byZone[key]) byZone[key] = b;
+                   else unassigned.push(b);
+               });
+               const used = new Set(Object.values(byZone));
+               const takeTitleMatch = (re) => {
+                   const idx = unassigned.findIndex(b => !used.has(b) && re.test(String(b.title || '')));
+                   if (idx === -1) return null;
+                   const hit = unassigned[idx];
+                   used.add(hit);
+                   return hit;
+               };
+               if (!byZone.overlapAB) byZone.overlapAB = takeTitleMatch(/\b(a\s*(&|and|∩|\+)\s*b|ab overlap)\b/i);
+               if (!byZone.overlapBC) byZone.overlapBC = takeTitleMatch(/\b(b\s*(&|and|∩|\+)\s*c|bc overlap)\b/i);
+               if (!byZone.overlapAC) byZone.overlapAC = takeTitleMatch(/\b(a\s*(&|and|∩|\+)\s*c|ac overlap)\b/i);
+               if (!byZone.shared) byZone.shared = takeTitleMatch(/\b(all three|all 3|shared|overlap|common|center|middle|both)\b/i);
+               const rem = unassigned.filter(b => !used.has(b));
+               const setA = _normVennBranch(_vData.setA || byZone.setA || rem[0], 'Set A');
+               const setB = _normVennBranch(_vData.setB || byZone.setB || rem[1], 'Set B');
+               const setC = _normVennBranch(_vData.setC || byZone.setC || rem[2], 'Set C');
+               const overlapAB = _normVennBranch(_vData.overlapAB || byZone.overlapAB || rem[3], `${setA.title} & ${setB.title}`);
+               const overlapBC = _normVennBranch(_vData.overlapBC || byZone.overlapBC || rem[4], `${setB.title} & ${setC.title}`);
+               const overlapAC = _normVennBranch(_vData.overlapAC || byZone.overlapAC || rem[5], `${setA.title} & ${setC.title}`);
+               const shared = _normVennBranch(_vData.shared || byZone.shared || rem[6], 'All Three / Shared');
+               return { isThreeCircle: true, setA, setB, setC, overlapAB, overlapBC, overlapAC, shared };
+          };
           let innerContent = '';
           let _vennExportModeForFallback = 'completed';
           if (type === 'Venn Diagram') {
-               const _vennOverlapIdx = branches.length === 3
-                 ? branches.findIndex(b => /both|overlap|shared|common|similar|middle|center/i.test(String(b?.title || '')))
-                 : -1;
-               const _vennSides = _vennOverlapIdx !== -1 ? [0, 1, 2].filter(idx => idx !== _vennOverlapIdx) : [0, 1];
-               const setA = branches[_vennSides[0]] || { title: 'Set A', items: [] };
-               const setB = branches[_vennSides[1]] || { title: 'Set B', items: [] };
-               const shared = (_vennOverlapIdx !== -1 ? branches[_vennOverlapIdx] : branches[2]) || { title: 'Shared', items: [] };
+               const _vennCfg = _resolveVennConfig();
+               const _isThreeCircleVenn = _vennCfg.isThreeCircle;
+               const { setA, setB, setC, overlapAB, overlapBC, overlapAC, shared } = _vennCfg;
                const _vennRequestedMode = ['completed', 'activity', 'both'].includes(cfg.vennExportMode)
                  ? cfg.vennExportMode
                  : 'completed';
@@ -48789,9 +48860,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                const renderItem = (it, en, opts) => `<li style="margin-bottom: ${opts.mb}; font-size: ${opts.fs}; line-height: 1.4; background: ${opts.bg}; color: ${opts.text}; padding: ${opts.pad}; border-radius: 10px; border-left: 4px solid ${opts.accent}; box-shadow: 0 1px 2px rgba(0,0,0,0.04); text-align: center; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
                        <span style="font-weight: 600;">${_escTxt(it && typeof it === 'object' ? (it.text || it.label || '') : it)}</span>${en ? `<br><span style="font-size:0.85em;opacity:0.8;font-style:italic;font-weight:normal;">(${_escTxt(en)})</span>` : ''}
                     </li>`;
-               const renderListA = (items, items_en, limit = 8) => items.slice(0, limit).map((it, i) => renderItem(it, items_en?.[i], { fs: '0.9em', pad: '7px 12px', mb: '7px', bg: '#fff1f2', text: '#881337', accent: '#fb7185' })).join('');
-               const renderListB = (items, items_en, limit = 8) => items.slice(0, limit).map((it, i) => renderItem(it, items_en?.[i], { fs: '0.9em', pad: '7px 12px', mb: '7px', bg: '#eff6ff', text: '#1e3a8a', accent: '#60a5fa' })).join('');
-               const renderListShared = (items, items_en, limit = 5) => items.slice(0, limit).map((it, i) => renderItem(it, items_en?.[i], { fs: sharedFontSize, pad: sharedItemPad, mb: sharedItemMargin, bg: '#f5f3ff', text: '#5b21b6', accent: '#a78bfa' })).join('');
+               const renderListA = (items, items_en, limit = 8) => (Array.isArray(items) ? items : []).slice(0, limit).map((it, i) => renderItem(it, items_en?.[i], { fs: '0.9em', pad: '7px 12px', mb: '7px', bg: '#fff1f2', text: '#881337', accent: '#fb7185' })).join('');
+               const renderListB = (items, items_en, limit = 8) => (Array.isArray(items) ? items : []).slice(0, limit).map((it, i) => renderItem(it, items_en?.[i], { fs: '0.9em', pad: '7px 12px', mb: '7px', bg: '#eff6ff', text: '#1e3a8a', accent: '#60a5fa' })).join('');
+               const renderListC = (items, items_en, limit = 8) => (Array.isArray(items) ? items : []).slice(0, limit).map((it, i) => renderItem(it, items_en?.[i], { fs: '0.9em', pad: '7px 12px', mb: '7px', bg: '#ecfdf5', text: '#065f46', accent: '#34d399' })).join('');
+               const renderListOverlap = (items, items_en, opts, limit = 4) => (Array.isArray(items) ? items : []).slice(0, limit).map((it, i) => renderItem(it, items_en?.[i], opts)).join('');
+               const renderListShared = (items, items_en, limit = 5) => (Array.isArray(items) ? items : []).slice(0, limit).map((it, i) => renderItem(it, items_en?.[i], { fs: sharedFontSize, pad: sharedItemPad, mb: sharedItemMargin, bg: '#f5f3ff', text: '#5b21b6', accent: '#a78bfa' })).join('');
                // Overflow list: extra shared items beyond the diagram fit
                const sharedOverflow = (shared.items || []).slice(5);
                const sharedOverflowHtml = sharedOverflow.length > 0
@@ -48806,54 +48879,75 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       </ul>
                     </div>`
                  : '';
-               const _completedVennHtml = `
-                  <style>
-                    .venn-print-wrapper { page-break-inside: avoid; -webkit-print-color-adjust: exact; print-color-adjust: exact; background: white; color: #0f172a; padding: 32px 24px; border-radius: 16px; max-width: 100%; }
-                    .venn-print-wrapper * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-                    .venn-print-wrapper .venn-visual { font-size: 16px; line-height: 1.35; max-width: 100%; overflow: visible; }
-                    .venn-print-wrapper .venn-visual li { overflow-wrap: anywhere; hyphens: auto; }
-                    /* The circles are a fixed 720px geometry, so the wrapper always
-                       owns the horizontal scroll rather than pushing the page
-                       sideways. Previously this only applied under an 820px
-                       viewport, which missed the case that actually bites: a normal
-                       window whose section got narrow because the reader turned the
-                       text up. Unconditional here; a no-op when there is room. */
-                    .venn-visual-viewport { max-width: 100%; overflow-x: auto; overflow-y: visible; -webkit-overflow-scrolling: touch; }
-                    .venn-print-wrapper .venn-visual { min-width: 720px; }
-                    /* On screen the fixed geometry shrinks to the space it has (the fit
-                       script sets --venn-fit); below a readable size it becomes three
-                       stacked panels. Print keeps its own scale. */
-                    @media screen {
-                      .venn-print-wrapper .venn-visual { zoom: var(--venn-fit, 1); }
-                      .venn-stacked .venn-visual { zoom: 1; min-width: 0 !important; width: auto !important; height: auto !important; display: flex; flex-direction: column; gap: 14px; }
-                      .venn-stacked .venn-visual > div { position: static !important; width: auto !important; transform: none !important; }
-                      .venn-stacked .venn-visual > div:nth-child(1) { order: 1; }
-                      .venn-stacked .venn-visual > div:nth-child(3) { order: 2; background: #f5f3ff; border: 4px solid #a78bfa; border-radius: 18px; padding: 16px; box-sizing: border-box; }
-                      .venn-stacked .venn-visual > div:nth-child(2) { order: 3; }
-                      .venn-stacked .venn-visual > div > div:first-child:not([role="heading"]) { padding-left: 0 !important; padding-right: 0 !important; }
-                      .venn-stacked [data-venn-circle] { width: auto !important; height: auto !important; border-radius: 18px !important; padding: 16px !important; }
-                    }
-                    html[data-alloflow-theme="dark"] .venn-print-wrapper { background: #f8fafc !important; color: #0f172a !important; }
-                    @media print {
-                      .venn-print-wrapper { page-break-inside: avoid; break-inside: avoid; padding: 12px 0; }
-                      .venn-visual-viewport { position: relative; height: 410px; overflow: visible; }
-                      .venn-print-wrapper .venn-visual { position: absolute !important; top: 0; left: 50%; margin: 0 !important; transform: translateX(-50%) scale(0.82); transform-origin: top center; }
-                      .venn-print-wrapper [data-venn-circle] { box-shadow: none !important; }
-                      .venn-print-wrapper li { box-shadow: none !important; }
-                    }
-                  </style>
-                  <div class="venn-print-wrapper">
-                  <div style="text-align:center; margin-bottom: 32px;">
-                      <div role="heading" aria-level="3" class="venn-main-title" style="margin:0; font-size: 1.9em; background:transparent; color:#0f172a; font-weight: 800; letter-spacing: -0.02em;">${_escTxt(main)}</div>
-                      ${main_en ? `<div style="font-size:1em; background:transparent; color:#475569; font-style:italic; margin-top:6px;">(${_escTxt(main_en)})</div>` : ''}
-                      <div style="display: inline-flex; align-items: center; gap: 8px; margin-top: 12px;">
-                        <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#fb7185;"></span>
-                        <span class="venn-compare-label" style="font-size: max(12px, 0.7em); font-weight: 700; background:transparent; color:#475569; text-transform: uppercase; letter-spacing: 0.08em;">Compare and Contrast</span>
-                        <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#60a5fa;"></span>
+               const _completedVennVisualBody = _isThreeCircleVenn
+                 ? `<div class="venn-visual venn-visual-3circle" role="img" aria-label="3-circle Venn diagram comparing ${_escTxt(setA.title)}, ${_escTxt(setB.title)}, and ${_escTxt(setC.title)}" style="position: relative; width: 720px; height: 670px; margin: 0 auto; font-family: 'Inter', system-ui, sans-serif; page-break-inside: avoid; break-inside: avoid;">
+                      <!-- Set A (Top-Left Circle) -->
+                      <div style="position: absolute; top: 0; left: 20px; width: 390px;">
+                          <div style="text-align: center; margin-bottom: 10px; padding-right: 90px;">
+                              <div role="heading" aria-level="4" class="venn-set-a-title" style="margin: 0; color:#9f1239; font-size: 1.1em; font-weight: 800; background: white; display: inline-block; padding: 7px 18px; border-radius: 999px; border: 2px solid #fda4af; box-shadow: 0 4px 10px -2px rgba(244,63,94,0.18); position: relative; z-index: 20;">
+                                  ${_escTxt(setA.title)}
+                              </div>
+                              ${setA.title_en ? `<div style="font-size:0.82em; background:transparent; color:#9f1239; margin-top:4px; font-style: italic;">(${_escTxt(setA.title_en)})</div>` : ''}
+                          </div>
+                          <div data-venn-circle="A" style="width: 390px; height: 390px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, rgba(255,228,230,0.92) 0%, rgba(254,205,211,0.88) 100%); border: 4px solid #fb7185; box-sizing: border-box; padding: 48px 145px 120px 32px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; word-wrap: break-word; z-index: 1; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                              <ul style="list-style: none; padding: 0; margin: 0; width: 100%;">
+                                  ${renderListA(setA.items, setA.items_en, 5)}
+                              </ul>
+                          </div>
                       </div>
-                  </div>
-                  <div class="venn-visual-viewport" tabindex="0" role="region" aria-label="Scrollable Venn diagram">
-                  <div class="venn-visual" role="img" aria-label="Venn diagram comparing ${_escTxt(setA.title)} and ${_escTxt(setB.title)}" style="position: relative; width: 720px; height: 500px; margin: 0 auto; font-family: 'Inter', system-ui, sans-serif; page-break-inside: avoid; break-inside: avoid;">
+                      <!-- Set B (Top-Right Circle) -->
+                      <div style="position: absolute; top: 0; right: 20px; width: 390px;">
+                          <div style="text-align: center; margin-bottom: 10px; padding-left: 90px;">
+                              <div role="heading" aria-level="4" class="venn-set-b-title" style="margin: 0; color:#1e40af; font-size: 1.1em; font-weight: 800; background: white; display: inline-block; padding: 7px 18px; border-radius: 999px; border: 2px solid #93c5fd; box-shadow: 0 4px 10px -2px rgba(59,130,246,0.18); position: relative; z-index: 20;">
+                                  ${_escTxt(setB.title)}
+                              </div>
+                              ${setB.title_en ? `<div style="font-size:0.82em; background:transparent; color:#1e40af; margin-top:4px; font-style: italic;">(${_escTxt(setB.title_en)})</div>` : ''}
+                          </div>
+                          <div data-venn-circle="B" style="width: 390px; height: 390px; border-radius: 50%; background: radial-gradient(circle at 70% 30%, rgba(219,234,254,0.92) 0%, rgba(191,219,254,0.88) 100%); border: 4px solid #60a5fa; box-sizing: border-box; padding: 48px 32px 120px 145px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; word-wrap: break-word; z-index: 2; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                              <ul style="list-style: none; padding: 0; margin: 0; width: 100%;">
+                                  ${renderListB(setB.items, setB.items_en, 5)}
+                              </ul>
+                          </div>
+                      </div>
+                      <!-- Set C (Bottom-Center Circle) -->
+                      <div style="position: absolute; top: 225px; left: 50%; transform: translateX(-50%); width: 390px;">
+                          <div data-venn-circle="C" style="width: 390px; height: 390px; border-radius: 50%; background: radial-gradient(circle at 50% 72%, rgba(209,250,229,0.9) 0%, rgba(167,243,208,0.86) 100%); border: 4px solid #34d399; box-sizing: border-box; padding: 170px 64px 28px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; word-wrap: break-word; z-index: 3; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                              <div role="heading" aria-level="4" class="venn-set-c-title" style="margin: 0 0 8px 0; color:#065f46; font-size: 1.05em; font-weight: 800; background: white; display: inline-block; padding: 6px 16px; border-radius: 999px; border: 2px solid #6ee7b7; box-shadow: 0 3px 8px -2px rgba(16,185,129,0.2);">
+                                  ${_escTxt(setC.title)}
+                              </div>
+                              ${setC.title_en ? `<div style="font-size:0.8em; color:#065f46; margin-bottom:6px; font-style:italic;">(${_escTxt(setC.title_en)})</div>` : ''}
+                              <ul style="list-style: none; padding: 0; margin: 0; width: 100%;">
+                                  ${renderListC(setC.items, setC.items_en, 5)}
+                              </ul>
+                          </div>
+                      </div>
+                      <!-- Overlap A & B -->
+                      <div class="venn-overlap-ab" style="position: absolute; top: 72px; left: 50%; transform: translateX(-50%); width: 155px; text-align: center; z-index: 14;">
+                          <div role="heading" aria-level="4" style="font-size: 0.78em; font-weight: 800; color:#6d28d9; margin: 0 0 6px 0; background: rgba(255,255,255,0.95); display: inline-block; padding: 4px 10px; border-radius: 999px; border: 1.5px solid #c4b5fd;">${_escTxt(overlapAB.title)}</div>
+                          <ul style="list-style: none; padding: 0; margin: 0;">${renderListOverlap(overlapAB.items, overlapAB.items_en, { fs: '0.8em', pad: '4px 8px', mb: '4px', bg: '#f5f3ff', text: '#4c1d95', accent: '#8b5cf6' }, 3)}</ul>
+                      </div>
+                      <!-- Overlap A & C -->
+                      <div class="venn-overlap-ac" style="position: absolute; top: 280px; left: 170px; width: 148px; text-align: center; z-index: 14;">
+                          <div role="heading" aria-level="4" style="font-size: 0.78em; font-weight: 800; color:#9a3412; margin: 0 0 6px 0; background: rgba(255,255,255,0.95); display: inline-block; padding: 4px 10px; border-radius: 999px; border: 1.5px solid #fdba74;">${_escTxt(overlapAC.title)}</div>
+                          <ul style="list-style: none; padding: 0; margin: 0;">${renderListOverlap(overlapAC.items, overlapAC.items_en, { fs: '0.8em', pad: '4px 8px', mb: '4px', bg: '#fff7ed', text: '#7c2d12', accent: '#fb923c' }, 3)}</ul>
+                      </div>
+                      <!-- Overlap B & C -->
+                      <div class="venn-overlap-bc" style="position: absolute; top: 280px; right: 170px; width: 148px; text-align: center; z-index: 14;">
+                          <div role="heading" aria-level="4" style="font-size: 0.78em; font-weight: 800; color:#0f766e; margin: 0 0 6px 0; background: rgba(255,255,255,0.95); display: inline-block; padding: 4px 10px; border-radius: 999px; border: 1.5px solid #5eead4;">${_escTxt(overlapBC.title)}</div>
+                          <ul style="list-style: none; padding: 0; margin: 0;">${renderListOverlap(overlapBC.items, overlapBC.items_en, { fs: '0.8em', pad: '4px 8px', mb: '4px', bg: '#f0fdfa', text: '#134e4a', accent: '#14b8a6' }, 3)}</ul>
+                      </div>
+                      <!-- Center All Three / Shared -->
+                      <div style="position: absolute; top: 215px; left: 50%; transform: translateX(-50%); width: 155px; text-align: center; z-index: 18;">
+                          <div role="heading" aria-level="4" class="venn-shared-title" style="font-size: 0.85em; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color:#6d28d9; margin: 0 0 8px 0; background: linear-gradient(to bottom, white, #faf5ff); display: inline-block; padding: 5px 12px; border-radius: 999px; border: 2px solid #a78bfa; box-shadow: 0 4px 10px -2px rgba(124,58,237,0.25);">
+                              ${_escTxt(shared.title || 'All Three / Shared')}
+                              ${shared.title_en ? `<br><span style="font-weight:normal; opacity:0.85; font-size: 0.82em; text-transform: none;">(${_escTxt(shared.title_en)})</span>` : ''}
+                          </div>
+                          <ul style="list-style: none; padding: 0; margin: 0;">
+                               ${renderListShared(shared.items, shared.items_en, 4)}
+                          </ul>
+                      </div>
+                  </div>`
+                 : `<div class="venn-visual" role="img" aria-label="Venn diagram comparing ${_escTxt(setA.title)} and ${_escTxt(setB.title)}" style="position: relative; width: 720px; height: 500px; margin: 0 auto; font-family: 'Inter', system-ui, sans-serif; page-break-inside: avoid; break-inside: avoid;">
                       <!-- Set A (Left Circle) -->
                       <div style="position: absolute; top: 0; left: 0; width: 440px;">
                           <!-- Header pill -->
@@ -48901,7 +48995,47 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                ${renderListShared(shared.items, shared.items_en, 5)}
                           </ul>
                       </div>
+                  </div>`;
+               const _completedVennHtml = `
+                  <style>
+                    .venn-print-wrapper { page-break-inside: avoid; -webkit-print-color-adjust: exact; print-color-adjust: exact; background: white; color: #0f172a; padding: 32px 24px; border-radius: 16px; max-width: 100%; }
+                    .venn-print-wrapper * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                    .venn-print-wrapper .venn-visual { font-size: 16px; line-height: 1.35; max-width: 100%; overflow: visible; }
+                    .venn-print-wrapper .venn-visual li { overflow-wrap: anywhere; hyphens: auto; }
+                    .venn-visual-viewport { max-width: 100%; overflow-x: auto; overflow-y: visible; -webkit-overflow-scrolling: touch; }
+                    .venn-print-wrapper .venn-visual { min-width: 720px; }
+                    @media screen {
+                      .venn-print-wrapper .venn-visual { zoom: var(--venn-fit, 1); }
+                      .venn-stacked .venn-visual { zoom: 1; min-width: 0 !important; width: auto !important; height: auto !important; display: flex; flex-direction: column; gap: 14px; }
+                      .venn-stacked .venn-visual > div { position: static !important; width: auto !important; transform: none !important; }
+                      .venn-stacked .venn-visual > div:nth-child(1) { order: 1; }
+                      .venn-stacked .venn-visual > div:nth-child(3) { order: 2; background: #f5f3ff; border: 4px solid #a78bfa; border-radius: 18px; padding: 16px; box-sizing: border-box; }
+                      .venn-stacked .venn-visual > div:nth-child(2) { order: 3; }
+                      .venn-stacked .venn-visual > div > div:first-child:not([role="heading"]) { padding-left: 0 !important; padding-right: 0 !important; }
+                      .venn-stacked [data-venn-circle] { width: auto !important; height: auto !important; border-radius: 18px !important; padding: 16px !important; }
+                    }
+                    html[data-alloflow-theme="dark"] .venn-print-wrapper { background: #f8fafc !important; color: #0f172a !important; }
+                    @media print {
+                      .venn-print-wrapper { page-break-inside: avoid; break-inside: avoid; padding: 12px 0; }
+                      .venn-visual-viewport { position: relative; height: ${_isThreeCircleVenn ? '550px' : '410px'}; overflow: visible; }
+                      .venn-print-wrapper .venn-visual { position: absolute !important; top: 0; left: 50%; margin: 0 !important; transform: translateX(-50%) scale(${_isThreeCircleVenn ? '0.76' : '0.82'}); transform-origin: top center; }
+                      .venn-print-wrapper [data-venn-circle] { box-shadow: none !important; }
+                      .venn-print-wrapper li { box-shadow: none !important; }
+                    }
+                  </style>
+                  <div class="venn-print-wrapper">
+                  <div style="text-align:center; margin-bottom: 32px;">
+                      <div role="heading" aria-level="3" class="venn-main-title" style="margin:0; font-size: 1.9em; background:transparent; color:#0f172a; font-weight: 800; letter-spacing: -0.02em;">${_escTxt(main)}</div>
+                      ${main_en ? `<div style="font-size:1em; background:transparent; color:#475569; font-style:italic; margin-top:6px;">(${_escTxt(main_en)})</div>` : ''}
+                      <div style="display: inline-flex; align-items: center; gap: 8px; margin-top: 12px;">
+                        <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#fb7185;"></span>
+                        <span class="venn-compare-label" style="font-size: max(12px, 0.7em); font-weight: 700; background:transparent; color:#475569; text-transform: uppercase; letter-spacing: 0.08em;">Compare and Contrast</span>
+                        <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#60a5fa;"></span>
+                        ${_isThreeCircleVenn ? '<span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#34d399;"></span>' : ''}
+                      </div>
                   </div>
+                  <div class="venn-visual-viewport" tabindex="0" role="region" aria-label="Scrollable Venn diagram">
+                  ${_completedVennVisualBody}
                   </div>
                   ${sharedOverflowHtml}
                   </div>
@@ -48927,19 +49061,49 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                  }
                  return hash >>> 0;
                };
-               const _vennActivityItems = [
-                 ..._vennItemsFor(setA, 'setA'),
-                 ..._vennItemsFor(setB, 'setB'),
-                 ..._vennItemsFor(shared, 'shared'),
-               ].map((entry, index) => ({ ...entry, itemIndex: index }))
+               const _vennActivityItems = (
+                 _isThreeCircleVenn
+                   ? [
+                       ..._vennItemsFor(setA, 'setA'),
+                       ..._vennItemsFor(setB, 'setB'),
+                       ..._vennItemsFor(setC, 'setC'),
+                       ..._vennItemsFor(overlapAB, 'overlapAB'),
+                       ..._vennItemsFor(overlapBC, 'overlapBC'),
+                       ..._vennItemsFor(overlapAC, 'overlapAC'),
+                       ..._vennItemsFor(shared, 'shared'),
+                     ]
+                   : [
+                       ..._vennItemsFor(setA, 'setA'),
+                       ..._vennItemsFor(setB, 'setB'),
+                       ..._vennItemsFor(shared, 'shared'),
+                     ]
+               ).map((entry, index) => ({ ...entry, itemIndex: index }))
                 .sort((a, b) => _vennStableHash(`${item.id || ''}:${a.text}:${a.itemIndex}`) - _vennStableHash(`${item.id || ''}:${b.text}:${b.itemIndex}`));
                const _vennSectionId = `alloflow-venn-${String(item.id || 'activity').replace(/[^A-Za-z0-9_-]/g, '-').slice(0, 96)}`;
                const _vennSetATitleRaw = String(setA.title || 'Set A');
                const _vennSetBTitleRaw = String(setB.title || 'Set B');
-               const _vennSharedTitleRaw = String(shared.title || 'Shared / Both');
+               const _vennSetCTitleRaw = String((setC && setC.title) || 'Set C');
+               const _vennOverlapABTitleRaw = String((overlapAB && overlapAB.title) || `${_vennSetATitleRaw} & ${_vennSetBTitleRaw}`);
+               const _vennOverlapBCTitleRaw = String((overlapBC && overlapBC.title) || `${_vennSetBTitleRaw} & ${_vennSetCTitleRaw}`);
+               const _vennOverlapACTitleRaw = String((overlapAC && overlapAC.title) || `${_vennSetATitleRaw} & ${_vennSetCTitleRaw}`);
+               const _vennSharedTitleRaw = String(shared.title || (_isThreeCircleVenn ? 'All Three / Shared' : 'Shared / Both'));
                const _vennSetATitle = _escTxt(_vennSetATitleRaw);
                const _vennSetBTitle = _escTxt(_vennSetBTitleRaw);
+               const _vennSetCTitle = _escTxt(_vennSetCTitleRaw);
                const _vennSharedTitle = _escTxt(_vennSharedTitleRaw);
+               const _vennSelectOptionsHtml = _isThreeCircleVenn
+                 ? `<option value="">Not placed</option>
+                     <option value="setA">${_vennSetATitle} only</option>
+                     <option value="setB">${_vennSetBTitle} only</option>
+                     <option value="setC">${_vennSetCTitle} only</option>
+                     <option value="overlapAB">${_escTxt(_vennOverlapABTitleRaw)}</option>
+                     <option value="overlapBC">${_escTxt(_vennOverlapBCTitleRaw)}</option>
+                     <option value="overlapAC">${_escTxt(_vennOverlapACTitleRaw)}</option>
+                     <option value="shared">${_vennSharedTitle}</option>`
+                 : `<option value="">Not placed</option>
+                     <option value="setA">${_vennSetATitle} only</option>
+                     <option value="shared">${_vennSharedTitle}</option>
+                     <option value="setB">${_vennSetBTitle} only</option>`;
                const _vennDigitalCards = _vennActivityItems.map(entry => `
                  <div role="listitem" class="alloflow-venn-card" data-venn-item-index="${entry.itemIndex}"${_vennCanSelfCheck ? ` data-answer-zone="${entry.zone}"` : ''}>
                    <button type="button" class="alloflow-venn-card-button" aria-pressed="false">
@@ -48947,10 +49111,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                      ${entry.translation ? `<span class="alloflow-venn-card-translation">(${_escTxt(entry.translation)})</span>` : ''}
                    </button>
                    <select hidden class="alloflow-venn-response" data-allo-response-key="${_escTxt((item.id || 'venn') + ':venn:' + entry.itemIndex + ':placement')}" data-allo-response-type="venn-sort" data-allo-part-label="Placement" data-allo-question="${_escTxt(entry.text)}" aria-label="Placement for ${_escTxt(entry.text)}">
-                     <option value="">Not placed</option>
-                     <option value="setA">${_vennSetATitle} only</option>
-                     <option value="shared">${_vennSharedTitle}</option>
-                     <option value="setB">${_vennSetBTitle} only</option>
+                     ${_vennSelectOptionsHtml}
                    </select>
                  </div>
                `).join('');
@@ -48980,6 +49141,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                    .alloflow-venn-zone-set-a { border-color:#be123c;background:#fff1f2; }
                    .alloflow-venn-zone-shared { border-color:#6d28d9;background:#f5f3ff; }
                    .alloflow-venn-zone-set-b { border-color:#1d4ed8;background:#eff6ff; }
+                   .alloflow-venn-zone-set-c { border-color:#047857;background:#ecfdf5; }
+                   .alloflow-venn-zone-overlap-ab { border-color:#7c3aed;background:#f5f3ff; }
+                   .alloflow-venn-zone-overlap-bc { border-color:#0f766e;background:#f0fdfa; }
+                   .alloflow-venn-zone-overlap-ac { border-color:#c2410c;background:#fff7ed; }
+                   .alloflow-venn-digital-zones-3circle { grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); }
                    .alloflow-venn-zone h4 { margin:0 0 8px;font-size:1rem;color:#1e293b; }
                    .alloflow-venn-place-button { width:100%;padding:8px 10px;border:0;border-radius:7px;background:#4f46e5;color:#fff;font-weight:700;cursor:pointer; }
                    .alloflow-venn-place-button:disabled { opacity:.52;cursor:not-allowed; }
@@ -49024,10 +49190,18 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                      .alloflow-venn-print-circle { position:absolute;top:0;width:61.5%;aspect-ratio:1;border:3px solid #334155;border-radius:50%;box-sizing:border-box;background:rgba(255,255,255,.01); }
                      .alloflow-venn-print-circle-a { left:0;border-color:#be123c; }
                      .alloflow-venn-print-circle-b { right:0;border-color:#1d4ed8; }
+                     .alloflow-venn-print-circles-3 { aspect-ratio:1.15 / 1 !important; max-width:560px !important; }
+                     .alloflow-venn-print-circles-3 .alloflow-venn-print-circle { width:56% !important; }
+                     .alloflow-venn-print-circle-c { left:22%;top:36% !important;border-color:#047857 !important; }
                      .alloflow-venn-print-zone-label { position:absolute;top:8%;z-index:2;padding:4px 9px;border:1px solid #64748b;border-radius:999px;background:#fff;color:#0f172a !important;font-size:.78rem;font-weight:800; }
                      .alloflow-venn-print-zone-label-a { left:11%; }
                      .alloflow-venn-print-zone-label-shared { left:50%;transform:translateX(-50%); }
                      .alloflow-venn-print-zone-label-b { right:11%; }
+                     .alloflow-venn-print-zone-label-c { left:50%;bottom:8%;top:auto !important;transform:translateX(-50%); }
+                     .alloflow-venn-print-zone-label-ab { left:50%;top:14% !important;transform:translateX(-50%); }
+                     .alloflow-venn-print-zone-label-ac { left:18%;top:54% !important; }
+                     .alloflow-venn-print-zone-label-bc { right:18%;top:54% !important; }
+                     .alloflow-venn-print-circles-3 .alloflow-venn-print-zone-label-shared { top:41% !important; }
                      .alloflow-venn-print-cards { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px; }
                      .alloflow-venn-print-card { display:flex;align-items:center;gap:9px;min-height:42px;padding:8px 10px;border:2px dashed #64748b;border-radius:6px;background:#fff;color:#0f172a !important;break-inside:avoid;page-break-inside:avoid; }
                      .alloflow-venn-card-number { flex-shrink:0;color:#475569 !important;font:700 .72rem/1 monospace; }
@@ -49038,10 +49212,22 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                  <div id="${_vennSectionId}" class="alloflow-venn-activity" data-alloflow-venn-mode="${_vennMode}" data-venn-copy-cleared="${_uiL('export.venn_cleared', 'Selection cleared.')}" data-venn-copy-selected="${_uiL('export.venn_selected', 'Selected {item}. Choose a Place button.')}" data-venn-copy-placed="${_uiL('export.venn_placed', '{item} placed in {zone}.')}" data-venn-copy-returned="${_uiL('export.venn_returned', '{item} returned to the item bank.')}" data-venn-copy-shuffled="${_uiL('export.venn_shuffled', 'Items shuffled.')}" data-venn-copy-reset="${_uiL('export.venn_reset', 'Sort reset.')}" data-venn-copy-score="${_uiL('export.venn_score', '{correct} of {total} correct. {remaining} still in the bank.')}" data-venn-copy-print-heading="${_uiL('export.venn_saved_placements', 'Your recorded placements:')}">
                    <div class="alloflow-venn-screen-only">
                      <div class="alloflow-venn-screen-instructions"><strong>${_uiL('glossary.export_howto_label', 'How to use:')}</strong> ${_uiL('export.venn_howto', 'Select an item, then use a named Place button to move it into {zoneA}, {shared}, or {zoneB}. This works with touch, mouse, Enter, or Space.', { zoneA: _uiRaw('export.venn_only', '{label} only', { label: _vennSetATitleRaw }), shared: _vennSharedTitleRaw, zoneB: _uiRaw('export.venn_only', '{label} only', { label: _vennSetBTitleRaw }) })} ${_vennCanSelfCheck ? _uiL('export.venn_self_check_hint', 'Use Check my sort when you are ready.') : _uiL('export.venn_teacher_review_hint', 'Your teacher will review your placements after you submit.')}</div>
-                     <div class="alloflow-venn-digital-zones" role="group" aria-label="${_uiL('export.venn_zones_aria', 'Venn sorting areas')}">
-                       ${_renderVennZone('setA', _uiRaw('export.venn_only', '{label} only', { label: _vennSetATitleRaw }), 'set-a')}
-                       ${_renderVennZone('shared', _vennSharedTitleRaw, 'shared')}
-                       ${_renderVennZone('setB', _uiRaw('export.venn_only', '{label} only', { label: _vennSetBTitleRaw }), 'set-b')}
+                     <div class="alloflow-venn-digital-zones${_isThreeCircleVenn ? ' alloflow-venn-digital-zones-3circle' : ''}" role="group" aria-label="${_uiL('export.venn_zones_aria', 'Venn sorting areas')}">
+                       ${_isThreeCircleVenn
+                         ? [
+                             _renderVennZone('setA', _uiRaw('export.venn_only', '{label} only', { label: _vennSetATitleRaw }), 'set-a'),
+                             _renderVennZone('overlapAB', _vennOverlapABTitleRaw, 'overlap-ab'),
+                             _renderVennZone('setB', _uiRaw('export.venn_only', '{label} only', { label: _vennSetBTitleRaw }), 'set-b'),
+                             _renderVennZone('shared', _vennSharedTitleRaw, 'shared'),
+                             _renderVennZone('overlapAC', _vennOverlapACTitleRaw, 'overlap-ac'),
+                             _renderVennZone('overlapBC', _vennOverlapBCTitleRaw, 'overlap-bc'),
+                             _renderVennZone('setC', _uiRaw('export.venn_only', '{label} only', { label: _vennSetCTitleRaw }), 'set-c'),
+                           ].join('')
+                         : [
+                             _renderVennZone('setA', _uiRaw('export.venn_only', '{label} only', { label: _vennSetATitleRaw }), 'set-a'),
+                             _renderVennZone('shared', _vennSharedTitleRaw, 'shared'),
+                             _renderVennZone('setB', _uiRaw('export.venn_only', '{label} only', { label: _vennSetBTitleRaw }), 'set-b'),
+                           ].join('')}
                      </div>
                      <div class="alloflow-venn-controls">
                        <button type="button" class="alloflow-venn-shuffle-button"><span aria-hidden="true">&#128256; </span>${_uiL('ui_common.shuffle', 'Shuffle')}</button>
@@ -49057,11 +49243,14 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                      <div class="alloflow-venn-print-board">
                        <h3 class="alloflow-venn-print-title">${_escTxt(main || 'Venn Diagram')} &mdash; ${_uiL('export.venn_sorting_activity', 'sorting activity')}</h3>
                        <p class="alloflow-venn-print-directions">${_uiL('export.venn_print_directions', 'Cut out the cards, then place each one in the correct part of the Venn diagram.')}</p>
-                       <div class="alloflow-venn-print-circles" role="img" aria-label="${_uiL('export.venn_blank_aria', 'Blank Venn diagram comparing {a} and {b}', { a: _vennSetATitleRaw, b: _vennSetBTitleRaw })}">
+                       <div class="alloflow-venn-print-circles${_isThreeCircleVenn ? ' alloflow-venn-print-circles-3' : ''}" role="img" aria-label="${_uiL('export.venn_blank_aria', 'Blank Venn diagram comparing {a} and {b}', { a: _vennSetATitleRaw, b: _isThreeCircleVenn ? (_vennSetBTitleRaw + ', ' + _vennSetCTitleRaw) : _vennSetBTitleRaw })}">
                          <div class="alloflow-venn-print-circle alloflow-venn-print-circle-a"></div>
                          <div class="alloflow-venn-print-circle alloflow-venn-print-circle-b"></div>
+                         ${_isThreeCircleVenn ? '<div class="alloflow-venn-print-circle alloflow-venn-print-circle-c"></div>' : ''}
                          <span class="alloflow-venn-print-zone-label alloflow-venn-print-zone-label-a">${_uiL('export.venn_only', '{label} only', { label: _vennSetATitleRaw })}</span>
+                         ${_isThreeCircleVenn ? `<span class="alloflow-venn-print-zone-label alloflow-venn-print-zone-label-ab">${_escTxt(_vennOverlapABTitleRaw)}</span>` : ''}
                          <span class="alloflow-venn-print-zone-label alloflow-venn-print-zone-label-shared">${_vennSharedTitle}</span>
+                         ${_isThreeCircleVenn ? `<span class="alloflow-venn-print-zone-label alloflow-venn-print-zone-label-ac">${_escTxt(_vennOverlapACTitleRaw)}</span><span class="alloflow-venn-print-zone-label alloflow-venn-print-zone-label-bc">${_escTxt(_vennOverlapBCTitleRaw)}</span><span class="alloflow-venn-print-zone-label alloflow-venn-print-zone-label-c">${_uiL('export.venn_only', '{label} only', { label: _vennSetCTitleRaw })}</span>` : ''}
                          <span class="alloflow-venn-print-zone-label alloflow-venn-print-zone-label-b">${_uiL('export.venn_only', '{label} only', { label: _vennSetBTitleRaw })}</span>
                        </div>
                        <div class="alloflow-venn-print-cards" role="list" aria-label="${_uiL('export.venn_print_cards_aria', 'Cut-out Venn sorting cards')}">${_vennPrintCards}</div>
@@ -49758,22 +49947,33 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               // Per-type framing so the relationships read sensibly aloud.
               let body = '';
               if (type === 'Venn Diagram') {
-                  const _vennOverlapIdx = branches.length === 3
-                    ? branches.findIndex(b => /both|overlap|shared|common|similar|middle|center/i.test(String(b?.title || '')))
-                    : -1;
-                  const _vennSides = _vennOverlapIdx !== -1 ? [0, 1, 2].filter(idx => idx !== _vennOverlapIdx) : [0, 1];
-                  const setA = branches[_vennSides[0]] || { title: 'Set A', items: [] };
-                  const setB = branches[_vennSides[1]] || { title: 'Set B', items: [] };
-                  const shared = (_vennOverlapIdx !== -1 ? branches[_vennOverlapIdx] : branches[2]) || { title: 'Shared', items: [] };
+                  const _fbVenn = _resolveVennConfig();
+                  const { setA, setB, setC, overlapAB, overlapBC, overlapAC, shared } = _fbVenn;
+                  const _allFallbackBranches = _fbVenn.isThreeCircle
+                    ? [setA, setB, setC, overlapAB, overlapBC, overlapAC, shared]
+                    : [setA, setB, shared];
                   if (_vennExportModeForFallback === 'activity') {
-                      const mixed = [setA, setB, shared].flatMap((branch) => (Array.isArray(branch.items) ? branch.items : []).map((value, index) => ({
+                      const mixed = _allFallbackBranches.flatMap((branch) => (Array.isArray(branch.items) ? branch.items : []).map((value, index) => ({
                           text: value && typeof value === 'object' ? (value.text || value.label || value.content || '') : value,
                           translation: (branch.items_en && branch.items_en[index]) || (value && typeof value === 'object' && value.translation) || '',
                       }))).filter(entry => String(entry.text || '').trim()).sort((a, b) => String(a.text).localeCompare(String(b.text)));
+                      const zonePrompt = _fbVenn.isThreeCircle
+                        ? `<strong>${escape(setA.title)} only</strong>, <strong>${escape(setB.title)} only</strong>, <strong>${escape(setC.title)} only</strong>, <strong>${escape(overlapAB.title)}</strong>, <strong>${escape(overlapBC.title)}</strong>, <strong>${escape(overlapAC.title)}</strong>, or <strong>${escape(shared.title || 'All Three / Shared')}</strong>`
+                        : `<strong>${escape(setA.title)} only</strong>, <strong>${escape(shared.title || 'Shared / Both')}</strong>, or <strong>${escape(setB.title)} only</strong>`;
                       body = `
-                          <p>Sorting activity: place every item under <strong>${escape(setA.title)} only</strong>, <strong>${escape(shared.title || 'Shared / Both')}</strong>, or <strong>${escape(setB.title)} only</strong>.</p>
+                          <p>Sorting activity: place every item under ${zonePrompt}.</p>
                           <h4>Items to sort</h4>
                           <ul>${mixed.map(entry => `<li>${escape(entry.text)}${entry.translation ? ` <em style="font-size:0.9em;">(${escape(entry.translation)})</em>` : ''}</li>`).join('')}</ul>
+                      `;
+                  } else if (_fbVenn.isThreeCircle) {
+                      body = `
+                          <h4>${escape(setA.title)} only</h4>${renderItems(setA.items, setA.items_en)}
+                          <h4>${escape(setB.title)} only</h4>${renderItems(setB.items, setB.items_en)}
+                          <h4>${escape(setC.title)} only</h4>${renderItems(setC.items, setC.items_en)}
+                          <h4>${escape(overlapAB.title)}</h4>${renderItems(overlapAB.items, overlapAB.items_en)}
+                          <h4>${escape(overlapBC.title)}</h4>${renderItems(overlapBC.items, overlapBC.items_en)}
+                          <h4>${escape(overlapAC.title)}</h4>${renderItems(overlapAC.items, overlapAC.items_en)}
+                          <h4>${escape(shared.title || 'All Three / Shared')}</h4>${renderItems(shared.items, shared.items_en)}
                       `;
                   } else {
                       body = `
@@ -50117,7 +50317,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           const quizId = String(item.id || 'quiz');
           // Graded or teacher-release quiz: the student copy carries no key and no self-check
           // (a file has no release step); answers still save and submit.
-          const quizGraded = !isTeacher && (item.data?.answerKeysWithheld === true || ['teacher-graded', 'teacher-release'].includes(item.data?.deliverySettings?.feedbackTiming));
+          const quizGraded = !isTeacher && (cfg.assessmentMode === true || item.data?.answerKeysWithheld === true || ['teacher-graded', 'teacher-release'].includes(item.data?.deliverySettings?.feedbackTiming));
           const quizGradedNote = (() => { const value = t('quiz.graded.student_note'); return typeof value === 'string' && value && value !== 'quiz.graded.student_note' ? value : 'Your teacher will check your answers.'; })();
           // Student-facing quiz chrome, escaped for both text and attribute use.
           const _qL = (key, fallback, n) => { const value = t(key); return _escTxt((typeof value === 'string' && value.trim() && value !== key ? value : fallback).replace('{n}', n)); };
@@ -50162,29 +50362,42 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           // q.correctAnswer can be a number, a string matching an option, or an
           // A/B/C/D letter — handle all three. -1 means we couldn't resolve it,
           // and that question gets skipped by the checker rather than scored wrong.
+          const _isDocTfType = (raw) => /^(?:true[-_]?false|truefalse|tf)$/i.test(String(raw || '').trim());
+          const _docMcqOptions = (q) => (q && Array.isArray(q.options) && q.options.length ? q.options : (_isDocTfType(q && q.type) ? ['True', 'False'] : []));
           const _resolveCorrectIdx = (q) => {
-              if (q == null || !Array.isArray(q.options)) return -1;
-              const ca = q.correctAnswer;
-              if (typeof ca === 'number' && ca >= 0 && ca < q.options.length) return ca;
-              if (typeof ca === 'string') {
-                  const trimmed = ca.trim();
-                  const exactIdx = q.options.indexOf(ca);
-                  if (exactIdx !== -1) return exactIdx;
-                  // Letter form (A, B, C, D, …)
-                  if (/^[A-Za-z]$/.test(trimmed)) {
-                      const letterIdx = trimmed.toUpperCase().charCodeAt(0) - 65;
-                      if (letterIdx >= 0 && letterIdx < q.options.length) return letterIdx;
+              if (q == null) return -1;
+              const opts = _docMcqOptions(q);
+              if (!opts.length) return -1;
+              const cands = [q.correctIndex, q.correct, q.correctAnswer, q.answer];
+              for (let ci = 0; ci < cands.length; ci++) {
+                  const ca = cands[ci];
+                  if (ca === undefined || ca === null) continue;
+                  if (typeof ca === 'boolean') {
+                      const target = ca ? 'true' : 'false';
+                      const bIdx = opts.findIndex((o) => String(o == null ? '' : o).trim().toLowerCase() === target);
+                      if (bIdx !== -1) return bIdx;
+                      if (_isDocTfType(q.type) && opts.length === 2) return ca ? 0 : 1;
+                      continue;
                   }
-                  // Numeric string ("0", "1", …)
-                  if (/^\d+$/.test(trimmed)) {
-                      const numIdx = parseInt(trimmed, 10);
-                      if (numIdx >= 0 && numIdx < q.options.length) return numIdx;
+                  if (typeof ca === 'number' && Number.isInteger(ca) && ca >= 0 && ca < opts.length) return ca;
+                  if (typeof ca === 'string') {
+                      const trimmed = ca.trim();
+                      if (!trimmed) continue;
+                      const exactIdx = opts.indexOf(ca);
+                      if (exactIdx !== -1) return exactIdx;
+                      const norm = (s) => String(s == null ? '' : s).trim().toLowerCase();
+                      const target = norm(trimmed);
+                      const found = opts.findIndex(opt => norm(opt) === target);
+                      if (found !== -1) return found;
+                      if (/^[A-Za-z]$/.test(trimmed)) {
+                          const letterIdx = trimmed.toUpperCase().charCodeAt(0) - 65;
+                          if (letterIdx >= 0 && letterIdx < opts.length) return letterIdx;
+                      }
+                      if (/^\d+$/.test(trimmed)) {
+                          const numIdx = parseInt(trimmed, 10);
+                          if (numIdx >= 0 && numIdx < opts.length) return numIdx;
+                      }
                   }
-                  // Match by literal option text (loose: lowercase + trim)
-                  const norm = (s) => String(s == null ? '' : s).trim().toLowerCase();
-                  const target = norm(trimmed);
-                  const found = q.options.findIndex(opt => norm(opt) === target);
-                  if (found !== -1) return found;
               }
               return -1;
           };
@@ -50202,9 +50415,12 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           };
           const _normDocQuizType = (raw) => {
               const k = String(raw || 'mcq').trim();
-              if (k === 'multiple-choice') return 'mcq';
-              if (k === 'shortAnswer') return 'short-answer';
-              if (k === 'order') return 'ordering';
+              const kl = k.toLowerCase();
+              if (kl === 'multiple-choice' || kl === 'true-false' || kl === 'true_false' || kl === 'truefalse' || kl === 'tf') return 'mcq';
+              if (kl === 'shortanswer' || kl === 'short-answer') return 'short-answer';
+              if (kl === 'order' || kl === 'ordering') return 'ordering';
+              if (kl === 'multiselect' || kl === 'multi-select' || kl === 'multi_select') return 'multi-select';
+              if (kl === 'fillblank' || kl === 'fill-blank') return 'fill-blank';
               return k;
           };
           const hasCheckableFill = !quizGraded && quizQuestions.some((q) => q && _normDocQuizType(q.type) === 'fill-blank' && typeof q.expectedFill === 'string' && q.expectedFill.trim());
@@ -50285,7 +50501,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           if (itemType === 'fill-blank') {
                               // Practice copies only: graded and assessment exports never carry the answer.
                               const fillAnswers = quizGraded || isTeacher || isWorksheet ? [] : [q.expectedFill].concat(Array.isArray(q.acceptableAlternatives) ? q.acceptableAlternatives : []).filter(v => typeof v === 'string' && v.trim());
-                              const fillAttr = fillAnswers.length ? ` data-fill-answers="${_escTxt(fillAnswers.map(v => encodeURIComponent(v.trim())).join('|'))}"` : '';
+                              const fillPolicy = fillAnswers.length && (q.blankPolicy === 'exact' || q.caseSensitive === true || q.exactMatch === true) ? ' data-fill-policy="exact"' : '';
+                              const fillAttr = fillAnswers.length ? ` data-fill-answers="${_escTxt(fillAnswers.map(v => encodeURIComponent(v.trim())).join('|'))}"${fillPolicy}` : '';
                               const fillFeedback = fillAnswers.length ? `<p id="${controlIdBase}_feedback" class="alloflow-quiz-feedback" hidden data-correct-label="${_qL('export.quiz_feedback_correct', 'Correct')}" data-review-label="${_qL('export.quiz_feedback_review', 'Review needed')}" data-unanswered-label="${_qL('export.quiz_feedback_unanswered', 'Unanswered')}" style="margin:0.5rem 0;font-weight:700;"></p>` : '';
                               return `
                               <div class="question" data-item-type="fill-blank"${fillAttr}${questionGroupAttrs}>
@@ -50433,7 +50650,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           if (itemType === 'numeric-response') {
                               const acceptedUnits = [q.unit, ...(Array.isArray(q.acceptableUnits) ? q.acceptableUnits : [])].filter((value, idx, list) => value && list.indexOf(value) === idx);
                               const toleranceText = q.tolerance !== undefined && q.tolerance !== null ? ` ± ${_escTxt(q.tolerance)}` : '';
-                              const _numKeyAttr = !quizGraded && !isTeacher && !isWorksheet && q.correctValue !== undefined && q.correctValue !== null && !Number.isNaN(Number(q.correctValue)) ? ` data-numeric-key="${_escTxt(encodeURIComponent(JSON.stringify({ value: Number(q.correctValue), tolerance: q.tolerance != null && !Number.isNaN(Number(q.tolerance)) ? Number(q.tolerance) : 0, units: acceptedUnits })))}"` : '';
+                              const _numKeyAttr = !quizGraded && !isTeacher && !isWorksheet && q.correctValue !== undefined && q.correctValue !== null && !Number.isNaN(Number(q.correctValue)) ? ` data-numeric-key="${_escTxt(encodeURIComponent(JSON.stringify({ value: Number(q.correctValue), tolerance: q.tolerance != null && !Number.isNaN(Number(q.tolerance)) ? Number(q.tolerance) : 0, units: acceptedUnits, requireUnit: Boolean(q.requireUnit && acceptedUnits.length > 0) })))}"` : '';
                               const _numFeedback = _numKeyAttr ? `<p id="${controlIdBase}_feedback" class="alloflow-quiz-feedback" hidden data-correct-label="${_qL('export.quiz_feedback_correct', 'Correct')}" data-review-label="${_qL('export.quiz_feedback_review', 'Review needed')}" data-unanswered-label="${_qL('export.quiz_feedback_unanswered', 'Unanswered')}" style="margin:0.5rem 0;font-weight:700;"></p>` : '';
                               return `
                               <div class="question" data-item-type="numeric-response"${_numKeyAttr}${questionGroupAttrs}>
@@ -50518,7 +50735,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           // Default: MCQ render (existing behavior preserved)
                           const correctIdx = _resolveCorrectIdx(q);
                           const correctAttr = quizGraded ? ' data-correct=""' : correctIdx >= 0 ? ` data-correct="${correctIdx}"` : '';
-                          const optsArr = Array.isArray(q.options) ? q.options : [];
+                          const optsArr = _docMcqOptions(q);
                           const feedbackId = !quizGraded && !isTeacher && !isWorksheet && correctIdx >= 0 ? controlIdBase + '_feedback' : '';
                           return `
                           <div class="question" data-item-type="mcq"${correctAttr}${questionGroupAttrs}>
@@ -50542,9 +50759,10 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           </div>
                       `;
                       }).join('')}
-                      ${quizGraded ? `<p class="alloflow-graded-note" style="margin:1rem 0;font-weight:700;color:#1e293b">${_escTxt(quizGradedNote)}</p>` : isTeacher || isWorksheet ? '' : `
+                      ${isTeacher || isWorksheet ? '' : `
+                          ${quizGraded ? `<p class="alloflow-graded-note" style="margin:1rem 0;font-weight:700;color:#1e293b">${_escTxt(quizGradedNote)}</p>` : ''}
                           <div class="quiz-controls" style="margin:1rem 0;display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center">
-                              ${hasSelfCheckableQuestions ? `<button type="button" class="quiz-check-btn" style="padding:8px 16px;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.9rem"><span aria-hidden="true">🎯 </span>${(hasCheckableFill || hasCheckableMulti || hasCheckableNumeric || hasCheckableStructured) ? _qL('export.quiz_check_answers', 'Check my answers') : _qL('export.quiz_check_mcq', 'Check multiple-choice answers')}</button>` : '<button type="button" class="quiz-check-btn" hidden disabled></button>'}
+                              ${!quizGraded ? (hasSelfCheckableQuestions ? `<button type="button" class="quiz-check-btn" style="padding:8px 16px;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.9rem"><span aria-hidden="true">🎯 </span>${(hasCheckableFill || hasCheckableMulti || hasCheckableNumeric || hasCheckableStructured) ? _qL('export.quiz_check_answers', 'Check my answers') : _qL('export.quiz_check_mcq', 'Check multiple-choice answers')}</button>` : '<button type="button" class="quiz-check-btn" hidden disabled></button>') : ''}
                               <button type="button" class="quiz-reset-btn" style="padding:8px 16px;background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.85rem"><span aria-hidden="true">↻ </span>${_qL('export.quiz_reset', 'Reset responses')}</button>
                               <div class="quiz-results" role="status" aria-live="polite" aria-atomic="true" data-answer-changed-label="${_qL('export.quiz_answer_changed', 'An answer changed. Check your answers again for an updated result.')}" data-reset-confirm-label="${_uiL('export.quiz_reset_confirm', 'This clears all your answers in this quiz. Press “{button}” again to confirm.', { button: _uiRaw('export.quiz_reset', 'Reset responses') })}" data-reset-label="${_qL('export.quiz_responses_cleared', 'Responses cleared.')}" style="font-size:0.95rem;font-weight:700;color:#1e293b;margin-left:0.5rem"></div>
                           </div>
@@ -50899,9 +51117,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       `;
                   }
                   return `
-                      <div class="alloflow-mindmap-spoke" role="listitem" data-spoke-idx="${idx}" tabindex="0" style="border:2px solid ${color}; border-radius:18px; background:${color}11; padding:14px; cursor:pointer; transition:box-shadow 0.15s; break-inside:avoid; page-break-inside:avoid;">
-                          <div style="font-size:max(12px, 0.7em); text-transform:uppercase; letter-spacing:0.05em; color:${color}; font-weight:bold; margin-bottom:4px;">${_escTxt(_bsL('export.activity_idea_number', 'Idea {n}').replace('{n}', idx + 1))}</div>
-                          <div style="font-weight:bold; color:#1e293b; line-height:1.3;">${_escTxt(idea.title || '')}</div>
+                      <div class="alloflow-mindmap-spoke" role="listitem" data-spoke-idx="${idx}" style="border:2px solid ${color}; border-radius:18px; background:${color}11; padding:14px; cursor:pointer; transition:box-shadow 0.15s; break-inside:avoid; page-break-inside:avoid;">
+                          <button type="button" class="alloflow-mindmap-toggle" aria-expanded="false" style="all:unset; box-sizing:border-box; display:block; width:100%; cursor:pointer; text-align:inherit;">
+                              <div style="font-size:max(12px, 0.7em); text-transform:uppercase; letter-spacing:0.05em; color:${color}; font-weight:bold; margin-bottom:4px;">${_escTxt(_bsL('export.activity_idea_number', 'Idea {n}').replace('{n}', idx + 1))}</div>
+                              <div style="font-weight:bold; color:#1e293b; line-height:1.3;">${_escTxt(idea.title || '')}</div>
+                          </button>
                           <div class="alloflow-mindmap-detail" style="display:none; margin-top:10px; padding-top:10px; border-top:1px dashed ${color}55; font-size:0.9em; color:#475569; text-align:left;">
                               ${typeof idea.description === 'string' && idea.description ? `<p style="margin:0 0 6px 0;"><strong>${_escTxt(_bsL('export.activity_idea_label', 'Activity'))}:</strong> ${_escTxt(idea.description)}</p>` : ''}
                               ${typeof idea.connection === 'string' && idea.connection ? `<p style="margin:0 0 6px 0; font-style:italic;"><strong>${_escTxt(_bsL('brainstorm.label_connection', 'Connection'))}:</strong> ${_escTxt(idea.connection)}</p>` : ''}
@@ -50914,7 +51134,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   ? `<div style="background:#fefce8; border-left:4px solid #eab308; padding:12px 16px; border-radius:4px; margin-bottom:20px; font-size:0.9em; color:#713f12; break-inside:avoid;">
                        <strong>How to use:</strong> The central bubble names the topic. Fill in each surrounding bubble with one idea, activity, or connection you can think of. The colored borders are just for reference — write your own thoughts.
                      </div>`
-                  : `<div style="background:#eff6ff; border-left:4px solid #2563eb; padding:10px 14px; border-radius:4px; margin-bottom:14px; font-size:0.88em; color:#1e40af;">
+                  : `<div class="alloflow-mindmap-hint no-print" style="background:#eff6ff; border-left:4px solid #2563eb; padding:10px 14px; border-radius:4px; margin-bottom:14px; font-size:0.88em; color:#1e40af;">
                        💡 Click any bubble to expand or collapse its details.
                      </div>`;
               return `
@@ -50926,6 +51146,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                               ${centerLabel}
                           </div>
                       </div>
+                      <style>.alloflow-mindmap-toggle:focus-visible { outline: 2px solid #2563eb; outline-offset: 4px; border-radius: 8px; } @media print { .alloflow-mindmap-spoke .alloflow-mindmap-detail { display: block !important; } .alloflow-mindmap-hint { display: none !important; } }</style>
                       <div class="alloflow-mindmap-spokes" role="list" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:14px;">
                           ${spokesHtml}
                       </div>
@@ -51533,7 +51754,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       const doc = _dbqCleanProv(rawDoc || {});
                       const exMeta = _dbqExcerptMeta(doc);
                       const imgSrc = doc.imageUrl || doc.image;
-                      const starters = Array.isArray(doc.sentenceStarters) ? doc.sentenceStarters.filter((s) => typeof s === 'string' && s.trim()) : [];
+                      const starters = (!isTeacher && cfg.assessmentMode === true) ? [] : (Array.isArray(doc.sentenceStarters) ? doc.sentenceStarters.filter((s) => typeof s === 'string' && s.trim()) : []);
                       const showHapp = !!(doc.happPrompts || doc.happ || item.data.includeHapp === true || item.data.happ === true);
                       const happHtml = showHapp ? `<div class="alloflow-dbq-happ" style="background:#eef2ff;border:1px solid #c7d2fe;border-radius:8px;padding:12px;margin:12px 0;"><strong style="display:block;color:#3730a3;font-size:max(12px,0.85em);margin-bottom:8px;">${_uiL('dbq.happ_heading', 'HAPP Source Analysis')}</strong><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;">${happDefs(doc).map((h) => `<div style="background:#ffffff;border:1px solid #e0e7ff;border-radius:6px;padding:8px;"><div style="font-weight:700;font-size:0.85em;color:#4338ca;">${h.label}</div><div style="font-size:0.8em;color:#64748b;font-style:italic;margin-bottom:4px;">${_escTxt(h.prompt)}</div>${isWorksheet ? ruledLines(2) : dbqField(di + ':happ:' + h.key, (doc.title || 'Doc') + ' ' + h.label, 2, starters[0] || '')}</div>`).join('')}</div></div>` : '';
                       return `
@@ -51557,7 +51778,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   `; }).join('')}
                   ${perspectivesHtml}
                   ${corrobHtml}
-                  ${item.data.synthesisPrompt ? `<div class="alloflow-dbq-synthesis${isWorksheet ? ' alloflow-dbq-synthesis-worksheet' : ''}" style="background:linear-gradient(135deg,#eff6ff,#f0fdf4);border:2px solid #86efac;border-radius:8px;padding:20px;margin-bottom:20px;break-inside:${isWorksheet ? 'auto' : 'avoid'};page-break-inside:${isWorksheet ? 'auto' : 'avoid'};"><strong style="font-size:1.1em;color:#166534;"><span aria-hidden="true">📝 </span>${_uiL('dbq.synthesis_prompt', 'Synthesis Essay Prompt')}:</strong><p style="margin-top:8px;font-size:1em;line-height:1.7;color:#1e293b;">${_escTxt(item.data.synthesisPrompt)}</p>${item.data.thesisStarter ? `<p class="alloflow-dbq-thesis-starter" style="margin:8px 0 0;font-style:italic;color:#1e293b;"><strong>${_uiL('ui_common.thesis_starter', 'Thesis starter')}:</strong> ${_escTxt(item.data.thesisStarter)}</p>` : ''}${(!isTeacher && !isWorksheet && docs.length > 0) ? `<div class="alloflow-dbq-evidence-tracker no-print" style="margin:10px 0 6px;padding:8px 10px;background:#ffffff;border:1px solid #bbf7d0;border-radius:6px;"><div style="font-size:0.78em;font-weight:700;color:#166534;margin-bottom:6px;">${_uiL('dbq.evidence_tracker', 'Evidence Tracker')}</div><div style="display:flex;flex-wrap:wrap;gap:6px;">${docs.map((d) => `<span class="alloflow-dbq-evidence-pill" data-dbq-doc-id="${_escTxt(d.id)}" data-dbq-doc-label="${_uiL('dbq.document_label', 'Document {id}', { id: d.id })}" style="display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:9999px;font-size:0.8em;font-weight:700;background:#f1f5f9;border:1px solid #cbd5e1;color:#334155;">⬜ ${_uiL('dbq.document_label', 'Document {id}', { id: d.id })}</span>`).join('')}</div></div>` : ''}${isWorksheet ? `<div style="margin-top:16px;">${ruledLines(12, _uiRaw('export.dbq_your_essay', 'Your essay:'))}</div>` : ''}${dbqField('essay', item.data.synthesisPrompt, 8)}</div>` : ''}
+                  ${item.data.synthesisPrompt ? `<div class="alloflow-dbq-synthesis${isWorksheet ? ' alloflow-dbq-synthesis-worksheet' : ''}" style="background:linear-gradient(135deg,#eff6ff,#f0fdf4);border:2px solid #86efac;border-radius:8px;padding:20px;margin-bottom:20px;break-inside:${isWorksheet ? 'auto' : 'avoid'};page-break-inside:${isWorksheet ? 'auto' : 'avoid'};"><strong style="font-size:1.1em;color:#166534;"><span aria-hidden="true">📝 </span>${_uiL('dbq.synthesis_prompt', 'Synthesis Essay Prompt')}:</strong><p style="margin-top:8px;font-size:1em;line-height:1.7;color:#1e293b;">${_escTxt(item.data.synthesisPrompt)}</p>${(item.data.thesisStarter && (isTeacher || cfg.assessmentMode !== true)) ? `<p class="alloflow-dbq-thesis-starter" style="margin:8px 0 0;font-style:italic;color:#1e293b;"><strong>${_uiL('ui_common.thesis_starter', 'Thesis starter')}:</strong> ${_escTxt(item.data.thesisStarter)}</p>` : ''}${(!isTeacher && !isWorksheet && docs.length > 0) ? `<div class="alloflow-dbq-evidence-tracker no-print" style="margin:10px 0 6px;padding:8px 10px;background:#ffffff;border:1px solid #bbf7d0;border-radius:6px;"><div style="font-size:0.78em;font-weight:700;color:#166534;margin-bottom:6px;">${_uiL('dbq.evidence_tracker', 'Evidence Tracker')}</div><div style="display:flex;flex-wrap:wrap;gap:6px;">${docs.map((d) => `<span class="alloflow-dbq-evidence-pill" data-dbq-doc-id="${_escTxt(d.id)}" data-dbq-doc-label="${_uiL('dbq.document_label', 'Document {id}', { id: d.id })}" style="display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:9999px;font-size:0.8em;font-weight:700;background:#f1f5f9;border:1px solid #cbd5e1;color:#334155;">⬜ ${_uiL('dbq.document_label', 'Document {id}', { id: d.id })}</span>`).join('')}</div></div>` : ''}${isWorksheet ? `<div style="margin-top:16px;">${ruledLines(12, _uiRaw('export.dbq_your_essay', 'Your essay:'))}</div>` : ''}${dbqField('essay', item.data.synthesisPrompt, 8)}</div>` : ''}
                   ${rubric.length > 0 ? `<div class="alloflow-dbq-rubric-wrap" style="margin-top:20px;break-inside:avoid;"><strong>${_uiL('dbq.rubric_tab', 'Rubric')}:</strong><style>.alloflow-dbq-rubric-wrap table{word-break:break-word;}@media screen and (max-width:600px){.alloflow-dbq-rubric-wrap table,.alloflow-dbq-rubric-wrap tbody,.alloflow-dbq-rubric-wrap tr,.alloflow-dbq-rubric-wrap td{display:block;width:auto !important;}.alloflow-dbq-rubric-wrap table{font-size:0.95em !important;}.alloflow-dbq-rubric-wrap tr.alloflow-dbq-rubric-head{position:absolute;width:1px !important;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;}.alloflow-dbq-rubric-wrap tr.alloflow-dbq-rubric-row{margin-top:10px;border:1px solid #cbd5e1;border-radius:8px;overflow:hidden;}.alloflow-dbq-rubric-wrap td{border:0 !important;border-top:1px solid #e2e8f0 !important;padding:8px 10px !important;font-size:1em !important;}.alloflow-dbq-rubric-wrap td:first-child{border-top:0 !important;background:#f1f5f9;}.alloflow-dbq-rubric-wrap td[data-level]::before{content:attr(data-level);display:block;font-weight:700;font-size:0.85em;margin-bottom:2px;}}@media print{.alloflow-dbq-rubric-wrap table{font-size:max(12px, 0.72em);}.alloflow-dbq-rubric-wrap th,.alloflow-dbq-rubric-wrap td{padding:5px 6px !important;}}</style><table role="table" style="width:100%;border-collapse:collapse;margin-top:8px;font-size:max(12px, 0.85em);table-layout:fixed;"><tr role="row" class="alloflow-dbq-rubric-head"><th role="columnheader" scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#f1f5f9;text-align:left;width:22%;">${_uiL('ui_common.criteria', 'Criteria')}</th><th role="columnheader" scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#fef2f2;text-align:center;">⭐ 1</th><th role="columnheader" scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#fefce8;text-align:center;">⭐⭐ 2</th><th role="columnheader" scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#f0fdf4;text-align:center;">⭐⭐⭐ 3</th><th role="columnheader" scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#eff6ff;text-align:center;">⭐⭐⭐⭐ 4</th></tr>${rubric.map(r => `<tr role="row" class="alloflow-dbq-rubric-row"><td role="cell" style="border:1px solid #e2e8f0;padding:8px;font-weight:bold;">${_escTxt(r.criteria)}</td><td role="cell" data-level="${_uiL('export.rubric_level', 'Level {n}', { n: 1 })}" style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${_escTxt(r['1'] || '')}</td><td role="cell" data-level="${_uiL('export.rubric_level', 'Level {n}', { n: 2 })}" style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${_escTxt(r['2'] || '')}</td><td role="cell" data-level="${_uiL('export.rubric_level', 'Level {n}', { n: 3 })}" style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${_escTxt(r['3'] || '')}</td><td role="cell" data-level="${_uiL('export.rubric_level', 'Level {n}', { n: 4 })}" style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${_escTxt(r['4'] || '')}</td></tr>`).join('')}</table></div>` : ''}
                   ${isTeacher && item.data.teacherNotes ? `<div class="teacher-view" data-allo-teacher-only="1" style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:8px;padding:12px;margin-top:16px;font-size:0.85em;color:#6b21a8;"><strong>${_uiL('dbq.teacher_notes', 'Teacher Notes')}:</strong> ${_escTxt(item.data.teacherNotes)}</div>` : ''}
               </div>
@@ -52143,20 +52364,22 @@ function projectStudentGuideData(data, mode) {
           // they autosave and travel with "Save my answers" like quiz responses. A template
           // that already holds writing keeps the read-only rendering used for review.
           const noteTypable = !isTeacher && !isWorksheet;
+          const noteHideAnswers = !isTeacher && cfg.assessmentMode === true;
           const noteText = (v) => typeof v === 'string' && v.trim() !== '';
           const noteField = (key, label, rows = 3) => `<textarea class="interactive-textarea alloflow-response-input" rows="${rows}" data-allo-response-key="${_escTxt((item.id || 'note-taking') + ':note:' + key)}" data-allo-response-type="free-response" data-allo-part-label="${_escTxt(NL('notes_column', 'Notes'))}" data-allo-question="${_escTxt(label)}" aria-label="${_escTxt(label)}" style="width:100%; box-sizing:border-box;"></textarea>`;
           const noteTypingSection = (label, color, key, rows = 3) => `<div data-note-typing-space="true" style="background:${color}; border-radius:6px; padding:10px; margin-bottom:8px;"><div style="font-size:max(12px, 0.75em); font-weight:bold; text-transform:uppercase; color:#334155; margin-bottom:4px;">${escapeHtml(label)}</div>${noteField(key, label, rows)}</div>`;
           const renderRows = () => {
               if (tt === 'cornell-notes') {
                   const cues = Array.isArray(d.cues) ? d.cues : [];
-                  const notes = Array.isArray(d.notes) ? d.notes : [];
-                  const cornellTypable = noteTypable && !notes.some(n => n && noteText(n.text)) && !noteText(d.summary);
+                  const notes = noteHideAnswers ? [] : (Array.isArray(d.notes) ? d.notes : []);
+                  const summary = noteHideAnswers ? '' : (d.summary || '');
+                  const cornellTypable = noteTypable && (noteHideAnswers || (!notes.some(n => n && noteText(n.text)) && !noteText(summary)));
                   const cornellEmpty = cornellTypable && !cues.some(c => c && (noteText(c.text) || noteText(c.guidance)));
                   const rowCount = cornellEmpty ? 4 : Math.max(cues.length, notes.length, 1);
-                  const cornellSelfQuizReadyBase = !isTeacher && !isWorksheet && !cornellTypable;
+                  const cornellSelfQuizReadyBase = !isTeacher && !isWorksheet && !noteHideAnswers && !cornellTypable;
                   const rowsHtml = Array.from({ length: rowCount }).map((_, i) => {
                       const cue = (cues[i] && cues[i].text) || '';
-                      const note = (notes[i] && notes[i].text) || '';
+                      const note = noteHideAnswers ? '' : ((notes[i] && notes[i].text) || '');
                       const guidance = cues[i] && typeof cues[i].guidance === 'string' ? cues[i].guidance : '';
                       if (cornellEmpty) return `<tr><td class="alloflow-note-cue" style="border:1px solid #cbd5e1; padding:8px; vertical-align:top; width:35%; background:#f8fafc;">${noteField('cue:' + i, XL('note_cue_n', 'Cue or question {n}', { n: i + 1 }), 2)}</td><td class="alloflow-note-cell" style="border:1px solid #cbd5e1; padding:8px; vertical-align:top;">${noteField('notes:' + i, NL('notes_row_n', 'Notes for row {n}', { n: i + 1 }), 3)}</td></tr>`;
                       if (!cue.trim() && !note.trim() && !guidance.trim() && !isWorksheet) return '';
@@ -52169,32 +52392,35 @@ function projectStudentGuideData(data, mode) {
                   const cornellControlsHtml = cornellSelfQuizReady
                       ? `<div class="alloflow-cornell-controls no-print" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px;"><button type="button" class="alloflow-cornell-fold-btn" aria-pressed="false" data-cornell-label-cover="${_escTxt(XL('note_cover_self_quiz', 'Cover notes to self-quiz'))}" data-cornell-label-reveal="${_escTxt(XL('note_reveal_all', 'Reveal all notes'))}" style="padding:5px 12px;border-radius:6px;border:1px solid #6366f1;background:#eef2ff;color:#3730a3;font-size:0.85em;font-weight:600;cursor:pointer;">${_escTxt(XL('note_cover_self_quiz', 'Cover notes to self-quiz'))}</button><span class="alloflow-cornell-hint" style="font-size:0.8em;color:#475569;">${_escTxt(XL('note_fold_hint', 'Click or press Enter on any covered note cell to peek while studying.'))}</span></div>`
                       : '';
-                  const summary = d.summary || '';
                   const summaryHtml = String(summary).trim() || (!isWorksheet && summary) ? `<div style="background:#ecfdf5; border-left:4px solid #10b981; padding:12px; border-radius:6px;"><div style="font-size:max(12px, 0.75em); font-weight:bold; text-transform:uppercase; color:#065f46; margin-bottom:4px;">${escapeHtml(NL('summary_title', 'Summary'))}</div><div style="font-size:0.95em; color:#1e293b; line-height:1.5; white-space:pre-wrap;">${escapeHtml(summary)}</div></div>` : isWorksheet ? `<section data-cornell-summary-space="true" aria-label="${_escTxt(NL('summary_title', 'Summary'))}" style="margin-top:12px; border:1px solid #cbd5e1; border-radius:6px; padding:10px; break-inside:avoid; page-break-inside:avoid;"><h3 style="margin:0 0 6px; font-size:0.85em;">${escapeHtml(NL('summary_title', 'Summary'))}</h3>${cornellWritingSpace('summary')}</section>` : cornellTypable ? noteTypingSection(NL('summary_title', 'Summary'), '#ecfdf5', 'summary', 4) : '<div style="font-size:0.85em; color:#475569; font-style:italic;">' + escapeHtml(XL('note_no_summary', 'No summary written yet.')) + '</div>';
                   return `<div class="alloflow-cornell-wrap"><style>@media screen and (max-width:600px){.alloflow-cornell-table,.alloflow-cornell-table tbody,.alloflow-cornell-table tr,.alloflow-cornell-table td{display:block;width:auto !important;}.alloflow-cornell-table thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);}.alloflow-cornell-table tr{margin-bottom:8px;}}@media print{.alloflow-cornell-controls{display:none !important;}.alloflow-cornell-table.alloflow-cornell-folded td.alloflow-note-cell{color:inherit !important;background:#ffffff !important;filter:none !important;opacity:1 !important;}}.alloflow-cornell-table.alloflow-cornell-folded td.alloflow-note-cell:not(.alloflow-note-peek){color:transparent !important;background:#f1f5f9 !important;filter:blur(5px);user-select:none;cursor:pointer;}.alloflow-cornell-table.alloflow-cornell-folded td.alloflow-note-cell.alloflow-note-peek{cursor:pointer;background:#fefce8 !important;transition:background 0.15s ease;}</style>${cornellControlsHtml}<table class="alloflow-cornell-table" style="width:100%; border-collapse:collapse; margin-bottom:12px;"><thead><tr><th scope="col" style="border:1px solid #cbd5e1; background:#e0e7ff; padding:8px; text-align:left; font-size:0.85em; text-transform:uppercase;">${escapeHtml(NL('cues_column', 'Cues / Questions'))}</th><th scope="col" style="border:1px solid #cbd5e1; background:#e0e7ff; padding:8px; text-align:left; font-size:0.85em; text-transform:uppercase;">${escapeHtml(NL('notes_column', 'Notes'))}</th></tr></thead><tbody>${rowsHtml || '<tr><td colspan="2" style="border:1px solid #cbd5e1; padding:12px; text-align:center; color:#64748b; font-style:italic;">' + escapeHtml(XL('note_no_rows', 'No rows filled in yet.')) + '</td></tr>'}</tbody></table></div>${summaryHtml}`;
               }
               if (tt === 'lab-report') {
                   const materials = (Array.isArray(d.materials) ? d.materials : []).map(m => (m && m.text || '').trim()).filter(Boolean);
                   const procedure = (Array.isArray(d.procedure) ? d.procedure : []).map(p => (p && p.text || '').trim()).filter(Boolean);
-                  const labTypable = noteTypable && ![d.hypothesis, d.data, d.analysis, d.conclusion].some(noteText);
+                  const labHypothesis = noteHideAnswers ? '' : d.hypothesis;
+                  const labData = noteHideAnswers ? '' : d.data;
+                  const labAnalysis = noteHideAnswers ? '' : d.analysis;
+                  const labConclusion = noteHideAnswers ? '' : d.conclusion;
+                  const labTypable = noteTypable && (noteHideAnswers || ![labHypothesis, labData, labAnalysis, labConclusion].some(noteText));
                   const section = (en, body, color, k) => { const label = NL(k, en); return typeof body === 'string' && body.trim() ? `<div style="background:${color}; border-radius:6px; padding:10px; margin-bottom:8px;"><div style="font-size:max(12px, 0.75em); font-weight:bold; text-transform:uppercase; color:#334155; margin-bottom:4px;">${escapeHtml(label)}</div><div style="font-size:0.95em; color:#1e293b; line-height:1.5; white-space:pre-wrap;">${escapeHtml(body)}</div></div>` : isWorksheet ? noteWritingSection(label, color) : labTypable ? noteTypingSection(label, color, 'lab:' + en.toLowerCase().replace(/[^a-z]+/g, '-')) : ''; };
                   if (labTypable && !materials.length && !procedure.length) return [
                       section('Research Question', d.question, '#eff6ff', 'research_question'),
-                      section('Hypothesis', d.hypothesis, '#faf5ff', 'hypothesis'),
+                      section('Hypothesis', labHypothesis, '#faf5ff', 'hypothesis'),
                       noteTypingSection(NL('materials', 'Materials'), '#fffbeb', 'lab:materials'),
                       noteTypingSection(NL('procedure', 'Procedure'), '#ecfdf5', 'lab:procedure', 5),
-                      section('Data / Observations', d.data, '#eef2ff', 'data_observations'),
-                      section('Analysis (CER)', d.analysis, '#fef2f2', 'analysis_label'),
-                      section('Conclusion', d.conclusion, '#f8fafc', 'conclusion'),
+                      section('Data / Observations', labData, '#eef2ff', 'data_observations'),
+                      section('Analysis (CER)', labAnalysis, '#fef2f2', 'analysis_label'),
+                      section('Conclusion', labConclusion, '#f8fafc', 'conclusion'),
                   ].join('');
                   return [
                       section('Research Question', d.question, '#eff6ff', 'research_question'),
-                      section('Hypothesis', d.hypothesis, '#faf5ff', 'hypothesis'),
+                      section('Hypothesis', labHypothesis, '#faf5ff', 'hypothesis'),
                       materials.length ?`<div style="background:#fffbeb; border-radius:6px; padding:10px; margin-bottom:8px;"><div style="font-size:max(12px, 0.75em); font-weight:bold; text-transform:uppercase; color:#92400e; margin-bottom:4px;">${escapeHtml(NL('materials', 'Materials'))}</div><ul style="margin:0; padding-left:20px;">${materials.map(m => `<li style="font-size:0.95em; color:#1e293b;">${escapeHtml(m)}</li>`).join('')}</ul></div>` : isWorksheet ? noteWritingSection(NL('materials', 'Materials'), '#fffbeb', 3) : '',
                       procedure.length ? `<div style="background:#ecfdf5; border-radius:6px; padding:10px; margin-bottom:8px;"><div style="font-size:max(12px, 0.75em); font-weight:bold; text-transform:uppercase; color:#065f46; margin-bottom:4px;">${escapeHtml(NL('procedure', 'Procedure'))}</div><ol style="margin:0; padding-left:20px;">${procedure.map(s => `<li style="font-size:0.95em; color:#1e293b; margin-bottom:2px;">${escapeHtml(s)}</li>`).join('')}</ol></div>` : isWorksheet ? noteWritingSection(NL('procedure', 'Procedure'), '#ecfdf5', 5) : '',
-                      section('Data / Observations', d.data, '#eef2ff', 'data_observations'),
-                      section('Analysis (CER)', d.analysis, '#fef2f2', 'analysis_label'),
-                      section('Conclusion', d.conclusion, '#f8fafc', 'conclusion'),
+                      section('Data / Observations', labData, '#eef2ff', 'data_observations'),
+                      section('Analysis (CER)', labAnalysis, '#fef2f2', 'analysis_label'),
+                      section('Conclusion', labConclusion, '#f8fafc', 'conclusion'),
                   ].filter(Boolean).join('');
               }
               if (tt === 'reading-response') {
@@ -52202,14 +52428,18 @@ function projectStudentGuideData(data, mode) {
                   const pageRange = d.pageRange || '';
                   const conn = d.connection || {};
                   const meta = (author || pageRange) ? `<div style="font-size:0.85em; color:#64748b; margin-bottom:8px;">${escapeHtml(author)}${author && pageRange ? ' · ' : ''}${escapeHtml(pageRange)}</div>` : '';
-                  const readingTypable = noteTypable && ![d.favoriteLine, d.thinkings, conn.text, d.question].some(noteText);
+                  const favoriteLine = noteHideAnswers ? '' : d.favoriteLine;
+                  const thinkings = noteHideAnswers ? '' : d.thinkings;
+                  const connText = noteHideAnswers ? '' : conn.text;
+                  const rQuestion = noteHideAnswers ? '' : d.question;
+                  const readingTypable = noteTypable && (noteHideAnswers || ![favoriteLine, thinkings, connText, rQuestion].some(noteText));
                   const sec = (label, body, color, key) => typeof body === 'string' && body.trim() ?`<div style="background:${color}; border-radius:6px; padding:10px; margin-bottom:8px;"><div style="font-size:max(12px, 0.75em); font-weight:bold; text-transform:uppercase; color:#334155; margin-bottom:4px;">${escapeHtml(label)}</div><div style="font-size:0.95em; color:#1e293b; line-height:1.5; white-space:pre-wrap;">${escapeHtml(body)}</div></div>` : isWorksheet ? noteWritingSection(label, color) : readingTypable ? noteTypingSection(label, color, 'reading:' + key) : '';
                   return [
                       meta,
-                      sec(NL('favorite_line', 'Favorite Line or Passage'), d.favoriteLine, '#fffbeb', 'favorite-line'),
-                      sec(NL('thinkings', 'What This Made Me Think About'), d.thinkings, '#faf5ff', 'thinking'),
-                      sec(NL('connection', 'Connection') + ' (' + ({ 'text-to-self': NL('text_to_self', 'Text to Self'), 'text-to-text': NL('text_to_text', 'Text to Text'), 'text-to-world': NL('text_to_world', 'Text to World') }[conn.type || 'text-to-self'] || conn.type) + ')', conn.text, '#eff6ff', 'connection'),
-                      sec(NL('one_question', 'One Question I Have'), d.question, '#ecfdf5', 'question'),
+                      sec(NL('favorite_line', 'Favorite Line or Passage'), favoriteLine, '#fffbeb', 'favorite-line'),
+                      sec(NL('thinkings', 'What This Made Me Think About'), thinkings, '#faf5ff', 'thinking'),
+                      sec(NL('connection', 'Connection') + ' (' + ({ 'text-to-self': NL('text_to_self', 'Text to Self'), 'text-to-text': NL('text_to_text', 'Text to Text'), 'text-to-world': NL('text_to_world', 'Text to World') }[conn.type || 'text-to-self'] || conn.type) + ')', connText, '#eff6ff', 'connection'),
+                      sec(NL('one_question', 'One Question I Have'), rQuestion, '#ecfdf5', 'question'),
                   ].filter(Boolean).join('');
               }
               if (tt === 'double-entry') {
@@ -52223,17 +52453,18 @@ function projectStudentGuideData(data, mode) {
                   const titleParts = String(d.title || '').split('→').map((part) => part.trim()).filter(Boolean);
                   const columnHeads = titleParts.length === 2 ? titleParts : [NL('quote_column', 'Quote / Passage'), NL('response_column', 'Response / Thinking')];
                   const caption = titleParts.length === 2 || !String(d.title || '').trim() ? '' : `<p style="margin:0 0 8px; font-weight:600; color:#334155;">${escapeHtml(String(d.title).trim())}</p>`;
-                  const entryTypable = noteTypable && !entries.some(en => noteText(en.response));
-                  const rowsHtml = entries.map((en, i) => `<tr><td style="border:1px solid #cbd5e1; padding:8px; vertical-align:top; width:45%; background:#fff1f2; font-style:italic;">${escapeHtml((en.quote || '').trim())}</td><td style="border:1px solid #cbd5e1; padding:8px; vertical-align:top;">${entryTypable ? noteField('response:' + i, XL('note_response_to', 'Response to: {quote}', { quote: (en.quote || '').trim().slice(0, 80) }), 3) : escapeHtml((en.response || '').trim())}</td></tr>`).join('')
+                  const entryTypable = noteTypable && (noteHideAnswers || !entries.some(en => noteText(en.response)));
+                  const rowsHtml = entries.map((en, i) => `<tr><td style="border:1px solid #cbd5e1; padding:8px; vertical-align:top; width:45%; background:#fff1f2; font-style:italic;">${escapeHtml((en.quote || '').trim())}</td><td style="border:1px solid #cbd5e1; padding:8px; vertical-align:top;">${entryTypable ? noteField('response:' + i, XL('note_response_to', 'Response to: {quote}', { quote: (en.quote || '').trim().slice(0, 80) }), 3) : (noteHideAnswers ? (isWorksheet ? cornellWritingSpace('response') : '') : escapeHtml((en.response || '').trim()))}</td></tr>`).join('')
                       || (entryTypable ? Array.from({ length: blankRows }, (_, i) => `<tr><td style="border:1px solid #cbd5e1; padding:8px; vertical-align:top; width:45%; background:#fff1f2;">${noteField('quote:' + i, XL('note_quote_n', 'Quote or passage {n}', { n: i + 1 }), 3)}</td><td style="border:1px solid #cbd5e1; padding:8px; vertical-align:top;">${noteField('response:' + i, XL('note_response_thinking_n', 'Response or thinking {n}', { n: i + 1 }), 3)}</td></tr>`).join('') : '')
                       || (isWorksheet ?Array.from({ length: blankRows }, () => `<tr data-note-writing-space="true"><td style="border:1px solid #cbd5e1; padding:8px; vertical-align:top; width:45%; background:#fff1f2;">${cornellWritingSpace('quote')}</td><td style="border:1px solid #cbd5e1; padding:8px; vertical-align:top;">${cornellWritingSpace('response')}</td></tr>`).join('') : '');
                   return `${meta}${caption}<table style="width:100%; border-collapse:collapse; margin-bottom:12px;"><thead><tr><th scope="col" style="border:1px solid #cbd5e1; background:#ffe4e6; padding:8px; text-align:left; font-size:0.85em; text-transform:uppercase;">${escapeHtml(columnHeads[0])}</th><th scope="col" style="border:1px solid #cbd5e1; background:#ffe4e6; padding:8px; text-align:left; font-size:0.85em; text-transform:uppercase;">${escapeHtml(columnHeads[1])}</th></tr></thead><tbody>${rowsHtml || '<tr><td colspan="2" style="border:1px solid #cbd5e1; padding:12px; text-align:center; color:#64748b; font-style:italic;">' + escapeHtml(XL('note_no_entries', 'No entries filled in yet.')) + '</td></tr>'}</tbody></table>`;
               }
               if (tt === 'guided-notes') {
                   const blanks = Array.isArray(d.blanks) ? d.blanks : [];
-                  const guidedTypable = noteTypable && !blanks.some(b => b && noteText(b.studentAnswer)) && !noteText(d.notesExtra);
+                  const guidedOwnText = noteHideAnswers ? '' : d.notesExtra;
+                  const guidedTypable = noteTypable && (noteHideAnswers || (!blanks.some(b => b && noteText(b.studentAnswer)) && !noteText(guidedOwnText)));
                   const itemsHtml = blanks.map((b, i) => {
-                      const ans = (b && b.studentAnswer || '').trim();
+                      const ans = noteHideAnswers ? '' : (b && b.studentAnswer || '').trim();
                       const filled = ans
                           ? `<strong style="color:#065f46;">${escapeHtml(ans)}</strong>`
                           : guidedTypable
@@ -52244,8 +52475,8 @@ function projectStudentGuideData(data, mode) {
                   const blanksBlock = blanks.length
                       ? `<ol style="margin:0 0 8px; padding-left:20px;">${itemsHtml}</ol>`
                       : '<div style="font-size:0.85em; color:#64748b; font-style:italic;">' + escapeHtml(XL('note_no_blanks', 'No guided-note blanks for this entry.')) + '</div>';
-                  const own = (d.notesExtra || '').trim()
-                      ? `<div style="background:#eef2ff; border-radius:6px; padding:10px; margin-top:8px;"><div style="font-size:max(12px, 0.75em); font-weight:bold; text-transform:uppercase; color:#3730a3; margin-bottom:4px;">${escapeHtml(NL('own_notes', 'My Own Notes'))}</div><div style="font-size:0.95em; color:#1e293b; line-height:1.5; white-space:pre-wrap;">${escapeHtml(d.notesExtra)}</div></div>`
+                  const own = (guidedOwnText || '').trim()
+                      ? `<div style="background:#eef2ff; border-radius:6px; padding:10px; margin-top:8px;"><div style="font-size:max(12px, 0.75em); font-weight:bold; text-transform:uppercase; color:#3730a3; margin-bottom:4px;">${escapeHtml(NL('own_notes', 'My Own Notes'))}</div><div style="font-size:0.95em; color:#1e293b; line-height:1.5; white-space:pre-wrap;">${escapeHtml(guidedOwnText)}</div></div>`
                       : guidedTypable ? noteTypingSection(NL('own_notes', 'My Own Notes'), '#eef2ff', 'own-notes', 4) : isWorksheet ? noteWritingSection(NL('own_notes', 'My Own Notes'), '#eef2ff', 4) : '';
                   return blanksBlock + own;
               }
@@ -52275,7 +52506,7 @@ function projectStudentGuideData(data, mode) {
               && !(d.summary && String(d.summary).trim()) && !(d.connections && String(d.connections).trim());
           // Optional student-authored elaboration field (cross-template). Rendered
           // once here so it can't become a per-template export gap.
-          const connectionsBlock = (d.connections && String(d.connections).trim())
+          const connectionsBlock = (!noteHideAnswers && d.connections && String(d.connections).trim())
               ? `<div style="margin-top:10px; background:#f5f3ff; border-left:4px solid #8b5cf6; border-radius:4px; padding:10px;"><div style="font-size:max(12px, 0.75em); font-weight:bold; text-transform:uppercase; color:#5b21b6; margin-bottom:4px;">${escapeHtml(XL('note_connections', 'Connections & Memory Hooks'))}</div><div style="font-size:0.95em; color:#1e293b; line-height:1.5; white-space:pre-wrap;">${escapeHtml(d.connections)}</div></div>`
               : '';
           return `
@@ -52287,7 +52518,10 @@ function projectStudentGuideData(data, mode) {
               </div>
           `;
       } else if (item.type === 'memory-aid') {
-          const memoryPreset = item.data && item.data.memoryAidExportPreset;
+          const rawMemoryPreset = item.data && item.data.memoryAidExportPreset;
+          const memoryPreset = (!isTeacher && cfg.assessmentMode === true && ['study', 'recall', 'teacher'].includes(rawMemoryPreset))
+              ? 'no-hints'
+              : rawMemoryPreset;
           if (['study', 'recall', 'no-hints', 'teacher'].includes(memoryPreset)) {
               const renderPreset = window.AlloModules && window.AlloModules.MemoryAid && window.AlloModules.MemoryAid.exportRules && window.AlloModules.MemoryAid.exportRules.renderPreset;
               const translate = (key, fallback, params) => { const value = typeof t === 'function' ? t('memory_aid.' + key, params) : ''; return value && value !== 'memory_aid.' + key ? value : String(fallback).replace(/\{(\w+)\}/g, (_, name) => params && params[name] || ''); };
@@ -52531,8 +52765,9 @@ function projectStudentGuideData(data, mode) {
               const earlierLinks = savedLinks.filter(row => !currentLinks.some(link => link.learnerIdentified && link.factKey === row.factKey && link.cueKey === row.cueKey));
               const connectionsHtml = (currentLinks.length ? '<section style="margin-top:12px"><h4>' + _maT('mapping_heading', 'How the cue connects') + '</h4><ul>' + currentLinks.map(link => '<li><strong>' + escapeHtml(String(link.cue || '').slice(0,200)) + '</strong> — ' + escapeHtml(String((c.essentialFacts || [])[link.factIndex] || '').slice(0,600)) + (link.explanation ? '<p>' + escapeHtml(String(link.explanation).slice(0,600)) + '</p>' : '') + '</li>').join('') + '</ul></section>' : '')
                   + (earlierLinks.length ? '<section style="margin-top:12px"><h4>' + _maT('connections_earlier', 'Notes for earlier facts') + '</h4><p>' + _maT('export_connections_recheck', 'Saved learner connections — recheck against the current cue and facts.') + '</p>' + earlierLinks.map(row => '<p>' + escapeHtml(String(row.cue || '').slice(0,200)) + ': ' + escapeHtml(String(row.explanation || '').slice(0,600)) + '</p>').join('') + '</section>' : '');
-              const draft = String(c.studentDraft || '').trim();
-              const reasoning = String(c.studentReasoning || '').trim();
+              const _maHideAnswers = !isTeacher && cfg.assessmentMode === true;
+              const draft = _maHideAnswers ? '' : String(c.studentDraft || '').trim();
+              const reasoning = _maHideAnswers ? '' : String(c.studentReasoning || '').trim();
               // Downloaded interactive HTML (not the paper worksheet, not the
               // teacher appendix) gets real fields that autosave like the quiz
               // and sentence-frame lanes; the saved app draft seeds them.
@@ -52544,15 +52779,14 @@ function projectStudentGuideData(data, mode) {
                   + '<p style="margin:4px 0;"><strong>' + _maT('export_feedback_accuracy_label', 'Accuracy check:') + '</strong> ' + escapeHtml(feedback.accuracyCheck) + '</p>'
                   + '<p style="margin:4px 0;"><strong>' + _maT('export_feedback_next_label', 'One next step:') + '</strong> ' + escapeHtml(feedback.nextStep) + '</p>'
                   + (feedback.question ? '<p style="margin:4px 0;"><strong>' + _maT('export_feedback_think_label', 'Think about:') + '</strong> ' + escapeHtml(feedback.question) + '</p>' : '') + '</section>' : '';
-              const _maHideAnswers = !isTeacher && cfg.assessmentMode === true;
               return '<article style="margin:0 0 18px;padding:16px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;break-inside:avoid;page-break-inside:avoid;">'
                   + '<div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;">'
                   + '<h3 style="margin:0;color:#0f172a;">' + (index + 1) + '. ' + escapeHtml(c.target || _maT('memory_target', 'Memory target')) + '</h3>'
                   + '<div style="font-size:max(12px, 0.78em);color:#334155;">' + escapeHtml(typeLabels[c.type] || c.type || _maT('export_memory_aid_fallback', 'Memory aid')) + ' &middot; ' + escapeHtml(modeLabels[c.mode] || c.mode || _maT('mode_student_authored_compact', 'Student-authored')) + '</div></div>'
                   + (_maHideAnswers ? '' : '<section style="margin-top:12px;padding:12px;border-left:4px solid #d97706;background:#fffbeb;border-radius:6px;"><h4 style="margin:0 0 6px;color:#78350f;">' + factsHeading + '</h4>'
                   + ((!isTeacher && !factsVerified) ? '' : (facts ? '<ul style="margin:0;padding-left:22px;">' + facts + '</ul>' : '<div>' + _maT('export_no_facts', 'No facts were supplied.') + '</div>')) + factsReviewNote + '</section>')
-                  + hookHtml
-                  + modeBlock
+                  + (_maHideAnswers ? '' : hookHtml)
+                  + (_maHideAnswers ? '' : modeBlock)
                   + (_maHideAnswers ? '' : connectionsHtml)
                   + (_maHideAnswers ? '' : mappingHtml)
                   + visualHtml
@@ -53729,6 +53963,7 @@ function projectStudentGuideData(data, mode) {
       const _submissionIdentity = !isWorksheet ? {
           ...(typeof cfg.classId === 'string' && cfg.classId.trim() ? { classId: cfg.classId.trim().slice(0, 160) } : {}),
           ...(typeof cfg.assignmentId === 'string' && cfg.assignmentId.trim() ? { assignmentId: cfg.assignmentId.trim().slice(0, 160) } : {}),
+          ...(typeof cfg.studentId === 'string' && cfg.studentId.trim() ? { studentId: cfg.studentId.trim().slice(0, 160) } : {}),
           ...(_submissionDueAt ? { dueDate: {
               schemaVersion: 1,
               dueAt: _submissionDueAt,
@@ -53793,6 +54028,16 @@ function projectStudentGuideData(data, mode) {
                     var _collectResponses = function() {
                         return typeof _collectAllResponses === 'function' ? _collectAllResponses() : {};
                     };
+                    var _countEncryptedUnanswered = function() {
+                        var missing = 0;
+                        if (typeof _responseGroups === 'object' && _responseGroups) {
+                            Object.keys(_responseGroups).forEach(function(k) {
+                                var v = typeof _responseValue === 'function' ? _responseValue(_responseGroups[k]) : '';
+                                if (!v || !String(v).trim() || v === '[]') missing++;
+                            });
+                        }
+                        return missing;
+                    };
                     btn.addEventListener('click', async function() {
                         if (typeof window.__alloflowEncryptSubmission !== 'function') {
                             window.__alloflowNotify(window.__alloflowText('encryptionUnavailable', 'Encryption is not available in this browser. Use a newer browser to save submissions.'), 'error');
@@ -53800,7 +54045,10 @@ function projectStudentGuideData(data, mode) {
                         }
                         var learnerWorkspace = window.__alloflowLearnerWorkspace;
                         var nickname = learnerWorkspace && learnerWorkspace.persist ? learnerWorkspace.nickname : '';
-                        if (!nickname) nickname = await window.__alloflowPrompt({ title: window.__alloflowText('saveWorkTitle', 'Save your work'), description: window.__alloflowText('saveWorkDescription', 'Enter a name or nickname so your teacher can identify this submission.'), label: window.__alloflowText('nameLabel', 'Name or nickname'), confirmLabel: window.__alloflowText('saveWorkConfirm', 'Save work'), cancelLabel: window.__alloflowText('cancel', 'Cancel'), maxLength: 60, requiredMessage: window.__alloflowText('requiredName', 'Enter a name or nickname.') });
+                        var missingCount = _countEncryptedUnanswered();
+                        var missingNotice = missingCount > 0 ? window.__alloflowText('unansweredSaveNotice', '{n} item(s) still unanswered. You can save now or click Cancel to finish first.', { n: missingCount }) : '';
+                        if (nickname && missingNotice && typeof window.__alloflowNotify === 'function') window.__alloflowNotify(missingNotice, 'info');
+                        if (!nickname) nickname = await window.__alloflowPrompt({ title: window.__alloflowText('saveWorkTitle', 'Save your work'), description: window.__alloflowText('saveWorkDescription', 'Enter a name or nickname so your teacher can identify this submission.'), notice: missingNotice, label: window.__alloflowText('nameLabel', 'Name or nickname'), confirmLabel: window.__alloflowText('saveWorkConfirm', 'Save work'), cancelLabel: window.__alloflowText('cancel', 'Cancel'), maxLength: 60, requiredMessage: window.__alloflowText('requiredName', 'Enter a name or nickname.') });
                         if (!nickname) return;
                         nickname = String(nickname).trim().slice(0, 60);
                         if (!nickname) return;
@@ -53819,6 +54067,7 @@ function projectStudentGuideData(data, mode) {
                                 documentId: _documentId,
                                 ...(identity.classId ? { classId: identity.classId } : {}),
                                 ...(identity.assignmentId ? { assignmentId: identity.assignmentId } : {}),
+                                ...(identity.studentId ? { studentId: identity.studentId } : {}),
                                 ...(identity.dueDate ? { dueDate: identity.dueDate } : {})
                             };
                             var encrypted = await window.__alloflowEncryptSubmission(payload, publicJwk);
@@ -53828,6 +54077,9 @@ function projectStudentGuideData(data, mode) {
                                 docTitle: payload.docTitle,
                                 timestamp: payload.timestamp,
                                 documentId: payload.documentId,
+                                ...(identity.classId ? { classId: identity.classId } : {}),
+                                ...(identity.assignmentId ? { assignmentId: identity.assignmentId } : {}),
+                                ...(identity.studentId ? { studentId: identity.studentId } : {}),
                                 wrappedKey: encrypted.wrappedKey,
                                 iv: encrypted.iv,
                                 ciphertext: encrypted.ciphertext
@@ -53860,7 +54112,8 @@ function projectStudentGuideData(data, mode) {
                                         iv: encrypted.iv,
                                         ciphertext: encrypted.ciphertext,
                                         classId: identity.classId || undefined,
-                                        assignmentId: identity.assignmentId || undefined
+                                        assignmentId: identity.assignmentId || undefined,
+                                        studentId: identity.studentId || undefined
                                     });
                                     var chunkSize = 60000;
                                     var totalParts = Math.max(1, Math.ceil(submissionEnvelope.length / chunkSize));
@@ -53909,7 +54162,7 @@ function projectStudentGuideData(data, mode) {
                             // all collapse to the same file name.
                             var filePart = function(value, fallback) {
                                 var out = String(value || '');
-                                try { out = out.normalize('NFC').replace(new RegExp('[^\\\\p{L}\\\\p{N}_-]+', 'gu'), '_'); }
+                                try { out = out.normalize('NFC').replace(new RegExp('[^\\\\p{L}\\\\p{M}\\\\p{N}_-]+', 'gu'), '_'); }
                                 catch (_) { out = out.replace(/[^a-zA-Z0-9_-]+/g, '_'); }
                                 return out.replace(/^_+|_+$/g, '').slice(0, 40) || fallback;
                             };
@@ -54289,6 +54542,8 @@ function projectStudentGuideData(data, mode) {
           .interactive-textarea:focus { outline: 2px solid #6366f1; border-color: #6366f1; }
           .interactive-blank { border: none; border-bottom: 2px solid #cbd5e1; padding: 0 5px; background: transparent; font-family: inherit; width: 150px; transition: border-color 0.2s; font-weight: bold; color: #1e40af; }
           .interactive-blank:focus { border-bottom-color: #4f46e5; outline: 2px solid #4f46e5; outline-offset: 2px; }
+          .alloflow-cloze-input.is-cloze-correct { border-bottom-color: #16a34a !important; background: #f0fdf4 !important; color: #14532d !important; }
+          .alloflow-cloze-input.is-cloze-wrong { border-bottom-color: #dc2626 !important; background: #fef2f2 !important; color: #991b1b !important; }
           .alloflow-response-group { border: 0; padding: 0; margin: 0.75rem 0; min-width: 0; break-inside: avoid; }
           .alloflow-response-group legend { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.35rem; padding: 0; color: inherit; }
           .alloflow-choice-label { display: inline-flex; align-items: center; gap: 7px; margin: 0 0.75rem 0.4rem 0; line-height: 1.45; }
@@ -54720,6 +54975,13 @@ function projectStudentGuideData(data, mode) {
           html[data-alloflow-theme="dark"] .interactive-textarea { background: #1e293b !important; color: #ffffff !important; border-color: #475569 !important; background-image: linear-gradient(#334155 1px, transparent 1px) !important; }
           html[data-alloflow-theme="dark"] .interactive-blank { color: #93c5fd !important; border-bottom-color: #475569 !important; }
           html[data-alloflow-theme="dark"] input.alloflow-response-input, html[data-alloflow-theme="dark"] .alloflow-response-select { background: #0f172a !important; color: #ffffff !important; border-color: #64748b !important; }
+          html[data-alloflow-theme="dark"] .alloflow-cloze-input { background: #0f172a !important; color: #f8fafc !important; border-bottom-color: #60a5fa !important; }
+          html[data-alloflow-theme="dark"] .alloflow-cloze-input.is-cloze-correct { background: #064e3b !important; color: #a7f3d0 !important; border-bottom-color: #34d399 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-cloze-input.is-cloze-wrong { background: #7f1d1d !important; color: #fecaca !important; border-bottom-color: #f87171 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-cloze-word-bank { background: #1e293b !important; border-color: #60a5fa !important; color: #f8fafc !important; }
+          html[data-alloflow-theme="dark"] .alloflow-cloze-chip { background: #0f172a !important; color: #f8fafc !important; border-color: #60a5fa !important; }
+          html[data-alloflow-theme="dark"] .alloflow-cloze-reset-btn { background: #1e293b !important; color: #f8fafc !important; border-color: #64748b !important; }
+          html[data-alloflow-theme="dark"] .alloflow-cloze-results { color: #f8fafc !important; }
           html[data-alloflow-theme="dark"] .mcq-label { color: #ffffff !important; }
           html[data-alloflow-theme="dark"] .mcq-label:hover { background: #334155 !important; }
           html[data-alloflow-theme="dark"] .mcq-label:has(input[type="radio"]:checked), html[data-alloflow-theme="dark"] .mcq-label:has(input[type="checkbox"]:checked) { background: #312e81 !important; border-color: #818cf8 !important; }
@@ -54836,6 +55098,13 @@ function projectStudentGuideData(data, mode) {
           html[data-alloflow-theme="sepia"] tbody tr:hover { background: #ede0c4 !important; }
           html[data-alloflow-theme="sepia"] .interactive-textarea { background: #fdf6e3 !important; color: #5b4636 !important; }
           html[data-alloflow-theme="sepia"] input.alloflow-response-input, html[data-alloflow-theme="sepia"] .alloflow-response-select { background: #fdf6e3 !important; color: #5b4636 !important; border-color: #a58b62 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-cloze-input { background: #fdf6e3 !important; color: #5b4636 !important; border-bottom-color: #a58b62 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-cloze-input.is-cloze-correct { background: #ecfdf5 !important; color: #065f46 !important; border-bottom-color: #047857 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-cloze-input.is-cloze-wrong { background: #fef2f2 !important; color: #991b1b !important; border-bottom-color: #b91c1c !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-cloze-word-bank { background: #ede0c4 !important; border-color: #a58b62 !important; color: #4a3a2a !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-cloze-chip { background: #fdf6e3 !important; color: #4a3a2a !important; border-color: #a58b62 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-cloze-reset-btn { background: #ede0c4 !important; color: #4a3a2a !important; border-color: #a58b62 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-cloze-results { color: #4a3a2a !important; }
           html[data-alloflow-theme="sepia"] .alloflow-reading-tools { background: rgba(245,236,217,0.96); border-bottom-color: #d4c5a0; }
           html[data-alloflow-theme="sepia"] .alloflow-reading-tools-group { background: #fdf6e3; border-color: #d4c5a0; }
           html[data-alloflow-theme="sepia"] .alloflow-reading-tools-label { background: #ede0c4; color: #6b5334; border-right-color: #d4c5a0; }
@@ -54912,6 +55181,13 @@ function projectStudentGuideData(data, mode) {
           html[data-alloflow-theme="hc"] a { color: #0000ee !important; text-decoration: underline !important; }
           html[data-alloflow-theme="hc"] .interactive-textarea { background: #ffffff !important; color: #000000 !important; border: 2px solid #000000 !important; }
           html[data-alloflow-theme="hc"] input.alloflow-response-input, html[data-alloflow-theme="hc"] .alloflow-response-select { background: #ffffff !important; color: #000000 !important; border: 2px solid #000000 !important; }
+          html[data-alloflow-theme="hc"] .alloflow-cloze-input { background: #ffffff !important; color: #000000 !important; border: 2px solid #000000 !important; }
+          html[data-alloflow-theme="hc"] .alloflow-cloze-input.is-cloze-correct { background: #e0ffe0 !important; color: #000000 !important; border: 3px solid #000000 !important; }
+          html[data-alloflow-theme="hc"] .alloflow-cloze-input.is-cloze-wrong { background: #ffe0e0 !important; color: #000000 !important; border: 3px dashed #000000 !important; }
+          html[data-alloflow-theme="hc"] .alloflow-cloze-word-bank { background: #ffffff !important; color: #000000 !important; border: 2px solid #000000 !important; }
+          html[data-alloflow-theme="hc"] .alloflow-cloze-chip, html[data-alloflow-theme="hc"] .alloflow-cloze-reset-btn { background: #ffffff !important; color: #000000 !important; border: 2px solid #000000 !important; }
+          html[data-alloflow-theme="hc"] .alloflow-cloze-check-btn { background: #000000 !important; color: #ffffff !important; border: 2px solid #000000 !important; }
+          html[data-alloflow-theme="hc"] .alloflow-cloze-results { color: #000000 !important; }
           html[data-alloflow-theme="hc"] .alloflow-reading-tools-group { background: #ffffff; border: 2px solid #000000; }
           html[data-alloflow-theme="hc"] .alloflow-reading-tools-label { background: #ffffff; color: #000000; border-right: 2px solid #000000; }
           html[data-alloflow-theme="hc"] .alloflow-cs-strip.alloflow-cs-selected, html[data-alloflow-theme="hc"] .alloflow-cs-strip.alloflow-cs-selected * { background: #ffff00 !important; border-color: #000000 !important; color: #000000 !important; }
@@ -55434,7 +55710,7 @@ function projectStudentGuideData(data, mode) {
                 // Fold-outs opened only for printing (FAQ answers) close again.
                 Array.prototype.forEach.call(document.querySelectorAll('details[data-alloflow-print-opened]'), function (node) { node.removeAttribute('data-alloflow-print-opened'); node.open = false; });
                 Array.prototype.forEach.call(document.querySelectorAll('.alloflow-cornell-table[data-alloflow-print-unfolded]'), function (tbl) { tbl.removeAttribute('data-alloflow-print-unfolded'); tbl.classList.add('alloflow-cornell-folded'); });
-                Array.prototype.forEach.call(document.querySelectorAll('.alloflow-question-long'), function (node) { node.classList.remove('alloflow-question-long'); });
+                Array.prototype.forEach.call(document.querySelectorAll('.alloflow-question-long[data-alloflow-dynamic-long="1"]'), function (node) { node.classList.remove('alloflow-question-long'); node.removeAttribute('data-alloflow-dynamic-long'); });
               }
               function copyAnswers() {
                 clearAnswerCopies();
@@ -55444,7 +55720,10 @@ function projectStudentGuideData(data, mode) {
                 Array.prototype.forEach.call(document.querySelectorAll('textarea'), function (ta) {
                   if (!ta.value || !ta.value.trim() || ta.closest('.alloflow-note-editor, .alloflow-export-prompt-overlay, .alloflow-anno-confirm-backdrop')) return;
                   var qWrap = ta.closest('.question');
-                  if (qWrap && (ta.value.length > 450 || ta.value.split(String.fromCharCode(10)).length > 7)) qWrap.classList.add('alloflow-question-long');
+                  if (qWrap && !qWrap.classList.contains('alloflow-question-long') && (ta.value.length > 450 || ta.value.split(String.fromCharCode(10)).length > 7)) {
+                    qWrap.classList.add('alloflow-question-long');
+                    qWrap.setAttribute('data-alloflow-dynamic-long', '1');
+                  }
                   var copy = document.createElement('div');
                   copy.className = 'alloflow-print-answer';
                   copy.setAttribute('aria-hidden', 'true');
@@ -57226,8 +57505,11 @@ function projectStudentGuideData(data, mode) {
                   var entry = {
                     id: (typeof a.id === 'string' || typeof a.id === 'number') ? String(a.id).slice(0, 80) : '',
                     type: type,
+                    ...(typeof a.kind === 'string' ? { kind: a.kind } : {}),
+                    ...(typeof a.author === 'string' ? { author: a.author } : {}),
                     quote: quote,
                     note: rawNote.slice(0, 2000),
+                    ...(typeof a.content === 'string' ? { content: a.content.slice(0, 2000) } : {}),
                     color: typeof a.color === 'string' ? a.color : defaultColor,
                     blockIdx: Number.isInteger(a.blockIdx) ? a.blockIdx : null
                   };
@@ -57977,12 +58259,23 @@ function projectStudentGuideData(data, mode) {
                 window.__alloflowNotify((window.__alloflowText ? window.__alloflowText('rtNoAnnotations', 'No annotations to save yet — add a note or highlight first.') : 'No annotations to save yet — add a note or highlight first.'), 'error');
                 return;
               }
-              var payload = {
+              var _annoIdentity = {};
+              try {
+                var _idEl = document.getElementById('alloflow-submission-identity');
+                if (_idEl && _idEl.textContent) _annoIdentity = JSON.parse(_idEl.textContent) || {};
+              } catch (e) { _annoIdentity = {}; }
+              var _resolvedAnnoDocId = String(window.__alloflowDocumentId || (typeof _annoDocId !== 'undefined' ? _annoDocId : '') || '');
+              var payload = Object.assign({
                 docTitle: docTitle,
                 exportedAt: new Date().toISOString(),
                 count: studentAnno.length,
                 annotations: studentAnno,
-              };
+              },
+              _resolvedAnnoDocId ? { documentId: _resolvedAnnoDocId } : {},
+              _annoIdentity.classId ? { classId: _annoIdentity.classId } : {},
+              _annoIdentity.assignmentId ? { assignmentId: _annoIdentity.assignmentId } : {},
+              _annoIdentity.studentId ? { studentId: _annoIdentity.studentId } : {},
+              _annoIdentity.dueDate ? { dueDate: _annoIdentity.dueDate } : {});
               try {
                 var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
                 var url = URL.createObjectURL(blob);
@@ -58387,6 +58680,10 @@ function projectStudentGuideData(data, mode) {
                             updateDbqPills(el.closest('.alloflow-dbq-synthesis'));
                         }
                         if (el.classList.contains('alloflow-cloze-input')) {
+                            el.classList.remove('is-cloze-correct', 'is-cloze-wrong');
+                            el.removeAttribute('aria-invalid');
+                            el.style.borderColor = '';
+                            el.style.background = '';
                             updateClozeChips(el.closest('.section'));
                         }
                         if (el.closest('.alloflow-sf-section') && (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT')) {
@@ -58426,14 +58723,21 @@ function projectStudentGuideData(data, mode) {
                             var target = (lastClozeField && sec && sec.contains(lastClozeField) && !lastClozeField.value) ? lastClozeField : (inputs.find(function(inp) { return !String(inp.value || '').trim(); }) || (lastClozeField && sec && sec.contains(lastClozeField) ? lastClozeField : inputs[0]));
                             if (target) {
                                 target.value = clozeChip.getAttribute('data-cloze-word') || '';
-                                target.style.borderColor = '#2563eb';
-                                target.style.background = '#eff6ff';
+                                target.classList.remove('is-cloze-correct', 'is-cloze-wrong');
+                                target.removeAttribute('aria-invalid');
+                                target.style.borderColor = '';
+                                target.style.background = '';
                                 target.focus();
                                 target.dispatchEvent(new Event('input', { bubbles: true }));
                                 target.dispatchEvent(new Event('change', { bubbles: true }));
                             }
                             return;
                         }
+                        var _normClozeAns = function(v) {
+                            var s = String(v == null ? '' : v);
+                            if (typeof s.normalize === 'function') s = s.normalize('NFKC');
+                            return s.replace(/[\\u2018\\u2019\\u02BC\\u2032]/g, "'").replace(/\\s+/g, ' ').trim().toLowerCase();
+                        };
                         var clozeCheck = tEl.closest('.alloflow-cloze-check-btn');
                         if (clozeCheck) {
                             var ctrl = clozeCheck.closest('.alloflow-cloze-controls');
@@ -58442,15 +58746,19 @@ function projectStudentGuideData(data, mode) {
                             var inputs = sec ? Array.prototype.slice.call(sec.querySelectorAll('.alloflow-cloze-input[data-cloze-answer]')) : [];
                             var correct = 0;
                             inputs.forEach(function(inp) {
-                                var expected = String(inp.getAttribute('data-cloze-answer') || '').trim().toLowerCase();
-                                var actual = String(inp.value || '').trim().toLowerCase();
+                                var expected = _normClozeAns(inp.getAttribute('data-cloze-answer') || '');
+                                var actual = _normClozeAns(inp.value || '');
+                                inp.style.borderColor = '';
+                                inp.style.background = '';
                                 if (expected && actual === expected) {
                                     correct++;
-                                    inp.style.borderColor = '#16a34a';
-                                    inp.style.background = '#f0fdf4';
+                                    inp.classList.add('is-cloze-correct');
+                                    inp.classList.remove('is-cloze-wrong');
+                                    inp.removeAttribute('aria-invalid');
                                 } else {
-                                    inp.style.borderColor = '#dc2626';
-                                    inp.style.background = '#fef2f2';
+                                    inp.classList.add('is-cloze-wrong');
+                                    inp.classList.remove('is-cloze-correct');
+                                    inp.setAttribute('aria-invalid', 'true');
                                 }
                             });
                             if (resEl) {
@@ -58469,8 +58777,10 @@ function projectStudentGuideData(data, mode) {
                             var resEl = ctrl && ctrl.querySelector('.alloflow-cloze-results');
                             if (sec) sec.querySelectorAll('.alloflow-cloze-input').forEach(function(inp) {
                                 inp.value = '';
-                                inp.style.borderColor = '#2563eb';
-                                inp.style.background = '#eff6ff';
+                                inp.classList.remove('is-cloze-correct', 'is-cloze-wrong');
+                                inp.removeAttribute('aria-invalid');
+                                inp.style.borderColor = '';
+                                inp.style.background = '';
                                 inp.dispatchEvent(new Event('input', { bubbles: true }));
                                 inp.dispatchEvent(new Event('change', { bubbles: true }));
                             });
@@ -58916,12 +59226,35 @@ function projectStudentGuideData(data, mode) {
                     const checkBtn = quiz.querySelector('.quiz-check-btn');
                     const resetBtn = quiz.querySelector('.quiz-reset-btn');
                     const resultsEl = quiz.querySelector('.quiz-results');
-                    if (!checkBtn || !resetBtn || !resultsEl) return;
+                    if (!resetBtn || !resultsEl) return;
                     const qSelector = '.question[data-correct], .question[data-fill-answers], .question[data-correct-multi], .question[data-sequence-key], .question[data-relation-key], .question[data-answer-evidence-key], .question[data-numeric-key], .question[data-matching-key], .question[data-ordering-key]';
                     const questions = quiz.querySelectorAll(qSelector);
-                    // Fill-ins compare without case, extra spaces, or punctuation around the answer.
+                    // Fill-ins compare without case, extra spaces, or punctuation unless data-fill-policy="exact".
+                    const fillNormExact = (value) => String(value == null ? '' : value).trim().replace(/\\s+/g, ' ');
                     const fillNorm = (value) => String(value == null ? '' : value).toLowerCase().replace(/\\s+/g, ' ').replace(/^[\\s.,;:!?'"()\\[\\]-]+|[\\s.,;:!?'"()\\[\\]-]+$/g, '');
-                    const fillAccepted = (q) => String(q.getAttribute('data-fill-answers') || '').split('|').map((part) => { try { return fillNorm(decodeURIComponent(part)); } catch (e) { return ''; } }).filter(Boolean);
+                    const fillAccepted = (q, exact) => String(q.getAttribute('data-fill-answers') || '').split('|').map((part) => { try { var s = decodeURIComponent(part); return exact ? fillNormExact(s) : fillNorm(s); } catch (e) { return ''; } }).filter(Boolean);
+                    const parseFlexNum = (raw) => {
+                        var s = String(raw == null ? '' : raw).replace(/[\u2212\u2013\u2014]/g, '-').trim();
+                        if (!s) return { val: NaN, inlineUnit: '' };
+                        var inlineUnit = '';
+                        var unitMatch = s.match(/^([+-]?(?:\\d[\\d,]*\\s+\\d+\\/\\d+|\\d+(?:\\.\\d+)?\\/\\d+(?:\\.\\d+)?|\\d[\\d,]*(?:\\.\\d+)?|\\.\\d+)(?:[eE][+-]?\\d+)?)\\s*([a-zA-Z°%µμ\\^][a-zA-Z0-9°%µμ/\\^²³·\\-\\s]*)$/);
+                        if (unitMatch) { s = unitMatch[1].trim(); inlineUnit = unitMatch[2].trim(); }
+                        s = s.replace(/,/g, '');
+                        var mixed = s.match(/^([+-]?\\d+)\\s+(\\d+)\\/(\\d+)$/);
+                        if (mixed) {
+                            var denM = Number(mixed[3]);
+                            if (!denM) return { val: NaN, inlineUnit: inlineUnit };
+                            var signM = mixed[1].charAt(0) === '-' ? -1 : 1;
+                            return { val: signM * (Math.abs(Number(mixed[1])) + Number(mixed[2]) / denM), inlineUnit: inlineUnit };
+                        }
+                        var frac = s.match(/^([+-]?\\d+(?:\\.\\d+)?)\\/([+-]?\\d+(?:\\.\\d+)?)$/);
+                        if (frac) {
+                            var den = Number(frac[2]);
+                            if (!den) return { val: NaN, inlineUnit: inlineUnit };
+                            return { val: Number(frac[1]) / den, inlineUnit: inlineUnit };
+                        }
+                        return { val: Number(s), inlineUnit: inlineUnit };
+                    };
                     const decodeKeyAttr = (q, attr) => {
                         const raw = q.getAttribute(attr);
                         if (!raw) return null;
@@ -58969,7 +59302,7 @@ function projectStudentGuideData(data, mode) {
                         inputs[idx].click();
                         inputs[idx].focus();
                     });
-                    checkBtn.addEventListener('click', () => {
+                    if (checkBtn) checkBtn.addEventListener('click', () => {
                         let correct = 0;
                         let wrong = 0;
                         let skipped = 0;
@@ -59006,9 +59339,10 @@ function projectStudentGuideData(data, mode) {
                         };
                         questions.forEach((q) => {
                             if (q.hasAttribute('data-fill-answers')) {
-                                const accepted = fillAccepted(q);
+                                const isExact = q.getAttribute('data-fill-policy') === 'exact';
+                                const accepted = fillAccepted(q, isExact);
                                 const blank = q.querySelector('.interactive-blank');
-                                const typed = fillNorm(blank && blank.value);
+                                const typed = isExact ? fillNormExact(blank && blank.value) : fillNorm(blank && blank.value);
                                 mark(q, !typed ? 'skipped' : (accepted.indexOf(typed) !== -1 ? 'correct' : 'wrong'));
                                 return;
                             }
@@ -59023,15 +59357,18 @@ function projectStudentGuideData(data, mode) {
                                 const key = decodeKeyAttr(q, 'data-numeric-key');
                                 const numEl = q.querySelector('input[data-allo-response-key$=":number"]');
                                 const unitEl = q.querySelector('input[data-allo-response-key$=":unit"]');
-                                const rawNum = numEl ? String(numEl.value || '').trim() : '';
+                                const rawNum = numEl ? String((numEl.value !== '' ? numEl.value : (numEl.getAttribute('value') || '')) || '').trim() : '';
                                 if (!rawNum || !key) { mark(q, 'skipped'); return; }
-                                const parsed = Number(rawNum);
+                                const parsedNum = parseFlexNum(rawNum);
+                                const parsed = parsedNum.val;
                                 const valOk = !Number.isNaN(parsed) && Math.abs(parsed - Number(key.value)) <= (Number(key.tolerance) || 0) + 1e-9;
                                 const allowedUnits = Array.isArray(key.units) ? key.units.map((u) => fillNorm(u)).filter(Boolean) : [];
                                 let unitOk = true;
-                                if (allowedUnits.length > 0 && unitEl) {
-                                    const gotUnit = fillNorm(unitEl.value);
+                                if (allowedUnits.length > 0) {
+                                    const rawUnit = unitEl && String(unitEl.value || '').trim() ? String(unitEl.value || '').trim() : parsedNum.inlineUnit;
+                                    const gotUnit = fillNorm(rawUnit);
                                     if (gotUnit) unitOk = allowedUnits.indexOf(gotUnit) !== -1;
+                                    else if (key.requireUnit) unitOk = false;
                                 }
                                 mark(q, (valOk && unitOk) ? 'correct' : 'wrong');
                                 return;
@@ -59094,9 +59431,9 @@ function projectStudentGuideData(data, mode) {
                                         } else if (expItems.length && (pickedItems.length !== expItems.length || pickedItems.some((v, i) => v !== expItems[i]))) {
                                             ok = false;
                                         }
-                                        if (ordVal && targetOrd && normOrd !== targetOrd) ok = false;
+                                        if (orderInput && targetOrd && (!ordVal || normOrd !== targetOrd)) ok = false;
                                     }
-                                    if (key.principleIdx >= 0 && prinVal !== '' && parseInt(prinVal, 10) !== key.principleIdx) ok = false;
+                                    if (key.principleIdx >= 0 && hasPrinControl && (prinVal === '' || parseInt(prinVal, 10) !== key.principleIdx)) ok = false;
                                 }
                                 mark(q, ok ? 'correct' : 'wrong');
                                 return;
@@ -59633,7 +59970,8 @@ function projectStudentGuideData(data, mode) {
                             var strips = Array.prototype.slice.call(container.querySelectorAll('.alloflow-tl-strip'));
                             // Practice resets to the canonical order. Graded
                             // timelines reset only to their safe shuffled order.
-                            var orderAttr = checkBtn ? 'data-original-index' : 'data-initial-index';
+                            var hasOrig = strips.some(function(s) { return /^\d+$/.test(String(s.getAttribute('data-original-index') || '').trim()); });
+                            var orderAttr = (checkBtn && hasOrig) ? 'data-original-index' : 'data-initial-index';
                             strips.sort(function(a, b) {
                                 return parseInt(a.getAttribute(orderAttr) || '0', 10)
                                      - parseInt(b.getAttribute(orderAttr) || '0', 10);
@@ -59660,17 +59998,27 @@ function projectStudentGuideData(data, mode) {
                     spokes.forEach(function(s) {
                         var detail = s.querySelector('.alloflow-mindmap-detail');
                         if (!detail) return;
-                        s.setAttribute('role', 'button');
-                        s.setAttribute('aria-pressed', 'false');
+                        var btn = s.querySelector('.alloflow-mindmap-toggle');
+                        if (btn) btn.setAttribute('aria-expanded', detail.style.display !== 'none' ? 'true' : 'false');
+                        else { s.setAttribute('role', 'button'); s.setAttribute('aria-pressed', 'false'); }
                         var toggle = function() {
                             var isOpen = detail.style.display !== 'none';
                             detail.style.display = isOpen ? 'none' : 'block';
-                            s.setAttribute('aria-pressed', isOpen ? 'false' : 'true');
+                            if (btn) btn.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
+                            else s.setAttribute('aria-pressed', isOpen ? 'false' : 'true');
                         };
-                        s.addEventListener('click', toggle);
-                        s.addEventListener('keydown', function(e) {
-                            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
-                        });
+                        if (btn) {
+                            btn.addEventListener('click', function(e) { e.stopPropagation(); toggle(); });
+                            s.addEventListener('click', function(e) {
+                                if (e.target && e.target.closest && e.target.closest('a, button, input, select, textarea')) return;
+                                toggle();
+                            });
+                        } else {
+                            s.addEventListener('click', toggle);
+                            s.addEventListener('keydown', function(e) {
+                                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+                            });
+                        }
                     });
                 })();
                 ${_submissionSaveHandler}
@@ -59704,14 +60052,14 @@ function projectStudentGuideData(data, mode) {
                         if (nick && missingNotice && typeof window.__alloflowNotify === 'function') window.__alloflowNotify(missingNotice, 'info');
                         if (!nick) nick = await window.__alloflowPrompt({ title: window.__alloflowText('saveAnswersTitle', 'Save your answers'), description: window.__alloflowText('saveAnswersDescription', 'Enter a name or nickname so your teacher can identify this answer file.'), notice: missingNotice, label: window.__alloflowText('nameLabel', 'Name or nickname'), confirmLabel: window.__alloflowText('saveAnswersConfirm', 'Save answers'), cancelLabel: window.__alloflowText('cancel', 'Cancel'), maxLength: 60, requiredMessage: window.__alloflowText('requiredName', 'Enter a name or nickname.') });
                         if (!nick) return; nick = String(nick).trim().slice(0, 60); if (!nick) return;
-                        var _savedAnnotations = typeof window.__alloflowGetStudentAnnotations === 'function' ? window.__alloflowGetStudentAnnotations() : [];
-                        var payload = { schemaVersion: 3, storageVersion: 2, kind: 'alloflow-student-submission', documentId: _documentId, nickname: nick, docTitle: document.title || 'Worksheet', timestamp: new Date().toISOString(), responses: _pcollect(), responseManifest: _collectResponseManifest(), annotations: _savedAnnotations, ...(identity.classId ? { classId: identity.classId } : {}), ...(identity.assignmentId ? { assignmentId: identity.assignmentId } : {}), ...(identity.dueDate ? { dueDate: identity.dueDate } : {}) };
+                        var _savedAnnotations = typeof window.__alloflowCollectAnnotations === 'function' ? window.__alloflowCollectAnnotations() : (typeof window.__alloflowGetStudentAnnotations === 'function' ? window.__alloflowGetStudentAnnotations() : []);
+                        var payload = { schemaVersion: 3, storageVersion: 2, kind: 'alloflow-student-submission', documentId: _documentId, nickname: nick, docTitle: document.title || 'Worksheet', timestamp: new Date().toISOString(), responses: _pcollect(), responseManifest: _collectResponseManifest(), annotations: _savedAnnotations, ...(identity.classId ? { classId: identity.classId } : {}), ...(identity.assignmentId ? { assignmentId: identity.assignmentId } : {}), ...(identity.studentId ? { studentId: identity.studentId } : {}), ...(identity.dueDate ? { dueDate: identity.dueDate } : {}) };
                         try {
                             var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
                             var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
                             var filePart = function(value, fallback) {
                                 var out = String(value || '');
-                                try { out = out.normalize('NFC').replace(new RegExp('[^\\\\p{L}\\\\p{N}]+', 'gu'), '_'); }
+                                try { out = out.normalize('NFC').replace(new RegExp('[^\\\\p{L}\\\\p{M}\\\\p{N}]+', 'gu'), '_'); }
                                 catch (_) { out = out.replace(/[^a-z0-9]+/gi, '_'); }
                                 return out.replace(/^_+|_+$/g, '').slice(0, 40) || fallback;
                             };
@@ -59952,11 +60300,11 @@ function projectStudentGuideData(data, mode) {
       if (cfg.assessmentMode === true) {
         _packHtml = _packHtml
           .replace(/ data-correct="[^"]*"/g, ' data-correct=""')
-          .replace(/ data-fill-answers="[^"]*"/g, '')
+          .replace(/ data-fill-(?:answers|policy)="[^"]*"/g, '')
           .replace(/ data-(?:correct-multi|sequence-key|relation-key|answer-evidence-key|numeric-key|cloze-answer|matching-key|ordering-key|expected-letter|answer-zone|correct-label|term-index|def-letter)="[^"]*"/g, '')
           .replace(/(<div[^>]*class="alloflow-cs-strip"[^>]*?) data-category-id="[^"]*"/g, '$1 data-category-id=""')
           .replace(/(<div[^>]*class="alloflow-tl-strip"[^>]*?) data-original-index="[^"]*"/g, '$1 data-original-index=""')
-          .replace(/<\/head>/i, '<style>.quiz-controls,.alloflow-cs-controls,.alloflow-cloze-controls,.alloflow-venn-controls,.alloflow-match-controls,.alloflow-tl-controls,.alloflow-ac-controls,.alloflow-venn-check-btn,.alloflow-venn-check-button,.alloflow-match-check-btn,.alloflow-tl-check-btn,.alloflow-cs-check-btn,.alloflow-cloze-check-btn,[data-allo-self-check-btn]{display:none !important}</style></head>');
+          .replace(/<\/head>/i, '<style>.quiz-check-btn,.alloflow-quiz-check-btn,.alloflow-quiz-feedback,.alloflow-venn-check-btn,.alloflow-venn-check-button,.alloflow-match-check-btn,.alloflow-match-feedback,.alloflow-tl-check-btn,.alloflow-cs-check-btn,.alloflow-cloze-check-btn,.alloflow-ac-check-btn,.alloflow-gm-check-btn,.alloflow-gm-feedback,[data-allo-self-check-btn]{display:none !important}</style></head>');
       }
       // Run WCAG sanitizer on the complete export HTML to guarantee accessibility
       const sanitized = sanitizeStyleForWCAG(_packHtml);

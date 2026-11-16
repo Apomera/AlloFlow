@@ -758,7 +758,9 @@ function MathView(props) {
       options.onInsert(result, latestContext.value, () => _mathAccessibleContextMatches(accessibleInputRegistryRef.current, request));
     }).catch(error => {
       if (_mathAccessibleRequestIsCurrent(accessibleInputRegistryRef.current, pending, request)) {
-        addToast(`Accessible math input is unavailable: ${error?.message || 'unknown error'}`, 'error');
+        addToast(_mathT(t, 'math.accessible_input_unavailable', 'Accessible math input is unavailable: {error}', {
+          error: error?.message || _mathT(t, 'common.unknown_error', 'unknown error')
+        }), 'error');
       }
     }).then(() => {
       if (pending.get(contextKey) === request.requestId) {
@@ -920,15 +922,15 @@ function MathView(props) {
       var tool = support.tool;
       var target = _mathPlainRecord(support.state);
       if (!_mathIsSupportedManipulativeTool(tool)) {
-        addToast('This visual support is unavailable because its tool type is invalid.', 'error');
+        addToast(_mathT(t, 'math.manipulative_invalid_tool', 'This visual support is unavailable because its tool type is invalid.'), 'error');
         return;
       }
       if (!canOpenStemLab) {
-        addToast('This visual support cannot open because the manipulative lab is unavailable.', 'error');
+        addToast(_mathT(t, 'math.manipulative_lab_unavailable', 'This visual support cannot open because the manipulative lab is unavailable.'), 'error');
         return;
       }
       if (!canPrepareMathManipulativeTool(tool, target)) {
-        addToast('This visual support cannot open because its lab state controls are unavailable.', 'error');
+        addToast(_mathT(t, 'math.manipulative_state_unavailable', 'This visual support cannot open because its lab state controls are unavailable.'), 'error');
         return;
       }
       var ownsSupportValue = key => {
@@ -1033,7 +1035,7 @@ function MathView(props) {
       setStemLabTab('explore');
     } catch (_) {
       activeManipulativeSessionRef.current = null;
-      addToast('This visual support contains invalid data and could not be opened safely.', 'error');
+      addToast(_mathT(t, 'math.manipulative_invalid_data', 'This visual support contains invalid data and could not be opened safely.'), 'error');
     }
   };
   var openMathManipulativeResponse = problem => {
@@ -1138,12 +1140,12 @@ function MathView(props) {
     var tool = response.tool;
     var session = activeManipulativeSessionRef.current;
     if (!session || session.artifact !== generatedContentArtifact || session.resourceId !== mathResourceId || session.problemKey !== problem.__viewKey || session.responseSource !== response.__source || session.tool !== tool) {
-      addToast('Open this problem’s manipulative before checking so its workspace can be prepared safely.', 'info');
+      addToast(_mathT(t, 'math.manipulative_open_before_check', 'Open this problem’s manipulative before checking so its workspace can be prepared safely.'), 'info');
       return;
     }
     var currentActual = _mathManipulativeActualState(tool, currentManipulativeSnapshot());
     if (session.requiresChange && currentActual === session.baseline) {
-      addToast('Complete this problem’s manipulative before checking. Previous problem work is not reused.', 'info');
+      addToast(_mathT(t, 'math.manipulative_complete_before_check', 'Complete this problem’s manipulative before checking. Previous problem work is not reused.'), 'info');
       return;
     }
     var evaluation;
@@ -1264,7 +1266,7 @@ function MathView(props) {
     onClick: () => submitMathSelfGrade(mathResourceId, mathProblems),
     "aria-describedby": selfGradeHelpId,
     disabled: !canSubmitMathSelfGrade || !hasAllSelfGradeAnswers,
-    className: "flex min-h-[44px] items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md hover:from-emerald-600 hover:to-teal-600 transition-all disabled:cursor-not-allowed disabled:opacity-50"
+    className: "flex min-h-[44px] items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r from-emerald-700 to-teal-700 text-white shadow-md hover:from-emerald-800 hover:to-teal-800 transition-all disabled:cursor-not-allowed disabled:opacity-50"
   }, "📊 Submit Assessment"), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('common.copy'),
@@ -1309,14 +1311,15 @@ function MathView(props) {
   })), /*#__PURE__*/React.createElement("p", {
     className: "mt-2 text-sm text-slate-700"
   }, _mathT(t, 'math.assessment_draft_notice', 'Your answers are saved after Submit Assessment completes. Leaving or switching assessments before submitting clears your draft answers.')))), graphHtml && /*#__PURE__*/React.createElement("div", {
-    className: "bg-white p-4 sm:p-6 rounded-xl border border-slate-400 shadow-sm animate-in fade-in slide-in-from-bottom-2"
+    className: "bg-white p-4 sm:p-6 rounded-xl border border-slate-400 shadow-sm animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-2"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-xs font-black text-purple-600 uppercase tracking-widest mb-4 flex items-center gap-2"
   }, /*#__PURE__*/React.createElement(ImageIcon, {
     size: 14
   }), " ", t('math.display.visual_header')), /*#__PURE__*/React.createElement("div", {
-    className: "w-full h-auto flex justify-center bg-slate-50 rounded-lg border border-slate-100 p-4 overflow-x-auto svg-container",
+    className: "w-full h-auto flex justify-center bg-slate-50 rounded-lg border border-slate-100 p-4 overflow-x-auto svg-container focus:outline-none focus:ring-2 focus:ring-indigo-300",
     role: "img",
+    tabIndex: 0,
     "aria-label": mathGraphAlt || 'Visual diagram for this problem',
     dangerouslySetInnerHTML: {
       __html: graphHtml
@@ -1355,7 +1358,7 @@ function MathView(props) {
     title: `Add math to problem ${pIdx + 1}`,
     contextKey: mathAccessibleContextKey('problem-question', problem.__viewKey),
     onInsert: (result, currentValue) => handleMathProblemEdit(pIdx, 'question', appendInlineMath(currentValue, result.latex), null, problem.__viewKey, mathResourceId)
-  }), 'Open accessible math keyboard for this problem', !canHandleMathProblemEdit), /*#__PURE__*/React.createElement("p", {
+  }), tr('math.keyboard_problem_aria', 'Open accessible math keyboard for this problem'), !canHandleMathProblemEdit), /*#__PURE__*/React.createElement("p", {
     id: `math-edit-hint-${_mathStableHash(mathResourceId + '|' + problem.__viewKey)}`,
     className: "mt-1 text-xs text-slate-600"
   }, "Press Ctrl+Enter or Command+Enter to finish editing.")) : /*#__PURE__*/React.createElement("h3", {
@@ -1411,7 +1414,9 @@ function MathView(props) {
       ..._mathPlainRecord(previous),
       [problem.__viewKey]: appendInlineMath(currentValue, result.latex)
     } : previous)
-  }), `Open accessible math keyboard for answer ${pIdx + 1}`, !canSetMathStudentAnswers)) : isTeacherMode ? /*#__PURE__*/React.createElement(React.Fragment, null, isIndependentMode && !problem._verification?.reviewRequired && /*#__PURE__*/React.createElement("div", {
+  }), tr('math.keyboard_self_answer_aria', 'Open accessible math keyboard for answer {p}', {
+    p: pIdx + 1
+  }), !canSetMathStudentAnswers)) : isTeacherMode ? /*#__PURE__*/React.createElement(React.Fragment, null, isIndependentMode && !problem._verification?.reviewRequired && /*#__PURE__*/React.createElement("div", {
     className: "ml-0 sm:ml-12 mt-4 mb-4 space-y-3"
   }, renderMathManipulativeSupport(problem), getMathManipulativeResponseAvailability(problem).available === true ? renderMathManipulativeResponse(problem) : /*#__PURE__*/React.createElement("div", {
     className: "relative"
@@ -1436,8 +1441,10 @@ function MathView(props) {
       if (!responseInput || responseInput.disabled) return;
       handleStudentInput(mathResourceId, problem.__viewKey, appendInlineMath(currentValue, result.latex));
     }
-  }), `Open accessible math keyboard for work on problem ${pIdx + 1}`, !canHandleStudentInput))), showMathAnswers ? /*#__PURE__*/React.createElement("div", {
-    className: "animate-in fade-in slide-in-from-top-2 duration-300"
+  }), tr('math.keyboard_work_aria', 'Open accessible math keyboard for work on problem {p}', {
+    p: pIdx + 1
+  }), !canHandleStudentInput))), showMathAnswers ? /*#__PURE__*/React.createElement("div", {
+    className: "animate-in motion-reduce:animate-none fade-in slide-in-from-top-2 duration-300"
   }, problem.steps && problem.steps.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "ml-0 sm:ml-4 pl-4 border-l-2 border-slate-200 space-y-4 mt-4"
   }, problem.steps.map((step, idx) => /*#__PURE__*/React.createElement("div", {
@@ -1462,7 +1469,11 @@ function MathView(props) {
     title: `Add math to explanation ${idx + 1} for problem ${pIdx + 1}`,
     contextKey: mathAccessibleContextKey('step-explanation-' + idx, problem.__viewKey),
     onInsert: (result, currentValue) => handleMathProblemEdit(pIdx, 'step_explanation', appendInlineMath(currentValue, result.latex), idx, problem.__viewKey, mathResourceId)
-  }), `Open accessible math keyboard for explanation ${idx + 1} of problem ${pIdx + 1}`, !canHandleMathProblemEdit), step.explanation && /*#__PURE__*/React.createElement("div", {
+  }), tr('math.keyboard_explanation_aria', 'Open accessible math keyboard for explanation {n} of problem {p}', {
+    n: idx + 1,
+    p: pIdx + 1
+  }), !canHandleMathProblemEdit), step.explanation && /*#__PURE__*/React.createElement("div", {
+    role: "region",
     className: "rounded border border-slate-200 bg-white p-2 text-sm text-slate-800",
     "aria-label": tr('math.explanation_preview_aria', 'Explanation {n} preview for problem {p}', {
       n: idx + 1,
@@ -1482,8 +1493,13 @@ function MathView(props) {
     initialLatex: step.latex || '',
     insertLabel: 'Use as step expression',
     onInsert: result => handleMathProblemEdit(pIdx, 'step_latex', result.latex, idx, problem.__viewKey, mathResourceId)
-  }), `Open accessible math keyboard for expression ${idx + 1} of problem ${pIdx + 1}`, !canHandleMathProblemEdit), step.latex && /*#__PURE__*/React.createElement("div", {
-    className: "overflow-x-auto rounded border border-slate-200 bg-white p-2 text-center text-slate-800",
+  }), tr('math.keyboard_expression_aria', 'Open accessible math keyboard for expression {n} of problem {p}', {
+    n: idx + 1,
+    p: pIdx + 1
+  }), !canHandleMathProblemEdit), step.latex && /*#__PURE__*/React.createElement("div", {
+    role: "region",
+    tabIndex: 0,
+    className: "overflow-x-auto rounded border border-slate-200 bg-white p-2 text-center text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-300",
     "aria-label": tr('math.expression_preview_aria', 'Expression {n} preview for problem {p}', {
       n: idx + 1,
       p: pIdx + 1
@@ -1493,7 +1509,13 @@ function MathView(props) {
   }))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "text-slate-700 mb-2 leading-relaxed font-medium text-sm"
   }, formatInlineText(step.explanation, false)), step.latex && /*#__PURE__*/React.createElement("div", {
-    className: "bg-slate-50 p-3 rounded text-center border border-slate-100 overflow-x-auto flex justify-center"
+    role: "region",
+    tabIndex: 0,
+    "aria-label": tr('math.step_expression_aria', 'Expression for step {n} of problem {p}', {
+      n: idx + 1,
+      p: pIdx + 1
+    }),
+    className: "bg-slate-50 p-3 rounded text-center border border-slate-100 overflow-x-auto flex justify-center focus:outline-none focus:ring-2 focus:ring-indigo-300"
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-lg font-serif text-slate-800 inline-block"
   }, /*#__PURE__*/React.createElement(MathSymbol, {
@@ -1503,7 +1525,7 @@ function MathView(props) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-green-50 p-4 rounded-xl border border-green-200 shadow-sm"
   }, /*#__PURE__*/React.createElement("h4", {
-    className: "text-xs font-black text-green-600 uppercase tracking-widest mb-2 flex items-center gap-2"
+    className: "text-xs font-black text-green-800 uppercase tracking-widest mb-2 flex items-center gap-2"
   }, /*#__PURE__*/React.createElement(CheckCircle2, {
     size: 14
   }), " ", t('math.display.answer_header')), isMathEditing(pIdx, problem.__viewKey, mathResourceId) ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("input", {
@@ -1520,8 +1542,12 @@ function MathView(props) {
     initialLatex: problem.answer || '',
     insertLabel: 'Use as answer key',
     onInsert: result => handleMathProblemEdit(pIdx, 'answer', result.latex, null, problem.__viewKey, mathResourceId)
-  }), `Open accessible math keyboard for answer key ${pIdx + 1}`, !canHandleMathProblemEdit), problem.answer && /*#__PURE__*/React.createElement("div", {
-    className: "mt-2 overflow-x-auto rounded border border-green-200 bg-white p-2 text-lg text-green-900",
+  }), tr('math.keyboard_answer_key_aria', 'Open accessible math keyboard for answer key {p}', {
+    p: pIdx + 1
+  }), !canHandleMathProblemEdit), problem.answer && /*#__PURE__*/React.createElement("div", {
+    role: "region",
+    tabIndex: 0,
+    className: "mt-2 overflow-x-auto rounded border border-green-200 bg-white p-2 text-lg text-green-900 focus:outline-none focus:ring-2 focus:ring-green-500",
     "aria-label": tr('math.answer_key_preview_aria', 'Answer key {p} preview', {
       p: pIdx + 1
     })
@@ -1534,7 +1560,7 @@ function MathView(props) {
   }))), problem.realWorld && /*#__PURE__*/React.createElement("div", {
     className: "bg-orange-50 p-4 rounded-xl border border-orange-200 shadow-sm"
   }, /*#__PURE__*/React.createElement("h4", {
-    className: "text-xs font-black text-orange-600 uppercase tracking-widest mb-2 flex items-center gap-2"
+    className: "text-xs font-black text-orange-800 uppercase tracking-widest mb-2 flex items-center gap-2"
   }, /*#__PURE__*/React.createElement(Globe, {
     size: 14
   }), " ", t('math.display.connection_header')), isMathEditing(pIdx, problem.__viewKey, mathResourceId) ? /*#__PURE__*/React.createElement("textarea", {
@@ -1581,7 +1607,9 @@ function MathView(props) {
       if (!responseInput || responseInput.disabled) return;
       handleStudentInput(mathResourceId, problem.__viewKey, appendInlineMath(currentValue, result.latex));
     }
-  }), `Open accessible math keyboard for work on problem ${pIdx + 1}`, !canHandleStudentInput || isMathResponseLocked(problem.__viewKey))), (() => {
+  }), tr('math.keyboard_work_aria', 'Open accessible math keyboard for work on problem {p}', {
+    p: pIdx + 1
+  }), !canHandleStudentInput || isMathResponseLocked(problem.__viewKey))), (() => {
     const checkResult = getMathCheckResult(problem.__viewKey);
     const studentWork = _mathScalarText(resourceStudentResponses[problem.__viewKey]);
     return /*#__PURE__*/React.createElement(React.Fragment, null, !checkResult?.checked && /*#__PURE__*/React.createElement("button", {
@@ -1604,13 +1632,13 @@ function MathView(props) {
         "aria-live": "polite"
       }, hintInfo.hints.map((hint, hIdx) => /*#__PURE__*/React.createElement("div", {
         key: hIdx,
-        className: "flex gap-2 items-start p-3 rounded-xl bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 animate-in fade-in slide-in-from-top-1 duration-200"
+        className: "flex gap-2 items-start p-3 rounded-xl bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 animate-in motion-reduce:animate-none fade-in slide-in-from-top-1 duration-200"
       }, /*#__PURE__*/React.createElement("span", {
         className: "text-lg flex-shrink-0"
       }, hIdx === 0 ? '💡' : hIdx === 1 ? '🔦' : '🔍'), /*#__PURE__*/React.createElement("div", {
         className: "flex-1"
       }, /*#__PURE__*/React.createElement("span", {
-        className: "text-[11px] font-black text-amber-600 uppercase tracking-widest"
+        className: "text-[11px] font-black text-amber-800 uppercase tracking-widest"
       }, _mathT(t, 'math.hint.label', 'Hint {n} of 3', {
         n: hIdx + 1
       })), /*#__PURE__*/React.createElement("p", {
@@ -1635,7 +1663,7 @@ function MathView(props) {
     }, _mathT(t, 'math.check.not_graded', 'Your work has not been graded.')), /*#__PURE__*/React.createElement("p", null, checkResult.feedback), /*#__PURE__*/React.createElement("p", null, _mathT(t, 'math.check.answer_saved_retry', 'Your answer is saved. Use the check button above to try again.'))), checkResult?.checked && checkResult.verdict !== 'error' && /*#__PURE__*/React.createElement("div", {
       role: "status",
       "aria-live": "polite",
-      className: `rounded-xl border-2 overflow-hidden shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-300 ${checkResult.verdict === 'correct' ? 'border-green-300 bg-green-50' : checkResult.verdict === 'partial' ? 'border-amber-300 bg-amber-50' : 'border-red-300 bg-red-50'}`
+      className: `rounded-xl border-2 overflow-hidden shadow-sm animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-2 duration-300 ${checkResult.verdict === 'correct' ? 'border-green-300 bg-green-50' : checkResult.verdict === 'partial' ? 'border-amber-300 bg-amber-50' : 'border-red-300 bg-red-50'}`
     }, /*#__PURE__*/React.createElement("div", {
       className: `px-4 py-3 flex flex-wrap items-center justify-between gap-2 ${checkResult.verdict === 'correct' ? 'bg-green-100' : checkResult.verdict === 'partial' ? 'bg-amber-100' : 'bg-red-100'}`
     }, /*#__PURE__*/React.createElement("div", {
@@ -1660,7 +1688,7 @@ function MathView(props) {
       type: "button",
       onClick: () => handleResetMathCheck(mathResourceId, problem.__viewKey),
       disabled: !canHandleResetMathCheck,
-      className: `flex min-h-[44px] items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${checkResult.verdict === 'correct' ? 'text-green-600 hover:bg-green-100' : 'text-indigo-600 hover:bg-indigo-100'}`
+      className: `flex min-h-[44px] items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${checkResult.verdict === 'correct' ? 'text-green-800 hover:bg-green-100' : 'text-indigo-700 hover:bg-indigo-100'}`
     }, /*#__PURE__*/React.createElement(RefreshCw, {
       size: 12
     }), checkResult.verdict === 'correct' ? t('math.check.try_another') || 'Revise Answer' : t('math.check.try_again') || 'Try Again'))), checkResult?.checked && problem.steps && problem.steps.length > 0 && /*#__PURE__*/React.createElement("details", {
@@ -1683,7 +1711,7 @@ function MathView(props) {
       className: "mt-2 space-y-2 pl-2 border-l-3 border-blue-200"
     }, problem.steps.map((step, sIdx) => /*#__PURE__*/React.createElement("div", {
       key: sIdx,
-      className: "flex gap-3 items-start p-3 bg-white rounded-lg border border-slate-100 shadow-sm animate-in fade-in slide-in-from-top-1 duration-200",
+      className: "flex gap-3 items-start p-3 bg-white rounded-lg border border-slate-100 shadow-sm animate-in motion-reduce:animate-none fade-in slide-in-from-top-1 duration-200",
       style: {
         animationDelay: `${sIdx * 80}ms`
       }
@@ -1694,11 +1722,23 @@ function MathView(props) {
     }, /*#__PURE__*/React.createElement("p", {
       className: "text-sm text-slate-700 font-medium leading-relaxed"
     }, step.explanation), step.latex && /*#__PURE__*/React.createElement("div", {
-      className: "mt-1.5 px-3 py-1.5 bg-slate-50 rounded-md border border-slate-400 text-xs text-indigo-700 overflow-x-auto"
+      role: "region",
+      tabIndex: 0,
+      "aria-label": tr('math.step_expression_aria', 'Expression for step {n} of problem {p}', {
+        n: sIdx + 1,
+        p: pIdx + 1
+      }),
+      className: "mt-1.5 px-3 py-1.5 bg-slate-50 rounded-md border border-slate-400 text-xs text-indigo-700 overflow-x-auto focus:outline-none focus:ring-2 focus:ring-indigo-300"
     }, /*#__PURE__*/React.createElement(MathSymbol, {
       text: step.latex
     })), step.expression && !step.latex && /*#__PURE__*/React.createElement("div", {
-      className: "mt-1.5 max-w-full overflow-x-auto px-3 py-1.5 bg-slate-50 rounded-md border border-slate-400 font-mono text-xs text-indigo-700"
+      role: "region",
+      tabIndex: 0,
+      "aria-label": tr('math.step_expression_aria', 'Expression for step {n} of problem {p}', {
+        n: sIdx + 1,
+        p: pIdx + 1
+      }),
+      className: "mt-1.5 max-w-full overflow-x-auto px-3 py-1.5 bg-slate-50 rounded-md border border-slate-400 font-mono text-xs text-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-300"
     }, /*#__PURE__*/React.createElement(MathSymbol, {
       text: step.expression
     }))))), problem.answer && /*#__PURE__*/React.createElement("div", {
@@ -1749,7 +1789,7 @@ function MathView(props) {
   }, "✏️"), /*#__PURE__*/React.createElement("span", {
     className: "text-xs font-bold text-indigo-700"
   }, t('math.edit_with_allobot')), /*#__PURE__*/React.createElement("span", {
-    className: "text-[11px] text-indigo-400 font-medium"
+    className: "text-[11px] text-indigo-700 font-medium"
   }, t('math.edit_helper'))), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap gap-2"
   }, /*#__PURE__*/React.createElement("input", {
@@ -1771,7 +1811,7 @@ function MathView(props) {
     onClick: () => handleMathEdit(mathEditInput, mathResourceId),
     "aria-busy": isMathEditingChat || isProcessing,
     disabled: !canHandleMathEdit || !mathEditInput.trim() || isMathEditingChat || isProcessing,
-    className: "min-h-[44px] px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold text-sm rounded-lg hover:from-indigo-600 hover:to-purple-600 disabled:opacity-40 transition-all flex items-center gap-2 shadow-md"
+    className: "min-h-[44px] px-4 py-2 bg-gradient-to-r from-indigo-700 to-purple-700 text-white font-bold text-sm rounded-lg hover:from-indigo-800 hover:to-purple-800 disabled:opacity-40 transition-all flex items-center gap-2 shadow-md"
   }, isMathEditingChat ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
     className: "animate-spin motion-reduce:animate-none"

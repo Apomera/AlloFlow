@@ -211,8 +211,11 @@ describe('wave 3: remaining teacher surfaces', () => {
   });
   it('Story Forge asks the host whether text AI is usable (keyless teacher included)', () => {
     const sf = src('story_forge_source.jsx');
-    expect(sf).toContain("return !!onCallGemini && !!window.__alloAiUsable('text', onCallGemini);");
-    expect(src('story_forge_module.js')).toContain('window.__alloAiUsable("text", onCallGemini)');
+    expect(sf).toContain('window.__alloAiUsable(kind, fn)');
+    expect(sf).toContain("const sfTextAi = _sfAiCheck('text', onCallGemini);");
+    const sfm = src('story_forge_module.js');
+    expect(sfm).toContain('window.__alloAiUsable(kind, fn)');
+    expect(sfm).toContain('const sfTextAi = _sfAiCheck("text", onCallGemini);');
   });
   it('UDL chat error reply carries the doorway and its retry is disabled without AI', () => {
     const modals = src('view_misc_modals_source.jsx');

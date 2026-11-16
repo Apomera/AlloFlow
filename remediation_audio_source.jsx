@@ -10,27 +10,35 @@
 // The monolith-side shim is a Proxy that forwards to window.remediationAudio
 // (set below), so all existing remediationAudio.X() call sites continue to work.
 
-var getGlobalAudioContext = (typeof window !== 'undefined' && window.getGlobalAudioContext)
-    ? window.getGlobalAudioContext
-    : function() {
-        var Ctx = (typeof window !== 'undefined') && (window.AudioContext || window.webkitAudioContext);
-        return Ctx ? new Ctx() : null;
-    };
-var isGlobalMuted = (typeof window !== 'undefined' && window.isGlobalMuted)
-    ? window.isGlobalMuted
-    : function() { return false; };
+var _fallbackAudioCtx = null;
+var _isMuted = function () {
+    return typeof window !== 'undefined' && typeof window.isGlobalMuted === 'function'
+        ? Boolean(window.isGlobalMuted())
+        : false;
+};
+var _getAudioCtx = function () {
+    if (typeof window !== 'undefined' && typeof window.getGlobalAudioContext === 'function') {
+        return window.getGlobalAudioContext();
+    }
+    if (_fallbackAudioCtx && _fallbackAudioCtx.state !== 'closed') {
+        return _fallbackAudioCtx;
+    }
+    var Ctx = (typeof window !== 'undefined') && (window.AudioContext || window.webkitAudioContext);
+    _fallbackAudioCtx = Ctx ? new Ctx() : null;
+    return _fallbackAudioCtx;
+};
 
 const remediationAudio = (() => {
   let lastChunkSoundAt = 0;
   const DEBOUNCE_MS = 150;
   const prefersReducedMotion = () => typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const canPlay = () => !isGlobalMuted() && !prefersReducedMotion();
+  const canPlay = () => !_isMuted() && !prefersReducedMotion();
 
   // Generic tone generator: frequency (Hz), duration (s), type, gain, attack, release
   const playTone = (freq, duration = 0.12, type = 'sine', gain = 0.12, attack = 0.005, release = 0.08) => {
     if (!canPlay()) return;
     try {
-      const ctx = getGlobalAudioContext();
+      const ctx = _getAudioCtx();
       if (!ctx) return;
       if (ctx.state === 'suspended') { try { ctx.resume(); } catch(e) {} }
       const osc = ctx.createOscillator();

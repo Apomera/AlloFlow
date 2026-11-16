@@ -240,7 +240,7 @@
           t('stem.timeline.title', '🕰️ Timeline Studio — turn a reading into a timeline')),
         h('p', { className: 'text-sm text-slate-300 leading-relaxed' },
           t('stem.timeline.blurb', 'Paste a reading — a history handout, a biography, the story of a scientific discovery — and the AI finds the dated events and lays them out as an interactive timeline you can scroll and step through. Great for turning dense text into a clear sequence.')),
-        h('label', { className: 'text-xs font-bold text-slate-400', htmlFor: 'tl-src' },
+        h('label', { className: 'text-xs font-bold text-slate-300', htmlFor: 'tl-src' },
           t('stem.timeline.source_label', 'Paste the text to turn into a timeline')),
         h('textarea', {
           id: 'tl-src',
@@ -251,7 +251,7 @@
           className: 'w-full rounded-xl bg-slate-900/70 border border-slate-700 p-3 text-sm text-slate-100 placeholder-slate-500 focus:border-rose-500 focus:outline-none resize-y'
         }),
         h('div', { className: 'flex flex-wrap items-center gap-3' },
-          h('label', { className: 'text-xs text-slate-400 flex items-center gap-2' },
+          h('label', { className: 'text-xs text-slate-300 flex items-center gap-2' },
             t('stem.timeline.reading_level', 'Reading level'),
             h('select', {
               value: grade,
@@ -278,7 +278,7 @@
           h('div', null, (aiOn ? '✨ ' + t('stem.timeline.ai_on', 'AI is ON — it reads your text and pulls out the dated events.')
             : '🌱 ' + t('stem.timeline.ai_off', 'AI hints are off — use “Build by hand” to add events yourself in the timeline window.'))),
           h('div', null, '🔒 ' + t('stem.timeline.privacy', 'Your text and the timeline stay in memory — nothing is saved or graded.'))),
-        h('p', { className: 'text-[0.6875rem] text-slate-400 leading-relaxed' },
+        h('p', { className: 'text-[0.6875rem] text-slate-300 leading-relaxed' },
           t('stem.timeline.credit', 'Timeline rendering: TimelineJS by Northwestern University Knight Lab (timeline.knightlab.com), free and open source under the Mozilla Public License. The timeline library loads from Knight Lab’s CDN, so this tool needs internet.'))
       );
     }

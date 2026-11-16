@@ -44,8 +44,8 @@
     // but re-keyed by MEANING. A board's colour answers "has this been dealt
     // with?", which is the question a sticky note cannot answer for you.
     const STATE_COLORS = {
-        open:     { fill: '#fef9c3', border: '#facc15', text: '#713f12', label: 'Open' },
-        answered: { fill: '#dcfce7', border: '#4ade80', text: '#14532d', label: 'Answered' },
+        open:     { fill: '#fef9c3', border: '#a16207', text: '#713f12', label: 'Open' },
+        answered: { fill: '#dcfce7', border: '#15803d', text: '#14532d', label: 'Answered' },
         pending:  { fill: '#dbeafe', border: '#60a5fa', text: '#1e3a8a', label: 'Waiting for your teacher' }
     };
 
@@ -211,10 +211,10 @@
                     maxLength: contract.LIMITS.ITEM_CHARS,
                     disabled: !vm.canPost,
                     onChange: function (e) { if (typeof props.onDraft === 'function') props.onDraft(e.target.value); },
-                    className: 'w-full rounded border p-2 text-sm'
+                    className: 'w-full min-h-11 rounded border p-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2'
                 }),
                 h('div', { key: 'row', className: 'flex items-center justify-between' }, [
-                    h('span', { key: 'left', className: 'text-xs opacity-70' },
+                    h('span', { key: 'left', className: 'text-xs text-slate-600' },
                         vm.canPost
                             ? tr('question_board.remaining', 'Questions you can still add') + ': ' + vm.remaining
                             : (vm.blockReason === 'board-full'
@@ -224,12 +224,12 @@
                                     : tr('question_board.cap', 'You have added all your questions for this board.'))),
                     h('button', {
                         key: 'post', type: 'button', onClick: submit, disabled: !vm.canPost || !String(draft).trim(),
-                        className: 'rounded bg-indigo-700 px-3 py-1 text-sm font-bold text-white disabled:opacity-50'
+                        className: 'min-h-11 rounded bg-indigo-700 px-3 py-1 text-sm font-bold text-white disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2'
                     }, tr('question_board.post', 'Add my question'))
                 ])
             ]) : null,
 
-            h('p', { key: 'counts', role: 'status', className: 'text-xs opacity-70' },
+            h('p', { key: 'counts', role: 'status', className: 'text-xs text-slate-700' },
                 vm.openCount + ' ' + tr('question_board.open', 'open') + ' · '
                 + vm.answeredCount + ' ' + tr('question_board.answered', 'answered')),
 
@@ -238,7 +238,7 @@
 
             // An empty-looking board is confusing; name the reason.
             vm.floorPending ? h('p', {
-                key: 'floor', role: 'status', className: 'text-xs opacity-70'
+                key: 'floor', role: 'status', className: 'text-xs text-slate-600'
             }, tr('question_board.floor', 'Classmates’ questions appear once a few more people have posted.')) : null,
 
             vm.peerItems.length ? h('ul', { key: 'peers', className: 'space-y-2' },
@@ -435,18 +435,18 @@
         }, [
             h('div', { key: 'text' }, [
                 h('p', { key: 'q' }, item.text || ''),
-                h('p', { key: 'who', className: 'text-xs opacity-70' }, item.displayName || '')
+                h('p', { key: 'who', className: 'text-xs text-slate-600' }, item.displayName || '')
             ]),
             h('div', { key: 'actions', className: 'flex shrink-0 gap-1' }, [
                 h('button', {
                     key: 'approve', type: 'button',
                     onClick: function () { if (props.onApprove) props.onApprove(item); },
-                    className: 'rounded bg-emerald-700 px-2 py-1 text-xs font-bold text-white'
+                    className: 'min-h-11 rounded bg-emerald-700 px-3 py-1 text-xs font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2'
                 }, tr('question_board.approve', 'Show to class')),
                 h('button', {
                     key: 'hide', type: 'button',
                     onClick: function () { if (props.onHide) props.onHide(item); },
-                    className: 'rounded border border-slate-400 px-2 py-1 text-xs font-bold'
+                    className: 'min-h-11 rounded border border-slate-400 px-3 py-1 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2'
                 }, tr('question_board.hide', 'Keep hidden'))
             ])
         ]);
@@ -472,7 +472,7 @@
             h('button', {
                 key: 'toggle', type: 'button',
                 onClick: function () { if (props.onToggleAnswered) props.onToggleAnswered(item, !done); },
-                className: 'shrink-0 rounded border px-2 py-1 text-xs font-bold',
+                className: 'shrink-0 min-h-11 rounded border px-3 py-1 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-800 focus-visible:ring-offset-2',
                 style: { borderColor: palette.border }
             }, done ? tr('question_board.reopen', 'Reopen') : tr('question_board.mark_answered', 'Mark answered'))
         ]);
@@ -545,7 +545,7 @@
                 }))
             ]) : null,
 
-            (!vm.total) ? h('p', { key: 'empty', className: 'text-sm opacity-70' },
+            (!vm.total) ? h('p', { key: 'empty', className: 'text-sm text-slate-600' },
                 tr('question_board.empty', 'No questions yet. Share the board code with your class.')) : null
         ]);
     }

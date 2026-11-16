@@ -96,19 +96,62 @@ window.SelHub = window.SelHub || {
     try { var lr = document.getElementById('allo-live-crisiscompanion'); if (lr) lr.textContent = String(msg || ''); } catch(e) {}
   };
 
-  // localStorage helpers
-  function lsGet(key, fallback) { try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch(e) { return fallback; } }
+  // Storage helpers — in unauthenticated solo mode on shared devices, _ccStore
+  // points to sessionStorage (falling back to in-memory) so crisis data clears
+  // when the tab closes rather than persisting in shared localStorage.
+  var _ccStore = null;
+  var _ccEphemeralSolo = false;
+  var _ccMemMap = {};
+  var _ccMemStore = {
+    getItem: function (k) { return Object.prototype.hasOwnProperty.call(_ccMemMap, k) ? _ccMemMap[k] : null; },
+    setItem: function (k, v) { _ccMemMap[k] = String(v); },
+    removeItem: function (k) { delete _ccMemMap[k]; }
+  };
+  function lsGet(key, fallback) { try { var v = (typeof _ccStore !== 'undefined' && _ccStore ? _ccStore : localStorage).getItem(key); return v ? JSON.parse(v) : fallback; } catch(e) { return fallback; } }
   // Returns false when the device refuses the write (quota full, private
   // mode, site data blocked). It used to swallow that, so a student could
   // lose a safety plan with no warning at all. Callers that do not care
   // can still ignore the result.
-  function lsSet(key, val)      { try { localStorage.setItem(key, JSON.stringify(val)); return true; } catch(e) { return false; } }
+  function lsSet(key, val)      { try { (typeof _ccStore !== 'undefined' && _ccStore ? _ccStore : localStorage).setItem(key, JSON.stringify(val)); return true; } catch(e) { return false; } }
   // Per-student namespace for crisis data. Without it, every student on a shared
   // device read/wrote the SAME global key — so the next student loaded the
   // previous one's suicide safety plan / coping toolkit. _ccNs is set at render
   // time (session + codename); ccKey() suffixes every crisis key with it.
   var _ccNs = '';
   function ccKey(key) { return _ccNs ? (key + '::' + _ccNs) : key; }
+  function ccDownloadSafetyPlanText(steps, planMap, announceFn) {
+    try {
+      var lines = [
+        __alloT('sel.crisiscompanion.ui.my_safety_plan_stanley_brown', 'My safety plan (Stanley-Brown)'),
+        ''
+      ];
+      (steps || []).forEach(function (s) {
+        var label = s.label || s.title || s.name || s.id;
+        var val = String((planMap && planMap[s.id]) || '').trim();
+        lines.push(label);
+        lines.push(val ? val : '-');
+        lines.push('');
+      });
+      var blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'my-safety-plan.txt';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () { try { URL.revokeObjectURL(url); } catch (e) {} }, 1000);
+      if (typeof announceFn === 'function') {
+        announceFn(__alloT('sel.crisiscompanion.ui.safety_plan_downloaded', 'Safety plan text copy downloaded.'));
+      }
+      return true;
+    } catch (e) {
+      if (typeof announceFn === 'function') {
+        announceFn(__alloT('sel.crisiscompanion.ui.print_could_not_be_opened', 'Print could not be opened.'));
+      }
+      return false;
+    }
+  }
 
   // Theme palette — calming teal / emerald, NOT alarming reds for this tool.
   // TEAL is teal-700 (not teal-600) so white-on-TEAL buttons hit 5.48:1
@@ -896,6 +939,15 @@ window.SelHub = window.SelHub || {
           __alloT('sel.crisiscompanion.ui.a_safety_plan_is_most_effective', 'A safety plan is most effective when an adult who knows you helps you fill it in — they think of things you\'d miss, and they\'re a person you\'ve already practiced reaching out to. You can start it here, save it, and finish it together. Saved on this device only.')
         )
       ),
+      _ccEphemeralSolo ? h('div', {
+        id: 'cc-shared-device-privacy-banner',
+        role: 'status',
+        style: { background: _ccC('#eff6ff'), border: '1px solid #93c5fd', borderRadius: '8px', padding: '10px 12px', marginBottom: '14px' }
+      },
+        h('p', { style: { fontSize: '12px', color: _ccC('#1e3a8a'), lineHeight: 1.55, margin: 0, fontWeight: 600 } },
+          __alloT('sel.crisiscompanion.ui.shared_device_tab_only_notice', 'Shared-device privacy: solo mode keeps your safety plan and coping tools in this browser tab only and clears them when the tab closes. Download a text copy below if you want to keep it.')
+        )
+      ) : null,
       // Progress
       h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' } },
         h('div', { style: { flex: 1, height: '6px', background: '#e5e7eb', borderRadius: '3px', overflow: 'hidden' }, 'aria-hidden': 'true' },
@@ -927,6 +979,11 @@ window.SelHub = window.SelHub || {
           onClick: printPlan,
           style: { padding: '10px 16px', background: TEAL, color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 800, fontSize: '13px', cursor: 'pointer' }
         }, __alloT('sel.crisiscompanion.ui.print_save_as_pdf', '🖨 Print / save as PDF')),
+        h('button', {
+          id: 'cc-download-safety-plan',
+          onClick: function () { ccDownloadSafetyPlanText(STEPS, entries, announce); },
+          style: { padding: '10px 16px', background: _ccC('#eff6ff'), color: _ccC('#1e40af'), border: '2px solid #93c5fd', borderRadius: '8px', fontWeight: 800, fontSize: '12px', cursor: 'pointer' }
+        }, __alloT('sel.crisiscompanion.ui.download_text_copy', 'Download text copy')),
         h('button', {
           id: 'cc-clear-safety-plan',
           onClick: clearAll,
@@ -1097,6 +1154,11 @@ window.SelHub = window.SelHub || {
     return ccH('div', { style: { padding: 14 } },
       ccSection('🛡', __alloT('sel.crisiscompanion.ui.my_safety_plan', 'My Safety Plan'), __alloT('sel.crisiscompanion.ui.stanley_brown_2012_strongest_evidence_interventi', 'Stanley + Brown 2012 — strongest-evidence intervention for reducing repeat-attempts. Build YOUR plan when calm.'), '#14b8a6'),
       ccCrisisBanner(),
+      _ccEphemeralSolo ? ccH('div', {
+        id: 'cc-kit-shared-device-privacy-banner',
+        role: 'status',
+        style: { marginBottom: 12, padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(96,165,250,0.45)', fontSize: 11, color: '#dbeafe', lineHeight: 1.55 }
+      }, __alloT('sel.crisiscompanion.ui.shared_device_tab_only_notice', 'Shared-device privacy: solo mode keeps your safety plan and coping tools in this browser tab only and clears them when the tab closes. Download a text copy below if you want to keep it.')) : null,
       ccH('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
         STEPS.map(function(s) {
           return ccH('div', { key: 'sp-' + s.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid ' + s.color } },
@@ -1104,6 +1166,13 @@ window.SelHub = window.SelHub || {
             ccTextarea(p[s.id], function(v) { update(s.id, v); }, '', 3)
           );
         })
+      ),
+      ccH('div', { style: { marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' } },
+        ccH('button', {
+          type: 'button',
+          onClick: function () { ccDownloadSafetyPlanText(STEPS, p); },
+          style: { padding: '8px 14px', borderRadius: 8, border: '1px solid rgba(96,165,250,0.6)', background: 'rgba(30,58,138,0.45)', color: '#dbeafe', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+        }, __alloT('sel.crisiscompanion.ui.download_text_copy', 'Download text copy'))
       ),
       ccH('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(20,184,166,0.08)', border: '1px solid rgba(20,184,166,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
         ccH('strong', { style: { color: '#14b8a6' } }, __alloT('sel.crisiscompanion.ui.why_this_works', '🎓 Why this works: ')),
@@ -1471,20 +1540,49 @@ window.SelHub = window.SelHub || {
 
       var d = (ctx.toolData && ctx.toolData.crisiscompanion) || {};
 
-      // ── Per-student isolation for crisis localStorage keys ──
-      // Namespace by live session + student codename so a shared classroom
-      // device never exposes one student's safety plan / toolkit / badges to
-      // the next. One-time cleanup: in solo use, migrate a pre-namespacing plan
-      // into this student's namespace; then delete the old global key so the
-      // previously-shared data can't be read by anyone else.
-      _ccNs = [ctx.activeSessionCode, ctx.studentCodename].filter(Boolean).join('.') || 'student';
+      // ── Per-student isolation & shared-device ephemeral default for crisis keys ──
+      // Namespace by live session, student codename, or signed-in learner key so
+      // a shared classroom device never exposes one student's safety plan /
+      // toolkit / badges to the next. Unauthenticated solo mode defaults to
+      // sessionStorage (falling back to in-memory) so sensitive crisis notes
+      // clear when the tab closes, and purges legacy unauthenticated
+      // localStorage keys on mount.
+      var _ccLearnerKey = '';
       try {
-        var _ccSolo = !ctx.activeSessionCode;
+        if (typeof window !== 'undefined' && typeof window.__alloActiveLearnerKey === 'string') {
+          _ccLearnerKey = window.__alloActiveLearnerKey.trim();
+        }
+      } catch (e) {}
+      var _ccHasScopedIdentity = !!(ctx.activeSessionCode || _ccLearnerKey || (ctx.studentCodename && ctx.studentCodename !== 'student'));
+      _ccNs = [ctx.activeSessionCode, ctx.studentCodename, _ccLearnerKey].filter(Boolean).join('.') || 'student';
+      _ccEphemeralSolo = !_ccHasScopedIdentity;
+      if (_ccEphemeralSolo) {
+        try {
+          _ccStore = (typeof sessionStorage !== 'undefined' && sessionStorage) ? sessionStorage : _ccMemStore;
+        } catch (e) {
+          _ccStore = _ccMemStore;
+        }
+      } else {
+        _ccStore = null;
+      }
+      try {
+        var _ccDest = _ccStore || localStorage;
         ['crisisCompanion.safetyPlan.v1', 'crisisCompanion.toolkit.v1', 'crisisCompanion.badges.v1'].forEach(function (k) {
+          var namespacedKey = ccKey(k);
           var legacy = localStorage.getItem(k);
-          if (legacy == null) return;
-          if (_ccSolo && localStorage.getItem(ccKey(k)) == null) { localStorage.setItem(ccKey(k), legacy); }
-          localStorage.removeItem(k);
+          var legacyStudent = _ccEphemeralSolo ? localStorage.getItem(k + '::student') : null;
+          if (legacy != null) {
+            if (_ccEphemeralSolo && _ccDest && _ccDest.getItem(namespacedKey) == null) {
+              try { _ccDest.setItem(namespacedKey, legacy); } catch (e2) {}
+            }
+            localStorage.removeItem(k);
+          }
+          if (_ccEphemeralSolo && legacyStudent != null) {
+            if (_ccDest && _ccDest.getItem(namespacedKey) == null) {
+              try { _ccDest.setItem(namespacedKey, legacyStudent); } catch (e3) {}
+            }
+            localStorage.removeItem(k + '::student');
+          }
         });
       } catch (e) {}
       var upd = function(key, val) {
@@ -1514,6 +1612,7 @@ window.SelHub = window.SelHub || {
           upd({ ccConfirmAction: null, safetyPlan: {} });
           if (_SafetyPlan._cache) delete _SafetyPlan._cache[ccKey('crisisCompanion.safetyPlan.v1')];
           lsSet(ccKey('crisisCompanion.safetyPlan.v1'), {});
+          if (_ccEphemeralSolo) { try { localStorage.removeItem(ccKey('crisisCompanion.safetyPlan.v1')); } catch (e) {} }
           announce(__alloT('sel.crisiscompanion.ui.safety_plan_cleared', 'Safety plan cleared.'));
           focusCrisisControl('cc-safety-plan-heading');
         } else if (ccConfirmAction.type === 'clear-distress-readings') {

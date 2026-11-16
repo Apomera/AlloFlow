@@ -5214,7 +5214,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             h('span', { className: 'text-3xl', 'aria-hidden': 'true' }, '🎥'),
             h('div', null,
               h('h2', { id: 'video-studio-title', className: 'font-bold text-slate-800 text-lg' }, T('video_studio.title', 'Video Studio')),
-              h('p', { id: 'video-studio-description', className: 'text-xs text-slate-500' }, T('video_studio.subtitle', 'Record your screen, trim, caption — everything stays on your device.'))
+              h('p', { id: 'video-studio-description', className: 'text-xs text-slate-600' }, T('video_studio.subtitle', 'Record your screen, trim, caption — everything stays on your device.'))
             )
           ),
           h('button', {

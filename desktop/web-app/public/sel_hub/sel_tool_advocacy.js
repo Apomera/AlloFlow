@@ -17,6 +17,13 @@ window.SelHub = window.SelHub || {
 
 (function() {
   'use strict';
+  function __alloT(key, fallback) {
+    try {
+      var fn = typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : null;
+      if (fn) { var v = fn(key, fallback); if (v != null && v !== key) return v; }
+    } catch (_) {}
+    return fallback != null ? fallback : key;
+  }
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-advocacy')) return;
@@ -14497,7 +14504,7 @@ var TRAUMA_INFORMED_ADVOCACY = [
               },
               style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: ltPreview ? _advBg('#334155') : _advSolid(ACCENT), color: _advFg('#fff'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
             }, ltPreview ? 'Hide Preview' : '\uD83D\uDC41\uFE0F Preview Letter'),
-            ltAllFilled && h('button', { 'aria-label': 'Copy & Save',
+            ltAllFilled && h('button', { 'aria-label': __alloT('sel.advocacy.copy_save_aria', 'Copy & Save'),
               onClick: function() {
                 var text = curLt.format(ltFields);
                 if (window.SelHub && window.SelHub.copyText) {

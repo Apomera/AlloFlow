@@ -1741,7 +1741,9 @@
   }
   function pdCsvCell(v) {
     var s = String(v == null ? '' : v);
-    return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+    // Teacher-typed titles/providers must stay text in spreadsheet apps.
+    if (typeof v !== 'number' && /^(?:[\t\r\n ]*[=+\-@|]|[\t\r\n])/.test(s)) s = "'" + s;
+    return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
   }
   function exportPdHoursCsv(history, manifestEntries, manualEntries) {
     var rows = [['date', 'title', 'provider', 'minutes', 'source']];
@@ -1864,7 +1866,7 @@
   // download it as an .html file instead.
   function openOrDownloadHtml(html, filename, addToast) {
     var w = null;
-    try { w = window.open('', '_blank'); } catch (_e) { w = null; }
+    try { w = window.open('', '_blank'); if (w) { try { w.opener = null; } catch (_) {} } } catch (_e) { w = null; }
     if (w && w.document) {
       try { w.document.open(); w.document.write(html); w.document.close(); return; } catch (_e2) { /* fall through to download */ }
     }

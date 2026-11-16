@@ -91,7 +91,7 @@ describe('the hub shell passes axe in both Drive states', () => {
 
   it('connected (status line, save-now, disconnect)', async () => {
     localStorage.setItem('allo_adminhubdrive_config_v1', JSON.stringify({
-      url: 'https://script.google.com/x/exec', token: 't', folder: 'AlloFlow Leadership Hub Backups',
+      url: 'https://script.google.com/macros/s/test_deploy_id/exec', token: 't', folder: 'AlloFlow Leadership Hub Backups',
       lastSavedAt: '2026-08-17T15:00:00Z', lastHash: 'h',
     }));
     vi.spyOn(globalThis, 'fetch').mockImplementation(async () => ({ json: async () => ({ ok: true }) }));
@@ -117,7 +117,7 @@ describe('the specific affordances a leader needs (beyond what axe can see)', ()
 
   it('the backup status is a polite live region, so a save is ANNOUNCED not just shown', async () => {
     localStorage.setItem('allo_adminhubdrive_config_v1', JSON.stringify({
-      url: 'https://x/exec', token: 't', folder: 'F', lastSavedAt: '2026-08-17T15:00:00Z', lastHash: 'h',
+      url: 'https://script.google.com/macros/s/test_deploy_id/exec', token: 't', folder: 'F', lastSavedAt: '2026-08-17T15:00:00Z', lastHash: 'h',
     }));
     vi.spyOn(globalThis, 'fetch').mockImplementation(async () => ({ json: async () => ({ ok: true }) }));
     const dialog = await mountHub();
@@ -136,7 +136,7 @@ describe('the specific affordances a leader needs (beyond what axe can see)', ()
   });
 
   it('every control in the backup area is keyboard-reachable and named', async () => {
-    localStorage.setItem('allo_adminhubdrive_config_v1', JSON.stringify({ url: 'https://x/exec', token: 't', folder: 'F', lastSavedAt: null, lastHash: null }));
+    localStorage.setItem('allo_adminhubdrive_config_v1', JSON.stringify({ url: 'https://script.google.com/macros/s/test_deploy_id/exec', token: 't', folder: 'F', lastSavedAt: null, lastHash: null }));
     vi.spyOn(globalThis, 'fetch').mockImplementation(async () => ({ json: async () => ({ ok: true }) }));
     const dialog = await mountHub();
     const section = dialog.querySelector('[data-help-key="adminhub_backup_section"]');

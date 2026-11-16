@@ -14,6 +14,7 @@
 
 const StudentJoinThemeFallbackContext = window.React && window.React.createContext ? window.React.createContext({ theme: "light", colorOverlay: "none" }) : null;
 const cx = (...parts) => parts.filter(Boolean).join(" ");
+const normalizeJoinCode = (value) => String(value || "").replace(/[\s-]+/g, "").toUpperCase().slice(0, 5);
 function getStudentJoinThemeStyles(themeContext = {}) {
   const theme = themeContext.theme || "light";
   const colorOverlay = themeContext.colorOverlay || "none";
@@ -81,17 +82,18 @@ function StudentJoinPanel({
   const instructionsId = "student-join-panel-instructions";
   const hostInputId = "student-join-host-id";
   const codeInputId = "student-join-code";
-  const canJoin = joinCodeInput.length >= 5;
+  const cleanJoinCode = normalizeJoinCode(joinCodeInput);
+  const canJoin = cleanJoinCode.length >= 5;
   const themeContext = React.useContext(window.AlloThemeContext || StudentJoinThemeFallbackContext);
   const styles = getStudentJoinThemeStyles(themeContext);
   const handleJoinSubmit = (e) => {
     e.preventDefault();
-    if (canJoin) joinClassSession(joinCodeInput);
+    if (canJoin) joinClassSession(cleanJoinCode);
   };
   return /* @__PURE__ */ React.createElement(
     "div",
     {
-      className: cx(styles.panel, "rounded-3xl shadow-xl mb-4 shrink-0 animate-in slide-in-from-left-4 duration-500 overflow-hidden transition-all", isJoinPanelExpanded ? "p-6" : "p-2"),
+      className: cx(styles.panel, "rounded-3xl shadow-xl mb-4 shrink-0 animate-in slide-in-from-left-4 motion-reduce:animate-none duration-500 overflow-hidden transition-all", isJoinPanelExpanded ? "p-6" : "p-2"),
       role: "region",
       "aria-labelledby": isJoinPanelExpanded ? titleId : collapsedTitleId
     },
@@ -113,7 +115,7 @@ function StudentJoinPanel({
         type: "text",
         value: joinAppIdInput,
         onChange: (e) => setJoinAppIdInput(e.target.value),
-        placeholder: `Default: ${appId}`,
+        placeholder: `${t("session.default_prefix") || "Default:"} ${appId}`,
         className: cx("w-full text-xs border rounded-xl p-2 focus-visible:outline-none focus-visible:ring-2 font-mono mb-2", styles.input)
       }
     )), /* @__PURE__ */ React.createElement("label", { htmlFor: codeInputId, className: "sr-only" }, t("common.enter_join_code_input")), /* @__PURE__ */ React.createElement(
@@ -124,9 +126,15 @@ function StudentJoinPanel({
         "aria-describedby": instructionsId,
         type: "text",
         value: joinCodeInput,
-        onChange: (e) => setJoinCodeInput(e.target.value.toUpperCase()),
+        onChange: (e) => setJoinCodeInput(normalizeJoinCode(e.target.value)),
+        onKeyDown: (e) => {
+          if (e.key === "Enter" && canJoin) {
+            e.preventDefault();
+            joinClassSession(cleanJoinCode);
+          }
+        },
         placeholder: t("session.code_placeholder"),
-        maxLength: 5,
+        maxLength: 12,
         autoComplete: "one-time-code",
         inputMode: "text",
         className: cx("w-full text-center font-mono font-black text-3xl tracking-[0.5em] border-2 rounded-2xl p-4 focus-visible:outline-none focus-visible:ring-4 uppercase transition-all", styles.input)
@@ -137,7 +145,7 @@ function StudentJoinPanel({
         type: "submit",
         disabled: !canJoin,
         "aria-disabled": !canJoin,
-        className: cx("w-full font-bold text-lg py-3 rounded-2xl transition-all transform hover:scale-[1.02] active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2", styles.primary, styles.focusOffset)
+        className: cx("w-full font-bold text-lg py-3 rounded-2xl transition-all transform hover:scale-[1.02] active:scale-95 motion-reduce:transform-none disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2", styles.primary, styles.focusOffset)
       },
       t("session.join_action"),
       " ",
@@ -150,7 +158,7 @@ function StudentJoinPanel({
         onClick: handleSetIsJoinPanelExpandedToTrue,
         className: cx("w-full flex items-center justify-between p-2 rounded-2xl transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2", styles.hoverPanel, styles.focusOffset)
       },
-      /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: cx("w-10 h-10 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform", styles.icon), "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Wifi, { size: 20 })), /* @__PURE__ */ React.createElement("div", { className: "text-left" }, /* @__PURE__ */ React.createElement("h3", { id: collapsedTitleId, className: cx("font-bold text-sm", styles.title) }, t("session.join")), /* @__PURE__ */ React.createElement("p", { className: cx("text-[11px]", styles.text) }, t("session.sync_desc")))),
+      /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: cx("w-10 h-10 rounded-full flex items-center justify-center group-hover:scale-110 motion-reduce:transform-none transition-transform", styles.icon), "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Wifi, { size: 20 })), /* @__PURE__ */ React.createElement("div", { className: "text-left" }, /* @__PURE__ */ React.createElement("h3", { id: collapsedTitleId, className: cx("font-bold text-sm", styles.title) }, t("session.join")), /* @__PURE__ */ React.createElement("p", { className: cx("text-[11px]", styles.text) }, t("session.sync_desc")))),
       /* @__PURE__ */ React.createElement("div", { className: cx("p-2 rounded-full opacity-0 group-hover:opacity-100 group-focus:opacity-100 group-focus-within:opacity-100 transition-opacity shadow-sm", styles.arrow), "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(ArrowRight, { size: 16 }))
     )
   );

@@ -220,11 +220,11 @@ function siStudentAnnotations(payload) {
         : ((typeof a.dataUrl === 'string' && /^data:audio\//i.test(a.dataUrl.trim())) ? a.dataUrl.trim()
         : ((typeof a.audio === 'string' && /^data:audio\//i.test(a.audio.trim())) ? a.audio.trim() : ''));
       var rawMime = String(a.mimeType || a.mime || '').trim().toLowerCase();
-      var mime = /^audio\/[a-z0-9.+-]+$/i.test(rawMime) ? rawMime : 'audio/webm';
+      var mime = /^audio\/[a-z0-9.+-]+(?:;[a-z0-9.+-]+=[^;,]+)*$/i.test(rawMime) ? rawMime : 'audio/webm';
       var audioSrc = '';
       if (rawB64 && rawB64.length <= 2000000 && /^[A-Za-z0-9+/=]+$/.test(rawB64)) {
         audioSrc = 'data:' + mime + ';base64,' + rawB64;
-      } else if (/^data:audio\/[a-z0-9.+-]+;base64,[A-Za-z0-9+/=]+$/i.test(rawAudioSrc) && rawAudioSrc.length <= 2000000) {
+      } else if (/^data:audio\/[a-z0-9.+-]+(?:;[a-z0-9.+-]+=[^;,]+)*;base64,[A-Za-z0-9+/=]+$/i.test(rawAudioSrc) && rawAudioSrc.length <= 2000000) {
         audioSrc = rawAudioSrc;
       }
       if (!audioSrc && !note) return null;
@@ -274,6 +274,221 @@ function siResolveVennBranches(branches) {
   };
 }
 
+function siResolveVennConfig(vennData) {
+  var data = vennData && typeof vennData === 'object' ? vennData : null;
+  var normalizeZone = function (rawZone, allowThree) {
+    var compact = String(rawZone == null ? '' : rawZone).trim().toLowerCase().replace(/[^a-z0-9&+]/g, '');
+    if (!compact) return '';
+    if (compact === 'seta' || compact === 'a' || compact === 'onlya' || compact === 'circlea') return 'setA';
+    if (compact === 'setb' || compact === 'b' || compact === 'onlyb' || compact === 'circleb') return 'setB';
+    if (compact === 'setc' || compact === 'c' || compact === 'onlyc' || compact === 'circlec') return 'setC';
+    if (compact === 'overlapab' || compact === 'ab' || compact === 'bothab' || compact === 'a&b' || compact === 'a+b' || compact === 'aandb') return 'overlapAB';
+    if (compact === 'overlapbc' || compact === 'bc' || compact === 'bothbc' || compact === 'b&c' || compact === 'b+c' || compact === 'bandc') return 'overlapBC';
+    if (compact === 'overlapac' || compact === 'ac' || compact === 'bothac' || compact === 'a&c' || compact === 'a+c' || compact === 'aandc' || compact === 'ca') return 'overlapAC';
+    if (compact === 'shared' || compact === 'allthree' || compact === 'all3' || compact === 'sharedall' || compact === 'overlapabc' || compact === 'abc' || compact === 'center' || compact === 'middle' || compact === 'common' || compact === 'overlap') return 'shared';
+    if (compact === 'both') return allowThree ? 'shared' : 'shared';
+    return '';
+  };
+  var isExplicitThreeTag = function (rawZone) {
+    var compact = String(rawZone == null ? '' : rawZone).trim().toLowerCase().replace(/[^a-z0-9&+]/g, '');
+    return compact === 'setc' || compact === 'c' || compact === 'onlyc' || compact === 'circlec'
+      || compact === 'overlapab' || compact === 'ab' || compact === 'bothab' || compact === 'a&b' || compact === 'a+b' || compact === 'aandb'
+      || compact === 'overlapbc' || compact === 'bc' || compact === 'bothbc' || compact === 'b&c' || compact === 'b+c' || compact === 'bandc'
+      || compact === 'overlapac' || compact === 'ac' || compact === 'bothac' || compact === 'a&c' || compact === 'a+c' || compact === 'aandc' || compact === 'ca'
+      || compact === 'allthree' || compact === 'all3' || compact === 'sharedall' || compact === 'overlapabc' || compact === 'abc';
+  };
+  if (!data) {
+    return {
+      isThreeCircle: false,
+      items: [],
+      zones: [],
+      zoneOrder: ['setA', 'setB', 'shared'],
+      zoneLabelMap: { setA: 'Set A', setB: 'Set B', shared: 'Shared' },
+      normalizeZone: function (z) { return normalizeZone(z, false); }
+    };
+  }
+  var branches = Array.isArray(data.branches) ? data.branches : [];
+  var flatItems = Array.isArray(data.vennItems) ? data.vennItems : (Array.isArray(data.items) ? data.items : []);
+  var circleCount = Number(data.vennCircles || data.circleCount || data.setsCount);
+  var hasFlatThree = flatItems.some(function (it) {
+    return it && typeof it === 'object' && isExplicitThreeTag(it.zone || it.set || it.branch || it.category);
+  });
+  var isThreeCircle = circleCount === 3
+    || Boolean(data.setC || data.overlapAB || data.overlapBC || data.overlapAC || data.allThree || data.sharedAll || data.overlapABC || data.ab || data.bc || data.ac)
+    || branches.length >= 4
+    || hasFlatThree;
+  var zoneOrder = isThreeCircle
+    ? ['setA', 'setB', 'setC', 'overlapAB', 'overlapBC', 'overlapAC', 'shared']
+    : ['setA', 'setB', 'shared'];
+  var branchMap = Object.create(null);
+  if (isThreeCircle) {
+    branchMap.setA = data.setA || null;
+    branchMap.setB = data.setB || null;
+    branchMap.setC = data.setC || null;
+    branchMap.overlapAB = data.overlapAB || data.ab || null;
+    branchMap.overlapBC = data.overlapBC || data.bc || null;
+    branchMap.overlapAC = data.overlapAC || data.ac || null;
+    branchMap.shared = data.allThree || data.sharedAll || data.overlapABC || data.shared || null;
+    var usedBranchIdx = {};
+    branches.forEach(function (b, bIdx) {
+      if (!b || typeof b !== 'object') return;
+      var explicit = normalizeZone(b.zone || b.key || b.id, true);
+      if (explicit && !branchMap[explicit]) {
+        branchMap[explicit] = b;
+        usedBranchIdx[bIdx] = true;
+        return;
+      }
+      var title = String(b.title || '');
+      var guessed = '';
+      if (/all\s*three|all\s*3|shared\s*all|center|middle|all\s*sets/i.test(title)) guessed = 'shared';
+      else if (/a\s*(?:&|and|\+|\/)\s*b/i.test(title)) guessed = 'overlapAB';
+      else if (/b\s*(?:&|and|\+|\/)\s*c/i.test(title)) guessed = 'overlapBC';
+      else if (/(?:a\s*(?:&|and|\+|\/)\s*c|c\s*(?:&|and|\+|\/)\s*a)/i.test(title)) guessed = 'overlapAC';
+      else if (/both|overlap|shared|common/i.test(title) && branches.length <= 4) guessed = 'shared';
+      if (guessed && !branchMap[guessed]) {
+        branchMap[guessed] = b;
+        usedBranchIdx[bIdx] = true;
+      }
+    });
+    var unassignedBranches = branches.filter(function (_, bIdx) { return !usedBranchIdx[bIdx]; });
+    var cursor = 0;
+    zoneOrder.forEach(function (z) {
+      if (!branchMap[z] && cursor < unassignedBranches.length) {
+        branchMap[z] = unassignedBranches[cursor++] || {};
+      }
+      if (!branchMap[z]) branchMap[z] = {};
+    });
+  } else {
+    var resolved2 = branches.length ? siResolveVennBranches(branches) : null;
+    branchMap.setA = resolved2 ? resolved2.setA : (data.setA || {});
+    branchMap.setB = resolved2 ? resolved2.setB : (data.setB || {});
+    branchMap.shared = resolved2 ? resolved2.shared : (data.shared || {});
+  }
+  var defaultLabels = {
+    setA: 'Set A',
+    setB: 'Set B',
+    setC: 'Set C',
+    overlapAB: 'A & B',
+    overlapBC: 'B & C',
+    overlapAC: 'A & C',
+    shared: isThreeCircle ? 'All Three' : 'Shared'
+  };
+  var zoneLabelMap = {};
+  zoneOrder.forEach(function (z) {
+    var b = branchMap[z];
+    zoneLabelMap[z] = (b && b.title) ? String(b.title) : defaultLabels[z];
+  });
+  var items = [];
+  var zones = [];
+  zoneOrder.forEach(function (z) {
+    var list = branchMap[z] && Array.isArray(branchMap[z].items) ? branchMap[z].items : [];
+    list.forEach(function (entry) {
+      var txt = (entry && typeof entry === 'object')
+        ? String(entry.text || entry.label || entry.content || entry.name || entry.item || '').trim()
+        : String(entry == null ? '' : entry).trim();
+      if (txt) {
+        items.push(txt);
+        zones.push(z);
+      }
+    });
+  });
+  if (items.length === 0 && flatItems.length > 0) {
+    flatItems.forEach(function (entry) {
+      var isObj = entry && typeof entry === 'object';
+      var txt = isObj
+        ? String(entry.text || entry.label || entry.content || entry.name || entry.item || '').trim()
+        : String(entry == null ? '' : entry).trim();
+      if (!txt) return;
+      items.push(txt);
+      var z = isObj ? normalizeZone(entry.zone || entry.set || entry.branch || entry.category, isThreeCircle) : '';
+      if (z) zones.push(z);
+      else zones.push('');
+    });
+  }
+  return {
+    isThreeCircle: isThreeCircle,
+    items: items,
+    zones: zones,
+    zoneOrder: zoneOrder,
+    zoneLabelMap: zoneLabelMap,
+    normalizeZone: function (z) { return normalizeZone(z, isThreeCircle); }
+  };
+}
+
+function siExtractGlossaryPairs(item) {
+  var rawData = item && item.data;
+  var list = Array.isArray(rawData)
+    ? rawData
+    : (rawData && typeof rawData === 'object'
+      ? (rawData.terms || rawData.items || rawData.entries || rawData.words || rawData.cards || rawData.glossary || [])
+      : []);
+  if (!Array.isArray(list)) return [];
+  return list.filter(function (gEntry) {
+    if (!gEntry || typeof gEntry !== 'object') return false;
+    if (gEntry.isSelected === false || gEntry.selected === false) return false;
+    var term = String(gEntry.term != null ? gEntry.term : (gEntry.word || gEntry.name || '')).trim();
+    var def = String(gEntry.def || gEntry.definition || gEntry.meaning || '').trim();
+    return Boolean(term && def);
+  });
+}
+
+function siParseNumericInput(rawVal) {
+  if (typeof rawVal === 'number') {
+    return Number.isFinite(rawVal) ? { num: rawVal, inlineUnit: '' } : { num: NaN, inlineUnit: '' };
+  }
+  var s = String(rawVal == null ? '' : rawVal).replace(/[\u2212\u2013\u2014]/g, '-').replace(/\u2044/g, '/').trim();
+  if (!s) return { num: NaN, inlineUnit: '' };
+  var stripThousands = function (t) {
+    var str = String(t).replace(/\s+/g, '');
+    if (/^[+-]?\d{1,3}(?:,\d{3})+(?:\.\d+)?$/.test(str)) return str.replace(/,/g, '');
+    if (/^[+-]?\d+,\d+$/.test(str)) return str.replace(',', '.');
+    return str;
+  };
+  var validTrailingUnit = function (rem) {
+    var u = String(rem || '').trim();
+    if (!u) return '';
+    if (/^[0-9.,/+\-]/.test(u)) return null;
+    return u.slice(0, 80);
+  };
+  var mixedMatch = s.match(/^([+-]?(?:\d{1,3}(?:,\d{3})+|\d+))\s+(\d+)\s*\/\s*(\d+)(.*)$/);
+  if (mixedMatch) {
+    var uMixed = validTrailingUnit(mixedMatch[4]);
+    if (uMixed !== null) {
+      var wholeNum = Number(stripThousands(mixedMatch[1]));
+      var mNumer = Number(mixedMatch[2]);
+      var mDenom = Number(mixedMatch[3]);
+      if (Number.isFinite(wholeNum) && Number.isFinite(mNumer) && Number.isFinite(mDenom) && mDenom !== 0) {
+        var sign = mixedMatch[1].trim().charAt(0) === '-' ? -1 : 1;
+        return { num: sign * (Math.abs(wholeNum) + (mNumer / mDenom)), inlineUnit: uMixed };
+      }
+    }
+    return { num: NaN, inlineUnit: '' };
+  }
+  var fracMatch = s.match(/^([+-]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:[.,]\d+)?)\s*\/\s*([+-]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:[.,]\d+)?)(.*)$/);
+  if (fracMatch) {
+    var uFrac = validTrailingUnit(fracMatch[3]);
+    if (uFrac !== null) {
+      var numer = Number(stripThousands(fracMatch[1]));
+      var denom = Number(stripThousands(fracMatch[2]));
+      if (Number.isFinite(numer) && Number.isFinite(denom) && denom !== 0) {
+        return { num: numer / denom, inlineUnit: uFrac };
+      }
+    }
+    return { num: NaN, inlineUnit: '' };
+  }
+  var decMatch = s.match(/^([+-]?(?:\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:[.,]\d+)?|\.\d+)(?:[eE][+-]?\d+)?)(.*)$/);
+  if (decMatch) {
+    var uDec = validTrailingUnit(decMatch[2]);
+    if (uDec !== null) {
+      var val = Number(stripThousands(decMatch[1]));
+      if (Number.isFinite(val)) {
+        return { num: val, inlineUnit: uDec };
+      }
+    }
+  }
+  return { num: NaN, inlineUnit: '' };
+}
+
 function siExportedQuizAutoGrades(payload, history) {
   var p = payload && typeof payload === 'object' ? payload : {};
   var responses = p.responses && typeof p.responses === 'object' && !Array.isArray(p.responses) ? p.responses : {};
@@ -286,22 +501,27 @@ function siExportedQuizAutoGrades(payload, history) {
       if (!item || typeof item !== 'object') return;
       var itemWithheld = item.data && item.data.answerKeysWithheld === true;
       if (itemWithheld) return;
-      if (item.type === 'quiz' && item.id != null && item.data && Array.isArray(item.data.questions)) {
-        quizMap[String(item.id)] = item;
+      var idKey = item.id != null ? String(item.id) : null;
+      if (idKey === '__proto__' || idKey === 'constructor' || idKey === 'prototype') idKey = null;
+      if (item.type === 'quiz' && idKey != null && !quizMap[idKey] && item.data && Array.isArray(item.data.questions)) {
+        quizMap[idKey] = item;
       }
       if (item.type === 'quiz' && !quizMap.quiz && item.data && Array.isArray(item.data.questions)) {
         quizMap.quiz = item;
       }
-      if (item.id != null && item.data != null) {
-        resourceMap[String(item.id)] = item;
+      if (idKey != null && !resourceMap[idKey] && item.data != null) {
+        resourceMap[idKey] = item;
       }
-      if (item.type && item.data != null && !defaultTypeMap[String(item.type)]) {
-        defaultTypeMap[String(item.type)] = item;
+      var typeKey = item.type ? String(item.type) : '';
+      if (typeKey && typeKey !== '__proto__' && typeKey !== 'constructor' && typeKey !== 'prototype' && item.data != null && !defaultTypeMap[typeKey]) {
+        defaultTypeMap[typeKey] = item;
       }
     });
   }
-  registerQuizzes(p.content);
+  // Authoritative teacher history registers first so untrusted student payload content
+  // cannot overwrite quiz answer keys or resource definitions.
   registerQuizzes(history);
+  registerQuizzes(p.content);
   var SI_SHORT_TYPE_IDS = { ac: 'anchor-chart', sf: 'sentence-frames', nt: 'note-taking', quiz: 'quiz', math: 'math' };
   function findTypedResource(resId, expectedType) {
     var direct = resourceMap[resId];
@@ -388,6 +608,19 @@ function siExportedQuizAutoGrades(payload, history) {
     if (!raw) return;
     var bare = String(key).replace(/^allo-response:/, '');
 
+    if (siAssessmentSnapshot(responses[key])) {
+      var snapReport = siAssessmentReport(responses[key], bare, history, p.content);
+      if (snapReport && snapReport.copyStatus === 'found' && snapReport.possible > 0 && snapReport.needsReview === 0 && typeof snapReport.percent === 'number') {
+        out[key] = {
+          score: snapReport.percent,
+          status: snapReport.percent === 100 ? 'correct' : (snapReport.percent >= 40 ? 'partially-correct' : 'incorrect'),
+          feedback: 'Auto-scored assessment snapshot (' + snapReport.points + ' / ' + snapReport.possible + ').',
+          origin: 'teacher-edit'
+        };
+      }
+      return;
+    }
+
     // 1. Concept Sort: <resId>:concept-sort:<origIdx>:category
     var csMatch = bare.match(/^(.+):concept-sort:(\d+):category$/);
     if (csMatch) {
@@ -458,7 +691,7 @@ function siExportedQuizAutoGrades(payload, history) {
         text = text.replace(/^\s*#{1,6}[ \t]+(?:Your Document References|Research Review|Source Excerpts)\b[\s\S]*$/mi, '');
         var firstH = text.match(/^\s*#{1,3}[ \t]+([^\n]+)(?:\r?\n|$)/);
         if (firstH && simpTitle) {
-          var normTitle = function (v) { return String(v || '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim(); };
+          var normTitle = function (v) { return String(v || '').normalize('NFC').toLowerCase().replace(/[^\p{L}\p{M}\p{N}]+/gu, ' ').trim(); };
           var hNorm = normTitle(firstH[1]), sNorm = normTitle(simpTitle);
           if (hNorm && sNorm && (hNorm === sNorm || sNorm.indexOf(hNorm) >= 0 || hNorm.indexOf(sNorm) >= 0)) {
             text = text.slice(firstH[0].length);
@@ -489,7 +722,7 @@ function siExportedQuizAutoGrades(payload, history) {
         var pattern;
         try {
           var branches = [];
-          if (boundaried.length) branches.push('(?<![\\p{L}\\p{N}])(?:' + boundaried.join('|') + ')(?![\\p{L}\\p{N}])');
+          if (boundaried.length) branches.push('(?<![\\p{L}\\p{M}\\p{N}])(?:' + boundaried.join('|') + ')(?![\\p{L}\\p{M}\\p{N}])');
           if (substringy.length) branches.push('(?:' + substringy.join('|') + ')');
           pattern = new RegExp('(' + branches.join('|') + ')', 'giu');
         } catch (reErr) {
@@ -572,36 +805,21 @@ function siExportedQuizAutoGrades(payload, history) {
       var vennIdx = Number(vennMatch[2]);
       var vennData = vennItem && vennItem.data && typeof vennItem.data === 'object' ? vennItem.data : null;
       if (!vennData) return;
-      var vBranches = Array.isArray(vennData.branches) ? vennData.branches : null;
-      var vResolved = vBranches ? siResolveVennBranches(vBranches) : null;
-      var vSetA = vResolved ? vResolved.setA : (vennData.setA || {});
-      var vSetB = vResolved ? vResolved.setB : (vennData.setB || {});
-      var vShared = vResolved ? vResolved.shared : (vennData.shared || {});
-      var extractVennZone = function (branch, zone) {
-        var list = branch && Array.isArray(branch.items) ? branch.items : [];
-        return list.map(function (entry) {
-          var txt = (entry && typeof entry === 'object') ? String(entry.text || entry.label || entry.content || '') : String(entry == null ? '' : entry);
-          return txt.trim() ? zone : null;
-        }).filter(Boolean);
-      };
-      var zones = extractVennZone(vSetA, 'setA')
-        .concat(extractVennZone(vSetB, 'setB'))
-        .concat(extractVennZone(vShared, 'shared'));
-      var expectedZone = zones[vennIdx];
+      var vCfg = siResolveVennConfig(vennData);
+      var expectedZone = vCfg.zones[vennIdx];
       if (!expectedZone) return;
-      var zoneLabelMap = {
-        setA: (vSetA && vSetA.title) ? vSetA.title : 'Set A',
-        shared: (vShared && vShared.title) ? vShared.title : 'Shared',
-        setB: (vSetB && vSetB.title) ? vSetB.title : 'Set B'
-      };
+      var zoneLabelMap = vCfg.zoneLabelMap;
       var rawZone = raw.trim();
-      var vennOk = rawZone === expectedZone || normFillText(rawZone, false) === normFillText(zoneLabelMap[expectedZone], false);
+      var normalizedSubmittedZone = vCfg.normalizeZone(rawZone);
+      var vennOk = rawZone === expectedZone
+        || (normalizedSubmittedZone && normalizedSubmittedZone === expectedZone)
+        || normFillText(rawZone, false) === normFillText(zoneLabelMap[expectedZone] || expectedZone, false);
       out[key] = {
         score: vennOk ? 100 : 0,
         status: vennOk ? 'correct' : 'incorrect',
         feedback: vennOk
-          ? ('Auto-scored against Venn key (' + zoneLabelMap[expectedZone] + ').')
-          : ('Auto-scored against Venn key (expected ' + zoneLabelMap[expectedZone] + ').'),
+          ? ('Auto-scored against Venn key (' + (zoneLabelMap[expectedZone] || expectedZone) + ').')
+          : ('Auto-scored against Venn key (expected ' + (zoneLabelMap[expectedZone] || expectedZone) + ').'),
         origin: 'teacher-edit'
       };
       return;
@@ -616,20 +834,17 @@ function siExportedQuizAutoGrades(payload, history) {
       var gwIds = Object.keys(resourceMap);
       for (var gwi = 0; gwi < gwIds.length; gwi++) {
         var candGw = resourceMap[gwIds[gwi]];
-        if (candGw && candGw.type === 'glossary' && Array.isArray(candGw.data)) {
+        if (candGw && candGw.type === 'glossary' && siExtractGlossaryPairs(candGw).length > 0) {
           var candSid = String(candGw.id || 'glossary').replace(/[^A-Za-z0-9_-]+/g, '-');
           if (candSid === gwSid) { gwItem = candGw; break; }
         }
       }
-      if (!gwItem && defaultTypeMap['glossary'] && Array.isArray(defaultTypeMap['glossary'].data)) {
+      if (!gwItem && defaultTypeMap['glossary'] && siExtractGlossaryPairs(defaultTypeMap['glossary']).length > 0) {
         gwItem = defaultTypeMap['glossary'];
       }
-      if (!gwItem || !Array.isArray(gwItem.data)) return;
-      var gwPairs = gwItem.data.filter(function (gEntry) {
-        return gEntry && String(gEntry.term == null ? '' : gEntry.term).trim() && String(gEntry.def || gEntry.definition || '').trim();
-      });
-      if (gwIdx < 0 || gwIdx >= gwPairs.length) return;
-      var gwSeedStr = (gwItem.glossaryWorksheetSeed != null ? String(gwItem.glossaryWorksheetSeed) : ((gwItem.id || '') + '|' + gwPairs.map(function (gEntry) { return gEntry.term; }).join('|')));
+      var gwPairs = gwItem ? siExtractGlossaryPairs(gwItem) : [];
+      if (!gwPairs.length || gwIdx < 0 || gwIdx >= gwPairs.length) return;
+      var gwSeedStr = (gwItem.glossaryWorksheetSeed != null ? String(gwItem.glossaryWorksheetSeed) : ((gwItem.id || '') + '|' + gwPairs.map(function (gEntry) { return gEntry.term != null ? gEntry.term : (gEntry.word || gEntry.name || ''); }).join('|')));
       var gwH = 0x811c9dc5;
       for (var gwCh of gwSeedStr) {
         gwH ^= gwCh.codePointAt(0);
@@ -684,7 +899,8 @@ function siExportedQuizAutoGrades(payload, history) {
           if (tldHash === tlDateHashMatch[2]) { tldEntry = tldCand; break; }
         }
       }
-      var expectedDate = tldEntry && tldEntry.date != null ? String(tldEntry.date).trim() : '';
+      var rawExpectedDate = tldEntry ? (tldEntry.date ?? tldEntry.time ?? tldEntry.year ?? tldEntry.period) : null;
+      var expectedDate = rawExpectedDate != null ? String(rawExpectedDate).trim() : '';
       if (!expectedDate) return;
       var dateOk = normFillText(raw, false) === normFillText(expectedDate, false);
       out[key] = {
@@ -922,7 +1138,8 @@ function siExportedQuizAutoGrades(payload, history) {
     }
     if (part === 'number') {
       if (q.correctValue == null || Number.isNaN(Number(q.correctValue))) return;
-      var numAns = Number(raw);
+      var parsedNum = siParseNumericInput(raw);
+      var numAns = parsedNum.num;
       if (Number.isNaN(numAns)) return;
       var targetNum = Number(q.correctValue);
       var tol = Math.abs(Number(q.tolerance) || 0);
@@ -930,7 +1147,9 @@ function siExportedQuizAutoGrades(payload, history) {
       var expectedUnits = [q.unit].concat(Array.isArray(q.acceptableUnits) ? q.acceptableUnits : []).filter(function (u) { return typeof u === 'string' && u.trim(); });
       var unitKey = key.replace(/:number$/, ':unit');
       var pairedUnit = Object.prototype.hasOwnProperty.call(responses, unitKey) ? siResponseText(responses[unitKey], 120) : '';
-      var unitWrong = numOk && expectedUnits.length > 0 && pairedUnit !== '' && !expectedUnits.some(function (u) { return normFillText(u, false) === normFillText(pairedUnit, false); });
+      var effectiveUnit = pairedUnit || parsedNum.inlineUnit;
+      var normUnitVal = function (u) { return normFillText(u, false).replace(/\./g, '').replace(/\s+/g, ''); };
+      var unitWrong = numOk && expectedUnits.length > 0 && effectiveUnit !== '' && !expectedUnits.some(function (u) { return normUnitVal(u) === normUnitVal(effectiveUnit); });
       out[key] = {
         score: numOk ? (unitWrong ? 50 : 100) : 0,
         status: numOk ? (unitWrong ? 'partially-correct' : 'correct') : 'incorrect',
@@ -1092,43 +1311,88 @@ function siExportedQuizAutoGrades(payload, history) {
 
 function siAnnotationDrawSvgHtml(anno) {
   if (!anno || !Array.isArray(anno.points) || anno.points.length < 2) return '';
-  var minX = anno.points[0].x, maxX = anno.points[0].x, minY = anno.points[0].y, maxY = anno.points[0].y;
-  for (var i = 1; i < anno.points.length; i++) {
-    if (anno.points[i].x < minX) minX = anno.points[i].x;
-    if (anno.points[i].x > maxX) maxX = anno.points[i].x;
-    if (anno.points[i].y < minY) minY = anno.points[i].y;
-    if (anno.points[i].y > maxY) maxY = anno.points[i].y;
+  var pts = anno.points.filter(function (pt) {
+    return pt && typeof pt === 'object' && typeof pt.x === 'number' && typeof pt.y === 'number' && Number.isFinite(pt.x) && Number.isFinite(pt.y);
+  });
+  if (pts.length < 2) return '';
+  var minX = pts[0].x, maxX = pts[0].x, minY = pts[0].y, maxY = pts[0].y;
+  for (var i = 1; i < pts.length; i++) {
+    if (pts[i].x < minX) minX = pts[i].x;
+    if (pts[i].x > maxX) maxX = pts[i].x;
+    if (pts[i].y < minY) minY = pts[i].y;
+    if (pts[i].y > maxY) maxY = pts[i].y;
   }
   var sw = Math.max(1, Math.min(16, Number(anno.strokeWidth) || 4));
   var pad = sw + 4;
   var bx = minX - pad, by = minY - pad;
   var bw = Math.max(20, (maxX - minX) + pad * 2);
   var bh = Math.max(20, (maxY - minY) + pad * 2);
-  var d = anno.points.map(function (pt, idx) {
+  var d = pts.map(function (pt, idx) {
     return (idx === 0 ? 'M' : 'L') + (Math.round((pt.x - bx) * 10) / 10) + ' ' + (Math.round((pt.y - by) * 10) / 10);
   }).join(' ');
   var stroke = /^#[0-9a-f]{3,8}$/i.test(String(anno.strokeHex || '')) ? anno.strokeHex : '#dc2626';
   return '<svg role="img" aria-label="Student drawing" viewBox="0 0 ' + bw + ' ' + bh + '" style="display:block;max-width:100%;max-height:160px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;margin-top:4px;"><path d="' + d + '" fill="none" stroke="' + stroke + '" stroke-width="' + sw + '" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 }
 
-function siBuildStudentFeedbackBody(row, rowGrades, summary, escHtml) {
+function siResolveFeedbackLocale(row, payload) {
+  var p = (payload && typeof payload === 'object') ? payload : {};
+  var rawLang = siResponseText((row && (row.lang || row.language)) || p.lang || p.language || '', 40);
+  var rawDir = siResponseText((row && row.dir) || p.dir || '', 12).toLowerCase();
+  var lower = rawLang.trim().toLowerCase();
+  var NAME_TO_BCP = {
+    english: 'en', spanish: 'es', french: 'fr', arabic: 'ar', hebrew: 'he',
+    farsi: 'fa', persian: 'fa', urdu: 'ur', pashto: 'ps', uyghur: 'ug', yiddish: 'yi',
+    chinese: 'zh', japanese: 'ja', korean: 'ko', vietnamese: 'vi', portuguese: 'pt',
+    'haitian creole': 'ht', russian: 'ru', german: 'de', italian: 'it'
+  };
+  var normCode = rawLang.trim().replace(/_/g, '-');
+  var lang = NAME_TO_BCP[lower] || (/^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$/i.test(normCode) ? normCode : 'en');
+  var isRtl = rawDir === 'rtl'
+    || /^(?:ar|fa|he|iw|ps|sd|ug|ur|yi)(?:-|$)/i.test(lang)
+    || /\b(?:arabic|hebrew|farsi|persian|urdu|pashto|yiddish|uyghur)\b/i.test(lower);
+  return { lang: lang, dir: isRtl ? 'rtl' : '' };
+}
+
+function siBuildStudentFeedbackBody(row, rowGrades, summary, escHtml, wrapMain, teacherHistory) {
   var p = (row && row.payload && typeof row.payload === 'object') ? row.payload : (row && typeof row === 'object' ? row : {});
+  var locale = siResolveFeedbackLocale(row, p);
   var nickname = siResponseText((row && row.nickname) || p.nickname || p.studentName || 'Student', 120) || 'Student';
   var docTitle = siResponseText((row && row.docTitle) || p.docTitle || 'Worksheet', 200) || 'Worksheet';
   var timestamp = siResponseText((row && row.timestamp) || p.timestamp || p.exportedAt || '', 80);
   var gradesMap = rowGrades && typeof rowGrades === 'object' ? rowGrades : {};
-  var entries = siResponseEntryModels(p);
-  var annos = siStudentAnnotations(p);
   var sumObj = summary && typeof summary === 'object' ? summary : {};
-  var scoredKeys = Object.keys(gradesMap);
-  var scoredCount = typeof sumObj.scored === 'number' ? sumObj.scored : scoredKeys.length;
-  var totalCount = typeof sumObj.total === 'number' ? sumObj.total : entries.length;
-  var avgText = (typeof sumObj.average === 'number' && Number.isFinite(sumObj.average)) ? (sumObj.average + '/100') : '—';
+  var resolvedHistory = Array.isArray(teacherHistory) ? teacherHistory
+    : (teacherHistory && Array.isArray(teacherHistory.teacherHistory) ? teacherHistory.teacherHistory
+    : (Array.isArray(sumObj.teacherHistory) ? sumObj.teacherHistory : []));
+  var entries = siResponseEntryModels(p);
+  var roleSwaps = siRoleSwapItems(p, resolvedHistory);
+  var stories = siStudentStoryItems(p);
+  var annos = siStudentAnnotations(p);
+  var numericScores = Object.keys(gradesMap)
+    .map(function (k) { return gradesMap[k] && gradesMap[k].score; })
+    .filter(function (s) { return typeof s === 'number' && Number.isFinite(s); });
+  var gradableEntries = entries.filter(function (entry) {
+    return !entry.isSelfCheck || Object.prototype.hasOwnProperty.call(gradesMap, entry.key);
+  });
+  var scoredCount = typeof sumObj.scored === 'number' ? sumObj.scored : numericScores.length;
+  var totalCount = typeof sumObj.total === 'number' ? sumObj.total : (gradableEntries.length + roleSwaps.length + stories.length);
+  var fallbackAvg = numericScores.length
+    ? Math.round(numericScores.reduce(function (acc, n) { return acc + n; }, 0) / numericScores.length)
+    : null;
+  var avgVal = (typeof sumObj.average === 'number' && Number.isFinite(sumObj.average)) ? sumObj.average : fallbackAvg;
+  var avgText = avgVal !== null ? (avgVal + '/100') : '—';
+  var renderScoreBadge = function (g, isSelfCheck) {
+    if (g && typeof g.score === 'number' && Number.isFinite(g.score)) {
+      return '<span style="display:inline-block;padding:2px 9px;border-radius:999px;background:#dcfce7;color:#14532d;font-weight:700;font-size:12px;">' + escHtml(g.score + '/100') + (g.status ? ' · ' + escHtml(g.status) : '') + '</span>';
+    }
+    if (isSelfCheck) {
+      return '<span style="display:inline-block;padding:2px 9px;border-radius:999px;background:#e0f2fe;color:#075985;font-weight:600;font-size:12px;">Self-check (ungraded)</span>';
+    }
+    return '<span style="display:inline-block;padding:2px 9px;border-radius:999px;background:#f1f5f9;color:#475569;font-weight:600;font-size:12px;">Not scored</span>';
+  };
   var responseCards = entries.map(function (entry) {
     var g = gradesMap[entry.key];
-    var scoreBadge = (g && typeof g.score === 'number')
-      ? '<span style="display:inline-block;padding:2px 9px;border-radius:999px;background:#dcfce7;color:#14532d;font-weight:700;font-size:12px;">' + escHtml(g.score + '/100') + (g.status ? ' · ' + escHtml(g.status) : '') + '</span>'
-      : '<span style="display:inline-block;padding:2px 9px;border-radius:999px;background:#f1f5f9;color:#475569;font-weight:600;font-size:12px;">Not scored</span>';
+    var scoreBadge = renderScoreBadge(g, entry.isSelfCheck);
     return '<article class="card" style="border:1px solid #cbd5e1;border-radius:10px;padding:12px 14px;margin-bottom:10px;background:#ffffff;break-inside:avoid;">'
       + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px;">'
       + '<div style="font-weight:700;color:#0f172a;">' + escHtml(entry.question) + (entry.partLabel ? ' <span style="color:#475569;font-weight:600;font-size:0.9em;">(' + escHtml(entry.partLabel) + ')</span>' : '') + '</div>'
@@ -1140,13 +1404,51 @@ function siBuildStudentFeedbackBody(row, rowGrades, summary, escHtml) {
       + (g && g.feedback ? '<p style="margin:8px 0 0;color:#334155;font-size:0.92em;"><strong>Feedback:</strong> ' + escHtml(g.feedback) + '</p>' : '')
       + '</article>';
   }).join('');
+  var extraCards = roleSwaps.map(function (rs) {
+    var g = gradesMap[rs.key];
+    var bodyHtml = rs.entries.map(function (e) {
+      return '<div style="margin-top:6px;">'
+        + '<strong>' + escHtml(e.question) + '</strong>'
+        + (e.speaker ? ' <span style="color:#475569;font-size:0.88em;">(' + escHtml(e.speaker) + ')</span>' : '')
+        + '<div style="white-space:pre-wrap;overflow-wrap:anywhere;margin-top:2px;">' + escHtml(e.answer) + '</div>'
+        + (e.evidence ? '<blockquote style="margin:4px 0 0;padding:2px 8px;border-left:3px solid #a5b4fc;color:#334155;font-style:italic;">' + escHtml(e.evidence) + (e.evidenceInSource ? ' &#10003; Found in source' : '') + '</blockquote>' : '')
+        + '</div>';
+    }).join('');
+    return '<article class="card" style="border:1px solid #c7d2fe;border-radius:10px;padding:12px 14px;margin-bottom:10px;background:#ffffff;break-inside:avoid;">'
+      + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px;">'
+      + '<div style="font-weight:700;color:#312e81;">' + escHtml(rs.title) + ' <span style="color:#475569;font-weight:600;font-size:0.9em;">(Role Swap)</span></div>'
+      + renderScoreBadge(g, false)
+      + '</div>'
+      + bodyHtml
+      + (g && g.feedback ? '<p style="margin:8px 0 0;color:#334155;font-size:0.92em;"><strong>Feedback:</strong> ' + escHtml(g.feedback) + '</p>' : '')
+      + '</article>';
+  }).concat(stories.map(function (st) {
+    var g = gradesMap[st.key];
+    return '<article class="card" style="border:1px solid #c7d2fe;border-radius:10px;padding:12px 14px;margin-bottom:10px;background:#ffffff;break-inside:avoid;">'
+      + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px;">'
+      + '<div style="font-weight:700;color:#312e81;">' + escHtml(st.title) + ' <span style="color:#475569;font-weight:600;font-size:0.9em;">(' + escHtml(st.scenes.length + ' scenes · ' + st.endings + ' endings') + ')</span></div>'
+      + renderScoreBadge(g, false)
+      + '</div>'
+      + '<div style="background:#f8fafc;border-left:3px solid #94a3b8;padding:8px 10px;border-radius:4px;color:#1e293b;white-space:pre-wrap;overflow-wrap:anywhere;">'
+      + escHtml(st.text)
+      + '</div>'
+      + (g && g.feedback ? '<p style="margin:8px 0 0;color:#334155;font-size:0.92em;"><strong>Feedback:</strong> ' + escHtml(g.feedback) + '</p>' : '')
+      + '</article>';
+  })).join('');
   var annoSection = annos.length ? (
     '<section style="margin-top:20px;">'
     + '<h2 style="font-size:1.05rem;color:#0f172a;margin:0 0 10px;">Highlights &amp; Notes (' + escHtml(annos.length) + ')</h2>'
     + annos.map(function (a) {
+        var drawSvg = a.type === 'draw' ? siAnnotationDrawSvgHtml(a) : '';
+        var safeDrawUrl = (a.type === 'draw' && !drawSvg && typeof a.dataUrl === 'string' && /^data:image\/(?:png|jpe?g|gif|webp);base64,[A-Za-z0-9+/=\s]+$/i.test(a.dataUrl.trim())) ? a.dataUrl.trim() : '';
+        var safeAudioUrl = (a.type === 'voice' && typeof a.audioSrc === 'string' && /^data:audio\/[a-z0-9.+-]+(?:;[a-z0-9.+-]+=[^;,]+)*;base64,[A-Za-z0-9+/=\s]+$/i.test(a.audioSrc.trim())) ? a.audioSrc.trim().replace(/\s+/g, '') : '';
         var extra = a.type === 'draw'
-          ? (a.points ? siAnnotationDrawSvgHtml(a) : '<div style="font-size:0.85em;color:#475569;">[Student drawing attached]</div>')
-          : (a.type === 'voice' ? '<div style="font-size:0.85em;color:#475569;">[Voice note attached]</div>' : '');
+          ? (drawSvg || (safeDrawUrl ? '<img src="' + escHtml(safeDrawUrl) + '" alt="Student drawing" style="display:block;max-width:100%;max-height:160px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;margin-top:4px;"/>' : '<div style="font-size:0.85em;color:#475569;">[Student drawing attached]</div>'))
+          : (a.type === 'voice'
+            ? (safeAudioUrl
+              ? '<div style="font-size:0.85em;color:#475569;">[Voice note attached]<audio controls preload="metadata" src="' + escHtml(safeAudioUrl) + '" style="display:block;width:100%;max-width:320px;height:32px;margin-top:4px;"></audio></div>'
+              : '<div style="font-size:0.85em;color:#475569;">[Voice note attached]</div>')
+            : '');
         return '<div class="card" style="border:1px solid #e2e8f0;border-left:4px solid #f59e0b;border-radius:8px;padding:10px 12px;margin-bottom:8px;background:#fffbeb;break-inside:avoid;">'
           + (a.quote ? '<div style="font-size:0.9em;color:#475569;margin-bottom:4px;">&ldquo;' + escHtml(a.quote) + '&rdquo;</div>' : '')
           + (a.note ? '<div style="color:#0f172a;white-space:pre-wrap;">' + escHtml(a.note) + '</div>' : '')
@@ -1155,8 +1457,11 @@ function siBuildStudentFeedbackBody(row, rowGrades, summary, escHtml) {
       }).join('')
     + '</section>'
   ) : '';
+  var contentTag = wrapMain === false ? 'div' : 'main';
   return {
     title: docTitle + ' - ' + nickname + ' Feedback',
+    lang: locale.lang,
+    dir: locale.dir,
     html: '<header style="background:#ffffff;border:1px solid #cbd5e1;border-radius:12px;padding:16px 18px;margin-bottom:18px;">'
       + '<h1 style="margin:0 0 6px;font-size:1.35rem;color:#0f172a;">' + escHtml(docTitle) + '</h1>'
       + '<div style="color:#334155;font-size:0.95rem;"><strong>Student:</strong> ' + escHtml(nickname)
@@ -1164,11 +1469,11 @@ function siBuildStudentFeedbackBody(row, rowGrades, summary, escHtml) {
       + ' &nbsp;|&nbsp; <strong>Average:</strong> ' + escHtml(avgText)
       + ' &nbsp;|&nbsp; <strong>Scored:</strong> ' + escHtml(scoredCount + ' / ' + totalCount) + '</div>'
       + '</header>'
-      + '<main>' + (responseCards || '<p style="color:#475569;">No captured responses in this submission.</p>') + annoSection + '</main>'
+      + '<' + contentTag + '>' + ((responseCards + extraCards) || '<p style="color:#475569;">No captured responses in this submission.</p>') + annoSection + '</' + contentTag + '>'
   };
 }
 
-function siBuildStudentFeedbackHtml(row, rowGrades, summary) {
+function siBuildStudentFeedbackHtml(row, rowGrades, summary, teacherHistory) {
   function escHtml(value) {
     return String(value == null ? '' : value)
       .replace(/&/g, '&amp;')
@@ -1177,14 +1482,16 @@ function siBuildStudentFeedbackHtml(row, rowGrades, summary) {
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
   }
-  var body = siBuildStudentFeedbackBody(row, rowGrades, summary, escHtml);
-  return '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+  var resolvedHistory = Array.isArray(teacherHistory) ? teacherHistory
+    : (teacherHistory && Array.isArray(teacherHistory.teacherHistory) ? teacherHistory.teacherHistory : undefined);
+  var body = siBuildStudentFeedbackBody(row, rowGrades, summary, escHtml, true, resolvedHistory);
+  return '<!DOCTYPE html><html lang="' + escHtml(body.lang || 'en') + '"' + (body.dir === 'rtl' ? ' dir="rtl"' : '') + '><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
     + '<title>' + escHtml(body.title) + '</title>'
     + '<style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.5;color:#0f172a;background:#f8fafc;max-width:820px;margin:0 auto;padding:24px;}@media print{body{background:#fff;padding:12px;}.card{break-inside:avoid;}}</style>'
     + '</head><body>' + body.html + '</body></html>';
 }
 
-function siBuildBatchFeedbackHtml(items, docLabel) {
+function siBuildBatchFeedbackHtml(items, docLabel, teacherHistory) {
   function escHtml(value) {
     return String(value == null ? '' : value)
       .replace(/&/g, '&amp;')
@@ -1193,17 +1500,27 @@ function siBuildBatchFeedbackHtml(items, docLabel) {
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
   }
+  var labelArg = (docLabel && typeof docLabel === 'object') ? (docLabel.docLabel || docLabel.title) : docLabel;
+  var resolvedHistory = Array.isArray(teacherHistory) ? teacherHistory
+    : (teacherHistory && Array.isArray(teacherHistory.teacherHistory) ? teacherHistory.teacherHistory
+    : (docLabel && typeof docLabel === 'object' && Array.isArray(docLabel.teacherHistory) ? docLabel.teacherHistory : undefined));
   var safeItems = Array.isArray(items) ? items : [];
+  var batchLang = 'en';
+  var batchDir = '';
   var sheets = safeItems.map(function (entry, idx) {
     var r = entry && entry.row ? entry.row : {};
-    var body = siBuildStudentFeedbackBody(r, entry && entry.rowGrades, entry && entry.summary, escHtml);
-    return '<section class="student-feedback-sheet" style="' + (idx < safeItems.length - 1 ? 'margin-bottom:28px;padding-bottom:20px;border-bottom:2px dashed #cbd5e1;' : '') + '">'
+    var body = siBuildStudentFeedbackBody(r, entry && entry.rowGrades, entry && entry.summary, escHtml, false, resolvedHistory);
+    if (idx === 0) {
+      batchLang = body.lang || 'en';
+      batchDir = body.dir || '';
+    }
+    return '<section class="student-feedback-sheet" lang="' + escHtml(body.lang || 'en') + '"' + (body.dir === 'rtl' ? ' dir="rtl"' : '') + ' style="' + (idx < safeItems.length - 1 ? 'margin-bottom:28px;padding-bottom:20px;border-bottom:2px dashed #cbd5e1;' : '') + '">'
       + body.html
       + '</section>'
       + (idx < safeItems.length - 1 ? '<div class="student-page-break"></div>' : '');
   }).join('');
-  var title = siResponseText(docLabel || 'Class Feedback Packet', 200) || 'Class Feedback Packet';
-  return '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+  var title = siResponseText(labelArg || 'Class Feedback Packet', 200) || 'Class Feedback Packet';
+  return '<!DOCTYPE html><html lang="' + escHtml(batchLang) + '"' + (batchDir === 'rtl' ? ' dir="rtl"' : '') + '><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
     + '<title>' + escHtml(title) + '</title>'
     + '<style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.5;color:#0f172a;background:#f8fafc;max-width:820px;margin:0 auto;padding:24px;}@media print{body{background:#fff;padding:12px;}.card{break-inside:avoid;}.student-page-break{page-break-after:always;break-after:page;}.student-feedback-sheet{border-bottom:none !important;margin-bottom:0 !important;padding-bottom:0 !important;}.no-print{display:none !important;}}</style>'
     + '</head><body>'
@@ -1211,7 +1528,7 @@ function siBuildBatchFeedbackHtml(items, docLabel) {
     + '<span style="font-weight:700;color:#312e81;">' + escHtml(title) + ' (' + escHtml(String(safeItems.length)) + ')</span>'
     + '<button type="button" onclick="window.print()" style="padding:6px 14px;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;">Print / Save PDF</button>'
     + '</div>'
-    + (sheets || '<p style="color:#475569;">No graded student feedback sheets yet.</p>')
+    + '<main>' + (sheets || '<p style="color:#475569;">No graded student feedback sheets yet.</p>') + '</main>'
     + '</body></html>';
 }
 
@@ -1443,10 +1760,7 @@ function siLookupTrustedHistoryPrompt(responseKey, history) {
       var sanId = rawId.replace(/[^A-Za-z0-9_-]+/g, '-');
       return rawId === gmSid || sanId === gmSid;
     }) || (gmItems.length === 1 ? gmItems[0] : null);
-    var gmArrRaw = gmRes && gmRes.data ? (Array.isArray(gmRes.data) ? gmRes.data : (gmRes.data.terms || gmRes.data.items || gmRes.data.entries || gmRes.data.glossary || [])) : [];
-    var gmArr = Array.isArray(gmArrRaw) ? gmArrRaw.filter(function (gEntry) {
-      return gEntry && String(gEntry.term == null ? '' : gEntry.term).trim() && String(gEntry.def || gEntry.definition || '').trim();
-    }) : [];
+    var gmArr = gmRes ? siExtractGlossaryPairs(gmRes) : [];
     var gmEntry = gmArr[gmIdx];
     var gmTerm = gmEntry ? (typeof gmEntry === 'string' ? gmEntry : (gmEntry.term || gmEntry.word || gmEntry.name || (Array.isArray(gmEntry) ? gmEntry[0] : '') || '')) : '';
     var gmPos = gmEntry && gmEntry.partOfSpeech ? ' (' + String(gmEntry.partOfSpeech).trim() + ')' : '';
@@ -1460,29 +1774,8 @@ function siLookupTrustedHistoryPrompt(responseKey, history) {
     var vnRes = history.find(function (item) { return isVnItem(item) && String(item.id) === vennMatch[1]; })
       || ((vennMatch[1] === 'venn' || vennMatch[1] === 'outline' || vennMatch[1] === 'venn-diagram') ? history.find(isVnItem) : null);
     var vnData = vnRes && vnRes.data && typeof vnRes.data === 'object' ? vnRes.data : null;
-    var vnList = [];
-    if (vnData) {
-      var vnZones = null;
-      if (Array.isArray(vnData.branches) && vnData.branches.length) {
-        var vnResolved = siResolveVennBranches(vnData.branches);
-        vnZones = [vnResolved.setA, vnResolved.setB, vnResolved.shared];
-      } else if (vnData.setA || vnData.setB || vnData.shared) {
-        vnZones = [vnData.setA, vnData.setB, vnData.shared];
-      }
-      if (vnZones) {
-        vnZones.forEach(function (br) {
-          var brItems = br && Array.isArray(br.items) ? br.items : [];
-          brItems.forEach(function (entry) {
-            var txt = entry && typeof entry === 'object' ? String(entry.text || entry.label || entry.content || '').trim() : String(entry == null ? '' : entry).trim();
-            if (txt) vnList.push(txt);
-          });
-        });
-      } else if (Array.isArray(vnData.vennItems)) {
-        vnList = vnData.vennItems;
-      } else if (Array.isArray(vnData.items)) {
-        vnList = vnData.items;
-      }
-    }
+    var vnCfg = siResolveVennConfig(vnData);
+    var vnList = vnCfg.items;
     var vnItem = vnList[Number(vennMatch[2])];
     var vnTxt = vnItem && typeof vnItem === 'object' ? (vnItem.text || vnItem.label || vnItem.name || vnItem.content || vnItem.item || '') : (vnItem || '');
     if (vnTxt) return 'Venn diagram placement for: ' + siResponseText(vnTxt, 300);
@@ -1599,7 +1892,9 @@ function siLookupTrustedHistoryPrompt(responseKey, history) {
 function siResponseResourcePrefix(key) {
   var bare = String(key || '').replace(/^allo-response:/, '');
   if (!bare) return '';
-  var m = bare.match(/^(.+?):(?:q\d+:|dbq:|math:\d+:|timeline(?:-date)?:|note:|(?:\d+|paragraph-\d+):sentence-frame$|(?:kwl|outline):|ac:|cloze:|reflection:|venn:|concept-sort:|card\d+:|applied:|directions:)/);
+  var gw = bare.match(/^(glossary-worksheet:[^:]+):/);
+  if (gw && gw[1]) return gw[1];
+  var m = bare.match(/^(.+?):(?:q\d+:|dbq:|math:\d+:|timeline(?:-date)?:|note:|(?:\d+|paragraph-\d+):sentence-frame$|(?:kwl|outline):|ac:|cloze:|reflection:|venn:|concept-sort:|card\d+:|applied:|directions:|match:|matching:|order:|ordering:)/);
   if (m && m[1]) return m[1];
   var colon = bare.indexOf(':');
   return colon > 0 ? bare.slice(0, colon) : bare;
@@ -1626,7 +1921,7 @@ function siCalibrationSamplesForKey(anchors, responseKey, exemplar, scope) {
   var sameResourceFallback = scopedList.filter(function (a) {
     if (!a.fromResponseKey || a.fromResponseKey === responseKey) return false;
     var anchorPrefix = siResponseResourcePrefix(a.fromResponseKey);
-    return !targetPrefix || !anchorPrefix || anchorPrefix === targetPrefix;
+    return !!(targetPrefix && anchorPrefix && anchorPrefix === targetPrefix);
   });
   var ordered = specific.length > 0
     ? specific.concat(unkeyed)
@@ -1943,6 +2238,7 @@ function siDisplayResponseValue(rawText, valueLabels) {
 function siResponseEntryModels(payload) {
   var p = payload && typeof payload === 'object' ? payload : {};
   var responses = p.responses && typeof p.responses === 'object' && !Array.isArray(p.responses) ? p.responses : {};
+  var contentList = Array.isArray(p.content) ? p.content : [];
   var rawManifest = p.responseManifest;
   var manifestDeclared = rawManifest != null;
   var manifestSupported = !!(rawManifest && typeof rawManifest === 'object' && !Array.isArray(rawManifest)
@@ -1950,6 +2246,51 @@ function siResponseEntryModels(payload) {
     && Array.isArray(rawManifest.entries));
   var payloadSchemaVersion = Math.max(0, Number(p.schemaVersion) || 0);
   var manifest = siResponseManifestMap(p);
+  function hydrateDirectionsLabels(key, existingLabels) {
+    var bareKey = String(key || '').replace(/^allo-response:/, '');
+    var dm = bareKey.match(/^(.+):directions:(goals|goal:(\d+)|choice)$/);
+    if (!dm) return existingLabels;
+    var dirId = dm[1];
+    var dirItem = contentList.find(function (it) { return it && it.type === 'directions' && String(it.id || '') === dirId; })
+      || (dirId === 'directions' ? contentList.find(function (it) { return it && it.type === 'directions'; }) : null);
+    var dirData = dirItem && dirItem.data && typeof dirItem.data === 'object' ? dirItem.data : null;
+    if (!dirData) return existingLabels;
+    var merged = Object.create(null);
+    if (existingLabels && typeof existingLabels === 'object') {
+      Object.keys(existingLabels).forEach(function (lk) { merged[lk] = existingLabels[lk]; });
+    }
+    var appOnly = function (g) { return g && (g.kind === 'game' || g.kind === 'xp'); };
+    var goals = (Array.isArray(dirData.objectives) ? dirData.objectives : []).filter(function (g) {
+      return g && typeof g.label === 'string' && g.label.trim() && !appOnly(g);
+    });
+    if (dm[2] === 'goals') {
+      goals.forEach(function (g, gi) {
+        var lbl = g.label.trim();
+        if (!Object.prototype.hasOwnProperty.call(merged, String(gi))) merged[String(gi)] = lbl;
+        if (g.id != null && !Object.prototype.hasOwnProperty.call(merged, String(g.id))) merged[String(g.id)] = lbl;
+      });
+    } else if (dm[3] != null) {
+      var oneG = goals[Number(dm[3])];
+      if (oneG && typeof oneG.label === 'string' && oneG.label.trim()) {
+        var gLbl = oneG.label.trim();
+        if (!Object.prototype.hasOwnProperty.call(merged, 'true')) merged['true'] = gLbl;
+        if (!Object.prototype.hasOwnProperty.call(merged, 'on')) merged['on'] = gLbl;
+        if (!Object.prototype.hasOwnProperty.call(merged, 'checked')) merged['checked'] = gLbl;
+      }
+    } else if (dm[2] === 'choice') {
+      var board = dirData.choiceBoard && typeof dirData.choiceBoard === 'object' ? dirData.choiceBoard : {};
+      var rawChoices = Array.isArray(board.choices) ? board.choices : (Array.isArray(board.options) ? board.options : []);
+      rawChoices.forEach(function (ch, ci) {
+        var cLbl = typeof ch === 'string' ? ch.trim() : (ch && typeof ch === 'object' ? String(ch.label || ch.title || '').trim() : '');
+        if (!cLbl) return;
+        if (!Object.prototype.hasOwnProperty.call(merged, String(ci))) merged[String(ci)] = cLbl;
+        if (ch && typeof ch === 'object' && ch.id != null && !Object.prototype.hasOwnProperty.call(merged, String(ch.id))) {
+          merged[String(ch.id)] = cLbl;
+        }
+      });
+    }
+    return merged;
+  }
   var keys = [];
   Object.keys(responses).forEach(function(key) { if (keys.indexOf(key) < 0) keys.push(key); });
   if (manifestSupported) Object.keys(manifest).forEach(function(key) { if (keys.indexOf(key) < 0) keys.push(key); });
@@ -1959,16 +2300,19 @@ function siResponseEntryModels(payload) {
     var rawText = hasStoredResponse ? siResponseText(responses[key], 12000) : '';
     var answered = hasStoredResponse && rawText !== '';
     var isSelfCheck = !!((meta && meta.isSelfCheck) || siIsSelfCheckResponse(key, meta && meta.responseType, meta && meta.questionType));
+    var effectiveLabels = hydrateDirectionsLabels(key, (meta && meta.valueLabels) || Object.create(null));
+    var formattedSnap = (hasStoredResponse && siAssessmentSnapshot(responses[key])) ? siFormatAssessmentSnapshotText(responses[key]) : '';
+    var displayVal = formattedSnap || siDisplayResponseValue(rawText, effectiveLabels);
     var model = {
       key: key,
       rawText: rawText,
-      displayValue: siDisplayResponseValue(rawText, meta && meta.valueLabels),
+      displayValue: displayVal,
       question: (meta && meta.question) || ('Response ' + (index + 1)),
       partLabel: (meta && meta.partLabel) || '',
       responseType: (meta && meta.responseType) || 'legacy-response',
       questionType: (meta && meta.questionType) || '',
       isSelfCheck: isSelfCheck,
-      valueLabels: (meta && meta.valueLabels) || Object.create(null),
+      valueLabels: effectiveLabels,
       manualReview: !!(meta && meta.manualReview),
       hasManifest: !!meta,
       answered: answered,
@@ -2005,16 +2349,60 @@ function siAssessmentSnapshot(value) {
   return submitted || draft;
 }
 
+function siFormatAssessmentSnapshotText(value) {
+  var snap = siAssessmentSnapshot(value);
+  if (!snap) return '';
+  var list = Array.isArray(snap.items) ? snap.items : (Array.isArray(snap.responses) ? snap.responses : []);
+  var lines = [];
+  list.slice(0, 300).forEach(function (raw, idx) {
+    if (!raw || typeof raw !== 'object') return;
+    var num = Number.isInteger(raw.number) && raw.number > 0 ? raw.number
+      : (typeof raw.index === 'number' && Number.isFinite(raw.index) ? raw.index + 1 : idx + 1);
+    var qTxt = siResponseText(raw.question, 300);
+    var isIdk = !!(raw.idk || (raw.answer && raw.answer.idk === true));
+    var respVal = raw.response !== undefined && raw.response !== null && String(raw.response).trim() !== ''
+      ? raw.response
+      : (raw.answer && typeof raw.answer === 'object'
+        ? (raw.answer.optionText || raw.answer.text || (Array.isArray(raw.answer.selectedOptions) ? raw.answer.selectedOptions.join(', ') : ''))
+        : '');
+    var ansTxt = isIdk
+      ? "I don't know yet"
+      : (Array.isArray(respVal)
+        ? respVal.map(function (x) { return siResponseText(x, 200); }).filter(Boolean).join(', ')
+        : (respVal !== undefined && respVal !== null && String(respVal).trim() !== '' ? siResponseText(respVal, 1000) : 'No answer'));
+    var reasoningTxt = siResponseText(raw.reasoning || (raw.answer && raw.answer.reasoning) || '', 500);
+    lines.push('Q' + num + (qTxt ? '. ' + qTxt : '') + ': ' + ansTxt + (reasoningTxt ? ' (Reasoning: ' + reasoningTxt + ')' : ''));
+  });
+  var refls = Array.isArray(snap.reflections) ? snap.reflections : [];
+  refls.slice(0, 20).forEach(function (rf) {
+    if (!rf || typeof rf !== 'object') return;
+    var pTxt = siResponseText(rf.prompt, 300);
+    var rTxt = siResponseText(rf.response, 1000);
+    if (!pTxt && !rTxt) return;
+    lines.push('Reflection: ' + (pTxt ? pTxt + ' — ' : '') + (rTxt || 'No answer'));
+  });
+  return lines.join('\n');
+}
+
 function siAssessmentComparable(value) {
   return siResponseText(value, 500).replace(/\s+/g, ' ').trim().toLowerCase();
 }
 
+function siIsTfType(raw) {
+  var k = String(raw || '').trim().toLowerCase().replace(/_/g, '-');
+  return k === 'true-false' || k === 'truefalse' || k === 'tf';
+}
+
 function siNormQuizType(raw) {
-  var k = String(raw == null ? 'mcq' : raw).trim();
-  if (k === 'multiple-choice') return 'mcq';
-  if (k === 'shortAnswer') return 'short-answer';
-  if (k === 'order') return 'ordering';
-  return k || 'mcq';
+  var k = String(raw == null ? 'mcq' : raw).trim().toLowerCase().replace(/_/g, '-');
+  if (!k || k === 'multiple-choice' || k === 'multiple-choice-question' || k === 'single-select' || siIsTfType(k)) return 'mcq';
+  if (k === 'shortanswer' || k === 'short-answer') return 'short-answer';
+  if (k === 'order' || k === 'ordering' || k === 'sequence') return 'ordering';
+  if (k === 'multiselect' || k === 'multi-select') return 'multi-select';
+  if (k === 'fillblank' || k === 'fill-blank' || k === 'fill-in-blank') return 'fill-blank';
+  if (k === 'numeric') return 'numeric-response';
+  if (k === 'match') return 'matching';
+  return k;
 }
 
 // Only the learner's own choice travels to the grader: option TEXT for choice
@@ -2026,12 +2414,16 @@ function siAssessmentAnswerForGrading(rawType, row) {
   if (a && a.idk === true) return { idk: true };
   if (type === 'mcq') {
     var optionText = a && typeof a.optionText === 'string' && a.optionText ? a.optionText : response;
-    return optionText ? { optionText: optionText } : null;
+    if (optionText) return { optionText: optionText };
+    if (a && Number.isInteger(a.optionIdx)) return { optionIdx: a.optionIdx };
+    return null;
   }
   if (type === 'multi-select') {
     var picked = a && Array.isArray(a.selectedOptions) ? a.selectedOptions : response ? response.split('; ') : [];
     picked = picked.map(function (entry) { return siResponseText(entry, 500); }).filter(Boolean);
-    return picked.length ? { selectedTexts: picked } : null;
+    if (picked.length) return { selectedTexts: picked };
+    if (a && Array.isArray(a.selectedIndices) && a.selectedIndices.length) return { selectedIndices: a.selectedIndices };
+    return null;
   }
   if (type === 'answer-evidence') {
     return a && (a.answerText || a.evidenceText) ? { answerText: siResponseText(a.answerText, 500), evidenceText: siResponseText(a.evidenceText, 500) } : null;
@@ -2050,18 +2442,360 @@ function siAssessmentAnswerForGrading(rawType, row) {
   return null;
 }
 
+function siPureObjectiveAssessmentGrade(question, row, policy, submitted) {
+  var q = question && typeof question === 'object' ? question : null;
+  if (!q) return { verdict: 'review', scorable: false };
+  var rawType = q.itemType || q.type || 'mcq';
+  if (/^(?:likert|opinion-mcq)$/i.test(String(rawType))) return { verdict: 'review', scorable: false };
+  var revStatus = q.keyCheck && typeof q.keyCheck === 'object' ? q.keyCheck.status : '';
+  if (revStatus === 'disputed' || /\[\[\s*KEY\s*:\s*DISPUTED\b/i.test(String(q.factCheck || ''))) {
+    return { verdict: 'review', scorable: false };
+  }
+  var type = siNormQuizType(rawType);
+  var partialCredit = !(policy && (policy.partialCredit === false || (policy.liveScoring && policy.liveScoring.partialCredit === false)));
+  var resolveOptIdx = function (opts, cand) {
+    if (!Array.isArray(opts) || !opts.length || cand == null) return -1;
+    if (typeof cand === 'boolean') {
+      var bText = cand ? 'true' : 'false';
+      var bIdx = opts.findIndex(function (o) { return siAssessmentComparable(o) === bText; });
+      if (bIdx >= 0) return bIdx;
+      return cand ? 0 : (opts.length > 1 ? 1 : -1);
+    }
+    if (Number.isInteger(cand)) return (cand >= 0 && cand < opts.length) ? cand : -1;
+    var s = String(cand).trim();
+    if (!s) return -1;
+    if (/^\d+$/.test(s)) {
+      var n = Number(s);
+      if (n >= 0 && n < opts.length) return n;
+    }
+    var low = siAssessmentComparable(s);
+    var tIdx = opts.findIndex(function (o) { return siAssessmentComparable(o) === low; });
+    if (tIdx >= 0) return tIdx;
+    if (/^[A-Za-z]$/.test(s) && opts.length <= 26) {
+      var lIdx = s.toUpperCase().charCodeAt(0) - 65;
+      if (lIdx >= 0 && lIdx < opts.length) return lIdx;
+    }
+    return -1;
+  };
+  var lookupPureUnitDef = function (raw) {
+    var u = String(raw || '').trim().toLowerCase().replace(/\./g, '').replace(/\s+/g, ' ');
+    if (!u) return null;
+    var tbl = [
+      ['length', 0.001, ['mm', 'millimeter', 'millimeters', 'millimetre', 'millimetres']],
+      ['length', 0.01, ['cm', 'centimeter', 'centimeters', 'centimetre', 'centimetres']],
+      ['length', 1, ['m', 'meter', 'meters', 'metre', 'metres']],
+      ['length', 1000, ['km', 'kilometer', 'kilometers', 'kilometre', 'kilometres']],
+      ['length', 0.0254, ['in', 'inch', 'inches']],
+      ['length', 0.3048, ['ft', 'foot', 'feet']],
+      ['length', 0.9144, ['yd', 'yard', 'yards']],
+      ['length', 1609.344, ['mi', 'mile', 'miles']],
+      ['mass', 0.001, ['mg', 'milligram', 'milligrams']],
+      ['mass', 1, ['g', 'gram', 'grams']],
+      ['mass', 1000, ['kg', 'kilogram', 'kilograms']],
+      ['mass', 453.59237, ['lb', 'lbs', 'pound', 'pounds']],
+      ['mass', 28.349523125, ['oz', 'ounce', 'ounces']],
+      ['volume', 0.001, ['ml', 'milliliter', 'milliliters', 'millilitre', 'millilitres']],
+      ['volume', 1, ['l', 'liter', 'liters', 'litre', 'litres']],
+      ['time', 1, ['s', 'sec', 'second', 'seconds']],
+      ['time', 60, ['min', 'minute', 'minutes']],
+      ['time', 3600, ['h', 'hr', 'hour', 'hours']],
+      ['time', 86400, ['d', 'day', 'days']]
+    ];
+    for (var ti = 0; ti < tbl.length; ti++) {
+      if (tbl[ti][2].indexOf(u) >= 0) return { dimension: tbl[ti][0], factor: tbl[ti][1] };
+    }
+    return null;
+  };
+  var isScorable = false;
+  var correctMcqIdx = -1;
+  var mcqOpts = [];
+  var multiCorrect = [];
+  var multiOpts = [];
+  var fillTargets = [];
+  var numericTargetVal = NaN;
+  var aeCorrAns = -1, aeCorrEv = -1, aeAnsOpts = [], aeEvOpts = [];
+  var expectedOrder = [];
+  var matchPairs = [];
+  var seqItems = [], seqPresented = null;
+  var rmPairs = [];
+  if (type === 'mcq' || type === 'true-false') {
+    mcqOpts = Array.isArray(q.options) && q.options.length ? q.options : (siIsTfType(rawType) ? ['True', 'False'] : []);
+    var cands = [q.correct, q.correctIndex, q.correctAnswer, q.answer, q.correctOption, q.answerIndex];
+    for (var ci = 0; ci < cands.length; ci++) {
+      correctMcqIdx = resolveOptIdx(mcqOpts, cands[ci]);
+      if (correctMcqIdx >= 0) break;
+    }
+    isScorable = correctMcqIdx >= 0;
+  } else if (type === 'multi-select') {
+    multiOpts = Array.isArray(q.options) ? q.options : [];
+    var rawMulti = (Array.isArray(q.correctAnswers) && q.correctAnswers.length) ? q.correctAnswers : (Array.isArray(q.correctIndices) ? q.correctIndices : []);
+    multiCorrect = Array.from(new Set(rawMulti.map(function (c) { return resolveOptIdx(multiOpts, c); }).filter(function (n) { return n >= 0; }))).sort(function (a, b) { return a - b; });
+    isScorable = multiOpts.length > 0 && multiCorrect.length > 0;
+  } else if (type === 'fill-blank') {
+    fillTargets = [q.expectedFill].concat(Array.isArray(q.acceptableAlternatives) ? q.acceptableAlternatives : []).concat(Array.isArray(q.acceptableAnswers) ? q.acceptableAnswers : []).filter(function (v) { return typeof v === 'string' && v.trim(); });
+    isScorable = fillTargets.length > 0;
+  } else if (type === 'numeric-response') {
+    numericTargetVal = siParseNumericInput(q.correctValue).num;
+    isScorable = q.correctValue != null && String(q.correctValue).trim() !== '' && Number.isFinite(numericTargetVal);
+  } else if (type === 'answer-evidence') {
+    aeAnsOpts = Array.isArray(q.answerOptions) ? q.answerOptions : [];
+    aeEvOpts = Array.isArray(q.evidenceOptions) ? q.evidenceOptions : [];
+    aeCorrAns = resolveOptIdx(aeAnsOpts, q.correctAnswerIndex != null ? q.correctAnswerIndex : (q.answerIndex != null ? q.answerIndex : (q.correctAnswer != null ? q.correctAnswer : q.expectedAnswer)));
+    aeCorrEv = resolveOptIdx(aeEvOpts, q.correctEvidenceIndex != null ? q.correctEvidenceIndex : (q.evidenceIndex != null ? q.evidenceIndex : (q.correctEvidence != null ? q.correctEvidence : q.expectedEvidence)));
+    isScorable = aeCorrAns >= 0 && aeCorrEv >= 0;
+  } else if (type === 'ordering') {
+    var ordItems = Array.isArray(q.items) ? q.items : [];
+    var explicitOrd = Array.isArray(q.correctOrder) ? q.correctOrder : (Array.isArray(q.correctSequence) ? q.correctSequence : null);
+    expectedOrder = explicitOrd ? explicitOrd.slice(0, 100) : ordItems.map(function (_, idx) { return idx; });
+    isScorable = expectedOrder.length >= 2
+      && (ordItems.length === 0 || expectedOrder.length === ordItems.length)
+      && !expectedOrder.some(function (v) { return v == null || (typeof v !== 'string' && typeof v !== 'number'); })
+      && new Set(expectedOrder.map(function (v) { return typeof v + ':' + String(v); })).size === expectedOrder.length;
+  } else if (type === 'matching') {
+    matchPairs = Array.isArray(q.pairs) ? q.pairs : [];
+    isScorable = matchPairs.length >= 2 && matchPairs.every(function (pr) {
+      return pr && String(pr.left || pr.prompt || '').trim() && String(pr.right || pr.match || pr.answer || '').trim();
+    });
+  } else if (type === 'sequence-sense') {
+    seqItems = Array.isArray(q.items) ? q.items : [];
+    var seqWrong = q.intentionallyWrongIndex;
+    var seqWrongOk = seqWrong == null || (Number.isInteger(seqWrong) && seqWrong >= 0 && seqWrong < seqItems.length);
+    var seqPresentedValid = Array.isArray(q.presentedOrder)
+      && q.presentedOrder.length === seqItems.length
+      && q.presentedOrder.every(function (v) { return Number.isInteger(v) && v >= 0 && v < seqItems.length; })
+      && new Set(q.presentedOrder).size === seqItems.length;
+    seqPresented = seqPresentedValid ? q.presentedOrder : null;
+    var seqOrderOk = !Array.isArray(q.presentedOrder) || !!seqPresented;
+    isScorable = seqItems.length >= 3 && seqWrongOk && seqOrderOk && !!String(q.orderingPrinciple || '').trim();
+  } else if (type === 'relation-mismatch') {
+    rmPairs = Array.isArray(q.pairs) ? q.pairs : [];
+    isScorable = rmPairs.length >= 2
+      && rmPairs.every(function (pr) { return pr && String(pr.left || '').trim() && String(pr.right || '').trim(); })
+      && Number.isInteger(q.wrongPairIndex) && q.wrongPairIndex >= 0 && q.wrongPairIndex < rmPairs.length
+      && !!String(q.correctPartnerForWrong || '').trim();
+  }
+  if (!row.answered) {
+    return row.hasResponse ? { verdict: 'incomplete', scorable: false, fraction: null } : { verdict: 'unanswered', scorable: !!(submitted && isScorable), fraction: (submitted && isScorable) ? 0 : null };
+  }
+  if (!isScorable) return { verdict: 'review', scorable: false };
+  var a = row.answer && typeof row.answer === 'object' && !Array.isArray(row.answer) ? row.answer : {};
+  var respText = siResponseText(row.response, 4000);
+  if (q.requireReasoning === true && !String(a.explanation || a.reasoning || row.reasoning || '').trim()) {
+    return { verdict: 'review', scorable: false };
+  }
+  if (type === 'mcq' || type === 'true-false') {
+    var stuMcq = resolveOptIdx(mcqOpts, a.optionText != null ? a.optionText : (Number.isInteger(a.optionIdx) ? a.optionIdx : respText));
+    if (stuMcq < 0) return { verdict: 'review', scorable: false };
+    var mcqOk = stuMcq === correctMcqIdx;
+    return { verdict: mcqOk ? 'correct' : 'incorrect', scorable: true, fraction: mcqOk ? 1 : 0 };
+  }
+  if (type === 'multi-select') {
+    var pickedSrc = Array.isArray(a.selectedOptions) && a.selectedOptions.length ? a.selectedOptions
+      : (Array.isArray(a.selectedIndices) && a.selectedIndices.length ? a.selectedIndices
+      : (respText ? respText.split(/[;,]/).map(function (s) { return s.trim(); }).filter(Boolean) : []));
+    var pickedIdx = Array.from(new Set(pickedSrc.map(function (v) { return resolveOptIdx(multiOpts, v); }).filter(function (n) { return n >= 0; })));
+    if (!pickedIdx.length) return { verdict: 'review', scorable: false };
+    var hitCnt = pickedIdx.filter(function (i) { return multiCorrect.indexOf(i) >= 0; }).length;
+    var wrongCnt = pickedIdx.length - hitCnt;
+    var exactM = wrongCnt === 0 && hitCnt === multiCorrect.length;
+    var fracM = partialCredit ? Math.max(0, Math.min(1, (hitCnt - wrongCnt) / Math.max(1, multiCorrect.length))) : (exactM ? 1 : 0);
+    return { verdict: exactM ? 'correct' : (fracM > 0 ? 'partial' : 'incorrect'), scorable: true, fraction: Math.round(fracM * 100) / 100 };
+  }
+  if (type === 'fill-blank') {
+    var fPolicy = q.fillBlankPolicy || (q.spellingPolicy === 'exact' ? 'exact' : 'normalized');
+    var stuRaw = typeof a.text === 'string' && a.text ? a.text : respText;
+    var normFn = fPolicy === 'exact'
+      ? function (s) { return String(s == null ? '' : s).trim(); }
+      : function (s) { return siAssessmentComparable(s).replace(/^["'`‘’“”([{]+|["'`‘’“”)\]}.,;:!?…]+$/g, '').trim(); };
+    var stuNorm = normFn(stuRaw);
+    if (!stuNorm) return { verdict: 'review', scorable: false };
+    if (fillTargets.some(function (t) { return normFn(t) === stuNorm; })) return { verdict: 'correct', scorable: true, fraction: 1 };
+    if (fPolicy === 'review-variants' || (fPolicy !== 'exact' && String(a.aiVerdict || '').trim().toLowerCase() === 'correct')) {
+      return { verdict: 'review', scorable: false };
+    }
+    return { verdict: 'incorrect', scorable: true, fraction: 0 };
+  }
+  if (type === 'numeric-response') {
+    var parsedStu = siParseNumericInput(typeof a.text === 'string' && a.text ? a.text : respText);
+    var stuVal = (typeof a.numericValue === 'number' && Number.isFinite(a.numericValue)) ? a.numericValue : parsedStu.num;
+    if (!Number.isFinite(stuVal)) return { verdict: 'review', scorable: false };
+    var tolVal = Math.max(0, Number(q.tolerance) || 0);
+    var expUnits = [q.unit].concat(Array.isArray(q.acceptableUnits) ? q.acceptableUnits : []).filter(function (u) { return typeof u === 'string' && u.trim(); });
+    var stuUnit = String(a.unit || parsedStu.inlineUnit || '').trim();
+    var normU = function (u) { return String(u || '').trim().toLowerCase().replace(/\./g, '').replace(/\s+/g, ''); };
+    var stuUnitDef = lookupPureUnitDef(stuUnit);
+    var unitOk = expUnits.length === 0 || expUnits.some(function (u) {
+      if (normU(u) === normU(stuUnit)) return true;
+      var expDef = lookupPureUnitDef(u);
+      return !!(stuUnitDef && expDef && stuUnitDef.dimension === expDef.dimension && stuUnitDef.factor === expDef.factor);
+    });
+    var comparableStuVal = stuVal;
+    var settingsN = q.numericSettings && typeof q.numericSettings === 'object' ? q.numericSettings : {};
+    if (settingsN.allowEquivalentUnits === true && expUnits.length && stuUnit) {
+      var targetDef = lookupPureUnitDef(q.unit || expUnits[0]);
+      if (stuUnitDef && targetDef && stuUnitDef.dimension === targetDef.dimension) {
+        comparableStuVal = stuVal * stuUnitDef.factor / targetDef.factor;
+        unitOk = true;
+      }
+    }
+    var valOk = Math.abs(comparableStuVal - numericTargetVal) <= tolVal + 1e-9;
+    var configuredVw = settingsN.valueWeight == null ? q.valueWeight : settingsN.valueWeight;
+    var vw = expUnits.length === 0 ? 1 : (typeof configuredVw === 'number' && Number.isFinite(configuredVw) ? Math.max(0, Math.min(1, configuredVw)) : 0.5);
+    var exactN = (vw === 0 || valOk) && (vw === 1 || unitOk);
+    var fracN = partialCredit ? ((valOk ? vw : 0) + (unitOk ? (1 - vw) : 0)) : (exactN ? 1 : 0);
+    return { verdict: exactN ? 'correct' : (fracN > 0 ? 'partial' : 'incorrect'), scorable: true, fraction: Math.round(fracN * 100) / 100 };
+  }
+  if (type === 'answer-evidence') {
+    var stuAns = resolveOptIdx(aeAnsOpts, a.answerText != null ? a.answerText : (Number.isInteger(a.answerIdx) ? a.answerIdx : null));
+    var stuEv = resolveOptIdx(aeEvOpts, a.evidenceText != null ? a.evidenceText : (Number.isInteger(a.evidenceIdx) ? a.evidenceIdx : null));
+    if (stuAns < 0 && stuEv < 0) return { verdict: 'review', scorable: false };
+    var hitsAE = (stuAns === aeCorrAns ? 1 : 0) + (stuEv === aeCorrEv ? 1 : 0);
+    if (hitsAE === 2) return { verdict: 'correct', scorable: true, fraction: 1 };
+    if (hitsAE === 1 && partialCredit) return { verdict: 'partial', scorable: true, fraction: 0.5 };
+    return { verdict: 'incorrect', scorable: true, fraction: 0 };
+  }
+  if (type === 'ordering') {
+    var stuOrd = Array.isArray(row.answer) ? row.answer : (a.order || a.orderedIndices || a.selectedOrder || a.sequence);
+    if (!Array.isArray(stuOrd) || stuOrd.length !== expectedOrder.length) {
+      return { verdict: 'review', scorable: false };
+    }
+    var ordExact = expectedOrder.every(function (v, idx) { return String(stuOrd[idx]) === String(v); });
+    return { verdict: ordExact ? 'correct' : 'incorrect', scorable: true, fraction: ordExact ? 1 : 0 };
+  }
+  if (type === 'matching') {
+    var stuMatchRaw = (a.matches && typeof a.matches === 'object') ? a.matches : ((a.pairs && typeof a.pairs === 'object') ? a.pairs : null);
+    if (!stuMatchRaw) return { verdict: 'review', scorable: false };
+    var mHits = 0;
+    var mAnswered = 0;
+    if (Array.isArray(stuMatchRaw)) {
+      if (stuMatchRaw.length !== matchPairs.length) return { verdict: 'review', scorable: false };
+      for (var mi = 0; mi < matchPairs.length; mi++) {
+        var expR = siAssessmentComparable(matchPairs[mi].right || matchPairs[mi].match || matchPairs[mi].answer);
+        var expL = siAssessmentComparable(matchPairs[mi].left || matchPairs[mi].prompt);
+        var ent = stuMatchRaw[mi];
+        var chosenVal = '';
+        if (ent && typeof ent === 'object') {
+          if (ent.left && siAssessmentComparable(ent.left) !== expL) {
+            var foundByL = stuMatchRaw.find(function (x) { return x && typeof x === 'object' && siAssessmentComparable(x.left || x.prompt) === expL; });
+            chosenVal = foundByL ? (foundByL.right || foundByL.match || foundByL.answer || '') : '';
+          } else {
+            chosenVal = ent.right || ent.match || ent.answer || '';
+          }
+        } else {
+          chosenVal = ent;
+        }
+        var cmpChosen = siAssessmentComparable(chosenVal);
+        if (!cmpChosen) continue;
+        mAnswered++;
+        if (cmpChosen === expR) mHits++;
+      }
+    } else {
+      var rawByNormKey = {};
+      Object.keys(stuMatchRaw).forEach(function (k) { rawByNormKey[siAssessmentComparable(k)] = stuMatchRaw[k]; });
+      for (var mj = 0; mj < matchPairs.length; mj++) {
+        var leftK = siAssessmentComparable(matchPairs[mj].left || matchPairs[mj].prompt);
+        var rightExp = siAssessmentComparable(matchPairs[mj].right || matchPairs[mj].match || matchPairs[mj].answer);
+        var pick = Object.prototype.hasOwnProperty.call(stuMatchRaw, String(mj))
+          ? stuMatchRaw[String(mj)]
+          : (Object.prototype.hasOwnProperty.call(rawByNormKey, leftK) ? rawByNormKey[leftK] : '');
+        var cmpPick = siAssessmentComparable(pick);
+        if (!cmpPick) continue;
+        mAnswered++;
+        if (cmpPick === rightExp) mHits++;
+      }
+    }
+    if (mAnswered === 0) return { verdict: 'review', scorable: false };
+    var mExact = mHits === matchPairs.length;
+    var mFrac = partialCredit ? Math.round((mHits / matchPairs.length) * 100) / 100 : (mExact ? 1 : 0);
+    return { verdict: mExact ? 'correct' : (mFrac > 0 ? 'partial' : 'incorrect'), scorable: true, fraction: mFrac };
+  }
+  if (type === 'sequence-sense') {
+    var ssCompact = q.sequenceMode === 'arrange-explain';
+    var ssVerify = siAssessmentComparable(a.verifyAnswer);
+    var ssPrinciple = siAssessmentComparable(a.principleAnswer);
+    if ((!ssCompact && ssVerify !== 'yes' && ssVerify !== 'no') || !ssPrinciple) {
+      return { verdict: 'review', scorable: false };
+    }
+    var ssN = seqItems.length;
+    var ssTruth = (function () {
+      if (!seqPresented || seqPresented.every(function (v, idx) { return v === idx; })) {
+        return { orderIsCorrect: true, misplaced: [] };
+      }
+      var misplaced = [];
+      for (var skip = 0; skip < seqPresented.length; skip++) {
+        var prev = -1;
+        var sorted = true;
+        for (var j = 0; j < seqPresented.length; j++) {
+          if (j === skip) continue;
+          if (seqPresented[j] < prev) { sorted = false; break; }
+          prev = seqPresented[j];
+        }
+        if (sorted) misplaced.push(skip);
+      }
+      if (misplaced.length) return { orderIsCorrect: false, misplaced: misplaced };
+      if (Number.isInteger(q.intentionallyWrongIndex) && q.intentionallyWrongIndex >= 0 && q.intentionallyWrongIndex < ssN) {
+        return { orderIsCorrect: false, misplaced: [q.intentionallyWrongIndex] };
+      }
+      return { orderIsCorrect: false, misplaced: seqPresented.map(function (_, idx) { return idx; }) };
+    })();
+    var ssStep1 = ssVerify === 'yes' ? ssTruth.orderIsCorrect : !ssTruth.orderIsCorrect;
+    var ssStep2 = ssVerify === 'yes' ? ssStep1 : ssTruth.misplaced.indexOf(a.clickedIdx) >= 0;
+    var rawOrdAns = Array.isArray(a.orderAnswer) ? a.orderAnswer : null;
+    var ssOrderAns = (rawOrdAns && a.orderBasis === 'displayed' && seqPresented)
+      ? rawOrdAns.map(function (v) { return Number.isInteger(v) && v >= 0 && v < seqPresented.length ? seqPresented[v] : v; })
+      : rawOrdAns;
+    var ssArrange = ssOrderAns
+      ? ssOrderAns.length === ssN && ssOrderAns.every(function (v, idx) { return v === idx; })
+      : null;
+    if (ssCompact && (!ssOrderAns || ssOrderAns.length !== ssN || new Set(ssOrderAns).size !== ssN
+        || ssOrderAns.some(function (v) { return !Number.isInteger(v) || v < 0 || v >= ssN; }))) {
+      return { verdict: 'review', scorable: false };
+    }
+    var ssStep3 = ssPrinciple === siAssessmentComparable(q.orderingPrinciple);
+    var ssMax = ssCompact ? 2 : ssOrderAns ? 4 : 3;
+    var ssRawScore = (ssCompact ? 0 : (ssStep1 ? 1 : 0) + (ssStep2 ? 1 : 0)) + (ssArrange ? 1 : 0) + (ssStep3 ? 1 : 0);
+    var ssScore = partialCredit ? ssRawScore : (ssRawScore === ssMax ? ssMax : 0);
+    var ssFrac = Math.round((ssScore / ssMax) * 100) / 100;
+    return { verdict: ssScore === ssMax ? 'correct' : (ssScore > 0 ? 'partial' : 'incorrect'), scorable: true, fraction: ssFrac };
+  }
+  if (type === 'relation-mismatch') {
+    if (!Number.isInteger(a.clickedPairIdx) || !siAssessmentComparable(a.partnerAnswer)) {
+      return { verdict: 'review', scorable: false };
+    }
+    var rmPairOk = a.clickedPairIdx === q.wrongPairIndex;
+    var rmPartnerOk = siAssessmentComparable(a.partnerAnswer) === siAssessmentComparable(q.correctPartnerForWrong);
+    var rmRaw = (rmPairOk ? 1 : 0) + (rmPartnerOk ? 1 : 0);
+    var rmScore = partialCredit ? rmRaw : (rmRaw === 2 ? 2 : 0);
+    return { verdict: rmScore === 2 ? 'correct' : (rmScore > 0 ? 'partial' : 'incorrect'), scorable: true, fraction: rmScore / 2 };
+  }
+  return { verdict: 'review', scorable: false };
+}
+
 function siAssessmentGrade(question, row, policy, submitted) {
-  var type = siNormQuizType(question && question.type || 'mcq');
+  var rawType = question && (question.itemType || question.type) || 'mcq';
+  var type = siNormQuizType(rawType);
   if (row.answer && row.answer.idk === true) return { verdict: 'skipped', scorable: false, fraction: null };
   var grader = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.QuizLiveAggregators;
-  var scorable = SI_ASSESSMENT_REVIEW_TYPES.indexOf(type) < 0 && !!grader && typeof grader.gradePresentationResponse === 'function'
-    && (typeof grader.presentationQuestionIsGameScorable !== 'function' || grader.presentationQuestionIsGameScorable(question) === true);
+  if (!grader || typeof grader.gradePresentationResponse !== 'function') {
+    return siPureObjectiveAssessmentGrade(question, row, policy, submitted);
+  }
+  var qForGrader = question;
+  if (question && siIsTfType(rawType)) {
+    var tfOpts = Array.isArray(question.options) && question.options.length ? question.options : ['True', 'False'];
+    var tfCorr = typeof question.correctAnswer === 'boolean' ? (question.correctAnswer ? 'True' : 'False') : question.correctAnswer;
+    qForGrader = Object.assign({}, question, { type: 'mcq', options: tfOpts, correctAnswer: tfCorr });
+  } else if (question && String(rawType).trim().toLowerCase() !== type && SI_ASSESSMENT_REVIEW_TYPES.indexOf(type) < 0) {
+    var mappedType = type === 'ordering' ? 'order' : type;
+    qForGrader = Object.assign({}, question, { type: mappedType });
+  }
+  var scorable = SI_ASSESSMENT_REVIEW_TYPES.indexOf(type) < 0
+    && (typeof grader.presentationQuestionIsGameScorable !== 'function' || grader.presentationQuestionIsGameScorable(qForGrader) === true);
   if (!row.answered) return row.hasResponse ? { verdict: 'incomplete', scorable: false, fraction: null } : { verdict: 'unanswered', scorable: submitted && scorable, fraction: submitted && scorable ? 0 : null };
   if (!scorable) return { verdict: 'review', scorable: false };
   var answer = siAssessmentAnswerForGrading(type, row);
   if (!answer) return { verdict: 'review', scorable: false };
   var grade = null;
-  try { grade = grader.gradePresentationResponse({ answer: answer }, question, policy); } catch (e) { grade = null; }
+  try { grade = grader.gradePresentationResponse({ answer: answer }, qForGrader, policy); } catch (e) { grade = null; }
   if (!grade || grade.evaluable !== true) return { verdict: 'review', scorable: false };
   var fraction = typeof grade.scoreFraction === 'number' && isFinite(grade.scoreFraction)
     ? Math.max(0, Math.min(1, grade.scoreFraction)) : grade.status === 'correct' ? 1 : 0;
@@ -2952,7 +3686,7 @@ function siCsvCell(s) {
   const raw = s == null ? '' : String(s);
   const trimmed = raw.replace(/[\r\n]+/g, ' ').trim();
   let v = trimmed;
-  if (typeof s !== 'number' && !/^-?\d+(?:\.\d+)?$/.test(trimmed) && (/^[=+\-@\t\r]/.test(raw) || /^[=+\-@\t\r]/.test(trimmed))) {
+  if (typeof s !== 'number' && !/^-?\d+(?:\.\d+)?$/.test(trimmed) && (/^[=+\-@\t\r|]/.test(raw) || /^[=+\-@\t\r|]/.test(trimmed))) {
     v = "'" + trimmed;
   }
   return /[",]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
@@ -2972,33 +3706,107 @@ function siBuildLmsGradebookCsv(entries, preset) {
       avg: scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : '',
     };
   };
-  const docTitles = Array.from(new Set(list.map(e => (e && e.docTitle ? String(e.docTitle).trim() : '')).filter(Boolean)));
+  const getStudentKey = (e) => {
+    if (!e || typeof e !== 'object') return '';
+    const ident = e.identity && typeof e.identity === 'object' ? e.identity : {};
+    const sid = String(ident.learnerId || e.learnerId || e.studentId || '').trim();
+    if (sid) return 'id:' + sid.toLowerCase();
+    const nick = String(e.nickname || e.studentName || '').trim().replace(/\s+/g, ' ').toLowerCase();
+    return nick ? 'nick:' + nick : '';
+  };
+  const getStudentDisplay = (e) => String((e && (e.nickname || e.studentName)) || '').trim();
+  const getClassName = (e) => String((e && e.className) || '').trim();
+  const getDocTitle = (e) => String((e && e.docTitle) || '').trim();
+  const getEntryTime = (e) => {
+    if (!e || typeof e !== 'object') return NaN;
+    const rawT = e.gradedAt || e.submittedAt || e.timestamp || '';
+    const parsed = rawT ? Date.parse(String(rawT)) : NaN;
+    return Number.isFinite(parsed) ? parsed : NaN;
+  };
+  const chosenByAttempt = new Map();
+  list.forEach((entry, idx) => {
+    const sk = getStudentKey(entry);
+    const dt = getDocTitle(entry);
+    if (!sk || !dt) return;
+    const attemptKey = sk + '\u0000' + getClassName(entry).toLowerCase() + '\u0000' + dt.toLowerCase();
+    const ts = getEntryTime(entry);
+    const prev = chosenByAttempt.get(attemptKey);
+    if (!prev) {
+      chosenByAttempt.set(attemptKey, { idx, ts });
+    } else {
+      const prevValid = Number.isFinite(prev.ts);
+      const curValid = Number.isFinite(ts);
+      const curWins = (curValid && prevValid) ? (ts >= prev.ts) : ((curValid && !prevValid) || (!curValid && !prevValid));
+      if (curWins) chosenByAttempt.set(attemptKey, { idx, ts });
+    }
+  });
+  const dedupedList = list.filter((entry, idx) => {
+    const sk = getStudentKey(entry);
+    const dt = getDocTitle(entry);
+    if (!sk || !dt) return true;
+    const attemptKey = sk + '\u0000' + getClassName(entry).toLowerCase() + '\u0000' + dt.toLowerCase();
+    const chosen = chosenByAttempt.get(attemptKey);
+    return chosen && chosen.idx === idx;
+  });
+  const docTitles = Array.from(new Set(dedupedList.map(getDocTitle).filter(Boolean)));
   let headers;
   const rows = [];
   if (mode === 'canvas') {
-    const assignHeader = (docTitles.length === 1 ? docTitles[0] : 'AlloFlow Gradebook Score') + ' (100)';
-    headers = ['Student', 'ID', 'SIS User ID', 'SIS Login ID', 'Section', assignHeader];
-    rows.push(headers.map(esc).join(','));
-    for (const entry of list) {
-      const { avg } = avgFor(entry);
-      rows.push([entry.nickname || '', '', entry.nickname || '', '', entry.className || '', avg].map(esc).join(','));
+    if (docTitles.length > 1) {
+      headers = ['Student', 'ID', 'SIS User ID', 'SIS Login ID', 'Section'].concat(docTitles.map(d => d + ' (100)'));
+      rows.push(headers.map(esc).join(','));
+      const studentBuckets = [];
+      const byStudentSection = new Map();
+      for (const entry of dedupedList) {
+        const sk = getStudentKey(entry);
+        const cn = getClassName(entry);
+        const bucketKey = sk ? (sk + '\u0000' + cn.toLowerCase()) : ('__anon_' + studentBuckets.length);
+        let bucket = byStudentSection.get(bucketKey);
+        if (!bucket) {
+          const disp = getStudentDisplay(entry);
+          const sid = String((entry.identity && entry.identity.learnerId) || entry.learnerId || entry.studentId || '').trim();
+          bucket = {
+            display: disp,
+            sisUserId: disp || sid,
+            section: cn,
+            scoresByDoc: Object.create(null),
+          };
+          byStudentSection.set(bucketKey, bucket);
+          studentBuckets.push(bucket);
+        }
+        const dt = getDocTitle(entry);
+        const { avg } = avgFor(entry);
+        if (dt && avg !== '') bucket.scoresByDoc[dt] = avg;
+      }
+      for (const b of studentBuckets) {
+        const scoreCols = docTitles.map(dt => Object.prototype.hasOwnProperty.call(b.scoresByDoc, dt) ? b.scoresByDoc[dt] : '');
+        rows.push([b.display, '', b.sisUserId, '', b.section].concat(scoreCols).map(esc).join(','));
+      }
+    } else {
+      const assignHeader = (docTitles.length === 1 ? docTitles[0] : 'AlloFlow Gradebook Score') + ' (100)';
+      headers = ['Student', 'ID', 'SIS User ID', 'SIS Login ID', 'Section', assignHeader];
+      rows.push(headers.map(esc).join(','));
+      for (const entry of dedupedList) {
+        const { avg } = avgFor(entry);
+        rows.push([getStudentDisplay(entry), '', getStudentDisplay(entry), '', entry.className || '', avg].map(esc).join(','));
+      }
     }
   } else if (mode === 'google-classroom') {
     headers = ['Student Name', 'Class', 'Assignment', 'Grade', 'Max Points', 'Submitted At', 'Graded At', 'Review State'];
     rows.push(headers.map(esc).join(','));
-    for (const entry of list) {
+    for (const entry of dedupedList) {
       const { avg } = avgFor(entry);
       rows.push([
-        entry.nickname || '', entry.className || '', entry.docTitle || '', avg, 100,
+        getStudentDisplay(entry), entry.className || '', entry.docTitle || '', avg, 100,
         entry.submittedAt || '', entry.gradedAt || '', (entry.review && entry.review.state) || 'legacy-unreviewed'
       ].map(esc).join(','));
     }
   } else if (mode === 'schoology') {
     headers = ['First Name', 'Last Name', 'Unique User ID', 'Section', 'Assignment', 'Score', 'Max Points', 'Review State'];
     rows.push(headers.map(esc).join(','));
-    for (const entry of list) {
+    for (const entry of dedupedList) {
       const { avg } = avgFor(entry);
-      const nick = String(entry.nickname || '').trim();
+      const nick = getStudentDisplay(entry);
       const parts = nick ? nick.split(/\s+/) : [''];
       const first = parts[0] || '';
       const last = parts.length > 1 ? parts.slice(1).join(' ') : '';
@@ -3009,18 +3817,27 @@ function siBuildLmsGradebookCsv(entries, preset) {
     }
   } else {
     const itemKeys = [];
-    list.forEach(entry => {
+    dedupedList.forEach(entry => {
       Object.keys((entry && entry.grades) || {}).forEach(k => {
         if (itemKeys.indexOf(k) < 0) itemKeys.push(k);
       });
     });
     headers = ['Nickname', 'Class', 'Document', 'SubmittedAt', 'GradedAt', 'AverageScore', 'ScoredCount', 'ExpectedCount', 'ReviewState'].concat(itemKeys.map(k => 'Item: ' + k));
     rows.push(headers.map(esc).join(','));
-    for (const entry of list) {
+    for (const entry of dedupedList) {
       const { gMap, scores, avg } = avgFor(entry);
-      const expectedCount = entry.review && typeof entry.review.expectedResponseCount === 'number' ? entry.review.expectedResponseCount : Object.keys(entry.responses || gMap).length;
+      const respSrc = entry.responses || gMap;
+      const expectedCount = entry.review && typeof entry.review.expectedResponseCount === 'number'
+        ? entry.review.expectedResponseCount
+        : Object.keys(respSrc).filter(k => {
+            if (Object.prototype.hasOwnProperty.call(gMap, k)) return true;
+            const rawResp = entry.responses && entry.responses[k];
+            const rt = rawResp && typeof rawResp === 'object' ? (rawResp.responseType || rawResp.type || '') : '';
+            const qt = rawResp && typeof rawResp === 'object' ? (rawResp.questionType || '') : '';
+            return !siIsSelfCheckResponse(k, rt, qt);
+          }).length;
       const baseCols = [
-        entry.nickname, entry.className, entry.docTitle, entry.submittedAt, entry.gradedAt,
+        getStudentDisplay(entry), entry.className, entry.docTitle, entry.submittedAt, entry.gradedAt,
         avg, scores.length, expectedCount, (entry.review && entry.review.state) || 'legacy-unreviewed'
       ];
       const itemCols = itemKeys.map(k => (gMap[k] && typeof gMap[k].score === 'number') ? gMap[k].score : '');
@@ -3357,14 +4174,18 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
       addToast && addToast(tr('Nothing to save yet — add a rubric or anchors first.'), 'warn');
       return;
     }
-    const key = name.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+    const key = String(name || '').normalize('NFC').toLowerCase().replace(/[^\p{L}\p{M}\p{N}]+/gu, '_').replace(/^_+|_+$/g, '') || ('preset_' + Date.now());
     const now = new Date().toISOString();
     const existing = rubricPresets[key];
     const preset = {
       name: name,
       rubric: globalRubric.rubric || '',
       context: globalRubric.context || '',
-      anchors: anchors.slice(),
+      anchors: anchors.map(a => {
+        const copy = Object.assign({}, a);
+        delete copy.fromSubmissionIdx;
+        return copy;
+      }),
       createdAt: existing ? existing.createdAt : now,
       lastUsed: now,
     };
@@ -3690,7 +4511,20 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
       if (row.status !== 'pending') continue;
       try {
         const payload = await SC.decryptSubmission(row.encryptedBlob, privateJwk);
-        setQueue(prev => prev.map((r, idx) => idx === i ? { ...r, payload, status: 'decrypted' } : r));
+        const innerNick = (payload && typeof payload === 'object')
+          ? siStableIdentityValue(payload.nickname || payload.studentName || payload.studentNickname || '')
+          : '';
+        const innerTitle = (payload && typeof payload === 'object' && typeof payload.docTitle === 'string')
+          ? payload.docTitle.trim()
+          : '';
+        setQueue(prev => prev.map((r, idx) => idx === i ? {
+          ...r,
+          nickname: innerNick || r.nickname,
+          docTitle: innerTitle || r.docTitle,
+          outerNicknameMismatch: Boolean(innerNick && r.nickname && r.nickname !== '?' && r.nickname !== innerNick),
+          payload,
+          status: 'decrypted'
+        } : r));
         ok++;
       } catch (err) {
         setQueue(prev => prev.map((r, idx) => idx === i ? { ...r, status: 'error', error: err.message } : r));
@@ -3744,7 +4578,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
   // Normalize a name for fuzzy comparison: lowercase, strip punctuation
   // + collapse internal whitespace. Handles capitalization, "Test Kid"
   // vs "TestKid", "test-kid", trailing whitespace, etc.
-  const _normalizeNickname = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const _normalizeNickname = (s) => String(s || '').normalize('NFKD').replace(/\p{M}+/gu, '').toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
   // Returns one of:
   //   { kind: 'exact', name }       — exact match in roster
   //   { kind: 'fuzzy', name }       — normalized match (e.g. "TestKid" ↔ "Test Kid")
@@ -3896,9 +4730,11 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
       setGrades(prev => {
         const rowGrades = { ...(prev[idx] || {}) };
         matchedAnchors.forEach(a => {
+          const anchorNum = Number(a.teacherScore);
+          const anchorStatus = anchorNum >= 85 ? 'correct' : (anchorNum >= 40 ? 'partially-correct' : 'incorrect');
           rowGrades[a.fromResponseKey] = {
             score: a.teacherScore,
-            status: 'correct',
+            status: anchorStatus,
             feedback: '📌 Teacher-anchored: ' + (a.teacherFeedback || tr('(no note)')),
             origin: 'teacher-anchor'
           };
@@ -4063,6 +4899,25 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
     }
     const anchorRow = queue[pendingAnchor.submissionIdx];
     const anchorPayload = anchorRow && anchorRow.payload && typeof anchorRow.payload === 'object' ? anchorRow.payload : {};
+    const anchorStatus = score >= 85 ? 'correct' : (score >= 40 ? 'partially-correct' : 'incorrect');
+    setGrades(previous => ({
+      ...previous,
+      [pendingAnchor.submissionIdx]: {
+        ...(previous[pendingAnchor.submissionIdx] || {}),
+        [pendingAnchor.responseKey]: {
+          score: score,
+          status: anchorStatus,
+          feedback: feedback || ('Teacher calibration anchor (' + score + '/100)'),
+          origin: 'teacher-anchor'
+        }
+      }
+    }));
+    setReviewedRows(previous => {
+      if (!previous[pendingAnchor.submissionIdx]) return previous;
+      const next = { ...previous };
+      delete next[pendingAnchor.submissionIdx];
+      return next;
+    });
     setAnchors(prev => [...prev, {
       studentResponse: pendingAnchor.responseText,
       teacherScore: score,
@@ -4085,16 +4940,30 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
   const removeAnchor = (i) => {
     setAnchors(prev => prev.filter((_, idx) => idx !== i));
   };
+  const unanchorEntry = (submissionIdx, responseKey, responseText) => {
+    setAnchors(prev => prev.filter(a => !anchorMatchesEntry(a, submissionIdx, responseKey, responseText)));
+    addToast && addToast(tr('Calibration anchor removed.'), 'info');
+  };
   const clearAnchors = () => {
     if (anchors.length === 0) return;
     setAnchors([]);
     addToast && addToast('Cleared ' + anchors.length + ' calibration anchor' + (anchors.length === 1 ? '' : 's') + '.', 'info');
   };
-  const isResponseAnchored = (submissionIdx, responseKey) => {
-    return anchors.some(a => a.fromSubmissionIdx === submissionIdx && a.fromResponseKey === responseKey);
+  const anchorMatchesEntry = (a, submissionIdx, responseKey, responseText) => {
+    if (!a || a.fromResponseKey !== responseKey) return false;
+    const sameResp = responseText === undefined || !a.studentResponse || String(a.studentResponse).trim() === String(responseText).trim();
+    if (a.fromSubmissionIdx === submissionIdx) return sameResp;
+    if (a.fromSubmissionIdx === undefined || a.fromSubmissionIdx === null) {
+      return responseText !== undefined && String(a.studentResponse || '').trim() !== ''
+        && String(a.studentResponse).trim() === String(responseText).trim();
+    }
+    return false;
   };
-  const getAnchorScore = (submissionIdx, responseKey) => {
-    const a = anchors.find(a2 => a2.fromSubmissionIdx === submissionIdx && a2.fromResponseKey === responseKey);
+  const isResponseAnchored = (submissionIdx, responseKey, responseText) => {
+    return anchors.some(a => anchorMatchesEntry(a, submissionIdx, responseKey, responseText));
+  };
+  const getAnchorScore = (submissionIdx, responseKey, responseText) => {
+    const a = anchors.find(a2 => anchorMatchesEntry(a2, submissionIdx, responseKey, responseText));
     return a ? a.teacherScore : null;
   };
   const isRowReviewCurrent = (idx) => {
@@ -4111,7 +4980,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
       const grade = item.grade;
       if (!grade || grade.status === 'error' || typeof grade.score !== 'number'
           || !Number.isFinite(grade.score) || grade.score < 0 || grade.score > 100) return false;
-      return !item.entry.requiresManualReview || grade.origin === 'teacher-edit';
+      return !item.entry.requiresManualReview || grade.origin === 'teacher-edit' || grade.origin === 'teacher-anchor';
     }).map(item => item.grade);
     return {
       total: entries.length,
@@ -4277,7 +5146,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
       addToast && addToast(tr('Grade or score at least one submission before creating a batch feedback packet.'), 'warn');
       return;
     }
-    const html = siBuildBatchFeedbackHtml(items, items[0].row.docTitle || items[0].row.payload.docTitle || 'Class Feedback Packet');
+    const html = siBuildBatchFeedbackHtml(items, items[0].row.docTitle || items[0].row.payload.docTitle || 'Class Feedback Packet', history);
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -4291,9 +5160,9 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
   const downloadStudentFeedbackSheet = (idx) => {
     const row = queue[idx];
     if (!row || !row.payload) return;
-    const html = siBuildStudentFeedbackHtml(row, grades[idx] || {}, rowGradeSummary(idx));
-    const safeDoc = String(row.docTitle || row.payload.docTitle || 'worksheet').replace(/[^A-Za-z0-9_-]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 60) || 'worksheet';
-    const safeNick = String(row.nickname || row.payload.nickname || 'student').replace(/[^A-Za-z0-9_-]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 40) || 'student';
+    const html = siBuildStudentFeedbackHtml(row, grades[idx] || {}, rowGradeSummary(idx), history);
+    const safeDoc = String(row.docTitle || row.payload.docTitle || 'worksheet').normalize('NFC').replace(/[^\p{L}\p{M}\p{N}_-]+/gu, '_').replace(/^_+|_+$/g, '').slice(0, 60) || 'worksheet';
+    const safeNick = String(row.nickname || row.payload.nickname || 'student').normalize('NFC').replace(/[^\p{L}\p{M}\p{N}_-]+/gu, '_').replace(/^_+|_+$/g, '').slice(0, 40) || 'student';
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -5784,7 +6653,9 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
               const groupOrder = [];
               queue.forEach((row, rowIdx) => {
                 if (!row || row.status !== 'decrypted' || !row.payload) return;
+                const seenKeys = new Set();
                 siResponseEntryModels(row.payload).forEach(entry => {
+                  seenKeys.add(entry.key);
                   if (!Object.prototype.hasOwnProperty.call(groupsMap, entry.key)) {
                     groupsMap[entry.key] = {
                       key: entry.key,
@@ -5797,6 +6668,61 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                   }
                   groupsMap[entry.key].items.push({ rowIdx, row, entry, grade: (grades[rowIdx] || {})[entry.key] });
                 });
+                const ev = typeof siWorkEvidence === 'function' ? siWorkEvidence(row.payload, history) : null;
+                if (ev) {
+                  (Array.isArray(ev.roleSwaps) ? ev.roleSwaps : []).forEach(rs => {
+                    if (!rs || !rs.key || seenKeys.has(rs.key)) return;
+                    seenKeys.add(rs.key);
+                    const rsEntry = {
+                      key: rs.key,
+                      rawText: rs.text || '',
+                      displayValue: rs.text || '',
+                      question: rs.title || tr('Role Swap'),
+                      partLabel: tr('Role Swap'),
+                      responseType: 'role-swap',
+                      answered: Boolean(String(rs.text || '').trim()),
+                      requiresManualReview: true,
+                      isSelfCheck: false
+                    };
+                    if (!Object.prototype.hasOwnProperty.call(groupsMap, rsEntry.key)) {
+                      groupsMap[rsEntry.key] = {
+                        key: rsEntry.key,
+                        question: rsEntry.question,
+                        partLabel: rsEntry.partLabel,
+                        responseType: rsEntry.responseType,
+                        items: []
+                      };
+                      groupOrder.push(groupsMap[rsEntry.key]);
+                    }
+                    groupsMap[rsEntry.key].items.push({ rowIdx, row, entry: rsEntry, grade: (grades[rowIdx] || {})[rsEntry.key] });
+                  });
+                  (Array.isArray(ev.stories) ? ev.stories : []).forEach(story => {
+                    if (!story || !story.key || seenKeys.has(story.key)) return;
+                    seenKeys.add(story.key);
+                    const storyEntry = {
+                      key: story.key,
+                      rawText: story.text || '',
+                      displayValue: story.text || '',
+                      question: story.title || tr('Student Story'),
+                      partLabel: tr('Student-written adventure'),
+                      responseType: 'student-story',
+                      answered: Boolean(String(story.text || '').trim()),
+                      requiresManualReview: true,
+                      isSelfCheck: false
+                    };
+                    if (!Object.prototype.hasOwnProperty.call(groupsMap, storyEntry.key)) {
+                      groupsMap[storyEntry.key] = {
+                        key: storyEntry.key,
+                        question: storyEntry.question,
+                        partLabel: storyEntry.partLabel,
+                        responseType: storyEntry.responseType,
+                        items: []
+                      };
+                      groupOrder.push(groupsMap[storyEntry.key]);
+                    }
+                    groupsMap[storyEntry.key].items.push({ rowIdx, row, entry: storyEntry, grade: (grades[rowIdx] || {})[storyEntry.key] });
+                  });
+                }
               });
               return /*#__PURE__*/React.createElement('div', { 'data-si-by-question-view': 'true', role: 'region', 'aria-label': tr('Responses grouped by question'), style: { display: 'flex', flexDirection: 'column', gap: 12 } },
                 groupOrder.length === 0
@@ -5811,7 +6737,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                       /*#__PURE__*/React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                         grp.items.map((item, sIdx) => {
                           const sc = item.grade ? scoreColor(item.grade.score) : null;
-                          const anchored = isResponseAnchored(item.rowIdx, grp.key);
+                          const anchored = isResponseAnchored(item.rowIdx, grp.key, item.entry.rawText);
                           return /*#__PURE__*/React.createElement('div', { key: sIdx, style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, padding: '8px 10px', borderRadius: 8, background: '#f8fafc', border: '1px solid #e2e8f0' } },
                             /*#__PURE__*/React.createElement('div', { style: { flex: 1, minWidth: 0 } },
                               /*#__PURE__*/React.createElement('div', { style: { fontWeight: 700, color: '#1e293b', fontSize: '0.8rem', marginBottom: 3 } }, item.row.nickname),
@@ -5829,11 +6755,24 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                                 onClick: () => openManualScoreForm(item.rowIdx, item.entry),
                                 style: { padding: '3px 9px', borderRadius: 999, background: '#e0f2fe', color: '#075985', border: '1px solid #7dd3fc', fontWeight: 700, fontSize: '0.72rem', cursor: 'pointer' }
                               }, item.grade ? tr('Edit score') : tr('Score')),
-                              !item.entry.requiresManualReview && !item.entry.isSelfCheck && item.entry.answered && !anchored && /*#__PURE__*/React.createElement('button', {
-                                type: 'button',
-                                onClick: () => openAnchorForm(item.rowIdx, grp.key, String(item.entry.rawText)),
-                                style: { padding: '3px 9px', borderRadius: 999, background: '#fffbeb', color: '#92400e', border: '1px solid #fcd34d', fontWeight: 600, fontSize: '0.72rem', cursor: 'pointer' }
-                              }, tr('📌 Anchor'))
+                              !item.entry.requiresManualReview && !item.entry.isSelfCheck && item.entry.answered && (anchored
+                                ? /*#__PURE__*/React.createElement(React.Fragment, null,
+                                    /*#__PURE__*/React.createElement('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 999, background: '#fde68a', color: '#92400e', fontWeight: 700, fontSize: '0.72rem', flexShrink: 0 } },
+                                      '📌 Anchor ' + getAnchorScore(item.rowIdx, grp.key, item.entry.rawText) + '/100'
+                                    ),
+                                    /*#__PURE__*/React.createElement('button', {
+                                      type: 'button',
+                                      'data-si-unanchor': 'true',
+                                      onClick: () => unanchorEntry(item.rowIdx, grp.key, String(item.entry.rawText)),
+                                      style: { padding: '2px 8px', background: 'white', color: '#92400e', border: '1px solid #fcd34d', borderRadius: 999, fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap' }
+                                    }, tr('Un-anchor'))
+                                  )
+                                : /*#__PURE__*/React.createElement('button', {
+                                    type: 'button',
+                                    onClick: () => openAnchorForm(item.rowIdx, grp.key, String(item.entry.rawText)),
+                                    style: { padding: '3px 9px', borderRadius: 999, background: '#fffbeb', color: '#92400e', border: '1px solid #fcd34d', fontWeight: 600, fontSize: '0.72rem', cursor: 'pointer' }
+                                  }, tr('📌 Anchor'))
+                              )
                             )
                           );
                         })
@@ -5979,8 +6918,8 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                                 const assessmentReport = siAssessmentReport(row.payload.responses && typeof row.payload.responses === 'object' ? row.payload.responses[k] : null, k, history, row.payload.content);
                                 const g = (grades[idx] || {})[k];
                                 const sc = g ? scoreColor(g.score) : null;
-                                const isAnchored = isResponseAnchored(idx, k);
-                                const anchorScore = getAnchorScore(idx, k);
+                                const isAnchored = isResponseAnchored(idx, k, v);
+                                const anchorScore = getAnchorScore(idx, k, v);
                                 return /*#__PURE__*/React.createElement('div', { key: i, style: { marginBottom: 8, padding: '6px 8px', borderRadius: 6, background: isAnchored ? '#fef3c7' : (g ? 'white' : 'transparent'), border: isAnchored ? '1.5px solid #f59e0b' : (g ? '1px solid #e2e8f0' : 'none') } },
                                   /*#__PURE__*/React.createElement('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: '0.85rem', marginBottom: g || isAnchored ? 4 : 0 } },
                                     /*#__PURE__*/React.createElement('div', { style: { flex: 1, minWidth: 0 } },
@@ -5996,7 +6935,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                                           ? String(entry.displayValue).slice(0, 12000)
                                           : /*#__PURE__*/React.createElement('em', { style: { color: '#9a3412', fontWeight: 700 } }, tr('No answer submitted'))
                                       ),
-                                      entry.answered && String(entry.displayValue) !== String(entry.rawText) && /*#__PURE__*/React.createElement('div', { style: { color: '#64748b', marginTop: 3, fontSize: '0.7rem', overflowWrap: 'anywhere' } },
+                                      !assessmentReport && entry.answered && String(entry.displayValue) !== String(entry.rawText) && /*#__PURE__*/React.createElement('div', { style: { color: '#64748b', marginTop: 3, fontSize: '0.7rem', overflowWrap: 'anywhere' } },
                                         tr('Stored value:') + ' ', /*#__PURE__*/React.createElement('code', null, String(entry.rawText).slice(0, 12000))
                                       ),
                                       /*#__PURE__*/React.createElement('details', { style: { marginTop: 4, color: '#64748b', fontSize: '0.7rem' } },
@@ -6013,10 +6952,18 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                                         onClick: () => openManualScoreForm(idx, entry),
                                         title: entry.requiresManualReview ? tr('Score this response yourself. It is not sent to the free-response AI grader.') : tr('Manually override or enter a teacher score for this response.'),
                                         style: { display: 'inline-flex', alignItems: 'center', padding: '3px 9px', borderRadius: 999, background: '#e0f2fe', color: '#075985', border: '1px solid #7dd3fc', fontWeight: 700, fontSize: '0.72rem', flexShrink: 0, whiteSpace: 'nowrap', cursor: 'pointer' }
-                                      }, g && g.origin === 'teacher-edit' ? tr('Edit score') : (entry.requiresManualReview ? tr('Score manually') : tr('Score'))),
+                                      }, g && (g.origin === 'teacher-edit' || g.origin === 'teacher-anchor') ? tr('Edit score') : (entry.requiresManualReview ? tr('Score manually') : tr('Score'))),
                                       !entry.requiresManualReview && !entry.isSelfCheck && entry.answered && (isAnchored
-                                        ? /*#__PURE__*/React.createElement('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 999, background: '#fde68a', color: '#92400e', fontWeight: 700, fontSize: '0.72rem', flexShrink: 0 } },
-                                            '📌 Anchor ' + anchorScore + '/100'
+                                        ? /*#__PURE__*/React.createElement(React.Fragment, null,
+                                            /*#__PURE__*/React.createElement('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 999, background: '#fde68a', color: '#92400e', fontWeight: 700, fontSize: '0.72rem', flexShrink: 0 } },
+                                              '📌 Anchor ' + anchorScore + '/100'
+                                            ),
+                                            /*#__PURE__*/React.createElement('button', {
+                                              type: 'button',
+                                              'data-si-unanchor': 'true',
+                                              onClick: () => unanchorEntry(idx, k, String(v)),
+                                              style: { padding: '2px 8px', background: 'white', color: '#92400e', border: '1px solid #fcd34d', borderRadius: 999, fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap' }
+                                            }, tr('Un-anchor'))
                                           )
                                         : /*#__PURE__*/React.createElement('button', {
                                             type: 'button',

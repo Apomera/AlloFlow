@@ -1306,7 +1306,8 @@ const _alloUseMailboxImageDelivery = ({
 const LiveAacBoardDialog = ({
   payload,
   onDismiss,
-  onSpeak
+  onSpeak,
+  t
 }) => {
   const portable = payload && payload.package;
   const pages = portable && Array.isArray(portable.pages) ? portable.pages : [];
@@ -1316,6 +1317,18 @@ const LiveAacBoardDialog = ({
   const [scanIndex, setScanIndex] = useState(0);
   const dialogRef = useRef(null);
   const openerRef = useRef(null);
+  const onDismissRef = useRef(onDismiss);
+  onDismissRef.current = onDismiss;
+  const langCtx = typeof React.useContext === 'function' && window.AlloLanguageContext ? React.useContext(window.AlloLanguageContext) : null;
+  const tFn = typeof t === 'function' ? t : langCtx && typeof langCtx.t === 'function' ? langCtx.t : null;
+  const tr = (k, fb) => {
+    try {
+      const v = tFn ? tFn(k, fb) : null;
+      return v && v !== k ? v : fb;
+    } catch (_) {
+      return fb;
+    }
+  };
   const safePageIndex = Math.max(0, Math.min(pageIndex, Math.max(0, pages.length - 1)));
   const page = pages[safePageIndex] || {
     title: 'AAC Board',
@@ -1377,22 +1390,40 @@ const LiveAacBoardDialog = ({
     setScanIndex(0);
   }, [safePageIndex]);
   useEffect(() => {
+    const dialog = dialogRef.current;
+    const stack = typeof window !== 'undefined' ? window.__alloFocusTrapStack = window.__alloFocusTrapStack || [] : null;
+    const trap = {
+      root: dialog
+    };
+    if (stack) stack.push(trap);
+    const isTopTrap = () => {
+      if (!stack || !stack.length) return true;
+      const top = stack[stack.length - 1];
+      return top === trap || Boolean(top && top.root && dialog && dialog.contains(top.root) && top.root === dialog);
+    };
+    const isEditableTarget = target => {
+      if (!target || !target.tagName) return false;
+      const tag = String(target.tagName).toUpperCase();
+      return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || Boolean(target.isContentEditable);
+    };
     const handleKey = event => {
+      if (event.defaultPrevented || event.isComposing || event.keyCode === 229 || !isTopTrap()) return;
+      const currentDialog = dialogRef.current;
       if (event.key === 'Tab') {
-        const focusable = dialogRef.current ? Array.from(dialogRef.current.querySelectorAll('button:not([disabled]), [href]')) : [];
+        const focusable = currentDialog ? Array.from(currentDialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')).filter(el => !el.disabled && !el.hidden && !el.closest('[inert]') && el.getAttribute('aria-hidden') !== 'true') : [];
         if (!focusable.length) {
           event.preventDefault();
           try {
-            dialogRef.current && dialogRef.current.focus();
+            currentDialog && currentDialog.focus();
           } catch (_) {}
           return;
         }
         const first = focusable[0];
         const last = focusable[focusable.length - 1];
-        if (event.shiftKey && (document.activeElement === first || !dialogRef.current.contains(document.activeElement))) {
+        if (event.shiftKey && (document.activeElement === first || document.activeElement === currentDialog || !currentDialog.contains(document.activeElement))) {
           event.preventDefault();
           last.focus();
-        } else if (!event.shiftKey && document.activeElement === last) {
+        } else if (!event.shiftKey && (document.activeElement === last || !currentDialog.contains(document.activeElement))) {
           event.preventDefault();
           first.focus();
         }
@@ -1400,9 +1431,11 @@ const LiveAacBoardDialog = ({
       }
       if (event.key === 'Escape') {
         event.preventDefault();
-        onDismiss();
+        event.stopPropagation();
+        if (typeof onDismissRef.current === 'function') onDismissRef.current();
         return;
       }
+      if (isEditableTarget(event.target)) return;
       if (event.key === 'Backspace') {
         event.preventDefault();
         setSentence(previous => previous.slice(0, -1));
@@ -1432,8 +1465,14 @@ const LiveAacBoardDialog = ({
       }
     };
     document.addEventListener('keydown', handleKey);
-    return () => document.removeEventListener('keydown', handleKey);
-  }, [activateCell, interactiveCells, scanIndex, scanning, pages.length, onDismiss]);
+    return () => {
+      document.removeEventListener('keydown', handleKey);
+      if (stack) {
+        const idx = stack.lastIndexOf(trap);
+        if (idx >= 0) stack.splice(idx, 1);
+      }
+    };
+  }, [activateCell, interactiveCells, scanIndex, scanning, pages.length]);
   const sentenceText = sentence.join(' ');
   const cellColors = {
     noun: '#fef9c3',
@@ -1444,7 +1483,7 @@ const LiveAacBoardDialog = ({
   return /*#__PURE__*/React.createElement("div", {
     role: "dialog",
     "aria-modal": "true",
-    "aria-label": "AAC Board from Teacher",
+    "aria-label": tr('live_aac.board_from_teacher', 'AAC Board from Teacher'),
     lang: locale,
     dir: direction,
     ref: dialogRef,
@@ -1495,12 +1534,14 @@ const LiveAacBoardDialog = ({
   }, "Shared by Teacher")), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: onDismiss,
-    "aria-label": "Close AAC Board",
+    "aria-label": tr('live_aac.close_board', 'Close AAC Board'),
     style: {
       border: 0,
       borderRadius: 10,
-      width: 36,
-      height: 36,
+      minWidth: 44,
+      minHeight: 44,
+      width: 44,
+      height: 44,
       cursor: 'pointer',
       fontSize: 18
     }
@@ -1510,7 +1551,7 @@ const LiveAacBoardDialog = ({
     }
   }, pages.length > 1 && /*#__PURE__*/React.createElement("div", {
     role: "group",
-    "aria-label": "AAC Board pages",
+    "aria-label": tr('live_aac.board_pages', 'AAC Board pages'),
     style: {
       display: 'flex',
       alignItems: 'center',
@@ -1521,11 +1562,21 @@ const LiveAacBoardDialog = ({
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => setPageIndex(current => Math.max(0, current - 1)),
-    disabled: safePageIndex === 0
+    disabled: safePageIndex === 0,
+    style: {
+      minHeight: 44,
+      minWidth: 44,
+      padding: '8px 12px'
+    }
   }, "Previous page"), /*#__PURE__*/React.createElement("strong", null, page.title, " (", safePageIndex + 1, " of ", pages.length, ")"), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => setPageIndex(current => Math.min(pages.length - 1, current + 1)),
-    disabled: safePageIndex === pages.length - 1
+    disabled: safePageIndex === pages.length - 1,
+    style: {
+      minHeight: 44,
+      minWidth: 44,
+      padding: '8px 12px'
+    }
   }, "Next page")), /*#__PURE__*/React.createElement("div", {
     role: "status",
     "aria-live": "polite",
@@ -1550,20 +1601,40 @@ const LiveAacBoardDialog = ({
     type: "button",
     onClick: () => speak(sentenceText),
     disabled: !sentenceText,
-    "aria-keyshortcuts": "Enter"
+    "aria-keyshortcuts": "Enter",
+    style: {
+      minHeight: 44,
+      minWidth: 44,
+      padding: '8px 12px'
+    }
   }, "Speak sentence"), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => setSentence(previous => previous.slice(0, -1)),
     disabled: !sentence.length,
-    "aria-keyshortcuts": "Backspace"
+    "aria-keyshortcuts": "Backspace",
+    style: {
+      minHeight: 44,
+      minWidth: 44,
+      padding: '8px 12px'
+    }
   }, "Undo"), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => setSentence([]),
-    disabled: !sentence.length
+    disabled: !sentence.length,
+    style: {
+      minHeight: 44,
+      minWidth: 44,
+      padding: '8px 12px'
+    }
   }, "Clear"), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-pressed": scanning,
-    onClick: () => setScanning(current => !current)
+    onClick: () => setScanning(current => !current),
+    style: {
+      minHeight: 44,
+      minWidth: 44,
+      padding: '8px 12px'
+    }
   }, scanning ? 'Stop scanning' : 'Start scanning')), /*#__PURE__*/React.createElement("div", {
     role: "grid",
     "aria-label": page.title || 'AAC Board symbols',

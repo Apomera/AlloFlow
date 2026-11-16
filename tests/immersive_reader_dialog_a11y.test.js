@@ -37,12 +37,13 @@ afterEach(() => {
 });
 
 describe('Immersive Reader modal dialog accessibility', () => {
-  it('names all three modal overlays and provides reduced-motion entry transitions', () => {
-    expect(source.match(/role="dialog"/g)).toHaveLength(3);
-    expect(source.match(/aria-modal="true"/g)).toHaveLength(3);
+  it('names all four modal overlays and provides reduced-motion entry transitions', () => {
+    expect(source.match(/role="dialog"/g)).toHaveLength(4);
+    expect(source.match(/aria-modal="true"/g)).toHaveLength(4);
     expect(source).toContain('aria-labelledby="focus-reader-dialog-title"');
     expect(source).toContain('aria-labelledby="perspective-crawl-dialog-title"');
     expect(source).toContain('aria-labelledby="karaoke-reader-dialog-title"');
+    expect(source).toContain('aria-labelledby="listening-place-title"');
     expect(source.match(/motion-reduce:animate-none/g)?.length).toBeGreaterThanOrEqual(2);
   });
 

@@ -13,7 +13,9 @@ describe('GitHub Pages promotion publication', () => {
             'tests/pages_publish_boundary.test.js', 'dev-tools/check_pages_publish.cjs',
             'app/index.html', 'lang/french.js', 'reading_library/books/alice/chapter1.json',
             'allopacks/media/water_cycle_grade6/wc-img-puddle-time.png',
-            'stem_lab/stem_tool_wave.js'
+            'stem_lab/stem_tool_wave.js',
+            'AlloFlowANTI.txt', 'cdn_lib.json', 'AGENT_HANDOFF.md',
+            'docs/sel_hub_unwired_content/README.md', 'translations/es.json'
         ]) expect(published(file), file).toBe(false);
         for (const file of [
             'index.html', 'tool-water-cycle.html', 'manual-water-cycle.html', 'guide/index.html',
@@ -22,7 +24,7 @@ describe('GitHub Pages promotion publication', () => {
             'allopacks/media/water_cycle_grade6/wc-img-puddle-time.webp', 'vendor/lucide.js',
             'packets.html', 'packets-make.html', 'packets-vocab.html', 'word_audio_kokoro_bank.json',
             'word_audio_shards/index.json', 'word_audio_shards/a-01.json',
-            'word_sounds_symbols/en-1.json', 'packets_vocab/en-1.json'
+            'word_sounds_symbols/en-1.json', 'packets_vocab/en-1.json', 'accessibility_brief.md'
         ]) expect(published(file), file).toBe(true);
     });
 

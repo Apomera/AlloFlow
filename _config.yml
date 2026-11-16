@@ -49,6 +49,19 @@
     "data/*",
     "word_audio_bank_part*.json",
     "duckdb-assets",
-    "Sample audiobank.txt"
+    "Sample audiobank.txt",
+    "AlloFlowANTI.txt",
+    "cdn_lib.json",
+    "explain_integrity_source_preview.js",
+    "AGENT_HANDOFF.md",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "translations",
+    "Instructions List",
+    "FLEET_2026-08-16",
+    "docs/sel_hub_unwired_content",
+    "docs/lesson-board-*",
+    "docs/connected-escape-room-*",
+    "docs/allopack-quality-*"
   ]
 }

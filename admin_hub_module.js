@@ -181,7 +181,7 @@ function AdminHubDriveBackup({ tt, addToast }) {
         type: "button",
         "data-help-key": "adminhub_drive_setup_open",
         onClick: () => setSetupOpen(true),
-        className: "text-[11px] font-bold text-indigo-700 underline underline-offset-2 hover:text-indigo-900"
+        className: "min-h-11 inline-flex items-center text-[11px] font-bold text-indigo-700 underline underline-offset-2 hover:text-indigo-900"
       },
       tt("adminhub.drive_setup_open", "Set up automatic Drive backup (school Google account)"),
       /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, " →")
@@ -193,7 +193,7 @@ function AdminHubDriveBackup({ tt, addToast }) {
         value: urlInput,
         onChange: (e) => setUrlInput(e.target.value),
         placeholder: tt("adminhub.drive_url_placeholder", "Web app URL ending in /exec"),
-        className: "min-h-10 w-full rounded-lg border border-slate-300 bg-white px-2 text-xs"
+        className: "min-h-11 w-full rounded-lg border border-slate-300 bg-white px-2 text-xs"
       }
     )), /* @__PURE__ */ React.createElement("div", { className: "w-full sm:w-40" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "adminhub-drive-token", className: "block text-[11px] font-bold text-slate-700 mb-0.5" }, tt("adminhub.drive_token_label", "Backup token")), /* @__PURE__ */ React.createElement(
       "input",
@@ -203,7 +203,7 @@ function AdminHubDriveBackup({ tt, addToast }) {
         value: tokenInput,
         onChange: (e) => setTokenInput(e.target.value),
         placeholder: tt("adminhub.drive_token_placeholder", "From setup()"),
-        className: "min-h-10 w-full rounded-lg border border-slate-300 bg-white px-2 text-xs"
+        className: "min-h-11 w-full rounded-lg border border-slate-300 bg-white px-2 text-xs"
       }
     )), /* @__PURE__ */ React.createElement(
       "button",
@@ -230,7 +230,7 @@ function AdminHubDriveBackup({ tt, addToast }) {
             setBusy(false);
           }
         },
-        className: "min-h-10 px-3 rounded-lg border border-indigo-300 bg-white text-xs font-bold text-indigo-800 hover:bg-indigo-50 disabled:opacity-50"
+        className: "min-h-11 px-3 rounded-lg border border-indigo-300 bg-white text-xs font-bold text-indigo-800 hover:bg-indigo-50 disabled:opacity-50"
       },
       busy ? tt("adminhub.drive_connecting", "Connecting…") : tt("adminhub.drive_connect", "Connect & test")
     ))));
@@ -249,7 +249,7 @@ function AdminHubDriveBackup({ tt, addToast }) {
           setBusy(false);
         }
       },
-      className: "min-h-10 px-3 rounded-lg border border-emerald-300 bg-white text-[11px] font-bold text-emerald-800 hover:bg-emerald-50 disabled:opacity-50"
+      className: "min-h-11 px-3 rounded-lg border border-emerald-300 bg-white text-[11px] font-bold text-emerald-800 hover:bg-emerald-50 disabled:opacity-50"
     },
     busy ? tt("adminhub.drive_saving", "Saving…") : tt("adminhub.drive_save_now", "Back up to Drive now")
   ), /* @__PURE__ */ React.createElement(
@@ -315,25 +315,77 @@ function AdminHubPanel(props) {
     }
   }, [addToast, onClose, onOpenSchoolRewards, openTool, tt]);
   const dialogRef = React.useRef(null);
+  const onCloseRef = React.useRef(onClose);
+  onCloseRef.current = onClose;
   React.useEffect(() => {
     const dialog = dialogRef.current;
-    if (!dialog) return void 0;
+    if (!dialog || typeof document === "undefined") return void 0;
     const previousFocus = document.activeElement;
     const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
     const trap = { root: dialog };
     trapStack.push(trap);
     const isTopTrap = () => trapStack[trapStack.length - 1] === trap;
+    const isolated = [];
+    const seenSiblings = /* @__PURE__ */ new Set();
+    let cursor = dialog;
+    while (cursor && cursor.parentElement) {
+      const parent = cursor.parentElement;
+      Array.from(parent.children).forEach((sibling) => {
+        if (!sibling || sibling === cursor || seenSiblings.has(sibling) || !sibling.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName)) return;
+        seenSiblings.add(sibling);
+        isolated.push({
+          sibling,
+          hadInert: sibling.hasAttribute("inert"),
+          prevInert: sibling.inert,
+          ariaHidden: sibling.getAttribute("aria-hidden")
+        });
+        try {
+          sibling.inert = true;
+        } catch (_) {
+        }
+        try {
+          sibling.setAttribute("inert", "");
+        } catch (_) {
+        }
+        try {
+          sibling.setAttribute("aria-hidden", "true");
+        } catch (_) {
+        }
+      });
+      if (parent === document.body) break;
+      cursor = parent;
+    }
+    const body = document.body;
+    const scrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: "" });
+    let scrollLocked = false;
+    try {
+      if (body) {
+        scrollLocked = true;
+        if (++scrollLock.count === 1) {
+          scrollLock.prev = body.style.overflow;
+          body.style.overflow = "hidden";
+        }
+      }
+    } catch (_) {
+    }
     const getFocusable = () => Array.from(dialog.querySelectorAll(
-      'button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])'
-    )).filter((el) => !el.closest('[hidden], [inert], [aria-hidden="true"]'));
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])'
+    )).filter((el) => {
+      if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      const closedDetails = el.closest("details:not([open])");
+      if (closedDetails && !(el.tagName === "SUMMARY" && el.parentElement === closedDetails)) return false;
+      const st = typeof window !== "undefined" && typeof window.getComputedStyle === "function" ? window.getComputedStyle(el) : null;
+      return !st || st.display !== "none" && st.visibility !== "hidden";
+    });
     const first = getFocusable()[0];
-    (first || dialog).focus();
+    if (!dialog.contains(document.activeElement)) (first || dialog).focus();
     const onKeyDown = (event) => {
-      if (!isTopTrap()) return;
+      if (event.defaultPrevented || !dialog.isConnected || !isTopTrap()) return;
+      if (event.nativeEvent && event.nativeEvent.isComposing || event.isComposing || event.keyCode === 229) return;
       if (event.key === "Escape") {
         event.preventDefault();
         event.stopPropagation();
-        onClose();
+        if (typeof onCloseRef.current === "function") onCloseRef.current();
         return;
       }
       if (event.key !== "Tab") return;
@@ -344,7 +396,7 @@ function AdminHubPanel(props) {
         return;
       }
       const firstItem = focusable[0], lastItem = focusable[focusable.length - 1];
-      if (!dialog.contains(document.activeElement)) {
+      if (!dialog.contains(document.activeElement) || document.activeElement === dialog) {
         event.preventDefault();
         (event.shiftKey ? lastItem : firstItem).focus();
       } else if (event.shiftKey && document.activeElement === firstItem) {
@@ -358,12 +410,48 @@ function AdminHubPanel(props) {
     document.addEventListener("keydown", onKeyDown);
     return () => {
       document.removeEventListener("keydown", onKeyDown);
+      try {
+        if (scrollLocked && body) {
+          scrollLock.count = Math.max(0, scrollLock.count - 1);
+          if (scrollLock.count === 0) body.style.overflow = scrollLock.prev;
+        }
+      } catch (_) {
+      }
+      isolated.forEach(({ sibling, hadInert, prevInert, ariaHidden }) => {
+        if (!sibling || !sibling.isConnected) return;
+        if (!hadInert) {
+          try {
+            sibling.inert = false;
+          } catch (_) {
+          }
+          try {
+            sibling.removeAttribute("inert");
+          } catch (_) {
+          }
+        } else {
+          try {
+            sibling.inert = Boolean(prevInert);
+          } catch (_) {
+          }
+        }
+        if (ariaHidden == null) {
+          try {
+            sibling.removeAttribute("aria-hidden");
+          } catch (_) {
+          }
+        } else {
+          try {
+            sibling.setAttribute("aria-hidden", ariaHidden);
+          } catch (_) {
+          }
+        }
+      });
       const wasTop = isTopTrap();
-      const idx = trapStack.indexOf(trap);
+      const idx = trapStack.lastIndexOf(trap);
       if (idx !== -1) trapStack.splice(idx, 1);
-      if (wasTop && previousFocus && previousFocus !== document.body && previousFocus.isConnected && typeof previousFocus.focus === "function") previousFocus.focus();
+      if (wasTop && previousFocus && previousFocus !== document.body && previousFocus !== document.documentElement && previousFocus.isConnected && typeof previousFocus.focus === "function") previousFocus.focus();
     };
-  }, [onClose]);
+  }, []);
   const TOOLS = [
     {
       id: "mtss",
@@ -526,7 +614,7 @@ function AdminHubPanel(props) {
           addToast(tt("adminhub.backup_failed", "Backup failed: ") + String(err && err.message || err), "error");
         }
       },
-      className: "min-h-10 px-3 rounded-lg border border-indigo-300 bg-white text-xs font-bold text-indigo-800 hover:bg-indigo-50"
+      className: "min-h-11 px-3 rounded-lg border border-indigo-300 bg-white text-xs font-bold text-indigo-800 hover:bg-indigo-50"
     },
     tt("adminhub.backup_export", "Download backup")
   ), /* @__PURE__ */ React.createElement(
@@ -588,7 +676,7 @@ function AdminHubPanel(props) {
         };
         input.click();
       },
-      className: "min-h-10 px-3 rounded-lg border border-slate-300 bg-white text-xs font-bold text-slate-700 hover:bg-slate-100"
+      className: "min-h-11 px-3 rounded-lg border border-slate-300 bg-white text-xs font-bold text-slate-700 hover:bg-slate-100"
     },
     tt("adminhub.backup_restore", "Restore from backup")
   ))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-800 mt-2" }, tt("adminhub.backup_caveat", "The file contains whatever the tools store — codes, notes, and settings. Treat it like the confidential records it may describe, and delete old copies per your retention policy.")), /* @__PURE__ */ React.createElement(AdminHubDriveBackup, { tt, addToast })), /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-[11px] text-slate-500 border-t border-slate-200 pt-3" }, tt("adminhub.covenant", "How this suite handles information: analysis tools use aggregate counts or de-identified codes. Everything you enter stays in your signed-in profile on this device and is never uploaded, protected by your device sign-in rather than by separate encryption. Connecting a district portal adds shared, authenticated records staff can see and acknowledge. Apply your district’s retention rules, and keep a backup so a lost device is not a lost year. Human review stays in control—never an automated verdict about a teacher or student.")), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[11px]" }, /* @__PURE__ */ React.createElement(

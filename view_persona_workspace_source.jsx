@@ -34,6 +34,16 @@ function PersonaWorkspaceView({
     const value = t('persona.workspace.' + key, params);
     return value && value !== 'persona.workspace.' + key ? value : fallback;
   };
+  const getEditorFocusables = (dialog) => {
+    if (!dialog || typeof dialog.querySelectorAll !== 'function') return [];
+    return Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])')).filter((el) => {
+      if (el.disabled || el.hidden || el.getAttribute('aria-hidden') === 'true') return false;
+      if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      const closedDetails = el.closest('details:not([open])');
+      if (closedDetails && !(el.tagName === 'SUMMARY' && el.parentElement === closedDetails)) return false;
+      return true;
+    });
+  };
   return (
 <ErrorBoundary fallbackMessage={t('persona.error_boundary_fallback')}>
                     <div className="h-full min-h-0 min-w-0 flex flex-col relative" data-help-key="persona_panel" aria-busy={isProcessing || isGeneratingPersona}>
@@ -61,7 +71,7 @@ function PersonaWorkspaceView({
                                         if (isProcessing || isGeneratingPersona) return;
                                         setPersonaState(prev => ({ ...prev, mode: 'single', selectedCharacters: [] }));
                                     }}
-                                    className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${personaState.mode === 'single' ? 'bg-white text-yellow-900 shadow-sm ring-1 ring-yellow-200' : 'text-yellow-700 hover:bg-yellow-100'}`}
+                                    className={`min-h-11 px-3 py-1.5 rounded-md text-xs font-bold transition-all motion-reduce:transition-none ${personaState.mode === 'single' ? 'bg-white text-yellow-900 shadow-sm ring-1 ring-yellow-200' : 'text-yellow-700 hover:bg-yellow-100'}`}
                                 >
                                     {t('persona.mode_single')}
                                 </button>
@@ -73,15 +83,15 @@ function PersonaWorkspaceView({
                                         if (isProcessing || isGeneratingPersona) return;
                                         setPersonaState(prev => ({ ...prev, mode: 'panel' }));
                                     }}
-                                    className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${personaState.mode === 'panel' ? 'bg-white text-yellow-900 shadow-sm ring-1 ring-yellow-200' : 'text-yellow-700 hover:bg-yellow-100'}`}
+                                    className={`min-h-11 px-3 py-1.5 rounded-md text-xs font-bold transition-all motion-reduce:transition-none ${personaState.mode === 'panel' ? 'bg-white text-yellow-900 shadow-sm ring-1 ring-yellow-200' : 'text-yellow-700 hover:bg-yellow-100'}`}
                                 >
                                     {t('persona.mode_panel')}
                                 </button>
                             </div>
                             {isTeacherMode && (
-                                <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white/80 px-2 py-1 text-[11px] font-bold text-slate-700">
+                                <label className="min-h-11 flex items-center gap-2 rounded-lg border border-slate-200 bg-white/80 px-2 py-1 text-[11px] font-bold text-slate-700">
                                     <span>{t('persona.resume_retention')}</span>
-                                    <select aria-label={t('persona.resume_retention')} disabled={isProcessing || isGeneratingPersona} defaultValue={(() => { try { return String(normalizePersonaResumeDays(localStorage.getItem('allo_persona_resume_days'))); } catch (_) { return '14'; } })()} onChange={async (e) => { try { const retentionDays = normalizePersonaResumeDays(e.target.value); localStorage.setItem('allo_persona_resume_days', String(retentionDays)); if (retentionDays === 0 && !(await clearPersonaResumeSnapshots())) throw new Error('clear failed'); addToast(t('persona.retention_updated'), 'success'); } catch (_) { addToast(t('persona.retention_update_failed'), 'error'); } }} className="rounded border border-slate-300 bg-white px-1.5 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-60">
+                                    <select aria-label={t('persona.resume_retention')} disabled={isProcessing || isGeneratingPersona} defaultValue={(() => { try { return String(normalizePersonaResumeDays(localStorage.getItem('allo_persona_resume_days'))); } catch (_) { return '14'; } })()} onChange={async (e) => { try { const retentionDays = normalizePersonaResumeDays(e.target.value); localStorage.setItem('allo_persona_resume_days', String(retentionDays)); if (retentionDays === 0 && !(await clearPersonaResumeSnapshots())) throw new Error('clear failed'); addToast(t('persona.retention_updated'), 'success'); } catch (_) { addToast(t('persona.retention_update_failed'), 'error'); } }} className="min-h-11 rounded border border-slate-300 bg-white px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-60">
                                         <option value="0">{t('persona.retention_off')}</option>
                                         <option value="7">7 {t('persona.days')}</option>
                                         <option value="14">14 {t('persona.days')}</option>
@@ -102,7 +112,7 @@ function PersonaWorkspaceView({
                             const disclosureCount = grounding.links.length + grounding.queries.length + (sourceBinding ? 1 : 0);
                             return (
                                 <details className="mx-3 mb-2 max-h-40 shrink-0 overflow-auto rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs text-slate-700">
-                                    <summary className="cursor-pointer font-bold text-sky-900">
+                                    <summary className="min-h-11 flex items-center cursor-pointer font-bold text-sky-900">
                                         {t('persona.verified_sources') || 'Sources and search context'} ({disclosureCount})
                                     </summary>
                                     {sourceBinding && (
@@ -182,7 +192,7 @@ function PersonaWorkspaceView({
                                                 {persona.year}
                                             </span>
                                             {isTeacherMode && (
-                                                <button type="button" disabled={isProcessing || isGeneratingPersona} className="min-h-[32px] rounded-md border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-[11px] font-bold text-indigo-700 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50" onClick={(e) => {
+                                                <button type="button" disabled={isProcessing || isGeneratingPersona} className="min-h-11 rounded-md border border-indigo-200 bg-indigo-50 px-3 py-1 text-[11px] font-bold text-indigo-700 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50" onClick={(e) => {
                                                     e.stopPropagation();
                                                     if (isProcessing || isGeneratingPersona) return;
                                                     openPersonaTeacherEditor(persona, idx);
@@ -214,7 +224,7 @@ function PersonaWorkspaceView({
                                                 handleTogglePanelSelection(persona);
                                             }
                                         }}
-                                        className={`w-full py-3 border-2 rounded-xl font-bold text-sm transition-all motion-reduce:transition-none shadow-sm relative z-10 flex items-center justify-center gap-2 group/btn focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2
+                                        className={`min-h-11 w-full py-3 border-2 rounded-xl font-bold text-sm transition-all motion-reduce:transition-none shadow-sm relative z-10 flex items-center justify-center gap-2 group/btn focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2
                                         ${personaState.mode === 'single'
                                             ? 'bg-white border-indigo-100 text-indigo-700 hover:bg-indigo-600 hover:text-white hover:border-indigo-600'
                                             : isSelectedInPanel
@@ -245,7 +255,7 @@ function PersonaWorkspaceView({
                                 <button type="button"
                                     onClick={handleStartPanelChat}
                                     disabled={personaState.selectedCharacters.length !== 2 || isProcessing || isGeneratingPersona} aria-busy={isProcessing || isGeneratingPersona}
-                                    className="bg-purple-600 text-white px-5 py-3 rounded-xl font-bold text-sm shadow-sm hover:bg-purple-700 transition-all motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 active:scale-95 shrink-0"
+                                    className="min-h-11 bg-purple-600 text-white px-5 py-3 rounded-xl font-bold text-sm shadow-sm hover:bg-purple-700 transition-all motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 active:scale-95 shrink-0"
                                 >
                                     {(isProcessing || isGeneratingPersona) ? <RefreshCw className="animate-spin motion-reduce:animate-none"/> : <Users size={24}/>}
                                     {t('persona.start_panel')}
@@ -264,13 +274,16 @@ function PersonaWorkspaceView({
                                     aria-labelledby="persona-teacher-editor-title"
                                     tabIndex={-1}
                                     onKeyDown={(event) => {
+                                        if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229) return;
+                                        if (event.defaultPrevented) return;
                                         if (event.key === 'Escape') {
+                                            event.preventDefault();
                                             if (typeof event.stopPropagation === 'function') event.stopPropagation();
                                             setPersonaTeacherEditor(null);
                                             return;
                                         }
-                                        if (event.key === 'Tab' && event.currentTarget && typeof event.currentTarget.querySelectorAll === 'function') {
-                                            const focusables = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+                                        if (event.key === 'Tab' && event.currentTarget) {
+                                            const focusables = getEditorFocusables(event.currentTarget);
                                             if (focusables.length > 0) {
                                                 const first = focusables[0];
                                                 const last = focusables[focusables.length - 1];
@@ -299,7 +312,7 @@ function PersonaWorkspaceView({
                                             autoFocus
                                             aria-label={t('common.close')}
                                             onClick={() => setPersonaTeacherEditor(null)}
-                                            className="rounded-lg border border-slate-200 px-3 py-1.5 text-lg font-bold text-slate-600 hover:bg-slate-100"
+                                            className="min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg border border-slate-200 px-3 py-2 text-lg font-bold text-slate-600 hover:bg-slate-100"
                                         >×</button>
                                     </div>
                                     <div className="space-y-5 p-5">
@@ -310,7 +323,7 @@ function PersonaWorkspaceView({
                                                     value={personaTeacherEditor.role}
                                                     maxLength={200}
                                                     onChange={(event) => updatePersonaTeacherEditor({ role: event.target.value })}
-                                                    className="w-full rounded-lg border border-slate-300 px-3 py-2 font-normal text-slate-900"
+                                                    className="min-h-11 w-full rounded-lg border border-slate-300 px-3 py-2 font-normal text-slate-900"
                                                 />
                                             </label>
                                             <label className="space-y-1 text-sm font-bold text-slate-700">
@@ -319,7 +332,7 @@ function PersonaWorkspaceView({
                                                     value={personaTeacherEditor.voice}
                                                     onChange={(event) => updatePersonaTeacherEditor({ voice: event.target.value })}
                                                     disabled={getPersonaVoiceOptions().length === 0}
-                                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 font-normal text-slate-900 disabled:bg-slate-100"
+                                                    className="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 font-normal text-slate-900 disabled:bg-slate-100"
                                                 >
                                                     {getPersonaVoiceOptions().length === 0
                                                         ? <option value={personaTeacherEditor.voice}>{personaTeacherEditor.voice || t('persona.no_voice_available') || 'Use the default voice'}</option>
@@ -360,7 +373,7 @@ function PersonaWorkspaceView({
                                                             onChange={(event) => updatePersonaTeacherEditor({
                                                                 quests: personaTeacherEditor.quests.map((item, index) => index === questIndex ? { ...item, text: event.target.value } : item)
                                                             })}
-                                                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 font-normal text-slate-900"
+                                                            className="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 font-normal text-slate-900"
                                                         />
                                                     </label>
                                                     <label className="space-y-1 text-xs font-bold text-slate-700">
@@ -383,7 +396,7 @@ function PersonaWorkspaceView({
                                                                     quests: personaTeacherEditor.quests.map((item, index) => index === questIndex ? { ...item, difficulty: clamped } : item)
                                                                 });
                                                             }}
-                                                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 font-normal text-slate-900"
+                                                            className="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 font-normal text-slate-900"
                                                         />
                                                     </label>
                                                     <button
@@ -391,7 +404,7 @@ function PersonaWorkspaceView({
                                                         onClick={() => updatePersonaTeacherEditor({
                                                             quests: personaTeacherEditor.quests.filter((_, index) => index !== questIndex)
                                                         })}
-                                                        className="rounded-lg border border-red-200 bg-white px-3 py-2 text-xs font-bold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                                                        className="min-h-11 rounded-lg border border-red-200 bg-white px-3 py-2 text-xs font-bold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
                                                     >
                                                         {t('persona.remove_quest') || 'Remove'}
                                                     </button>
@@ -411,17 +424,17 @@ function PersonaWorkspaceView({
                                                         }]
                                                     });
                                                 }}
-                                                className="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-50"
+                                                className="min-h-11 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-50"
                                             >
                                                 + {t('persona.add_quest') || 'Add quest'}
                                             </button>
                                         </fieldset>
                                     </div>
                                     <div className="sticky bottom-0 flex justify-end gap-2 border-t border-slate-200 bg-white px-5 py-4">
-                                        <button type="button" onClick={() => setPersonaTeacherEditor(null)} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100">
+                                        <button type="button" onClick={() => setPersonaTeacherEditor(null)} className="min-h-11 rounded-lg border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100">
                                             {t('common.cancel')}
                                         </button>
-                                        <button type="button" onClick={savePersonaTeacherEditor} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700">
+                                        <button type="button" onClick={savePersonaTeacherEditor} className="min-h-11 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700">
                                             {t('persona.save_changes') || t('common.save')}
                                         </button>
                                     </div>

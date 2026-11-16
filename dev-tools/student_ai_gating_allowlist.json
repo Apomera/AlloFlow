@@ -224,13 +224,6 @@
       "reason": "Library call-guard (rejects). [2026-11-04 line 1630]"
     },
     {
-      "file": "concept_pictionary_module.js",
-      "rule": "typeof-ai-gate",
-      "snippet": "const visionFeedbackAvailable = props.visionFeedbackAvailable === true && typeof callGeminiVision === \"function\";",
-      "class": "fine",
-      "reason": "Also requires props.visionFeedbackAvailable === true from the host. [2026-11-04 line 1684]"
-    },
-    {
       "file": "content_engine_module.js",
       "rule": "typeof-ai-gate",
       "snippet": "var _currentCallGemini = function() { return (typeof window !== 'undefined' && typeof window.callGemini === 'function') ? window.callGemini : _depsCallGemini; };",
@@ -350,13 +343,6 @@
       "snippet": "sRefineItemImage=async(itemId,instructionOverride=null)=>{if(!itemId||typeof __d.callGeminiImageEdit!=='function')return;const items=__d.generatedContent&&__d.generatedContent.data&&_",
       "class": "fine",
       "reason": "Teacher-only call sites: concept-sort image regenerate/refine/auto-strip live in the editor branch (view_concept_sort: !isTeacherMode || isIndependentMode shows the learner start screen); poll suggestion is the organizer header path with a toast fallback. [2026-11-04 GAPS lane]"
-    },
-    {
-      "file": "lesson_board_module.js",
-      "rule": "typeof-ai-gate",
-      "snippet": "if (typeof callGemini !== \"function\") throw Error(tr(t, \"provider_needed\", \"Connect an AI provider to create a new board. You can still open saved boards or board files.\"));",
-      "class": "fine",
-      "reason": "Board authoring call-guards that throw a provider-needed error (teacher board creation/images). [2026-11-04 line 9044]"
     },
     {
       "file": "lesson_board_module.js",
@@ -537,13 +523,6 @@
       "reason": "Grader library call-guard returning an error status; QuizView mount passes null under studentAiFeaturesHidden. [2026-11-04 line 167]"
     },
     {
-      "file": "research_hub_module.js",
-      "rule": "typeof-ai-gate",
-      "snippet": "if (!aiText && typeof onCallGemini !== \"function\") {",
-      "class": "fine",
-      "reason": "Prop fn from the ResearchHub host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 3379]"
-    },
-    {
       "file": "safety_checker_module.js",
       "rule": "raw-gemini-fetch",
       "snippet": "var endpoint = 'https://generativelanguage.googleapis.com/v1beta';",
@@ -556,13 +535,6 @@
       "snippet": "var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + safetyModel + ':generateContent';",
       "class": "fine",
       "reason": "aiCheck returns before the raw fetch unless __alloAiUsable(\"text\", window.callGemini) (old-host fallback: blocked tag + __alloStudentAiDisabled) and authenticates via x-goog-api-key header; regex layer still runs. [2026-11-14 Pass 6]"
-    },
-    {
-      "file": "seating_chart_module.js",
-      "rule": "typeof-ai-gate",
-      "snippet": "if (uiLang === \"English\" || typeof window === \"undefined\" || typeof window.callGemini !== \"function\") return void 0;",
-      "class": "fine",
-      "reason": "Background UI translation guard in a teacher tool; fails closed. [2026-11-04 line 747]"
     },
     {
       "file": "stem_lab/stem_lab_module.js",
@@ -633,27 +605,6 @@
       "snippet": "const rawUrl = backend === 'gemini' ? 'https://generativelanguage.googleapis.com' : descriptor.backend === backend ? descriptor.baseUrl : config.backe",
       "class": "fine",
       "reason": "Backend-settings URL label for credential destination; not a fetch. [2026-11-04 line 2130]"
-    },
-    {
-      "file": "udl_chat_module.js",
-      "rule": "typeof-ai-gate",
-      "snippet": "if (typeof deps.callGemini !== 'function') return fallback;",
-      "class": "fine",
-      "reason": "Library call-guard returning a failure/fallback; host decides who gets options.callGemini/deps.callGemini. [2026-11-04 line 2604]"
-    },
-    {
-      "file": "udl_chat_module.js",
-      "rule": "typeof-ai-gate",
-      "snippet": "if (typeof options.callGemini !== 'function') return fail('An approved AI connection is needed to discuss the proposal.');",
-      "class": "fine",
-      "reason": "Library call-guard returning a failure/fallback; host decides who gets options.callGemini/deps.callGemini. [2026-11-04 line 2020]"
-    },
-    {
-      "file": "udl_chat_module.js",
-      "rule": "typeof-ai-gate",
-      "snippet": "if (typeof options.callGemini !== 'function') return fail('An approved AI connection is needed to prepare a revision.');",
-      "class": "fine",
-      "reason": "Library call-guard returning a failure/fallback; host decides who gets options.callGemini/deps.callGemini. [2026-11-04 line 1926]"
     },
     {
       "file": "utils_pure_module.js",
@@ -745,13 +696,6 @@
       "snippet": "if (typeof callGemini !== 'function' || feedbackPending(key)) return null;",
       "class": "fine",
       "reason": "Prop fn from the DbqView host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 487]"
-    },
-    {
-      "file": "view_guided_mode_banner_module.js",
-      "rule": "typeof-ai-gate",
-      "snippet": "}, t(\"guided.phase_checkpoint_review\") || \"Review latest resource\"), typeof callGemini === \"function\" && /* @__PURE__ */ React.createElement(\"button\", { type: \"button\", di",
-      "class": "fine",
-      "reason": "Guided-mode quick guide (teacher planning banner). [2026-11-04 line 2702]"
     },
     {
       "file": "view_image_module.js",
@@ -885,27 +829,6 @@
       "snippet": "if (typeof callImagen !== \"function\") return Promise.resolve();",
       "class": "fine",
       "reason": "Local callImagen is nulled unless runtimeAiAllowed && wsAiUsable(\"images\", providedCallImagen), so these typeof checks are truthful. [2026-11-04 GAPS lane]"
-    },
-    {
-      "file": "word_sounds_setup_module.js",
-      "rule": "typeof-ai-gate",
-      "snippet": "const aiAvailable = typeof window !== \"undefined\" && typeof window.callGeminiAudio === \"function\";",
-      "class": "fine",
-      "reason": "Word Sounds setup/pack builder (teacher). [2026-11-04 line 2278]"
-    },
-    {
-      "file": "word_sounds_setup_module.js",
-      "rule": "typeof-ai-gate",
-      "snippet": "if (includeAacImages && typeof callImagen === \"function\") {",
-      "class": "fine",
-      "reason": "Word Sounds setup/pack builder (teacher). [2026-11-04 line 5973]"
-    },
-    {
-      "file": "word_sounds_setup_module.js",
-      "rule": "typeof-ai-gate",
-      "snippet": "if (typeof callImagen === \"function\") {",
-      "class": "fine",
-      "reason": "Word Sounds setup/pack builder (teacher). [2026-11-04 line 5905]"
     }
   ]
 }

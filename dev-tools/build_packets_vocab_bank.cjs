@@ -40,12 +40,12 @@ const CURATION = path.join(ROOT, 'data/packets_vocab_curation_en.json');
 const INDEX_FILE = path.join(ROOT, 'packets_vocab_bank_en.js');
 const SHARD_DIR = path.join(ROOT, 'packets_vocab');
 const SHARD_URL = 'packets_vocab/en-';
-const SHARD_LIMIT = 900 * 1024;
+const SHARD_LIMIT = 990 * 1024;
 const BANK_VERSION = 1;
 const MAX_HEADWORDS = 10000;
 // all shards together, uncompressed. Unit, NAWL and built-in Word Sounds words are always kept; the other
 // common words are added while the bank stays within this.
-const SIZE_BUDGET = +(process.env.VOCAB_BUDGET || 1536 * 1024);
+const SIZE_BUDGET = +(process.env.VOCAB_BUDGET || 1640 * 1024);
 const N_DISTRACTORS = 10, N_DISTRACTORS_UNCHECKED = 8, N_BLANKS = 10;
 
 const sha256 = (s) => crypto.createHash('sha256').update(s).digest('hex');

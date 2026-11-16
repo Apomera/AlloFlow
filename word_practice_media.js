@@ -309,6 +309,7 @@
     return 'data:audio/wav;base64,' + bytesToBase64(bytes);
   }
   async function buildPptx(input, rawOptions = {}, sequence, context = {}) {
+    const pictureSlidesOnly = !!(rawOptions && rawOptions.pictureSlidesOnly);
     const core = getCore(), pack = core.normalizeInput(input), options = core.normalizeOptions({ ...pack.options, ...rawOptions });
     const appearance = core.cardAppearance(options, context.readerSettings);
     const cardType = { italic: appearance.fontStyle === 'italic', bold: appearance.fontWeight === 700 };
@@ -877,7 +878,21 @@
         const modeNames = { popup: 'Word Fluency Pop-Up', blend: 'Sound & Blend', vocabulary: 'Word Meaning', spelling: 'Listen & Spell', sentence: 'Finish the Sentence' };
         const footer = [localized('card_progress', 'Card {n} of {total}', { n: index + 1, total: cards.length }), localized('mode_' + options.mode, modeNames[options.mode])];
         const answerFooter = () => [...footer, localized('pptx_answer', 'Answer')];
-        if (options.mode === 'sentence') {
+        if (pictureSlidesOnly) {
+          const pictureAudio = options.includeAudio && (item.wordAudio || (item.phonemes.length && item.phonemes.every(sound => sound.audio)));
+          const picSlide = addPictureSlide(item, footer, null, !!pictureAudio);
+          if (picSlide) {
+            await addAudio(picSlide, item, footer);
+          } else {
+            const slide = slideBase(footer);
+            mainWord(slide, item.word, card, item, true);
+            if (item.definition) {
+              const defBox = { x: 1.0, y: 5.05, w: 11.3, h: 1.15, margin: 0.05 };
+              slide.addText(item.definition, { ...defBox, fontFace: appearance.fontFace, ...cardType, fontSize: fittedFont(item.definition, defBox, 22 * meaningScale), color: appearance.muted, align: 'center', valign: 'top', ...textLanguage(itemLanguage(item, 'definition')) });
+            }
+            await addAudio(slide, item, footer);
+          }
+        } else if (options.mode === 'sentence') {
           if (!item.sentenceActivity) throw new Error(L('pptx_sentence_missing', 'A prepared sentence activity is missing.'));
           const activity = item.sentenceActivity;
           const choiceText = activity.choices.map((choice, n) => String.fromCharCode(65 + n) + '. ' + choice).join('\n');
@@ -972,6 +987,9 @@
           if (caption) await addInstruction(slide, caption, footer);
           await addAudio(slide, item, footer);
         }
+        if (!pictureSlidesOnly && options.includePictures && options.pictureSlides === true && options.mode !== 'vocabulary' && item.picture) {
+          addPictureSlide(item, footer, null, false);
+        }
         await addAnnotationSlides(item, footer);
         if (typeof context.onProgress === 'function') context.onProgress({ completed: index + 1, total: cards.length });
         if ((index + 1) % 10 === 0) { await new Promise(resolve => setTimeout(resolve, 0)); checkAbort(context); }
@@ -1042,5 +1060,658 @@
       return pack.items.some(item => convertible(item.wordAudio) || (item.phonemes || []).some(sound => convertible(sound.audio)));
     } catch (_) { return false; }
   }
-  root.AlloWordPracticeMedia = { prepareAudio, buildPptx, everyDeviceAudio, needsEveryDeviceAudio };
+  async function buildPictureSlidesPptx(input, rawOptions = {}, context = {}) {
+    const core = getCore(), pack = core.normalizeInput(input);
+    const opts = core.normalizeOptions({ ...pack.options, ...rawOptions, repetitions: rawOptions.repetitions ?? 1, shuffle: rawOptions.shuffle === true, includePictures: true });
+    const sequence = Array.isArray(context.sequence) ? context.sequence : core.createSequence(pack, { ...opts, mode: 'vocabulary' });
+    return buildPptx(pack, { ...opts, pictureSlidesOnly: true }, sequence, context);
+  }
+  function escHtml(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+  function safeHtmlImg(source) {
+    const raw = source && typeof source === 'object' ? (source.src || source.dataUri || '') : source;
+    const s = String(raw || '').trim();
+    if (!/^data:image\/(png|jpeg|jpg|gif|webp|svg\+xml)[;,]/i.test(s)) return '';
+    if (/svg\+xml/i.test(s)) {
+      let decoded = s;
+      const comma = s.indexOf(',');
+      if (comma > -1) {
+        const body = s.slice(comma + 1);
+        if (/;base64/i.test(s.slice(0, comma))) {
+          try { decoded = atob(body); } catch (_) { return ''; }
+        } else {
+          try { decoded = decodeURIComponent(body); } catch (_) { decoded = body; }
+        }
+      }
+      if (/<script|<foreignObject|\bon[a-z]+\s*=|javascript:/i.test(decoded)) return '';
+    }
+    return s;
+  }
+  function rawPictureLookup(input) {
+    const core = getCore();
+    const list = Array.isArray(input && input.items) ? input.items : (Array.isArray(input && input.words) ? input.words : []);
+    const byId = new Map(), byWord = new Map();
+    list.forEach(entry => {
+      if (!entry || typeof entry !== 'object') return;
+      const src = safeHtmlImg(entry.image) || safeHtmlImg(entry.picture);
+      if (!src) return;
+      const alt = (entry.picture && entry.picture.alt) || entry.imageAlt || entry.word || '';
+      const credit = (entry.picture && (entry.picture.credit || entry.picture.attribution)) || entry.imageCredit || entry.credit || entry.attribution || '';
+      const info = { src, alt: String(alt || '').trim(), credit: String(credit || '').trim() };
+      if (entry.id) byId.set(String(entry.id), info);
+      const k = core.key(entry.word);
+      if (k && !byWord.has(k)) byWord.set(k, info);
+    });
+    return { byId, byWord };
+  }
+  function printableBoxes(item) {
+    const list = Array.isArray(item && item.phonemes) && item.phonemes.length
+      ? item.phonemes
+      : (typeof (item && item.word) === 'string' ? item.word.trim().split('') : []);
+    return list.map(p => {
+      if (typeof p === 'string') return p.trim();
+      if (p && typeof p === 'object') return String(p.label || p.grapheme || p.soundKey || p.phoneme || p.sound || p.text || '').trim();
+      return '';
+    }).filter(Boolean);
+  }
+  function blankedSentence(example, word) {
+    const ex = String(example || '').trim(), w = String(word || '').trim();
+    if (!ex || !w) return ex;
+    const escaped = w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return ex.replace(new RegExp('\\b' + escaped + '\\b', 'gi'), '_______');
+  }
+  function printableCardsData(input, rawOptions = {}, fallbackTitle = 'Word Cards') {
+    const core = getCore(), pack = core.normalizeInput(input);
+    const opts = core.normalizeOptions({ ...pack.options, ...rawOptions });
+    const rawPics = rawPictureLookup(input);
+    const showPics = opts.includePictures !== false;
+    const items = (pack.items || []).map(item => {
+      const normalizedSrc = safeHtmlImg(item.picture);
+      const rawHit = rawPics.byId.get(String(item.id || '')) || rawPics.byWord.get(core.key(item.word));
+      const imgSrc = showPics ? (normalizedSrc || (rawHit ? rawHit.src : '')) : '';
+      const imgAlt = (item.picture && item.picture.alt) || (rawHit && rawHit.alt) || item.word;
+      const imgCredit = (item.picture && (item.picture.credit || item.picture.attribution)) || (rawHit && rawHit.credit) || '';
+      return {
+        word: item.word,
+        boxes: printableBoxes(item),
+        definition: item.definition || '',
+        example: item.example || item.contextSentence || '',
+        imgSrc,
+        imgAlt,
+        imgCredit: String(imgCredit || '').trim(),
+      };
+    });
+    const title = String((pack && pack.title) || (input && input.title) || fallbackTitle).trim() || fallbackTitle;
+    return { title, items };
+  }
+  function buildFlashcardsHtml(input, rawOptions = {}) {
+    const data = printableCardsData(input, rawOptions, 'Word Flashcards');
+    const rows = data.items.map(it => {
+      const boxes = it.boxes.map(b => '<span class="elkonin-box">' + escHtml(b) + '</span>').join('');
+      const picHtml = it.imgSrc ? '<img class="card-pic" src="' + escHtml(it.imgSrc) + '" alt="' + escHtml(it.imgAlt || it.word) + '">' : '';
+      const defHtml = it.definition ? '<p class="def"><strong>Meaning:</strong> ' + escHtml(it.definition) + '</p>' : '';
+      const blanked = blankedSentence(it.example, it.word);
+      const exHtml = blanked ? '<p class="ex"><strong>Sentence:</strong> ' + escHtml(blanked) + '</p>' : '';
+      return '<article class="fc-row">'
+        + '<div class="fc-side fc-front"><div class="side-tag">Front</div><div class="word">' + escHtml(it.word) + '</div><div class="elkonin">' + boxes + '</div></div>'
+        + '<div class="fc-side fc-back"><div class="side-tag">Back</div>' + picHtml + '<div class="back-text">' + defHtml + exHtml + '</div></div>'
+        + '</article>';
+    }).join('\n');
+    return [
+      '<!doctype html>',
+      '<html lang="en">',
+      '<head>',
+      '<meta charset="utf-8">',
+      '<meta name="viewport" content="width=device-width,initial-scale=1">',
+      '<title>' + escHtml(data.title) + ' — 2-Sided Flashcards</title>',
+      '<style>',
+      'body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;margin:20px;max-width:980px}',
+      'h1{font-size:20px;margin:0 0 6px}',
+      '.directions{font-size:13px;color:#334155;margin:0 0 14px}',
+      '.fc-row{display:grid;grid-template-columns:1fr 1fr;gap:0;border:2px solid #0f172a;margin-bottom:14px;page-break-inside:avoid;break-inside:avoid}',
+      '.fc-side{padding:14px;min-height:140px;box-sizing:border-box}',
+      '.fc-front{border-right:2px dashed #475569;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}',
+      '.fc-back{display:flex;gap:12px;align-items:center}',
+      '.side-tag{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#64748b;margin-bottom:6px}',
+      '.word{font-size:28px;font-weight:800;margin-bottom:10px}',
+      '.elkonin{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}',
+      '.elkonin-box{border:2px solid #334155;min-width:28px;height:30px;padding:0 6px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;border-radius:4px}',
+      '.card-pic{width:76px;height:76px;object-fit:contain;border:1px solid #cbd5e1;border-radius:6px;background:#fff;flex-shrink:0}',
+      '.back-text p{margin:0 0 6px;font-size:14px;line-height:1.4}',
+      '@media print{body{margin:10mm} .noprint{display:none}}',
+      '</style>',
+      '</head>',
+      '<body>',
+      '<h1>' + escHtml(data.title) + ' — Cut-and-Fold Flashcards</h1>',
+      '<p class="directions">Cut across each card row, fold along the dashed line, and tape or glue the front and back together.</p>',
+      rows,
+      '</body>',
+      '</html>',
+    ].join('\n');
+  }
+  function buildFrayerHtml(input, rawOptions = {}) {
+    const data = printableCardsData(input, rawOptions, 'Frayer Study Sheets');
+    const cards = data.items.map(it => {
+      const boxes = it.boxes.map(b => '<span class="elkonin-box">' + escHtml(b) + '</span>').join('');
+      const picBlock = it.imgSrc
+        ? '<img class="card-pic" src="' + escHtml(it.imgSrc) + '" alt="' + escHtml(it.imgAlt || it.word) + '">'
+        : '<div class="sketch-space">Draw a quick sketch here</div>';
+      return '<section class="frayer-card">'
+        + '<header class="frayer-head"><h2 class="frayer-word">' + escHtml(it.word) + '</h2><div class="elkonin">' + boxes + '</div></header>'
+        + '<div class="frayer-grid">'
+        + '<div class="frayer-box"><h3>Meaning</h3><p>' + escHtml(it.definition || 'Write a meaning in your own words.') + '</p></div>'
+        + '<div class="frayer-box"><h3>Picture or sketch</h3>' + picBlock + '</div>'
+        + '<div class="frayer-box"><h3>Example sentence</h3><p>' + escHtml(it.example || '') + '</p></div>'
+        + '<div class="frayer-box"><h3>Write your own sentence</h3><div class="write-lines"><div></div><div></div></div></div>'
+        + '</div></section>';
+    }).join('\n');
+    return [
+      '<!doctype html>',
+      '<html lang="en">',
+      '<head>',
+      '<meta charset="utf-8">',
+      '<meta name="viewport" content="width=device-width,initial-scale=1">',
+      '<title>' + escHtml(data.title) + ' — Frayer Study Sheets</title>',
+      '<style>',
+      'body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;margin:20px;max-width:960px}',
+      'h1{font-size:20px;margin:0 0 12px}',
+      '.frayer-card{border:2px solid #0f172a;border-radius:8px;padding:12px;margin-bottom:18px;page-break-inside:avoid;break-inside:avoid}',
+      '.frayer-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;border-bottom:2px solid #0f172a;padding-bottom:8px;margin-bottom:10px}',
+      '.frayer-word{margin:0;font-size:24px;font-weight:800}',
+      '.elkonin{display:flex;flex-wrap:wrap;gap:6px}',
+      '.elkonin-box{border:2px solid #334155;min-width:26px;height:28px;padding:0 5px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;border-radius:4px}',
+      '.frayer-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}',
+      '.frayer-box{border:1px solid #475569;border-radius:6px;padding:10px;min-height:96px}',
+      '.frayer-box h3{margin:0 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:#334155}',
+      '.frayer-box p{margin:0;font-size:14px;line-height:1.4}',
+      '.card-pic{max-width:86px;max-height:86px;object-fit:contain;display:block}',
+      '.sketch-space{height:64px;border:1px dashed #94a3b8;border-radius:4px;display:grid;place-items:center;font-size:12px;color:#64748b}',
+      '.write-lines div{border-bottom:1px solid #94a3b8;height:26px}',
+      '@media print{body{margin:10mm} .frayer-card{page-break-inside:avoid;break-inside:avoid}}',
+      '</style>',
+      '</head>',
+      '<body>',
+      '<h1>' + escHtml(data.title) + ' — Frayer Study Sheets</h1>',
+      cards,
+      '</body>',
+      '</html>',
+    ].join('\n');
+  }
+  function sortingOrder(count, salt) {
+    const out = [];
+    for (let i = 0; i < count; i++) out.push(i);
+    if (count < 2) return out;
+    let seed = (salt >>> 0) || 1;
+    for (let i = count - 1; i > 0; i--) {
+      seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+      const j = seed % (i + 1);
+      const tmp = out[i];
+      out[i] = out[j];
+      out[j] = tmp;
+    }
+    if (out[0] === 0 && count > 1) {
+      const swap = out[0];
+      out[0] = out[1];
+      out[1] = swap;
+    }
+    return out;
+  }
+  function buildSortingCardsHtml(input, rawOptions = {}) {
+    const data = printableCardsData(input, rawOptions, 'Word Sorting Cards');
+    const items = data.items || [];
+    const wordTiles = items.map(it => {
+      const boxes = it.boxes.map(b => '<span class="elkonin-box">' + escHtml(b) + '</span>').join('');
+      return '<article class="sort-tile sort-word">'
+        + '<div class="tile-tag">Word</div>'
+        + '<div class="sort-word-text">' + escHtml(it.word) + '</div>'
+        + '<div class="elkonin">' + boxes + '</div>'
+        + '</article>';
+    }).join('\n');
+    const meaningOrder = sortingOrder(items.length, 37);
+    const meaningTiles = meaningOrder.map(idx => {
+      const it = items[idx];
+      const defBlank = blankedSentence(it.definition, it.word);
+      const exBlank = blankedSentence(it.example, it.word);
+      const defHtml = defBlank
+        ? '<p class="sort-def"><strong>Meaning:</strong> ' + escHtml(defBlank) + '</p>'
+        : '<p class="sort-def"><strong>Word clue:</strong> ' + escHtml(it.boxes.length + ' sounds') + '</p>';
+      const exHtml = exBlank ? '<p class="sort-ex"><strong>Sentence:</strong> ' + escHtml(exBlank) + '</p>' : '';
+      return '<article class="sort-tile sort-meaning">'
+        + '<div class="tile-tag">Meaning</div>'
+        + defHtml
+        + exHtml
+        + '</article>';
+    }).join('\n');
+    const picEntries = [];
+    sortingOrder(items.length, 91).forEach(idx => {
+      const it = items[idx];
+      if (!it.imgSrc) return;
+      picEntries.push('<article class="sort-tile sort-picture">'
+        + '<div class="tile-tag">Picture</div>'
+        + '<img class="sort-pic" src="' + escHtml(it.imgSrc) + '" alt="Sorting picture card">'
+        + '</article>');
+    });
+    const pictureSection = picEntries.length
+      ? '<section class="sort-group"><h2>Picture cards (unlabeled)</h2><div class="sort-grid sort-grid-pics">' + picEntries.join('\n') + '</div></section>'
+      : '';
+    const keyRows = items.map((it, idx) => {
+      const picInfo = it.imgSrc
+        ? ('Yes' + (it.imgCredit ? ' (' + escHtml(it.imgCredit) + ')' : ''))
+        : 'None attached';
+      return '<tr>'
+        + '<td>' + (idx + 1) + '</td>'
+        + '<td><strong>' + escHtml(it.word) + '</strong></td>'
+        + '<td>' + escHtml(it.definition || '') + (it.example ? '<br><em>' + escHtml(it.example) + '</em>' : '') + '</td>'
+        + '<td>' + picInfo + '</td>'
+        + '</tr>';
+    }).join('\n');
+    return [
+      '<!doctype html>',
+      '<html lang="en">',
+      '<head>',
+      '<meta charset="utf-8">',
+      '<meta name="viewport" content="width=device-width,initial-scale=1">',
+      '<title>' + escHtml(data.title) + ' — Cut-Out Sorting Cards</title>',
+      '<style>',
+      'body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;margin:20px;max-width:980px}',
+      'h1{font-size:20px;margin:0 0 6px}',
+      'h2{font-size:15px;margin:14px 0 8px;color:#1e293b}',
+      '.directions{font-size:13px;color:#334155;margin:0 0 12px}',
+      '.sort-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}',
+      '.sort-tile{border:2px dashed #334155;border-radius:8px;padding:12px;min-height:92px;box-sizing:border-box;background:#fff;page-break-inside:avoid;break-inside:avoid}',
+      '.tile-tag{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#64748b;margin-bottom:6px}',
+      '.sort-word{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}',
+      '.sort-word-text{font-size:24px;font-weight:800;margin-bottom:8px}',
+      '.elkonin{display:flex;flex-wrap:wrap;gap:5px;justify-content:center}',
+      '.elkonin-box{border:2px solid #334155;min-width:24px;height:26px;padding:0 5px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;border-radius:4px}',
+      '.sort-meaning p{margin:0 0 6px;font-size:13px;line-height:1.4}',
+      '.sort-picture{display:flex;flex-direction:column;align-items:center;justify-content:center}',
+      '.sort-pic{width:92px;height:92px;object-fit:contain;display:block}',
+      '.teacher-key{margin-top:24px;padding-top:14px;border-top:2px solid #0f172a;page-break-before:always;break-before:page}',
+      '.key-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}',
+      '.key-table th,.key-table td{border:1px solid #cbd5e1;padding:6px 8px;text-align:left;vertical-align:top}',
+      '.key-table th{background:#f1f5f9}',
+      '.attr-note{font-size:12px;color:#475569;margin-top:10px}',
+      '@media print{body{margin:10mm} .noprint{display:none} .sort-tile{page-break-inside:avoid;break-inside:avoid} .teacher-key{page-break-before:always;break-before:page}}',
+      '</style>',
+      '</head>',
+      '<body>',
+      '<h1>' + escHtml(data.title) + ' — Cut-Out Sorting Cards</h1>',
+      '<p class="directions">Cut along the dashed lines and mix the piles. Match each word card with its meaning card' + (picEntries.length ? ' and picture card' : '') + '.</p>',
+      '<section class="sort-group"><h2>Word cards</h2><div class="sort-grid">' + wordTiles + '</div></section>',
+      '<section class="sort-group"><h2>Meaning cards (target word blanked)</h2><div class="sort-grid">' + meaningTiles + '</div></section>',
+      pictureSection,
+      '<section class="teacher-key">',
+      '<h2>Teacher Answer &amp; Attribution Key</h2>',
+      '<table class="key-table"><thead><tr><th>#</th><th>Word</th><th>Meaning &amp; Example</th><th>Picture</th></tr></thead><tbody>',
+      keyRows,
+      '</tbody></table>',
+      '<p class="attr-note">Built-in picture artwork may use Mulberry Symbols or OpenMoji under CC BY-SA 4.0 unless a custom credit is shown above.</p>',
+      '</section>',
+      '</body>',
+      '</html>',
+    ].join('\n');
+  }
+  function buildWorksheetHtml(input, rawOptions = {}) {
+    const data = printableCardsData(input, rawOptions, 'Vocabulary Study Worksheet');
+    const items = data.items || [];
+    const bankOrder = sortingOrder(items.length, 53);
+    const bankChips = bankOrder.map(idx => {
+      const it = items[idx];
+      const boxes = it.boxes.map(b => '<span class="elkonin-box">' + escHtml(b) + '</span>').join('');
+      return '<span class="bank-chip"><span class="bank-word">' + escHtml(it.word) + '</span>' + (boxes ? '<span class="elkonin">' + boxes + '</span>' : '') + '</span>';
+    }).join('\n');
+    const matchOrder = sortingOrder(items.length, 79);
+    const matchRows = matchOrder.map((idx, pos) => {
+      const it = items[idx];
+      const defBlank = blankedSentence(it.definition, it.word);
+      const picHtml = it.imgSrc
+        ? '<img class="ws-pic" src="' + escHtml(it.imgSrc) + '" alt="Worksheet clue picture">'
+        : '';
+      return '<li class="ws-match-item">'
+        + '<span class="ws-num">' + (pos + 1) + '.</span>'
+        + '<span class="ws-blank">______________</span>'
+        + '<span class="ws-def">' + escHtml(defBlank || ('Matches sound pattern: ' + it.boxes.join(' / '))) + '</span>'
+        + picHtml
+        + '</li>';
+    }).join('\n');
+    const clozeOrder = sortingOrder(items.length, 107);
+    const clozeRows = clozeOrder.map((idx, pos) => {
+      const it = items[idx];
+      const exBlank = blankedSentence(it.example, it.word);
+      const lineText = exBlank
+        ? escHtml(exBlank)
+        : 'Write a sentence using one word from the Word Bank: ______________________________';
+      return '<li class="ws-cloze-item"><span class="ws-num">' + (pos + 1) + '.</span><span>' + lineText + '</span></li>';
+    }).join('\n');
+    const matchKeyRows = matchOrder.map((idx, pos) => {
+      const it = items[idx];
+      return '<tr><td>' + (pos + 1) + '</td><td><strong>' + escHtml(it.word) + '</strong></td><td>' + escHtml(it.definition || '') + '</td><td>' + (it.imgSrc ? (it.imgCredit ? escHtml(it.imgCredit) : 'Included') : 'None') + '</td></tr>';
+    }).join('\n');
+    const clozeKeyRows = clozeOrder.map((idx, pos) => {
+      const it = items[idx];
+      return '<li><strong>' + (pos + 1) + '. ' + escHtml(it.word) + '</strong>' + (it.example ? ' — ' + escHtml(it.example) : ' — (Student sentence)') + '</li>';
+    }).join('\n');
+    return [
+      '<!doctype html>',
+      '<html lang="en">',
+      '<head>',
+      '<meta charset="utf-8">',
+      '<meta name="viewport" content="width=device-width,initial-scale=1">',
+      '<title>' + escHtml(data.title) + ' — Cloze and Matching Worksheet</title>',
+      '<style>',
+      'body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;margin:20px;max-width:960px}',
+      'h1{font-size:20px;margin:0 0 8px}',
+      'h2{font-size:15px;margin:16px 0 8px;color:#1e293b}',
+      '.ws-meta{display:flex;flex-wrap:wrap;gap:20px;font-size:14px;border-bottom:2px solid #0f172a;padding-bottom:8px;margin-bottom:12px}',
+      '.ws-word-bank{border:2px solid #334155;border-radius:8px;padding:10px 12px;background:#f8fafc;margin-bottom:14px}',
+      '.bank-list{display:flex;flex-wrap:wrap;gap:8px}',
+      '.bank-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid #475569;border-radius:6px;padding:4px 8px;background:#fff}',
+      '.bank-word{font-weight:700;font-size:15px}',
+      '.elkonin{display:inline-flex;gap:3px}',
+      '.elkonin-box{border:1px solid #64748b;min-width:16px;height:18px;padding:0 3px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border-radius:3px}',
+      '.ws-matching ol,.ws-cloze ol{margin:0;padding-left:0;list-style:none}',
+      '.ws-match-item,.ws-cloze-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #e2e8f0;font-size:14px;line-height:1.45;page-break-inside:avoid;break-inside:avoid}',
+      '.ws-num{font-weight:700;min-width:22px}',
+      '.ws-blank{font-weight:700;color:#334155;white-space:nowrap}',
+      '.ws-def{flex:1}',
+      '.ws-pic{width:54px;height:54px;object-fit:contain;border:1px solid #cbd5e1;border-radius:4px;background:#fff;flex-shrink:0}',
+      '.teacher-key{margin-top:24px;padding-top:14px;border-top:2px solid #0f172a;page-break-before:always;break-before:page}',
+      '.key-table{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0 12px}',
+      '.key-table th,.key-table td{border:1px solid #cbd5e1;padding:6px 8px;text-align:left;vertical-align:top}',
+      '.key-table th{background:#f1f5f9}',
+      '.key-cloze{margin:6px 0 0 18px;font-size:13px;line-height:1.5}',
+      '.attr-note{font-size:12px;color:#475569;margin-top:10px}',
+      '@media print{body{margin:10mm} .noprint{display:none} .ws-match-item,.ws-cloze-item{page-break-inside:avoid;break-inside:avoid} .teacher-key{page-break-before:always;break-before:page}}',
+      '</style>',
+      '</head>',
+      '<body>',
+      '<h1>' + escHtml(data.title) + ' — Cloze and Matching Worksheet</h1>',
+      '<div class="ws-meta"><span>Name: ______________________________</span><span>Date: ________________</span></div>',
+      '<section class="ws-word-bank"><h2>Word Bank</h2><div class="bank-list">' + bankChips + '</div></section>',
+      '<section class="ws-matching"><h2>Part 1 — Match Each Meaning and Picture</h2><ol>' + matchRows + '</ol></section>',
+      '<section class="ws-cloze"><h2>Part 2 — Fill in the Blank Sentences</h2><ol>' + clozeRows + '</ol></section>',
+      '<section class="teacher-key">',
+      '<h2>Teacher Answer &amp; Attribution Key</h2>',
+      '<table class="key-table"><thead><tr><th>#</th><th>Word</th><th>Meaning</th><th>Picture</th></tr></thead><tbody>' + matchKeyRows + '</tbody></table>',
+      '<h3>Part 2 Answers</h3>',
+      '<ol class="key-cloze">' + clozeKeyRows + '</ol>',
+      '<p class="attr-note">Built-in picture artwork may use Mulberry Symbols or OpenMoji under CC BY-SA 4.0 unless a custom credit is shown above.</p>',
+      '</section>',
+      '</body>',
+      '</html>',
+    ].join('\n');
+  }
+  function buildBingoHtml(input, rawOptions = {}) {
+    const data = printableCardsData(input, rawOptions, 'Vocabulary Classroom Bingo');
+    const items = data.items || [];
+    const boardCount = 6;
+    const gridSize = items.length >= 16 ? 4 : 3;
+    const cellCount = gridSize * gridSize;
+    const hasFree = gridSize === 3;
+    const needed = hasFree ? cellCount - 1 : cellCount;
+    const boardsHtml = [];
+    for (let b = 0; b < boardCount; b++) {
+      const pool = [];
+      if (items.length > 0) {
+        let pass = 0;
+        while (pool.length < needed) {
+          sortingOrder(items.length, 37 + b * 97 + pass * 131).forEach(idx => pool.push(items[idx]));
+          pass++;
+        }
+      }
+      let poolCursor = 0;
+      const rows = [];
+      for (let r = 0; r < gridSize; r++) {
+        const cells = [];
+        for (let c = 0; c < gridSize; c++) {
+          const pos = r * gridSize + c;
+          if (hasFree && pos === 4) {
+            cells.push('<td class="bingo-cell bingo-free"><div class="bingo-word">FREE</div><div class="bingo-sub">Center space</div></td>');
+            continue;
+          }
+          const it = pool[poolCursor++];
+          if (!it) {
+            cells.push('<td class="bingo-cell"><div class="bingo-word">____</div></td>');
+            continue;
+          }
+          const picHtml = it.imgSrc
+            ? '<img class="bingo-pic" src="' + escHtml(it.imgSrc) + '" alt="Bingo picture cue">'
+            : '';
+          cells.push('<td class="bingo-cell"><div class="bingo-word">' + escHtml(it.word) + '</div>' + picHtml + '</td>');
+        }
+        rows.push('<tr>' + cells.join('') + '</tr>');
+      }
+      boardsHtml.push(
+        '<section class="bingo-board" data-board="' + (b + 1) + '">'
+        + '<h2>' + escHtml(data.title) + ' — Board ' + (b + 1) + '</h2>'
+        + '<table class="bingo-grid" data-grid-size="' + gridSize + '"><tbody>' + rows.join('') + '</tbody></table>'
+        + '</section>'
+      );
+    }
+    const callerOrder = sortingOrder(items.length, 211);
+    const callerRows = callerOrder.map((idx, pos) => {
+      const it = items[idx];
+      const defBlank = blankedSentence(it.definition, it.word);
+      const exBlank = blankedSentence(it.example, it.word);
+      const parts = [];
+      if (defBlank) parts.push(escHtml(defBlank));
+      if (exBlank) parts.push('<em>' + escHtml(exBlank) + '</em>');
+      if (!parts.length) parts.push('Sound pattern: ' + escHtml(it.boxes.join(' / ')));
+      const picInfo = it.imgSrc
+        ? ('Yes' + (it.imgCredit ? ' (' + escHtml(it.imgCredit) + ')' : ''))
+        : 'None';
+      return '<tr><td>' + (pos + 1) + '</td><td><strong>' + escHtml(it.word) + '</strong></td><td>' + parts.join('<br>') + '</td><td>' + picInfo + '</td></tr>';
+    }).join('\n');
+    return [
+      '<!doctype html>',
+      '<html lang="en">',
+      '<head>',
+      '<meta charset="utf-8">',
+      '<meta name="viewport" content="width=device-width,initial-scale=1">',
+      '<title>' + escHtml(data.title) + ' — Classroom Bingo Boards</title>',
+      '<style>',
+      'body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;margin:20px;max-width:1020px}',
+      'h1{font-size:20px;margin:0 0 6px}',
+      'h2{font-size:15px;margin:0 0 8px;color:#1e293b}',
+      '.directions{font-size:13px;color:#334155;margin:0 0 14px}',
+      '.bingo-boards{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:14px}',
+      '.bingo-board{border:2px solid #0f172a;border-radius:8px;padding:10px;background:#fff;page-break-inside:avoid;break-inside:avoid}',
+      '.bingo-grid{width:100%;border-collapse:collapse;table-layout:fixed}',
+      '.bingo-cell{border:2px solid #334155;height:86px;padding:6px;text-align:center;vertical-align:middle}',
+      '.bingo-free{background:#f1f5f9}',
+      '.bingo-word{font-size:15px;font-weight:800;line-height:1.2;word-break:break-word}',
+      '.bingo-sub{font-size:11px;color:#475569;margin-top:3px}',
+      '.bingo-pic{width:38px;height:38px;object-fit:contain;display:block;margin:4px auto 0}',
+      '.teacher-key{margin-top:24px;padding-top:14px;border-top:2px solid #0f172a;page-break-before:always;break-before:page}',
+      '.key-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}',
+      '.key-table th,.key-table td{border:1px solid #cbd5e1;padding:6px 8px;text-align:left;vertical-align:top}',
+      '.key-table th{background:#f1f5f9}',
+      '.attr-note{font-size:12px;color:#475569;margin-top:10px}',
+      '@media print{body{margin:10mm} .noprint{display:none} .bingo-board{page-break-inside:avoid;break-inside:avoid} .teacher-key{page-break-before:always;break-before:page}}',
+      '</style>',
+      '</head>',
+      '<body>',
+      '<h1>' + escHtml(data.title) + ' — Classroom Bingo Boards</h1>',
+      '<p class="directions">Print one board per student or pair. Call the meaning or fill-in-the-blank clue from the Teacher Caller Sheet on the last page.</p>',
+      '<div class="bingo-boards">' + boardsHtml.join('\n') + '</div>',
+      '<section class="teacher-key">',
+      '<h2>Teacher Caller Clues &amp; Attribution Key</h2>',
+      '<p class="directions">Read the meaning or fill-in-the-blank clue aloud without saying the target word. Check the caller row as you go.</p>',
+      '<table class="key-table"><thead><tr><th>Call #</th><th>Target Word</th><th>Caller Clue (target word blanked)</th><th>Picture</th></tr></thead><tbody>' + callerRows + '</tbody></table>',
+      '<p class="attr-note">Built-in picture artwork may use Mulberry Symbols or OpenMoji under CC BY-SA 4.0 unless a custom credit is shown above.</p>',
+      '</section>',
+      '</body>',
+      '</html>',
+    ].join('\n');
+  }
+  function buildLoopGameHtml(input, rawOptions = {}) {
+    const data = printableCardsData(input, rawOptions, 'I Have, Who Has Loop Cards');
+    const items = data.items || [];
+    const order = sortingOrder(items.length, 313);
+    const chain = order.map(idx => items[idx]);
+    const cardsHtml = chain.length
+      ? chain.map((cur, i) => {
+          const next = chain[(i + 1) % chain.length];
+          const boxes = cur.boxes.map(b => '<span class="elkonin-box">' + escHtml(b) + '</span>').join('');
+          const picHtml = cur.imgSrc
+            ? '<img class="loop-pic" src="' + escHtml(cur.imgSrc) + '" alt="I have picture cue">'
+            : '';
+          const nextDef = blankedSentence(next.definition, next.word);
+          const nextEx = blankedSentence(next.example, next.word);
+          const whoClue = nextDef || nextEx || ('the word with sound boxes: ' + next.boxes.join(' / '));
+          const roleTag = i === 0
+            ? 'Card 1 — Start Card'
+            : (i === chain.length - 1 && chain.length > 1 ? ('Card ' + (i + 1) + ' — Loops to Card 1') : ('Card ' + (i + 1)));
+          return '<article class="loop-card" data-step="' + (i + 1) + '">'
+            + '<div class="loop-tag">' + escHtml(roleTag) + '</div>'
+            + '<div class="loop-have"><div class="loop-label">I have</div><div class="loop-word">' + escHtml(cur.word) + '</div>'
+            + (boxes ? '<div class="elkonin">' + boxes + '</div>' : '')
+            + picHtml + '</div>'
+            + '<div class="loop-who"><div class="loop-label">Who has...</div><p class="loop-clue">' + escHtml(whoClue) + '</p></div>'
+            + '</article>';
+        }).join('\n')
+      : '<article class="loop-card"><div class="loop-have"><div class="loop-label">Add words</div><p class="loop-clue">Add at least two words before printing loop cards.</p></div></article>';
+    const keyRows = chain.map((cur, i) => {
+      const next = chain[(i + 1) % chain.length];
+      const nextDef = blankedSentence(next.definition, next.word);
+      const nextEx = blankedSentence(next.example, next.word);
+      const whoClue = nextDef || nextEx || ('Sound boxes: ' + next.boxes.join(' / '));
+      const picInfo = cur.imgSrc
+        ? ('Yes' + (cur.imgCredit ? ' (' + escHtml(cur.imgCredit) + ')' : ''))
+        : 'None';
+      return '<tr><td>' + (i + 1) + '</td><td><strong>' + escHtml(cur.word) + '</strong></td><td>' + escHtml(whoClue) + '</td><td><strong>' + escHtml(next.word) + '</strong></td><td>' + picInfo + '</td></tr>';
+    }).join('\n');
+    return [
+      '<!doctype html>',
+      '<html lang="en">',
+      '<head>',
+      '<meta charset="utf-8">',
+      '<meta name="viewport" content="width=device-width,initial-scale=1">',
+      '<title>' + escHtml(data.title) + ' — I Have, Who Has Cards</title>',
+      '<style>',
+      'body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;margin:20px;max-width:980px}',
+      'h1{font-size:20px;margin:0 0 6px}',
+      'h2{font-size:15px;margin:0 0 8px;color:#1e293b}',
+      '.directions{font-size:13px;color:#334155;margin:0 0 14px}',
+      '.loop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}',
+      '.loop-card{border:2px dashed #334155;border-radius:10px;padding:12px;background:#fff;display:flex;flex-direction:column;justify-content:space-between;min-height:190px;page-break-inside:avoid;break-inside:avoid}',
+      '.loop-tag{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#475569;margin-bottom:6px}',
+      '.loop-have{border-bottom:2px solid #cbd5e1;padding-bottom:10px;margin-bottom:10px;text-align:center}',
+      '.loop-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#334155;margin-bottom:4px}',
+      '.loop-word{font-size:24px;font-weight:800;margin-bottom:6px}',
+      '.elkonin{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-bottom:6px}',
+      '.elkonin-box{border:1px solid #334155;min-width:20px;height:22px;padding:0 4px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;border-radius:4px}',
+      '.loop-pic{width:54px;height:54px;object-fit:contain;display:block;margin:4px auto 0}',
+      '.loop-who{text-align:left}',
+      '.loop-clue{margin:0;font-size:13px;line-height:1.4}',
+      '.teacher-key{margin-top:24px;padding-top:14px;border-top:2px solid #0f172a;page-break-before:always;break-before:page}',
+      '.key-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}',
+      '.key-table th,.key-table td{border:1px solid #cbd5e1;padding:6px 8px;text-align:left;vertical-align:top}',
+      '.key-table th{background:#f1f5f9}',
+      '.attr-note{font-size:12px;color:#475569;margin-top:10px}',
+      '@media print{body{margin:10mm} .noprint{display:none} .loop-card{page-break-inside:avoid;break-inside:avoid} .teacher-key{page-break-before:always;break-before:page}}',
+      '</style>',
+      '</head>',
+      '<body>',
+      '<h1>' + escHtml(data.title) + ' — I Have, Who Has Cards</h1>',
+      '<p class="directions">Cut along the dashed borders and deal one or more cards to each student. Card 1 reads "Who has..." to start the closed chain back to Card 1.</p>',
+      '<div class="loop-grid">' + cardsHtml + '</div>',
+      '<section class="teacher-key">',
+      '<h2>Teacher Chain Sequence &amp; Attribution Key</h2>',
+      '<table class="key-table"><thead><tr><th>Step #</th><th>Student Says "I have..."</th><th>Student Reads "Who has..." Clue</th><th>Next Card Answer</th><th>Picture</th></tr></thead><tbody>' + keyRows + '</tbody></table>',
+      '<p class="attr-note">Built-in picture artwork may use Mulberry Symbols or OpenMoji under CC BY-SA 4.0 unless a custom credit is shown above.</p>',
+      '</section>',
+      '</body>',
+      '</html>',
+    ].join('\n');
+  }
+  function buildWordWallHtml(input, rawOptions = {}) {
+    const data = printableCardsData(input, rawOptions, 'Classroom Word Wall Cards');
+    const items = data.items || [];
+    const rawPics = rawPictureLookup(input);
+    const cleanBang = s => escHtml(String(s == null ? '' : s).replace(/!/g, '.'));
+    const rawDecoMap = new Map();
+    const rawList = Array.isArray(input && input.items) ? input.items : (Array.isArray(input && input.words) ? input.words : []);
+    rawList.forEach(entry => {
+      if (!entry || typeof entry !== 'object') return;
+      const wKey = getCore().key(entry.word);
+      const deco = !!(entry.imageDecorative || (entry.picture && entry.picture.decorative));
+      if (wKey && deco) rawDecoMap.set(wKey, true);
+    });
+    const wallCardsHtml = items.length
+      ? items.map((it, idx) => {
+          const boxes = it.boxes.map(b => '<span class="elkonin-box">' + cleanBang(b) + '</span>').join('');
+          const isDeco = rawDecoMap.has(getCore().key(it.word));
+          const picAlt = isDeco ? '' : cleanBang(it.imgAlt || it.word);
+          const picHtml = it.imgSrc
+            ? '<img class="wall-pic" src="' + escHtml(it.imgSrc) + '" alt="' + picAlt + '">'
+            : '';
+          const defText = it.definition || 'Meaning to discuss in class.';
+          const exHtml = it.example ? '<p class="wall-ex"><em>' + cleanBang(it.example) + '</em></p>' : '';
+          return '<article class="wall-card" data-card="' + (idx + 1) + '">'
+            + '<div class="wall-top"><div class="wall-word">' + cleanBang(it.word) + '</div>'
+            + (boxes ? '<div class="elkonin">' + boxes + '</div>' : '') + '</div>'
+            + '<div class="wall-body">' + picHtml
+            + '<div class="wall-text"><p class="wall-def">' + cleanBang(defText) + '</p>' + exHtml + '</div></div>'
+            + '</article>';
+        }).join('\n')
+      : '<article class="wall-card"><div class="wall-top"><div class="wall-word">Add words</div></div><div class="wall-body"><div class="wall-text"><p class="wall-def">Add words before printing classroom Word Wall cards.</p></div></div></article>';
+    const keyRows = items.map((it, idx) => {
+      const picInfo = it.imgSrc
+        ? ('Yes' + (it.imgCredit ? ' (' + cleanBang(it.imgCredit) + ')' : ''))
+        : 'None';
+      return '<tr><td>' + (idx + 1) + '</td><td><strong>' + cleanBang(it.word) + '</strong></td><td>' + cleanBang(it.boxes.join(' / ')) + '</td><td>' + cleanBang(it.definition || '') + '</td><td>' + picInfo + '</td></tr>';
+    }).join('\n');
+    const titleSafe = cleanBang(data.title);
+    return [
+      '<!doctype html>',
+      '<html lang="en">',
+      '<head>',
+      '<meta charset="utf-8">',
+      '<meta name="viewport" content="width=device-width,initial-scale=1">',
+      '<title>' + titleSafe + ' — Classroom Word Wall Cards</title>',
+      '<style>',
+      'body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;margin:20px;max-width:980px}',
+      'h1{font-size:20px;margin:0 0 6px}',
+      'h2{font-size:15px;margin:0 0 8px;color:#1e293b}',
+      '.directions{font-size:13px;color:#334155;margin:0 0 14px}',
+      '.wall-list{display:grid;grid-template-columns:1fr;gap:14px}',
+      '.wall-card{border:2px solid #0f172a;border-radius:10px;padding:14px 16px;background:#fff;page-break-inside:avoid;break-inside:avoid}',
+      '.wall-top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;border-bottom:2px solid #cbd5e1;padding-bottom:10px;margin-bottom:10px}',
+      '.wall-word{font-size:40px;font-weight:900;letter-spacing:.01em;line-height:1.1}',
+      '.elkonin{display:flex;flex-wrap:wrap;gap:5px;align-items:center}',
+      '.elkonin-box{border:2px solid #334155;min-width:26px;height:28px;padding:0 6px;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;border-radius:5px}',
+      '.wall-body{display:flex;gap:14px;align-items:flex-start}',
+      '.wall-pic{width:88px;height:88px;object-fit:contain;border:1px solid #cbd5e1;border-radius:8px;background:#fff;flex-shrink:0}',
+      '.wall-text{flex:1;min-width:0}',
+      '.wall-def{margin:0 0 6px;font-size:15px;line-height:1.45}',
+      '.wall-ex{margin:0;font-size:13px;color:#334155;line-height:1.4}',
+      '.teacher-key{margin-top:24px;padding-top:14px;border-top:2px solid #0f172a;page-break-before:always;break-before:page}',
+      '.key-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}',
+      '.key-table th,.key-table td{border:1px solid #cbd5e1;padding:6px 8px;text-align:left;vertical-align:top}',
+      '.key-table th{background:#f1f5f9}',
+      '.attr-note{font-size:12px;color:#475569;margin-top:10px}',
+      '@media print{body{margin:10mm} .noprint{display:none} .wall-card{page-break-inside:avoid;break-inside:avoid} .teacher-key{page-break-before:always;break-before:page}}',
+      '</style>',
+      '</head>',
+      '<body>',
+      '<h1>' + titleSafe + ' — Classroom Word Wall Cards</h1>',
+      '<p class="directions">Display on your classroom Word Wall or anchor chart so students can reference spelling patterns, sound boxes, and kid-friendly meanings during reading and writing.</p>',
+      '<div class="wall-list">' + wallCardsHtml + '</div>',
+      '<section class="teacher-key">',
+      '<h2>Teacher Unit Word Wall Reference &amp; Attribution Key</h2>',
+      '<table class="key-table"><thead><tr><th>#</th><th>Word</th><th>Sound Boxes</th><th>Meaning</th><th>Picture</th></tr></thead><tbody>' + keyRows + '</tbody></table>',
+      '<p class="attr-note">Built-in picture artwork may use Mulberry Symbols or OpenMoji under CC BY-SA 4.0 unless a custom credit is shown above.</p>',
+      '</section>',
+      '</body>',
+      '</html>',
+    ].join('\n');
+  }
+  root.AlloWordPracticeMedia = { prepareAudio, buildPptx, buildPictureSlidesPptx, buildFlashcardsHtml, buildFrayerHtml, buildSortingCardsHtml, buildWorksheetHtml, buildBingoHtml, buildLoopGameHtml, buildWordWallHtml, everyDeviceAudio, needsEveryDeviceAudio };
 })(typeof window !== 'undefined' ? window : globalThis);

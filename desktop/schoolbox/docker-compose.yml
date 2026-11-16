@@ -8,6 +8,10 @@ services:
       - "${WEB_PORT:-32174}:80"
     volumes:
       - ../app-build:/usr/share/nginx/html:ro
+      - ../../word_audio_shards:/usr/share/nginx/html/word_audio_shards:ro
+      - ../../word_audio_kokoro_bank.json:/usr/share/nginx/html/word_audio_kokoro_bank.json:ro
+      - ../../packets_vocab:/usr/share/nginx/html/packets_vocab:ro
+      - ../../packets_vocab_bank_en.js:/usr/share/nginx/html/packets_vocab_bank_en.js:ro
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       pocketbase:

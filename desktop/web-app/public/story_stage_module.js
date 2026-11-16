@@ -45,6 +45,8 @@
       '.litlab-step-number{display:grid;place-items:center;flex-shrink:0;width:28px;height:28px;border:1px solid #d7d1e4;border-radius:50%;font-size:12px;background:#faf9fc}',
       '.litlab-step[aria-current="step"]{color:#6d28d9}.litlab-step[aria-current="step"] .litlab-step-number{background:#6d28d9;border-color:#6d28d9;color:#fff}',
       '.litlab-step[data-complete="true"] .litlab-step-number{background:#ede9fe;border-color:#ddd6fe;color:#6d28d9}',
+      '.theme-contrast .litlab-dialog,.theme-contrast .litlab-steps,.theme-contrast .litlab-step-number{background:#000!important;background-image:none!important;color:#ffff00!important;border-color:#ffff00!important}',
+      '.theme-contrast .litlab-dialog :is(h1,h2,h3,h4,p,span,label,li,div):not(button):not(button *){color:#ffff00!important}',
       '.litlab-mode-picker{padding:5px;border:1px solid #ddd6ed;background:#f0edf6;border-radius:14px}.litlab-mode-picker button{flex:1}',
       '.litlab-story-meta{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:12px;color:#64748b;margin-top:10px;line-height:1.5}',
       '.litlab-options{flex-wrap:wrap}.litlab-options>button{min-width:64px}.litlab-options>label{width:100%}',

@@ -19,6 +19,7 @@
 <script src="packets_handoff.js" defer></script>
 <script src="packets_vocab_bank_en.js" defer></script>
 <script src="word_sounds_symbols_en.js" defer></script>
+<script src="word_picture_matcher.js" defer></script>
 <script src="word_sounds_packet_builder.js" defer></script>
 <script src="packets_vocab_media.js" defer></script>
 <script src="packet_vocab_builder.js" defer></script>
@@ -153,6 +154,20 @@
         <div class="choices" id="types"></div>
       </fieldset>
 
+      <details class="why code-box" id="picture-more">
+        <summary>More pictures and school concept diagrams</summary>
+        <div class="block">
+          <label class="radio"><input type="checkbox" id="f-diagrams" aria-describedby="diagrams-hint"> <span>Include school concept diagrams</span></label>
+          <span class="hint" id="diagrams-hint">Adds built-in diagrams for science, math, geography and reading words when the everyday picture set has none.</span>
+        </div>
+        <div class="block">
+          <p class="hint" id="custom-pic-hint">Add or replace a picture for any word in your list with an image from this device (PNG, JPEG or SVG, under 300 KB).</p>
+          <input type="file" id="f-custom-pic" accept="image/png,image/jpeg,image/svg+xml" hidden aria-label="Choose a picture from this device">
+          <p id="custom-pic-said" class="hint" role="status"></p>
+          <div id="custom-pic-rows" class="v-rows"></div>
+        </div>
+      </details>
+
       <div id="picture-panel" class="block" hidden>
         <h3 class="v-sub">Check the pictures</h3>
         <p class="hint">Each word's picture comes first, then the 3 other pictures. A picture can show another meaning of a word. Leave out any word whose picture does not fit your unit. Picture questions cannot be answered with a screen reader.</p>
@@ -238,6 +253,7 @@
 
       <div class="actions">
         <button type="button" class="btn" id="back-3">Back</button>
+        <a class="btn" id="open-present-export" href="packets-present-export.html#from-vocab">Present or print word cards</a>
         <a class="btn push" id="try" href="packets-try.html" target="_blank" rel="noopener" hidden>Try it <span class="sr-only">(opens in a new tab)</span></a>
         <button type="button" class="btn btn-primary" id="save" hidden>Save the file</button>
       </div>

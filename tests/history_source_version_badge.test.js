@@ -70,9 +70,10 @@ describe('history marks resources made from an older source version', () => {
   it('marks only the older ones, in text and in the accessible name', () => {
     render(items, { inUse: { text: 'Garden text v2', version: 2 } });
     expect(row('Garden quiz').querySelector('[data-history-source-version]').textContent).toBe('From source version 1');
-    expect(openButton('Garden quiz').getAttribute('aria-label')).toBe('Open: Garden quiz. From source version 1');
+    expect(openButton('Garden quiz').getAttribute('aria-label')).toBe('Garden quiz quiz From source version 1. Open');
     expect(row('Garden words').querySelector('[data-history-source-version]')).toBeNull();
-    expect(openButton('Garden words').getAttribute('aria-label')).toBe('Open: Garden words');
+    expect(openButton('Garden words').getAttribute('aria-label')).toMatch(/^Garden words\b.*\. Open$/);
+    expect(openButton('Garden words').getAttribute('aria-label')).not.toContain('From source version');
     expect(row('Saved before versions').querySelector('[data-history-source-version]')).toBeNull();
   });
 

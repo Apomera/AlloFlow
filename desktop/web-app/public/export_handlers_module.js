@@ -460,15 +460,17 @@
   };
   const _alloReadAloudModal = (canEmbed) => new Promise((resolve) => {
     try {
+      const prevFocus = typeof document !== 'undefined' ? document.activeElement : null;
       const ov = document.createElement('div');
       ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true');
+      ov.setAttribute('aria-labelledby', 'allo-read-aloud-modal-title');
       ov.style.cssText = 'position:fixed;inset:0;z-index:2147483600;background:rgba(15,23,42,0.55);display:flex;align-items:center;justify-content:center;padding:20px;font-family:system-ui,-apple-system,sans-serif;';
       const box = document.createElement('div');
       box.style.cssText = 'background:#fff;border-radius:16px;max-width:660px;width:100%;padding:24px;box-shadow:0 20px 50px rgba(0,0,0,0.3);';
       const disabled = canEmbed ? '' : 'disabled aria-disabled="true" ';
       const mutedStyle = canEmbed ? '' : 'opacity:.62;';
       box.innerHTML =
-        '<h2 style="margin:0 0 8px;font-size:1.2rem;color:#0f172a;">Add read-aloud audio?</h2>' +
+        '<h2 id="allo-read-aloud-modal-title" style="margin:0 0 8px;font-size:1.2rem;color:#0f172a;">Add read-aloud audio?</h2>' +
         '<p style="margin:0 0 6px;font-size:0.92rem;color:#475569;line-height:1.5;">Use the selected voice to add offline audio to the downloaded HTML. Standard audio is the lean default; structured audio adds screen-reader-style cues for headings, lists, tables, and images.</p>' +
         '<p style="margin:0 0 16px;font-size:0.8rem;color:#64748b;line-height:1.45;">To keep downloads smaller, both audio versions are only included when you choose that option.</p>' +
         '<fieldset style="border:1px solid #cbd5e1;border-radius:12px;padding:12px 14px;margin:0 0 12px;' + mutedStyle + '">' +
@@ -489,7 +491,48 @@
           '<button type="button" data-r="continue" ' + (canEmbed ? '' : 'disabled aria-disabled="true" ') + 'style="padding:9px 16px;background:' + (canEmbed ? '#0369a1' : '#94a3b8') + ';color:#fff;border:1px solid ' + (canEmbed ? '#075985' : '#94a3b8') + ';border-radius:9px;font-weight:800;cursor:' + (canEmbed ? 'pointer' : 'not-allowed') + ';">Add audio</button>' +
         '</div>';
       ov.appendChild(box);
-      const done = (val) => { try { ov.remove(); } catch (e) {} resolve(val); };
+      let settled = false;
+      const getFocusable = () => Array.from(box.querySelectorAll('input:not([disabled]), button:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'))
+        .filter((el) => !el.disabled && el.getAttribute('aria-disabled') !== 'true');
+      const onKeyDown = (e) => {
+        if (!ov.isConnected) {
+          try { document.removeEventListener('keydown', onKeyDown, true); } catch (_) {}
+          return;
+        }
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          if (typeof e.stopPropagation === 'function') e.stopPropagation();
+          done(null);
+          return;
+        }
+        if (e.key === 'Tab') {
+          const focusable = getFocusable();
+          if (!focusable.length) return;
+          const first = focusable[0];
+          const last = focusable[focusable.length - 1];
+          const active = document.activeElement;
+          if (!box.contains(active)) {
+            e.preventDefault();
+            (e.shiftKey ? last : first).focus();
+          } else if (e.shiftKey && active === first) {
+            e.preventDefault();
+            last.focus();
+          } else if (!e.shiftKey && active === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      };
+      const done = (val) => {
+        if (settled) return;
+        settled = true;
+        try { document.removeEventListener('keydown', onKeyDown, true); } catch (_) {}
+        try { ov.remove(); } catch (e) {}
+        if (prevFocus && typeof prevFocus.focus === 'function' && (!document.contains || document.contains(prevFocus))) {
+          try { prevFocus.focus(); } catch (_) {}
+        }
+        resolve(val);
+      };
       ov.addEventListener('click', (e) => {
         const b = e.target && e.target.closest && e.target.closest('[data-r]');
         if (b) {
@@ -512,8 +555,12 @@
         }
         if (e.target === ov) done(null);
       });
+      document.addEventListener('keydown', onKeyDown, true);
       document.body.appendChild(ov);
-      const y = box.querySelector('[data-r="continue"]') || box.querySelector('[data-r="no"]'); if (y) y.focus();
+      const y = box.querySelector('button[data-r="continue"]:not([disabled])')
+        || box.querySelector('button[data-r="no"]:not([disabled])')
+        || box.querySelector('button:not([disabled])');
+      if (y) y.focus();
     } catch (e) { resolve(false); }
   });
   const _alloAudioProgress = () => {
@@ -615,11 +662,114 @@
     .replace(/([.!?])\s*\.+/g, '$1')
     .replace(/\.{2,}/g, '.')
     .trim();
-  const _alloTeacherOnlySelector = '.teacher-view,[data-allo-teacher-only],.answer-key,.alloflow-cs-answer-key,.alloflow-glossary-worksheet-key,.alloflow-math-solution,.alloflow-fluency-key,.alloflow-teacher-plan,.alloflow-teacher-annotations,.alloflow-teacher-annotations-by-resource';
+  const _alloTeacherOnlySelector = '.teacher-view,[data-allo-teacher-only],[data-teacher-only],.teacher-only,.answer-key,.alloflow-teacher-copy-banner,#alloflow-interactive-object-profile,.alloflow-cs-answer-key,.alloflow-glossary-worksheet-key,.alloflow-math-solution,.alloflow-fluency-key,.alloflow-teacher-plan,.alloflow-teacher-annotations,.alloflow-teacher-annotations-by-resource,del[data-allo-change-id],[data-allo-change-kind="structure-delete"],[data-allo-citation-store],.alloflow-gm-check-btn,.alloflow-gm-feedback,.alloflow-match-check-btn,.alloflow-match-feedback';
   const _alloIsTeacherOnlyNode = (node) => !!(node && node.closest && node.closest(_alloTeacherOnlySelector));
+  const _alloSyncLiveControlsToAttrs = (srcRoot, dstRoot) => {
+    const src = srcRoot;
+    const dst = dstRoot || srcRoot;
+    if (!src || !dst || !src.querySelectorAll || !dst.querySelectorAll) return;
+    try {
+      const srcInputs = src.querySelectorAll('input');
+      const dstInputs = dst.querySelectorAll('input');
+      const syncInput = (sEl, dEl) => {
+        const typ = String((sEl && sEl.type) || (dEl && dEl.getAttribute && dEl.getAttribute('type')) || 'text').toLowerCase();
+        if (typ === 'file' || typ === 'password') return;
+        if (typ === 'checkbox' || typ === 'radio') {
+          const chk = !!sEl.checked;
+          dEl.checked = chk;
+          if (chk) dEl.setAttribute('checked', '');
+          else dEl.removeAttribute('checked');
+        } else {
+          const val = sEl.value != null ? String(sEl.value) : '';
+          dEl.value = val;
+          if (val) dEl.setAttribute('value', val);
+          else dEl.removeAttribute('value');
+        }
+      };
+      if (srcInputs.length === dstInputs.length) {
+        for (let i = 0; i < srcInputs.length; i++) syncInput(srcInputs[i], dstInputs[i]);
+      }
+      const srcTas = src.querySelectorAll('textarea');
+      const dstTas = dst.querySelectorAll('textarea');
+      if (srcTas.length === dstTas.length) {
+        for (let i = 0; i < srcTas.length; i++) {
+          const val = srcTas[i].value != null ? String(srcTas[i].value) : '';
+          dstTas[i].value = val;
+          dstTas[i].textContent = val;
+        }
+      }
+      const srcSels = src.querySelectorAll('select');
+      const dstSels = dst.querySelectorAll('select');
+      if (srcSels.length === dstSels.length) {
+        for (let i = 0; i < srcSels.length; i++) {
+          const sSel = srcSels[i], dSel = dstSels[i];
+          if (typeof sSel.selectedIndex === 'number') dSel.selectedIndex = sSel.selectedIndex;
+          const sOpts = sSel.options || sSel.querySelectorAll('option');
+          const dOpts = dSel.options || dSel.querySelectorAll('option');
+          for (let j = 0; j < sOpts.length && j < dOpts.length; j++) {
+            const isSel = !!sOpts[j].selected;
+            dOpts[j].selected = isSel;
+            if (isSel) dOpts[j].setAttribute('selected', '');
+            else dOpts[j].removeAttribute('selected');
+          }
+        }
+      }
+    } catch (_) {}
+  };
+  const _alloLinearizeMathNode = (mathEl) => {
+    if (!mathEl) return '';
+    const cleanSp = (s) => String(s == null ? '' : s).replace(/\s+/g, ' ').trim();
+    const explicit = cleanSp((mathEl.getAttribute && (mathEl.getAttribute('aria-label') || mathEl.getAttribute('alttext'))) || '');
+    if (explicit) return explicit;
+    const mathAtom = (s) => (/^[A-Za-z0-9.]+$/.test(s) ? s : '(' + s + ')');
+    const mathScript = (s) => (/^-?[A-Za-z0-9]+$/.test(s) ? s : '(' + s + ')');
+    const walkMath = (node) => {
+      if (!node) return '';
+      if (node.nodeType === 3) return String(node.nodeValue || node.textContent || '');
+      if (node.nodeType !== 1) return '';
+      const t = String(node.tagName || '').toLowerCase();
+      if (t === 'annotation' || t === 'annotation-xml') return '';
+      if (t === 'mspace') return ' ';
+      const ch = Array.from(node.children || []);
+      if (t === 'mfrac' && ch.length >= 2) return '(' + cleanSp(walkMath(ch[0])) + ')/(' + cleanSp(walkMath(ch[1])) + ')';
+      if (t === 'msup' && ch.length >= 2) {
+        const b = cleanSp(walkMath(ch[0]));
+        const e = cleanSp(walkMath(ch[1]));
+        return b ? mathAtom(b) + '^' + mathScript(e) : e;
+      }
+      if (t === 'msub' && ch.length >= 2) {
+        const b = cleanSp(walkMath(ch[0]));
+        const s = cleanSp(walkMath(ch[1]));
+        return b ? mathAtom(b) + '_' + mathScript(s) : s;
+      }
+      if (t === 'msubsup' && ch.length >= 3) {
+        const b = cleanSp(walkMath(ch[0]));
+        const s = cleanSp(walkMath(ch[1]));
+        const e = cleanSp(walkMath(ch[2]));
+        return b ? mathAtom(b) + '_' + mathScript(s) + '^' + mathScript(e) : '';
+      }
+      if (t === 'msqrt') {
+        const inner = cleanSp(Array.from(node.childNodes || []).map(walkMath).join(''));
+        return inner ? 'sqrt(' + inner + ')' : '';
+      }
+      if (t === 'mroot' && ch.length >= 2) {
+        const b = cleanSp(walkMath(ch[0]));
+        const idx = cleanSp(walkMath(ch[1]));
+        return (b && idx) ? 'root(' + idx + ', ' + b + ')' : b;
+      }
+      return Array.from(node.childNodes || []).map(walkMath).join('');
+    };
+    const walked = cleanSp(walkMath(mathEl));
+    if (walked) return walked;
+    const latexAttr = cleanSp((mathEl.getAttribute && mathEl.getAttribute('data-allo-latex')) || '');
+    if (latexAttr) return latexAttr;
+    const ann = mathEl.querySelector && mathEl.querySelector('annotation[encoding="application/x-tex"],annotation[encoding="application/tex"]');
+    return cleanSp((ann && ann.textContent) || '');
+  };
   const _alloAudioDocRoot = (root, opts) => {
     if (!root) return null;
     const clone = root.cloneNode(true);
+    _alloSyncLiveControlsToAttrs(root, clone);
     const scoped = (clone.querySelector && (clone.querySelector('body') || clone.querySelector('main'))) || clone;
     const doc = scoped.ownerDocument || root.ownerDocument || (typeof document !== 'undefined' ? document : null);
     try {
@@ -627,7 +777,7 @@
         const teacherOnly = scoped.querySelectorAll(_alloTeacherOnlySelector);
         for (let i = 0; i < teacherOnly.length; i++) teacherOnly[i].remove();
       }
-      const chromeKill = scoped.querySelectorAll('#allo-reader-bar,#allo-reader-ruler,#allo-reader-style,#allo-reader-script,#allo-ka-style,#allo-ka-script,.allo-ka-bar,.allo-ka-audios,.alloflow-audio-downloads,.alloflow-reading-tools-shell,.alloflow-anno-colors,#alloflow-reader-line,.alloflow-reader-mask,.alloflow-export-save-tools,#alloflow-save-cta,#alloflow-savejson-cta,.allo-img-controls,[data-alloflow-picker],[data-alloflow-nomsg],.quiz-controls,.alloflow-cs-controls,.alloflow-tl-check-btn,.alloflow-tl-arrows,.alloflow-venn-controls,.alloflow-venn-print-only,script,style,noscript,audio,video');
+      const chromeKill = scoped.querySelectorAll('#allo-reader-bar,#allo-reader-ruler,#allo-reader-style,#allo-reader-script,#allo-ka-style,#allo-ka-script,.allo-ka-bar,.allo-ka-audios,.alloflow-audio-downloads,.alloflow-reading-tools-shell,.alloflow-anno-colors,#alloflow-reader-line,.alloflow-reader-mask,.alloflow-export-save-tools,#alloflow-save-cta,#alloflow-savejson-cta,.allo-img-controls,[data-alloflow-picker],[data-alloflow-nomsg],.quiz-controls,.alloflow-cs-controls,.alloflow-tl-check-btn,.alloflow-tl-arrows,.alloflow-venn-controls,.alloflow-venn-print-only,.alloflow-gm-controls,.alloflow-dir-controls,.alloflow-cloze-controls,.alloflow-match-controls,.alloflow-ac-controls,.allo-block-controls,.allo-block-remove,del[data-allo-change-id],[data-allo-change-kind="structure-delete"],[data-allo-citation-store],script,style,noscript,audio,video');
       for (let i = 0; i < chromeKill.length; i++) chromeKill[i].remove();
       const hidden = scoped.querySelectorAll('[hidden],[aria-hidden="true"]');
       for (let i = 0; i < hidden.length; i++) {
@@ -691,7 +841,7 @@
             strip.appendChild(note);
           }
         }
-        const formCtrls = scoped.querySelectorAll('.alloflow-cloze-input,.interactive-blank,input.alloflow-response-input,textarea,select,input[type="text"],input[type="number"],input:not([type])');
+        const formCtrls = scoped.querySelectorAll('.alloflow-cloze-input,.interactive-blank,input.alloflow-response-input,input[type="checkbox"],input[type="radio"],textarea,select,input[type="text"],input[type="number"],input:not([type])');
         for (let i = 0; i < formCtrls.length; i++) {
           const ctrl = formCtrls[i];
           if (!ctrl.parentNode) continue;
@@ -699,8 +849,12 @@
             ctrl.remove();
             continue;
           }
+          const ctrlTag = String(ctrl.tagName || '').toLowerCase();
+          const ctrlType = ctrlTag === 'input' ? String(ctrl.type || ctrl.getAttribute('type') || 'text').toLowerCase() : '';
           let replacement = ' blank ';
-          if (String(ctrl.tagName || '').toLowerCase() === 'select') {
+          if (ctrlType === 'checkbox' || ctrlType === 'radio') {
+            replacement = (ctrl.checked || ctrl.hasAttribute('checked')) ? ' (selected) ' : '';
+          } else if (ctrlTag === 'select') {
             const sVal = String(ctrl.value || '').trim();
             const opt = (ctrl.options && ctrl.selectedIndex >= 0) ? ctrl.options[ctrl.selectedIndex] : null;
             const oTxt = opt ? String(opt.textContent || '').trim() : '';
@@ -723,6 +877,49 @@
           || (sumEl.closest && !!sumEl.closest('figure'))
           || /^(?:text from this image|transcribed from\b)/i.test(sTxt);
         if (isCompanionChrome) sumEl.remove();
+      }
+      if (doc) {
+        const mathNodes = scoped.querySelectorAll('math');
+        for (let i = 0; i < mathNodes.length; i++) {
+          const mathEl = mathNodes[i];
+          if (!mathEl.parentNode) continue;
+          if (mathEl.hasAttribute('hidden') || mathEl.getAttribute('aria-hidden') === 'true' || (mathEl.closest && mathEl.closest('[hidden],[aria-hidden="true"]'))) {
+            mathEl.remove();
+            continue;
+          }
+          const mTxt = _alloLinearizeMathNode(mathEl);
+          mathEl.parentNode.replaceChild(doc.createTextNode(mTxt ? ' ' + mTxt + ' ' : ''), mathEl);
+        }
+        const svgNodes = scoped.querySelectorAll('svg');
+        for (let i = 0; i < svgNodes.length; i++) {
+          const svgEl = svgNodes[i];
+          if (!svgEl.parentNode) continue;
+          const svgRole = String(svgEl.getAttribute('role') || '').toLowerCase();
+          if ((svgEl.closest && svgEl.closest('.alloflow-inline-chart,[hidden],[aria-hidden="true"]')) || svgEl.getAttribute('aria-hidden') === 'true' || svgRole === 'presentation' || svgRole === 'none') {
+            svgEl.remove();
+            continue;
+          }
+          const sLbl = _alloSpokenText(svgEl.getAttribute('aria-label') || Array.from(svgEl.querySelectorAll('title, desc')).map((n) => (n.textContent || '').trim()).filter(Boolean).join('. '));
+          if (!sLbl) {
+            svgEl.remove();
+            continue;
+          }
+          const fig = svgEl.closest && svgEl.closest('figure');
+          const cap = fig && fig.querySelector('figcaption');
+          const capNorm = cap ? _alloSpokenText(cap.textContent || '').toLowerCase() : '';
+          if (capNorm && capNorm.indexOf(sLbl.toLowerCase()) !== -1) {
+            svgEl.remove();
+            continue;
+          }
+          if (svgEl.closest && svgEl.closest('p,h1,h2,h3,h4,h5,h6,li,blockquote,dd,dt,th,td,caption,figcaption,figure,span,a,strong,em')) {
+            svgEl.parentNode.replaceChild(doc.createTextNode(' ' + sLbl + '. '), svgEl);
+          } else {
+            const p = doc.createElement('p');
+            p.className = 'alloflow-spoken-media';
+            p.textContent = sLbl + '.';
+            svgEl.parentNode.replaceChild(p, svgEl);
+          }
+        }
       }
       const annotations = scoped.querySelectorAll('annotation, annotation-xml, [data-allo-latex-src]');
       for (let i = 0; i < annotations.length; i++) annotations[i].remove();
@@ -1114,6 +1311,15 @@
     if (['script', 'style', 'template', 'noscript', 'button', 'input', 'select', 'textarea', 'audio', 'video'].indexOf(tag) !== -1) return true;
     if (el.getAttribute && el.getAttribute('aria-hidden') === 'true') return true;
     if (el.classList && (el.classList.contains('allo-ka-bar') || el.classList.contains('allo-ka-audios'))) return true;
+    if (tag === 'svg') {
+      const role = String(el.getAttribute && el.getAttribute('role') || '').toLowerCase();
+      if (role === 'presentation' || role === 'none' || (el.closest && el.closest('.alloflow-inline-chart'))) return true;
+      const svgLbl = String(
+        (el.getAttribute && el.getAttribute('aria-label')) ||
+        Array.from((el.querySelectorAll && el.querySelectorAll('title, desc')) || []).map((n) => (n.textContent || '').trim()).filter(Boolean).join('. ')
+      ).replace(/\s+/g, ' ').trim();
+      return !svgLbl;
+    }
     if (tag === 'a') {
       const role = String(el.getAttribute('role') || '').toLowerCase();
       const rel = String(el.getAttribute('rel') || '').toLowerCase().split(/\s+/);
@@ -1124,11 +1330,12 @@
   };
   const _alloKaAtomicSpeech = (el) => {
     const tag = String(el && el.tagName || '').toLowerCase();
-    if (tag === 'math') {
-      const labelled = el.getAttribute('aria-label') || el.getAttribute('alttext');
-      if (labelled) return String(labelled);
-      const annotation = el.querySelector && el.querySelector('annotation[encoding="application/x-tex"],annotation[encoding="application/tex"]');
-      return String((annotation && annotation.textContent) || el.textContent || '');
+    if (tag === 'math') return _alloLinearizeMathNode(el);
+    if (tag === 'svg') {
+      return String(
+        (el.getAttribute && el.getAttribute('aria-label')) ||
+        Array.from((el.querySelectorAll && el.querySelectorAll('title, desc')) || []).map((n) => (n.textContent || '').trim()).filter(Boolean).join('. ')
+      ).replace(/\s+/g, ' ').trim();
     }
     if (tag === 'ruby') {
       const clone = el.cloneNode(true);
@@ -1155,7 +1362,7 @@
       if (_alloKaIgnoredElement(node)) { appendGap(); return; }
       const tag = String(node.tagName || '').toLowerCase();
       if (tag === 'br') { appendGap(); return; }
-      if (tag === 'math' || tag === 'ruby') {
+      if (tag === 'math' || tag === 'ruby' || tag === 'svg') {
         const spoken = _alloKaAtomicSpeech(node);
         if (!spoken) return;
         const start = text.length;
@@ -1531,14 +1738,19 @@
     const parse = () => new DOMParser().parseFromString(String(htmlContent || ''), 'text/html');
     const serialize = (doc) => '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
     const studentDoc = parse();
-    const teacherSections = Array.from(studentDoc.querySelectorAll('.teacher-view, [data-allo-teacher-only]'));
+    const teacherSections = Array.from(studentDoc.querySelectorAll('.teacher-view, [data-allo-teacher-only], [data-teacher-only], .teacher-only'));
     if (teacherSections.length === 0) throw new Error('The teacher answer-key section was not found, so a safe student copy could not be verified.');
     teacherSections.forEach((section) => {
       const prior = section.previousElementSibling;
       if (prior && prior.classList && prior.classList.contains('page-break')) prior.remove();
       section.remove();
     });
-    studentDoc.querySelectorAll('.answer-key, .alloflow-teacher-copy-banner, .alloflow-cs-answer-key, .alloflow-glossary-worksheet-key, .alloflow-math-solution, .alloflow-fluency-key, .alloflow-teacher-plan, .alloflow-teacher-annotations, .alloflow-teacher-annotations-by-resource').forEach((node) => node.remove());
+    studentDoc.querySelectorAll('.answer-key, .alloflow-teacher-copy-banner, .alloflow-cs-answer-key, .alloflow-glossary-worksheet-key, .alloflow-math-solution, .alloflow-fluency-key, .alloflow-teacher-plan, .alloflow-teacher-annotations, .alloflow-teacher-annotations-by-resource, del[data-allo-change-id], [data-allo-change-kind="structure-delete"], [data-allo-citation-store], .allo-block-controls, .allo-block-remove, .alloflow-quiz-feedback, .alloflow-gm-feedback, .alloflow-match-feedback').forEach((node) => node.remove());
+    studentDoc.querySelectorAll('ins[data-allo-change-id]').forEach((node) => {
+      if (!node.parentNode) return;
+      while (node.firstChild) node.parentNode.insertBefore(node.firstChild, node);
+      node.remove();
+    });
     // The pack profile lists every resource, teacher-only ones included, with
     // its adapted grade level. Nothing in the student page reads it.
     studentDoc.querySelectorAll('#alloflow-interactive-object-profile').forEach((node) => node.remove());
@@ -1568,20 +1780,22 @@
   const _alloSanitizeAssessmentStudentHtml = (htmlContent) => {
     if (typeof DOMParser === 'undefined') throw new Error('This browser cannot verify a student-safe assessment export.');
     const doc = new DOMParser().parseFromString(String(htmlContent || ''), 'text/html');
-    doc.querySelectorAll('.teacher-view,[data-allo-teacher-only]').forEach((section) => {
+    doc.querySelectorAll('.teacher-view,[data-allo-teacher-only],[data-teacher-only],.teacher-only').forEach((section) => {
       const prior = section.previousElementSibling;
       if (prior && prior.classList && prior.classList.contains('page-break')) prior.remove();
       section.remove();
     });
-    doc.querySelectorAll('.answer-key,.alloflow-teacher-copy-banner,.alloflow-cs-answer-key,.alloflow-glossary-worksheet-key,.alloflow-math-solution,.alloflow-fluency-key,.alloflow-teacher-plan,.alloflow-teacher-annotations,.alloflow-teacher-annotations-by-resource,.allo-block-controls,.allo-block-remove,del[data-allo-change-id],[data-allo-citation-store],#alloflow-interactive-object-profile').forEach((node) => node.remove());
+    doc.querySelectorAll('.answer-key,.alloflow-teacher-copy-banner,.alloflow-cs-answer-key,.alloflow-glossary-worksheet-key,.alloflow-math-solution,.alloflow-fluency-key,.alloflow-teacher-plan,.alloflow-teacher-annotations,.alloflow-teacher-annotations-by-resource,.allo-block-controls,.allo-block-remove,del[data-allo-change-id],[data-allo-change-kind="structure-delete"],[data-allo-citation-store],#alloflow-interactive-object-profile,.alloflow-quiz-feedback,.alloflow-quiz-check-btn,.quiz-check-btn,.alloflow-gm-feedback,.alloflow-gm-check-btn,.alloflow-gm-controls,.alloflow-match-feedback,.alloflow-match-check-btn,.alloflow-match-controls,.alloflow-venn-check-btn,.alloflow-cloze-controls,.alloflow-cloze-check-btn,.alloflow-cloze-translation,[data-allo-cloze-trans]').forEach((node) => node.remove());
     doc.querySelectorAll('ins[data-allo-change-id]').forEach((node) => {
       if (!node.parentNode) return;
       while (node.firstChild) node.parentNode.insertBefore(node.firstChild, node);
       node.remove();
     });
     doc.querySelectorAll('.question[data-correct]').forEach((node) => node.setAttribute('data-correct', ''));
-    doc.querySelectorAll('[data-fill-answers],[data-correct-multi],[data-sequence-key],[data-relation-key],[data-answer-evidence-key],[data-numeric-key],[data-matching-key],[data-ordering-key],[data-correct-label],[data-cloze-answer],[data-answer-zone],.alloflow-tl-strip[data-original-index]').forEach((node) => {
-      ['data-fill-answers', 'data-correct-multi', 'data-sequence-key', 'data-relation-key', 'data-answer-evidence-key', 'data-numeric-key', 'data-matching-key', 'data-ordering-key', 'data-correct-label', 'data-cloze-answer', 'data-answer-zone', 'data-original-index'].forEach((attr) => {
+    const _sanStripAttrs = ['data-correct', 'data-fill-answers', 'data-correct-multi', 'data-sequence-key', 'data-relation-key', 'data-answer-evidence-key', 'data-numeric-key', 'data-matching-key', 'data-ordering-key', 'data-correct-label', 'data-cloze-answer', 'data-answer-zone', 'data-original-index', 'data-answer', 'data-expected', 'data-answer-key', 'data-correct-index', 'data-correct-indices', 'data-correct-order', 'data-correct-principle', 'data-cat', 'data-zone', 'data-target-zone', 'data-allo-expected', 'data-expected-answer', 'data-answer-index', 'data-correct-answer', 'data-fill-policy', 'data-numeric-answer', 'data-numeric-tolerance', 'data-match-right', 'data-right-index'];
+    doc.querySelectorAll(_sanStripAttrs.map((a) => '[' + a + ']').join(',')).forEach((node) => {
+      _sanStripAttrs.forEach((attr) => {
+        if (attr === 'data-correct' && node.classList && node.classList.contains('question')) return;
         if (node.hasAttribute(attr)) node.removeAttribute(attr);
       });
     });
@@ -1605,13 +1819,46 @@
         container.appendChild(node);
       });
       const response = container.querySelector('.alloflow-tl-response');
-      if (response) response.value = '';
+      if (response) {
+        response.value = '';
+        response.removeAttribute('value');
+      }
+    });
+    doc.querySelectorAll('.question input, .alloflow-response-input, .interactive-blank, .alloflow-cloze-input, input[data-allo-response-key]').forEach((node) => {
+      const typ = String(node.type || node.getAttribute('type') || 'text').toLowerCase();
+      if (typ === 'checkbox' || typ === 'radio') {
+        node.checked = false;
+        node.removeAttribute('checked');
+      } else if (typ !== 'button' && typ !== 'submit' && typ !== 'reset' && typ !== 'hidden') {
+        node.value = '';
+        node.removeAttribute('value');
+      } else if (node.classList && (node.classList.contains('alloflow-cs-response') || node.classList.contains('alloflow-venn-response'))) {
+        node.value = '';
+        node.removeAttribute('value');
+      }
+    });
+    doc.querySelectorAll('.question textarea, textarea.alloflow-response-input, textarea[data-allo-response-key]').forEach((node) => {
+      node.value = '';
+      node.textContent = '';
+    });
+    doc.querySelectorAll('.question select, select.alloflow-cs-response, select.alloflow-venn-response, select.alloflow-response-input, select[data-allo-response-key]').forEach((sel) => {
+      const opts = sel.options || sel.querySelectorAll('option');
+      let blankIdx = -1;
+      for (let i = 0; i < opts.length; i++) {
+        opts[i].selected = false;
+        opts[i].removeAttribute('selected');
+        if (blankIdx === -1 && String(opts[i].getAttribute('value') || '') === '') blankIdx = i;
+      }
+      sel.selectedIndex = blankIdx;
+    });
+    doc.querySelectorAll('.question, .alloflow-cs-strip, .alloflow-venn-card, .alloflow-cloze-input').forEach((node) => {
+      if (node.classList) node.classList.remove('is-correct', 'is-wrong', 'correct', 'incorrect');
     });
     doc.querySelectorAll('.alloflow-tl-check-btn,.alloflow-cs-check-btn,.alloflow-venn-check-button,.quiz-check-btn,.alloflow-cloze-check-btn,.alloflow-glossary-check-btn').forEach((node) => node.remove());
     if (!doc.getElementById('alloflow-assessment-export-safety')) {
       const style = doc.createElement('style');
       style.id = 'alloflow-assessment-export-safety';
-      style.textContent = '.quiz-controls,.alloflow-cs-controls,.alloflow-tl-check-btn,.alloflow-cs-check-btn,.alloflow-venn-check-button,.quiz-check-btn,.alloflow-cloze-check-btn,.alloflow-glossary-check-btn{display:none!important}';
+      style.textContent = '.alloflow-tl-check-btn,.alloflow-cs-check-btn,.alloflow-venn-check-btn,.alloflow-venn-check-button,.alloflow-match-check-btn,.alloflow-gm-check-btn,.quiz-check-btn,.alloflow-cloze-check-btn,.alloflow-glossary-check-btn,[data-allo-self-check-btn]{display:none!important}';
       doc.head.appendChild(style);
     }
     if (doc.title) doc.title = doc.title.replace(/^TEACHER COPY\s*[—:-]\s*/i, '');
@@ -1715,6 +1962,7 @@
       // the edit-loss dirty flag previously shipped INSIDE student-facing
       // exports (2026-06-11; the live preview keeps its badges untouched).
       var _exClone = iframeDoc.documentElement.cloneNode(true);
+      if (!_assessmentStudentOnly) _alloSyncLiveControlsToAttrs(iframeDoc.documentElement, _exClone);
       try {
         var _exKill = _exClone.querySelectorAll('#a11y-inspect-css, #a11y-inspect-styles, #allo-builder-edit-css, #allo-builder-view-filter, #allo-builder-paper-css, .a11y-inspect-badge, .allo-block-controls, .allo-block-remove, [data-allo-crop-ui], [data-allo-citation-store], del[data-allo-change-id]');
         for (var _ki = 0; _ki < _exKill.length; _ki++) _exKill[_ki].remove();
@@ -1762,11 +2010,20 @@
           _bn.removeAttribute('data-alloflow-prompt-inert'); _bn.removeAttribute('data-alloflow-prompt-aria');
         }
       } catch (_exStripErr) { /* strip is best-effort — never block an export */ }
+      if (_assessmentStudentOnly) {
+        try {
+          const _preSafeCloneHtml = _alloSanitizeAssessmentStudentHtml('<!DOCTYPE html>\n' + _exClone.outerHTML);
+          if (typeof DOMParser !== 'undefined') _exClone = new DOMParser().parseFromString(_preSafeCloneHtml, 'text/html').documentElement;
+        } catch (assessmentPreError) {
+          _alloExportNotice(assessmentPreError && assessmentPreError.message ? assessmentPreError.message : 'Assessment content could not be verified as student-safe.', 'error', addToast);
+          return false;
+        }
+      }
       // Read-aloud: turn every [data-ka-readable] passage into inline
       // sentence-karaoke on the clone (modal-driven, at download time).
       if (_readAloudMode) {
         try {
-          const _kaResult = await _alloKaraokeProcess(_exClone, { callTTS: callTTS, selectedVoice: selectedVoice, addToast: addToast, mode: _readAloudMode, singleFile: _wantSingleFile, studentSafeAudio: _separateTeacherStudent });
+          const _kaResult = await _alloKaraokeProcess(_exClone, { callTTS: callTTS, selectedVoice: selectedVoice, addToast: addToast, mode: _readAloudMode, singleFile: _wantSingleFile, studentSafeAudio: _separateTeacherStudent || _assessmentStudentOnly });
           _audioAssets = (_kaResult && _kaResult.assets) || [];
           _readAloudApplied = true;
         }
@@ -1796,10 +2053,18 @@
       return;
     }
 
+    if (_assessmentStudentOnly && _readAloudMode && !_readAloudApplied && mode === 'html') {
+      try { htmlContent = _alloSanitizeAssessmentStudentHtml(htmlContent); }
+      catch (assessmentSafetyPreError) {
+        _alloExportNotice(assessmentSafetyPreError && assessmentSafetyPreError.message ? assessmentSafetyPreError.message : 'Assessment content could not be verified as student-safe.', 'error', addToast);
+        return false;
+      }
+    }
+
     if (_readAloudMode && !_readAloudApplied && mode === 'html' && typeof DOMParser !== 'undefined') {
       try {
         const _kaDoc = new DOMParser().parseFromString(htmlContent, 'text/html');
-        const _kaResult = await _alloKaraokeProcess(_kaDoc.documentElement, { callTTS: callTTS, selectedVoice: selectedVoice, addToast: addToast, mode: _readAloudMode, singleFile: _wantSingleFile, studentSafeAudio: _separateTeacherStudent });
+        const _kaResult = await _alloKaraokeProcess(_kaDoc.documentElement, { callTTS: callTTS, selectedVoice: selectedVoice, addToast: addToast, mode: _readAloudMode, singleFile: _wantSingleFile, studentSafeAudio: _separateTeacherStudent || _assessmentStudentOnly });
         _audioAssets = (_kaResult && _kaResult.assets) || [];
         htmlContent = '<!DOCTYPE html>\n' + _kaDoc.documentElement.outerHTML;
         _readAloudApplied = true;
@@ -1837,6 +2102,7 @@
         // The exported runtime normally asks who is working before enabling
         // local autosave. Print popups are transient and must never show that
         // learner-workspace prompt in the worksheet/PDF handoff.
+        try { printWindow.opener = null; } catch (_) {}
         try { printWindow.__alloflowPrintExport = true; } catch (_) {}
         printWindow.document.write(htmlContent);
         printWindow.document.close();
@@ -2002,6 +2268,7 @@
       const printWindow = window.open('', '_blank');
       if (printWindow) {
         // Keep the transient print document out of learner-scoped autosave.
+        try { printWindow.opener = null; } catch (_) {}
         try { printWindow.__alloflowPrintExport = true; } catch (_) {}
         printWindow.document.write(htmlContent);
         printWindow.document.close();
@@ -2101,6 +2368,7 @@
 
     const dialog = doc.createElement('div');
     dialog.className = 'a11y-inspect-editor';
+    dialog.tabIndex = -1;
     dialog.setAttribute('role', 'dialog');
     dialog.setAttribute('aria-modal', 'true');
     dialog.setAttribute('aria-labelledby', 'a11y-inspect-editor-title');
@@ -2182,7 +2450,7 @@
       if (typeof opts.onSave === 'function') opts.onSave(input.value);
       close(true);
     });
-    dialog.addEventListener('keydown', function(ev) {
+    overlay.addEventListener('keydown', function(ev) {
       if (ev.key === 'Escape') {
         ev.preventDefault();
         ev.stopPropagation();
@@ -2191,8 +2459,18 @@
       }
       if (ev.key !== 'Tab') return;
       const focusable = [input, cancel, save].filter(function(el) { return !el.disabled; });
+      if (!focusable.length) {
+        ev.preventDefault();
+        dialog.focus();
+        return;
+      }
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
+      if (focusable.indexOf(doc.activeElement) === -1) {
+        ev.preventDefault();
+        (ev.shiftKey ? last : first).focus();
+        return;
+      }
       if (ev.shiftKey && doc.activeElement === first) {
         ev.preventDefault();
         last.focus();
@@ -2578,57 +2856,126 @@
         });
       }
     } else if (activeView === 'glossary' && generatedContent && generatedContent.type === 'glossary') {
-      const terms = (generatedContent && generatedContent.data) || [];
-      const displayed = filteredGlossaryData || [];
-      const tier2 = terms.filter(function(t) { return t.tier === 'Academic'; }).length;
-      const tier3 = terms.filter(function(t) { return t.tier === 'Domain-Specific'; }).length;
+      const rawGlossary = generatedContent && generatedContent.data;
+      const unwrappedTerms = Array.isArray(rawGlossary) ? rawGlossary : (rawGlossary && typeof rawGlossary === 'object' ? (rawGlossary.terms || rawGlossary.items || rawGlossary.entries || rawGlossary.glossary || []) : []);
+      const terms = (Array.isArray(unwrappedTerms) ? unwrappedTerms : []).filter(function(t) { return !(t && (t.isSelected === false || t.selected === false)); });
+      const displayed = Array.isArray(filteredGlossaryData) ? filteredGlossaryData : terms;
+      const tier2 = terms.filter(function(t) { return t && t.tier === 'Academic'; }).length;
+      const tier3 = terms.filter(function(t) { return t && t.tier === 'Domain-Specific'; }).length;
       items.push({ type: 'heading', text: 'Glossary. ' + terms.length + ' total terms. ' + tier2 + ' academic, ' + tier3 + ' domain-specific.' });
       if (displayed.length !== terms.length) items.push({ type: 'status', text: 'Showing ' + displayed.length + ' filtered terms.' });
       displayed.forEach(function(term, i) {
-        const defText = term.def || term.definition || '';
-        items.push({ type: 'term', text: 'Term ' + (i + 1) + ': ' + term.term + (defText ? '. ' + defText : '') + (term.example ? ' Example: ' + term.example : '') });
+        if (!term) return;
+        const termWord = typeof term === 'string' ? term : (term.term || term.word || term.name || '');
+        const defText = typeof term === 'object' ? (term.def || term.definition || term.meaning || '') : '';
+        items.push({ type: 'term', text: 'Term ' + (i + 1) + ': ' + termWord + (defText ? '. ' + defText : '') + (term.example ? ' Example: ' + term.example : '') });
       });
     } else if (activeView === 'quiz' && generatedContent && generatedContent.type === 'quiz') {
       const questions = (generatedContent.data && generatedContent.data.questions) || [];
       items.push({ type: 'heading', text: 'Exit Ticket. ' + questions.length + ' questions.' });
       const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
+      const _qStripMd = function(raw) {
+        return String(raw == null ? '' : raw)
+          .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+          .replace(/\*\*([^*]+)\*\*/g, '$1').replace(/__([^_]+)__/g, '$1')
+          .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1$2').replace(/(^|[^_])_([^_\n]+)_(?!_)/g, '$1$2')
+          .replace(/~~([^~]+)~~/g, '$1').replace(/`([^`\n]+)`/g, '$1')
+          .replace(/\s+/g, ' ').trim();
+      };
       const _qItemText = function(v) {
         if (v == null) return '';
-        if (typeof v === 'object') return String(v.text || v.label || v.term || v.event || v.prompt || '').trim();
-        return String(v).trim();
+        if (typeof v === 'object') return _qStripMd(v.text || v.label || v.term || v.event || v.prompt || '');
+        return _qStripMd(v);
       };
+      const _qHash = function(s) {
+        const str = String(s == null ? '' : s);
+        let h = 2166136261;
+        for (let hi = 0; hi < str.length; hi++) {
+          h ^= str.charCodeAt(hi);
+          h = Math.imul(h, 16777619) >>> 0;
+        }
+        return h;
+      };
+      const _qDeterministicShuffle = function(arr, seed) {
+        if (!Array.isArray(arr) || arr.length <= 1) return arr ? arr.slice() : [];
+        const indexed = arr.map(function(val, idx) {
+          return { val: val, idx: idx, hash: _qHash(String(seed || '') + ':' + idx + ':' + _qItemText(val)) };
+        }).sort(function(a, b) { return a.hash - b.hash || a.idx - b.idx; });
+        if (indexed.every(function(entry, idx) { return entry.idx === idx; })) indexed.push(indexed.shift());
+        return indexed.map(function(entry) { return entry.val; });
+      };
+      const _qKeepPartnerOrder = Boolean(deps && deps.includeTeacherKey === true && deps.assessmentMode !== true);
       questions.forEach(function(q, i) {
-        if (q.passage) items.push({ type: 'passage', text: 'Passage: ' + String(q.passage).trim() });
-        const qStem = String(q.question || q.prompt || q.statement || q.sentence || '').trim();
+        if (!q || typeof q !== 'object') return;
+        if (q.passage) items.push({ type: 'passage', text: 'Passage: ' + _qStripMd(q.passage) });
+        const qRawType = String(q.type || 'mcq').trim().toLowerCase();
+        const qNormType = (qRawType === 'true_false' || qRawType === 'tf' || qRawType === 'truefalse') ? 'true-false'
+          : (qRawType === 'multi_select' || qRawType === 'multiselect') ? 'multi-select'
+          : (qRawType === 'multiple_choice' || qRawType === 'multiple-choice') ? 'mcq' : qRawType;
+        const qStem = _qStripMd(q.question || q.prompt || q.statement || q.sentence || '');
         items.push({ type: 'question', text: 'Question ' + (i + 1) + ': ' + qStem });
-        if (q.type === 'multi-select') items.push({ type: 'note', text: 'Select all that apply.' });
-        if (q.options && Array.isArray(q.options)) {
-          q.options.forEach(function(opt, j) {
-            items.push({ type: 'option', text: 'Option ' + (letters[j] || j + 1) + ': ' + _qItemText(opt) });
+        if (qNormType === 'multi-select') items.push({ type: 'note', text: 'Select all that apply.' });
+        const qOpts = Array.isArray(q.options) ? q.options : (Array.isArray(q.answerOptions) ? q.answerOptions : []);
+        const cleanOpts = qOpts.map(_qItemText).filter(Boolean);
+        if (cleanOpts.length > 0) {
+          cleanOpts.forEach(function(optTxt, j) {
+            items.push({ type: 'option', text: 'Option ' + (letters[j] || j + 1) + ': ' + optTxt });
           });
-        } else if (q.type === 'true-false') {
+        } else if (qNormType === 'true-false') {
           items.push({ type: 'option', text: 'Option A: True' });
           items.push({ type: 'option', text: 'Option B: False' });
         }
         const evList = q.evidenceOptions || q.evidence;
-        if (Array.isArray(evList) && evList.length > 0) {
-          evList.forEach(function(ev, j) {
-            items.push({ type: 'option', text: 'Evidence ' + (letters[j] || j + 1) + ': ' + _qItemText(ev) });
+        const cleanEv = Array.isArray(evList) ? evList.map(_qItemText).filter(Boolean) : [];
+        if (cleanEv.length > 0) {
+          cleanEv.forEach(function(evTxt, j) {
+            items.push({ type: 'option', text: 'Evidence ' + (letters[j] || j + 1) + ': ' + evTxt });
           });
         }
         if (Array.isArray(q.pairs) && q.pairs.length > 0) {
-          q.pairs.forEach(function(pair, j) {
-            const left = pair && (pair.left || pair.term || pair.item || pair.a || '');
-            const right = pair && (pair.right || pair.match || pair.def || pair.definition || pair.b || '');
-            items.push({ type: 'option', text: 'Pair ' + (j + 1) + ': ' + String(left).trim() + (right ? ' — ' + String(right).trim() : '') });
-          });
+          if (qNormType === 'relation-mismatch') {
+            q.pairs.forEach(function(pair, j) {
+              const left = pair && (pair.left || pair.term || pair.item || pair.a || '');
+              const right = pair && (pair.right || pair.match || pair.def || pair.definition || pair.b || '');
+              items.push({ type: 'option', text: 'Pair ' + (j + 1) + ': ' + _qStripMd(left) + (right ? ' — ' + _qStripMd(right) : '') });
+            });
+          } else {
+            const lefts = [];
+            const rights = [];
+            q.pairs.forEach(function(pair) {
+              const left = pair && (pair.left || pair.term || pair.item || pair.a || pair.prompt || '');
+              const right = pair && (pair.right || pair.match || pair.def || pair.definition || pair.b || pair.answer || '');
+              if (String(left).trim()) lefts.push(_qStripMd(left));
+              if (String(right).trim()) rights.push(_qStripMd(right));
+            });
+            lefts.forEach(function(lTxt, j) {
+              items.push({ type: 'option', text: 'Prompt ' + (j + 1) + ': ' + lTxt });
+            });
+            const shuffledRights = _qDeterministicShuffle(rights, 'match:' + i + ':' + qStem);
+            shuffledRights.forEach(function(rTxt, j) {
+              items.push({ type: 'option', text: 'Match choice ' + (letters[j] || (j + 1)) + ': ' + rTxt });
+            });
+          }
         } else if (Array.isArray(q.leftItems) || Array.isArray(q.rightItems)) {
-          (q.leftItems || []).forEach(function(l, j) { items.push({ type: 'option', text: 'Left ' + (j + 1) + ': ' + _qItemText(l) }); });
-          (q.rightItems || []).forEach(function(r, j) { items.push({ type: 'option', text: 'Right ' + (j + 1) + ': ' + _qItemText(r) }); });
+          (q.leftItems || []).forEach(function(l, j) { items.push({ type: 'option', text: 'Prompt ' + (j + 1) + ': ' + _qItemText(l) }); });
+          const shuffledRightItems = _qDeterministicShuffle(q.rightItems || [], 'matchlr:' + i + ':' + qStem);
+          shuffledRightItems.forEach(function(r, j) { items.push({ type: 'option', text: 'Match choice ' + (letters[j] || (j + 1)) + ': ' + _qItemText(r) }); });
+        }
+        const cleanPartners = Array.isArray(q.candidatePartners) ? q.candidatePartners.map(_qItemText).filter(Boolean) : [];
+        if (cleanPartners.length > 0) {
+          const shownPartners = (!_qKeepPartnerOrder && cleanPartners.length > 1)
+            ? _qDeterministicShuffle(cleanPartners, 'cand:' + i + ':' + qStem)
+            : cleanPartners;
+          shownPartners.forEach(function(cpTxt, j) {
+            items.push({ type: 'option', text: 'Candidate partner ' + (j + 1) + ': ' + cpTxt });
+          });
         }
         const seqList = q.items || q.steps || q.events;
         if (Array.isArray(seqList) && seqList.length > 0) {
-          seqList.forEach(function(seqItem, j) {
+          const orderedSeq = (Array.isArray(q.presentedOrder) && q.presentedOrder.length === seqList.length && q.presentedOrder.every(function(idx) { return Number.isInteger(idx) && idx >= 0 && idx < seqList.length; }))
+            ? q.presentedOrder.map(function(idx) { return seqList[idx]; })
+            : (seqList.length > 1 ? _qDeterministicShuffle(seqList, 'seq:' + i + ':' + qStem) : seqList);
+          orderedSeq.forEach(function(seqItem, j) {
             items.push({ type: 'option', text: 'Item ' + (j + 1) + ': ' + _qItemText(seqItem) });
           });
         }
@@ -2644,8 +2991,15 @@
           if (rTxt) items.push({ type: 'reflection', text: 'Reflection ' + (ri + 1) + ': ' + rTxt });
         });
       }
-    } else if (activeView === 'simplified' && generatedContent && generatedContent.type === 'simplified') {
-      const txt = (generatedContent && typeof generatedContent.data === 'string') ? generatedContent.data : '';
+    } else if (activeView === 'simplified' && generatedContent && (generatedContent.type === 'simplified' || generatedContent.type === 'same-text-supported')) {
+      const rawSimData = generatedContent && generatedContent.data;
+      let txt = typeof rawSimData === 'string'
+        ? rawSimData
+        : (rawSimData && typeof rawSimData === 'object' ? (rawSimData.text || rawSimData.passage || rawSimData.content || rawSimData.clozeText || '') : '');
+      txt = String(txt || '')
+        .replace(/\r?\n---\s*ENGLISH TRANSLATION\s*---\r?\n[\s\S]*$/i, '')
+        .replace(/\[\[CHART:\s*\{[\s\S]*?\}\s*\]\]/gi, '')
+        .trim();
       if (txt) {
         const wc = txt.trim().split(/\s+/).filter(function(w) { return w; }).length;
         items.push({ type: 'heading', text: 'Adapted text. ' + wc + ' words.' });
@@ -2661,16 +3015,26 @@
       const d = generatedContent.data;
       if (d && d.accuracy && d.accuracy.discrepancies) items.push({ type: 'status', text: d.accuracy.discrepancies.length + ' accuracy items found.' });
       if (d && d.grammar) items.push({ type: 'status', text: d.grammar.length + ' grammar suggestions.' });
-      if (d && d.summary) items.push({ type: 'text', text: typeof d.summary === 'string' ? d.summary : JSON.stringify(d.summary) });
+      if (d && d.summary) {
+        const sumText = typeof d.summary === 'string'
+          ? d.summary
+          : (typeof d.summary === 'object' ? Object.keys(d.summary).map(function(k) { return typeof d.summary[k] === 'string' ? d.summary[k] : ''; }).filter(Boolean).join('. ') : String(d.summary));
+        if (sumText) items.push({ type: 'text', text: sumText });
+      }
     } else if (activeView === 'sentence-frames' && generatedContent && generatedContent.type === 'sentence-frames') {
       const data = generatedContent.data || {};
-      const frames = Array.isArray(data) ? data : (Array.isArray(data.items) ? data.items : []);
+      const rawFrames = Array.isArray(data) ? data : (Array.isArray(data.items) ? data.items : []);
+      const frames = rawFrames
+        .filter(function(frame) { return !(frame && typeof frame === 'object' && (frame.isSelected === false || frame.selected === false)); })
+        .map(function(frame) { return typeof frame === 'string' ? frame.trim() : String((frame && (frame.text || frame.frame)) || '').trim(); })
+        .filter(Boolean);
+      const hideTeacherRubric = Boolean(deps && (deps.isStudentMode === true || deps.studentMode === true || deps.assessmentMode === true || (deps.exportConfig && (deps.exportConfig.assessmentMode === true || deps.exportConfig.audience === 'student'))));
       items.push({ type: 'heading', text: !Array.isArray(data) && data.mode !== 'list' && data.text ? 'Paragraph frame.' : 'Sentence frames. ' + frames.length + ' frames generated.' });
-      frames.forEach(function(frame, index) {
-        items.push({ type: 'text', text: 'Frame ' + (index + 1) + ': ' + (typeof frame === 'string' ? frame : (frame.text || frame.frame || '')) });
+      frames.forEach(function(frameText, index) {
+        items.push({ type: 'text', text: 'Frame ' + (index + 1) + ': ' + frameText });
       });
       if (!Array.isArray(data) && data.text) items.push({ type: 'text', text: data.text });
-      if (!Array.isArray(data) && data.rubric) items.push({ type: 'text', text: data.rubric });
+      if (!Array.isArray(data) && data.rubric && !hideTeacherRubric) items.push({ type: 'text', text: data.rubric });
     } else {
       const main = (deps && deps.root) || document.getElementById('main-content');
       if (main) {
@@ -2726,9 +3090,20 @@
     const ref = overrideRef || textEditorRef;
     const textarea = ref && ref.current;
     if (!textarea) return;
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const text = overrideText !== undefined ? overrideText : (generatedContent && generatedContent.data) || '';
+    const rawSrc = (overrideText !== undefined && overrideText !== null)
+      ? overrideText
+      : ((generatedContent && generatedContent.data !== undefined && generatedContent.data !== null)
+        ? generatedContent.data
+        : (typeof textarea.value === 'string' ? textarea.value : ''));
+    const text = typeof rawSrc === 'string'
+      ? rawSrc
+      : (rawSrc && typeof rawSrc === 'object'
+        ? String(rawSrc.simplifiedText ?? rawSrc.text ?? rawSrc.simplified ?? rawSrc.content ?? '')
+        : String(rawSrc || ''));
+    const rawStart = Number.isFinite(Number(textarea.selectionStart)) ? Math.max(0, Math.min(text.length, Number(textarea.selectionStart))) : text.length;
+    const rawEnd = Number.isFinite(Number(textarea.selectionEnd)) ? Math.max(0, Math.min(text.length, Number(textarea.selectionEnd))) : rawStart;
+    const start = Math.min(rawStart, rawEnd);
+    const end = Math.max(rawStart, rawEnd);
     const selection = text.substring(start, end);
     const before = text.substring(0, start);
     const after = text.substring(end);
@@ -2748,8 +3123,8 @@
     const cb = overrideCallback || handleSimplifiedTextChange;
     if (typeof cb === 'function') cb(newText);
     setTimeout(function() {
-      textarea.focus();
-      textarea.setSelectionRange(newCursorPos, newCursorPos);
+      if (typeof textarea.focus === 'function') textarea.focus();
+      if (typeof textarea.setSelectionRange === 'function') textarea.setSelectionRange(newCursorPos, newCursorPos);
     }, 0);
   };
 
@@ -3017,11 +3392,15 @@
   // with a DENY list instead of dumping JSON: never lesson source excerpts or
   // snippets, learner practice evidence, AI feedback, ids/timestamps, or media
   // (data: URLs, base64, image/audio keys). Returns bounded plain-text lines.
-  const _RESOURCE_TEXT_DENY = /^(id|resourceId|schemaVersion|type|mode|status|family|kind|key|layout|chartType|templateType|language|gradeLevel|level|createdAt|updatedAt|generatedAt|reviewedAt|apiKey|token|secret|password|sourceExcerpt|sourceText|sourceTextSnippet|excerpt|lessonRef|factCheck|contentReview|sourceEvidence|verdicts|practiceAttempts|retrievalAttempts|feedback|coachHint|visualCheck|visualReview|visualSyncOmission|basisKey|cueKey|factKeys|translations|omittedAssets|omittedAssetManifest)$/i;
+  const _RESOURCE_TEXT_DENY = /^(id|resourceId|schemaVersion|type|mode|status|family|kind|key|layout|chartType|templateType|language|gradeLevel|level|createdAt|updatedAt|generatedAt|reviewedAt|apiKey|token|secret|password|sourceExcerpt|sourceText|sourceTextSnippet|excerpt|lessonRef|factCheck|contentReview|sourceEvidence|verdicts|practiceAttempts|retrievalAttempts|feedback|coachHint|visualCheck|visualReview|visualSyncOmission|basisKey|cueKey|factKeys|translations|omittedAssets|omittedAssetManifest|correctIndex|correctIndices|correctAnswerIndex|correctEvidenceIndex|wrongPairIndex|correctPartnerIndex)$/i;
+  const _RESOURCE_ANSWER_KEY_DENY = /^(correctAnswer|correctAnswers|correctEvidence|expectedAnswer|expectedFill|sampleAnswer|modelAnswer|answerKey|answerKeys|rubric|scoringGuide|solution|solutions|explanation|teacherComment|teacherNotes|teacherNote|teacherGuidance|teacherTip|correctOrder|wrongPair|correctPartner|correctPartnerForWrong|correctValue|distractors)$/i;
   const _RESOURCE_MEDIA_KEY = /(image|icon|audio|video|thumbnail|avatar|base64|dataurl|blob|portrait|recording|url|src|svg|glb)/i;
   const _RESOURCE_PLAIN_KEY = /^(text|content|body|value|summary|description|label|title|question|prompt|answer|term|def|definition|main|event|item|items|bullets|steps|cues|notes|name|heading|target|essentialFacts|facts)$/i;
   const summarizeResourceText = (item, options) => {
     const max = (options && options.maxChars) || 1200;
+    const hideAnswers = !!(options && (options.hideAnswers === true || options.studentSafe === true));
+    const isAssessment = !!(options && options.assessmentMode === true);
+    const itemType = String((item && item.type) || '').toLowerCase();
     const lines = [];
     let used = 0;
     const seen = typeof WeakSet === 'function' ? new WeakSet() : null;
@@ -3047,6 +3426,13 @@
         if (seen) { if (seen.has(value)) return; seen.add(value); }
         Object.keys(value).forEach((k) => {
           if (_RESOURCE_TEXT_DENY.test(k) || _RESOURCE_MEDIA_KEY.test(k)) return;
+          if (hideAnswers) {
+            if (_RESOURCE_ANSWER_KEY_DENY.test(k)) return;
+            if (/^(answer|answers)$/i.test(k) && !(itemType === 'faq' && !isAssessment)) return;
+            if (itemType === 'math' && /^steps$/i.test(k)) return;
+            if ((itemType === 'note-taking' || itemType === 'guided-notes') && isAssessment && /^(response|notes|summary|hypothesis|data|analysis|conclusion|favoriteLine|thinkings|connection|studentAnswer|notesExtra)$/i.test(k)) return;
+            if (itemType === 'applied-challenge' && isAssessment && /^(response|workspace)$/i.test(k)) return;
+          }
           visit(value[k], k, depth + 1);
         });
       }
@@ -3059,16 +3445,18 @@
 
   // Shared Contract A resource type -> exportConfig toggle key mapping
   const _SLIDE_RESOURCE_TYPE_TO_KEY = {
-    'simplified': 'includeSimplified', 'glossary': 'includeGlossary', 'quiz': 'includeQuiz',
+    'simplified': 'includeSimplified', 'same-text-supported': 'includeOriginalReading',
+    'glossary': 'includeGlossary', 'quiz': 'includeQuiz', 'flashcards': 'includeFlashcards',
     'math': 'includeMath', 'sentence-frames': 'includeSentenceFrames', 'outline': 'includeOutline',
-    'timeline': 'includeTimeline', 'concept-sort': 'includeConceptSort', 'dbq': 'includeDbq',
-    'lesson-plan': 'includeLessonPlan', 'anchor-chart': 'includeAnchorChart',
-    'guided-notes': 'includeGuidedNotes', 'note-taking': 'includeNoteTaking',
-    'memory-aid': 'includeMemoryAid', 'applied-challenge': 'includeAppliedChallenge',
-    'directions': 'includeDirections', 'word-wall': 'includeWordWall',
-    'fluency-record': 'includeFluencyRecord', 'alignment-report': 'includeAlignmentReport',
-    'faq': 'includeFaq', 'analysis': 'includeAnalysis', 'udl-advice': 'includeUdlAdvice',
-    'brainstorm': 'includeBrainstorm'
+    'timeline': 'includeTimeline', 'concept-sort': 'includeConceptSort', 'venn-diagram': 'includeVenn',
+    'word-search': 'includeWordSearch', 'dbq': 'includeDbq', 'lesson-plan': 'includeLessonPlan',
+    'anchor-chart': 'includeAnchorChart', 'guided-notes': 'includeGuidedNotes',
+    'note-taking': 'includeNoteTaking', 'memory-aid': 'includeMemoryAid',
+    'applied-challenge': 'includeAppliedChallenge', 'directions': 'includeDirections',
+    'word-wall': 'includeWordWall', 'fluency-record': 'includeFluencyRecord',
+    'alignment-report': 'includeAlignmentReport', 'faq': 'includeFaq', 'analysis': 'includeAnalysis',
+    'udl-advice': 'includeUdlAdvice', 'brainstorm': 'includeBrainstorm',
+    'study-guide': 'includeStudyGuide', 'gemini-bridge': 'includeGeminiBridge', 'image': 'includeImage'
   };
 
   // ── getSlidesPreviewHTML ─────────────────────────────────────────
@@ -3085,7 +3473,13 @@
         .replace(/'/g, '&#39;');
     };
     const _cleanText = function(v) {
-      return String(v == null ? '' : v).replace(/\*\*/g, '').replace(/\[(.*?)\]\(.*?\)/g, '$1').trim();
+      return String(v == null ? '' : v)
+        .replace(/\[(.*?)\]\(.*?\)/g, '$1')
+        .replace(/`([^`\n]+)`/g, '$1')
+        .replace(/\*\*([^*\n]+)\*\*/g, '$1')
+        .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1$2')
+        .replace(/\*\*/g, '')
+        .trim();
     };
     const _maT = function(key, fallback) {
       const fullKey = 'memory_aid.' + key;
@@ -3094,7 +3488,11 @@
     };
     const activeCfg = exportConfig || (typeof window !== 'undefined' && window.__alloActiveExportConfig) || null;
     const isAssessment = !!(activeCfg && activeCfg.assessmentMode === true);
-    const showKeys = !isAssessment && (!activeCfg || activeCfg.includeTeacherKey !== false);
+    const isStudentAudience = !!(activeCfg && activeCfg.audience === 'student');
+    const showKeys = !isAssessment && !isStudentAudience && (!activeCfg || activeCfg.includeTeacherKey !== false);
+    const _sumOpts = function(maxChars) {
+      return { maxChars: maxChars || 1200, hideAnswers: !showKeys, assessmentMode: isAssessment };
+    };
     const _slideStableHash = function(val) {
       const s = String(val == null ? '' : val);
       let h = 2166136261;
@@ -3108,21 +3506,34 @@
       ? activeCfg.builderResourceIds.map(String)
       : null;
     const _builderIdSet = _builderIds ? new Set(_builderIds) : null;
-    const _teacherOnlySlideTypes = ['alignment-report', 'lesson-plan', 'udl-advice', 'analysis'];
+    const _teacherOnlySlideTypes = ['alignment-report', 'lesson-plan', 'udl-advice', 'analysis', 'gemini-bridge'];
+    const _slideContract = typeof window !== 'undefined' && window.AlloModules ? window.AlloModules.InstructionalContext : null;
+    const _isOrigReading = function(it) {
+      if (!it || typeof it !== 'object') return false;
+      const idStr = it.id != null ? String(it.id) : '';
+      return !!((_slideContract && typeof _slideContract.isSupportedOriginal === 'function' && _slideContract.isSupportedOriginal(it)) || it.type === 'same-text-supported' || it.isOriginalReading === true || (it.meta && it.meta.isOriginalReading === true) || (it.type === 'simplified' && idStr.indexOf('reading-orig-') === 0));
+    };
+    const _slideCfgKeyFor = function(it) {
+      if (_isOrigReading(it)) return 'includeOriginalReading';
+      return _SLIDE_RESOURCE_TYPE_TO_KEY[it && it.type] || '';
+    };
     const rawHistory = (typeof getExportableHistory === 'function' ? getExportableHistory() : []).filter(function(item) {
       if (!item || typeof item !== 'object') return false;
       const itemId = item.id != null ? String(item.id) : '';
       if (_builderIdSet && (!itemId || !_builderIdSet.has(itemId))) return false;
-      const cfgKey = _SLIDE_RESOURCE_TYPE_TO_KEY[item.type] || '';
-      if (cfgKey && activeCfg && activeCfg[cfgKey] === false) return false;
-      if (item.type === 'simplified' && itemId.indexOf('reading-orig-') === 0 && activeCfg && activeCfg.includeOriginalReading === false) return false;
+      const cfgKey = _slideCfgKeyFor(item);
+      if (activeCfg) {
+        if (cfgKey === 'includeUdlAdvice' && (activeCfg.includeUdlAdvice === false || activeCfg.includeUdl === false)) return false;
+        if (item.type === 'guided-notes' && (activeCfg.includeGuidedNotes === false || activeCfg.includeNoteTaking === false)) return false;
+        if (cfgKey && activeCfg[cfgKey] === false) return false;
+      }
       if (!showKeys && _teacherOnlySlideTypes.indexOf(item.type) !== -1) return false;
       return true;
     });
     const resourceOrder = activeCfg && Array.isArray(activeCfg.resourceOrder) ? activeCfg.resourceOrder : [];
     const itemOrder = activeCfg && Array.isArray(activeCfg.resourceItemOrder) ? activeCfg.resourceItemOrder : [];
     const orderedHistory = rawHistory.map(function(item, origIdx) {
-      const key = _SLIDE_RESOURCE_TYPE_TO_KEY[item.type] || '';
+      const key = _slideCfgKeyFor(item);
       const typeRank = key && resourceOrder.length ? resourceOrder.indexOf(key) : -1;
       const itemId = item.id != null ? String(item.id) : '';
       let itemRank = itemId && itemOrder.length ? itemOrder.indexOf(itemId) : -1;
@@ -3177,8 +3588,11 @@
     orderedHistory.forEach(function(item) {
       const title = item.title || item.type || 'Resource';
       const d = item.data;
-      if (item.type === 'simplified' && typeof d === 'string') {
-        const paragraphs = d.split(/\n{2,}/);
+      if ((item.type === 'simplified' || item.type === 'same-text-supported') && (typeof d === 'string' || (d && typeof d === 'object'))) {
+        let rawSim = typeof d === 'string' ? d : (typeof (d.text || d.clozeText || d.content || d.passage) === 'string' ? String(d.text || d.clozeText || d.content || d.passage) : summarizeResourceText(item, _sumOpts(1200)).join('\n\n'));
+        rawSim = String(rawSim || '').replace(/\r?\n---\s*ENGLISH TRANSLATION\s*---\r?\n[\s\S]*$/i, '').replace(/\[\[CHART:\s*\{[\s\S]*?\}\s*\]\]/gi, '');
+        if (!showKeys) rawSim = rawSim.replace(/\[\[([^\]]+)\]\]/g, '________').replace(/\{\{([^}]+)\}\}/g, '________');
+        const paragraphs = rawSim.split(/\n{2,}/);
         let slideContent = ''; let charCount = 0;
         paragraphs.forEach(function(p) {
           const clean = _cleanText(p);
@@ -3190,40 +3604,150 @@
           slideContent += '<p>' + _escSlide(clean) + '</p>'; charCount += clean.length;
         });
         if (slideContent) slides.push('<div class="slide"><div class="slide-title">' + _escSlide(title) + '</div><div class="slide-body">' + slideContent + '</div></div>');
-      } else if ((item.type === 'glossary' || item.type === 'word-wall') && (Array.isArray(d) || (d && typeof d === 'object' && Array.isArray(d.terms || d.items || d.words)))) {
-        const list = Array.isArray(d) ? d : (d.terms || d.items || d.words || []);
+      } else if (item.type === 'flashcards' && (Array.isArray(d) || (d && typeof d === 'object' && Array.isArray(d.cards || d.items)))) {
+        const fcList = (Array.isArray(d) ? d : (d.cards || d.items || [])).filter(function(fc) {
+          return fc != null && (typeof fc !== 'object' || (fc.isSelected !== false && fc.selected !== false));
+        });
+        const FCPP = 4;
+        for (let i = 0; i < fcList.length; i += FCPP) {
+          const chunk = fcList.slice(i, i + FCPP);
+          const cardsHtml = chunk.map(function(fc) {
+            const obj = fc && typeof fc === 'object' ? fc : { front: String(fc || '') };
+            const front = _cleanText(_safeTextVal(obj.front || obj.term || obj.question || obj.word));
+            const back = !showKeys ? '' : _cleanText(_safeTextVal(obj.back || obj.def || obj.definition || obj.answer || obj.meaning));
+            return '<div style="border:2px solid #4f46e5;border-radius:10px;padding:10px 12px;background:#eef2ff"><div style="font-size:15px;font-weight:800;color:#312e81">' + _escSlide(front) + '</div>' + (back ? '<div style="font-size:12px;color:#334155;margin-top:4px">' + _escSlide(back) + '</div>' : '') + '</div>';
+          }).join('');
+          slides.push('<div class="slide"><div class="slide-title">' + _escSlide(title) + (i > 0 ? ' (cont.)' : '') + '</div><div class="slide-body"><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">' + cardsHtml + '</div></div></div>');
+        }
+      } else if ((item.type === 'glossary' || item.type === 'word-wall') && (Array.isArray(d) || (d && typeof d === 'object' && Array.isArray(d.terms || d.items || d.words || d.entries)))) {
+        const list = (Array.isArray(d) ? d : (d.terms || d.items || d.words || d.entries || [])).filter(function(entry) {
+          return entry != null && (typeof entry !== 'object' || (entry.isSelected !== false && entry.selected !== false));
+        });
         if (item.type === 'word-wall') {
           const CPP = 4;
           for (let i = 0; i < list.length; i += CPP) {
             const chunk = list.slice(i, i + CPP);
             const cardsHtml = chunk.map(function(w) {
               const obj = w && typeof w === 'object' ? w : { term: String(w || '') };
-              const term = obj.term || obj.word || '';
-              const def = obj.def || obj.definition || obj.meaning || '';
+              const term = _cleanText(obj.term || obj.word || '');
+              const def = _cleanText(obj.def || obj.definition || obj.meaning || '');
               return '<div style="border:2px solid #059669;border-radius:10px;padding:10px 12px;background:#f0fdf4"><div style="font-size:16px;font-weight:800;color:#065f46">' + _escSlide(term) + '</div>' + (def ? '<div style="font-size:12px;color:#334155;margin-top:4px">' + _escSlide(def) + '</div>' : '') + '</div>';
             }).join('');
             slides.push('<div class="slide"><div class="slide-title">' + _escSlide(title) + (i > 0 ? ' (cont.)' : '') + '</div><div class="slide-body"><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">' + cardsHtml + '</div></div></div>');
           }
         } else {
+          const hideGlossDefs = !showKeys && (isAssessment || Boolean(d && !Array.isArray(d) && d.interactive && d.interactive.armed === true));
           const TPS = 5;
           for (let i = 0; i < list.length; i += TPS) {
             const chunk = list.slice(i, i + TPS);
             const rows = chunk.map(function(g) {
               const obj = g && typeof g === 'object' ? g : { term: String(g || '') };
-              return '<tr><td style="font-weight:700;color:' + themeColor + ';padding:6px 10px;border-bottom:1px solid #e2e8f0;width:30%">' + _escSlide(obj.term || obj.word || '') + '</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0">' + _escSlide(obj.def || obj.definition || obj.meaning || '') + '</td></tr>';
+              const glossDef = hideGlossDefs ? '________' : _cleanText(obj.def || obj.definition || obj.meaning || '');
+              return '<tr><td style="font-weight:700;color:' + themeColor + ';padding:6px 10px;border-bottom:1px solid #e2e8f0;width:30%">' + _escSlide(_cleanText(obj.term || obj.word || '')) + '</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0">' + _escSlide(glossDef) + '</td></tr>';
             }).join('');
             slides.push('<div class="slide"><div class="slide-title">' + _escSlide(title) + (i > 0 ? ' (cont.)' : '') + '</div><div class="slide-body"><table style="width:100%;border-collapse:collapse;font-size:13px"><tbody>' + rows + '</tbody></table></div></div>');
           }
         }
-      } else if (item.type === 'quiz' && d && Array.isArray(d.questions)) {
-        d.questions.forEach(function(q, qi) {
-          const optArr = q && Array.isArray(q.options) ? q.options : (q && Array.isArray(q.answerOptions) ? q.answerOptions : []);
-          const opts = optArr.map(function(o, oi) {
-            const optText = typeof o === 'string' || typeof o === 'number' ? o : _safeTextVal(o);
-            return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0"><span style="background:#e0e7ff;color:' + themeColor + ';width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex-shrink:0">' + String.fromCharCode(65 + oi) + '</span><span>' + _escSlide(optText) + '</span></div>';
-          }).join('');
-          slides.push('<div class="slide"><div class="slide-title">' + _escSlide('Question ' + (qi + 1)) + '</div><div class="slide-body"><p style="font-size:16px;font-weight:600;margin-bottom:14px">' + _escSlide((q && (q.question || q.prompt)) || '') + '</p>' + (opts || '<p style="font-size:12px;color:#64748b;font-style:italic">Open-ended response</p>') + '</div></div>');
+      } else if (item.type === 'quiz' && d && (Array.isArray(d.questions) || Array.isArray(d.reflections))) {
+        const _renderCircleChoices = function(arr, useNums) {
+          return (Array.isArray(arr) ? arr : [])
+            .map(function(o) { return _cleanText(typeof o === 'string' || typeof o === 'number' ? o : _safeTextVal(o)); })
+            .filter(Boolean)
+            .map(function(optText, oi) {
+              const badge = useNums ? String(oi + 1) : String.fromCharCode(65 + oi);
+              return '<div style="display:flex;align-items:center;gap:8px;padding:4px 0"><span style="background:#e0e7ff;color:' + themeColor + ';width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex-shrink:0">' + badge + '</span><span>' + _escSlide(optText) + '</span></div>';
+            }).join('');
+        };
+        (Array.isArray(d.questions) ? d.questions : []).forEach(function(q, qi) {
+          const qType = String((q && q.type) || 'mcq').trim().toLowerCase();
+          let bodyContent = '';
+          if (qType === 'answer-evidence' && q && (Array.isArray(q.answerOptions) || Array.isArray(q.evidenceOptions))) {
+            const ansOpts = Array.isArray(q.answerOptions) ? q.answerOptions : (Array.isArray(q.options) ? q.options : []);
+            const evOpts = Array.isArray(q.evidenceOptions) ? q.evidenceOptions : [];
+            bodyContent = _renderCircleChoices(ansOpts, false);
+            if (evOpts.length) {
+              bodyContent += '<p style="font-size:13px;font-weight:700;color:' + themeColor + ';margin:10px 0 4px">' + _escSlide((q.evidencePrompt && String(q.evidencePrompt).trim()) || 'Evidence') + '</p>' + _renderCircleChoices(evOpts, true);
+            }
+          } else if (qType === 'matching' && q && Array.isArray(q.pairs)) {
+            const pairLines = q.pairs.map(function(p, pi) {
+              if (!p) return '';
+              const leftTxt = _safeTextVal(p.left || p.prompt);
+              return '<div style="padding:3px 0">' + (pi + 1) + '. ' + _escSlide(leftTxt) + ' &rarr; ____</div>';
+            }).join('');
+            const rhsRaw = q.pairs.map(function(p, pi) {
+              return { text: _safeTextVal(p && (p.right || p.match || p.answer)), idx: pi };
+            }).filter(function(r) { return !!r.text; });
+            let rhsList = rhsRaw;
+            if (!showKeys && rhsRaw.length > 1) {
+              rhsList = rhsRaw.map(function(r) {
+                return { text: r.text, idx: r.idx, hash: _slideStableHash(String(item.id || 'qz') + ':match:' + qi + ':' + r.idx + ':' + r.text) };
+              }).sort(function(a, b) { return a.hash - b.hash || a.idx - b.idx; });
+              if (rhsList.every(function(r, idx) { return r.idx === idx; })) rhsList.push(rhsList.shift());
+            }
+            bodyContent = pairLines + (rhsList.length ? '<p style="font-size:12px;color:#475569;margin-top:8px"><strong>Match choices:</strong> ' + _escSlide(rhsList.map(function(r) { return r.text; }).join(' | ')) + '</p>' : '');
+          } else if (qType === 'ordering' || qType === 'order' || qType === 'sequence-sense') {
+            const rawSeq = q ? (Array.isArray(q.items) && q.items.length ? q.items : (Array.isArray(q.correctOrder) ? q.correctOrder : [])) : [];
+            let seqDisplay = rawSeq;
+            if (showKeys && q && Array.isArray(q.correctOrder) && q.correctOrder.length) {
+              seqDisplay = q.correctOrder;
+            } else if (!showKeys && qType === 'sequence-sense' && q && Array.isArray(q.presentedOrder) && q.presentedOrder.length === rawSeq.length) {
+              seqDisplay = q.presentedOrder.map(function(idx) { return rawSeq[idx]; }).filter(function(x) { return x != null; });
+            } else if (!showKeys && rawSeq.length > 1) {
+              const hashed = rawSeq.map(function(s, idx) {
+                const label = typeof s === 'string' || typeof s === 'number' ? String(s) : _safeTextVal(s);
+                return { val: s, idx: idx, hash: _slideStableHash(String(item.id || 'qz') + ':ord:' + qi + ':' + idx + ':' + label) };
+              }).sort(function(a, b) { return a.hash - b.hash || a.idx - b.idx; });
+              if (hashed.every(function(r, idx) { return r.idx === idx; })) hashed.push(hashed.shift());
+              seqDisplay = hashed.map(function(r) { return r.val; });
+            }
+            bodyContent = seqDisplay.map(function(s, si) {
+              const txt = typeof s === 'string' || typeof s === 'number' ? String(s) : _safeTextVal(s);
+              return '<div style="padding:3px 0">' + (si + 1) + '. ' + _escSlide(txt) + '</div>';
+            }).join('');
+          } else if (qType === 'relation-mismatch' && q && Array.isArray(q.pairs)) {
+            const pairRows = q.pairs.map(function(p, pi) {
+              if (!p) return '';
+              const leftTxt = _safeTextVal(p.left || p.prompt);
+              const rightTxt = _safeTextVal(p.right || p.match || p.answer);
+              return '<div style="padding:3px 0">' + (pi + 1) + '. ' + _escSlide(leftTxt) + ' &mdash; ' + _escSlide(rightTxt) + '</div>';
+            }).join('');
+            let cands = Array.isArray(q.candidatePartners) ? q.candidatePartners.map(function(c) { return _cleanText(typeof c === 'string' || typeof c === 'number' ? String(c) : _safeTextVal(c)); }).filter(Boolean) : [];
+            if (!showKeys && cands.length > 1) {
+              const hashedCands = cands.map(function(txt, idx) {
+                return { text: txt, idx: idx, hash: _slideStableHash(String(item.id || 'qz') + ':rmcand:' + qi + ':' + idx + ':' + txt) };
+              }).sort(function(a, b) { return a.hash - b.hash || a.idx - b.idx; });
+              if (hashedCands.every(function(r, idx) { return r.idx === idx; }) && new Set(cands).size > 1) hashedCands.push(hashedCands.shift());
+              cands = hashedCands.map(function(r) { return r.text; });
+            }
+            bodyContent = pairRows + (cands.length ? '<p style="font-size:12px;color:#475569;margin-top:8px"><strong>Candidate partners:</strong> ' + _escSlide(cands.join(' | ')) + '</p>' : '');
+          } else if (qType === 'fill-blank' || qType === 'fillblank') {
+            const wb = q && Array.isArray(q.wordBank) ? q.wordBank.map(function(w) { return typeof w === 'string' || typeof w === 'number' ? String(w) : _safeTextVal(w); }).filter(Boolean) : [];
+            bodyContent = wb.length
+              ? '<p style="font-size:13px;color:#334155"><strong>Word Bank:</strong> ' + _escSlide(wb.join(', ')) + '</p>'
+              : '<p style="font-size:12px;color:#64748b;font-style:italic">Fill in the blank</p>';
+          } else if (qType === 'numeric-response' || qType === 'numeric') {
+            bodyContent = '<p style="font-size:12px;color:#64748b;font-style:italic">Numeric response' + (q && q.unit ? ' (' + _escSlide(q.unit) + ')' : '') + '</p>';
+          } else {
+            let optArr = q && Array.isArray(q.options) ? q.options : (q && Array.isArray(q.answerOptions) ? q.answerOptions : []);
+            if (!optArr.length && (qType === 'true-false' || qType === 'true_false' || qType === 'truefalse' || qType === 'tf')) optArr = ['True', 'False'];
+            bodyContent = _renderCircleChoices(optArr, false);
+          }
+          if (q && (q.requireReasoning || q.explanationPrompt)) {
+            bodyContent += '<p style="font-size:12px;color:#475569;margin-top:8px"><em>' + _escSlide(_cleanText(q.explanationPrompt || 'Explain your reasoning.')) + '</em></p>';
+          }
+          slides.push('<div class="slide"><div class="slide-title">' + _escSlide('Question ' + (qi + 1)) + '</div><div class="slide-body"><p style="font-size:16px;font-weight:600;margin-bottom:14px">' + _escSlide(_cleanText((q && (q.question || q.prompt)) || '')) + '</p>' + (bodyContent || '<p style="font-size:12px;color:#64748b;font-style:italic">Open-ended response</p>') + '</div></div>');
         });
+        if (Array.isArray(d.reflections) && d.reflections.length) {
+          const reflItems = d.reflections.map(function(rf, ri) {
+            const txt = typeof rf === 'string' || typeof rf === 'number'
+              ? String(rf).trim()
+              : _safeTextVal(rf && (rf.prompt || rf.question || rf.text || rf));
+            return txt ? '<p style="margin-bottom:10px"><strong>' + (ri + 1) + '.</strong> ' + _escSlide(txt) + '</p>' : '';
+          }).filter(Boolean);
+          for (let i = 0; i < reflItems.length; i += 3) {
+            slides.push('<div class="slide"><div class="slide-title">' + _escSlide(title + ' · Reflection' + (i > 0 ? ' (cont.)' : '')) + '</div><div class="slide-body">' + reflItems.slice(i, i + 3).join('') + '</div></div>');
+          }
+        }
       } else if (item.type === 'math' && d) {
         const probs = Array.isArray(d) ? d : (Array.isArray(d.problems) ? d.problems : (Array.isArray(d.questions) ? d.questions : []));
         if (probs.length) {
@@ -3239,7 +3763,7 @@
             slides.push('<div class="slide"><div class="slide-title">' + _escSlide(title) + (i > 0 ? ' (cont.)' : '') + '</div><div class="slide-body">' + blocks + '</div></div>');
           }
         } else {
-          const lines = (typeof d === 'string' ? d : summarizeResourceText(item, { maxChars: 1200 }).join('\n')).split(/\n/).filter(Boolean).map(function(tLine) { return { kind: 'p', text: _cleanText(tLine) }; });
+          const lines = (typeof d === 'string' ? d : summarizeResourceText(item, _sumOpts(1200)).join('\n')).split(/\n/).filter(Boolean).map(function(tLine) { return { kind: 'p', text: _cleanText(tLine) }; });
           _pushLineChunks(title, lines, 7);
         }
       } else if (item.type === 'sentence-frames' && d) {
@@ -3255,12 +3779,68 @@
             slides.push('<div class="slide"><div class="slide-title">' + _escSlide(title) + (i > 0 ? ' (cont.)' : '') + '</div><div class="slide-body"><ul style="list-style:none;padding:0">' + rows + '</ul></div></div>');
           }
         } else {
-          const raw = typeof d === 'string' ? d : String(d.text || summarizeResourceText(item, { maxChars: 1000 }).join('\n') || '');
+          const raw = typeof d === 'string' ? d : String(d.text || summarizeResourceText(item, _sumOpts(1000)).join('\n') || '');
           const lines = raw.split(/\n+/).filter(Boolean).map(function(tLine) { return { kind: 'p', text: _cleanText(tLine) }; });
           _pushLineChunks(title, lines, 6);
         }
-      } else if (item.type === 'outline') {
+      } else if (item.type === 'outline' || item.type === 'venn-diagram') {
         const entries = [];
+        const _appendVennItemsSchema = function(src, keySeed) {
+          if (!src || typeof src !== 'object' || !Array.isArray(src.items) || !src.items.length) return false;
+          const leftHeading = _safeTextVal(src.leftLabel || (src.labels && src.labels.left) || src.setALabel) || 'Left / Set A';
+          const rightHeading = _safeTextVal(src.rightLabel || (src.labels && src.labels.right) || src.setBLabel) || 'Right / Set B';
+          const bothHeading = _safeTextVal(src.bothLabel || (src.labels && (src.labels.both || src.labels.shared)) || src.sharedLabel) || 'Shared / Both';
+          const thirdHeading = _safeTextVal(src.thirdLabel || (src.labels && src.labels.third) || src.setCLabel) || '';
+          const zoneOrder = [
+            { id: 'left', heading: leftHeading, list: [] },
+            { id: 'both', heading: bothHeading, list: [] },
+            { id: 'right', heading: rightHeading, list: [] }
+          ];
+          if (thirdHeading) zoneOrder.push({ id: 'third', heading: thirdHeading, list: [] });
+          const zoneById = {};
+          zoneOrder.forEach(function(z) { zoneById[z.id] = z; });
+          const getZone = function(rawZone) {
+            const zKey = String(rawZone || 'both').trim().toLowerCase();
+            if (zKey === 'a' || zKey === 'leftonly' || zKey === 'set_a') return zoneById.left;
+            if (zKey === 'b' || zKey === 'rightonly' || zKey === 'set_b') return zoneById.right;
+            if (zKey === 'shared' || zKey === 'overlap' || zKey === 'intersection') return zoneById.both;
+            if (zKey === 'c' || zKey === 'thirdonly' || zKey === 'set_c') {
+              if (!zoneById.third) { zoneById.third = { id: 'third', heading: thirdHeading || 'Third / Set C', list: [] }; zoneOrder.push(zoneById.third); }
+              return zoneById.third;
+            }
+            if (!zoneById[zKey]) {
+              const extraLabel = zKey === 'all' || zKey === 'center' ? 'All / Center' : zKey.replace(/_/g, ' & ');
+              zoneById[zKey] = { id: zKey, heading: extraLabel, list: [] };
+              zoneOrder.push(zoneById[zKey]);
+            }
+            return zoneById[zKey];
+          };
+          const bank = [];
+          src.items.forEach(function(it, idx) {
+            const label = typeof it === 'string' || typeof it === 'number' ? String(it).trim() : _safeTextVal(it);
+            if (!label) return;
+            const zBucket = getZone(it && typeof it === 'object' ? (it.zone || it.targetZone) : 'both');
+            zBucket.list.push(label);
+            bank.push({ text: label, idx: idx, hash: _slideStableHash(String(item.id || '') + ':' + keySeed + ':' + idx + ':' + label) });
+          });
+          if (showKeys) {
+            zoneOrder.forEach(function(z) {
+              if (!z.heading && !z.list.length) return;
+              entries.push({ kind: 'h', text: z.heading });
+              z.list.forEach(function(s) { entries.push({ kind: 'p', text: '\u2022 ' + s, indent: 1 }); });
+            });
+          } else {
+            zoneOrder.forEach(function(z) {
+              if (z.heading) entries.push({ kind: 'h', text: z.heading });
+            });
+            if (bank.length) {
+              bank.sort(function(a, b) { return a.hash - b.hash || a.idx - b.idx; });
+              entries.push({ kind: 'h', text: 'Items to sort' });
+              bank.forEach(function(b) { entries.push({ kind: 'p', text: '\u2022 ' + b.text, indent: 1 }); });
+            }
+          }
+          return true;
+        };
         if (typeof d === 'string') {
           d.split(/\n/).forEach(function(l) {
             const clean = _cleanText(l.replace(/^#+\s*/, ''));
@@ -3306,33 +3886,37 @@
               fb.forEach(function(c) { const s = _safeTextVal(c); if (s) entries.push({ kind: 'p', text: '\u2022 ' + s }); });
             }
           } else if (d.venn && typeof d.venn === 'object') {
-            const vennZones = [];
-            [['setA', 'Set A'], ['left', 'Left / Set A'], ['leftItems', 'Left / Set A'], ['shared', 'Shared'], ['both', 'Shared'], ['overlap', 'Shared'], ['sharedItems', 'Shared'], ['setB', 'Set B'], ['right', 'Right / Set B'], ['rightItems', 'Right / Set B']].forEach(function(pair) {
-              const val = d.venn[pair[0]];
-              if (!val) return;
-              const arr = Array.isArray(val) ? val : (Array.isArray(val.items) ? val.items : [val]);
-              const heading = (val && !Array.isArray(val) && (val.title || val.label)) || pair[1];
-              const list = arr.map(function(x) { return _safeTextVal(x); }).filter(Boolean);
-              if (list.length || heading) vennZones.push({ heading: heading, list: list });
-            });
-            if (showKeys) {
-              vennZones.forEach(function(z) {
-                entries.push({ kind: 'h', text: z.heading });
-                z.list.forEach(function(s) { entries.push({ kind: 'p', text: '\u2022 ' + s, indent: 1 }); });
+            if (!_appendVennItemsSchema(d.venn, 'vennitems')) {
+              const vennZones = [];
+              [['setA', 'Set A'], ['left', 'Left / Set A'], ['leftItems', 'Left / Set A'], ['shared', 'Shared'], ['both', 'Shared'], ['overlap', 'Shared'], ['sharedItems', 'Shared'], ['setB', 'Set B'], ['right', 'Right / Set B'], ['rightItems', 'Right / Set B']].forEach(function(pair) {
+                const val = d.venn[pair[0]];
+                if (!val) return;
+                const arr = Array.isArray(val) ? val : (Array.isArray(val.items) ? val.items : [val]);
+                const heading = (val && !Array.isArray(val) && (val.title || val.label)) || pair[1];
+                const list = arr.map(function(x) { return _safeTextVal(x); }).filter(Boolean);
+                if (list.length || heading) vennZones.push({ heading: heading, list: list });
               });
-            } else if (vennZones.length) {
-              const bank = [];
-              vennZones.forEach(function(z, zi) {
-                entries.push({ kind: 'h', text: z.heading });
-                z.list.forEach(function(s, si) { bank.push({ text: s, hash: _slideStableHash(String(item.id || '') + ':venn:' + zi + ':' + si + ':' + s) }); });
-              });
-              if (bank.length) {
-                entries.push({ kind: 'h', text: 'Items to sort' });
-                bank.sort(function(a, b) { return a.hash - b.hash; }).forEach(function(b) {
-                  entries.push({ kind: 'p', text: '\u2022 ' + b.text, indent: 1 });
+              if (showKeys) {
+                vennZones.forEach(function(z) {
+                  entries.push({ kind: 'h', text: z.heading });
+                  z.list.forEach(function(s) { entries.push({ kind: 'p', text: '\u2022 ' + s, indent: 1 }); });
                 });
+              } else if (vennZones.length) {
+                const bank = [];
+                vennZones.forEach(function(z, zi) {
+                  entries.push({ kind: 'h', text: z.heading });
+                  z.list.forEach(function(s, si) { bank.push({ text: s, hash: _slideStableHash(String(item.id || '') + ':venn:' + zi + ':' + si + ':' + s) }); });
+                });
+                if (bank.length) {
+                  entries.push({ kind: 'h', text: 'Items to sort' });
+                  bank.sort(function(a, b) { return a.hash - b.hash; }).forEach(function(b) {
+                    entries.push({ kind: 'p', text: '\u2022 ' + b.text, indent: 1 });
+                  });
+                }
               }
             }
+          } else if (Array.isArray(d.items) && (item.type === 'venn-diagram' || d.leftLabel || d.rightLabel || d.thirdLabel || (d.labels && (d.labels.left || d.labels.right)) || d.items.some(function(it) { return it && typeof it === 'object' && ('zone' in it || 'targetZone' in it); }))) {
+            _appendVennItemsSchema(d, 'topvennitems');
           } else if (d.setA || d.setB || d.leftItems || d.rightItems || d.sharedItems) {
             const topZones = [];
             [['setA', 'Set A'], ['leftItems', 'Left / Set A'], ['shared', 'Shared'], ['sharedItems', 'Shared'], ['setB', 'Set B'], ['rightItems', 'Right / Set B']].forEach(function(pair) {
@@ -3418,7 +4002,7 @@
             walkNode(d.hierarchy, 0);
           }
           if (!entries.length || (entries.length === 1 && entries[0].text === topMain)) {
-            summarizeResourceText(item, { maxChars: 1200 }).forEach(function(line) {
+            summarizeResourceText(item, _sumOpts(1200)).forEach(function(line) {
               if (line && line !== topMain) entries.push({ kind: 'p', text: _cleanText(line) });
             });
           }
@@ -3427,12 +4011,22 @@
       } else if (item.type === 'timeline') {
         const events = Array.isArray(d) ? d : (d && typeof d === 'object' ? (Array.isArray(d.events) ? d.events : (Array.isArray(d.items) ? d.items : null)) : null);
         if (events && events.length) {
+          let displayEvents = events;
+          if (isAssessment && !showKeys && events.length > 1) {
+            const hashed = events.map(function(ev, idx) {
+              const obj = ev && typeof ev === 'object' ? ev : { title: String(ev || '') };
+              const key = (obj.title || obj.event || obj.heading || obj.name || obj.date || '') + ':' + idx;
+              return { ev: ev, idx: idx, hash: _slideStableHash(String(item.id || 'tl') + ':tl:' + key) };
+            }).sort(function(a, b) { return a.hash - b.hash || a.idx - b.idx; });
+            if (hashed.every(function(r, idx) { return r.idx === idx; })) hashed.push(hashed.shift());
+            displayEvents = hashed.map(function(r) { return r.ev; });
+          }
           const EPP = 4;
-          for (let i = 0; i < events.length; i += EPP) {
-            const chunk = events.slice(i, i + EPP);
+          for (let i = 0; i < displayEvents.length; i += EPP) {
+            const chunk = displayEvents.slice(i, i + EPP);
             const cardsHtml = chunk.map(function(ev) {
               const obj = ev && typeof ev === 'object' ? ev : { title: String(ev || '') };
-              const when = obj.date || obj.year || obj.time || obj.period || obj.label || '';
+              const when = (isAssessment && !showKeys) ? '' : (obj.date || obj.year || obj.time || obj.era || obj.period || obj.label || '');
               const what = obj.title || obj.event || obj.heading || obj.name || '';
               const desc = obj.description || obj.summary || obj.details || obj.text || obj.content || '';
               return '<div style="border-left:3px solid ' + themeColor + ';padding:6px 10px;margin-bottom:8px;background:#f8fafc;border-radius:0 6px 6px 0">'
@@ -3444,7 +4038,7 @@
             slides.push('<div class="slide"><div class="slide-title">' + _escSlide(title) + (i > 0 ? ' (cont.)' : '') + '</div><div class="slide-body">' + cardsHtml + '</div></div>');
           }
         } else {
-          const raw = typeof d === 'string' ? d : summarizeResourceText(item, { maxChars: 1200 }).join('\n');
+          const raw = typeof d === 'string' ? d : summarizeResourceText(item, _sumOpts(1200)).join('\n');
           const entries = raw.split(/\n/).filter(Boolean).map(function(l) { return { kind: l.trim().startsWith('#') ? 'h' : 'p', text: _cleanText(l.replace(/^#+\s*/, '')) }; });
           _pushLineChunks(title, entries, 8);
         }
@@ -3527,34 +4121,36 @@
         cards.forEach(function(card, ci) {
           const c = card && typeof card === 'object' ? card : {};
           const facts = (Array.isArray(c.essentialFacts) ? c.essentialFacts : []).slice(0, 10).map(function(f) { return String(f == null ? '' : f).slice(0, 600).trim(); }).filter(Boolean);
-          const verified = !!(rules && typeof rules.isCardVerified === 'function' && rules.isCardVerified(c));
-          const cueBlock = rules && typeof rules.cueBlock === 'function' ? rules.cueBlock(c) : null;
-          const cue = c.cueNeedsReview ? '' : cueBlock ? cueBlock.cue : (rules && typeof rules.practiceCue === 'function' ? rules.practiceCue(c) : String(c.studentDraft || c.aiExample || c.scaffoldStarter || '').trim().slice(0, 6000));
-          slides.push('<div class="slide"><div class="slide-title">' + _escSlide(title) + ' &middot; ' + (ci + 1) + '/' + cards.length + '</div><div class="slide-body">'
-            + '<p style="font-size:16px;font-weight:700">' + _escSlide(c.target || _maT('memory_target', 'Memory target')) + '</p>'
-            + (cue ? '<p style="font-size:15px;font-weight:600;color:#0f766e;white-space:pre-wrap">' + _escSlide(cue.slice(0, 700)) + '</p>' : '')
-            + (cueBlock && cueBlock.steps.length ? '<p style="margin-top:6px;font-size:13px;font-weight:700;color:#3730a3">' + _escSlide(_maT('scaffold_heading', 'Build it with support')) + '</p><ol style="margin:2px 0 0 18px;font-size:13px">' + cueBlock.steps.map(function(s) { return '<li>' + _escSlide(String(s).slice(0, 500)) + '</li>'; }).join('') + '</ol>' : '')
-            + (cueBlock && cueBlock.visualDescription ? '<p style="margin-top:6px;font-size:13px;color:#0f766e"><strong>' + _escSlide(_maT('export_visual_cue_described', 'Picture cue, described:')) + '</strong> ' + _escSlide(String(cueBlock.visualDescription).slice(0, 700)) + '</p>' : '')
-            + (cueBlock && cueBlock.prompts.length ? '<p style="margin-top:6px;font-size:13px;font-weight:700;color:#5b21b6">' + _escSlide(_maT('coach_heading', 'Coach questions')) + '</p><ul style="margin:2px 0 0 18px;font-size:13px">' + cueBlock.prompts.map(function(p) { return '<li>' + _escSlide(String(p).slice(0, 500)) + '</li>'; }).join('') + '</ul>' : '')
-            + '<p style="margin-top:8px;font-weight:700">' + _escSlide(verified ? _maT('facts_student_heading', 'Facts to remember') : _maT('facts_pending_student_note', 'Your teacher is still checking these facts. Recall practice opens when they finish.')) + '</p>'
-            + (facts.length ? '<ul style="margin:4px 0 0 18px">' + facts.map(function(f) { return '<li>' + _escSlide(f) + '</li>'; }).join('') + '</ul>' : '')
-            + (function() {
-                const connections = rules && typeof rules.activeConnections === 'function' ? rules.activeConnections(c) : [];
-                if (connections.length) return '<dl style="margin-top:8px;font-size:13px;color:#334155">' + connections.filter(function(row) { return facts[row.factIndex]; }).map(function(row) {
-                  return '<dt style="font-weight:700">' + _escSlide(row.cue) + '</dt><dd>' + _escSlide(facts[row.factIndex]) + (row.explanation ? ' ' + _escSlide(row.explanation) : '') + '</dd>';
-                }).join('') + '</dl>';
-                const customCue = !(rules && typeof rules.customCue === 'function') || rules.customCue(c);
-                return c.mapping && !c.cueNeedsReview && !customCue ? '<p style="margin-top:8px;font-size:13px;color:#334155"><em>' + _escSlide(String(c.mapping).slice(0, 500)) + '</em></p>' : '';
-              })()
-            + (function() {
-                const hook = rules && typeof rules.hookFact === 'function' ? rules.hookFact(c) : null;
-                if (!hook) return '';
-                const source = hook.webVerified && hook.sourceUrl
-                  ? '<br><span style="font-size:11px;color:#78716c">' + _escSlide(_maT('hook_from_web_note', 'From the web. Check the source:')) + ' <a href="' + _escSlide(hook.sourceUrl) + '" style="color:#9a3412">' + _escSlide(hook.sourceTitle || hook.sourceUrl) + '</a>' + (hook.sourceHost && hook.sourceTitle ? ' &middot; ' + _escSlide(_maT('hook_source_host', 'goes to {host}').replace('{host}', hook.sourceHost)) : '') + '</span>'
-                  : '<br><span style="font-size:11px;color:#78716c">' + _escSlide(_maT('hook_unsourced_note', 'Fun fact from AI knowledge. Ask your teacher if you want to check it.')) + '</span>';
-                return '<p style="margin-top:8px;font-size:13px;color:#9a3412"><strong>' + _escSlide(_maT('hook_heading', 'Did you know?')) + '</strong> ' + _escSlide(hook.text) + source + '</p>';
-              })()
-            + '</div></div>');
+            const verified = !!(rules && typeof rules.isCardVerified === 'function' && rules.isCardVerified(c));
+            const canShowFacts = verified || showKeys;
+            const cueBlock = rules && typeof rules.cueBlock === 'function' ? rules.cueBlock(c) : null;
+            const cue = c.cueNeedsReview ? '' : cueBlock ? cueBlock.cue : (rules && typeof rules.practiceCue === 'function' ? rules.practiceCue(c) : String(c.studentDraft || c.aiExample || c.scaffoldStarter || '').trim().slice(0, 6000));
+            slides.push('<div class="slide"><div class="slide-title">' + _escSlide(title) + ' &middot; ' + (ci + 1) + '/' + cards.length + '</div><div class="slide-body">'
+              + '<p style="font-size:16px;font-weight:700">' + _escSlide(c.target || _maT('memory_target', 'Memory target')) + '</p>'
+              + (cue ? '<p style="font-size:15px;font-weight:600;color:#0f766e;white-space:pre-wrap">' + _escSlide(cue.slice(0, 700)) + '</p>' : '')
+              + (cueBlock && cueBlock.steps.length ? '<p style="margin-top:6px;font-size:13px;font-weight:700;color:#3730a3">' + _escSlide(_maT('scaffold_heading', 'Build it with support')) + '</p><ol style="margin:2px 0 0 18px;font-size:13px">' + cueBlock.steps.map(function(s) { return '<li>' + _escSlide(String(s).slice(0, 500)) + '</li>'; }).join('') + '</ol>' : '')
+              + (cueBlock && cueBlock.visualDescription ? '<p style="margin-top:6px;font-size:13px;color:#0f766e"><strong>' + _escSlide(_maT('export_visual_cue_described', 'Picture cue, described:')) + '</strong> ' + _escSlide(String(cueBlock.visualDescription).slice(0, 700)) + '</p>' : '')
+              + (cueBlock && cueBlock.prompts.length ? '<p style="margin-top:6px;font-size:13px;font-weight:700;color:#5b21b6">' + _escSlide(_maT('coach_heading', 'Coach questions')) + '</p><ul style="margin:2px 0 0 18px;font-size:13px">' + cueBlock.prompts.map(function(p) { return '<li>' + _escSlide(String(p).slice(0, 500)) + '</li>'; }).join('') + '</ul>' : '')
+              + '<p style="margin-top:8px;font-weight:700">' + _escSlide(verified ? _maT('facts_student_heading', 'Facts to remember') : _maT('facts_pending_student_note', 'Your teacher is still checking these facts. Recall practice opens when they finish.')) + '</p>'
+              + (canShowFacts && facts.length ? '<ul style="margin:4px 0 0 18px">' + facts.map(function(f) { return '<li>' + _escSlide(f) + '</li>'; }).join('') + '</ul>' : '')
+              + (function() {
+                  if (!canShowFacts) return '';
+                  const connections = rules && typeof rules.activeConnections === 'function' ? rules.activeConnections(c) : [];
+                  if (connections.length) return '<dl style="margin-top:8px;font-size:13px;color:#334155">' + connections.filter(function(row) { return facts[row.factIndex]; }).map(function(row) {
+                    return '<dt style="font-weight:700">' + _escSlide(row.cue) + '</dt><dd>' + _escSlide(facts[row.factIndex]) + (row.explanation ? ' ' + _escSlide(row.explanation) : '') + '</dd>';
+                  }).join('') + '</dl>';
+                  const customCue = !(rules && typeof rules.customCue === 'function') || rules.customCue(c);
+                  return c.mapping && !c.cueNeedsReview && !customCue ? '<p style="margin-top:8px;font-size:13px;color:#334155"><em>' + _escSlide(String(c.mapping).slice(0, 500)) + '</em></p>' : '';
+                })()
+              + (function() {
+                  const hook = rules && typeof rules.hookFact === 'function' ? rules.hookFact(c) : null;
+                  if (!hook) return '';
+                  const source = hook.webVerified && hook.sourceUrl
+                    ? '<br><span style="font-size:11px;color:#78716c">' + _escSlide(_maT('hook_from_web_note', 'From the web. Check the source:')) + ' <a href="' + _escSlide(hook.sourceUrl) + '" style="color:#9a3412">' + _escSlide(hook.sourceTitle || hook.sourceUrl) + '</a>' + (hook.sourceHost && hook.sourceTitle ? ' &middot; ' + _escSlide(_maT('hook_source_host', 'goes to {host}').replace('{host}', hook.sourceHost)) : '') + '</span>'
+                    : '<br><span style="font-size:11px;color:#78716c">' + _escSlide(_maT('hook_unsourced_note', 'Fun fact from AI knowledge. Ask your teacher if you want to check it.')) + '</span>';
+                  return '<p style="margin-top:8px;font-size:13px;color:#9a3412"><strong>' + _escSlide(_maT('hook_heading', 'Did you know?')) + '</strong> ' + _escSlide(hook.text) + source + '</p>';
+                })()
+              + '</div></div>');
         });
       } else if (item.type === 'anchor-chart' && d && Array.isArray(d.sections)) {
         // Anchor chart: one slide per section (label + bullets/points); armed student/assessment copies mask bullets as blanks.
@@ -3572,9 +4168,12 @@
         });
       } else if ((item.type === 'note-taking' || item.type === 'guided-notes') && d && typeof d === 'object') {
         const entries = [];
+        const hideNtResponses = !showKeys && isAssessment;
         if (Array.isArray(d.cues) || Array.isArray(d.notes)) {
           (Array.isArray(d.cues) ? d.cues : []).forEach(function(c) { const txt = _safeTextVal(c); if (txt) entries.push({ kind: 'h', text: txt }); });
-          (Array.isArray(d.notes) ? d.notes : []).forEach(function(n) { const txt = _safeTextVal(n); if (txt) entries.push({ kind: 'p', text: '\u2022 ' + txt, indent: 1 }); });
+          if (!hideNtResponses) {
+            (Array.isArray(d.notes) ? d.notes : []).forEach(function(n) { const txt = _safeTextVal(n); if (txt) entries.push({ kind: 'p', text: '\u2022 ' + txt, indent: 1 }); });
+          }
         }
         (Array.isArray(d.sections) ? d.sections : []).forEach(function(sec, si) {
           if (!sec || typeof sec !== 'object') { const s = _safeTextVal(sec); if (s) entries.push({ kind: 'p', text: s }); return; }
@@ -3589,10 +4188,15 @@
           const s = _safeTextVal(p);
           if (s) entries.push({ kind: 'p', text: '\u2022 ' + s });
         });
-        if (typeof d.clozeText === 'string' && d.clozeText.trim()) entries.push({ kind: 'p', text: d.clozeText.trim().slice(0, 600) });
-        if (typeof d.summary === 'string' && d.summary.trim()) entries.push({ kind: 'p', text: 'Summary: ' + d.summary.trim().slice(0, 400) });
+        if (typeof d.clozeText === 'string' && d.clozeText.trim()) {
+          const clozeSlideText = showKeys
+            ? d.clozeText.trim()
+            : d.clozeText.trim().replace(/\[\[([^\]]+)\]\]/g, '________').replace(/\{\{([^}]+)\}\}/g, '________');
+          entries.push({ kind: 'p', text: clozeSlideText.slice(0, 600) });
+        }
+        if (!hideNtResponses && typeof d.summary === 'string' && d.summary.trim()) entries.push({ kind: 'p', text: 'Summary: ' + d.summary.trim().slice(0, 400) });
         if (!entries.length) {
-          summarizeResourceText(item, { maxChars: 1200 }).forEach(function(l) { entries.push({ kind: 'p', text: _cleanText(l) }); });
+          summarizeResourceText(item, _sumOpts(1200)).forEach(function(l) { entries.push({ kind: 'p', text: _cleanText(l) }); });
         }
         _pushLineChunks(title, entries, 7);
       } else if (item.type === 'applied-challenge' && d && typeof d === 'object') {
@@ -3615,7 +4219,7 @@
         if (html) {
           slides.push('<div class="slide"><div class="slide-title">' + _escSlide(title) + '</div><div class="slide-body">' + html + '</div></div>');
         } else {
-          const lines = summarizeResourceText(item, { maxChars: 1200 }).map(function(l) { return { kind: 'p', text: _cleanText(l) }; });
+          const lines = summarizeResourceText(item, _sumOpts(1200)).map(function(l) { return { kind: 'p', text: _cleanText(l) }; });
           _pushLineChunks(title, lines, 7);
         }
       } else if (item.type === 'directions' && d) {
@@ -3660,14 +4264,14 @@
         if (bodyHtml) {
           slides.push('<div class="slide"><div class="slide-title">' + _escSlide(title) + '</div><div class="slide-body">' + bodyHtml + '</div></div>');
         } else {
-          const lines = summarizeResourceText(item, { maxChars: 1200 }).map(function(l) { return { kind: 'p', text: _cleanText(l) }; });
+          const lines = summarizeResourceText(item, _sumOpts(1200)).map(function(l) { return { kind: 'p', text: _cleanText(l) }; });
           _pushLineChunks(title, lines, 7);
         }
       } else {
         // Object-shaped resources without a dedicated slide renderer go through
         // the deny-listed summarizer, never raw JSON (which leaked source
         // excerpts, learner evidence and base64 media onto slides).
-        const text = typeof d === 'string' ? d.substring(0, 1200) : summarizeResourceText(item, { maxChars: 1200 }).join('\n');
+        const text = typeof d === 'string' ? d.substring(0, 1200) : summarizeResourceText(item, _sumOpts(1200)).join('\n');
         const clean = _cleanText(text);
         const lines = clean.split(/\n/).filter(Boolean).map(function(l) { return { kind: 'p', text: l }; });
         _pushLineChunks(title, lines, 8);
@@ -3677,7 +4281,28 @@
     if (slides.length <= 1) {
       slides.push('<div class="slide"><div style="display:flex;align-items:center;justify-content:center;height:100%;color:#94a3b8;font-size:14px;text-align:center"><div><div style="font-size:40px;margin-bottom:12px">📊</div>Generate content first, then preview as slides.<br><span style="font-size:12px">Each resource type becomes its own slide(s).</span></div></div></div>');
     }
-    return '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'
+    const _LANG_NAME_TO_TAG = {
+      english: 'en', spanish: 'es', french: 'fr', german: 'de', italian: 'it', portuguese: 'pt',
+      russian: 'ru', chinese: 'zh', japanese: 'ja', korean: 'ko', hindi: 'hi', bengali: 'bn',
+      tamil: 'ta', telugu: 'te', marathi: 'mr', thai: 'th', vietnamese: 'vi', turkish: 'tr',
+      polish: 'pl', dutch: 'nl', swedish: 'sv', ukranian: 'uk', ukrainian: 'uk',
+      arabic: 'ar', hebrew: 'he', persian: 'fa', farsi: 'fa', urdu: 'ur', pashto: 'ps',
+      sindhi: 'sd', uyghur: 'ug', yiddish: 'yi', sorani: 'ckb', 'kurdish (sorani)': 'ckb',
+      dhivehi: 'dv', syriac: 'syr'
+    };
+    const _rawSlideLang = String(
+      (activeCfg && (activeCfg.language || activeCfg.targetLanguage || activeCfg.lang || activeCfg.documentLanguage))
+      || (typeof document !== 'undefined' && document.documentElement && document.documentElement.getAttribute && document.documentElement.getAttribute('lang'))
+      || 'en'
+    ).trim();
+    const slideLang = _LANG_NAME_TO_TAG[_rawSlideLang.toLowerCase()] || _rawSlideLang || 'en';
+    const slideDir = (activeCfg && (activeCfg.dir === 'rtl' || activeCfg.direction === 'rtl'))
+      || /^(?:ar|he|iw|fa|ur|ps|sd|ug|yi|ckb|dv|syr)(?:[-_]|$)/i.test(slideLang)
+      || /^(?:arabic|hebrew|persian|farsi|urdu|pashto|sindhi|uyghur|yiddish|kurdish.*sorani|dhivehi|syriac)$/i.test(_rawSlideLang)
+      ? 'rtl'
+      : 'ltr';
+    const slideDocTitle = String((activeCfg && (activeCfg.title || activeCfg.docTitle)) || sourceTopic || (orderedHistory[0] && orderedHistory[0].title) || 'Slides Preview').trim();
+    return '<!DOCTYPE html><html lang="' + _escSlide(slideLang) + '" dir="' + slideDir + '"><head><meta charset="UTF-8"><title>' + _escSlide(slideDocTitle) + '</title><style>'
       + '* { box-sizing: border-box; margin: 0; padding: 0; }'
       + 'body { font-family: system-ui, sans-serif; background: #1e293b; padding: 24px; display: flex; flex-direction: column; gap: 24px; align-items: center; }'
       + '.slide { width: 100%; max-width: 720px; aspect-ratio: 16/9; background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); padding: 32px 40px; overflow: hidden; position: relative; }'
@@ -3822,8 +4447,19 @@
       }
     }
     record(adaptedSupportItem, 'Adapted text excerpt');
-    if (Array.isArray(glossaryItem?.data)) {
-      const terms = glossaryItem.data.filter(item => item && typeof item.term === 'string' && item.term.trim()).map(item => item.term).join(', ');
+    const glossaryList = Array.isArray(glossaryItem?.data)
+      ? glossaryItem.data
+      : (glossaryItem?.data && typeof glossaryItem.data === 'object'
+        ? (Array.isArray(glossaryItem.data.terms) ? glossaryItem.data.terms
+          : Array.isArray(glossaryItem.data.items) ? glossaryItem.data.items
+          : Array.isArray(glossaryItem.data.entries) ? glossaryItem.data.entries
+          : Array.isArray(glossaryItem.data.glossary) ? glossaryItem.data.glossary : null)
+        : null);
+    if (Array.isArray(glossaryList)) {
+      const terms = glossaryList
+        .filter(item => item && item.isSelected !== false && item.selected !== false && typeof (item.term ?? item.word) === 'string' && (item.term ?? item.word).trim())
+        .map(item => (item.term ?? item.word).trim())
+        .join(', ');
       if (terms) context += '\n--- CONTEXT: VOCABULARY (Glossary) ---\nKey Terms: ' + terms + '\n';
     }
     record(glossaryItem, 'Vocabulary terms');
@@ -3831,8 +4467,12 @@
       context += '\n--- CONTEXT: VISUAL SUPPORT ---\nAvailable Image: "' + imageItem.data.prompt + '". Use this for the Hook or Visual Anchor.\n';
     }
     record(imageItem, 'Visual support summary');
-    if (Array.isArray(quizItem?.data?.questions)) {
-      context += '\n--- CONTEXT: ASSESSMENT (Exit Ticket) ---\nHas ' + quizItem.data.questions.length + ' Multiple Choice Questions and ' + (Array.isArray(quizItem.data.reflections) ? quizItem.data.reflections.length : 0) + ' Reflection prompts. Use this for Closure.\n';
+    if (Array.isArray(quizItem?.data?.questions) || Array.isArray(quizItem?.data?.reflections)) {
+      const qCount = Array.isArray(quizItem.data.questions) ? quizItem.data.questions.length : 0;
+      const rCount = Array.isArray(quizItem.data.reflections) ? quizItem.data.reflections.length : 0;
+      if (qCount || rCount) {
+        context += '\n--- CONTEXT: ASSESSMENT (Exit Ticket) ---\nHas ' + qCount + ' Questions and ' + rCount + ' Reflection prompts. Use this for Closure.\n';
+      }
     }
     record(quizItem, 'Assessment summary');
     if (scaffoldItem?.data && ['list', 'paragraph'].includes(scaffoldItem.data.mode)) {
@@ -3840,13 +4480,19 @@
       context += '\n--- CONTEXT: WRITING SCAFFOLDS ---\nType: ' + type + '. Use this for Independent Practice.\n';
     }
     record(scaffoldItem, 'Writing scaffold summary');
-    const timelineEvents = Array.isArray(timelineItem?.data) ? timelineItem.data : timelineItem?.data?.items;
+    const timelineEvents = Array.isArray(timelineItem?.data)
+      ? timelineItem.data
+      : (Array.isArray(timelineItem?.data?.events) ? timelineItem.data.events : timelineItem?.data?.items);
     if (Array.isArray(timelineEvents)) {
       context += '\n--- CONTEXT: SEQUENCE BUILDER ACTIVITY ---\n' + timelineEvents.length + ' Events available for sequencing. Use for Guided Practice.\n';
     }
     record(timelineItem, 'Sequence summary');
     if (Array.isArray(conceptItem?.data?.categories)) {
-      const categories = conceptItem.data.categories.filter(item => item && typeof item.label === 'string' && item.label.trim()).map(item => item.label);
+      const categories = conceptItem.data.categories
+        .filter(item => item && item.id !== '__uncategorized')
+        .map(item => (typeof item === 'string' ? item : (item.label ?? item.name ?? item.title ?? '')))
+        .filter(lbl => typeof lbl === 'string' && lbl.trim())
+        .map(lbl => lbl.trim());
       if (categories.length) context += '\n--- CONTEXT: CONCEPT SORT ---\nCategories: ' + categories.join(', ') + '. Use for Guided Practice.\n';
     }
     record(conceptItem, 'Concept sort summary');
@@ -3946,6 +4592,8 @@
     separateStudentTeacherHtml: _alloSeparateStudentTeacherHtml,
     embedDocumentFont: _alloEmbedDocumentFont,
     sanitizeAssessmentStudentHtml: _alloSanitizeAssessmentStudentHtml,
+    _alloSanitizeAssessmentStudentHtml,
+    syncLiveControlsToAttrs: _alloSyncLiveControlsToAttrs,
     shouldSeparateStudentTeacher: _alloShouldSeparateStudentTeacher,
     downloadSeparatedStudentTeacher: _alloDownloadSeparatedStudentTeacher,
     audioReadyTextFromRoot: _alloAudioReadyTextFromRoot,

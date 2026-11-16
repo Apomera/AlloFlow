@@ -18,6 +18,13 @@ window.SelHub = window.SelHub || {
 
 (function() {
   'use strict';
+  function __alloT(key, fallback) {
+    try {
+      var fn = typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : null;
+      if (fn) { var v = fn(key, fallback); if (v != null && v !== key) return v; }
+    } catch (_) {}
+    return fallback != null ? fallback : key;
+  }
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-coping')) return;
@@ -29174,7 +29181,7 @@ window.SelHub = window.SelHub || {
           })
         );
         var scSearchBar = h('div', { style: { padding: '0 12px 10px' } },
-          h('input', { type: 'search', 'aria-label': 'Search sample plans and guided scripts', placeholder: '🔎 Search...', value: d.scSearch || '',
+          h('input', { type: 'search', 'aria-label': __alloT('sel.coping.search_plans_aria', 'Search sample plans and guided scripts'), placeholder: '🔎 Search...', value: d.scSearch || '',
             onChange: function(e) { upd({ scSearch: e.target.value }); },
             style: { width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: _copBg('#0f172a'), color: _copFg('#e2e8f0'), fontSize: 13 }
           })

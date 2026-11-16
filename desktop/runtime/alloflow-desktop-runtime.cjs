@@ -25,6 +25,27 @@ function resolveStaticAppDir(resourcesPath = process.resourcesPath, isDefaultApp
   if (isDefaultApp) return path.join(DESKTOP_ROOT, 'app-build');
   return resourcesPath ? path.join(resourcesPath, 'app-build') : path.join(DESKTOP_ROOT, 'app-build');
 }
+function resolveExtraResourcePath(envVarName, relativeName, resourcesPath = process.resourcesPath, isDefaultApp = Boolean(process.defaultApp)) {
+  const envOverride = String(process.env[envVarName] || '').trim();
+  if (envOverride) return path.resolve(envOverride);
+  if (!isDefaultApp && resourcesPath) {
+    const packaged = path.join(resourcesPath, relativeName);
+    if (fs.existsSync(packaged)) return packaged;
+  }
+  return path.join(REPO_ROOT, relativeName);
+}
+function resolveWordAudioShardsDir(resourcesPath = process.resourcesPath, isDefaultApp = Boolean(process.defaultApp)) {
+  return resolveExtraResourcePath('ALLOFLOW_WORD_AUDIO_SHARDS_DIR', 'word_audio_shards', resourcesPath, isDefaultApp);
+}
+function resolveWordAudioKokoroBankPath(resourcesPath = process.resourcesPath, isDefaultApp = Boolean(process.defaultApp)) {
+  return resolveExtraResourcePath('ALLOFLOW_WORD_AUDIO_KOKORO_BANK_PATH', 'word_audio_kokoro_bank.json', resourcesPath, isDefaultApp);
+}
+function resolvePacketsVocabDir(resourcesPath = process.resourcesPath, isDefaultApp = Boolean(process.defaultApp)) {
+  return resolveExtraResourcePath('ALLOFLOW_PACKETS_VOCAB_DIR', 'packets_vocab', resourcesPath, isDefaultApp);
+}
+function resolvePacketsVocabBankScriptPath(resourcesPath = process.resourcesPath, isDefaultApp = Boolean(process.defaultApp)) {
+  return resolveExtraResourcePath('ALLOFLOW_PACKETS_VOCAB_BANK_SCRIPT_PATH', 'packets_vocab_bank_en.js', resourcesPath, isDefaultApp);
+}
 const STATIC_APP_DIR = resolveStaticAppDir();
 function readDesktopRuntimeVersion() {
   try {
@@ -5414,6 +5435,66 @@ function serveBundledApp(req, res, pathname) {
   });
 }
 
+function tryServeWordAudioAsset(req, res, pathname) {
+  const singleFileResolvers = {
+    '/app/word_audio_kokoro_bank.json': resolveWordAudioKokoroBankPath,
+    '/word_audio_kokoro_bank.json': resolveWordAudioKokoroBankPath,
+    '/app/packets_vocab_bank_en.js': resolvePacketsVocabBankScriptPath,
+    '/packets_vocab_bank_en.js': resolvePacketsVocabBankScriptPath,
+  };
+  const dirMount = [
+    ['/app/word_audio_shards', resolveWordAudioShardsDir],
+    ['/word_audio_shards', resolveWordAudioShardsDir],
+    ['/app/packets_vocab', resolvePacketsVocabDir],
+    ['/packets_vocab', resolvePacketsVocabDir],
+  ].find(([base]) => pathname === base || pathname.startsWith(base + '/'));
+
+  const singleResolver = Object.prototype.hasOwnProperty.call(singleFileResolvers, pathname)
+    ? singleFileResolvers[pathname]
+    : null;
+  if (!singleResolver && !dirMount) return false;
+
+  const method = String(req.method || 'GET').toUpperCase();
+  if (method !== 'GET' && method !== 'HEAD') {
+    res.setHeader('Allow', 'GET, HEAD');
+    textResponse(res, 405, 'Method not allowed');
+    return true;
+  }
+
+  if (singleResolver) {
+    const filePath = singleResolver();
+    if (!fs.existsSync(filePath)) {
+      textResponse(res, 404, 'Not found');
+      return true;
+    }
+    try {
+      const realFilePath = fs.realpathSync(filePath);
+      sendFile(req, res, realFilePath, { cacheStatic: true });
+    } catch (_) {
+      textResponse(res, 404, 'Not found');
+    }
+    return true;
+  }
+
+  const [mountBase, resolveDir] = dirMount;
+  const routePrefix = mountBase + '/';
+  if (pathname === mountBase || pathname === routePrefix) {
+    textResponse(res, 404, 'Not found');
+    return true;
+  }
+  const targetDir = resolveDir();
+  if (!fs.existsSync(targetDir)) {
+    textResponse(res, 404, 'Not found');
+    return true;
+  }
+  serveFromDir(req, res, targetDir, pathname, {
+    routePrefix,
+    fallbackToIndex: false,
+    cacheStatic: true,
+  });
+  return true;
+}
+
 let activeSourceFetches = 0;
 
 async function handleApi(req, res, url) {
@@ -6309,6 +6390,7 @@ function createServer() {
         res.end();
         return;
       }
+      if (tryServeWordAudioAsset(req, res, url.pathname)) return;
       if (url.pathname.startsWith('/app/')) {
         serveBundledApp(req, res, url.pathname);
         return;
@@ -6348,6 +6430,7 @@ function createLanShareServer() {
         res.end();
         return;
       }
+      if (tryServeWordAudioAsset(req, res, url.pathname)) return;
       if (url.pathname.startsWith('/app/')) {
         serveBundledApp(req, res, url.pathname);
         return;
@@ -6736,6 +6819,10 @@ module.exports = {
   VERSION,
   PROVIDER_PRESETS,
   resolveStaticAppDir,
+  resolveWordAudioShardsDir,
+  resolveWordAudioKokoroBankPath,
+  resolvePacketsVocabDir,
+  resolvePacketsVocabBankScriptPath,
   DEFAULT_CONFIG,
   createLanShareServer,
   createServer,

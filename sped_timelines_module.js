@@ -137,7 +137,7 @@ function spedRollup(cases, today) {
 function spedCsv(cases, today) {
   const esc = (v) => {
     const raw = v == null ? "" : String(v);
-    const s = /^[\t\r\n]/.test(raw) || /^\s*[=+\-@]/.test(raw) ? "'" + raw : raw;
+    const s = /^[\t\r\n]/.test(raw) || /^\s*[=+\-@|]/.test(raw) ? "'" + raw : raw;
     return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
   };
   const head = ["student_code", "type", "provider", "key_date", "due_date", "days_until_due", "status", "completed_at"];
@@ -216,25 +216,77 @@ function SpedTimelinesPanel(props) {
   React.useEffect(() => {
     spedStore(SPED_CONFIG_KEY, config);
   }, [config]);
+  const onCloseRef = React.useRef(onClose);
+  onCloseRef.current = onClose;
   React.useEffect(() => {
     const dialog = dialogRef.current;
-    if (!dialog) return void 0;
+    if (!dialog || typeof document === "undefined") return void 0;
     const previousFocus = document.activeElement;
     const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
     const trap = { root: dialog };
     trapStack.push(trap);
     const isTopTrap = () => trapStack[trapStack.length - 1] === trap;
+    const isolated = [];
+    const seenSiblings = /* @__PURE__ */ new Set();
+    let cursor = dialog;
+    while (cursor && cursor.parentElement) {
+      const parent = cursor.parentElement;
+      Array.from(parent.children).forEach((sibling) => {
+        if (!sibling || sibling === cursor || seenSiblings.has(sibling) || !sibling.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName)) return;
+        seenSiblings.add(sibling);
+        isolated.push({
+          sibling,
+          hadInert: sibling.hasAttribute("inert"),
+          prevInert: sibling.inert,
+          ariaHidden: sibling.getAttribute("aria-hidden")
+        });
+        try {
+          sibling.inert = true;
+        } catch (_) {
+        }
+        try {
+          sibling.setAttribute("inert", "");
+        } catch (_) {
+        }
+        try {
+          sibling.setAttribute("aria-hidden", "true");
+        } catch (_) {
+        }
+      });
+      if (parent === document.body) break;
+      cursor = parent;
+    }
+    const body = document.body;
+    const scrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: "" });
+    let scrollLocked = false;
+    try {
+      if (body) {
+        scrollLocked = true;
+        if (++scrollLock.count === 1) {
+          scrollLock.prev = body.style.overflow;
+          body.style.overflow = "hidden";
+        }
+      }
+    } catch (_) {
+    }
     const getFocusable = () => Array.from(dialog.querySelectorAll(
-      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
-    )).filter((el) => !el.closest('[hidden], [inert], [aria-hidden="true"]'));
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])'
+    )).filter((el) => {
+      if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      const closedDetails = el.closest("details:not([open])");
+      if (closedDetails && !(el.tagName === "SUMMARY" && el.parentElement === closedDetails)) return false;
+      const st = typeof window !== "undefined" && typeof window.getComputedStyle === "function" ? window.getComputedStyle(el) : null;
+      return !st || st.display !== "none" && st.visibility !== "hidden";
+    });
     const first = getFocusable()[0];
-    (first || dialog).focus();
+    if (!dialog.contains(document.activeElement)) (first || dialog).focus();
     const onKeyDown = (event) => {
-      if (!isTopTrap()) return;
+      if (event.defaultPrevented || !dialog.isConnected || !isTopTrap()) return;
+      if (event.nativeEvent && event.nativeEvent.isComposing || event.isComposing || event.keyCode === 229) return;
       if (event.key === "Escape") {
         event.preventDefault();
         event.stopPropagation();
-        onClose();
+        if (typeof onCloseRef.current === "function") onCloseRef.current();
         return;
       }
       if (event.key !== "Tab") return;
@@ -245,7 +297,7 @@ function SpedTimelinesPanel(props) {
         return;
       }
       const firstItem = focusable[0], lastItem = focusable[focusable.length - 1];
-      if (!dialog.contains(document.activeElement)) {
+      if (!dialog.contains(document.activeElement) || document.activeElement === dialog) {
         event.preventDefault();
         (event.shiftKey ? lastItem : firstItem).focus();
       } else if (event.shiftKey && document.activeElement === firstItem) {
@@ -259,12 +311,48 @@ function SpedTimelinesPanel(props) {
     document.addEventListener("keydown", onKeyDown);
     return () => {
       document.removeEventListener("keydown", onKeyDown);
+      try {
+        if (scrollLocked && body) {
+          scrollLock.count = Math.max(0, scrollLock.count - 1);
+          if (scrollLock.count === 0) body.style.overflow = scrollLock.prev;
+        }
+      } catch (_) {
+      }
+      isolated.forEach(({ sibling, hadInert, prevInert, ariaHidden }) => {
+        if (!sibling || !sibling.isConnected) return;
+        if (!hadInert) {
+          try {
+            sibling.inert = false;
+          } catch (_) {
+          }
+          try {
+            sibling.removeAttribute("inert");
+          } catch (_) {
+          }
+        } else {
+          try {
+            sibling.inert = Boolean(prevInert);
+          } catch (_) {
+          }
+        }
+        if (ariaHidden == null) {
+          try {
+            sibling.removeAttribute("aria-hidden");
+          } catch (_) {
+          }
+        } else {
+          try {
+            sibling.setAttribute("aria-hidden", ariaHidden);
+          } catch (_) {
+          }
+        }
+      });
       const wasTop = isTopTrap();
-      const idx = trapStack.indexOf(trap);
+      const idx = trapStack.lastIndexOf(trap);
       if (idx !== -1) trapStack.splice(idx, 1);
-      if (wasTop && previousFocus && previousFocus !== document.body && previousFocus.isConnected && typeof previousFocus.focus === "function") previousFocus.focus();
+      if (wasTop && previousFocus && previousFocus !== document.body && previousFocus !== document.documentElement && previousFocus.isConnected && typeof previousFocus.focus === "function") previousFocus.focus();
     };
-  }, [onClose]);
+  }, []);
   const today = spedToday();
   const rollup = spedRollup(cases, today);
   const updateForm = (patch) => {
@@ -355,6 +443,7 @@ function SpedTimelinesPanel(props) {
       "data-help-key": "spedtl_tab",
       onClick: () => setTab(tb.id),
       onKeyDown: (e) => {
+        if (e.nativeEvent && e.nativeEvent.isComposing || e.isComposing || e.keyCode === 229) return;
         let next = null;
         if (e.key === "ArrowRight" || e.key === "ArrowDown") next = (tbIdx + 1) % tabs.length;
         else if (e.key === "ArrowLeft" || e.key === "ArrowUp") next = (tbIdx - 1 + tabs.length) % tabs.length;
@@ -467,7 +556,7 @@ function SpedTimelinesPanel(props) {
         }
       },
       "aria-label": (armDelete === c.id ? tt("spedtl.delete_confirm_aria", "Confirm delete") : tt("spedtl.delete_aria", "Delete")) + " " + c.code + " " + typeLabel(c.type),
-      className: "shrink-0 min-w-9 min-h-9 inline-flex items-center justify-center rounded text-[11px] font-bold " + (armDelete === c.id ? "bg-rose-600 text-white" : "text-slate-500 hover:text-rose-700 hover:bg-rose-50")
+      className: "shrink-0 min-w-11 min-h-11 inline-flex items-center justify-center rounded text-[11px] font-bold " + (armDelete === c.id ? "bg-rose-600 text-white" : "text-slate-600 hover:text-rose-700 hover:bg-rose-50")
     },
     armDelete === c.id ? tt("spedtl.delete_confirm_short", "Sure?") : "✕"
   )))), /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement(

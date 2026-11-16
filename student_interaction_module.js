@@ -357,19 +357,66 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
       }
     }
   }, [isOpen, currentNickname, parseNickname, randomizeName]);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+  const focusTrapRef = useRef(null);
   useEffect(() => {
     if (!isOpen) return void 0;
     const previousFocus = document.activeElement;
+    const dialog = dialogRef.current;
+    const stack = typeof window !== "undefined" ? window.__alloFocusTrapStack = window.__alloFocusTrapStack || [] : null;
+    const trap = { root: dialog };
+    focusTrapRef.current = trap;
+    if (stack) stack.push(trap);
+    const isTopTrap = () => {
+      if (!stack || !stack.length) return true;
+      const top = stack[stack.length - 1];
+      return top === trap || Boolean(top && top.root && dialog && dialog.contains(top.root) && top.root === dialog);
+    };
     const focusTimer = window.setTimeout(() => {
-      const dialog = dialogRef.current;
-      if (!dialog) return;
-      const focusable = dialog.querySelector('button, select, input, textarea, a[href], [tabindex]:not([tabindex="-1"])');
+      const currentDialog = dialogRef.current;
+      if (!currentDialog) return;
+      const focusable = currentDialog.querySelector('button:not([disabled]), select:not([disabled]), input:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])');
       if (focusable && typeof focusable.focus === "function") focusable.focus();
-      else dialog.focus();
+      else currentDialog.focus();
     }, 0);
+    const onDocKeyDown = (e) => {
+      if (e.defaultPrevented || e.isComposing || e.keyCode === 229 || !isTopTrap()) return;
+      const currentDialog = dialogRef.current;
+      if (!currentDialog) return;
+      if (e.key === "Escape") {
+        e.preventDefault();
+        e.stopPropagation();
+        if (typeof onCloseRef.current === "function") onCloseRef.current();
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const focusable = Array.from(currentDialog.querySelectorAll('button:not([disabled]), select:not([disabled]), input:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter((el) => !el.disabled && !el.hidden && !el.closest("[inert]") && el.getAttribute("aria-hidden") !== "true");
+      if (!focusable.length) {
+        e.preventDefault();
+        currentDialog.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && (document.activeElement === first || document.activeElement === currentDialog || !currentDialog.contains(document.activeElement))) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && (document.activeElement === last || !currentDialog.contains(document.activeElement))) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", onDocKeyDown);
     return () => {
       window.clearTimeout(focusTimer);
-      if (previousFocus && typeof previousFocus.focus === "function") previousFocus.focus();
+      document.removeEventListener("keydown", onDocKeyDown);
+      if (stack) {
+        const idx = stack.lastIndexOf(trap);
+        if (idx >= 0) stack.splice(idx, 1);
+      }
+      if (focusTrapRef.current === trap) focusTrapRef.current = null;
+      if (previousFocus && previousFocus.isConnected && typeof previousFocus.focus === "function") previousFocus.focus();
     };
   }, [isOpen]);
   const getFullName = () => `${selectedAdj} ${selectedAnimal}`;
@@ -479,19 +526,31 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
     };
   }, [isOpen]);
   const handleDialogKeyDown = (e) => {
+    if (e.defaultPrevented || e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229) return;
+    const dialog = dialogRef.current;
+    const stack = typeof window !== "undefined" ? window.__alloFocusTrapStack : null;
+    const trap = focusTrapRef.current;
+    if (Array.isArray(stack) && stack.length > 0 && trap) {
+      const top = stack[stack.length - 1];
+      if (top !== trap && !(top && top.root && dialog && dialog.contains(top.root) && top.root === dialog)) return;
+    }
     if (e.key === "Escape") {
+      e.preventDefault();
       e.stopPropagation();
       onClose();
       return;
     }
     if (e.key !== "Tab") return;
-    const dialog = dialogRef.current;
     if (!dialog) return;
-    const focusable = Array.from(dialog.querySelectorAll('button, select, input, textarea, a[href], [tabindex]:not([tabindex="-1"])')).filter((el) => !el.disabled && el.getAttribute("aria-hidden") !== "true");
-    if (!focusable.length) return;
+    const focusable = Array.from(dialog.querySelectorAll('button:not([disabled]), select:not([disabled]), input:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter((el) => !el.disabled && !el.hidden && !el.closest("[inert]") && el.getAttribute("aria-hidden") !== "true");
+    if (!focusable.length) {
+      e.preventDefault();
+      dialog.focus();
+      return;
+    }
     const first = focusable[0];
     const last = focusable[focusable.length - 1];
-    if (e.shiftKey && document.activeElement === first) {
+    if (e.shiftKey && (document.activeElement === first || document.activeElement === dialog)) {
       e.preventDefault();
       last.focus();
     } else if (!e.shiftKey && document.activeElement === last) {
@@ -517,7 +576,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
       {
         type: "button",
         onClick: onClose,
-        className: cx("absolute top-4 right-4 p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors motion-reduce:transition-none", styles.secondary, styles.focusOffset),
+        className: cx("absolute top-4 right-4 min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors motion-reduce:transition-none", styles.secondary, styles.focusOffset),
         "aria-label": t("common.close")
       },
       /* @__PURE__ */ React.createElement(X, { size: 20, "aria-hidden": "true" })
@@ -548,7 +607,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
       {
         type: "button",
         onClick: randomizeName,
-        className: cx("p-2 rounded-full hover:scale-110 transition-all motion-reduce:transition-none shrink-0", styles.secondary),
+        className: cx("min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-full hover:scale-110 transition-all motion-reduce:transition-none shrink-0", styles.secondary),
         title: t("modals.entry.randomize_codename"),
         "aria-label": t("modals.entry.randomize_codename"),
         "data-help-key": "entry_randomize_btn"
@@ -602,7 +661,7 @@ const DraftFeedbackInterface = React.memo(({
     })));
   };
   if (status === "writing") {
-    return /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto p-2" }, /* @__PURE__ */ React.createElement("div", { className: cx("rounded-2xl shadow-xl overflow-hidden", styles.panel) }, /* @__PURE__ */ React.createElement("div", { className: cx("p-4 flex items-center justify-between gap-3", styles.header) }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: cx("p-2 rounded-full", styles.iconBubble) }, /* @__PURE__ */ React.createElement(BookOpen, { size: 20 })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "font-bold text-lg" }, t("mastery.draft_label", { count: draftCount })), /* @__PURE__ */ React.createElement("p", { className: cx("text-xs", styles.headerText) }, t("mastery.instruction")))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onCancel, className: cx("p-2 rounded-full", styles.secondary), "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 20 }))), /* @__PURE__ */ React.createElement("div", { className: "p-6" }, /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto p-2" }, /* @__PURE__ */ React.createElement("div", { className: cx("rounded-2xl shadow-xl overflow-hidden", styles.panel) }, /* @__PURE__ */ React.createElement("div", { className: cx("p-4 flex items-center justify-between gap-3", styles.header) }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: cx("p-2 rounded-full", styles.iconBubble) }, /* @__PURE__ */ React.createElement(BookOpen, { size: 20 })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "font-bold text-lg" }, t("mastery.draft_label", { count: draftCount })), /* @__PURE__ */ React.createElement("p", { className: cx("text-xs", styles.headerText) }, t("mastery.instruction")))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onCancel, className: cx("min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-full", styles.secondary), "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 20 }))), /* @__PURE__ */ React.createElement("div", { className: "p-6" }, /* @__PURE__ */ React.createElement(
       "textarea",
       {
         "aria-label": t("mastery.draft_aria") || t("mastery.placeholder") || "Draft response",
@@ -630,7 +689,7 @@ const DraftFeedbackInterface = React.memo(({
     return /* @__PURE__ */ React.createElement("div", { className: cx("flex flex-col items-center justify-center h-96 p-8", styles.panel), role: "status", "aria-live": "polite", "aria-atomic": "true", "aria-busy": "true" }, /* @__PURE__ */ React.createElement("div", { className: "relative", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("div", { className: "w-20 h-20 border-4 border-indigo-100 rounded-full" }), /* @__PURE__ */ React.createElement("div", { className: "w-20 h-20 border-4 border-t-indigo-600 border-r-indigo-600 border-b-transparent border-l-transparent rounded-full animate-spin motion-reduce:animate-none absolute top-0 left-0" }), /* @__PURE__ */ React.createElement("div", { className: cx("absolute inset-0 flex items-center justify-center", styles.title) }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 24, className: "animate-spin motion-reduce:animate-none" }))), /* @__PURE__ */ React.createElement("h3", { className: cx("mt-6 text-xl font-bold animate-pulse motion-reduce:animate-none", styles.title) }, t("mastery.analyzing")), /* @__PURE__ */ React.createElement("p", { className: cx("mt-2", styles.text) }, t("mastery.criteria_check")));
   }
   if (status === "revision") {
-    return /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto p-4 md:p-6 space-y-8 animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4 duration-500" }, /* @__PURE__ */ React.createElement("div", { className: cx("flex justify-between items-center p-4 rounded-xl", styles.needsWork) }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: cx("p-2 rounded-full", styles.iconBubble) }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 24 })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: cx("text-xl font-black", styles.title), role: "status", "aria-live": "polite" }, t("mastery.revision_required")), /* @__PURE__ */ React.createElement("p", { className: cx("text-sm", styles.text) }, t("mastery.revision_desc")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: cx("hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg shadow-sm mr-2", styles.panel) }, /* @__PURE__ */ React.createElement(Star, { size: 16, className: "text-yellow-500 fill-current" }), /* @__PURE__ */ React.createElement("span", { className: cx("text-xs font-bold", styles.text) }, t("mastery.current_progress"), ": ", gradingDetails?.rawScore, "/100")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onCancel, className: cx("p-2 rounded-full", styles.secondary), "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 20 })))), renderRubric(), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 lg:grid-cols-2 gap-6" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2" }, /* @__PURE__ */ React.createElement("label", { className: cx("text-xs font-bold uppercase tracking-wider flex items-center gap-2", styles.muted) }, /* @__PURE__ */ React.createElement(History, { size: 14 }), " ", t("mastery.locked_draft", { count: draftCount })), /* @__PURE__ */ React.createElement("div", { className: cx("p-6 rounded-xl h-96 overflow-y-auto font-serif relative whitespace-pre-wrap", styles.panelSoft) }, /* @__PURE__ */ React.createElement("div", { className: cx("absolute top-4 right-4", styles.muted) }, /* @__PURE__ */ React.createElement(Lock, { size: 20 })), previousDraft)), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2" }, /* @__PURE__ */ React.createElement("label", { className: cx("text-xs font-bold uppercase tracking-wider flex items-center gap-2", styles.title) }, /* @__PURE__ */ React.createElement(BookOpen, { size: 14 }), " ", t("mastery.new_draft", { count: draftCount + 1 })), /* @__PURE__ */ React.createElement("div", { className: "relative h-96" }, /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto p-4 md:p-6 space-y-8 animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4 duration-500" }, /* @__PURE__ */ React.createElement("div", { className: cx("flex justify-between items-center p-4 rounded-xl", styles.needsWork) }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: cx("p-2 rounded-full", styles.iconBubble) }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 24 })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: cx("text-xl font-black", styles.title), role: "status", "aria-live": "polite" }, t("mastery.revision_required")), /* @__PURE__ */ React.createElement("p", { className: cx("text-sm", styles.text) }, t("mastery.revision_desc")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: cx("hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg shadow-sm mr-2", styles.panel) }, /* @__PURE__ */ React.createElement(Star, { size: 16, className: "text-yellow-500 fill-current" }), /* @__PURE__ */ React.createElement("span", { className: cx("text-xs font-bold", styles.text) }, t("mastery.current_progress"), ": ", gradingDetails?.rawScore, "/100")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onCancel, className: cx("min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-full", styles.secondary), "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 20 })))), renderRubric(), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 lg:grid-cols-2 gap-6" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2" }, /* @__PURE__ */ React.createElement("label", { className: cx("text-xs font-bold uppercase tracking-wider flex items-center gap-2", styles.muted) }, /* @__PURE__ */ React.createElement(History, { size: 14 }), " ", t("mastery.locked_draft", { count: draftCount })), /* @__PURE__ */ React.createElement("div", { className: cx("p-6 rounded-xl h-96 overflow-y-auto font-serif relative whitespace-pre-wrap", styles.panelSoft) }, /* @__PURE__ */ React.createElement("div", { className: cx("absolute top-4 right-4", styles.muted) }, /* @__PURE__ */ React.createElement(Lock, { size: 20 })), previousDraft)), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2" }, /* @__PURE__ */ React.createElement("label", { className: cx("text-xs font-bold uppercase tracking-wider flex items-center gap-2", styles.title) }, /* @__PURE__ */ React.createElement(BookOpen, { size: 14 }), " ", t("mastery.new_draft", { count: draftCount + 1 })), /* @__PURE__ */ React.createElement("div", { className: "relative h-96" }, /* @__PURE__ */ React.createElement(
       "textarea",
       {
         "aria-label": t("mastery.new_draft", { count: draftCount + 1 }) || "New draft",

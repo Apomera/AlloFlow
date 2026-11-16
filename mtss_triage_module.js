@@ -219,7 +219,7 @@ function mtssSiblingCounts(storage) {
 function mtssCsv(dataset) {
   const esc = (v) => {
     const raw = v == null ? "" : String(v);
-    const s = /^[\t\r\n]/.test(raw) || /^\s*[=+\-@]/.test(raw) ? "'" + raw : raw;
+    const s = /^[\t\r\n]/.test(raw) || /^\s*[=+\-@|]/.test(raw) ? "'" + raw : raw;
     return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
   };
   const board = mtssBoard(dataset);
@@ -299,25 +299,77 @@ function MtssTriagePanel(props) {
   React.useEffect(() => {
     mtssStore(MTSS_GROUPS_KEY, groups);
   }, [groups]);
+  const onCloseRef = React.useRef(onClose);
+  onCloseRef.current = onClose;
   React.useEffect(() => {
     const dialog = dialogRef.current;
-    if (!dialog) return void 0;
+    if (!dialog || typeof document === "undefined") return void 0;
     const previousFocus = document.activeElement;
     const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
     const trap = { root: dialog };
     trapStack.push(trap);
     const isTopTrap = () => trapStack[trapStack.length - 1] === trap;
+    const isolated = [];
+    const seenSiblings = /* @__PURE__ */ new Set();
+    let cursor = dialog;
+    while (cursor && cursor.parentElement) {
+      const parent = cursor.parentElement;
+      Array.from(parent.children).forEach((sibling) => {
+        if (!sibling || sibling === cursor || seenSiblings.has(sibling) || !sibling.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName)) return;
+        seenSiblings.add(sibling);
+        isolated.push({
+          sibling,
+          hadInert: sibling.hasAttribute("inert"),
+          prevInert: sibling.inert,
+          ariaHidden: sibling.getAttribute("aria-hidden")
+        });
+        try {
+          sibling.inert = true;
+        } catch (_) {
+        }
+        try {
+          sibling.setAttribute("inert", "");
+        } catch (_) {
+        }
+        try {
+          sibling.setAttribute("aria-hidden", "true");
+        } catch (_) {
+        }
+      });
+      if (parent === document.body) break;
+      cursor = parent;
+    }
+    const body = document.body;
+    const scrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: "" });
+    let scrollLocked = false;
+    try {
+      if (body) {
+        scrollLocked = true;
+        if (++scrollLock.count === 1) {
+          scrollLock.prev = body.style.overflow;
+          body.style.overflow = "hidden";
+        }
+      }
+    } catch (_) {
+    }
     const getFocusable = () => Array.from(dialog.querySelectorAll(
-      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-    )).filter((el) => !el.closest('[hidden], [inert], [aria-hidden="true"]'));
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])'
+    )).filter((el) => {
+      if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      const closedDetails = el.closest("details:not([open])");
+      if (closedDetails && !(el.tagName === "SUMMARY" && el.parentElement === closedDetails)) return false;
+      const st = typeof window !== "undefined" && typeof window.getComputedStyle === "function" ? window.getComputedStyle(el) : null;
+      return !st || st.display !== "none" && st.visibility !== "hidden";
+    });
     const first = getFocusable()[0];
-    (first || dialog).focus();
+    if (!dialog.contains(document.activeElement)) (first || dialog).focus();
     const onKeyDown = (event) => {
-      if (!isTopTrap()) return;
+      if (event.defaultPrevented || !dialog.isConnected || !isTopTrap()) return;
+      if (event.nativeEvent && event.nativeEvent.isComposing || event.isComposing || event.keyCode === 229) return;
       if (event.key === "Escape") {
         event.preventDefault();
         event.stopPropagation();
-        onClose();
+        if (typeof onCloseRef.current === "function") onCloseRef.current();
         return;
       }
       if (event.key !== "Tab") return;
@@ -328,7 +380,7 @@ function MtssTriagePanel(props) {
         return;
       }
       const firstItem = focusable[0], lastItem = focusable[focusable.length - 1];
-      if (!dialog.contains(document.activeElement)) {
+      if (!dialog.contains(document.activeElement) || document.activeElement === dialog) {
         event.preventDefault();
         (event.shiftKey ? lastItem : firstItem).focus();
       } else if (event.shiftKey && document.activeElement === firstItem) {
@@ -342,12 +394,48 @@ function MtssTriagePanel(props) {
     document.addEventListener("keydown", onKeyDown);
     return () => {
       document.removeEventListener("keydown", onKeyDown);
+      try {
+        if (scrollLocked && body) {
+          scrollLock.count = Math.max(0, scrollLock.count - 1);
+          if (scrollLock.count === 0) body.style.overflow = scrollLock.prev;
+        }
+      } catch (_) {
+      }
+      isolated.forEach(({ sibling, hadInert, prevInert, ariaHidden }) => {
+        if (!sibling || !sibling.isConnected) return;
+        if (!hadInert) {
+          try {
+            sibling.inert = false;
+          } catch (_) {
+          }
+          try {
+            sibling.removeAttribute("inert");
+          } catch (_) {
+          }
+        } else {
+          try {
+            sibling.inert = Boolean(prevInert);
+          } catch (_) {
+          }
+        }
+        if (ariaHidden == null) {
+          try {
+            sibling.removeAttribute("aria-hidden");
+          } catch (_) {
+          }
+        } else {
+          try {
+            sibling.setAttribute("aria-hidden", ariaHidden);
+          } catch (_) {
+          }
+        }
+      });
       const wasTop = isTopTrap();
-      const idx = trapStack.indexOf(trap);
+      const idx = trapStack.lastIndexOf(trap);
       if (idx !== -1) trapStack.splice(idx, 1);
-      if (wasTop && previousFocus && previousFocus !== document.body && previousFocus.isConnected && typeof previousFocus.focus === "function") previousFocus.focus();
+      if (wasTop && previousFocus && previousFocus !== document.body && previousFocus !== document.documentElement && previousFocus.isConnected && typeof previousFocus.focus === "function") previousFocus.focus();
     };
-  }, [onClose]);
+  }, []);
   const active = activeId ? datasets.find((d) => d.id === activeId) : null;
   const board = active ? mtssBoard(active) : null;
   const context = mtssSiblingCounts(typeof localStorage !== "undefined" ? localStorage : { getItem: () => null });
@@ -430,6 +518,7 @@ function MtssTriagePanel(props) {
       "data-help-key": "mtss_tab",
       onClick: () => setTab(tb.id),
       onKeyDown: (e) => {
+        if (e.nativeEvent && e.nativeEvent.isComposing || e.isComposing || e.keyCode === 229) return;
         let next = null;
         if (e.key === "ArrowRight" || e.key === "ArrowDown") next = (tbIdx + 1) % tabs.length;
         else if (e.key === "ArrowLeft" || e.key === "ArrowUp") next = (tbIdx - 1 + tabs.length) % tabs.length;
@@ -446,7 +535,7 @@ function MtssTriagePanel(props) {
     /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, tb.icon),
     " ",
     tb.label
-  )))), /* @__PURE__ */ React.createElement("div", { className: "p-4", role: "tabpanel", id: "mtss-tabpanel", "aria-labelledby": "mtss-tab-" + tab, tabIndex: -1 }, /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mb-3" }, tt("mtss.context_strip", "Building context (from this device’s Leadership Hub data):"), " ", context.walkthroughVisits, " ", tt("mtss.ctx_visits", "walkthrough visits"), " · ", context.disproAnalyses, " ", tt("mtss.ctx_dispro", "equity analyses"), " · ", context.spedOpen, " ", tt("mtss.ctx_sped", "open SpEd timelines"), " · ", context.meetings, " ", tt("mtss.ctx_meetings", "meeting records")), tab === "screen" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-300 rounded-xl p-3 mb-3" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700 mb-1" }, tt("mtss.new_dataset", "New screening window")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "mtss-label", className: "block text-xs font-bold text-slate-600 mb-1" }, tt("mtss.measure_label", "Measure (e.g. ORF grade 3)")), /* @__PURE__ */ React.createElement(
+  )))), /* @__PURE__ */ React.createElement("div", { className: "p-4", role: "tabpanel", id: "mtss-tabpanel", "aria-labelledby": "mtss-tab-" + tab, tabIndex: -1 }, /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-600 mb-3" }, tt("mtss.context_strip", "Building context (from this device’s Leadership Hub data):"), " ", context.walkthroughVisits, " ", tt("mtss.ctx_visits", "walkthrough visits"), " · ", context.disproAnalyses, " ", tt("mtss.ctx_dispro", "equity analyses"), " · ", context.spedOpen, " ", tt("mtss.ctx_sped", "open SpEd timelines"), " · ", context.meetings, " ", tt("mtss.ctx_meetings", "meeting records")), tab === "screen" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-300 rounded-xl p-3 mb-3" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700 mb-1" }, tt("mtss.new_dataset", "New screening window")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "mtss-label", className: "block text-xs font-bold text-slate-600 mb-1" }, tt("mtss.measure_label", "Measure (e.g. ORF grade 3)")), /* @__PURE__ */ React.createElement(
     "input",
     {
       id: "mtss-label",
@@ -503,7 +592,7 @@ function MtssTriagePanel(props) {
       placeholder: "Code,Score\nJD,42\nMR,71\nAL,18",
       className: "w-full text-xs font-mono border border-slate-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
     }
-  ), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, tt("mtss.cuts_note", 'Enter YOUR measure’s benchmark cut scores (publisher tables are measure- and season-specific — this tool ships none). "At the cut" counts as the less intensive band.')), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: saveDataset, className: "mt-2 min-h-11 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700" }, tt("mtss.save_dataset", "Save window & triage"))), datasets.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-2" }, datasets.map((d) => /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-600 mt-1" }, tt("mtss.cuts_note", 'Enter YOUR measure’s benchmark cut scores (publisher tables are measure- and season-specific — this tool ships none). "At the cut" counts as the less intensive band.')), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: saveDataset, className: "mt-2 min-h-11 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700" }, tt("mtss.save_dataset", "Save window & triage"))), datasets.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-2" }, datasets.map((d) => /* @__PURE__ */ React.createElement(
     "button",
     {
       key: d.id,
@@ -513,7 +602,7 @@ function MtssTriagePanel(props) {
         setActiveId(d.id);
         setChecked({});
       },
-      className: "min-h-9 px-2.5 py-1 rounded-full border text-xs font-bold " + (activeId === d.id ? "bg-indigo-600 text-white border-indigo-700" : "bg-white text-slate-600 border-slate-300 hover:bg-slate-100")
+      className: "min-h-11 px-3 py-1.5 rounded-full border text-xs font-bold " + (activeId === d.id ? "bg-indigo-600 text-white border-indigo-700" : "bg-white text-slate-600 border-slate-300 hover:bg-slate-100")
     },
     d.label,
     " · ",
@@ -523,7 +612,7 @@ function MtssTriagePanel(props) {
     {
       type: "button",
       onClick: () => mtssDownload("mtss-" + (active.window || "window").replace(/\s+/g, "-") + ".csv", "text/csv;charset=utf-8", "\uFEFF" + mtssCsv(active), addToast, tt("mtss.export_toast", "Export started — check your downloads."), tt("mtss.export_failed", "Export failed: ")),
-      className: "min-h-9 px-2.5 py-1 rounded-lg border border-slate-300 bg-white text-xs font-bold text-slate-700 hover:bg-slate-100"
+      className: "min-h-11 px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs font-bold text-slate-700 hover:bg-slate-100"
     },
     /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "⬇️"),
     " ",
@@ -543,7 +632,7 @@ function MtssTriagePanel(props) {
           mtssAnnounce(tt("mtss.delete_arm_announce", "Activate delete again to permanently remove this window."));
         }
       },
-      className: "min-h-9 px-2.5 py-1 rounded-lg border text-xs font-bold " + (armDelete === active.id ? "bg-rose-600 text-white border-rose-700" : "bg-white text-rose-700 border-rose-300 hover:bg-rose-50")
+      className: "min-h-11 px-3 py-1.5 rounded-lg border text-xs font-bold " + (armDelete === active.id ? "bg-rose-600 text-white border-rose-700" : "bg-white text-rose-700 border-rose-300 hover:bg-rose-50")
     },
     armDelete === active.id ? tt("mtss.delete_confirm", "Tap again to delete") : tt("mtss.delete", "Delete")
   ))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-3 gap-2" }, [3, 2, 1].map((tier) => /* @__PURE__ */ React.createElement("div", { key: tier, className: "rounded-xl border p-2 " + MTSS_TIER_META[tier].cls }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold" }, tt("mtss.tier_" + tier, MTSS_TIER_META[tier].label), " (", board.tiers[tier].length, ")"), /* @__PURE__ */ React.createElement("ul", { className: "mt-1 space-y-0.5" }, board.tiers[tier].map((r) => /* @__PURE__ */ React.createElement("li", { key: r.code, className: "flex items-center gap-1.5 text-xs" }, tier !== 1 && /* @__PURE__ */ React.createElement(
@@ -562,7 +651,7 @@ function MtssTriagePanel(props) {
       type: "text",
       value: groupName,
       onChange: (e) => setGroupName(e.target.value),
-      className: "w-full min-h-10 border border-slate-300 rounded-lg px-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      className: "w-full min-h-11 border border-slate-300 rounded-lg px-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
     }
   )), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-40" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "mtss-group-focus", className: "block text-[10px] font-bold text-slate-600 mb-0.5" }, tt("mtss.group_focus", "Focus (e.g. decoding, fluency)")), /* @__PURE__ */ React.createElement(
     "input",
@@ -571,9 +660,9 @@ function MtssTriagePanel(props) {
       type: "text",
       value: groupFocus,
       onChange: (e) => setGroupFocus(e.target.value),
-      className: "w-full min-h-10 border border-slate-300 rounded-lg px-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      className: "w-full min-h-11 border border-slate-300 rounded-lg px-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
     }
-  )), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: createGroup, className: "min-h-10 px-3 py-2 rounded-lg bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700" }, tt("mtss.create_group", "Create group")))), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[10px] text-slate-500" }, tt("mtss.integrity_note", "Tiers here are suggested risk bands from ONE screener against the cut scores you entered — a flag for team review, never a placement. MTSS teams decide with multiple data sources (progress monitoring, classroom evidence, family input). All computation happens on this device."))), !active && datasets.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 bg-white border border-slate-300 rounded-xl p-3" }, tt("mtss.empty", "Paste your first screening window above to build the tier board."))), tab === "groups" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700 mb-2" }, tt("mtss.groups_title", "Intervention groups")), groups.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 bg-white border border-slate-300 rounded-xl p-3" }, tt("mtss.no_groups", "No groups yet — check students on the Screen tab and create one.")), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1.5" }, groups.map((g) => /* @__PURE__ */ React.createElement("li", { key: g.id, className: "bg-white border border-slate-300 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-sm text-slate-800" }, g.name, g.focus ? /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-600" }, " — ", g.focus) : null), /* @__PURE__ */ React.createElement("span", { className: "block text-[10px] text-slate-500" }, g.measure, " · ", g.window, " · ", tt("mtss.started", "created"), " ", g.createdAt)), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: createGroup, className: "min-h-11 px-3 py-2 rounded-lg bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700" }, tt("mtss.create_group", "Create group")))), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[10px] text-slate-600" }, tt("mtss.integrity_note", "Tiers here are suggested risk bands from ONE screener against the cut scores you entered — a flag for team review, never a placement. MTSS teams decide with multiple data sources (progress monitoring, classroom evidence, family input). All computation happens on this device."))), !active && datasets.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 bg-white border border-slate-300 rounded-xl p-3" }, tt("mtss.empty", "Paste your first screening window above to build the tier board."))), tab === "groups" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700 mb-2" }, tt("mtss.groups_title", "Intervention groups")), groups.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 bg-white border border-slate-300 rounded-xl p-3" }, tt("mtss.no_groups", "No groups yet — check students on the Screen tab and create one.")), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1.5" }, groups.map((g) => /* @__PURE__ */ React.createElement("li", { key: g.id, className: "bg-white border border-slate-300 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-sm text-slate-800" }, g.name, g.focus ? /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-600" }, " — ", g.focus) : null), /* @__PURE__ */ React.createElement("span", { className: "block text-[10px] text-slate-600" }, g.measure, " · ", g.window, " · ", tt("mtss.started", "created"), " ", g.createdAt)), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -587,7 +676,7 @@ function MtssTriagePanel(props) {
           mtssAnnounce(tt("mtss.delete_arm_announce", "Activate delete again to permanently remove this group."));
         }
       },
-      className: "shrink-0 min-h-9 px-2.5 py-1 rounded-lg border text-xs font-bold " + (armDelete === g.id ? "bg-rose-600 text-white border-rose-700" : "bg-white text-rose-700 border-rose-300 hover:bg-rose-50")
+      className: "shrink-0 min-h-11 px-3 py-1.5 rounded-lg border text-xs font-bold " + (armDelete === g.id ? "bg-rose-600 text-white border-rose-700" : "bg-white text-rose-700 border-rose-300 hover:bg-rose-50")
     },
     armDelete === g.id ? tt("mtss.delete_confirm", "Tap again to delete") : tt("mtss.delete", "Delete")
   )), /* @__PURE__ */ React.createElement("ul", { className: "mt-1.5 flex flex-wrap gap-1" }, g.members.map((m) => /* @__PURE__ */ React.createElement("li", { key: m, className: "text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-800 border border-indigo-200" }, m)))))), groups.length > 0 && /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-[10px] text-slate-500" }, tt("mtss.groups_note", "For delivering interventions, the teacher-facing side of AlloFlow (SEL Hub routines, accessible materials, Take-Home Packs) is the natural next stop — groups here are the roster, not the intervention."))), tab === "progress" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700 mb-1" }, tt("mtss.progress_title", "Window over window")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 mb-2" }, tt("mtss.progress_hint", "Compare two saved windows of the SAME measure (matching student codes). Movement toward less intensive bands is the win condition.")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2" }, [["A", progA, setProgA], ["B", progB, setProgB]].map(([label, val, setter]) => /* @__PURE__ */ React.createElement("div", { key: label }, /* @__PURE__ */ React.createElement("label", { htmlFor: "mtss-prog-" + label, className: "block text-[10px] font-bold text-slate-600 mb-0.5" }, tt("mtss.window", "Window"), " ", label), /* @__PURE__ */ React.createElement(

@@ -58,8 +58,8 @@
   var changing = {};
   var buildTimer = 0, buildRun = 0, built = null, fileUrl = '', batchFile = null;
   var wordsTimer = 0;
-  // Recordings and pictures (packets_vocab_media.js, word_sounds_symbols_en.js, word_sounds_packet_builder.js).
-  var media = null, symbols = null, art = null, pictureState = 'idle', heard = null;
+  // Recordings and pictures (packets_vocab_media.js, word_sounds_symbols_en.js, word_sounds_packet_builder.js, word_picture_matcher.js).
+  var media = null, symbols = null, art = null, matcher = null, pictureState = 'idle', heard = null, pendingPicWord = '';
   var previewOmit = {}, previewSlot = {}, previewSession = null, inPreviewAction = false;
   function resetPreview(stopSession) {
     previewOmit = {};
@@ -67,14 +67,14 @@
     if (stopSession && previewSession) { try { previewSession.stop(); } catch (_) {} previewSession = null; }
   }
 
-  function defaults() { return { words: '', types: ['meaning', 'word'], mode: 'practice', title: '', readAloud: true, voices: true, codeName: '' }; }
+  function defaults() { return { words: '', types: ['meaning', 'word'], mode: 'practice', title: '', readAloud: true, voices: true, diagrams: false, codeName: '' }; }
 
   // ---------------------------------------------------------------------------
   // What this page keeps, in this browser only
   // ---------------------------------------------------------------------------
   function remember() {
     try {
-      window.localStorage.setItem(STORE_KEY, JSON.stringify({ v: 1, words: state.words, types: state.types, mode: state.mode, title: state.title, readAloud: state.readAloud, voices: state.voices }));
+      window.localStorage.setItem(STORE_KEY, JSON.stringify({ v: 1, words: state.words, types: state.types, mode: state.mode, title: state.title, readAloud: state.readAloud, voices: state.voices, diagrams: !!state.diagrams }));
     } catch (_) { /* a browser that cannot keep them still works */ }
   }
   function recall() {
@@ -87,6 +87,7 @@
     if (typeof saved.title === 'string') fresh.title = saved.title.slice(0, 80);
     if (typeof saved.readAloud === 'boolean') fresh.readAloud = saved.readAloud;
     if (typeof saved.voices === 'boolean') fresh.voices = saved.voices;
+    if (typeof saved.diagrams === 'boolean') fresh.diagrams = saved.diagrams;
     return fresh;
   }
   function freshEdits() { return { v: 1, words: {}, senses: {} }; }
@@ -112,14 +113,14 @@
   // The rows: one for each word, made again after every change
   // ---------------------------------------------------------------------------
   function listNow() { return builder.parseWords(state.words); }
-  function redraft() { rows = builder.draftRows({ words: listNow().words, bank: bankState === 'ready' ? bank : null, edits: edits, pictures: symbols }); }
+  function redraft() { rows = builder.draftRows({ words: listNow().words, bank: bankState === 'ready' ? bank : null, edits: edits, pictures: symbols, diagrams: !!state.diagrams, matcher: matcher, art: art }); }
   function rowOf(key) { return rows.filter(function (r) { return r.key === key; })[0] || null; }
   function changed() {
     keepEdits();
     redraft();
     clearBuilt();
     if (step === 2) drawRows();
-    if (step === 3) { drawBlankRows(); drawPictureRows(); makeSoon(250); }
+    if (step === 3) { drawStep3(); makeSoon(250); }
   }
 
   // ---------------------------------------------------------------------------
@@ -371,12 +372,13 @@
   // ---------------------------------------------------------------------------
   // Picture questions are offered when at least builder.MIN_PICTURES list words have a picture: with fewer, the
   // pictures to choose from would mostly be words the student has not met in this list.
-  function picturesOffered() { return !!symbols && typeof builder.pictureCount === 'function' && builder.pictureCount(rows).offered; }
+  function hasCustomPictures() { return rows.some(function (r) { return !!(r && r.customPicture); }); }
+  function picturesOffered() { return (!!symbols || !!state.diagrams || hasCustomPictures()) && typeof builder.pictureCount === 'function' && builder.pictureCount(rows).offered; }
   function typesNow() { return state.types.filter(function (id) { var t = builder.TYPES.filter(function (x) { return x.id === id; })[0]; return !!t && (!t.pictures || picturesOffered()); }); }
   function drawTypes() {
     var host = $('types');
     host.textContent = '';
-    var pics = symbols && typeof builder.pictureCount === 'function' ? builder.pictureCount(rows) : null;
+    var pics = (symbols || state.diagrams || hasCustomPictures()) && typeof builder.pictureCount === 'function' ? builder.pictureCount(rows) : null;
     builder.TYPES.forEach(function (t) {
       if (t.pictures && !pics) return;
       var label = el('label', 'choice'), box = el('input');
@@ -405,6 +407,41 @@
       host.appendChild(label);
     });
   }
+  function drawCustomPicRows() {
+    var host = $('custom-pic-rows');
+    if (!host) return;
+    host.textContent = '';
+    rows.forEach(function (row) {
+      var box = el('div', 'v-row');
+      box.setAttribute('data-custom-pic-row', row.key);
+      var line = el('div', 'v-line');
+      var status = row.customPicture ? 'Your picture is set.'
+        : row.pictureSource === 'diagram' ? 'School concept diagram.'
+        : row.picture ? 'Picture from the picture set.'
+        : 'No picture yet.';
+      var tools = el('div', 'v-tools');
+      var chooseBtn = button(row.customPicture ? 'Change picture' : 'Choose a picture', 'btn-small', function () {
+        pendingPicWord = row.key;
+        var inp = $('f-custom-pic');
+        if (inp) { inp.value = ''; inp.click(); }
+      }, (row.customPicture ? 'Change picture for ' : 'Choose a picture for ') + row.word);
+      chooseBtn.setAttribute('data-choose-pic', row.key);
+      tools.appendChild(chooseBtn);
+      if (row.customPicture) {
+        var rmBtn = button('Remove my picture', 'btn-small', function () {
+          var w = wordEdit(row.key);
+          delete w.customPicture;
+          setText('custom-pic-said', 'Removed your picture for ' + row.word + '.');
+          changed();
+        }, 'Remove my picture for ' + row.word);
+        rmBtn.setAttribute('data-remove-pic', row.key);
+        tools.appendChild(rmBtn);
+      }
+      add(line, add(el('p', 'v-text'), el('span', 'v-word', row.word), doc.createTextNode(' — ' + status)), tools);
+      box.appendChild(line);
+      host.appendChild(box);
+    });
+  }
   // The picture questions, to look at before the file is made: each word with its picture and the 3 others, and a box to
   // leave a word out (a picture can show another meaning of the word: a bat for baseball, not the animal).
   function drawPictureRows() {
@@ -414,20 +451,57 @@
     if (!host) return;
     host.textContent = '';
     if (!on) return;
+    var needsSymbols = rows.some(function (r) { return r.picture && r.pictureSource === 'symbol'; });
     if (pictureState !== 'ready') {
-      setText('picture-line', pictureState === 'failed' ? 'The pictures could not be downloaded. Check the connection, then load the page again.'
-        : 'Getting the pictures' + (symbols.bytes > 0 ? ', about ' + fileSize(symbols.bytes) : '') + '. They come from this site, the same files whatever words you type.');
-      getPictures();
-      return;
+      if (pictureState !== 'failed' && symbols && needsSymbols) {
+        setText('picture-line', 'Getting the pictures' + (symbols.bytes > 0 ? ', about ' + fileSize(symbols.bytes) : '') + '. They come from this site, the same files whatever words you type.');
+        getPictures();
+        return;
+      }
+      if (pictureState === 'failed' && !state.diagrams && !hasCustomPictures()) {
+        setText('picture-line', 'The pictures could not be downloaded. Check the connection, then load the page again.');
+        getPictures();
+        return;
+      }
+      setText('picture-line', pictureState === 'failed' && needsSymbols
+        ? 'The everyday picture set could not be downloaded. Using school concept diagrams and your own pictures.'
+        : '');
+    } else {
+      setText('picture-line', '');
     }
-    setText('picture-line', '');
     var thumb = function (word, main) {
-      var got = null;
-      try { got = symbols.get(word); } catch (_) { got = null; }
+      var r = rowOf(builder.keyOf(word));
+      var src = '';
+      if (r && r.customPicture) {
+        src = r.customPicture;
+      } else {
+        var got = null;
+        if (symbols && pictureState === 'ready') {
+          try { got = symbols.get(word) || (r && r.pictureLookupWord ? symbols.get(r.pictureLookupWord) : null); } catch (_) { got = null; }
+        }
+        if (got && typeof got.svg === 'string' && !(art && art.svgRefusal(got.svg))) {
+          src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(got.svg)));
+        } else {
+          var dSvg = (r && r.diagramSvg) || '';
+          if (!dSvg && state.diagrams && matcher && typeof matcher.getDiagram === 'function') {
+            try {
+              var dg = matcher.getDiagram(word, (r && r.base) || '', word);
+              if (!dg && typeof matcher.matchWord === 'function') {
+                var dm = matcher.matchWord({ word: word, lemma: (r && r.base) || '', definition: (r && r.def) || '' }, { symbols: symbols, preferDiagrams: true });
+                if (dm && dm.set === 'diagram') dg = dm;
+              }
+              if (dg && dg.svg) dSvg = dg.svg;
+            } catch (_) { dSvg = ''; }
+          }
+          if (dSvg && !(art && art.svgRefusal(dSvg))) {
+            src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(dSvg)));
+          }
+        }
+      }
       var fig = el('figure', main ? 'v-pic v-pic-main' : 'v-pic');
-      if (got && typeof got.svg === 'string' && !(art && art.svgRefusal(got.svg))) {
+      if (src) {
         var img = el('img');
-        img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(got.svg)));
+        img.src = src;
         img.alt = '';
         img.width = 64; img.height = 64;
         fig.appendChild(img);
@@ -533,6 +607,8 @@
   }
   function drawStep3() {
     drawTypes();
+    if ($('f-diagrams')) $('f-diagrams').checked = !!state.diagrams;
+    drawCustomPicRows();
     drawBlankRows();
     drawPictureRows();
     syncMode();
@@ -568,10 +644,10 @@
   function codeNow() { return String($('f-code').value || '').trim(); }
   function buildWith(learner, types, clips) {
     var vocabOpts = { loader: loader, rows: rows, types: types, mode: state.mode, title: state.title, readAloud: state.readAloud,
-      voices: state.voices, clips: clips || null, pictures: pictureState === 'ready' ? symbols : null, art: art };
+      voices: state.voices, clips: clips || null, pictures: pictureState === 'ready' ? symbols : null, diagrams: !!state.diagrams, matcher: matcher, art: art };
     if (Object.keys(previewOmit).length) vocabOpts.omitItems = previewOmit;
     var lesson = builder.lessonFromVocab(vocabOpts);
-    return builder.buildVocabPacket({ lesson: lesson, loader: loader, rows: rows, bank: bankState === 'ready' ? bank : null, teacherCode: state.mode === 'check' ? codeNow() : '', learner: learner || '', voices: state.voices });
+    return builder.buildVocabPacket({ lesson: lesson, loader: loader, rows: rows, bank: bankState === 'ready' ? bank : null, teacherCode: state.mode === 'check' ? codeNow() : '', learner: learner || '', voices: state.voices, diagrams: !!state.diagrams });
   }
   function isPictureType(id) { return id === 'picture' || id === 'picword'; }
   function make() {
@@ -584,8 +660,10 @@
     setText('code-line', '');
     // Picture questions wait for the pictures (getPictures makes the file again when they are here).
     if (types.some(isPictureType)) {
-      if (pictureState !== 'ready' && pictureState !== 'failed') { making('Getting the pictures.'); getPictures(); return Promise.resolve({ html: null, said: 'Getting the pictures.' }); }
-      if (pictureState === 'failed') { types = types.filter(function (id) { return !isPictureType(id); }); notes.push('The pictures could not be downloaded, so the file has no picture questions.'); }
+      var needsSymbols = rows.some(function (r) { return r.picture && r.pictureSource === 'symbol'; });
+      var localReady = rows.filter(function (r) { return r.picture && (r.pictureSource === 'diagram' || r.pictureSource === 'own'); }).length >= (builder.MIN_PICTURES || 4);
+      if (needsSymbols && pictureState !== 'ready' && pictureState !== 'failed') { making('Getting the pictures.'); getPictures(); return Promise.resolve({ html: null, said: 'Getting the pictures.' }); }
+      if (pictureState === 'failed' && !localReady) { types = types.filter(function (id) { return !isPictureType(id); }); notes.push('The pictures could not be downloaded, so the file has no picture questions.'); }
       if (!types.length) { problem('The pictures could not be downloaded. Choose another kind of question, or load the page again.'); return Promise.resolve({ html: null, said: 'The pictures could not be downloaded.' }); }
     }
     var go = function (clips) {
@@ -626,12 +704,17 @@
       var byBlank = rows.filter(function (r) { return r.blank && r.blank.ask.slice(0, 120) === stem.slice(0, 120); })[0];
       if (byBlank) return byBlank;
     }
-    if (t && t.id === 'picword' && item && item.image && lesson && lesson.images && symbols && pictureState === 'ready') {
+    if (t && t.id === 'picword' && item && item.image && lesson && lesson.images) {
       var imgUri = lesson.images[item.image] || item.image;
       var byImg = rows.filter(function (r) {
         try {
-          var s = symbols.get(r.word);
-          return s && typeof s.svg === 'string' && ('data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(s.svg)))) === imgUri;
+          if (r.customPicture && r.customPicture === imgUri) return true;
+          if (r.diagramSvg && ('data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(r.diagramSvg)))) === imgUri) return true;
+          if (symbols && pictureState === 'ready') {
+            var s = symbols.get(r.word) || (r.pictureLookupWord ? symbols.get(r.pictureLookupWord) : null);
+            return s && typeof s.svg === 'string' && ('data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(s.svg)))) === imgUri;
+          }
+          return false;
         } catch (_) { return false; }
       })[0];
       if (byImg) return byImg;
@@ -757,7 +840,9 @@
     data.push(['Read aloud', !state.readAloud ? 'Off.' : clips.length
       ? 'On. ' + capital(count(clips.length, 'word')) + ' have a recording made ahead of time (a machine voice), about ' + fileSize(clipBytes) + ' of the file. The device voice reads the rest, where the device has a voice that runs on it.'
       : 'On, where the device has a voice that runs on it.']);
-    if (pictureIds.length) data.push(['Pictures', capital(count(pictureIds.length, 'picture')) + ' from the Word Sounds picture set, about ' + fileSize(pictureBytes) + ' of the file. Their credits are under About this file.']);
+    if (pictureIds.length) data.push(['Pictures', (!state.diagrams && !hasCustomPictures())
+      ? capital(count(pictureIds.length, 'picture')) + ' from the Word Sounds picture set, about ' + fileSize(pictureBytes) + ' of the file. Their credits are under About this file.'
+      : capital(count(pictureIds.length, 'picture')) + ', about ' + fileSize(pictureBytes) + ' of the file. Their credits are under About this file.']);
     if (notes && notes.length) data.push(['Note', notes.join(' ')]);
     setText('voices-line', !state.readAloud ? 'Read aloud is off, so the file has no recordings.' : !state.voices ? 'Off: the device voice reads every word.'
       : clips.length ? capital(count(clips.length, 'word')) + ' in this file have a recording, about ' + fileSize(clipBytes) + '.' : 'No word in this file has a recording made ahead of time.');
@@ -886,6 +971,7 @@
     state.title = back.title;
     state.readAloud = back.readAloud;
     state.voices = back.voices !== false;
+    state.diagrams = !!back.diagrams;
     (back.noPicture || []).forEach(function (word) { wordEdit(builder.keyOf(word)).noPicture = true; });
     state.codeName = back.learner;
     $('f-code-name').value = back.learner;
@@ -1013,6 +1099,47 @@
     $('f-title').addEventListener('input', function () { state.title = this.value.slice(0, 80); remember(); makeSoon(400); });
     $('f-read').addEventListener('change', function () { state.readAloud = this.checked; remember(); if ($('f-voices')) $('f-voices').disabled = !state.readAloud; makeSoon(30); });
     if ($('f-voices')) $('f-voices').addEventListener('change', function () { state.voices = this.checked; remember(); makeSoon(30); });
+    if ($('f-diagrams')) $('f-diagrams').addEventListener('change', function () {
+      state.diagrams = this.checked;
+      remember();
+      redraft();
+      drawStep3();
+      makeSoon(30);
+    });
+    if ($('f-custom-pic')) $('f-custom-pic').addEventListener('change', function () {
+      var file = this.files && this.files[0];
+      var targetKey = pendingPicWord;
+      pendingPicWord = '';
+      this.value = '';
+      if (!file || !targetKey) return;
+      if (file.size > 300 * 1024) {
+        setText('custom-pic-said', 'That picture is too large. Choose an image under 300 KB.');
+        return;
+      }
+      if (typeof FileReader !== 'function') {
+        setText('custom-pic-said', 'This browser cannot read local image files.');
+        return;
+      }
+      var reader = new FileReader();
+      reader.onload = function () {
+        var uri = String(reader.result || '');
+        var safe = typeof builder.validCustomDataUri === 'function' ? builder.validCustomDataUri(uri, art) : (/^data:image\/(png|jpeg|svg\+xml);base64,/i.test(uri) ? uri : '');
+        if (!safe) {
+          setText('custom-pic-said', 'Could not use that image. Choose a PNG, JPEG or SVG file.');
+          return;
+        }
+        var w = wordEdit(targetKey);
+        w.customPicture = { dataUri: safe };
+        delete w.noPicture;
+        var row = rowOf(targetKey);
+        setText('custom-pic-said', 'Added picture for ' + (row ? row.word : targetKey) + '.');
+        changed();
+      };
+      reader.onerror = function () {
+        setText('custom-pic-said', 'This browser could not read that image.');
+      };
+      reader.readAsDataURL(file);
+    });
     // A meaning saved on the lookup page in another tab: read the changes again.
     window.addEventListener('storage', function (e) { if (e.key !== EDITS_KEY) return; edits = recallEdits(); redraft(); if (step === 1) drawWords(); if (step === 2) drawRows(); if (step === 3) { drawStep3(); makeSoon(30); } });
     $('f-code').addEventListener('input', function () { makeSoon(400); });
@@ -1044,6 +1171,8 @@
       $('f-words').value = '';
       $('f-title').value = '';
       $('f-code-name').value = '';
+      if ($('f-diagrams')) $('f-diagrams').checked = false;
+      setText('custom-pic-said', '');
       goTo(1, true);
       setText('forget-said', 'Done. Your choices are back to how they started.');
     });
@@ -1056,6 +1185,29 @@
       if (step === 3) { drawStep3(); makeSoon(30); }
       setText('forget-said', 'Done. Your changes to the questions are gone. The questions are the ones the word list gives.');
     });
+  }
+
+  function applyRehearseHash() {
+    var hash = String(window.location && window.location.hash ? window.location.hash : '');
+    var match = /^#rehearse=(.+)$/i.exec(hash);
+    if (!match) return false;
+    var parsed = '';
+    try { parsed = decodeURIComponent(match[1]); } catch (_) { parsed = match[1]; }
+    var unique = [];
+    parsed.split(/[\s,;]+/).forEach(function (raw) {
+      var word = String(raw || '').trim();
+      if (!word) return;
+      var low = word.toLowerCase();
+      if (unique.every(function (x) { return x.toLowerCase() !== low; }) && unique.length < 40) unique.push(word);
+    });
+    if (unique.length) {
+      state.words = unique.join('\n').slice(0, MAX_TYPED);
+      if ($('f-words')) $('f-words').value = state.words;
+      remember();
+      drawWords();
+    }
+    try { window.history.replaceState(null, '', window.location.href.split('#')[0]); } catch (_) {}
+    return unique.length > 0;
   }
 
   function start() {
@@ -1077,9 +1229,11 @@
     media = window.AlloVocabMedia && typeof window.AlloVocabMedia.clips === 'function' && typeof window.fetch === 'function' ? window.AlloVocabMedia : null;
     var sym = window.AlloModules && window.AlloModules.WordSoundsSymbols;
     art = window.AlloPacketBuilder && typeof window.AlloPacketBuilder.svgRefusal === 'function' ? window.AlloPacketBuilder : null;
+    matcher = window.AlloWordPictureMatcher || (window.AlloModules && window.AlloModules.WordPictureMatcher) || null;
     symbols = media && art && sym && typeof sym.has === 'function' && typeof sym.file === 'function' && typeof sym.get === 'function' ? sym : null;
     if (loader.DEFAULT_LABELS && loader.DEFAULT_LABELS.save_csv) setText('csv-label', loader.DEFAULT_LABELS.save_csv);
     wire();
+    applyRehearseHash();
     show('reopen', !!(window.AlloPacketVerify && typeof window.AlloPacketVerify.readParts === 'function' && typeof FileReader === 'function'));
     show('loading', false);
     startBank();

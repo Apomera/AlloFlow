@@ -2371,11 +2371,11 @@
       function printOrientationControls() {
         if (!originalContext || originalContext.sourceTool !== 'geometryWorld' || format !== 'STL' || (!turnActive && !geometryOrientationAdvice)) return null;
         var buttonClass = 'min-h-[44px] rounded-lg border border-violet-400 px-3 text-sm font-bold text-violet-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-200';
-        if (turnActive) return h('section', { className: 'mt-3 rounded-xl border border-violet-600 bg-violet-950/30 p-3', 'aria-label': 'Print orientation', 'data-print-orientation': true, 'data-turn-applied': true },
+        if (turnActive) return h('section', { className: 'mt-3 rounded-xl border border-violet-600 bg-violet-950/30 p-3', 'aria-label': __alloT('stem.printlab.printOrientation', 'Print orientation'), 'data-print-orientation': true, 'data-turn-applied': true },
           h('strong', { className: 'block text-sm text-white' }, 'Print copy turned 90°'),
           h('p', { className: 'my-2 text-xs leading-5 text-slate-200' }, geometryPhysicalSize.label+' (width × depth × height). Your editable blocks keep their building orientation.'),
           h('button', { type: 'button', className: buttonClass, onClick: function () { commitPrintTurn(true); } }, 'Restore original orientation'));
-        return h('section', { className: 'mt-3 rounded-xl border border-violet-600 bg-violet-950/30 p-3', 'aria-label': 'Print orientation', 'data-print-orientation': true },
+        return h('section', { className: 'mt-3 rounded-xl border border-violet-600 bg-violet-950/30 p-3', 'aria-label': __alloT('stem.printlab.printOrientation', 'Print orientation'), 'data-print-orientation': true },
           currentTurnPreview && h('div', { 'data-turn-preview': true, className: 'mb-3 text-sm leading-6 text-white' },
             h('strong', null, 'Turn preview at '+unitMm+' mm per block'),
             h('p', null, 'Current: '+geometryPhysicalSize.label+'. Turned: '+currentTurnPreview.size.label+' (width × depth × height).'),
@@ -2395,12 +2395,12 @@
         var dims = result && result.dimensions;
         var sizeText = dims && [dims.width, dims.depth, dims.height].map(function (value) { return value.toLocaleString(undefined, { maximumSignificantDigits: 6 }); }).join(' × ');
         var secondary = 'min-h-[44px] rounded-lg border border-slate-400 px-3 text-sm font-bold text-white';
-        return h('section', { ref: packageSectionRef, 'data-print-package-open': true, 'aria-label': 'Open a Geometry World print package', className: 'rounded-2xl border border-cyan-700 bg-slate-900 p-4' },
+        return h('section', { ref: packageSectionRef, 'data-print-package-open': true, 'aria-label': __alloT('stem.printlab.openPrintPackage', 'Open a Geometry World print package'), className: 'rounded-2xl border border-cyan-700 bg-slate-900 p-4' },
           h('h2', { className: 'text-base font-black text-white' }, reopenedPackage ? 'Reopened print package' : 'Open a print package'),
           h('p', { className: 'mt-1 text-sm leading-6 text-slate-200' }, reopenedPackage ? title + ' was reopened from its finished STL. '+(sourceContext.editableAvailable ? 'Preview its editable blocks in Geometry World to start a revision.' : 'This package has no editable world.') : 'Choose a Geometry World ZIP to preview the finished model before opening it.'),
           editPackageBlocksButton(),
           h('button', { type: 'button', ref: packageChooserRef, onClick: function () { if (packageInputRef.current) packageInputRef.current.click(); }, className: 'mt-3 min-h-[44px] rounded-lg border border-cyan-400 px-4 text-sm font-bold text-cyan-100' }, 'Choose print package'),
-          h('input', { type: 'file', accept: '.zip,application/zip', hidden: true, ref: packageInputRef, onChange: choosePrintPackage, 'aria-label': 'Geometry World print package ZIP' }),
+          h('input', { type: 'file', accept: '.zip,application/zip', hidden: true, ref: packageInputRef, onChange: choosePrintPackage, 'aria-label': __alloT('stem.printlab.packageZipLabel', 'Geometry World print package ZIP') }),
           packageRead && packageRead.status === 'reading' && h('div', { className: 'mt-3 flex flex-wrap items-center gap-3' }, h('p', { role: 'status', className: 'text-sm text-white' }, 'Checking the print package…'), h('button', { type: 'button', onClick: cancelPackagePreview, className: secondary }, 'Cancel checking')),
           packageRead && packageRead.status === 'error' && h('p', { ref: packageResultRef, tabIndex: -1, role: 'alert', className: 'mt-3 rounded-lg border border-rose-500 bg-rose-950 p-3 text-sm text-rose-100' }, packageRead.message),
           result && h('div', { 'data-print-package-preview': true, className: 'mt-3 rounded-xl border border-cyan-600 bg-slate-950 p-3' },
@@ -2552,7 +2552,7 @@
                   })
                 )
               ),
-              h('form', {noValidate:true,onSubmit:commitUnitDraft,'aria-label':'Physical model scale','data-print-scale-editor':true,className:'mt-3 space-y-2'},
+              h('form', {noValidate:true,onSubmit:commitUnitDraft,'aria-label':__alloT('stem.printlab.physicalModelScale', 'Physical model scale'),'data-print-scale-editor':true,className:'mt-3 space-y-2'},
                 finishedDimensions && h(React.Fragment,null,
                   h('label',{htmlFor:'print-lab-size-basis',className:'block text-sm font-bold text-slate-200'},'Set size by'),
                   h('select',{id:'print-lab-size-basis',value:sizeBasis,onChange:function(event){changeSizeBasis(event.target.value);},'aria-describedby':'print-lab-finished-size-help',className:'min-h-[44px] w-full rounded-lg border border-slate-500 bg-slate-950 px-3 text-sm text-white'},
@@ -2737,7 +2737,7 @@
           if (code === 'ASSEMBLY_NOT_UNIONED') return 'Inspect the sliced intersections where separate parts are meant to join.';
           return '';
         }
-        return h('section', { 'data-print-revision-findings': true, 'aria-label': 'Revised model findings', className: 'mt-3 space-y-3' }, groups.filter(function (group) { return group.visible; }).map(function (group) {
+        return h('section', { 'data-print-revision-findings': true, 'aria-label': __alloT('stem.printlab.revisedModelFindings', 'Revised model findings'), className: 'mt-3 space-y-3' }, groups.filter(function (group) { return group.visible; }).map(function (group) {
           var hasFit = group === fitGroup;
           return h('section', { key: group.key, 'data-print-finding-group': group.key, 'aria-label': group.title, className: 'rounded-xl border p-3 '+group.style },
             h('h3', { className: 'text-base font-bold text-white' }, group.title),
@@ -2766,7 +2766,7 @@
           h('section', { className: 'rounded-2xl border border-slate-700 bg-slate-900 p-4', 'aria-labelledby': 'print-profile-title' },
             h('h2', { id: 'print-profile-title', className: 'text-base font-black text-white' }, 'School printer profile'),
             h('p', { className: 'mt-1 text-xs text-slate-300' }, 'Use the receiving printer’s actual build area. These values are not machine settings.'),
-            h('form',{className:'mt-3 space-y-2',noValidate:true,onSubmit:commitProfileDraft,'aria-label':'Printer profile settings','data-print-profile-editor':true},
+            h('form',{className:'mt-3 space-y-2',noValidate:true,onSubmit:commitProfileDraft,'aria-label':__alloT('stem.printlab.printerProfileSettings', 'Printer profile settings'),'data-print-profile-editor':true},
               PRINTER_FIELDS.map(function(field){var key=field[0],id='print-lab-profile-'+key;return h('label',{key:key,htmlFor:id,className:'block text-[0.6875rem] font-bold text-slate-200'},h('span',{className:'mb-1 block'},field[1]),h('input',{id:id,ref:function(node){profileInputRefs.current[key]=node;},type:'number',inputMode:'decimal',min:field[2],max:field[3],step:'any',value:profileDraft[key],'aria-invalid':profileInvalid.indexOf(key)!==-1?'true':undefined,'aria-describedby':'print-lab-profile-help'+(profileError?' print-lab-profile-error':''),onChange:function(event){setProfileField(key,event.target.value);},className:'min-h-[44px] w-full rounded-lg border border-slate-500 bg-slate-950 px-3 text-sm text-white'}));}),
               h('p',{id:'print-lab-profile-help',className:'text-xs leading-5 text-slate-200'},profileHasDraft?'Profile edit not applied. Size checks still use '+profile.bedWidthMm+' × '+profile.bedDepthMm+' × '+profile.bedHeightMm+' mm.':'Applied build area: '+profile.bedWidthMm+' × '+profile.bedDepthMm+' × '+profile.bedHeightMm+' mm. Width × depth × height.'),
               h('div',{className:'flex flex-wrap gap-2'},h('button',{type:'submit',className:'min-h-[44px] rounded-lg bg-cyan-700 px-4 text-sm font-bold text-white'},'Apply printer profile'),
@@ -2905,7 +2905,7 @@
               h('p', { className: 'mt-3 text-[0.6875rem] leading-5 text-amber-100' }, 'Follow the printer manufacturer, filament manufacturer, school ventilation/enclosure, supervision, burn, moving-parts, and post-processing procedures. This tool does not replace them.')
             )
           ),
-          h('section', { className:'rounded-2xl border border-cyan-700 bg-slate-900 p-4', 'aria-label':'Next print step', 'data-print-next-step':'materials' },
+          h('section', { className:'rounded-2xl border border-cyan-700 bg-slate-900 p-4', 'aria-label':__alloT('stem.printlab.nextPrintStep', 'Next print step'), 'data-print-next-step':'materials' },
             h('p', { className:'text-sm leading-6 text-slate-200' }, 'Selected filament: ' + chosenMaterial.name + '. ' + (!report || report.status === 'FAIL' ? 'Check the model and resolve blocking findings before preparing print files.' : 'Continue to prepare your STL and review package. This does not start a printer.')),
             h('button', { type:'button', onClick:function(){chooseTab(!report || report.status === 'FAIL' ? 'Preflight' : 'Submit');}, className:'mt-3 min-h-[44px] w-full rounded-xl bg-cyan-700 px-4 text-sm font-black text-white' }, !report || report.status === 'FAIL' ? 'Return to Preflight' : 'Continue to Submit')
           )

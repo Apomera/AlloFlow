@@ -27,6 +27,11 @@ function ClozeInteractionPanel(props) {
   const panelId = React.useId();
   const [resetPrompt, setResetPrompt] = React.useState(null);
   const [resetStatus, setResetStatus] = React.useState('');
+  const [dockTop, setDockTop] = React.useState(false);
+  const [isMinimized, setIsMinimized] = React.useState(false);
+  React.useEffect(() => {
+    if (wordBankPosition) setDockTop(false);
+  }, [wordBankPosition]);
   const hasCompletedAnswers = !Number.isInteger(completedBlankCount) || completedBlankCount > 0;
   const isEnglishPassage = !leveledTextLanguage || leveledTextLanguage === 'English';
   // Kept local: it is a per-student display preference, not lesson content, so
@@ -109,14 +114,20 @@ function ClozeInteractionPanel(props) {
   return (
               <div
                   ref={wordBankRef}
-                  style={wordBankPosition ? {
+                  style={dockTop ? {
+                      position: 'fixed',
+                      left: '50%',
+                      top: '16px',
+                      bottom: 'auto',
+                      transform: 'translateX(-50%)'
+                  } : (wordBankPosition ? {
                       position: 'fixed',
                       left: wordBankPosition.x,
                       top: wordBankPosition.y,
                       bottom: 'auto',
                       transform: 'none'
-                  } : {}}
-                  className={`z-40 w-[90%] max-w-3xl bg-blue-50/95 backdrop-blur-md p-4 rounded-xl border-2 border-blue-300 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] animate-in fade-in duration-300 ${!wordBankPosition ? 'absolute bottom-28 left-1/2 -translate-x-1/2 slide-in-from-bottom-10' : ''}`}
+                  } : {})}
+                  className={`z-40 w-[90%] max-w-3xl bg-blue-50/95 backdrop-blur-md p-4 rounded-xl border-2 border-blue-300 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] animate-in fade-in motion-reduce:animate-none duration-300 ${!wordBankPosition && !dockTop ? 'absolute bottom-28 left-1/2 -translate-x-1/2 slide-in-from-bottom-10' : ''}`}
               >
                   <div
                       onMouseDown={handleBankMouseDown}
@@ -125,7 +136,27 @@ function ClozeInteractionPanel(props) {
                       <h4 ref={bankHeadingRef} tabIndex={-1} className="font-bold text-blue-800 flex items-center gap-2 text-sm uppercase tracking-wider pointer-events-none">
                           <Globe size={16} /> {t('simplified.word_bank')}
                       </h4>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2" onMouseDown={(e) => e.stopPropagation()}>
+                        <button type="button" style={controlSize}
+                            data-cloze-dock-toggle="true"
+                            aria-pressed={dockTop}
+                            onClick={() => setDockTop(prev => !prev)}
+                            className="text-blue-800 bg-blue-100/50 hover:bg-blue-100 px-2.5 py-1 rounded-full text-xs font-bold transition-colors flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+                            aria-label={dockTop ? (t('simplified.dock_bottom') || 'Move word bank to bottom') : (t('simplified.dock_top') || 'Move word bank to top')}
+                            title={dockTop ? (t('simplified.dock_bottom') || 'Move word bank to bottom') : (t('simplified.dock_top') || 'Move word bank to top')}
+                        >
+                            {dockTop ? '⬇' : '⬆'}
+                        </button>
+                        <button type="button" style={controlSize}
+                            data-cloze-minimize-toggle="true"
+                            aria-expanded={!isMinimized}
+                            onClick={() => setIsMinimized(prev => !prev)}
+                            className="text-blue-800 bg-blue-100/50 hover:bg-blue-100 px-2.5 py-1 rounded-full text-xs font-bold transition-colors flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+                            aria-label={isMinimized ? (t('simplified.expand_word_bank') || 'Expand word bank') : (t('simplified.minimize_word_bank') || 'Minimize word bank')}
+                            title={isMinimized ? (t('simplified.expand_word_bank') || 'Expand word bank') : (t('simplified.minimize_word_bank') || 'Minimize word bank')}
+                        >
+                            {isMinimized ? '+' : '−'}
+                        </button>
                         <button type="button" style={controlSize} ref={resetButtonRef}
                             data-cloze-reset disabled={!hasCompletedAnswers}
                             aria-expanded={resetOpen} aria-controls={panelId + '-reset'}
@@ -145,6 +176,8 @@ function ClozeInteractionPanel(props) {
                         </button>
                       </div>
                   </div>
+                  {!isMinimized && (
+                    <>
                   {resetOpen && <div id={panelId + '-reset'} role="group" aria-labelledby={panelId + '-reset-heading'} aria-describedby={panelId + '-reset-description'}
                     className="mb-3 rounded-lg border border-blue-300 bg-white p-3" data-cloze-reset-confirmation
                     onKeyDown={(event) => {
@@ -193,7 +226,7 @@ function ClozeInteractionPanel(props) {
                                 tabIndex={0}
                                 aria-pressed={isPicked}
                                 data-cloze-bank-chip="true"
-                                className={`px-3 py-1.5 font-bold text-sm rounded-lg border shadow-sm cursor-grab active:cursor-grabbing hover:scale-105 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 ${isPicked ? 'bg-blue-600 text-white border-blue-700 ring-2 ring-blue-700 ring-offset-1' : 'bg-white text-blue-700 border-blue-200'}`}
+                                className={`px-3 py-1.5 font-bold text-sm rounded-lg border shadow-sm cursor-grab active:cursor-grabbing hover:scale-105 motion-reduce:transform-none hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 ${isPicked ? 'bg-blue-600 text-white border-blue-700 ring-2 ring-blue-700 ring-offset-1' : 'bg-white text-blue-700 border-blue-200'}`}
                                 draggable="true"
                                 onDragStart={(e) => e.dataTransfer.setData("text/plain", payload)}
                                 onClick={() => pickChip(idx, payload)}
@@ -205,7 +238,9 @@ function ClozeInteractionPanel(props) {
                           );
                       })}
                   </div>
-                  <p className="text-[11px] text-blue-500 mt-2 text-center font-medium pointer-events-none">{t('simplified.cloze_instructions_tap')}</p>
+                  <p className="text-[11px] text-blue-700 mt-2 text-center font-medium pointer-events-none">{t('simplified.cloze_instructions_tap')}</p>
+                    </>
+                  )}
               </div>
   );
 }

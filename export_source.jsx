@@ -364,16 +364,29 @@ const createExport = (deps) => {
         try { options.onProgress(Object.assign({ phase: 'export', completed: 0, total: 0 }, update || {})); }
         catch (_) {}
     };
-    const _storybookImageSource = value => typeof value === 'string' && /^(?:data:image\/(?:png|jpeg|jpg|gif|webp);base64,|blob:|https?:\/\/)/i.test(value) ? value : '';
+    const _storybookImageSource = (value, allowRemote = true) => {
+        if (typeof value !== 'string') return '';
+        if (/^(?:data:image\/(?:png|jpeg|jpg|gif|webp);base64,|blob:)/i.test(value)) return value;
+        if (allowRemote !== false && /^https?:\/\//i.test(value)) return value;
+        return '';
+    };
     const _storybookPictureId = entry => entry?.imageId == null ? '' : String(entry.imageId).trim();
     const _recoverStorybookPictures = async (story, cache, hydrate, options, checkCancelled) => {
         // Only attach recovered media to this export's copy of the journey.
         // A failed lookup must not discard text or pictures recovered earlier.
+        const allowRemote = options?.allowRemoteImages !== false;
+        if (!allowRemote) {
+            story.forEach(entry => {
+                if (entry && entry.type === 'scene' && entry.image && !_storybookImageSource(entry.image, false)) {
+                    entry.image = '';
+                }
+            });
+        }
         if (!options.includeImages || typeof hydrate !== 'function') return;
         const known = new Map();
         story.forEach(entry => {
             const id = _storybookPictureId(entry);
-            if (entry.type === 'scene' && id && _storybookImageSource(entry.image)) known.set(id, entry.image);
+            if (entry.type === 'scene' && id && _storybookImageSource(entry.image, allowRemote)) known.set(id, entry.image);
         });
         const missing = story.filter(entry => entry.type === 'scene' && !entry.image && _storybookPictureId(entry));
         const localCache = Array.isArray(cache) ? cache : [];
@@ -388,7 +401,7 @@ const createExport = (deps) => {
                 try {
                     const hydrated = await hydrate([{ ...entry }], localCache);
                     const recovered = Array.isArray(hydrated) ? hydrated[0] : null;
-                    if (recovered && _storybookPictureId(recovered) === id) image = _storybookImageSource(recovered.image);
+                    if (recovered && _storybookPictureId(recovered) === id) image = _storybookImageSource(recovered.image, allowRemote);
                 } catch (error) {
                     if (error?.name === 'AbortError') throw error;
                     if (typeof warnLog === 'function') warnLog('Storybook picture unavailable', error);
@@ -592,27 +605,156 @@ const createExport = (deps) => {
         };
     };
 
-    const handleExportResearchJSON = () => {
+    const _deidentifyResearchMeasures = (rawMeasures = {}) => {
+        const DROP_PII_KEY_RE = /^(?:email|parentEmail|guardianEmail|studentEmail|teacherEmail|contactEmail|phone|phoneNumber|parentPhone|guardianPhone|address|streetAddress|ssn|dob|dateOfBirth|birthDate)$/i;
+        const ID_KEY_RE = /^(?:studentName|studentId|learnerId|learnerName|codename|nickname|participantName|participantId|subjectName|subjectId|student|learner)$/i;
+        const participantMap = new Map();
+        const tokenToAlias = new Map();
+        let counter = 0;
+        const getAlias = (raw) => {
+            const cleaned = String(raw == null ? '' : raw).trim();
+            if (!cleaned) return '';
+            if (/^participant_\d+$/i.test(cleaned)) return cleaned;
+            const lookup = cleaned.toLowerCase();
+            let alias = participantMap.get(lookup);
+            if (!alias) {
+                counter += 1;
+                alias = `participant_${String(counter).padStart(3, '0')}`;
+                participantMap.set(lookup, alias);
+            }
+            if (!tokenToAlias.has(cleaned)) tokenToAlias.set(cleaned, alias);
+            return alias;
+        };
+        const isPlain = (val) => Boolean(val && typeof val === 'object' && !Array.isArray(val) && !(val instanceof Date));
+        const collectFromValue = (val, seen = new Set()) => {
+            if (!val || typeof val !== 'object' || seen.has(val)) return;
+            seen.add(val);
+            if (Array.isArray(val)) {
+                val.forEach((item) => collectFromValue(item, seen));
+                return;
+            }
+            Object.keys(val).forEach((k) => {
+                const v = val[k];
+                if (ID_KEY_RE.test(k) && (typeof v === 'string' || typeof v === 'number') && String(v).trim()) {
+                    getAlias(v);
+                } else if (v && typeof v === 'object') {
+                    collectFromValue(v, seen);
+                }
+            });
+        };
+        const keyedFields = ['probeHistory', 'externalCBMScores', 'interventionLogs'];
+        const listFields = ['surveyResponses', 'fidelityLog'];
+        keyedFields.forEach((field) => {
+            const container = rawMeasures[field];
+            if (isPlain(container)) {
+                Object.keys(container).forEach((studentKey) => {
+                    if (String(studentKey || '').trim()) getAlias(studentKey);
+                });
+            }
+            collectFromValue(container);
+        });
+        listFields.forEach((field) => collectFromValue(rawMeasures[field]));
+        const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const tokenEntries = Array.from(tokenToAlias.entries())
+            .filter(([tok]) => tok.length >= 2)
+            .sort((a, b) => b[0].length - a[0].length)
+            .map(([tok, alias]) => [new RegExp('(^|[^A-Za-z0-9_])' + escapeRe(tok) + '(?=$|[^A-Za-z0-9_])', 'gi'), alias]);
+        const sharedScrubber = (typeof window !== 'undefined' && window.AlloModules?.IdentifierRedaction && typeof window.AlloModules.IdentifierRedaction.scrubIdentifiers === 'function')
+            ? window.AlloModules.IdentifierRedaction.scrubIdentifiers : null;
+        const scrubText = (input) => {
+            if (typeof input !== 'string' || !input) return input;
+            let text = input;
+            for (let i = 0; i < tokenEntries.length; i += 1) {
+                text = text.replace(tokenEntries[i][0], (_, prefix) => prefix + tokenEntries[i][1]);
+            }
+            if (sharedScrubber) {
+                try {
+                    const scrubbed = sharedScrubber(text);
+                    if (typeof scrubbed === 'string') text = scrubbed;
+                } catch (_) {}
+            }
+            return text
+                .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[EMAIL]')
+                .replace(/(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}\b/g, '[PHONE]')
+                .replace(/\b\d{3}-\d{2}-\d{4}\b/g, '[SSN]');
+        };
+        const transformValue = (val, seen = new WeakSet()) => {
+            if (typeof val === 'string') return scrubText(val);
+            if (!val || typeof val !== 'object') return val;
+            if (val instanceof Date) return val.toISOString();
+            if (seen.has(val)) return null;
+            seen.add(val);
+            if (Array.isArray(val)) return val.map((item) => transformValue(item, seen));
+            const out = {};
+            Object.keys(val).forEach((k) => {
+                if (DROP_PII_KEY_RE.test(k)) return;
+                const v = val[k];
+                if (ID_KEY_RE.test(k)) {
+                    if (typeof v === 'string' || typeof v === 'number') {
+                        const mapped = getAlias(v);
+                        out[k] = mapped || '';
+                    } else {
+                        out[k] = transformValue(v, seen);
+                    }
+                    return;
+                }
+                out[k] = transformValue(v, seen);
+            });
+            return out;
+        };
+        const transformMeasureRoot = (val, isKeyed) => {
+            if (isKeyed && isPlain(val)) {
+                const out = {};
+                Object.keys(val).forEach((studentKey) => {
+                    const alias = getAlias(studentKey) || 'participant_000';
+                    const transformed = transformValue(val[studentKey]);
+                    if (Array.isArray(out[alias]) && Array.isArray(transformed)) {
+                        out[alias] = out[alias].concat(transformed);
+                    } else if (isPlain(out[alias]) && isPlain(transformed)) {
+                        out[alias] = { ...out[alias], ...transformed };
+                    } else {
+                        out[alias] = transformed;
+                    }
+                });
+                return out;
+            }
+            return transformValue(val);
+        };
+        return {
+            probeHistory: transformMeasureRoot(rawMeasures.probeHistory, true),
+            surveyResponses: transformMeasureRoot(rawMeasures.surveyResponses, false),
+            fidelityLog: transformMeasureRoot(rawMeasures.fidelityLog, false),
+            externalCBMScores: transformMeasureRoot(rawMeasures.externalCBMScores, true),
+            interventionLogs: transformMeasureRoot(rawMeasures.interventionLogs, true),
+        };
+    };
+
+    const handleExportResearchJSON = (rawOptions = null) => {
         const {
             probeHistory, surveyResponses, fidelityLog, sessionCounter,
             externalCBMScores, interventionLogs, addToast, history,
         } = liveRef.current;
+        const deidentify = Boolean(rawOptions && typeof rawOptions === 'object' && rawOptions.deidentify === true);
+        const measures = deidentify
+            ? _deidentifyResearchMeasures({ probeHistory, surveyResponses, fidelityLog, externalCBMScores, interventionLogs })
+            : { probeHistory, surveyResponses, fidelityLog, externalCBMScores, interventionLogs };
         const items = Array.isArray(history) ? history : [];
         const researchBundle = {
             exportVersion: 2,
             provenanceSchemaVersion: 2,
             appBuild: _appBuild(),
             exportDate: new Date().toISOString(),
+            ...(deidentify ? { deidentified: true, deidentificationPolicy: 'ferpa-99.31b-study-bundle' } : {}),
             // The measurement half of a study was already here; the materials
             // half was not. Without it a researcher has scores with no record of
             // what the students actually read or how it was configured.
             generatedResources: items.map(buildProvenanceRecord),
-            probeHistory,
-            surveyResponses,
-            fidelityLog,
+            probeHistory: measures.probeHistory,
+            surveyResponses: measures.surveyResponses,
+            fidelityLog: measures.fidelityLog,
             sessionCounter,
-            externalCBMScores,
-            interventionLogs,
+            externalCBMScores: measures.externalCBMScores,
+            interventionLogs: measures.interventionLogs,
         };
         const blob = new Blob([JSON.stringify(researchBundle, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -629,15 +771,17 @@ const createExport = (deps) => {
     // ─── handleExportProfiles ──────────────────────────────────────────
     const handleExportProfiles = () => {
         const { profiles, addToast, t } = liveRef.current;
-        if (profiles.length === 0) return;
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(profiles));
+        if (!Array.isArray(profiles) || profiles.length === 0) return;
+        const blob = new Blob([JSON.stringify(profiles, null, 2)], { type: 'application/json;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
         const downloadAnchorNode = document.createElement('a');
-        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("href", url);
         downloadAnchorNode.setAttribute("download", `${t('export.filenames.profiles')}.json`);
         document.body.appendChild(downloadAnchorNode);
         downloadAnchorNode.click();
         downloadAnchorNode.remove();
-        addToast(t('profiles.export_success'), "success");
+        setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
+        if (addToast) addToast(t('profiles.export_success'), "success");
     };
 
     // ─── handleExportQTI ───────────────────────────────────────────────
@@ -672,10 +816,12 @@ const createExport = (deps) => {
         const answers = (acceptedAnswers || []).map(value => String(value == null ? '' : value).trim()).filter(Boolean);
         if (!String(q.question == null ? '' : q.question).trim() || !answers.length) return null;
         const answerConditions = answers.map(answer =>
-            '\n        <respcondition continue="No" title="Correct">\n          <conditionvar>\n            <varequal respident="' + responseId + '" case="' + (q.fillBlankPolicy === 'exact' ? 'Yes' : 'No') + '">' + _escapeExportText(answer) + '</varequal>\n          </conditionvar>\n          <setvar action="Set" varname="SCORE">1</setvar>\n        </respcondition>'
+            '\n        <respcondition continue="No" title="Correct">\n          <conditionvar>\n            <varequal respident="' + responseId + '" case="' + ((q.fillBlankPolicy === 'exact' || q.caseSensitive === true) ? 'Yes' : 'No') + '">' + _escapeExportText(answer) + '</varequal>\n          </conditionvar>\n          <setvar action="Set" varname="SCORE">1</setvar>\n        </respcondition>'
         ).join('');
+        const wordBank = itemType === 'fill-blank' ? _exportWordBankPromptSuffix(q, 'qti:wb:' + index) : '';
+        const promptText = String(q.question == null ? '' : q.question) + (wordBank ? '\n\n' + wordBank : '');
         const presentation =
-            '\n        <material>\n          <mattext texttype="text/plain">' + _escapeExportText(q.question) + '</mattext>\n        </material>' +
+            '\n        <material>\n          <mattext texttype="text/plain">' + _escapeExportText(promptText) + '</mattext>\n        </material>' +
             '\n        <response_str ident="' + responseId + '" rcardinality="Single">\n          <render_fib fibtype="String" rows="1" maxchars="250">\n            <response_label ident="' + responseId + '_LABEL"/>\n          </render_fib>\n        </response_str>';
         return _qtiWrapItemXml({
             itemId: 'Q_' + index + '_' + generateUUID().slice(0, 8),
@@ -702,13 +848,21 @@ const createExport = (deps) => {
     };
     const _normExportQuizType = (raw) => {
         const k = String(raw || 'mcq').trim();
-        if (k === 'multiple-choice') return 'mcq';
-        if (k === 'shortAnswer') return 'short-answer';
-        if (k === 'order') return 'ordering';
+        const kl = k.toLowerCase();
+        if (kl === 'multiple-choice' || kl === 'multiple_choice' || kl === 'true-false' || kl === 'true_false' || kl === 'truefalse' || kl === 'tf') return 'mcq';
+        if (kl === 'shortanswer' || kl === 'short-answer' || kl === 'short_answer') return 'short-answer';
+        if (kl === 'order' || kl === 'ordering') return 'ordering';
+        if (kl === 'multiselect' || kl === 'multi-select' || kl === 'multi_select') return 'multi-select';
+        if (kl === 'fillblank' || kl === 'fill-blank' || kl === 'fill_blank') return 'fill-blank';
         return k;
     };
     const _resolveExportChoiceIdx = (opts, candidate) => {
-        if (!Array.isArray(opts) || !opts.length || candidate === undefined || candidate === null || typeof candidate === 'boolean') return -1;
+        if (!Array.isArray(opts) || !opts.length || candidate === undefined || candidate === null) return -1;
+        if (typeof candidate === 'boolean') {
+            const target = candidate ? 'true' : 'false';
+            const bi = opts.findIndex((o) => String(o == null ? '' : o).trim().toLowerCase() === target);
+            return bi >= 0 ? bi : -1;
+        }
         if (typeof candidate === 'number') {
             return Number.isInteger(candidate) && candidate >= 0 && candidate < opts.length ? candidate : -1;
         }
@@ -729,12 +883,45 @@ const createExport = (deps) => {
         }
         return -1;
     };
+    const _isExportTrueFalseType = (raw) => /^(?:true[-_]?false|truefalse|tf)$/i.test(String(raw || '').trim());
+    const _cleanExportChoiceOptions = (q, rawOptions, plainFn) => {
+        const isTf = _isExportTrueFalseType(q && q.type);
+        const src = Array.isArray(rawOptions) && rawOptions.length ? rawOptions : (isTf ? ['True', 'False'] : []);
+        const toText = plainFn || ((v) => String(v == null ? '' : v).trim());
+        const rawStrings = [];
+        const options = [];
+        const origIndices = [];
+        const origToClean = new Map();
+        for (let i = 0; i < src.length; i++) {
+            const rawItem = src[i];
+            const txt = rawItem && typeof rawItem === 'object' ? toText(rawItem.text ?? rawItem.label ?? rawItem.value ?? rawItem) : toText(rawItem);
+            rawStrings.push(txt);
+            if (txt) {
+                origToClean.set(i, options.length);
+                origIndices.push(i);
+                options.push(txt);
+            }
+        }
+        return { options, origIndices, origToClean, rawStrings, isTf };
+    };
     const _resolveExportMcqIdx = (q, opts) => {
         if (!q || typeof q !== 'object') return -1;
         const candidates = [q.correctIndex, q.correct, q.correctAnswer, q.answer];
         for (let i = 0; i < candidates.length; i++) {
             const idx = _resolveExportChoiceIdx(opts, candidates[i]);
             if (idx >= 0) return idx;
+        }
+        return -1;
+    };
+    const _resolveCleanedMcqIdx = (q, cleaned) => {
+        if (!q || !cleaned) return -1;
+        const rawIdx = _resolveExportMcqIdx(q, cleaned.rawStrings);
+        if (rawIdx >= 0 && cleaned.origToClean.has(rawIdx)) return cleaned.origToClean.get(rawIdx);
+        const directIdx = _resolveExportMcqIdx(q, cleaned.options);
+        if (directIdx >= 0) return directIdx;
+        if (cleaned.isTf && cleaned.options.length === 2) {
+            const boolCand = [q.correctIndex, q.correct, q.correctAnswer, q.answer].find((v) => typeof v === 'boolean');
+            if (typeof boolCand === 'boolean') return boolCand ? 0 : 1;
         }
         return -1;
     };
@@ -750,6 +937,15 @@ const createExport = (deps) => {
         }
         return out.length ? out : null;
     };
+    const _resolveCleanedMultiIndices = (q, cleaned) => {
+        if (!q || !cleaned) return null;
+        const rawIndices = _resolveExportMultiIndices(q, cleaned.rawStrings);
+        if (rawIndices) {
+            const mapped = Array.from(new Set(rawIndices.map((i) => cleaned.origToClean.get(i)).filter((v) => Number.isInteger(v) && v >= 0)));
+            if (mapped.length === rawIndices.length) return mapped;
+        }
+        return _resolveExportMultiIndices(q, cleaned.options);
+    };
     const _resolveExportAnswerEvidenceIdx = (q, answers, evidence) => {
         const resolveFirst = (list, cands) => {
             for (let i = 0; i < cands.length; i++) {
@@ -763,16 +959,91 @@ const createExport = (deps) => {
             evidenceIdx: resolveFirst(evidence, [q && q.correctEvidenceIndex, q && q.correctEvidence, q && q.expectedEvidence, q && q.evidence]),
         };
     };
-    const _qtiSingleChoiceItemXml = (q, index) => {
-        const options = Array.isArray(q.options) ? q.options : [];
-        const correctIndex = _resolveExportMcqIdx(q, options);
+    const _resolveCleanedAnswerEvidenceIdx = (q, ansCleaned, evCleaned) => {
+        const resolveCleanedFirst = (cleaned, cands) => {
+            for (let i = 0; i < cands.length; i++) {
+                const ri = _resolveExportChoiceIdx(cleaned.rawStrings, cands[i]);
+                if (ri >= 0 && cleaned.origToClean.has(ri)) return cleaned.origToClean.get(ri);
+                const ci = _resolveExportChoiceIdx(cleaned.options, cands[i]);
+                if (ci >= 0) return ci;
+            }
+            return -1;
+        };
+        return {
+            answerIdx: resolveCleanedFirst(ansCleaned, [q && q.correctAnswerIndex, q && q.correctAnswer, q && q.expectedAnswer, q && q.answer]),
+            evidenceIdx: resolveCleanedFirst(evCleaned, [q && q.correctEvidenceIndex, q && q.correctEvidence, q && q.expectedEvidence, q && q.evidence]),
+        };
+    };
+    const _exportShuffleList = (list, seedPrefix, labelFn) => {
+        const fnv = (v) => {
+            let h = 2166136261;
+            const s = String(v == null ? '' : v);
+            for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+            return h >>> 0;
+        };
+        let arr = (Array.isArray(list) ? list : []).map((entry, idx) => ({
+            entry,
+            idx,
+            hash: fnv(`${seedPrefix}:${idx}:${labelFn ? labelFn(entry) : String(entry || '')}`),
+        }));
+        if (arr.length > 1) {
+            arr = arr.slice().sort((a, b) => a.hash - b.hash || a.idx - b.idx);
+            if (arr.every((it, idx) => it.idx === idx)) arr.push(arr.shift());
+        }
+        return arr.map((it) => it.entry);
+    };
+    const _exportWordBankPromptSuffix = (q, seedPrefix) => {
+        const raw = Array.isArray(q && q.wordBank) ? q.wordBank : [];
+        const seen = new Set();
+        const words = [];
+        raw.forEach((w) => {
+            const txt = _exportQuizPlain(w && typeof w === 'object' ? (w.text ?? w.label ?? w.value ?? w) : w).trim();
+            if (!txt) return;
+            const key = txt.toLocaleLowerCase();
+            if (seen.has(key)) return;
+            seen.add(key);
+            words.push(txt);
+        });
+        if (!words.length) return '';
+        const shown = words.length > 1 ? _exportShuffleList(words, seedPrefix + ':' + words.join('|')) : words;
+        return 'Word bank: ' + shown.join(', ');
+    };
+    const _shuffleCleanedChoices = (cleaned, seedPrefix) => {
+        const opts = cleaned && Array.isArray(cleaned.options) ? cleaned.options : [];
+        const orig = cleaned && Array.isArray(cleaned.origIndices) ? cleaned.origIndices : opts.map((_, i) => i);
+        if (!opts.length || (cleaned && cleaned.isTf) || opts.length < 2) {
+            return { options: opts.slice(), cleanOrder: opts.map((_, i) => i), origOrder: orig.slice() };
+        }
+        const entries = opts.map((text, cleanIdx) => ({ text, cleanIdx, origIdx: orig[cleanIdx] }));
+        const ordered = _exportShuffleList(entries, seedPrefix, (it) => `${it.cleanIdx}:${it.text}`);
+        return {
+            options: ordered.map((e) => e.text),
+            cleanOrder: ordered.map((e) => e.cleanIdx),
+            origOrder: ordered.map((e) => e.origIdx),
+        };
+    };
+    const _qtiSingleChoiceItemXml = (q, index, shuffleChoices = false) => {
+        const cleaned = _cleanExportChoiceOptions(q, q && q.options);
+        let options = cleaned.options;
+        let correctIndex = _resolveCleanedMcqIdx(q, cleaned);
         if (!String(q.question == null ? '' : q.question).trim() || options.length < 2 || correctIndex < 0) return null;
+        if (shuffleChoices && !cleaned.isTf) {
+            const shuffled = _shuffleCleanedChoices(cleaned, 'qti:mcq:' + index + ':' + (q.question || ''));
+            const remapped = shuffled.cleanOrder.indexOf(correctIndex);
+            if (remapped >= 0) {
+                options = shuffled.options;
+                correctIndex = remapped;
+            }
+        }
         const responseId = 'RESPONSE_' + index;
+        const reasoningXml = (q.requireReasoning || q.explanationPrompt)
+            ? ('\n        <response_str ident="REASON_' + index + '" rcardinality="Single">\n          <render_fib fibtype="String" rows="4" columns="80">\n            <response_label ident="REASON_' + index + '_LABEL"/>\n          </render_fib>\n        </response_str>')
+            : '';
         const presentation =
-            '\n        <material>\n          <mattext texttype="text/plain">' + _escapeExportText(q.question) + '</mattext>\n        </material>' +
+            '\n        <material>\n          <mattext texttype="text/plain">' + _escapeExportText(String(q.question) + _assessmentExportReasoningPrompt(q)) + '</mattext>\n        </material>' +
             '\n        <response_lid ident="' + responseId + '" rcardinality="Single">\n          <render_choice shuffle="No">' +
             _qtiChoiceLabelsXml(options, 'OPT') +
-            '\n          </render_choice>\n        </response_lid>';
+            '\n          </render_choice>\n        </response_lid>' + reasoningXml;
         const processing = _qtiScoreOutcomeXml(1) +
             '\n        <respcondition continue="No" title="Correct">\n          <conditionvar>\n            <varequal respident="' + responseId + '">OPT_' + correctIndex + '</varequal>\n          </conditionvar>\n          <setvar action="Set" varname="SCORE">1</setvar>\n        </respcondition>\n      </resprocessing>';
         return _qtiWrapItemXml({
@@ -784,16 +1055,28 @@ const createExport = (deps) => {
         });
     };
 
-    const _qtiMultiSelectItemXml = (q, index, partialCredit) => {
-        const options = Array.isArray(q.options) ? q.options : [];
-        const correctIndices = _resolveExportMultiIndices(q, options) || [];
-        if (!String(q.question == null ? '' : q.question).trim() || options.length < 3 || !correctIndices.length) return null;
+    const _qtiMultiSelectItemXml = (q, index, partialCredit, shuffleChoices = false) => {
+        const cleaned = _cleanExportChoiceOptions(q, q && q.options);
+        let options = cleaned.options;
+        let correctIndices = _resolveCleanedMultiIndices(q, cleaned) || [];
+        if (!String(q.question == null ? '' : q.question).trim() || options.length < 2 || !correctIndices.length) return null;
+        if (shuffleChoices) {
+            const shuffled = _shuffleCleanedChoices(cleaned, 'qti:ms:' + index + ':' + (q.question || ''));
+            const remapped = correctIndices.map((ci) => shuffled.cleanOrder.indexOf(ci)).filter((ci) => ci >= 0);
+            if (remapped.length === correctIndices.length) {
+                options = shuffled.options;
+                correctIndices = remapped;
+            }
+        }
         const responseId = 'RESPONSE_' + index;
+        const reasoningXml = (q.requireReasoning || q.explanationPrompt)
+            ? ('\n        <response_str ident="REASON_' + index + '" rcardinality="Single">\n          <render_fib fibtype="String" rows="4" columns="80">\n            <response_label ident="REASON_' + index + '_LABEL"/>\n          </render_fib>\n        </response_str>')
+            : '';
         const presentation =
-            '\n        <material>\n          <mattext texttype="text/plain">' + _escapeExportText(q.question) + '</mattext>\n        </material>' +
+            '\n        <material>\n          <mattext texttype="text/plain">' + _escapeExportText(String(q.question) + _assessmentExportReasoningPrompt(q)) + '</mattext>\n        </material>' +
             '\n        <response_lid ident="' + responseId + '" rcardinality="Multiple">\n          <render_choice shuffle="No" minnumber="1" maxnumber="' + options.length + '">' +
             _qtiChoiceLabelsXml(options, 'OPT') +
-            '\n          </render_choice>\n        </response_lid>';
+            '\n          </render_choice>\n        </response_lid>' + reasoningXml;
         let conditions = '';
         if (partialCredit) {
             const weight = (1 / correctIndices.length).toFixed(6);
@@ -823,11 +1106,27 @@ const createExport = (deps) => {
         });
     };
 
-    const _qtiAnswerEvidenceItemXml = (q, index, partialCredit) => {
-        const answers = Array.isArray(q.answerOptions) ? q.answerOptions : [];
-        const evidence = Array.isArray(q.evidenceOptions) ? q.evidenceOptions : [];
-        const { answerIdx: correctAnswerIndex, evidenceIdx: correctEvidenceIndex } = _resolveExportAnswerEvidenceIdx(q, answers, evidence);
+    const _qtiAnswerEvidenceItemXml = (q, index, partialCredit, shuffleChoices = false) => {
+        const ansCleaned = _cleanExportChoiceOptions(null, q && q.answerOptions);
+        const evCleaned = _cleanExportChoiceOptions(null, q && q.evidenceOptions);
+        let answers = ansCleaned.options;
+        let evidence = evCleaned.options;
+        let { answerIdx: correctAnswerIndex, evidenceIdx: correctEvidenceIndex } = _resolveCleanedAnswerEvidenceIdx(q, ansCleaned, evCleaned);
         if (!String(q.question == null ? '' : q.question).trim() || answers.length < 2 || evidence.length < 2 || correctAnswerIndex < 0 || correctEvidenceIndex < 0) return null;
+        if (shuffleChoices) {
+            const shAns = _shuffleCleanedChoices(ansCleaned, 'qti:ae-a:' + index + ':' + (q.question || ''));
+            const remAns = shAns.cleanOrder.indexOf(correctAnswerIndex);
+            if (remAns >= 0) {
+                answers = shAns.options;
+                correctAnswerIndex = remAns;
+            }
+            const shEv = _shuffleCleanedChoices(evCleaned, 'qti:ae-e:' + index + ':' + (q.question || ''));
+            const remEv = shEv.cleanOrder.indexOf(correctEvidenceIndex);
+            if (remEv >= 0) {
+                evidence = shEv.options;
+                correctEvidenceIndex = remEv;
+            }
+        }
         const answerId = 'ANSWER_' + index;
         const evidenceId = 'EVIDENCE_' + index;
         const evidencePrompt = q.evidencePrompt || 'Which evidence or reason best supports that answer?';
@@ -862,12 +1161,16 @@ const createExport = (deps) => {
     const _qtiNumericItemXml = (q, index, partialCredit) => {
         const prompt = String(q.question == null ? '' : q.question).trim();
         const correctValue = Number(q.correctValue);
-        const tolerance = Number(q.tolerance == null ? 0 : q.tolerance);
+        const rawTolerance = q.tolerance != null ? q.tolerance : q.numericSettings?.tolerance;
+        const tolerance = Number(rawTolerance == null ? 0 : rawTolerance);
         if (!prompt || !_hasExportNumericKey(q.correctValue) || !Number.isFinite(tolerance) || tolerance < 0) return null;
 
         const valueId = 'NUM_' + index;
         const unitId = 'UNIT_' + index;
-        const units = [q.unit].concat(Array.isArray(q.acceptableUnits) ? q.acceptableUnits : [])
+        const rawAcceptableUnits = Array.isArray(q.acceptableUnits)
+            ? q.acceptableUnits
+            : (Array.isArray(q.numericSettings?.acceptableUnits) ? q.numericSettings.acceptableUnits : []);
+        const units = [q.unit].concat(rawAcceptableUnits)
             .map(value => String(value == null ? '' : value).trim())
             .filter((value, unitIndex, values) => value && values.findIndex(candidate => candidate.toLowerCase() === value.toLowerCase()) === unitIndex);
         const lower = correctValue - tolerance;
@@ -950,8 +1253,15 @@ const createExport = (deps) => {
             const right = Array.isArray(pair) ? pair[1] : pair && (pair.right || pair.match);
             return (pairIndex + 1) + '. ' + String(left == null ? '' : left) + ' ↔ ' + String(right == null ? '' : right);
         }).join('\n');
+        const candCleaned = _cleanExportChoiceOptions(null, q.candidatePartners);
+        const partners = candCleaned.options.length >= 2
+            ? (q._keepPartnerOrder ? candCleaned.options : _exportShuffleList(candCleaned.options, 'qti:rm:' + (q.question || '') + ':' + candCleaned.options.join('|')))
+            : [];
+        const partnerBlock = partners.length
+            ? '\n\nPartner choices:\n' + partners.map((c, idx) => String.fromCharCode(65 + idx) + '. ' + c).join('\n')
+            : '';
         return {
-            prompt: String(q.question || 'Review the relationships.') + '\n\nDisplayed pairs:\n' + displayedPairs + '\n\nIdentify the mismatched pair and provide the correct partner.' + _assessmentExportReasoningPrompt(q),
+            prompt: String(q.question || 'Review the relationships.') + '\n\nDisplayed pairs:\n' + displayedPairs + partnerBlock + '\n\nIdentify the mismatched pair and provide the correct partner.' + _assessmentExportReasoningPrompt(q),
             guide: (q.wrongPairIndex == null ? '' : 'Mismatched pair: ' + (Number(q.wrongPairIndex) + 1)) + (q.correctPartnerForWrong ? '\nCorrect partner: ' + q.correctPartnerForWrong : '') + (q.requireReasoning || q.explanationPrompt ? '\nReview the explanation separately; it does not add points to the two-part choice score.' : '')
         };
     };
@@ -964,12 +1274,13 @@ const createExport = (deps) => {
     };
     // Export formats do not share AlloFlow's policy engine. Preserve the task
     // as an explicitly ungraded response when automatic scoring would differ.
-    const _assessmentManualPolicyAdaptation = (q) => {
+    const _assessmentManualPolicyAdaptation = (q, index = '', shuffleChoices = false) => {
         const type = _normExportQuizType(q.type);
         const prompt = String(q.question || '').trim();
         if (!prompt) return null;
         if (type === 'fill-blank' && ['normalized', 'review-variants'].includes(q.fillBlankPolicy) && String(q.expectedFill || '').trim()) {
-            return { prompt: prompt + '\n\nTeacher review: enter the missing answer.',
+            const wordBank = _exportWordBankPromptSuffix(q, 'qti:wb:' + (index !== '' ? index : prompt));
+            return { prompt: prompt + (wordBank ? '\n\n' + wordBank : '') + '\n\nTeacher review: enter the missing answer.',
                 guide: 'Accepted answers: ' + [q.expectedFill].concat(q.acceptableAlternatives || []).join('; ') + '\nMatching policy: ' + (q.fillBlankPolicy === 'normalized' ? 'ignore capitalization, spacing, Unicode composition and surrounding punctuation; preserve conceptual distinctions.' : 'other wording requires teacher review.'),
                 reason: 'The selected answer-matching policy requires teacher review in this export.' };
         }
@@ -988,10 +1299,20 @@ const createExport = (deps) => {
                 if (!Array.isArray(pairs) || pairs.length < 2 || !Number.isInteger(wrong) || wrong < 0 || wrong >= pairs.length || !q.correctPartnerForWrong) return null;
                 return Object.assign(_qtiDiagnosticManualPrompt(q, type), { reason: 'The explanation and choice parts are retained together for teacher review.' });
             }
-            const answers = q.answerOptions || [], evidence = q.evidenceOptions || [];
-            const { answerIdx, evidenceIdx } = _resolveExportAnswerEvidenceIdx(q, answers, evidence);
+            const ansCleaned = _cleanExportChoiceOptions(null, q.answerOptions);
+            const evCleaned = _cleanExportChoiceOptions(null, q.evidenceOptions);
+            let answers = ansCleaned.options, evidence = evCleaned.options;
+            let { answerIdx, evidenceIdx } = _resolveCleanedAnswerEvidenceIdx(q, ansCleaned, evCleaned);
             if (!Array.isArray(answers) || answers.length < 2 || answerIdx < 0 || answerIdx >= answers.length || !Array.isArray(evidence) || evidence.length < 2 || evidenceIdx < 0 || evidenceIdx >= evidence.length) return null;
-            return { prompt: prompt + '\n\nAnswer choices:\n' + answers.map((value, index) => String.fromCharCode(65 + index) + '. ' + value).join('\n') + '\n\n' + (q.evidencePrompt || 'Choose supporting evidence.') + '\n' + evidence.map((value, index) => String.fromCharCode(65 + index) + '. ' + value).join('\n') + _assessmentExportReasoningPrompt(q),
+            if (shuffleChoices) {
+                const shAns = _shuffleCleanedChoices(ansCleaned, 'qti:ae-a:' + index + ':' + prompt);
+                const remAns = shAns.cleanOrder.indexOf(answerIdx);
+                if (remAns >= 0) { answers = shAns.options; answerIdx = remAns; }
+                const shEv = _shuffleCleanedChoices(evCleaned, 'qti:ae-e:' + index + ':' + prompt);
+                const remEv = shEv.cleanOrder.indexOf(evidenceIdx);
+                if (remEv >= 0) { evidence = shEv.options; evidenceIdx = remEv; }
+            }
+            return { prompt: prompt + '\n\nAnswer choices:\n' + answers.map((value, idx) => String.fromCharCode(65 + idx) + '. ' + value).join('\n') + '\n\n' + (q.evidencePrompt || 'Choose supporting evidence.') + '\n' + evidence.map((value, idx) => String.fromCharCode(65 + idx) + '. ' + value).join('\n') + _assessmentExportReasoningPrompt(q),
                 guide: 'Answer: ' + answers[answerIdx] + '\nEvidence: ' + evidence[evidenceIdx] + '\nReview the explanation separately; it does not add points to the two-part choice score.',
                 reason: 'The explanation and choice parts are retained together for teacher review.' };
         }
@@ -1004,29 +1325,31 @@ const createExport = (deps) => {
         if (!String(q.question || '').trim()) return null;
         const type = _normExportQuizType(q.type);
         const partialCredit = !scoringPolicy || scoringPolicy.partialCredit !== false;
-        const adaptation = _assessmentManualPolicyAdaptation(q);
+        const shuffleChoices = Boolean(scoringPolicy && scoringPolicy.shuffleChoices === true);
+        const adaptation = _assessmentManualPolicyAdaptation(q, index, shuffleChoices);
         if (adaptation) return _qtiManualTextItemXml({ q, index, itemType: type, prompt: adaptation.prompt + _assessmentExportCriteriaPrompt(q), scoringGuide: adaptation.guide + '\nPartial credit: ' + (partialCredit ? 'enabled.' : 'disabled; use all-or-nothing scoring for the scored components.') });
-        if (type === 'mcq') return _qtiSingleChoiceItemXml(q, index);
-        if (type === 'multi-select') return _qtiMultiSelectItemXml(q, index, partialCredit);
+        if (type === 'mcq') return _qtiSingleChoiceItemXml(q, index, shuffleChoices);
+        if (type === 'multi-select') return _qtiMultiSelectItemXml(q, index, partialCredit, shuffleChoices);
         if (type === 'fill-blank') {
             return _qtiAutoTextItemXml({
                 q,
                 index,
                 itemType: type,
-                acceptedAnswers: [q.expectedFill || q.correctAnswer].concat(Array.isArray(q.acceptableAlternatives) ? q.acceptableAlternatives : [])
+                acceptedAnswers: [q.expectedFill || q.correctAnswer || q.answer].concat(Array.isArray(q.acceptableAlternatives) ? q.acceptableAlternatives : [])
             });
         }
         if (type === 'short-answer') {
-            return _qtiManualTextItemXml({ q, index, itemType: type, prompt: String(q.question || '') + _assessmentExportCriteriaPrompt(q), scoringGuide: q.expectedAnswer || q.sampleAnswer || q.correctAnswer || q.rubric });
+            return _qtiManualTextItemXml({ q, index, itemType: type, prompt: String(q.question || '') + _assessmentExportReasoningPrompt(q) + _assessmentExportCriteriaPrompt(q), scoringGuide: q.expectedAnswer || q.sampleAnswer || q.correctAnswer || q.rubric });
         }
         if (type === 'self-explanation' || type === 'reasoning') {
-            return _qtiManualTextItemXml({ q, index, itemType: type, prompt: String(q.question || '') + _assessmentExportCriteriaPrompt(q), scoringGuide: q.rubric || q.sampleAnswer || q.expectedAnswer || q.explanationPrompt });
+            return _qtiManualTextItemXml({ q, index, itemType: type, prompt: String(q.question || '') + _assessmentExportReasoningPrompt(q) + _assessmentExportCriteriaPrompt(q), scoringGuide: q.rubric || q.sampleAnswer || q.expectedAnswer || q.explanationPrompt });
         }
         if (type === 'matching') {
             const pairs = Array.isArray(q.pairs) ? q.pairs.filter((p) => p && String(p.left || p.prompt || '').trim() && String(p.right || p.match || p.answer || '').trim()) : [];
             if (pairs.length < 2) return null;
-            const choices = pairs.map((p) => String(p.right || p.match || p.answer || '').trim());
-            const promptText = String(q.question || 'Match each item.') + '\n\nItems:\n' + pairs.map((p, idx) => (idx + 1) + '. ' + String(p.left || p.prompt || '').trim() + ' -> ____').join('\n') + '\n\nMatch choices:\n' + choices.map((c, idx) => String.fromCharCode(65 + idx) + '. ' + c).join('\n');
+            const rawChoices = pairs.map((p) => String(p.right || p.match || p.answer || '').trim());
+            const choices = _exportShuffleList(rawChoices, 'qti:match:' + index + ':' + rawChoices.join('|'));
+            const promptText = String(q.question || 'Match each item.') + '\n\nItems:\n' + pairs.map((p, idx) => (idx + 1) + '. ' + String(p.left || p.prompt || '').trim() + ' -> ____').join('\n') + '\n\nMatch choices:\n' + choices.map((c, idx) => String.fromCharCode(65 + idx) + '. ' + c).join('\n') + _assessmentExportReasoningPrompt(q) + _assessmentExportCriteriaPrompt(q);
             const guideText = 'Expected pairs:\n' + pairs.map((p, idx) => (idx + 1) + '. ' + String(p.left || p.prompt || '').trim() + ' -> ' + String(p.right || p.match || p.answer || '').trim()).join('\n');
             return _qtiManualTextItemXml({ q, index, itemType: type, prompt: promptText, scoringGuide: guideText });
         }
@@ -1034,7 +1357,10 @@ const createExport = (deps) => {
             const items = Array.isArray(q.items) ? q.items.map((it) => String(it == null ? '' : it).trim()).filter(Boolean) : [];
             if (items.length < 2) return null;
             const expectedOrder = Array.isArray(q.correctOrder) && q.correctOrder.length ? q.correctOrder.map((it) => String(it == null ? '' : it).trim()).filter(Boolean) : items;
-            const promptText = String(q.question || 'Put the items in order.') + '\n\nItems to order:\n' + items.map((it, idx) => (idx + 1) + '. ' + it).join('\n');
+            const shownItems = (Array.isArray(q.presentedOrder) && q.presentedOrder.length === items.length)
+                ? q.presentedOrder.map((idx) => items[idx]).filter(Boolean)
+                : _exportShuffleList(items, 'qti:ord:' + index + ':' + items.join('|'));
+            const promptText = String(q.question || 'Put the items in order.') + '\n\nItems to order:\n' + shownItems.map((it, idx) => (idx + 1) + '. ' + it).join('\n') + _assessmentExportReasoningPrompt(q) + _assessmentExportCriteriaPrompt(q);
             const guideText = 'Expected order:\n' + expectedOrder.map((it, idx) => (idx + 1) + '. ' + it).join('\n');
             return _qtiManualTextItemXml({ q, index, itemType: type, prompt: promptText, scoringGuide: guideText });
         }
@@ -1042,7 +1368,7 @@ const createExport = (deps) => {
             const diagnostic = _qtiDiagnosticManualPrompt(q, type);
             return _qtiManualTextItemXml({ q, index, itemType: type, prompt: diagnostic.prompt, scoringGuide: diagnostic.guide });
         }
-        if (type === 'answer-evidence') return _qtiAnswerEvidenceItemXml(q, index, partialCredit);
+        if (type === 'answer-evidence') return _qtiAnswerEvidenceItemXml(q, index, partialCredit, shuffleChoices);
         if (type === 'numeric-response') return _qtiNumericItemXml(q, index, partialCredit);
         return _qtiManualTextItemXml({
             q,
@@ -1065,18 +1391,28 @@ const createExport = (deps) => {
         media.files.push({ path, base64: payload });
         return '\n          <matimage imagtype="' + mime + '" uri="' + path + '" label="' + _escapeExportText(label) + '"/>';
     };
-    const _qtiWithImages = (xml, q, index, media) => {
+    const _qtiWithImages = (xml, q, index, media, shuffleChoices = false) => {
         if (!xml || !q || typeof q !== 'object') return xml;
         let out = xml;
         const stem = _qtiImageXml(q.imageUrl, q.imageAltText || q.question || 'Question image', media, 'q' + (index + 1));
         if (stem) out = out.replace(/(<\/mattext>)(\s*<\/material>)/, (_, text, close) => text + stem + close);
+        const qType = _normExportQuizType(q.type);
+        const cleaned = _cleanExportChoiceOptions(q, q.options);
+        let shuffled = null;
+        if (shuffleChoices && (qType === 'mcq' || qType === 'multi-select') && !cleaned.isTf) {
+            const seedTag = qType === 'multi-select' ? 'ms' : 'mcq';
+            const cleanedPlain = _cleanExportChoiceOptions(q, q.options, _exportQuizPlain);
+            shuffled = _shuffleCleanedChoices(cleanedPlain, 'qti:' + seedTag + ':' + index + ':' + _exportQuizPlain(q.question || ''));
+        }
         const options = Array.isArray(q.options) ? q.options : [];
         const alts = Array.isArray(q.optionImageAltTexts) ? q.optionImageAltTexts : [];
         (Array.isArray(q.optionImageUrls) ? q.optionImageUrls : []).forEach((source, optionIndex) => {
             if (typeof source !== 'string' || !source.trim()) return;
-            const at = out.indexOf('<response_label ident="OPT_' + optionIndex + '">');
+            const rawCleanIdx = cleaned.origToClean.has(optionIndex) ? cleaned.origToClean.get(optionIndex) : optionIndex;
+            const cleanIdx = shuffled ? shuffled.cleanOrder.indexOf(rawCleanIdx) : rawCleanIdx;
+            const at = out.indexOf('<response_label ident="OPT_' + cleanIdx + '">');
             if (at < 0) { media.omitted += 1; return; }
-            const image = _qtiImageXml(source, alts[optionIndex] || options[optionIndex] || 'Choice ' + (optionIndex + 1), media, 'q' + (index + 1) + '-choice-' + (optionIndex + 1));
+            const image = _qtiImageXml(source, alts[optionIndex] || options[optionIndex] || 'Choice ' + (cleanIdx + 1), media, 'q' + (index + 1) + '-choice-' + (cleanIdx + 1));
             const close = out.indexOf('</mattext>', at) + '</mattext>'.length;
             if (image) out = out.slice(0, close) + image + out.slice(close);
         });
@@ -1139,15 +1475,18 @@ const createExport = (deps) => {
         const rawQuestions = Array.isArray(generatedContent && generatedContent.data && generatedContent.data.questions)
             ? generatedContent.data.questions
             : [];
+        const effQtiCfg = (options && options.exportConfig) || (live && live.exportConfig) || {};
+        const shuffleQtiChoices = Boolean(options && options.shuffleChoices !== undefined ? options.shuffleChoices : effQtiCfg.shuffleChoices === true);
         const scoringPolicy = Object.assign(
-            { partialCredit: true },
+            { partialCredit: true, shuffleChoices: shuffleQtiChoices },
             generatedContent && generatedContent.data && generatedContent.data.scoringPolicy
                 ? generatedContent.data.scoringPolicy
                 : {}
         );
+        if (options && options.shuffleChoices !== undefined) scoringPolicy.shuffleChoices = Boolean(options.shuffleChoices);
         const media = { files: [], omitted: 0 };
         const questionItems = rawQuestions.map((question, questionIndex) =>
-            _qtiWithImages(_qtiQuestionItemXml(question, questionIndex, scoringPolicy), question, questionIndex, media)
+            _qtiWithImages(_qtiQuestionItemXml(question, questionIndex, scoringPolicy), question, questionIndex, media, scoringPolicy.shuffleChoices === true)
         );
         const validQuestionItems = questionItems.filter(Boolean);
         const policyAdaptations = rawQuestions.map((question, index) => {
@@ -1229,7 +1568,19 @@ const createExport = (deps) => {
     const handleExportH5P = async (options = {}) => {
         const live = liveRef.current;
         const generatedContent = options.generatedContent || live.generatedContent;
-        const { sourceTopic, addToast, t, history } = live;
+        const { sourceTopic, addToast, t, history, exportConfig } = live;
+        const effH5pCfg = (options && options.exportConfig) || exportConfig || {};
+        const isAssessmentH5p = Boolean((options && options.assessmentMode === true) || effH5pCfg.assessmentMode === true);
+        const explicitH5pKey = options && options.includeTeacherKey !== undefined
+            ? Boolean(options.includeTeacherKey)
+            : (options && options.includeAnswerKey !== undefined
+                ? Boolean(options.includeAnswerKey)
+                : (effH5pCfg.includeTeacherKey !== undefined
+                    ? Boolean(effH5pCfg.includeTeacherKey)
+                    : (effH5pCfg.includeAnswerKey !== undefined ? Boolean(effH5pCfg.includeAnswerKey) : null)));
+        const allowH5pSolutions = !isAssessmentH5p;
+        const allowH5pSampleKey = allowH5pSolutions && explicitH5pKey !== false;
+        const shuffleH5pChoices = Boolean(options && options.shuffleChoices !== undefined ? options.shuffleChoices : effH5pCfg.shuffleChoices === true);
         // Messages through t(); a key it echoes falls back to the English here.
         const h5pText = (key, fallback, params) => {
             const v = typeof t === 'function' ? t(key) : '';
@@ -1320,7 +1671,7 @@ const createExport = (deps) => {
                     question: richText(prompt),
                     answers: clean.map((option, index) => ({ correct: keys.includes(index), tipsAndFeedback: { tip: '', chosenFeedback: '', notChosenFeedback: '' }, text: richText(option) })),
                     overallFeedback: [{ from: 0, to: 100, feedback: '' }],
-                    behaviour: { enableRetry: true, enableSolutionsButton: true, enableCheckButton: true, type: keys.length > 1 ? 'multi' : 'single', singlePoint: false, randomAnswers: false, showSolutionsRequiresInput: true, confirmCheckDialog: false, confirmRetryDialog: false, autoCheck: false, passPercentage: 100, showScorePoints: true },
+                    behaviour: { enableRetry: allowH5pSolutions, enableSolutionsButton: allowH5pSolutions, enableCheckButton: allowH5pSolutions, type: keys.length > 1 ? 'multi' : 'single', singlePoint: false, randomAnswers: false, showSolutionsRequiresInput: true, confirmCheckDialog: false, confirmRetryDialog: false, autoCheck: false, passPercentage: 100, showScorePoints: true },
                     UI: { checkAnswerButton: 'Check', submitAnswerButton: 'Submit', showSolutionButton: 'Show solution', tryAgainButton: 'Retry', tipsLabel: 'Show tip', scoreBarLabel: 'You got :num out of :total points', tipAvailable: 'Tip available', feedbackAvailable: 'Feedback available', correctAnswer: 'Correct answer', shouldCheck: 'Should have been checked', shouldNotCheck: 'Should not have been checked', noInput: 'Please answer before viewing the solution', a11yCheck: 'Check the answers.', a11yShowSolution: 'Show the solution.', a11yRetry: 'Retry the task.' },
                 };
                 if (mediaAsset) {
@@ -1342,7 +1693,7 @@ const createExport = (deps) => {
                 used.add('H5P.MultiChoice');
                 return true;
             };
-            const addBlanks = (prompt, answerValues, caseSensitive = false) => {
+            const addBlanks = (prompt, answerValues, caseSensitive = false, instructionExtra = '') => {
                 const answers = Array.from(new Set((answerValues || []).map((value) => plain(value).replace(/[*/:]/g, ' ').replace(/\s+/g, ' ').trim()).filter(Boolean)));
                 if (!plain(prompt) || !answers.length) return false;
                 const token = 'ALLOFLOWBLANKTOKEN';
@@ -1351,12 +1702,12 @@ const createExport = (deps) => {
                 questions.push({
                     library: 'H5P.Blanks 1.14', subContentId: generateUUID(),
                     params: {
-                        text: richText('Fill in the missing answer.'), questions: [line], overallFeedback: [{ from: 0, to: 100, feedback: '' }],
+                        text: richText('Fill in the missing answer.' + (instructionExtra ? ' ' + instructionExtra : '')), questions: [line], overallFeedback: [{ from: 0, to: 100, feedback: '' }],
                         showSolutions: 'Show solution', tryAgain: 'Retry', checkAnswer: 'Check', submitAnswer: 'Submit',
                         notFilledOut: 'Please fill in the blank to view the solution', answerIsCorrect: "':ans' is correct", answerIsWrong: "':ans' is wrong",
                         answeredCorrectly: 'Answered correctly', answeredIncorrectly: 'Answered incorrectly', solutionLabel: 'Correct answer:',
                         inputLabel: 'Blank input @num of @total', inputHasTipLabel: 'Tip available', tipLabel: 'Tip',
-                        behaviour: { enableRetry: true, allowRetryIfCorrect: false, enableSolutionsButton: true, enableCheckButton: true, autoCheck: false, caseSensitive, showSolutionsRequiresInput: true, separateLines: false, confirmCheckDialog: false, confirmRetryDialog: false, acceptSpellingErrors: false },
+                        behaviour: { enableRetry: allowH5pSolutions, allowRetryIfCorrect: false, enableSolutionsButton: allowH5pSolutions, enableCheckButton: allowH5pSolutions, autoCheck: false, caseSensitive, showSolutionsRequiresInput: true, separateLines: false, confirmCheckDialog: false, confirmRetryDialog: false, acceptSpellingErrors: false },
                         scoreBarLabel: 'You got :num out of :total points', a11yCheck: 'Check the answers.', a11yShowSolution: 'Show the solution.', a11yRetry: 'Retry the task.', a11yCheckingModeHeader: 'Checking mode',
                     },
                 });
@@ -1369,10 +1720,10 @@ const createExport = (deps) => {
                     library: 'H5P.Essay 1.5', subContentId: generateUUID(),
                     params: {
                         taskDescription: richText(prompt), placeholderText: 'Type your response here.',
-                        solution: { introduction: richText('Use this sample to review your response.'), sample: sample ? richText(sample) : '' },
+                        solution: { introduction: allowH5pSampleKey ? richText('Use this sample to review your response.') : '', sample: (allowH5pSampleKey && sample) ? richText(sample) : '' },
                         keywords: [{ keyword: '/./', alternatives: [], options: { points: 0, occurrences: 1, caseSensitive: false, forgiveMistakes: true, feedbackIncluded: '', feedbackMissed: '', feedbackIncludedWord: 'none', feedbackMissedWord: 'none' } }],
                         overallFeedback: [{ from: 0, to: 100, feedback: '' }],
-                        behaviour: { minimumLength: 1, inputFieldSize: '10', enableRetry: true, ignoreScoring: true, pointsHost: 1, linebreakReplacement: ' ' },
+                        behaviour: { minimumLength: 1, inputFieldSize: '10', enableRetry: allowH5pSolutions, ignoreScoring: true, pointsHost: 1, linebreakReplacement: ' ' },
                         checkAnswer: 'Submit', submitAnswer: 'Submit', tryAgain: 'Retry', showSolution: 'Show solution',
                         feedbackHeader: 'Feedback', solutionTitle: 'Sample answer', remainingChars: 'Remaining characters: @chars',
                         notEnoughChars: 'You must enter at least @chars characters!', messageSave: 'saved', ariaYourResult: 'Response submitted.',
@@ -1402,9 +1753,9 @@ const createExport = (deps) => {
                     progressType: 'textual', passPercentage: 70, questions,
                     texts: { prevButton: 'Previous question', previous: 'Previous', nextButton: 'Next question', next: 'Next', finishButton: 'Finish', submitButton: 'Submit', textualProgress: 'Question: @current of @total questions', jumpToQuestion: 'Question %d of %total', questionLabel: 'Question', readSpeakerProgress: 'Question @current of @total', unansweredText: 'Unanswered', answeredText: 'Answered', currentQuestionText: 'Current question', navigationLabel: 'Questions', questionSetInstruction: 'Choose question to display' },
                     disableBackwardsNavigation: false, randomQuestions: false,
-                    endGame: { showResultPage: true, showSolutionButton: true, showRetryButton: true, noResultMessage: 'Finished', message: 'Results', amountCorrect: '@finals of @totals correct', scoreBarLabel: 'You got @finals out of @totals points', scoreHeader: 'Score', overallFeedback: [{ from: 0, to: 100, feedback: '' }] },
+                    endGame: { showResultPage: true, showSolutionButton: allowH5pSolutions, showRetryButton: allowH5pSolutions, noResultMessage: 'Finished', message: 'Results', amountCorrect: '@finals of @totals correct', scoreBarLabel: 'You got @finals out of @totals points', scoreHeader: 'Score', overallFeedback: [{ from: 0, to: 100, feedback: '' }] },
                     solutionButtonText: 'Show solution', retryButtonText: 'Retry', finishButtonText: 'Finish', submitButtonText: 'Submit',
-                    override: { checkButton: true, showSolutionButton: 'on', retryButton: 'on' },
+                    override: allowH5pSolutions ? { checkButton: true, showSolutionButton: 'on', retryButton: 'on' } : { checkButton: false, showSolutionButton: 'off', retryButton: 'off' },
                 };
                 libraryLabel = 'H5P.QuestionSet 1.21 with ' + Array.from(used).join(', ');
                 fileSuffix = suffix || 'quiz';
@@ -1416,13 +1767,20 @@ const createExport = (deps) => {
         if (type === 'quiz') {
             const rawQuestions = Array.isArray(generatedContent?.data?.questions) ? generatedContent.data.questions : [];
             const _qHasImage = (q) => !!(q && (q.image || q.imageUrl || q.stimulusImage || q.media || (Array.isArray(q.options) && q.options.some((opt) => opt && typeof opt === 'object' && (opt.image || opt.imageUrl)))));
-            const allSingleChoice = rawQuestions.length > 0 && rawQuestions.every((q) => !q || (_normExportQuizType(q.type) === 'mcq' && !_qHasImage(q) && (!Array.isArray(q.options) || q.options.length <= 4)));
+            const allSingleChoice = rawQuestions.length > 0 && rawQuestions.every((q) => {
+                if (!q) return true;
+                if (_normExportQuizType(q.type) !== 'mcq' || _qHasImage(q)) return false;
+                if (q.requireReasoning || q.explanationPrompt) return false;
+                const cleaned = _cleanExportChoiceOptions(q, q.options, plain);
+                return cleaned.options.length <= 4;
+            });
             if (allSingleChoice) {
                 const choices = rawQuestions.map((question) => {
                     const prompt = plain(question && question.question);
-                    const optionsList = Array.isArray(question && question.options) ? question.options.map(plain) : [];
-                    const correctIndex = _resolveExportMcqIdx(question, optionsList);
-                    if (!prompt || optionsList.length < 2 || optionsList.length > 4 || optionsList.some((option) => !option) || correctIndex < 0 || correctIndex >= optionsList.length) {
+                    const cleaned = _cleanExportChoiceOptions(question, question && question.options, plain);
+                    const optionsList = cleaned.options;
+                    const correctIndex = _resolveCleanedMcqIdx(question, cleaned);
+                    if (!prompt || optionsList.length < 2 || optionsList.length > 4 || correctIndex < 0 || correctIndex >= optionsList.length) {
                         omitted += 1;
                         return null;
                     }
@@ -1441,7 +1799,7 @@ const createExport = (deps) => {
                 contentJson = {
                     choices,
                     overallFeedback: [{ from: 0, to: 100, feedback: '' }],
-                    behaviour: { autoContinue: false, timeoutCorrect: 2000, timeoutWrong: 3000, soundEffectsEnabled: false, enableRetry: true, enableSolutionsButton: true, passPercentage: 70 },
+                    behaviour: { autoContinue: false, timeoutCorrect: 2000, timeoutWrong: 3000, soundEffectsEnabled: false, enableRetry: allowH5pSolutions, enableSolutionsButton: allowH5pSolutions, passPercentage: 70 },
                     l10n: {
                         nextButtonLabel: tx('common.next', 'Next'), nextButton: tx('common.next', 'Next'),
                         showResultsButtonLabel: tx('quiz.results', 'Show results'), retryButtonLabel: tx('common.retry', 'Retry'),
@@ -1467,32 +1825,62 @@ const createExport = (deps) => {
                     const prompt = plain(q.question);
                     if (!prompt) { omitted += 1; return; }
                     let included = false;
-                    const adaptation = _assessmentManualPolicyAdaptation(q);
+                    const adaptation = _assessmentManualPolicyAdaptation(q, questionIndex, shuffleH5pChoices);
                     if (adaptation) {
                         const partialCredit = generatedContent.data?.scoringPolicy?.partialCredit !== false;
                         included = addEssay(adaptation.prompt + _assessmentExportCriteriaPrompt(q), adaptation.guide + '\nPartial credit: ' + (partialCredit ? 'enabled.' : 'disabled; use all-or-nothing scoring for scored components.'));
                         if (included) { adapted += 1; manualReview += 1; policyAdaptations.push({ question: questionIndex + 1, itemType: kind, scoring: 'manual-review', reason: adaptation.reason }); }
                     } else if (kind === 'mcq') {
-                        const options = Array.isArray(q.options) ? q.options.map(plain) : [];
-                        const key = _resolveExportMcqIdx(q, options);
+                        const cleaned = _cleanExportChoiceOptions(q, q.options, plain);
+                        let options = cleaned.options;
+                        let key = _resolveCleanedMcqIdx(q, cleaned);
+                        if (shuffleH5pChoices && !cleaned.isTf && options.length >= 2 && key >= 0) {
+                            const shuffled = _shuffleCleanedChoices(cleaned, 'h5p:mcq:' + questionIndex + ':' + prompt);
+                            const remapped = shuffled.cleanOrder.indexOf(key);
+                            if (remapped >= 0) { options = shuffled.options; key = remapped; }
+                        }
                         const qImgAsset = _qHasImage(q) ? addEmbeddedAsset(q.image || q.imageUrl || q.stimulusImage || q.media, 'image', questionIndex) : null;
                         const qImgAlt = plain(q.imageAltText || q.imageAlt || q.alt || prompt);
                         included = addMulti(prompt, options, [key], qImgAsset, qImgAlt);
+                        if (included && (q.requireReasoning || q.explanationPrompt)) {
+                            addEssay((plain(q.explanationPrompt) || 'Explain your reasoning.') + ' (' + prompt + ')', plain(q.explanation || q.rubric || q.sampleAnswer || ''));
+                            manualReview += 1;
+                        }
                     } else if (kind === 'multi-select') {
-                        const options = Array.isArray(q.options) ? q.options.map(plain) : [];
-                        const indices = _resolveExportMultiIndices(q, options);
+                        const cleaned = _cleanExportChoiceOptions(q, q.options, plain);
+                        let options = cleaned.options;
+                        let indices = _resolveCleanedMultiIndices(q, cleaned);
+                        if (shuffleH5pChoices && options.length >= 2 && indices && indices.length) {
+                            const shuffled = _shuffleCleanedChoices(cleaned, 'h5p:ms:' + questionIndex + ':' + prompt);
+                            const remapped = indices.map((ci) => shuffled.cleanOrder.indexOf(ci)).filter((ci) => ci >= 0);
+                            if (remapped.length === indices.length) { options = shuffled.options; indices = remapped; }
+                        }
                         included = !!indices && addMulti(prompt, options, indices);
+                        if (included && (q.requireReasoning || q.explanationPrompt)) {
+                            addEssay((plain(q.explanationPrompt) || 'Explain your reasoning.') + ' (' + prompt + ')', plain(q.explanation || q.rubric || q.sampleAnswer || ''));
+                            manualReview += 1;
+                        }
                     } else if (kind === 'fill-blank') {
-                        included = addBlanks(prompt, [q.expectedFill || q.correctAnswer].concat(Array.isArray(q.acceptableAlternatives) ? q.acceptableAlternatives : []), q.fillBlankPolicy === 'exact');
+                        included = addBlanks(
+                            prompt,
+                            [q.expectedFill || q.correctAnswer || q.answer].concat(Array.isArray(q.acceptableAlternatives) ? q.acceptableAlternatives : []),
+                            q.fillBlankPolicy === 'exact' || q.caseSensitive === true,
+                            _exportWordBankPromptSuffix(q, 'h5p:wb:' + questionIndex)
+                        );
+                        if (included && (q.requireReasoning || q.explanationPrompt)) {
+                            addEssay((plain(q.explanationPrompt) || 'Explain your reasoning.') + ' (' + prompt + ')', plain(q.explanation || q.rubric || q.sampleAnswer || ''));
+                            manualReview += 1;
+                        }
                     } else if (kind === 'short-answer' || kind === 'self-explanation' || kind === 'reasoning') {
                         included = addEssay(prompt + _assessmentExportCriteriaPrompt(q), plain(q.expectedAnswer || q.sampleAnswer || q.correctAnswer || q.rubric));
                         if (included) manualReview += 1;
                     } else if (kind === 'matching') {
                         const pairs = Array.isArray(q.pairs) ? q.pairs.filter((p) => p && plain(p.left || p.prompt) && plain(p.right || p.match || p.answer)) : [];
                         if (pairs.length >= 2) {
-                            const rhs = pairs.map((p) => plain(p.right || p.match || p.answer));
+                            const rawRhs = pairs.map((p) => plain(p.right || p.match || p.answer));
+                            const rhs = _exportShuffleList(rawRhs, 'h5p:match:' + questionIndex + ':' + rawRhs.join('|'));
                             included = addEssay(
-                                prompt + ' Items: ' + pairs.map((p, idx) => (idx + 1) + '. ' + plain(p.left || p.prompt)).join('; ') + '. Choices: ' + rhs.join(', '),
+                                prompt + ' Items: ' + pairs.map((p, idx) => (idx + 1) + '. ' + plain(p.left || p.prompt)).join('; ') + '. Choices: ' + rhs.join(', ') + _assessmentExportReasoningPrompt(q),
                                 'Expected matches: ' + pairs.map((p) => plain(p.left || p.prompt) + ' -> ' + plain(p.right || p.match || p.answer)).join('; ')
                             );
                             if (included) { adapted += 1; manualReview += 1; }
@@ -1501,7 +1889,10 @@ const createExport = (deps) => {
                         const items = Array.isArray(q.items) ? q.items.map(plain).filter(Boolean) : [];
                         const expectedOrder = Array.isArray(q.correctOrder) && q.correctOrder.length ? q.correctOrder.map(plain).filter(Boolean) : items;
                         if (items.length >= 2) {
-                            included = addEssay(prompt + ' Arrange in order: ' + items.join(' | '), 'Expected order: ' + expectedOrder.join(' -> '));
+                            const shownItems = (Array.isArray(q.presentedOrder) && q.presentedOrder.length === items.length)
+                                ? q.presentedOrder.map((idx) => items[idx]).filter(Boolean)
+                                : _exportShuffleList(items, 'h5p:ord:' + questionIndex + ':' + items.join('|'));
+                            included = addEssay(prompt + ' Arrange in order: ' + shownItems.join(' | ') + _assessmentExportReasoningPrompt(q), 'Expected order: ' + expectedOrder.join(' -> '));
                             if (included) { adapted += 1; manualReview += 1; }
                         }
                     } else if (kind === 'sequence-sense') {
@@ -1512,17 +1903,34 @@ const createExport = (deps) => {
                     } else if (kind === 'relation-mismatch') {
                         const pairs = Array.isArray(q.pairs) ? q.pairs.filter((pair) => pair && plain(pair.left) && plain(pair.right)) : [];
                         const wrong = Number(q.wrongPairIndex);
-                        const candidates = Array.isArray(q.candidatePartners) ? q.candidatePartners.map(plain).filter(Boolean) : [];
-                        const repair = _resolveExportChoiceIdx(candidates, q.correctPartnerForWrong !== undefined ? q.correctPartnerForWrong : q.correctPartnerIndex);
-                        if (prompt && pairs.length >= 2 && Number.isInteger(wrong) && wrong >= 0 && wrong < pairs.length && candidates.length >= 2 && repair >= 0) {
+                        const candCleaned = _cleanExportChoiceOptions(null, q.candidatePartners, plain);
+                        const candidates = candCleaned.options;
+                        const repairCand = q.correctPartnerForWrong !== undefined ? q.correctPartnerForWrong : q.correctPartnerIndex;
+                        const rawRepair = _resolveExportChoiceIdx(candCleaned.rawStrings, repairCand);
+                        const repair = rawRepair >= 0 && candCleaned.origToClean.has(rawRepair) ? candCleaned.origToClean.get(rawRepair) : _resolveExportChoiceIdx(candidates, repairCand);
+                        const shownCandidates = candidates.length >= 2 && !q._keepPartnerOrder
+                            ? _exportShuffleList(candidates, 'h5p:rm:' + questionIndex + ':' + candidates.join('|'))
+                            : candidates;
+                        const shownRepair = repair >= 0 ? shownCandidates.indexOf(candidates[repair]) : -1;
+                        if (prompt && pairs.length >= 2 && Number.isInteger(wrong) && wrong >= 0 && wrong < pairs.length && shownCandidates.length >= 2 && shownRepair >= 0) {
                             included = addMulti(prompt + ' Which displayed pair is the mismatch?', pairs.map((pair) => plain(pair.left) + ' ↔ ' + plain(pair.right)), [wrong])
-                                && addMulti('What should ' + plain(pairs[wrong].left) + ' pair with?', candidates, [repair]);
+                                && addMulti('What should ' + plain(pairs[wrong].left) + ' pair with?', shownCandidates, [shownRepair]);
                             if (included) adapted += 1;
                         }
                     } else if (kind === 'answer-evidence') {
-                        const answers = Array.isArray(q.answerOptions) ? q.answerOptions.map(plain) : [];
-                        const evidence = Array.isArray(q.evidenceOptions) ? q.evidenceOptions.map(plain) : [];
-                        const { answerIdx: answerKey, evidenceIdx: evidenceKey } = _resolveExportAnswerEvidenceIdx(q, answers, evidence);
+                        const ansCleaned = _cleanExportChoiceOptions(null, q.answerOptions, plain);
+                        const evCleaned = _cleanExportChoiceOptions(null, q.evidenceOptions, plain);
+                        let answers = ansCleaned.options;
+                        let evidence = evCleaned.options;
+                        let { answerIdx: answerKey, evidenceIdx: evidenceKey } = _resolveCleanedAnswerEvidenceIdx(q, ansCleaned, evCleaned);
+                        if (shuffleH5pChoices && answers.length >= 2 && evidence.length >= 2 && answerKey >= 0 && evidenceKey >= 0) {
+                            const shAns = _shuffleCleanedChoices(ansCleaned, 'h5p:ae-a:' + questionIndex + ':' + prompt);
+                            const remAns = shAns.cleanOrder.indexOf(answerKey);
+                            if (remAns >= 0) { answers = shAns.options; answerKey = remAns; }
+                            const shEv = _shuffleCleanedChoices(evCleaned, 'h5p:ae-e:' + questionIndex + ':' + prompt);
+                            const remEv = shEv.cleanOrder.indexOf(evidenceKey);
+                            if (remEv >= 0) { evidence = shEv.options; evidenceKey = remEv; }
+                        }
                         if (prompt && answers.length >= 2 && evidence.length >= 2 && answerKey >= 0 && evidenceKey >= 0) {
                             included = addMulti(prompt, answers, [answerKey]) && addMulti(plain(q.evidencePrompt) || 'Which evidence best supports the answer?', evidence, [evidenceKey]);
                             if (included) adapted += 1;
@@ -1530,12 +1938,25 @@ const createExport = (deps) => {
                     } else if (kind === 'numeric-response') {
                         const expected = Number(q.correctValue);
                         if (prompt && _hasExportNumericKey(q.correctValue)) {
-                            const units = [q.unit].concat(Array.isArray(q.acceptableUnits) ? q.acceptableUnits : []).map(plain).filter(Boolean);
-                            if (Number(q.tolerance) > 0) {
-                                included = addEssay(prompt + ' This exported item requires manual review because H5P exact-answer fields do not preserve numeric tolerance.', String(expected) + (plain(q.unit) ? ' ' + plain(q.unit) : '') + ' (±' + Number(q.tolerance) + ')');
+                            const rawTol = q.tolerance != null ? q.tolerance : q.numericSettings?.tolerance;
+                            const tol = Number(rawTol == null ? 0 : rawTol);
+                            const rawAccUnits = Array.isArray(q.acceptableUnits)
+                                ? q.acceptableUnits
+                                : (Array.isArray(q.numericSettings?.acceptableUnits) ? q.numericSettings.acceptableUnits : []);
+                            const units = [q.unit].concat(rawAccUnits).map(plain).filter((u, uIdx, arr) => u && arr.findIndex((c) => c.toLowerCase() === u.toLowerCase()) === uIdx);
+                            const requireUnit = Boolean(q.requireUnit === true || q.numericSettings?.requireUnit === true);
+                            if (tol > 0) {
+                                included = addEssay(prompt + ' This exported item requires manual review because H5P exact-answer fields do not preserve numeric tolerance.', String(expected) + (plain(q.unit) ? ' ' + plain(q.unit) : '') + ' (±' + tol + ')');
                                 if (included) manualReview += 1;
                             } else {
-                                included = addBlanks(prompt, units.length ? units.map((unit) => String(expected) + ' ' + unit) : [String(expected)]);
+                                const acceptedNumeric = !units.length
+                                    ? [String(expected)]
+                                    : (requireUnit ? units.map((unit) => String(expected) + ' ' + unit) : [String(expected)].concat(units.map((unit) => String(expected) + ' ' + unit)));
+                                included = addBlanks(prompt, acceptedNumeric);
+                                if (included && (q.requireReasoning || q.explanationPrompt)) {
+                                    addEssay((plain(q.explanationPrompt) || 'Explain your reasoning.') + ' (' + prompt + ')', plain(q.explanation || q.rubric || q.sampleAnswer || ''));
+                                    manualReview += 1;
+                                }
                             }
                             if (included) adapted += 1;
                         }
@@ -1566,6 +1987,7 @@ const createExport = (deps) => {
                 }
                 if (Array.isArray(src)) return src.flatMap(collectTerms);
                 if (typeof src === 'object') {
+                    if (src.isSelected === false || src.selected === false) return [];
                     if (src.term || src.word) return [plain(src.term || src.word)];
                     if (src.data || src.terms || src.items || src.entries || src.glossary) {
                         return collectTerms(src.data || src.terms || src.items || src.entries || src.glossary);
@@ -1583,7 +2005,12 @@ const createExport = (deps) => {
             };
             const _targetUnit = unitOfItem(generatedContent);
             const _targetFamily = familyOfItem(generatedContent);
-            const _histGlossaries = (Array.isArray(history) ? history : []).filter((h) => h && h.type === 'glossary').reverse();
+            const _h5pBuilderIds = Array.isArray(options.builderResourceIds)
+                ? options.builderResourceIds.map(String)
+                : (Array.isArray(effH5pCfg.builderResourceIds) ? effH5pCfg.builderResourceIds.map(String) : null);
+            const _histGlossaries = (Array.isArray(history) ? history : [])
+                .filter((h) => h && h.type === 'glossary' && (!_h5pBuilderIds || _h5pBuilderIds.includes(String(h.id || ''))))
+                .reverse();
             let _scopedGlossaries = [];
             if (_targetUnit || _targetFamily) {
                 const _inUnit = _histGlossaries.filter((g) => unitOfItem(g) === _targetUnit);
@@ -1617,7 +2044,7 @@ const createExport = (deps) => {
                         re = new RegExp('()(' + escapedTerm + ')', 'iu');
                     } else {
                         try {
-                            re = new RegExp('(^|[^\\p{L}\\p{N}_])(' + escapedTerm + ')(?=$|[^\\p{L}\\p{N}_])', 'iu');
+                            re = new RegExp('(^|[^\\p{L}\\p{M}\\p{N}_])(' + escapedTerm + ')(?=$|[^\\p{L}\\p{M}\\p{N}_])', 'iu');
                         } catch (_) {
                             re = new RegExp('(^|[^A-Za-z0-9_])(' + escapedTerm + ')(?=$|[^A-Za-z0-9_])', 'i');
                         }
@@ -1652,7 +2079,7 @@ const createExport = (deps) => {
                 const pairs = Array.isArray(nt.pairs) ? nt.pairs : (Array.isArray(nt.questions) ? nt.questions : []);
                 pairs.forEach((p) => {
                     const qText = typeof p === 'string' ? plain(p) : plain(p && (p.question || p.prompt || p.text));
-                    const aText = typeof p === 'object' && p ? plain(p.answer || p.sampleAnswer || '') : '';
+                    const aText = allowH5pSampleKey && typeof p === 'object' && p ? plain(p.answer || p.sampleAnswer || '') : '';
                     if (addEssay(qText, aText)) manualReview += 1;
                     else omitted += 1;
                 });
@@ -1660,18 +2087,21 @@ const createExport = (deps) => {
                 const rows = Array.isArray(nt.entries) ? nt.entries : (Array.isArray(nt.rows) ? nt.rows : []);
                 rows.forEach((row) => {
                     const quote = plain(row && (row.quote || row.passage || row.left || row.prompt));
-                    const sample = plain(row && (row.response || row.right || row.sampleAnswer || ''));
+                    const sample = allowH5pSampleKey ? plain(row && (row.response || row.right || row.sampleAnswer || '')) : '';
                     if (quote && addEssay('Respond to this passage or quote: ' + quote, sample)) manualReview += 1;
                     else omitted += 1;
                 });
-            } else if (templateType === 'outline' || Array.isArray(nt.sections)) {
-                const secs = Array.isArray(nt.sections) ? nt.sections : [];
+            } else if (templateType === 'outline' || Array.isArray(nt.sections) || Array.isArray(nt.branches)) {
+                const secs = Array.isArray(nt.sections) ? nt.sections : (Array.isArray(nt.branches) ? nt.branches : []);
                 secs.forEach((sec, si) => {
-                    const headingTxt = typeof sec === 'string' ? plain(sec) : plain(sec && (sec.heading || sec.title || sec.label)) || `Section ${si + 1}`;
+                    if (!sec) { omitted += 1; return; }
+                    const rawHeading = typeof sec === 'string' ? plain(sec) : plain(sec && (sec.heading || sec.title || sec.label));
                     const pts = sec && typeof sec === 'object'
-                        ? (Array.isArray(sec.prompts) ? sec.prompts : (Array.isArray(sec.items) ? sec.items : (Array.isArray(sec.bullets) ? sec.bullets : [])))
+                        ? (Array.isArray(sec.prompts) ? sec.prompts : (Array.isArray(sec.points) ? sec.points : (Array.isArray(sec.items) ? sec.items : (Array.isArray(sec.bullets) ? sec.bullets : []))))
                         : [];
-                    const sample = pts.map((pt) => plain(pt && typeof pt === 'object' ? (pt.text || pt.label || pt.prompt) : pt)).filter(Boolean).join('; ');
+                    if (!rawHeading && (!Array.isArray(pts) || pts.length === 0)) { omitted += 1; return; }
+                    const headingTxt = rawHeading || `Section ${si + 1}`;
+                    const sample = allowH5pSampleKey ? pts.map((pt) => plain(pt && typeof pt === 'object' ? (pt.text || pt.label || pt.prompt) : pt)).filter(Boolean).join('; ') : '';
                     if (addEssay('Outline notes for: ' + headingTxt, sample)) manualReview += 1;
                     else omitted += 1;
                 });
@@ -1686,17 +2116,17 @@ const createExport = (deps) => {
                 parts.forEach(([lbl, val]) => {
                     const v = plain(val);
                     if (v || lbl === 'Hypothesis' || lbl === 'Conclusion') {
-                        if (addEssay('Lab section — ' + lbl, v)) manualReview += 1;
+                        if (addEssay('Lab section — ' + lbl, allowH5pSampleKey ? v : '')) manualReview += 1;
                     }
                 });
             } else if (templateType === 'reading-response' || nt.favoriteLine || nt.thinkings || Array.isArray(nt.prompts)) {
                 const prompts = Array.isArray(nt.prompts) && nt.prompts.length
-                    ? nt.prompts.map((p, pi) => [`Prompt ${pi + 1}`, plain(p && typeof p === 'object' ? (p.prompt || p.question || p.text) : p), plain(p && typeof p === 'object' ? (p.answer || p.sampleAnswer || '') : '')])
+                    ? nt.prompts.map((p, pi) => [`Prompt ${pi + 1}`, plain(p && typeof p === 'object' ? (p.prompt || p.question || p.text) : p), allowH5pSampleKey && p && typeof p === 'object' ? plain(p.answer || p.sampleAnswer || '') : ''])
                     : [
-                        ['Favorite Line or Passage', 'Select a key line or passage and explain why it matters.', plain(nt.favoriteLine)],
-                        ['What This Made Me Think About', 'Record your key reactions and ideas from the reading.', plain(nt.thinkings)],
-                        ['Connection', 'Describe a connection to another idea, text, or experience.', plain(nt.connection && nt.connection.text)],
-                        ['One Question I Have', 'Write one lingering question you still want to explore.', plain(nt.question)],
+                        ['Favorite Line or Passage', 'Select a key line or passage and explain why it matters.', allowH5pSampleKey ? plain(nt.favoriteLine) : ''],
+                        ['What This Made Me Think About', 'Record your key reactions and ideas from the reading.', allowH5pSampleKey ? plain(nt.thinkings) : ''],
+                        ['Connection', 'Describe a connection to another idea, text, or experience.', allowH5pSampleKey ? plain(nt.connection && nt.connection.text) : ''],
+                        ['One Question I Have', 'Write one lingering question you still want to explore.', allowH5pSampleKey ? plain(nt.question) : ''],
                     ];
                 prompts.forEach((entry) => {
                     if (addEssay(entry[1] || entry[0], entry[2] || '')) manualReview += 1;
@@ -1709,13 +2139,13 @@ const createExport = (deps) => {
                     const cueTxt = plain(cues[ci] && typeof cues[ci] === 'object' ? (cues[ci].text || cues[ci].cue || cues[ci].label) : cues[ci]);
                     const noteTxt = plain(notes[ci] && typeof notes[ci] === 'object' ? (notes[ci].text || notes[ci].note || notes[ci].content) : notes[ci]);
                     const qPrompt = cueTxt || (noteTxt ? `Cornell Note ${ci + 1}` : '');
-                    if (qPrompt && addEssay(qPrompt, noteTxt)) manualReview += 1;
+                    if (qPrompt && addEssay(qPrompt, allowH5pSampleKey ? noteTxt : '')) manualReview += 1;
                 }
-                if (plain(nt.summary) && addEssay('Summary: Synthesize the main ideas from your Cornell notes.', plain(nt.summary))) manualReview += 1;
+                if (plain(nt.summary) && addEssay('Summary: Synthesize the main ideas from your Cornell notes.', allowH5pSampleKey ? plain(nt.summary) : '')) manualReview += 1;
             }
             if (!finalize(templateType === 'guided-notes' ? 'guided-notes' : 'study-notes')) return false;
         } else {            const rawData = generatedContent && generatedContent.data;
-            const rawCards = Array.isArray(rawData) ? rawData : (Array.isArray(rawData?.cards) ? rawData.cards : (Array.isArray(rawData?.items) ? rawData.items : []));
+            const rawCards = (Array.isArray(rawData) ? rawData : (Array.isArray(rawData?.terms) ? rawData.terms : (Array.isArray(rawData?.entries) ? rawData.entries : (Array.isArray(rawData?.words) ? rawData.words : (Array.isArray(rawData?.cards) ? rawData.cards : (Array.isArray(rawData?.items) ? rawData.items : [])))))).filter((c) => c && c.isSelected !== false && c.selected !== false);
             const dialogs = rawCards.map((card, index) => {
                 const front = plain(type === 'glossary' ? (card?.term ?? card?.word ?? card?.phrase) : (card?.front ?? card?.term ?? card?.question));
                 const back = plain(type === 'glossary' ? (card?.def ?? card?.definition ?? card?.meaning) : (card?.back ?? card?.definition ?? card?.answer));
@@ -1839,7 +2269,7 @@ const createExport = (deps) => {
             if (policyAdaptations.length) zip.file('alloflow-assessment-compatibility.json', JSON.stringify({ version: 1, format: 'H5P', adaptations: policyAdaptations }, null, 2));
             packagedAssets.forEach((asset) => zip.file(`content/${asset.path}`, asset.base64, { base64: true }));
             const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } });
-            const safeTitle = String(title || '').normalize('NFC').replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '').substring(0, 60) || 'alloflow';
+            const safeTitle = String(title || '').normalize('NFC').replace(/[^\p{L}\p{M}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '').substring(0, 60) || 'alloflow';
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
@@ -1874,7 +2304,9 @@ const createExport = (deps) => {
         }
         const _imsCfg = (options && options.exportConfig) || (liveRef.current && liveRef.current.exportConfig) || {};
         const _imsIsAssessment = _imsCfg.assessmentMode === true;
-        const _imsHideTeacher = _imsIsAssessment || _imsCfg.includeTeacherKey === false;
+        const _imsForceStudent = _imsIsAssessment || _imsCfg.audience === 'student' || _imsCfg.builderViewFilter === 'student' || options.audience === 'student';
+        const _imsWantTeacherKey = !_imsForceStudent && options.includeTeacherKey === true;
+        const _imsHideTeacher = !_imsWantTeacherKey;
         const _imsContract = typeof window !== 'undefined' ? window.AlloModules?.InstructionalContext : null;
         const _IMS_TYPE_TO_KEY = {
             'simplified': 'includeSimplified', 'analysis': 'includeAnalysis', 'glossary': 'includeGlossary',
@@ -1929,27 +2361,65 @@ const createExport = (deps) => {
         const _stripTeacherForIms = (htmlStr, assessmentMode) => {
             let out = String(htmlStr || '');
             if (!out.trim()) return out;
-            if (_imsHideTeacher || _imsCfg.audience === 'student' || _imsCfg.builderViewFilter === 'student' || options.audience === 'student') {
-                if (typeof DOMParser !== 'undefined') {
-                    try {
-                        const doc = new DOMParser().parseFromString(out, 'text/html');
-                        doc.querySelectorAll('.teacher-view,[data-allo-teacher-only]').forEach((sec) => {
-                            const prev = sec.previousElementSibling;
-                            if (prev && prev.classList && prev.classList.contains('page-break')) prev.remove();
-                            sec.remove();
+            const eh = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.ExportHandlers;
+            const sanFn = eh && (eh.sanitizeAssessmentStudentHtml || eh._alloSanitizeAssessmentStudentHtml);
+            if (_imsHideTeacher && typeof DOMParser !== 'undefined') {
+                try {
+                    const doc = new DOMParser().parseFromString(out, 'text/html');
+                    let domMutated = false;
+                    doc.querySelectorAll('.teacher-view,[data-allo-teacher-only]').forEach((sec) => {
+                        const prev = sec.previousElementSibling;
+                        if (prev && prev.classList && prev.classList.contains('page-break')) prev.remove();
+                        sec.remove();
+                        domMutated = true;
+                    });
+                    doc.querySelectorAll('.answer-key,.alloflow-teacher-copy-banner,.alloflow-cs-answer-key,.alloflow-glossary-worksheet-key,.alloflow-math-solution,.alloflow-fluency-key,.alloflow-teacher-plan,.alloflow-teacher-annotations,.alloflow-teacher-annotations-by-resource,.alloflow-teacher-notes,.alloflow-rubric-key,.alloflow-model-answer,.alloflow-sample-response,.alloflow-scoring-guide,#alloflow-interactive-object-profile,[data-teacher-note],[data-answer-key],[data-teacher-only],.teacher-only,.alloflow-gm-check-btn,.alloflow-gm-feedback,.alloflow-match-check-btn,.alloflow-match-feedback').forEach((n) => {
+                        n.remove();
+                        domMutated = true;
+                    });
+                    if (assessmentMode && typeof sanFn !== 'function') {
+                        doc.querySelectorAll('.quiz-results,.alloflow-score-bar,[data-allo-self-check-btn],.quiz-check-btn,.alloflow-cs-check-btn,.alloflow-cloze-check-btn,.alloflow-venn-check-btn,.alloflow-venn-check-button,.alloflow-match-check-btn,.alloflow-tl-check-btn,.alloflow-quiz-glyph').forEach((n) => {
+                            n.remove();
+                            domMutated = true;
                         });
-                        doc.querySelectorAll('.answer-key,.alloflow-teacher-copy-banner,.alloflow-cs-answer-key,.alloflow-glossary-worksheet-key,.alloflow-math-solution,.alloflow-fluency-key,.alloflow-teacher-plan,.alloflow-teacher-annotations,.alloflow-teacher-annotations-by-resource').forEach((n) => n.remove());
+                        doc.querySelectorAll('input,textarea,select').forEach((ctrl) => {
+                            const tg = String(ctrl.tagName || '').toLowerCase();
+                            const clsBefore = ctrl.className;
+                            ctrl.classList.remove('correct', 'incorrect', 'is-correct', 'is-wrong', 'revealed');
+                            if (ctrl.className !== clsBefore) domMutated = true;
+                            if (tg === 'input') {
+                                if (ctrl.hasAttribute('checked')) { ctrl.removeAttribute('checked'); domMutated = true; }
+                                if ((ctrl.type || '').toLowerCase() !== 'button' && (ctrl.type || '').toLowerCase() !== 'submit' && ctrl.hasAttribute('value')) { ctrl.removeAttribute('value'); domMutated = true; }
+                            } else if (tg === 'select') {
+                                ctrl.querySelectorAll('option[selected]').forEach((o) => { o.removeAttribute('selected'); domMutated = true; });
+                            } else if (tg === 'textarea') {
+                                if (ctrl.textContent) { ctrl.textContent = ''; domMutated = true; }
+                            }
+                        });
+                    }
+                    if (domMutated) {
                         if (/<html[\s>]/i.test(out) && doc.documentElement) {
                             out = (/^\s*<!DOCTYPE/i.test(out) ? '<!DOCTYPE html>\n' : '') + doc.documentElement.outerHTML;
                         } else if (doc.body) {
                             out = doc.body.innerHTML;
                         }
-                    } catch (_) {}
-                }
+                    }
+                } catch (_) {}
             }
-            const eh = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.ExportHandlers;
-            if (assessmentMode && eh && typeof eh._alloSanitizeAssessmentStudentHtml === 'function') {
-                out = eh._alloSanitizeAssessmentStudentHtml(out);
+            if (assessmentMode) {
+                if (typeof sanFn === 'function') {
+                    out = sanFn(out);
+                } else {
+                    out = out
+                        .replace(/ data-correct="[^"]*"/g, ' data-correct=""')
+                        .replace(/ data-fill-answers="[^"]*"/g, '')
+                        .replace(/ data-(?:correct-multi|sequence-key|relation-key|answer-evidence-key|numeric-key|cloze-answer|matching-key|ordering-key|expected-letter|answer-zone|correct-label|term-index|def-letter)="[^"]*"/g, '')
+                        .replace(/(<div[^>]*class="alloflow-cs-strip"[^>]*?) data-category-id="[^"]*"/g, '$1 data-category-id=""')
+                        .replace(/(<div[^>]*class="alloflow-tl-strip"[^>]*?) data-original-index="[^"]*"/g, '$1 data-original-index=""');
+                    if (/<\/head>/i.test(out) && !/id="alloflow-assessment-export-safety"/i.test(out)) {
+                        out = out.replace(/<\/head>/i, '<style id="alloflow-assessment-export-safety">.quiz-check-btn,.alloflow-cs-check-btn,.alloflow-cloze-check-btn,.alloflow-venn-check-btn,.alloflow-venn-check-button,.alloflow-match-check-btn,.alloflow-tl-check-btn,[data-allo-self-check-btn]{display:none !important}</style></head>');
+                    }
+                }
             }
             return out;
         };
@@ -2008,8 +2478,10 @@ const createExport = (deps) => {
                     return;
                 }
                 const _imsBaseCfg = _imsCfg;
-                const _imsStudentCfg = Object.assign({}, _imsBaseCfg, { annotations: [], includeTeacherKey: false, audience: 'student' });
-                const rawImsItemHtml = generateResourceHTML(item, false, studentResponses, _imsStudentCfg);
+                const _imsItemCfg = _imsWantTeacherKey
+                    ? Object.assign({}, _imsBaseCfg, { includeTeacherKey: true, audience: 'teacher' })
+                    : Object.assign({}, _imsBaseCfg, { annotations: [], includeTeacherKey: false, audience: 'student' });
+                const rawImsItemHtml = generateResourceHTML(item, false, studentResponses, _imsItemCfg);
                 const html = _stripTeacherForIms(rawImsItemHtml, _imsIsAssessment);
                 if (html && String(html).trim() !== '') {
                     packagedEntries.push({ item, html, profile, originalIndex });
@@ -2038,7 +2510,9 @@ const createExport = (deps) => {
         if (!liveHtml && typeof generateFullPackHTML === 'function') {
             try {
                 const included = packagedEntries.map((entry) => entry.item);
-                const _imsFullCfg = Object.assign({}, _imsCfg, { annotations: [], includeTeacherKey: false, audience: 'student' });
+                const _imsFullCfg = _imsWantTeacherKey
+                    ? Object.assign({}, _imsCfg, { includeTeacherKey: true, audience: 'teacher' })
+                    : Object.assign({}, _imsCfg, { annotations: [], includeTeacherKey: false, audience: 'student' });
                 const fullHtml = _stripTeacherForIms(String(generateFullPackHTML(included, sourceTopic, false, studentResponses, _imsFullCfg) || ''), _imsIsAssessment);
                 if (/<html[\s>]/i.test(fullHtml)) {
                     const includedItems = packagedEntries.map((entry) => safeManifestItem(entry.item, { originalIndex: entry.originalIndex }));
@@ -2239,20 +2713,46 @@ const createExport = (deps) => {
             }).map((e) => e.it);
         }
         // 'student' leaves activity answer keys and facilitation notes off the slides.
-        const slideAudience = (options.audience || exportConfig?.audience) === 'student' ? 'student' : 'teacher';
-        const showSlideAnswerKey = slideAudience !== 'student' && exportConfig?.assessmentMode !== true && exportConfig?.includeTeacherKey !== false && options.includeAnswerKey !== false;
-        const _teacherOnlySlides = new Set(['alignment-report', 'lesson-plan', 'udl-advice', 'analysis']);
+        const isAssessmentSlides = Boolean(options.assessmentMode === true || exportConfig?.assessmentMode === true);
+        const explicitSlideTeacherKey = options.includeTeacherKey !== undefined
+            ? Boolean(options.includeTeacherKey)
+            : (options.includeAnswerKey !== undefined
+                ? Boolean(options.includeAnswerKey)
+                : (exportConfig?.includeTeacherKey !== undefined
+                    ? Boolean(exportConfig.includeTeacherKey)
+                    : (exportConfig?.includeAnswerKey !== undefined ? Boolean(exportConfig.includeAnswerKey) : null)));
+        const slideAudience = (
+            isAssessmentSlides
+            || options.audience === 'student'
+            || exportConfig?.audience === 'student'
+            || exportConfig?.builderViewFilter === 'student'
+            || explicitSlideTeacherKey === false
+        ) ? 'student' : 'teacher';
+        const showSlideAnswerKey = slideAudience !== 'student' && !isAssessmentSlides && explicitSlideTeacherKey !== false;
+        const _teacherOnlySlides = new Set(['alignment-report', 'lesson-plan', 'udl-advice', 'analysis', 'gemini-bridge']);
         const history = _readingSourcePairsForExport(_rawHistory).filter((it) => !_slideToggleOff(it) && (showSlideAnswerKey || !_teacherOnlySlides.has(it?.type)));
         if (Object.prototype.hasOwnProperty.call(options, 'liveHtml')) {
             try {
                 if (typeof options.liveHtml !== 'string' || !options.liveHtml.trim()) throw new Error('The editable preview is not ready.');
+                let liveSlideHtml = options.liveHtml;
+                if (!showSlideAnswerKey && typeof DOMParser !== 'undefined') {
+                    try {
+                        const sdoc = new DOMParser().parseFromString(liveSlideHtml, 'text/html');
+                        sdoc.querySelectorAll('.teacher-view,[data-allo-teacher-only],[data-teacher-only],.teacher-only,.answer-key,.alloflow-teacher-copy-banner,.alloflow-cs-answer-key,.alloflow-glossary-worksheet-key,.alloflow-math-solution,.alloflow-fluency-key,.alloflow-teacher-plan,.alloflow-teacher-annotations,.alloflow-teacher-annotations-by-resource,#alloflow-interactive-object-profile,.alloflow-quiz-feedback,.alloflow-quiz-check-btn,.alloflow-gm-check-btn,.alloflow-gm-feedback,.alloflow-match-check-btn,.alloflow-match-feedback,.alloflow-teacher-notes,.alloflow-rubric-key,.alloflow-model-answer,.alloflow-sample-response,.alloflow-scoring-guide,[data-teacher-note],[data-answer-key]').forEach((n) => n.remove());
+                        if (/<html[\s>]/i.test(liveSlideHtml) && sdoc.documentElement) liveSlideHtml = (/^\s*<!DOCTYPE/i.test(liveSlideHtml) ? '<!DOCTYPE html>\n' : '') + sdoc.documentElement.outerHTML;
+                        else if (sdoc.body) liveSlideHtml = sdoc.body.innerHTML;
+                    } catch (_) {}
+                }
+                const eh = typeof window !== 'undefined' && window.AlloModules?.ExportHandlers;
+                const sanFn = eh && (eh.sanitizeAssessmentStudentHtml || eh._alloSanitizeAssessmentStudentHtml);
+                if (isAssessmentSlides && typeof sanFn === 'function') liveSlideHtml = sanFn(liveSlideHtml);
                 let api = window.AlloModules?.AccessibleOfficeExport;
                 if (!api?.build && typeof window.__alloEnsurePdfAuditView === 'function') {
                     await window.__alloEnsurePdfAuditView();
                     api = window.AlloModules?.AccessibleOfficeExport;
                 }
                 if (!api?.build) throw new Error('The document slide exporter is still loading. Please try again.');
-                const result = await api.build({ html: options.liveHtml, title: options.liveTitle || sourceTopic, format: 'pptx' });
+                const result = await api.build({ html: liveSlideHtml, title: options.liveTitle || sourceTopic, format: 'pptx' });
                 if (!result?.blob) throw new Error('The slide export did not produce a file.');
                 const url = URL.createObjectURL(result.blob), anchor = document.createElement('a');
                 try { anchor.href = url; anchor.download = result.fileName; document.body.appendChild(anchor); anchor.click(); }
@@ -2471,7 +2971,12 @@ const createExport = (deps) => {
                         });
                     }
                 } else if (type === 'glossary') {
-                    const entries = Array.isArray(item.data) ? item.data : [];
+                    const rawEntries = Array.isArray(item.data)
+                        ? item.data
+                        : (Array.isArray(item.data?.terms) ? item.data.terms
+                            : (Array.isArray(item.data?.items) ? item.data.items
+                                : (Array.isArray(item.data?.entries) ? item.data.entries : [])));
+                    const entries = rawEntries.filter((entry) => entry && entry.isSelected !== false && entry.selected !== false);
                     const glossaryRows = entries.map((entry) => {
                         const values = entry.translations;
                         const languages = values && typeof values === 'object' && !Array.isArray(values) ? Object.keys(values) : [];
@@ -2532,15 +3037,17 @@ const createExport = (deps) => {
                         if (!q) return '';
                         const qt = _normExportQuizType(q.type);
                         if (qt === 'mcq') {
-                            const opts = Array.isArray(q.options) ? q.options : [];
-                            const li = _resolveExportMcqIdx(q, opts);
+                            const cleaned = _cleanExportChoiceOptions(q, q.options, _exportQuizPlain);
+                            const opts = cleaned.options;
+                            const li = _resolveCleanedMcqIdx(q, cleaned);
                             const ans = li >= 0 ? opts[li] : (q.correctAnswer != null ? q.correctAnswer : q.answer);
-                            const txt = _exportQuizPlain(ans || '');
+                            const txt = _exportQuizPlain(ans != null ? ans : '');
                             return li >= 0 ? `${String.fromCharCode(65 + li)}) ${txt}` : txt;
                         }
                         if (qt === 'multi-select') {
-                            const opts = Array.isArray(q.options) ? q.options : [];
-                            const idxs = _resolveExportMultiIndices(q, opts);
+                            const cleaned = _cleanExportChoiceOptions(q, q.options, _exportQuizPlain);
+                            const opts = cleaned.options;
+                            const idxs = _resolveCleanedMultiIndices(q, cleaned);
                             if (idxs) return idxs.map((li) => `${String.fromCharCode(65 + li)}) ${_exportQuizPlain(opts[li])}`).join('; ');
                             return (Array.isArray(q.correctAnswers) ? q.correctAnswers : []).map((ans) => _exportQuizPlain(ans)).join('; ');
                         }
@@ -2549,9 +3056,11 @@ const createExport = (deps) => {
                         if (qt === 'matching') return (q.pairs || []).map((p) => p ? `${_exportQuizPlain(p.left || p.prompt || '')} -> ${_exportQuizPlain(p.right || p.match || p.answer || '')}` : '').filter(Boolean).join('; ');
                         if (qt === 'ordering' || qt === 'sequence-sense') return (Array.isArray(q.correctOrder) ? q.correctOrder : (q.items || [])).map((it) => _exportQuizPlain(it)).join(' -> ');
                         if (qt === 'answer-evidence') {
-                            const ansOpts = Array.isArray(q.answerOptions) ? q.answerOptions : [];
-                            const evOpts = Array.isArray(q.evidenceOptions) ? q.evidenceOptions : [];
-                            const { answerIdx, evidenceIdx } = _resolveExportAnswerEvidenceIdx(q, ansOpts, evOpts);
+                            const ansCleaned = _cleanExportChoiceOptions(q, q.answerOptions, _exportQuizPlain);
+                            const evCleaned = _cleanExportChoiceOptions(q, q.evidenceOptions, _exportQuizPlain);
+                            const ansOpts = ansCleaned.options;
+                            const evOpts = evCleaned.options;
+                            const { answerIdx, evidenceIdx } = _resolveCleanedAnswerEvidenceIdx(q, ansCleaned, evCleaned);
                             const ansVal = answerIdx >= 0 ? ansOpts[answerIdx] : (q.correctAnswer || q.expectedAnswer || '');
                             const evVal = evidenceIdx >= 0 ? evOpts[evidenceIdx] : (q.correctEvidence || q.expectedEvidence || '');
                             return [_exportQuizPlain(ansVal), evVal ? 'Evidence: ' + _exportQuizPlain(evVal) : ''].filter(Boolean).join(' | ');
@@ -2568,10 +3077,18 @@ const createExport = (deps) => {
                             x: 0.5, y: 1.0, w: 9, h: 1.2,
                             fontSize: 18, color: darkText, valign: 'top', fit: 'shrink', margin: 0.04,
                         });
-                        const optionCards = qt === 'answer-evidence' ? (Array.isArray(q.answerOptions) ? q.answerOptions : []) : (Array.isArray(q.options) ? q.options : []);
+                        const _pptxKeepMdOpt = (v) => {
+                            const raw = String(v == null ? '' : v).trim();
+                            return _exportQuizPlain(raw) ? raw : '';
+                        };
+                        const evList = qt === 'answer-evidence' ? _cleanExportChoiceOptions(q, q.evidenceOptions, _exportQuizPlain).options : [];
+                        const optionCards = qt === 'answer-evidence'
+                            ? _cleanExportChoiceOptions(q, q.answerOptions, _pptxKeepMdOpt).options
+                            : ((qt === 'mcq' || qt === 'multi-select') ? _cleanExportChoiceOptions(q, q.options, _pptxKeepMdOpt).options : []);
                         if (optionCards.length > 0) {
-                            const step = optionCards.length > 4 ? Math.min(0.7, 2.75 / optionCards.length) : 0.7;
-                            const boxH = Math.max(0.38, step - 0.14);
+                            const availH = evList.length ? 2.15 : 2.75;
+                            const step = (optionCards.length > 4 || evList.length) ? Math.min(0.65, availH / optionCards.length) : 0.7;
+                            const boxH = Math.max(0.36, step - 0.14);
                             optionCards.forEach((opt, idx) => {
                                 const yPos = 2.3 + (idx * step);
                                 slide.addShape(pptx.ShapeType.rect, {
@@ -2593,23 +3110,39 @@ const createExport = (deps) => {
                                     fontSize: optionCards.length > 4 ? 12 : 14, color: darkText, valign: 'middle', fit: 'shrink', margin: 0.03
                                 });
                             });
-                            if (qt === 'answer-evidence' && Array.isArray(q.evidenceOptions) && q.evidenceOptions.length) {
-                                slide.addText('Evidence: ' + q.evidenceOptions.map((ev, eIdx) => `${eIdx + 1}. ${_exportQuizPlain(ev)}`).join('   |   '), {
-                                    x: 1.0, y: 2.3 + (optionCards.length * step) + 0.05, w: 8, h: 0.6,
+                            if (evList.length) {
+                                const evY = Math.min(4.55, 2.3 + (optionCards.length * step) + 0.05);
+                                const evH = Math.max(0.45, 5.15 - evY);
+                                slide.addText('Evidence: ' + evList.map((ev, eIdx) => `${eIdx + 1}. ${_exportQuizPlain(ev)}`).join('   |   '), {
+                                    x: 1.0, y: evY, w: 8, h: evH,
                                     fontSize: 11, color: "475569", valign: 'top', fit: 'shrink',
+                                });
+                            } else if ((q.requireReasoning || q.explanationPrompt) && 2.3 + (optionCards.length * step) <= 4.65) {
+                                const rY = 2.3 + (optionCards.length * step) + 0.05;
+                                slide.addText(_exportQuizPlain(q.explanationPrompt || 'Explain your reasoning.'), {
+                                    x: 1.0, y: rY, w: 8, h: Math.min(0.55, 5.15 - rY),
+                                    fontSize: 11, italic: true, color: "475569", valign: 'top', fit: 'shrink',
                                 });
                             }
                         } else if (qt === 'matching' && Array.isArray(q.pairs)) {
+                            const rhsRaw = q.pairs.map((p) => p?.right || p?.match || p?.answer || '');
+                            const rhsShown = showSlideAnswerKey ? rhsRaw : _detShuffleList(rhsRaw, `pptx-match-${i}-${q.id || ''}`, (v) => _exportQuizPlain(v));
                             const lines = q.pairs.map((p, idx) => body(`${idx + 1}. ${_exportQuizPlain(p?.left || p?.prompt || '')}  ->  ____`)).concat(
-                                [body('Choices: ' + q.pairs.map((p, idx) => `${String.fromCharCode(65 + idx)}) ${_exportQuizPlain(p?.right || p?.match || p?.answer || '')}`).join('   '), 12)]
+                                [body('Choices: ' + rhsShown.map((r, idx) => `${String.fromCharCode(65 + idx)}) ${_exportQuizPlain(r)}`).join('   '), 12)]
                             );
                             slide.addText(lines, { x: 0.8, y: 2.3, w: 8.4, h: 2.7, valign: 'top', fit: 'shrink' });
                         } else if ((qt === 'ordering' || qt === 'sequence-sense') && Array.isArray(q.items)) {
                             const shown = qt === 'sequence-sense' && Array.isArray(q.presentedOrder) && q.presentedOrder.length === q.items.length
-                                ? q.presentedOrder.map((idx) => q.items[idx]) : q.items;
+                                ? q.presentedOrder.map((idx) => q.items[idx])
+                                : (showSlideAnswerKey ? q.items : _detShuffleList(q.items, `pptx-order-${i}-${q.id || ''}`, (v) => _exportQuizPlain(v)));
                             slide.addText(shown.map((it, idx) => body(`${idx + 1}. ${_exportQuizPlain(it)}`)), { x: 0.8, y: 2.3, w: 8.4, h: 2.7, valign: 'top', fit: 'shrink' });
                         } else if (qt === 'relation-mismatch' && Array.isArray(q.pairs)) {
-                            slide.addText(q.pairs.map((p, idx) => body(`${idx + 1}. ${_exportQuizPlain(p?.left || '')} - ${_exportQuizPlain(p?.right || '')}`)), { x: 0.8, y: 2.3, w: 8.4, h: 2.7, valign: 'top', fit: 'shrink' });
+                            const lines = q.pairs.map((p, idx) => body(`${idx + 1}. ${_exportQuizPlain(p?.left || '')} - ${_exportQuizPlain(p?.right || '')}`));
+                            if (Array.isArray(q.candidatePartners) && q.candidatePartners.length) {
+                                const shownPartners = showSlideAnswerKey ? q.candidatePartners : _detShuffleList(q.candidatePartners, `pptx-rm-${i}-${q.id || ''}`, (v) => _exportQuizPlain(v));
+                                lines.push(body('Candidate partners: ' + shownPartners.map(_exportQuizPlain).join('  |  '), 12));
+                            }
+                            slide.addText(lines, { x: 0.8, y: 2.3, w: 8.4, h: 2.7, valign: 'top', fit: 'shrink' });
                         } else {
                             const detailRuns = [];
                             if (qt === 'fill-blank' && Array.isArray(q.wordBank) && q.wordBank.length) detailRuns.push(body('Word bank: ' + q.wordBank.map(_exportQuizPlain).join(', '), 13));
@@ -2712,12 +3245,12 @@ const createExport = (deps) => {
                         const vennStyles = orderedVenn.length === 3
                             ? [{ fill: "DBEAFE", border: "93C5FD", titleColor: "1E40AF" }, { fill: "F3E8FF", border: "D8B4FE", titleColor: "6B21A8" }, { fill: "DCFCE7", border: "86EFAC", titleColor: "166534" }]
                             : [{ fill: "DBEAFE", border: "93C5FD", titleColor: "1E40AF" }, { fill: "DCFCE7", border: "86EFAC", titleColor: "166534" }];
-                        const _vennUnsorted = exportConfig?.assessmentMode === true
+                        const _vennUnsorted = isAssessmentSlides
                             || (exportConfig?.vennExportMode === 'activity' && !showSlideAnswerKey);
                         if (_vennUnsorted) {
                             const unsortedBank = _detShuffleList(
                                 orderedVenn.flatMap((b) => (Array.isArray(b && b.items) ? b.items : []).map(_outlineEntryText).map((s) => s.trim()).filter(Boolean)),
-                                `${item.id || 'venn'}:${exportConfig?.assessmentMode ? 'a' : 'w'}`,
+                                `${item.id || 'venn'}:${isAssessmentSlides ? 'a' : 'w'}`,
                                 (v) => v
                             );
                             const pageCount = Math.max(1, Math.ceil(unsortedBank.length / 12));
@@ -2754,8 +3287,9 @@ const createExport = (deps) => {
                                 : [{ fill: "E0E7FF", border: "A5B4FC", titleColor: "3730A3" }, { fill: "F1F5F9", border: "CBD5E1", titleColor: "334155" }];
                         renderOutlineColumns(branches, pairStyles);
                     } else if (/^memory\s+palace$/i.test(rawStruct)) {
+                        const hidePalaceMnemonics = isAssessmentSlides && !showSlideAnswerKey;
                         const store = item.data.memoryPalace && typeof item.data.memoryPalace === 'object' ? item.data.memoryPalace : {};
-                        const own = (exportConfig?.includeStudentResponses !== false && store.myMnemonics && typeof store.myMnemonics === 'object') ? store.myMnemonics : {};
+                        const own = (!hidePalaceMnemonics && exportConfig?.includeStudentResponses !== false && store.myMnemonics && typeof store.myMnemonics === 'object') ? store.myMnemonics : {};
                         const rooms = branches.map((b, bi) => ({
                             key: 'b' + bi,
                             title: (b && b.title) || ('Room ' + (bi + 1)),
@@ -2763,8 +3297,8 @@ const createExport = (deps) => {
                                 const lid = 'b' + bi + '_i' + li;
                                 const mnems = Array.isArray(b && b.mnemonics) ? b.mnemonics : [];
                                 const ownTxt = typeof own[lid] === 'string' ? own[lid].trim() : '';
-                                const mn = ownTxt || (mnems[li] != null ? String(mnems[li]).trim() : '');
-                                return { text: _outlineEntryText(it), mnemonic: mn, ownImage: !!ownTxt };
+                                const mn = hidePalaceMnemonics ? '' : (ownTxt || (mnems[li] != null ? String(mnems[li]).trim() : ''));
+                                return { text: _outlineEntryText(it), mnemonic: mn, ownImage: !hidePalaceMnemonics && !!ownTxt };
                             }).filter((l) => l.text || l.mnemonic),
                         }));
                         (Array.isArray(store.extraRooms) ? store.extraRooms : []).forEach((r, ri) => {
@@ -2780,8 +3314,8 @@ const createExport = (deps) => {
                             const lid = e.id != null ? String(e.id) : '';
                             const ownTxt = lid && typeof own[lid] === 'string' ? own[lid].trim() : '';
                             const txt = String(e.label != null ? e.label : (e.text || '')).trim();
-                            const mn = ownTxt || (e.mnemonic != null ? String(e.mnemonic).trim() : '');
-                            if (txt || mn) room.loci.push({ text: txt, mnemonic: mn, ownImage: !!ownTxt });
+                            const mn = hidePalaceMnemonics ? '' : (ownTxt || (e.mnemonic != null ? String(e.mnemonic).trim() : ''));
+                            if (txt || mn) room.loci.push({ text: txt, mnemonic: mn, ownImage: !hidePalaceMnemonics && !!ownTxt });
                         });
                         if (!rooms.length) { skipped.push(itemTitle); return; }
                         const pages = [];
@@ -2875,12 +3409,12 @@ const createExport = (deps) => {
                         });
                     }
                 } else if (type === 'concept-sort') {
-                    const rawCategories = Array.isArray(item.data && item.data.categories) ? item.data.categories.filter(Boolean) : [];
-                    const rawItems = Array.isArray(item.data && item.data.items) ? item.data.items.filter(Boolean) : [];
+                    const rawCategories = Array.isArray(item.data && item.data.categories) ? item.data.categories.filter((cat) => cat && cat.isSelected !== false && cat.selected !== false) : [];
+                    const rawItems = Array.isArray(item.data && item.data.items) ? item.data.items.filter((entry) => entry && entry.isSelected !== false && entry.selected !== false) : [];
                     if (!showSlideAnswerKey) {
                         const sortableItems = _detShuffleList(
                             rawItems.filter((entry) => entry.categoryId !== '__uncategorized'),
-                            `${item.id || 'cs'}:${exportConfig?.assessmentMode ? 'a' : 'w'}`,
+                            `${item.id || 'cs'}:${isAssessmentSlides ? 'a' : 'w'}`,
                             (entry) => (entry && (entry.text || entry.label || entry.content)) || ''
                         );
                         if (!rawCategories.length && !sortableItems.length) {
@@ -2985,7 +3519,7 @@ const createExport = (deps) => {
                             { text: rubric, options: { color: "713F12", fontSize: 11.5 } }
                         ], { x: 0.62, y: yPos + 0.04, w: 8.76, h: 0.64, valign: 'mid', fit: 'shrink', margin: 0.02 });
                     };
-                    const sfItems = Array.isArray(sf.items) ? sf.items.filter(Boolean) : [];
+                    const sfItems = Array.isArray(sf.items) ? sf.items.filter((entry) => entry && entry.isSelected !== false && entry.selected !== false) : [];
                     if (sf.mode === 'paragraph' || (!sfItems.length && sf.text)) {
                         const paraChunks = chunkText(clip(sf.text || '', 1800) || itemTitle, 700);
                         paraChunks.forEach((chunk, pIdx) => {
@@ -3116,8 +3650,10 @@ const createExport = (deps) => {
                         const c = card && typeof card === 'object' ? card : {};
                         const facts = listOf(c.essentialFacts || c.facts, 10);
                         const verified = !!(_memoryAidRules && typeof _memoryAidRules.isCardVerified === 'function' && _memoryAidRules.isCardVerified(c));
-                        const cueBlock = _memoryAidRules && typeof _memoryAidRules.cueBlock === 'function' ? _memoryAidRules.cueBlock(c) : null;
-                        const cue = c.cueNeedsReview ? '' : cueBlock ? clip(cueBlock.cue, 700) : clip(c.studentDraft || c.aiExample || c.scaffoldStarter, 700);
+                        const hideMemoryAidCues = isAssessmentSlides && !showSlideAnswerKey;
+                        const canShowSlideFacts = !hideMemoryAidCues && (verified || showSlideAnswerKey);
+                        const cueBlock = !hideMemoryAidCues && _memoryAidRules && typeof _memoryAidRules.cueBlock === 'function' ? _memoryAidRules.cueBlock(c) : null;
+                        const cue = (hideMemoryAidCues || c.cueNeedsReview) ? '' : cueBlock ? clip(cueBlock.cue, 700) : clip(c.studentDraft || c.aiExample || c.scaffoldStarter, 700);
                         const target = clip(c.target, 300) || _nsT('memory_aid.memory_target', 'Memory target');
                         const factsLabel = verified ? _nsT('memory_aid.facts_student_heading', 'Facts to remember') : _nsT('memory_aid.facts_pending_student_note', 'Your teacher is still checking these facts. Recall practice opens when they finish.');
                         const runs = [{ text: target, options: { fontSize: 20, bold: true, color: darkText, breakLine: true, bullet: false } }];
@@ -3133,9 +3669,11 @@ const createExport = (deps) => {
                             runs.push(heading(_nsT('memory_aid.coach_heading', 'Coach questions'), "5B21B6"));
                             cueBlock.prompts.forEach((prompt) => runs.push(bullet(clip(prompt, 500))));
                         }
-                        runs.push(heading(factsLabel, verified ? "166534" : "92400E"));
-                        facts.forEach((fact) => runs.push(bullet(fact)));
-                        const hook = _memoryAidRules && typeof _memoryAidRules.hookFact === 'function' ? _memoryAidRules.hookFact(c) : null;
+                        if (canShowSlideFacts) {
+                            runs.push(heading(factsLabel, verified ? "166534" : "92400E"));
+                            facts.forEach((fact) => runs.push(bullet(fact)));
+                        }
+                        const hook = !hideMemoryAidCues && _memoryAidRules && typeof _memoryAidRules.hookFact === 'function' ? _memoryAidRules.hookFact(c) : null;
                         if (hook) {
                             runs.push({ text: _nsT('memory_aid.hook_heading', 'Did you know?') + ' ' + clip(hook.text, 400), options: { fontSize: 12, color: "9A3412", breakLine: true, bullet: false, paraSpaceBefore: 6 } });
                             // Provenance travels with the claim, as it does in the view and the HTML lane.
@@ -3146,18 +3684,18 @@ const createExport = (deps) => {
                                 runs.push({ text: _nsT('memory_aid.hook_unsourced_note', 'Fun fact from AI knowledge. Ask your teacher if you want to check it.'), options: { fontSize: 10, color: "78716C", breakLine: true, bullet: false } });
                             }
                         }
-                        const connections = _memoryAidRules && typeof _memoryAidRules.activeConnections === 'function' ? _memoryAidRules.activeConnections(c) : [];
+                        const connections = canShowSlideFacts && _memoryAidRules && typeof _memoryAidRules.activeConnections === 'function' ? _memoryAidRules.activeConnections(c) : [];
                         const customCue = !(_memoryAidRules && typeof _memoryAidRules.customCue === 'function') || _memoryAidRules.customCue(c);
                         if (connections.length) connections.forEach(connection => {
                             const fact = facts[connection.factIndex];
                             if (fact) runs.push({ text: clip(connection.cue, 200) + ': ' + clip(fact, 600) + (connection.explanation ? ' ' + clip(connection.explanation, 600) : ''), options: { fontSize: 12, italic: true, color: "475569", breakLine: true, bullet: false, paraSpaceBefore: 6 } });
                         });
-                        else if (c.mapping && !c.cueNeedsReview && !customCue) runs.push({ text: clip(c.mapping, 500), options: { fontSize: 12, italic: true, color: "475569", breakLine: true, bullet: false, paraSpaceBefore: 6 } });
+                        else if (canShowSlideFacts && c.mapping && !c.cueNeedsReview && !customCue) runs.push({ text: clip(c.mapping, 500), options: { fontSize: 12, italic: true, color: "475569", breakLine: true, bullet: false, paraSpaceBefore: 6 } });
                         const cueNote = cue
                             || (cueBlock && cueBlock.steps.length ? cueBlock.steps.join(' ') : '')
                             || (cueBlock && cueBlock.visualDescription)
                             || (cueBlock && cueBlock.prompts.length ? cueBlock.prompts.join(' ') : '');
-                        addRichSlide(itemTitle + ' \u00B7 ' + (ci + 1) + '/' + cards.length, runs, target + '. ' + (cueNote ? cueNote + '. ' : '') + factsLabel + ': ' + facts.join('; '));
+                        addRichSlide(itemTitle + ' \u00B7 ' + (ci + 1) + '/' + cards.length, runs, target + '. ' + (cueNote ? cueNote + '. ' : '') + (canShowSlideFacts ? factsLabel + ': ' + facts.join('; ') : ''));
                     });
                 } else if (type === 'anchor-chart' && item.data && typeof item.data === 'object') {
                     // Anchor chart: one slide per section (or fallback summary slide); icons are skipped.
@@ -3248,7 +3786,7 @@ const createExport = (deps) => {
                         const heads = customHeads || (titleParts.length === 2 ? titleParts : [_nsT('note_taking.quote_column', 'Quote / Passage'), _nsT('note_taking.response_column', 'Response / Thinking')]);
                         if (!entries.length) { skipped.push(itemTitle); return; }
                         const header = heads.map((h) => ({ text: clip(h, 80), options: { bold: true, fill: "F1F5F9", color: darkText } }));
-                        const rows = entries.map((en) => [clip(en.quote, 320), clip(en.response, 480)]);
+                        const rows = entries.map((en) => [clip(en.quote, 320), showSlideAnswerKey ? clip(en.response, 480) : '________________________']);
                         for (let start = 0; start < rows.length; start += 6) {
                             const page = rows.slice(start, start + 6);
                             const slide = pptx.addSlide({ masterName: "MASTER_SLIDE" });
@@ -3261,29 +3799,34 @@ const createExport = (deps) => {
                         const mats = listOf((Array.isArray(nt.materials) ? nt.materials : []).map((m) => (m && m.text) || m), 8);
                         const procs = listOf((Array.isArray(nt.procedure) ? nt.procedure : []).map((p) => (p && p.text) || p), 8);
                         if (nt.question) { runs.push(heading(_nsT('note_taking.research_question', 'Research Question'))); runs.push(body(clip(nt.question, 400))); }
-                        if (nt.hypothesis) { runs.push(heading(_nsT('note_taking.hypothesis', 'Hypothesis'))); runs.push(body(clip(nt.hypothesis, 400))); }
+                        if (nt.hypothesis) { runs.push(heading(_nsT('note_taking.hypothesis', 'Hypothesis'))); runs.push(body(showSlideAnswerKey ? clip(nt.hypothesis, 400) : '________________________')); }
                         if (mats.length) { runs.push(heading(_nsT('note_taking.materials', 'Materials'))); mats.forEach((m) => runs.push(bullet(m))); }
                         if (procs.length) { runs.push(heading(_nsT('note_taking.procedure', 'Procedure'))); procs.forEach((p) => runs.push(bullet(p))); }
-                        if (nt.data) { runs.push(heading(_nsT('note_taking.data_observations', 'Data / Observations'))); runs.push(body(clip(nt.data, 500))); }
-                        if (nt.analysis) { runs.push(heading(_nsT('note_taking.analysis_label', 'Analysis (CER)'))); runs.push(body(clip(nt.analysis, 500))); }
-                        if (nt.conclusion) { runs.push(heading(_nsT('note_taking.conclusion', 'Conclusion'))); runs.push(body(clip(nt.conclusion, 500))); }
+                        if (nt.data) { runs.push(heading(_nsT('note_taking.data_observations', 'Data / Observations'))); runs.push(body(showSlideAnswerKey ? clip(nt.data, 500) : '________________________')); }
+                        if (nt.analysis) { runs.push(heading(_nsT('note_taking.analysis_label', 'Analysis (CER)'))); runs.push(body(showSlideAnswerKey ? clip(nt.analysis, 500) : '________________________')); }
+                        if (nt.conclusion) { runs.push(heading(_nsT('note_taking.conclusion', 'Conclusion'))); runs.push(body(showSlideAnswerKey ? clip(nt.conclusion, 500) : '________________________')); }
                         if (!runs.length) { skipped.push(itemTitle); return; }
                         addRichSlide(itemTitle, runs, runs.map((r) => r.text).join(' '));
                     } else if (tt === 'reading-response' || nt.favoriteLine || nt.thinkings) {
                         const runs = [];
-                        if (nt.favoriteLine) { runs.push(heading(_nsT('note_taking.favorite_line', 'Favorite Line or Passage'))); runs.push(body(clip(nt.favoriteLine, 500))); }
-                        if (nt.thinkings) { runs.push(heading(_nsT('note_taking.thinkings', 'What This Made Me Think About'))); runs.push(body(clip(nt.thinkings, 600))); }
-                        if (nt.connection && nt.connection.text) { runs.push(heading(_nsT('note_taking.connection', 'Connection'))); runs.push(body(clip(nt.connection.text, 500))); }
-                        if (nt.question) { runs.push(heading(_nsT('note_taking.one_question', 'One Question I Have'))); runs.push(body(clip(nt.question, 400))); }
+                        if (nt.favoriteLine) { runs.push(heading(_nsT('note_taking.favorite_line', 'Favorite Line or Passage'))); runs.push(body(showSlideAnswerKey ? clip(nt.favoriteLine, 500) : '________________________')); }
+                        if (nt.thinkings) { runs.push(heading(_nsT('note_taking.thinkings', 'What This Made Me Think About'))); runs.push(body(showSlideAnswerKey ? clip(nt.thinkings, 600) : '________________________')); }
+                        if (nt.connection && nt.connection.text) { runs.push(heading(_nsT('note_taking.connection', 'Connection'))); runs.push(body(showSlideAnswerKey ? clip(nt.connection.text, 500) : '________________________')); }
+                        if (nt.question) { runs.push(heading(_nsT('note_taking.one_question', 'One Question I Have'))); runs.push(body(showSlideAnswerKey ? clip(nt.question, 400) : '________________________')); }
                         if (!runs.length) { skipped.push(itemTitle); return; }
                         addRichSlide(itemTitle, runs, runs.map((r) => r.text).join(' '));
                     } else if (cues.length || notes.length || nt.summary) {
                         // Cornell-style notes: cue | notes table, then the summary.
                         const rowCount = Math.max(cues.length, notes.length);
                         const rows = [];
-                        for (let r = 0; r < rowCount; r += 1) rows.push([clip(cues[r] && (cues[r].text || cues[r]), 300), clip(notes[r] && (notes[r].text || notes[r]), 600)]);
-                        const filled = rows.filter((row) => row[0] || row[1]);
-                        const summary = clip(nt.summary, 1200);
+                        for (let r = 0; r < rowCount; r += 1) {
+                            const cueCell = clip(cues[r] && (cues[r].text || cues[r]), 300);
+                            const noteCell = clip(notes[r] && (notes[r].text || notes[r]), 600);
+                            if (cueCell || noteCell) rows.push([cueCell, showSlideAnswerKey ? noteCell : '________________________']);
+                        }
+                        const filled = rows;
+                        const hasSummary = Boolean(nt.summary && String(nt.summary).trim());
+                        const summary = showSlideAnswerKey ? clip(nt.summary, 1200) : (hasSummary ? '________________________' : '');
                         if (!filled.length && !summary) { skipped.push(itemTitle); return; }
                         const header = [
                             { text: _nsT('export.ppt_cue_col', 'Cue'), options: { bold: true, fill: "F1F5F9", color: darkText } },
@@ -3309,8 +3852,9 @@ const createExport = (deps) => {
                     const question = clip(brief.drivingQuestion || brief.question, 500);
                     const role = clip(brief.role, 200);
                     const audience = clip(brief.audience, 200);
-                    const facts = listOf(brief.lockedLessonFacts, 10);
                     const factsReviewed = brief.factVerified === true && brief.factLocked !== false;
+                    const canShowChallengeFacts = factsReviewed || showSlideAnswerKey;
+                    const facts = canShowChallengeFacts ? listOf(brief.lockedLessonFacts, 10) : [];
                     const factHeading = factsReviewed
                         ? _nsT('applied_challenge.brief.facts_verified', 'Teacher-verified lesson facts')
                         : _nsT('applied_challenge.brief.facts_pending', 'Lesson facts awaiting teacher review');
@@ -3465,13 +4009,43 @@ const createExport = (deps) => {
                     } else {
                         skipped.push(itemTitle);
                     }
+                } else if (type === 'flashcards' && item.data) {
+                    const fcList = Array.isArray(item.data)
+                        ? item.data
+                        : (Array.isArray(item.data.cards) ? item.data.cards : (Array.isArray(item.data.items) ? item.data.items : []));
+                    const cards = fcList.filter((fc) => fc != null && (typeof fc !== 'object' || (fc.isSelected !== false && fc.selected !== false))).map((fc) => {
+                        if (typeof fc === 'string' || typeof fc === 'number') return { front: clip(fc, 240), back: '' };
+                        const front = clip(fc.front || fc.term || fc.question || fc.word || '', 240);
+                        const back = showSlideAnswerKey ? clip(fc.back || fc.def || fc.definition || fc.answer || fc.meaning || '', 340) : '';
+                        return (front || back) ? { front, back } : null;
+                    }).filter(Boolean);
+                    if (!cards.length) { skipped.push(itemTitle); return; }
+                    for (let start = 0; start < cards.length; start += 4) {
+                        const chunk = cards.slice(start, start + 4);
+                        const slide = pptx.addSlide({ masterName: "MASTER_SLIDE" });
+                        addSlideTitle(slide, itemTitle + (start ? ' (Cont.)' : ''));
+                        chunk.forEach((card, idx) => {
+                            const col = idx % 2;
+                            const row = Math.floor(idx / 2);
+                            const x = 0.5 + col * 4.6;
+                            const y = 1.05 + row * 2.0;
+                            const w = 4.4;
+                            const h = 1.82;
+                            slide.addShape(pptx.ShapeType.rect, { x, y, w, h, fill: { color: "EEF2FF" }, line: { color: "6366F1", width: 1.25 } });
+                            const cardRuns = [];
+                            if (card.front) cardRuns.push({ text: card.front, options: { fontSize: 14, bold: true, color: "312E81", breakLine: Boolean(card.back) } });
+                            if (card.back) cardRuns.push({ text: card.back, options: { fontSize: 12, color: "334155" } });
+                            slide.addText(cardRuns, { x: x + 0.14, y: y + 0.1, w: w - 0.28, h: h - 0.2, valign: 'top', fit: 'shrink', margin: 0.04 });
+                        });
+                        addA11yNotes(slide, itemTitle, chunk.map((c) => c.back ? `${c.front}: ${c.back}` : c.front).join(' | '));
+                    }
                 } else if (type === 'word-wall' && item.data) {
                     const wwList = Array.isArray(item.data)
                         ? item.data
                         : (Array.isArray(item.data.words) ? item.data.words : (Array.isArray(item.data.terms) ? item.data.terms : (Array.isArray(item.data.items) ? item.data.items : [])));
                     const entries = wwList.map((w) => {
                         if (typeof w === 'string') return { term: clip(w, 120), def: '', ex: '' };
-                        if (!w || typeof w !== 'object') return null;
+                        if (!w || typeof w !== 'object' || w.isSelected === false || w.selected === false) return null;
                         const term = clip(w.word || w.term || w.label || '', 120);
                         const def = clip(w.definition || w.def || w.meaning || '', 300);
                         const ex = clip(w.example || w.sentence || w.context || '', 220);
@@ -3505,7 +4079,7 @@ const createExport = (deps) => {
                     });
                     if (lp.assessment || lp.closure) { runs.push(heading('Assessment / Closure')); runs.push(body(clip(lp.assessment || lp.closure, 400), 13)); }
                     if (!runs.length) {
-                        const lines = _summarizeResource ? _summarizeResource(item, { maxChars: 2400 }) : [];
+                        const lines = _summarizeResource ? _summarizeResource(item, { maxChars: 2400, hideAnswers: !showSlideAnswerKey, assessmentMode: isAssessmentSlides }) : [];
                         if (!lines.length) { skipped.push(itemTitle); return; }
                         addTextSlides(itemTitle, lines.join('\n'));
                     } else {
@@ -3531,7 +4105,7 @@ const createExport = (deps) => {
                         runs.push(bullet(`${label}${st}${sum}`));
                     });
                     if (!runs.length) {
-                        const lines = _summarizeResource ? _summarizeResource(item, { maxChars: 2400 }) : [];
+                        const lines = _summarizeResource ? _summarizeResource(item, { maxChars: 2400, hideAnswers: !showSlideAnswerKey, assessmentMode: isAssessmentSlides }) : [];
                         if (!lines.length) { skipped.push(itemTitle); return; }
                         addTextSlides(itemTitle, lines.join('\n'));
                     } else {
@@ -3546,13 +4120,13 @@ const createExport = (deps) => {
                     // the item is named in the toast rather than dropped silently.
                     const lines = typeof item.data === 'string'
                         ? [item.data]
-                        : (_summarizeResource ? _summarizeResource(item, { maxChars: 4000 }) : []);
+                        : (_summarizeResource ? _summarizeResource(item, { maxChars: 4000, hideAnswers: !showSlideAnswerKey, assessmentMode: isAssessmentSlides }) : []);
                     const text = lines.join('\n').trim();
                     if (!text) { skipped.push(itemTitle); return; }
                     addTextSlides(itemTitle, text);
                 }
             });
-            const cleanedTopic = sourceTopic ? String(sourceTopic).normalize('NFKC').replace(/[^\p{L}\p{N}]+/gu, '_').replace(/^_+|_+$/g, '').substring(0, 32) : '';
+            const cleanedTopic = sourceTopic ? String(sourceTopic).normalize('NFKC').replace(/[^\p{L}\p{M}\p{N}]+/gu, '_').replace(/^_+|_+$/g, '').substring(0, 32) : '';
             const safeTopic = cleanedTopic || 'Lesson';
             await pptx.writeFile({ fileName: `${t('export.filenames.slides_prefix')}-${safeTopic}.pptx` });
             addToast(t('export_status.ppt_success'), "success");
@@ -3571,6 +4145,19 @@ const createExport = (deps) => {
     };
 
     // ─── handleExportStorybook ────────────────────────────────────────
+    const _storybookStudentAiBlocked = (live) => {
+        const studentMode = Boolean(live && (live.isStudentMode === true || live.studentMode === true || live.isTeacherMode === false));
+        const hasWindow = typeof window !== 'undefined';
+        if (hasWindow) {
+            if (window.__alloStudentAiDisabled === true || window._alloQrBlocked === true) return true;
+            const gem = window.callGemini;
+            if (gem && gem._alloQrBlocked === true) return true;
+            if (studentMode && typeof window.__alloAiUsable === 'function') {
+                try { return !window.__alloAiUsable('text', gem); } catch (_) { return true; }
+            }
+        }
+        return studentMode;
+    };
     let storybookPreparing = false;
     const handleExportStorybook = async (rawOptions = false) => {
         if (storybookPreparing) return false;
@@ -3580,6 +4167,7 @@ const createExport = (deps) => {
         };
         const { includeImages, includeNarration } = options;
         const current = liveRef.current || {};
+        const studentAiBlocked = _storybookStudentAiBlocked(current);
         const {
             adventureState, sourceTopic, generatedContent,
             setShowStorybookExportModal, setIsProcessing,
@@ -3625,7 +4213,13 @@ const createExport = (deps) => {
                     });
                 }
             }
-            await _recoverStorybookPictures(fullStory, adventureState.imageCache, rehydrateHistoryWithImages, options, checkCancelled);
+            await _recoverStorybookPictures(
+                fullStory,
+                adventureState.imageCache,
+                rehydrateHistoryWithImages,
+                { ...options, allowRemoteImages: !studentAiBlocked },
+                checkCancelled
+            );
             checkCancelled();
             const historyText = fullStory.map((entry) => (
                 entry.type === 'scene' ? `Scene: ${entry.text}` :
@@ -3650,26 +4244,28 @@ const createExport = (deps) => {
               Return ONLY the narrative text.
             `;
             let summary = '', summaryWarning = '';
-            try {
-                if (includeNarration && typeof prepareStorybookSummary === 'function') {
-                    const preparedText = await prepareStorybookSummary({
-                        ownerApproved: true, resourceId: storyId,
-                        resourceType: 'adventure-storybook-read-aloud', adapterId: 'adventure-storybook-artifact', scopeId: 'story',
-                        // Include the full journey, even beyond the provider prompt limit.
-                        input: JSON.stringify([1, String(sourceTopic || 'General'), fullStory.map(entry => [entry.type, entry.text]), summaryLanguage]),
-                        prompt, signal: options.signal,
-                    });
-                    summary = preparedText.text;
-                    if (preparedText.recovery?.state === 'session-only') summaryWarning = 'The epilogue is available for this session but could not be saved on this device. Keep this page open to retry, or keep the download.';
-                } else {
-                    summary = String(await window.callGemini(prompt) || '').trim();
+            if (!studentAiBlocked) {
+                try {
+                    if (includeNarration && typeof prepareStorybookSummary === 'function') {
+                        const preparedText = await prepareStorybookSummary({
+                            ownerApproved: true, resourceId: storyId,
+                            resourceType: 'adventure-storybook-read-aloud', adapterId: 'adventure-storybook-artifact', scopeId: 'story',
+                            // Include the full journey, even beyond the provider prompt limit.
+                            input: JSON.stringify([1, String(sourceTopic || 'General'), fullStory.map(entry => [entry.type, entry.text]), summaryLanguage]),
+                            prompt, signal: options.signal,
+                        });
+                        summary = preparedText.text;
+                        if (preparedText.recovery?.state === 'session-only') summaryWarning = 'The epilogue is available for this session but could not be saved on this device. Keep this page open to retry, or keep the download.';
+                    } else {
+                        summary = String(await window.callGemini(prompt) || '').trim();
+                    }
+                    if (!summary) throw new Error('No Storybook epilogue was returned.');
+                } catch (error) {
+                    if (error?.name === 'AbortError' || error?.code === 'preparation-in-progress') throw error;
+                    checkCancelled();
+                    summaryWarning = 'The epilogue could not be prepared. Your complete journey is included; retry online to add the epilogue.';
+                    if (typeof warnLog === 'function') warnLog('Storybook epilogue unavailable', error);
                 }
-                if (!summary) throw new Error('No Storybook epilogue was returned.');
-            } catch (error) {
-                if (error?.name === 'AbortError' || error?.code === 'preparation-in-progress') throw error;
-                checkCancelled();
-                summaryWarning = 'The epilogue could not be prepared. Your complete journey is included; retry online to add the epilogue.';
-                if (typeof warnLog === 'function') warnLog('Storybook epilogue unavailable', error);
             }
             checkCancelled();
             if (summaryWarning && typeof addToast === 'function') addToast(summaryWarning, 'warning');
@@ -3688,11 +4284,17 @@ const createExport = (deps) => {
                 sceneTitle: 'Scene',
                 studentSpeaker: String(strUser || 'Student'),
             });
-            const exportLang = _exportLanguage();
-            const exportDir = _exportDirection();
+            const _storyLangRaw = (leveledTextLanguage && leveledTextLanguage !== 'original' && leveledTextLanguage !== 'same')
+                ? String(leveledTextLanguage)
+                : (currentUiLanguage ? String(currentUiLanguage) : '');
+            const _storyLangInfo = _storyLangRaw ? _glossaryLanguageInfo(_storyLangRaw) : null;
+            const exportLang = (_storyLangInfo && _storyLangInfo.tag) || _exportLanguage();
+            const exportDir = (_storyLangInfo && _storyLangInfo.dir && _storyLangInfo.dir !== 'auto')
+                ? _storyLangInfo.dir
+                : _exportDirection();
             const ts = Date.now();
             const createdAt = new Date(ts).toISOString();
-            const fileTitle = title.replace(/[^A-Za-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'adventure-storybook';
+            const fileTitle = title.normalize('NFC').replace(/[^\p{L}\p{M}\p{N}_-]+/gu, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'adventure-storybook';
             const htmlFilename = `${fileTitle}-storybook-${ts}.html`;
             const jsonFilename = `${fileTitle}-storybook-read-aloud-${ts}.json`;
             let readAloudArtifact = null;
@@ -3735,7 +4337,7 @@ const createExport = (deps) => {
                                 const numericSpeed = Number(voiceSpeed);
                                 const narrationSpeed = Number.isFinite(numericSpeed) && numericSpeed > 0 ? numericSpeed : 1;
                                 prepared = await prepareReadAloudArtifactAudio({
-                                    ownerApproved: true,
+                                    ownerApproved: !studentAiBlocked,
                                     recoverPreparedAudio: true,
                                     resourceId: storyId,
                                     resourceType: 'adventure-storybook-read-aloud',
@@ -3889,7 +4491,7 @@ const createExport = (deps) => {
                     .replace(/\{(omitted|external)\}/g, (_, key) => String(key === 'omitted' ? omittedPictureCount : externalPictureCount));
                 addToast(`${__alloT('export.storybook.pictures_not_embedded', 'Some Storybook pictures are not embedded. Their availability on another device is not verified.')} ${recoveryDetail}`, 'warning');
             }
-            const readerScript = `<script>(function(){var r=document.documentElement,b=document.body,sz=100;var tb=document.getElementById('reader-theme-btn'),sm=document.getElementById('reader-font-dec'),lg=document.getElementById('reader-font-inc'),pa=document.getElementById('reader-play-all');var themes=['paper','dark','contrast'];var ti=0;if(tb){tb.addEventListener('click',function(){ti=(ti+1)%themes.length;b.setAttribute('data-reader-theme',themes[ti]);tb.textContent='Theme: '+themes[ti].charAt(0).toUpperCase()+themes[ti].slice(1);});}function setSz(n){sz=Math.max(85,Math.min(150,n));r.style.fontSize=sz+'%';}if(sm){sm.addEventListener('click',function(){setSz(sz-10);});}if(lg){lg.addEventListener('click',function(){setSz(sz+10);});}if(pa){var clips=Array.prototype.slice.call(document.querySelectorAll('.narration-audio')),idx=0,playing=false;function stopAll(){playing=false;clips.forEach(function(a){try{a.pause();}catch(_){}});pa.textContent='Play all';}clips.forEach(function(a,i){a.addEventListener('ended',function(){if(!playing)return;if(i+1<clips.length){idx=i+1;clips[idx].scrollIntoView({behavior:'smooth',block:'center'});clips[idx].play().catch(stopAll);}else{stopAll();idx=0;}});});pa.addEventListener('click',function(){if(!clips.length)return;if(playing){stopAll();return;}playing=true;pa.textContent='Pause';if(idx>=clips.length)idx=0;clips[idx].scrollIntoView({behavior:'smooth',block:'center'});clips[idx].play().catch(stopAll);});}})();</script>`;
+            const readerScript = `<script>(function(){var r=document.documentElement,b=document.body,sz=100;var tb=document.getElementById('reader-theme-btn'),sm=document.getElementById('reader-font-dec'),lg=document.getElementById('reader-font-inc'),pa=document.getElementById('reader-play-all');var themes=['paper','dark','contrast'];var ti=0;function sbBehavior(){return window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth';}if(tb){tb.addEventListener('click',function(){ti=(ti+1)%themes.length;b.setAttribute('data-reader-theme',themes[ti]);tb.textContent='Theme: '+themes[ti].charAt(0).toUpperCase()+themes[ti].slice(1);});}function setSz(n){sz=Math.max(85,Math.min(150,n));r.style.fontSize=sz+'%';}if(sm){sm.addEventListener('click',function(){setSz(sz-10);});}if(lg){lg.addEventListener('click',function(){setSz(sz+10);});}if(pa){var clips=Array.prototype.slice.call(document.querySelectorAll('.narration-audio')),idx=0,playing=false;pa.setAttribute('aria-pressed','false');function stopAll(){playing=false;clips.forEach(function(a){try{a.pause();}catch(_){}});pa.textContent='Play all';pa.setAttribute('aria-pressed','false');}clips.forEach(function(a,i){a.addEventListener('ended',function(){if(!playing)return;if(i+1<clips.length){idx=i+1;clips[idx].scrollIntoView({behavior:sbBehavior(),block:'center'});clips[idx].play().catch(stopAll);}else{stopAll();idx=0;}});});pa.addEventListener('click',function(){if(!clips.length)return;if(playing){stopAll();return;}playing=true;pa.textContent='Pause';pa.setAttribute('aria-pressed','true');if(idx>=clips.length)idx=0;clips[idx].scrollIntoView({behavior:sbBehavior(),block:'center'});clips[idx].play().catch(stopAll);});}})();</script>`;
             const storyHtml = `
               <!DOCTYPE html>
               <html lang="${_escapeExportText(exportLang)}" dir="${exportDir}">
@@ -3903,10 +4505,10 @@ const createExport = (deps) => {
                       body[data-reader-theme="dark"] h1 { color: #f9fafb; }
                       body[data-reader-theme="dark"] .summary-box, body[data-reader-theme="dark"] .feedback { background: #1f2937; border-color: #374151; color: #e5e7eb; }
                       body[data-reader-theme="dark"] .epilogue-badge { background: #111827; color: #fcd34d; }
-                      body[data-reader-theme="dark"] .choice { color: #93c5fd; border-left-color: #60a5fa; }
+                      body[data-reader-theme="dark"] .choice { color: #93c5fd; border-inline-start-color: #60a5fa; }
                       body[data-reader-theme="dark"] .meta { color: #9ca3af; }
                       body[data-reader-theme="contrast"] { background: #000000; color: #ffffff; }
-                      body[data-reader-theme="contrast"] h1, body[data-reader-theme="contrast"] .choice { color: #fde047; border-left-color: #fde047; }
+                      body[data-reader-theme="contrast"] h1, body[data-reader-theme="contrast"] .choice { color: #fde047; border-inline-start-color: #fde047; }
                       body[data-reader-theme="contrast"] .summary-box, body[data-reader-theme="contrast"] .feedback { background: #000000; border: 2px solid #ffffff; color: #ffffff; }
                       body[data-reader-theme="contrast"] .epilogue-badge { background: #000000; color: #fde047; }
                       .cover { text-align: center; padding: 60px 0; border-bottom: 4px double #d4af37; margin-bottom: 40px; }
@@ -3916,16 +4518,19 @@ const createExport = (deps) => {
                       .epilogue-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #fffdf5; padding: 0 15px; color: #9a7620; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; font-size: 0.8em; }
                       .log-section { margin-top: 40px; }
                       .chapter { margin-bottom: 30px; page-break-inside: avoid; }
-                      .scene { margin-bottom: 10px; text-align: left; }
+                      .scene { margin-bottom: 10px; text-align: start; }
                       .scene-img { width: 100%; max-width: 600px; height: auto; display: block; margin: 0 auto 20px auto; border-radius: 4px; border: 4px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-                      .choice { margin: 10px 0 10px 20px; padding-left: 15px; border-left: 3px solid #3498db; font-family: sans-serif; font-weight: bold; color: #1f6695; font-size: 0.95em; }
-                      .feedback { margin: 10px 0 20px 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; color: #4b5563; font-size: 0.9em; font-style: italic; border: 1px solid #dce1e5; }
+                      .choice { margin: 10px 0 10px 0; margin-inline-start: 20px; padding-inline-start: 15px; border-inline-start: 3px solid #3498db; font-family: sans-serif; font-weight: bold; color: #1f6695; font-size: 0.95em; }
+                      .feedback { margin: 10px 0 20px 0; margin-inline-start: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; color: #4b5563; font-size: 0.9em; font-style: italic; border: 1px solid #dce1e5; }
                       .chapter-separator { text-align: center; color: #cbd5e1; margin: 20px 0; }
                       .narration-audio { display: block; width: min(100%, 34rem); margin: 0.75rem 0 1rem; }
-                      .reader-toolbar { position: fixed; top: 16px; right: 16px; z-index: 50; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; background: rgba(255,255,255,0.92); padding: 6px; border-radius: 999px; border: 1px solid #cbd5e1; box-shadow: 0 4px 12px rgba(0,0,0,0.12); backdrop-filter: blur(6px); }
-                      .reader-tool-btn, .print-btn { min-height: 40px; padding: 8px 14px; background: #2c3e50; color: white; border: none; border-radius: 999px; cursor: pointer; font-family: sans-serif; font-size: 13px; font-weight: bold; transition: transform 0.2s, background-color 0.2s; }
+                      .reader-toolbar { position: fixed; top: 16px; inset-inline-end: 16px; z-index: 50; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; background: rgba(255,255,255,0.92); padding: 6px; border-radius: 999px; border: 1px solid #cbd5e1; box-shadow: 0 4px 12px rgba(0,0,0,0.12); backdrop-filter: blur(6px); }
+                      .reader-tool-btn, .print-btn { min-width: 44px; min-height: 44px; padding: 8px 14px; background: #2c3e50; color: white; border: none; border-radius: 999px; cursor: pointer; font-family: sans-serif; font-size: 13px; font-weight: bold; transition: transform 0.2s, background-color 0.2s; }
                       .reader-tool-btn:hover, .print-btn:hover { transform: scale(1.03); background: #34495e; }
                       .reader-tool-btn:focus-visible, .print-btn:focus-visible { outline: 3px solid #f59e0b; outline-offset: 2px; }
+                      @media (prefers-reduced-motion: reduce) {
+                          .reader-tool-btn, .print-btn, .reader-tool-btn:hover, .print-btn:hover { transition: none !important; transform: none !important; }
+                      }
                       @media (max-width: 640px) {
                           body { padding: 16px; }
                           .cover { padding: 32px 0; }
@@ -4061,18 +4666,20 @@ const createExport = (deps) => {
             } else {
                 const printWindow = window.open('', '_blank');
                 if (printWindow) {
+                    try { printWindow.opener = null; } catch (_) {}
                     printWindow.document.write(storyHtml);
                     printWindow.document.close();
                 } else {
-                    const fallbackTitle = (adventureState.title || t('adventure.storybook_default_title') || 'Adventure')
-                        .replace(/[^a-z0-9]/gi, '_')
-                        .toLowerCase();
+                    const fallbackTitle = String(adventureState.title || t('adventure.storybook_default_title') || 'Adventure')
+                        .normalize('NFC')
+                        .replace(/[^\p{L}\p{M}\p{N}]+/gu, '_')
+                        .replace(/^_+|_+$/g, '')
+                        .toLowerCase() || 'adventure';
                     const fallbackFilename = `${fallbackTitle}_storybook.html`;
                     _downloadStorybookFile(storyHtml, 'text/html;charset=utf-8', fallbackFilename);
                     if (typeof addToast === 'function') {
                         addToast(t('adventure.storybook_popup_fallback') || t('adventure.storybook_toast_html') || t('adventure.storybook_toast_popup'), "info");
                     }
-                    return true;
                 }
             }
             _storybookProgress(options, { phase: 'complete', completed: 1, total: 1, message: 'Storybook ready.' });
@@ -4096,7 +4703,7 @@ const createExport = (deps) => {
     // such as ** and 2 ** 3. Those are meaningful glossary text, not empty fields.
     const _glossaryPlainText = value => {
         const source = typeof value === 'string' ? value : typeof value === 'number' || typeof value === 'boolean' ? String(value) : '';
-        const plain = text => text.replace(/(^|[^\p{L}\p{N}\\*])(\*{1,2})([^\s*](?:[^*]*[^\s*])?)\2(?!\*)/gu, '$1$3');
+        const plain = text => text.replace(/(^|[^\p{L}\p{M}\p{N}\\*])(\*{1,2})([^\s*](?:[^*]*[^\s*])?)\2(?!\*)/gu, '$1$3');
         let result = '', plainStart = 0, position = 0;
         // Only complete, equally sized delimiter runs form a code span. Bare
         // ticks (including an empty JavaScript template literal) remain text.
@@ -4260,7 +4867,14 @@ const createExport = (deps) => {
         const uiText = (key, fallback, params) => uiLabel(key, fallback, params).text;
         const audioOptions = exportOptions && typeof exportOptions === 'object' ? exportOptions : {};
         const cleanText = text => _escapeExportText(_glossaryPlainText(text));
-        const cards = Array.isArray(generatedContent.data) ? generatedContent.data.filter(item => item && item.term) : [];
+        const rawCardsData = Array.isArray(generatedContent.data)
+            ? generatedContent.data
+            : (Array.isArray(generatedContent.data?.terms) ? generatedContent.data.terms
+                : (Array.isArray(generatedContent.data?.items) ? generatedContent.data.items
+                    : (Array.isArray(generatedContent.data?.entries) ? generatedContent.data.entries : [])));
+        const cards = rawCardsData
+            .filter(item => item && item.isSelected !== false && item.selected !== false && (item.term || item.word))
+            .map(item => (item.term ? item : { ...item, term: item.word }));
         if (!cards.length) { if (addToast) addToast(uiText('flashcards.export_empty', 'Add glossary terms before exporting flashcards.'), 'info'); return; }
         // lang/dir for a card side written in a named language ("Arabic"), from
         // the host's language utilities. A name they do not know comes back as
@@ -4275,7 +4889,7 @@ const createExport = (deps) => {
         const titleAttrs = `lang="${_escapeExportText(titleLanguage.tag)}" dir="${titleLanguage.dir}"`;
         const titleText = _escapeExportText(deckTitle);
         const sideLangAttrs = (languageName) => {
-            if (!languageName) return ' lang="en" dir="ltr"';
+            if (!languageName) return ' dir="auto"';
             const info = _glossaryLanguageInfo(languageName);
             return ' lang="' + _escapeExportText(info.tag) + '" dir="' + info.dir + '"';
         };
@@ -4340,6 +4954,7 @@ function flashcardExportImageAlt(item) {
             .card-container {
                 position: relative;
                 display: flex;
+                flex-wrap: wrap;
                 border: 2px dashed #cbd5e1;
                 margin-bottom: 20px;
                 page-break-inside: avoid;
@@ -4423,8 +5038,12 @@ function flashcardExportImageAlt(item) {
         const instructionsLabel = uiLabel('flashcards.print_instructions', 'Instructions: Print single-sided. Cut along the dashed borders. Fold in the middle to create double-sided cards.');
         const printLabel = uiLabel('common.print', 'Print');
         const foldLabel = uiLabel('flashcards.fold_guide', 'FOLD HERE');
+        const fcFlipLabel = uiText('flashcards.study_flip', 'Flip');
+        const fcPracticeLabel = uiText('flashcards.study_needs_practice', 'Needs Practice');
+        const fcKnownLabel = uiText('flashcards.study_known', 'Known');
+        const fcSummaryTpl = uiText('flashcards.study_summary', '{visible} of {total} shown \u00b7 Known: {known} \u00b7 Needs practice: {practice}');
         let htmlBody = `
-            <div class="no-print" data-flashcard-toolbar style="background: #eef2ff; padding: 20px; border-radius: 8px; margin-bottom: 30px; text-align: center; border: 1px solid #c7d2fe;">
+            <div class="no-print" data-flashcard-toolbar data-fc-flip-label="${_escapeExportText(fcFlipLabel)}" data-fc-practice-label="${_escapeExportText(fcPracticeLabel)}" data-fc-known-label="${_escapeExportText(fcKnownLabel)}" data-fc-summary-tpl="${_escapeExportText(fcSummaryTpl)}" style="background: #eef2ff; padding: 20px; border-radius: 8px; margin-bottom: 30px; text-align: center; border: 1px solid #c7d2fe;">
                 <h1${titleLabel.attrs} style="margin-top:0; color: #3730a3; font-family: sans-serif;">${_escapeExportText(titleLabel.text)}</h1>
                 <p${instructionsLabel.attrs} style="color: #4338ca; font-family: sans-serif;">${_escapeExportText(instructionsLabel.text)}</p>
                 <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 12px; font-family: sans-serif;">
@@ -4509,6 +5128,8 @@ function flashcardExportImageAlt(item) {
                 : _escapeExportText(sourceLabels);
             const setHeader = uiLabel('flashcards.set_header', 'Study Set');
             const setLabel = `${header} <span${setHeader.attrs}>${_escapeExportText(setHeader.text)}</span>`;
+            const setKey = lang ? String(lang) : 'default';
+            htmlBody += `<section class="flashcard-set" data-fc-set="${_escapeExportText(setKey)}">`;
             htmlBody += `<h2 class="set-header">${titleText ? `<bdi class="set-title" ${titleAttrs}>${titleText}</bdi><span class="set-caption">${setLabel}</span>` : setLabel}</h2>`;
             setCards.forEach(item => {
                 let transTerm = "";
@@ -4585,6 +5206,7 @@ function flashcardExportImageAlt(item) {
                     </div>
                 `;
             });
+            htmlBody += `</section>`;
         };
         sets.forEach((set, index) => {
             if (index > 0) htmlBody += `<div style="page-break-before: always;"></div>`;
@@ -4617,8 +5239,10 @@ function flashcardExportImageAlt(item) {
                     .card-container.fc-back-hidden .back { display: none; }
                     .card-container[data-fc-filtered="1"] { display: none; }
                     .card-study-controls { width: 100%; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; padding: 6px 8px; border-top: 1px dashed #cbd5e1; background: #f8fafc; font-family: sans-serif; }
-                    .card-study-btn { border: 1px solid #cbd5e1; background: #fff; color: #334155; border-radius: 5px; padding: 4px 10px; font-size: 12px; font-weight: 600; cursor: pointer; }
+                    [data-flashcard-toolbar] button { min-height: 44px; min-width: 44px; }
+                    .card-study-btn { min-height: 44px; min-width: 44px; border: 1px solid #cbd5e1; background: #fff; color: #334155; border-radius: 5px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer; }
                     .card-study-btn[aria-pressed="true"] { background: #e0e7ff; border-color: #4f46e5; color: #1e1b4b; }
+                    [data-flashcard-toolbar] button:focus-visible, .card-study-btn:focus-visible { outline: 3px solid #1e1b4b; outline-offset: 2px; }
                     @media print {
                         body { padding: 0; margin: 0; max-width: 100%; }
                         .no-print { display: none !important; }
@@ -4639,6 +5263,11 @@ function flashcardExportImageAlt(item) {
                 <script data-flashcard-study>(function(){
                   var filter = 'all';
                   var flippedAll = false;
+                  var tb = document.querySelector('[data-flashcard-toolbar]');
+                  var lblFlip = (tb && tb.getAttribute('data-fc-flip-label')) || 'Flip';
+                  var lblPractice = (tb && tb.getAttribute('data-fc-practice-label')) || 'Needs Practice';
+                  var lblKnown = (tb && tb.getAttribute('data-fc-known-label')) || 'Known';
+                  var summaryTpl = (tb && tb.getAttribute('data-fc-summary-tpl')) || '{visible} of {total} shown \u00b7 Known: {known} \u00b7 Needs practice: {practice}';
                   var cards = Array.prototype.slice.call(document.querySelectorAll('.card-container'));
                   cards.forEach(function(card, idx){
                     card.setAttribute('data-fc-status', 'needs-practice');
@@ -4648,15 +5277,15 @@ function flashcardExportImageAlt(item) {
                     var flipBtn = document.createElement('button');
                     flipBtn.type = 'button'; flipBtn.className = 'card-study-btn';
                     flipBtn.setAttribute('data-card-study', 'flip'); flipBtn.setAttribute('aria-pressed', 'false');
-                    flipBtn.textContent = 'Flip';
+                    flipBtn.textContent = lblFlip;
                     var pracBtn = document.createElement('button');
                     pracBtn.type = 'button'; pracBtn.className = 'card-study-btn';
                     pracBtn.setAttribute('data-card-study', 'needs-practice'); pracBtn.setAttribute('aria-pressed', 'true');
-                    pracBtn.textContent = 'Needs Practice';
+                    pracBtn.textContent = lblPractice;
                     var knownBtn = document.createElement('button');
                     knownBtn.type = 'button'; knownBtn.className = 'card-study-btn';
                     knownBtn.setAttribute('data-card-study', 'known'); knownBtn.setAttribute('aria-pressed', 'false');
-                    knownBtn.textContent = 'Known';
+                    knownBtn.textContent = lblKnown;
                     bar.appendChild(flipBtn); bar.appendChild(pracBtn); bar.appendChild(knownBtn);
                     card.appendChild(bar);
                   });
@@ -4676,7 +5305,11 @@ function flashcardExportImageAlt(item) {
                       if (pb) pb.setAttribute('aria-pressed', st !== 'known' ? 'true' : 'false');
                     }
                     var sum = document.querySelector('[data-fc-summary]');
-                    if (sum) sum.textContent = visibleCount + ' of ' + allCards.length + ' shown \u00b7 Known: ' + knownCount + ' \u00b7 Needs practice: ' + practiceCount;
+                    if (sum) sum.textContent = summaryTpl
+                      .replace('{visible}', String(visibleCount))
+                      .replace('{total}', String(allCards.length))
+                      .replace('{known}', String(knownCount))
+                      .replace('{practice}', String(practiceCount));
                   }
                   document.addEventListener('click', function(e){
                     var actBtn = e.target && e.target.closest ? e.target.closest('[data-fc-action]') : null;
@@ -4692,14 +5325,27 @@ function flashcardExportImageAlt(item) {
                           if (fb) fb.setAttribute('aria-pressed', flippedAll ? 'true' : 'false');
                         }
                       } else if (act === 'shuffle'){
-                        var all = Array.prototype.slice.call(document.querySelectorAll('.card-container'));
-                        var parent = all.length ? all[0].parentNode : null;
-                        if (parent){
-                          for (var k = all.length - 1; k > 0; k--){
-                            var j = Math.floor(Math.random() * (k + 1));
-                            var tmp = all[k]; all[k] = all[j]; all[j] = tmp;
+                        var sets = document.querySelectorAll('[data-fc-set]');
+                        if (sets.length){
+                          for (var si = 0; si < sets.length; si++){
+                            var setNode = sets[si];
+                            var setCards = Array.prototype.slice.call(setNode.querySelectorAll('.card-container'));
+                            for (var k = setCards.length - 1; k > 0; k--){
+                              var j = Math.floor(Math.random() * (k + 1));
+                              var tmp = setCards[k]; setCards[k] = setCards[j]; setCards[j] = tmp;
+                            }
+                            setCards.forEach(function(node){ setNode.appendChild(node); });
                           }
-                          all.forEach(function(node){ parent.appendChild(node); });
+                        } else {
+                          var all = Array.prototype.slice.call(document.querySelectorAll('.card-container'));
+                          var parent = all.length ? all[0].parentNode : null;
+                          if (parent){
+                            for (var k2 = all.length - 1; k2 > 0; k2--){
+                              var j2 = Math.floor(Math.random() * (k2 + 1));
+                              var tmp2 = all[k2]; all[k2] = all[j2]; all[j2] = tmp2;
+                            }
+                            all.forEach(function(node){ parent.appendChild(node); });
+                          }
                         }
                       }
                       return;
@@ -4932,7 +5578,7 @@ function flashcardExportImageAlt(item) {
         list = Array.isArray(list) ? list : [];
         const entries = list.filter(item => item && typeof item === 'object' && _gxOneLine(item.term));
         if (scope === 'all') return entries;
-        if (scope === 'selected') return entries.filter(item => item.isSelected !== false);
+        if (scope === 'selected') return entries.filter(item => item.isSelected !== false && item.selected !== false);
         // Filters belong to the source object used to compute the visible rows.
         // A missing or stale filter never falls back to the complete glossary.
         if (scope !== 'filtered' || filteredGlossaryResource !== generatedContent || !Array.isArray(filteredGlossaryData)) return [];
@@ -4963,7 +5609,7 @@ function flashcardExportImageAlt(item) {
     // RFC 4180 quoting, and a leading ' on anything a spreadsheet would run as a formula.
     const _gxCsvCell = value => {
         let text = _gxPlain(value);
-        if (/^[=+\-@\t\r]/.test(text)) text = "'" + text;
+        if (/^[\s]*[=+\-@|]|^[\t\r\n]/.test(text)) text = "'" + text;
         return /[",\r\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
     };
     const _gxCsv = (entries, languages) => {
@@ -4988,7 +5634,7 @@ function flashcardExportImageAlt(item) {
         const { generatedContent } = liveRef.current || {};
         let title = '';
         try { title = String((generatedContent && generatedContent.title) || getDefaultTitle('glossary') || ''); } catch (_) { title = ''; }
-        const base = title.normalize('NFC').replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'glossary';
+        const base = title.normalize('NFC').replace(/[^\p{L}\p{M}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'glossary';
         const now = new Date();
         const pad = n => String(n).padStart(2, '0');
         return base + '-' + kind + '-' + now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate()) + '.' + extension;

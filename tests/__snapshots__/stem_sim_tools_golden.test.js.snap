@@ -405,13 +405,13 @@ exports[`science-sim + studio render goldens > renders + pins a digest for water
 
 exports[`science-sim + studio render goldens > renders + pins a digest for wave [mount] 1`] = `
 {
-  "buttons": 55,
+  "buttons": 57,
   "canvases": 1,
   "inputs": 8,
-  "lengthBucket": 187,
+  "lengthBucket": 196,
   "paths": 0,
   "selects": 0,
-  "sha": "948b154af314715d",
+  "sha": "f0efa51ebcd36b3a",
   "svgs": 0,
 }
 `;

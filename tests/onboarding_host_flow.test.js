@@ -24,7 +24,7 @@ const setterNames = [
   'IsSpecialistMode', 'GuidedMode', 'ShowEducatorHub', 'ShowLearningHub', 'ShowBehaviorLens',
   'ShowStudentEntry', 'PendingJoinCode', 'ShowWizard', 'WorkspacePane', 'ActiveSidebarTab',
   'ExpandedTools', 'IsTeacherMode', 'IsParentMode', 'IsIndependentMode', 'IsStudentLinkMode',
-  'IsAdventureStoryMode', 'GradeLevel', 'HasSelectedRole', 'HasSelectedMode', 'PendingRole',
+  'IsAdventureStoryMode', 'GradeLevel', 'SourceLevel', 'HasSelectedRole', 'HasSelectedMode', 'PendingRole',
   'IsGateOpen', 'IsAdminHubOpen', 'LaunchResume', 'RosterKey',
 ];
 
@@ -36,7 +36,7 @@ function fixture(extra = {}) {
     guidedMode: false, isTeacherMode: true, isParentMode: false, isIndependentMode: false,
     isSpecialistMode: false, isStudentLinkMode: false, pendingRole: null,
     hasSelectedMode: false, hasSelectedRole: false, isGateOpen: false,
-    expandedTools: ['analysis'], gradeLevel: '5th Grade',
+    expandedTools: ['analysis'], gradeLevel: '5th Grade', sourceLevel: '5th Grade',
     guidedSelectedIds: null, guidedStep: 0, guidedPlanBrief: null, _guidedSaved: null,
     guidedCompletedIds: [], guidedSkippedIds: [], guidedCreatedHistoryIds: [],
     guidedStarterRequestedRef: { current: false }, pendingRoleOptionsRef: { current: null },

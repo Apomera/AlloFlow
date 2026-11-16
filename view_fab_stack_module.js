@@ -1061,6 +1061,7 @@ function FabStack(props) {
       /* @__PURE__ */ React.createElement("div", { className: "alloflow-student-tools-body custom-scrollbar" }, activeView === "simplified" && generatedContent && /* @__PURE__ */ React.createElement("section", { className: "alloflow-student-tools-section px-4 py-3", "aria-labelledby": "alloflow-student-tools-read-heading" }, /* @__PURE__ */ React.createElement("div", { className: "mb-2 flex items-center justify-between gap-3" }, /* @__PURE__ */ React.createElement("h3", { id: "alloflow-student-tools-read-heading", className: "text-[11px] font-black uppercase tracking-[0.16em] text-slate-500" }, t("student_tools.read") || "Read"), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-semibold text-slate-600" }, t("simplified.mode_label"))), /* @__PURE__ */ React.createElement("div", { className: "alloflow-student-tools-grid" }, /* @__PURE__ */ React.createElement(
         "button",
         {
+          type: "button",
           "data-student-tool": "true",
           onClick: () => {
             setInteractionMode("read");
@@ -1080,6 +1081,7 @@ function FabStack(props) {
       ), /* @__PURE__ */ React.createElement(
         "button",
         {
+          type: "button",
           "data-student-tool": "true",
           onClick: () => {
             setInteractionMode("define");
@@ -1098,6 +1100,7 @@ function FabStack(props) {
       ), !studentAiFeaturesHidden && /* @__PURE__ */ React.createElement(
         "button",
         {
+          type: "button",
           "data-student-tool": "true",
           "data-help-toggle": "true",
           onClick: () => {
@@ -1115,6 +1118,7 @@ function FabStack(props) {
       ))), /* @__PURE__ */ React.createElement("section", { className: "alloflow-student-tools-section px-4 py-3", "aria-labelledby": "alloflow-student-tools-focus-heading" }, /* @__PURE__ */ React.createElement("h3", { id: "alloflow-student-tools-focus-heading", className: "mb-2 text-[11px] font-black uppercase tracking-[0.16em] text-slate-500" }, t("student_tools.focus") || "Focus"), /* @__PURE__ */ React.createElement("div", { className: "alloflow-student-tools-grid" }, /* @__PURE__ */ React.createElement(
         "button",
         {
+          type: "button",
           "data-student-tool": "true",
           onClick: handleToggleReadingRuler,
           className: `alloflow-student-tool transition-colors shadow-sm motion-reduce:transition-none ${readingRuler ? "bg-indigo-100 text-indigo-700 ring-2 ring-indigo-500" : "bg-white text-slate-700 hover:bg-slate-50"}`,
@@ -1155,6 +1159,7 @@ function FabStack(props) {
       )))), /* @__PURE__ */ React.createElement("p", { id: "student-tools-magnifier-keys", className: "mt-1 text-[11px] text-slate-600" }, magnifierKeysHint)), /* @__PURE__ */ React.createElement(
         "button",
         {
+          type: "button",
           "data-student-tool": "true",
           onClick: handleSetShowStudyTimerModalToTrue,
           className: `alloflow-student-tool transition-colors shadow-sm motion-reduce:transition-none ${isStudyTimerRunning ? "bg-green-100 text-green-800 ring-2 ring-green-500" : "bg-white text-slate-700 hover:bg-slate-50"}`,
@@ -1168,6 +1173,7 @@ function FabStack(props) {
       ), /* @__PURE__ */ React.createElement(
         "button",
         {
+          type: "button",
           "data-student-tool": "true",
           onClick: handleToggleFocusMode,
           className: `alloflow-student-tool transition-colors shadow-sm motion-reduce:transition-none ${focusMode ? "bg-indigo-100 text-indigo-700 ring-2 ring-indigo-500" : "bg-white text-slate-700 hover:bg-slate-50"}`,
@@ -1182,6 +1188,7 @@ function FabStack(props) {
       ), /* @__PURE__ */ React.createElement(
         "button",
         {
+          type: "button",
           "data-student-tool": "true",
           onClick: handleToggleVisualSupports,
           className: `alloflow-student-tool transition-colors shadow-sm motion-reduce:transition-none ${showVisualSupports ? "bg-purple-100 text-purple-700 ring-2 ring-purple-500" : "bg-white text-slate-700 hover:bg-slate-50"}`,
@@ -1194,6 +1201,7 @@ function FabStack(props) {
       ), activeView === "simplified" && /* @__PURE__ */ React.createElement(
         "button",
         {
+          type: "button",
           "data-student-tool": "true",
           onClick: () => {
             setIsLineFocusMode(!isLineFocusMode);
@@ -1211,6 +1219,7 @@ function FabStack(props) {
       ))), showInputAndPractice && /* @__PURE__ */ React.createElement("section", { className: "alloflow-student-tools-section px-4 py-3", "aria-labelledby": "alloflow-student-tools-input-heading" }, /* @__PURE__ */ React.createElement("h3", { id: "alloflow-student-tools-input-heading", className: "mb-2 text-[11px] font-black uppercase tracking-[0.16em] text-slate-500" }, t("student_tools.input_practice") || "Input & practice"), /* @__PURE__ */ React.createElement("div", { className: "alloflow-student-tools-grid" }, !isTeacherMode && !studentAiFeaturesHidden && studentProjectSettings.allowSocraticTutor && /* @__PURE__ */ React.createElement(
         "button",
         {
+          type: "button",
           "data-student-tool": "true",
           onClick: handleToggleShowSocraticChat,
           className: `alloflow-student-tool transition-colors shadow-sm motion-reduce:transition-none ${showSocraticChat ? "bg-teal-700 text-white ring-2 ring-teal-400" : "bg-teal-100 text-teal-800 hover:bg-teal-200"}`,
@@ -1224,6 +1233,7 @@ function FabStack(props) {
       ), activeView === "simplified" && generatedContent && /* @__PURE__ */ React.createElement(
         "button",
         {
+          type: "button",
           "data-student-tool": "true",
           onClick: handleSetIsSyntaxGameToTrue,
           className: "alloflow-student-tool border-orange-200 bg-orange-100 text-orange-900 shadow-sm transition-colors hover:bg-orange-200 motion-reduce:transition-none",

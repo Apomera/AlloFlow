@@ -50,32 +50,203 @@ function EndSessionPreview({
       return String(fallback || '');
     }
   };
+  const fallbackDialogRef = React.useRef(null);
+  const effectiveDialogRef = dialogRef || fallbackDialogRef;
+  const endPreviewStateRef = React.useRef({
+    preview,
+    onKeepOpen
+  });
+  endPreviewStateRef.current = {
+    preview,
+    onKeepOpen
+  };
   React.useEffect(() => {
+    const dialog = effectiveDialogRef && effectiveDialogRef.current;
+    if (!dialog || typeof document === 'undefined') return undefined;
     let focusTimer = null;
+    const prevFocus = document.activeElement;
+    const trap = {
+      root: dialog
+    };
+    const stack = typeof window !== 'undefined' ? window.__alloFocusTrapStack = window.__alloFocusTrapStack || [] : null;
+    if (stack) stack.push(trap);
+    const isTopTrap = () => !stack || stack[stack.length - 1] === trap;
+    const isolated = [];
+    const seenSiblings = new Set();
+    let cursor = dialog;
+    while (cursor && cursor.parentElement) {
+      const parent = cursor.parentElement;
+      Array.from(parent.children).forEach(sibling => {
+        if (!sibling || sibling === cursor || seenSiblings.has(sibling) || !sibling.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName)) return;
+        seenSiblings.add(sibling);
+        isolated.push({
+          sibling,
+          hadInert: sibling.hasAttribute('inert'),
+          prevInert: sibling.inert,
+          ariaHidden: sibling.getAttribute('aria-hidden')
+        });
+        try {
+          sibling.inert = true;
+        } catch (_) {}
+        try {
+          sibling.setAttribute('inert', '');
+        } catch (_) {}
+        try {
+          sibling.setAttribute('aria-hidden', 'true');
+        } catch (_) {}
+      });
+      if (parent === document.body) break;
+      cursor = parent;
+    }
+    const body = document.body;
+    const scrollLock = typeof window !== 'undefined' ? window.__alloScrollLockState || (window.__alloScrollLockState = {
+      count: 0,
+      prev: ''
+    }) : null;
+    let scrollLocked = false;
+    try {
+      if (body && scrollLock) {
+        scrollLocked = true;
+        if (++scrollLock.count === 1) {
+          scrollLock.prev = body.style.overflow;
+          body.style.overflow = 'hidden';
+        }
+      }
+    } catch (_) {}
     try {
       focusTimer = window.setTimeout(() => {
         try {
-          if (!dialogRef || !dialogRef.current) return;
-          dialogRef.current.scrollTop = 0;
-          dialogRef.current.focus({
+          if (!effectiveDialogRef || !effectiveDialogRef.current) return;
+          effectiveDialogRef.current.scrollTop = 0;
+          effectiveDialogRef.current.focus({
             preventScroll: true
           });
         } catch (_) {}
       }, 0);
     } catch (_) {}
+    const getFocusable = root => Array.from(root.querySelectorAll('a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), summary, [tabindex]:not([tabindex="-1"])')).filter(el => {
+      if (el.disabled || el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      let ancestor = el.parentElement;
+      while (ancestor && ancestor !== root) {
+        if (ancestor.matches && ancestor.matches('details:not([open])')) {
+          const directSummary = ancestor.querySelector(':scope > summary');
+          if (el !== directSummary) return false;
+        }
+        ancestor = ancestor.parentElement;
+      }
+      const st = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(el) : null;
+      return !st || st.display !== 'none' && st.visibility !== 'hidden';
+    });
+    const onKeyDown = event => {
+      if (event.defaultPrevented) return;
+      if (!dialog.isConnected || !isTopTrap()) return;
+      if (event.key === 'Escape') {
+        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+        event.preventDefault();
+        const latest = endPreviewStateRef.current;
+        if (!(latest.preview && (latest.preview.busy || latest.preview.followUpBusy)) && typeof latest.onKeepOpen === 'function') {
+          latest.onKeepOpen();
+        }
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const items = getFocusable(dialog);
+      if (!items.length) {
+        event.preventDefault();
+        try {
+          dialog.focus({
+            preventScroll: true
+          });
+        } catch (_) {}
+        return;
+      }
+      const first = items[0],
+        last = items[items.length - 1];
+      if (!dialog.contains(document.activeElement) || document.activeElement === dialog) {
+        event.preventDefault();
+        try {
+          (event.shiftKey ? last : first).focus({
+            preventScroll: true
+          });
+        } catch (_) {}
+      } else if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        try {
+          last.focus({
+            preventScroll: true
+          });
+        } catch (_) {}
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        try {
+          first.focus({
+            preventScroll: true
+          });
+        } catch (_) {}
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
     return () => {
       try {
         if (focusTimer !== null) window.clearTimeout(focusTimer);
       } catch (_) {}
+      document.removeEventListener('keydown', onKeyDown);
+      try {
+        if (scrollLocked && body && scrollLock) {
+          scrollLock.count = Math.max(0, scrollLock.count - 1);
+          if (scrollLock.count === 0) body.style.overflow = scrollLock.prev;
+        }
+      } catch (_) {}
+      isolated.forEach(({
+        sibling,
+        hadInert,
+        prevInert,
+        ariaHidden
+      }) => {
+        if (!sibling || !sibling.isConnected) return;
+        if (!hadInert) {
+          try {
+            sibling.inert = false;
+          } catch (_) {}
+          try {
+            sibling.removeAttribute('inert');
+          } catch (_) {}
+        } else {
+          try {
+            sibling.inert = Boolean(prevInert);
+          } catch (_) {}
+        }
+        if (ariaHidden == null) {
+          try {
+            sibling.removeAttribute('aria-hidden');
+          } catch (_) {}
+        } else {
+          try {
+            sibling.setAttribute('aria-hidden', ariaHidden);
+          } catch (_) {}
+        }
+      });
+      const wasTopTrap = isTopTrap();
+      if (stack) {
+        const idx = stack.lastIndexOf(trap);
+        if (idx >= 0) stack.splice(idx, 1);
+      }
+      if (wasTopTrap && prevFocus && prevFocus !== document.body && prevFocus !== document.documentElement && prevFocus.isConnected && typeof prevFocus.focus === 'function') {
+        try {
+          prevFocus.focus({
+            preventScroll: true
+          });
+        } catch (_) {}
+      }
     };
-  }, [dialogRef]);
+  }, [effectiveDialogRef]);
 
   // Keep the extracted markup readable while exposing only the minimum host
   // controller surface. No roster identities or session transport objects cross
   // this presentation boundary.
   const endSessionPreview = preview;
   const endSessionNote = note;
-  const endSessionPreviewRef = dialogRef;
+  const endSessionPreviewRef = effectiveDialogRef;
   const setEndSessionNote = onNoteChange;
   const sendEndSessionEvidenceCohort = onSendCohort;
   const completeLiveSessionEnd = onComplete;

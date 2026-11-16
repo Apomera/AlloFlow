@@ -135,6 +135,17 @@ function EducatorHubModal(props) {
     // AI assist). Optional default so a host that hasn't wired it still renders.
     openWhiteboard = (() => {}),
   } = props;
+  const tr = (key, fallback, params) => {
+    let out = fallback;
+    try {
+      const value = typeof t === 'function' ? t(key, params) : '';
+      if (value && value !== key) out = value;
+    } catch (_) {}
+    if (params && typeof out === 'string') {
+      Object.keys(params).forEach((k) => { out = out.split('{' + k + '}').join(String(params[k])); });
+    }
+    return out;
+  };
   const dialogRef = React.useRef(null);
   const pdfBatchIntakeRef = React.useRef(null);
   const educatorHubMountedRef = React.useRef(true);
@@ -152,7 +163,7 @@ function EducatorHubModal(props) {
     if (typeof job.cancelRead === 'function') job.cancelRead();
     if (pdfBatchIntakeRef.current === job) pdfBatchIntakeRef.current = null;
     _setPdfBatchIntakeProgressIfMounted(null);
-    if (notify !== false) addToast('PDF batch preparation cancelled.', 'info');
+    if (notify !== false) addToast(tr('educator_hub.pdf_batch_cancelled', 'PDF batch preparation cancelled.'), 'info');
   };
   React.useEffect(function () {
     _loadEducatorAlloSheetBridge().catch(() => {});
@@ -171,6 +182,8 @@ function EducatorHubModal(props) {
       if (pdfBatchIntakeRef.current === job) pdfBatchIntakeRef.current = null;
     };
   }, []);
+  const closeHandlerRef = React.useRef(setShowEducatorHub);
+  closeHandlerRef.current = setShowEducatorHub;
   React.useEffect(function () {
     const dialog = dialogRef.current;
     if (!dialog) return undefined;
@@ -178,6 +191,25 @@ function EducatorHubModal(props) {
     const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
     const trap = { root: dialog };
     trapStack.push(trap);
+    const isolated = [];
+    const seenSiblings = new Set();
+    let cursor = dialog;
+    while (cursor && cursor.parentElement) {
+      const parent = cursor.parentElement;
+      Array.from(parent.children).forEach(function (sibling) {
+        if (!sibling || sibling === cursor || seenSiblings.has(sibling) || !sibling.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName)) return;
+        seenSiblings.add(sibling);
+        const hadInert = sibling.hasAttribute('inert');
+        const prevInert = sibling.inert;
+        const ariaHidden = sibling.getAttribute('aria-hidden');
+        isolated.push({ sibling, hadInert, prevInert, ariaHidden });
+        try { sibling.inert = true; } catch (_) {}
+        try { sibling.setAttribute('inert', ''); } catch (_) {}
+        try { sibling.setAttribute('aria-hidden', 'true'); } catch (_) {}
+      });
+      if (parent === document.body) break;
+      cursor = parent;
+    }
     // Ref-counted shared body scroll lock — see window.__alloScrollLockState.
     // Without it the page behind the hub scrolls under a touch drag, which on
     // a phone reads as the tiles sliding away and not coming back.
@@ -190,9 +222,17 @@ function EducatorHubModal(props) {
     const isTopTrap = function () { return trapStack[trapStack.length - 1] === trap; };
     const getFocusable = function () {
       return Array.from(dialog.querySelectorAll(
-        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
+        'button:not([disabled]), summary, [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
       )).filter(function (element) {
         if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+        let ancestor = element.parentElement;
+        while (ancestor && ancestor !== dialog) {
+          if (ancestor.matches && ancestor.matches('details:not([open])')) {
+            const directSummary = ancestor.querySelector(':scope > summary');
+            if (element !== directSummary) return false;
+          }
+          ancestor = ancestor.parentElement;
+        }
         const style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(element) : null;
         return !style || (style.display !== 'none' && style.visibility !== 'hidden');
       });
@@ -201,12 +241,16 @@ function EducatorHubModal(props) {
     (first || dialog).focus();
     const onKeyDown = function (event) {
       if (!isTopTrap()) return;
-      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); setShowEducatorHub(false); return; }
+      if (!dialog.isConnected) return;
+      if (event.key === 'Escape') {
+        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+        event.preventDefault(); event.stopPropagation(); closeHandlerRef.current && closeHandlerRef.current(false); return;
+      }
       if (event.key !== 'Tab') return;
       const focusable = getFocusable();
       if (focusable.length === 0) { event.preventDefault(); dialog.focus(); return; }
       const firstItem = focusable[0], lastItem = focusable[focusable.length - 1];
-      if (!dialog.contains(document.activeElement)) { event.preventDefault(); (event.shiftKey ? lastItem : firstItem).focus(); }
+      if (!dialog.contains(document.activeElement) || document.activeElement === dialog) { event.preventDefault(); (event.shiftKey ? lastItem : firstItem).focus(); }
       else if (event.shiftKey && document.activeElement === firstItem) { event.preventDefault(); lastItem.focus(); }
       else if (!event.shiftKey && document.activeElement === lastItem) { event.preventDefault(); firstItem.focus(); }
     };
@@ -219,30 +263,37 @@ function EducatorHubModal(props) {
           if (scrollLock.count === 0) document.body.style.overflow = scrollLock.prev;
         }
       } catch (_) {}
+      isolated.forEach(function ({ sibling, hadInert, prevInert, ariaHidden }) {
+        if (!sibling || !sibling.isConnected) return;
+        if (!hadInert) {
+          try { sibling.inert = false; } catch (_) {}
+          try { sibling.removeAttribute('inert'); } catch (_) {}
+        } else {
+          try { sibling.inert = Boolean(prevInert); } catch (_) {}
+        }
+        if (ariaHidden == null) { try { sibling.removeAttribute('aria-hidden'); } catch (_) {} }
+        else { try { sibling.setAttribute('aria-hidden', ariaHidden); } catch (_) {} }
+      });
       const wasTopTrap = isTopTrap();
       const trapIndex = trapStack.indexOf(trap);
       if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
-      if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus.isConnected && typeof previousFocus.focus === 'function') previousFocus.focus();
+      if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus !== document.documentElement && previousFocus.isConnected && typeof previousFocus.focus === 'function') previousFocus.focus();
     };
-  }, [setShowEducatorHub]);
+  }, []);
 
   const _openAlloSheet = () => {
     const bridge = window.AlloSheetHostBridge;
     if (!bridge || typeof bridge.open !== 'function') {
       _loadEducatorAlloSheetBridge().catch((error) => {
-        addToast(error && error.message ? error.message : 'AlloSheet could not be loaded.', 'error');
+        addToast(error && error.message ? error.message : tr('educator_hub.allosheet_load_failed', 'AlloSheet could not be loaded.'), 'error');
       });
-      addToast('AlloSheet is loading. Select it again in a moment.', 'info');
+      addToast(tr('educator_hub.allosheet_loading', 'AlloSheet is loading. Select it again in a moment.'), 'info');
       return;
     }
     const popup = bridge.open({ theme: _educatorAlloSheetTheme() });
     if (popup) setShowEducatorHub(false);
   };
 
-  const tr = (key, fallback) => {
-    try { const value = typeof t === 'function' ? t(key) : ''; return value && value !== key ? value : fallback; }
-    catch (_) { return fallback; }
-  };
   const hubGridRef = React.useRef(null);
   const [hubQuery, setHubQuery] = React.useState('');
   const [hubCards, setHubCards] = React.useState([]);
@@ -438,7 +489,7 @@ function EducatorHubModal(props) {
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <h3 className="text-sm font-black uppercase tracking-wide text-indigo-800">{tr('educator_hub.section_start_title', 'Start here')}</h3>
-                    <p className="text-xs text-slate-500 mt-1">{tr('educator_hub.section_start_desc', 'Plan the next lesson, gather evidence, and prepare the materials students will use.')}</p>
+                    <p className="text-xs text-slate-600 mt-1">{tr('educator_hub.section_start_desc', 'Plan the next lesson, gather evidence, and prepare the materials students will use.')}</p>
                   </div>
                   <button type="button" data-hub-section-toggle="start" aria-expanded={!hubCollapsedSections.includes('start')} aria-label={hubCollapsedSections.includes('start') ? tr('hub.expand_section', 'Expand section') : tr('hub.collapse_section', 'Collapse section')} onClick={() => toggleHubSection('start')} className="min-h-11 min-w-11 rounded-lg border border-slate-300 bg-white text-slate-700 text-lg font-black hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubCollapsedSections.includes('start') ? '+' : '-'}</button>
                 </div>
@@ -449,7 +500,7 @@ function EducatorHubModal(props) {
                 <div>
                   <span className="inline-flex items-center rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-indigo-700">{t('educator_hub.blueprint_mode_badge') || 'Blueprint Mode'}</span>
                   <h3 className="font-bold text-indigo-800">{t('educator_hub.lesson_builder_title') || 'Help me build a lesson'}</h3>
-                  <p className="text-xs text-indigo-600 mt-1">{t('educator_hub.lesson_builder_desc') || "Answer a few questions, then build a differentiated lesson step by step with AlloBot."}</p>
+                  <p className="text-xs text-indigo-800 mt-1">{t('educator_hub.lesson_builder_desc') || "Answer a few questions, then build a differentiated lesson step by step with AlloBot."}</p>
                 </div>
               </button>
 
@@ -460,7 +511,7 @@ function EducatorHubModal(props) {
                 <span className="text-3xl mt-1" aria-hidden="true">💡</span>
                 <div>
                   <h3 className="font-bold text-amber-800">{t('educator_hub.lumen_title') || 'Lumen'}</h3>
-                  <p className="text-xs text-amber-600 mt-1">{t('educator_hub.lumen_desc') || 'Research sources or explore data in one evidence workspace. Cite exact passages and keep uncertainty and provenance visible.'}</p>
+                  <p className="text-xs text-amber-800 mt-1">{t('educator_hub.lumen_desc') || 'Research sources or explore data in one evidence workspace. Cite exact passages and keep uncertainty and provenance visible.'}</p>
                 </div>
               </button>
 
@@ -471,7 +522,7 @@ function EducatorHubModal(props) {
                 <span className="text-3xl mt-1" aria-hidden="true">📄</span>
                 <div>
                   <h3 className="font-bold text-emerald-800">{t('educator_hub.document_hub_title') || 'Document Hub'}</h3>
-                  <p className="text-xs text-emerald-600 mt-1">{t('educator_hub.document_hub_desc') || 'Build polished documents, audit accessibility, and export to PDF, HTML, worksheets, or slides.'}</p>
+                  <p className="text-xs text-emerald-800 mt-1">{t('educator_hub.document_hub_desc') || 'Build polished documents, audit accessibility, and export to PDF, HTML, worksheets, or slides.'}</p>
                 </div>
               </button>
 
@@ -482,7 +533,7 @@ function EducatorHubModal(props) {
                 <span className="text-3xl mt-1" aria-hidden="true">✏️</span>
                 <div>
                   <h3 className="font-bold text-indigo-800">{t('educator_hub.whiteboard_title') || 'Whiteboard'}</h3>
-                  <p className="text-xs text-indigo-600 mt-1">{t('educator_hub.whiteboard_desc') || 'Sketch ideas, build diagrams, and map thinking with graphic organizers and one-click image export.'}</p>
+                  <p className="text-xs text-indigo-800 mt-1">{t('educator_hub.whiteboard_desc') || 'Sketch ideas, build diagrams, and map thinking with graphic organizers and one-click image export.'}</p>
                 </div>
               </button>
 
@@ -492,7 +543,7 @@ function EducatorHubModal(props) {
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <h3 className="text-sm font-black uppercase tracking-wide text-indigo-800">{tr('educator_hub.section_plan_title', 'Plan and create')}</h3>
-                    <p className="text-xs text-slate-500 mt-1">{tr('educator_hub.section_plan_desc', 'Turn ideas and evidence into lessons, documents, and accessible learning materials.')}</p>
+                    <p className="text-xs text-slate-600 mt-1">{tr('educator_hub.section_plan_desc', 'Turn ideas and evidence into lessons, documents, and accessible learning materials.')}</p>
                   </div>
                   <button type="button" data-hub-section-toggle="plan" aria-expanded={!hubCollapsedSections.includes('plan')} aria-label={hubCollapsedSections.includes('plan') ? tr('hub.expand_section', 'Expand section') : tr('hub.collapse_section', 'Collapse section')} onClick={() => toggleHubSection('plan')} className="min-h-11 min-w-11 rounded-lg border border-slate-300 bg-white text-slate-700 text-lg font-black hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubCollapsedSections.includes('plan') ? '+' : '-'}</button>
                 </div>
@@ -502,7 +553,7 @@ function EducatorHubModal(props) {
                 <span className="text-3xl mt-1" aria-hidden="true">{'\uD83E\uDDF5'}</span>
                 <div>
                   <h3 className="font-bold text-amber-800">{t('educator_hub.throughline_title') || 'Learning Web: Unit Path'}</h3>
-                  <p className="text-xs text-amber-700 mt-1">{t('educator_hub.throughline_desc') || 'Arrange lessons into a teachable sequence, then inspect linked standards and evidence in the shared Learning Web.'}</p>
+                  <p className="text-xs text-amber-800 mt-1">{t('educator_hub.throughline_desc') || 'Arrange lessons into a teachable sequence, then inspect linked standards and evidence in the shared Learning Web.'}</p>
                 </div>
               </button>
 
@@ -512,7 +563,7 @@ function EducatorHubModal(props) {
                 <span className="text-3xl mt-1" aria-hidden="true">🎨</span>
                 <div>
                   <h3 className="font-bold text-rose-800">{t('educator_hub.allo_studio_title') || 'Page Designer'}</h3>
-                  <p className="text-xs text-rose-600 mt-1">{t('educator_hub.allo_studio_desc') || 'Create flyers, worksheets, posters, and slide decks with accessible exports, reading order, alt text, and a hand/AI process record.'}</p>
+                  <p className="text-xs text-rose-800 mt-1">{t('educator_hub.allo_studio_desc') || 'Create flyers, worksheets, posters, and slide decks with accessible exports, reading order, alt text, and a hand/AI process record.'}</p>
                 </div>
               </button>
 
@@ -523,7 +574,7 @@ function EducatorHubModal(props) {
                 <span className="text-3xl mt-1" aria-hidden="true">🎥</span>
                 <div>
                   <h3 className="font-bold text-sky-800">{t('educator_hub.video_studio_title') || 'Video Studio'}</h3>
-                  <p className="text-xs text-sky-600 mt-1">{t('educator_hub.video_studio_desc') || 'Record, trim, caption, and export short videos, with prompt tools for NotebookLM and other AI video tools.'}</p>
+                  <p className="text-xs text-sky-800 mt-1">{t('educator_hub.video_studio_desc') || 'Record, trim, caption, and export short videos, with prompt tools for NotebookLM and other AI video tools.'}</p>
                 </div>
               </button>
 
@@ -534,7 +585,7 @@ function EducatorHubModal(props) {
                 <span className="text-3xl mt-1" aria-hidden="true">{'\uD83E\uDEA7'}</span>
                 <div>
                   <h3 className="font-bold text-purple-800">{t('educator_hub.symbol_studio_title') || 'Symbol Studio'}</h3>
-                  <p className="text-xs text-purple-600 mt-1">{t('educator_hub.symbol_studio_desc') || 'Create PCS-style icons for visual supports, AAC boards, and schedules — then edit them with image-to-image tools.'}</p>
+                  <p className="text-xs text-purple-800 mt-1">{t('educator_hub.symbol_studio_desc') || 'Create PCS-style icons for visual supports, AAC boards, and schedules — then edit them with image-to-image tools.'}</p>
                 </div>
               </button>
 
@@ -545,7 +596,7 @@ function EducatorHubModal(props) {
                 <span className="text-3xl mt-1" aria-hidden="true">📊</span>
                 <div>
                   <h3 className="font-bold text-emerald-800">{t('educator_hub.allosheet_title') || 'AlloSheet (Pilot)'}</h3>
-                  <p className="text-xs text-emerald-700 mt-1">{t('educator_hub.allosheet_desc') || 'Explore educator data with agent assistance, review every change before applying it, and run local audits.'}</p>
+                  <p className="text-xs text-emerald-800 mt-1">{t('educator_hub.allosheet_desc') || 'Explore educator data with agent assistance, review every change before applying it, and run local audits.'}</p>
                 </div>
               </button>
 
@@ -555,7 +606,7 @@ function EducatorHubModal(props) {
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <h3 className="text-sm font-black uppercase tracking-wide text-indigo-800">{tr('educator_hub.section_teach_title', 'Teach and assess')}</h3>
-                    <p className="text-xs text-slate-500 mt-1">{tr('educator_hub.section_teach_desc', 'Run activities, collect evidence, and respond to learner needs.')}</p>
+                    <p className="text-xs text-slate-600 mt-1">{tr('educator_hub.section_teach_desc', 'Run activities, collect evidence, and respond to learner needs.')}</p>
                   </div>
                   <button type="button" data-hub-section-toggle="teach" aria-expanded={!hubCollapsedSections.includes('teach')} aria-label={hubCollapsedSections.includes('teach') ? tr('hub.expand_section', 'Expand section') : tr('hub.collapse_section', 'Collapse section')} onClick={() => toggleHubSection('teach')} className="min-h-11 min-w-11 rounded-lg border border-slate-300 bg-white text-slate-700 text-lg font-black hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubCollapsedSections.includes('teach') ? '+' : '-'}</button>
                 </div>
@@ -565,7 +616,7 @@ function EducatorHubModal(props) {
                 <span className="text-3xl mt-1" aria-hidden="true">🗓️</span>
                 <div>
                   <h3 className="font-bold text-teal-800">{t('educator_hub.activities_title') || 'Polls & Sign-ups'}</h3>
-                  <p className="text-xs text-teal-700 mt-1">{t('educator_hub.activities_desc') || 'Schedule a meeting, collect sign-ups, or run a quick word cloud or rating. Share by link or QR code — no account required.'}</p>
+                  <p className="text-xs text-teal-800 mt-1">{t('educator_hub.activities_desc') || 'Schedule a meeting, collect sign-ups, or run a quick word cloud or rating. Share by link or QR code — no account required.'}</p>
                 </div>
               </button>
 
@@ -577,7 +628,7 @@ function EducatorHubModal(props) {
                 <span className="text-3xl mt-1" aria-hidden="true">{'\uD83D\uDDD2\uFE0F'}</span>
                 <div>
                   <h3 className="font-bold text-violet-800">{t('educator_hub.assessment_center_title') || 'Assessment Center'}</h3>
-                  <p className="text-xs text-violet-600 mt-1">{t('educator_hub.assessment_center_desc') || 'Screening batteries, CBM probes, RTI decision aids, intervention logs, and student progress.'}</p>
+                  <p className="text-xs text-violet-800 mt-1">{t('educator_hub.assessment_center_desc') || 'Screening batteries, CBM probes, RTI decision aids, intervention logs, and student progress.'}</p>
                 </div>
               </button>
 
@@ -590,7 +641,7 @@ function EducatorHubModal(props) {
                 <span className="text-3xl mt-1" aria-hidden="true">{'\uD83E\uDE7A'}</span>
                 <div>
                   <h3 className="font-bold text-blue-800">{t('educator_hub.dynamic_assessment_title') || 'Dynamic Assessment'}</h3>
-                  <p className="text-xs text-blue-600 mt-1">{t('educator_hub.dynamic_assessment_desc') || 'Run test-teach-retest probes with graduated prompts, modifiability scoring, IEP goals, and family/teacher handoffs.'}</p>
+                  <p className="text-xs text-blue-800 mt-1">{t('educator_hub.dynamic_assessment_desc') || 'Run test-teach-retest probes with graduated prompts, modifiability scoring, IEP goals, and family/teacher handoffs.'}</p>
                 </div>
               </button>
 
@@ -603,7 +654,7 @@ function EducatorHubModal(props) {
                 <span className="text-3xl mt-1" aria-hidden="true">{'\uD83D\uDC41\uFE0F'}</span>
                 <div>
                   <h3 className="font-bold text-indigo-800">{t('educator_hub.behavior_lens_title') || 'BehaviorLens'}</h3>
-                  <p className="text-xs text-indigo-600 mt-1">{t('educator_hub.behavior_lens_desc') || 'Collect ABC observations, build FBA/BIP data, and use 60+ tools for behavior support.'}</p>
+                  <p className="text-xs text-indigo-800 mt-1">{t('educator_hub.behavior_lens_desc') || 'Collect ABC observations, build FBA/BIP data, and use 60+ tools for behavior support.'}</p>
                 </div>
               </button>
 
@@ -616,7 +667,7 @@ function EducatorHubModal(props) {
                 <span className="text-3xl mt-1" aria-hidden="true">📝</span>
                 <div>
                   <h3 className="font-bold text-violet-800">{t('educator_hub.report_writer_title') || 'Report Writer'}</h3>
-                  <p className="text-xs text-violet-600 mt-1">{t('educator_hub.report_writer_desc') || 'Draft clinical reports with fact chunks, accuracy checks, and developmental norms.'}</p>
+                  <p className="text-xs text-violet-800 mt-1">{t('educator_hub.report_writer_desc') || 'Draft clinical reports with fact chunks, accuracy checks, and developmental norms.'}</p>
                 </div>
               </button>
 
@@ -627,7 +678,7 @@ function EducatorHubModal(props) {
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <h3 className="text-sm font-black uppercase tracking-wide text-indigo-800">{tr('educator_hub.section_access_title', 'Access and review')}</h3>
-                    <p className="text-xs text-slate-500 mt-1">{tr('educator_hub.section_access_desc', 'Verify that materials work for every learner before sharing them.')}</p>
+                    <p className="text-xs text-slate-600 mt-1">{tr('educator_hub.section_access_desc', 'Verify that materials work for every learner before sharing them.')}</p>
                   </div>
                   <button type="button" data-hub-section-toggle="access" aria-expanded={!hubCollapsedSections.includes('access')} aria-label={hubCollapsedSections.includes('access') ? tr('hub.expand_section', 'Expand section') : tr('hub.collapse_section', 'Collapse section')} onClick={() => toggleHubSection('access')} className="min-h-11 min-w-11 rounded-lg border border-slate-300 bg-white text-slate-700 text-lg font-black hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubCollapsedSections.includes('access') ? '+' : '-'}</button>
                 </div>
@@ -680,7 +731,7 @@ function EducatorHubModal(props) {
                           try {
                               await Promise.resolve(handleFileUpload({ target: singleTarget, currentTarget: singleTarget }));
                           } catch (error) {
-                              addToast('Could not open "' + (files[0].name || 'document') + '": ' + String((error && error.message) || error || 'unknown error'), 'error');
+                              addToast(tr('educator_hub.open_file_failed', 'Could not open "{name}": {error}', { name: files[0].name || 'document', error: String((error && error.message) || error || 'unknown error') }), 'error');
                           }
                           return;
                       }
@@ -690,7 +741,7 @@ function EducatorHubModal(props) {
                           return mime === 'application/pdf' || /\.pdf$/i.test(String(file && file.name || ''));
                       });
                       if (pdfFiles.length <= 1) {
-                          addToast('Select one DOCX or PPTX at a time, or select two or more PDFs for batch remediation.', 'warning');
+                          addToast(tr('educator_hub.batch_selection_invalid', 'Select one DOCX or PPTX at a time, or select two or more PDFs for batch remediation.'), 'warning');
                           return;
                       }
 
@@ -710,11 +761,11 @@ function EducatorHubModal(props) {
                           acceptedBytes += size;
                           acceptedPdfFiles.push(file);
                       }
-                      if (overCount) addToast('Batch limit is 60 PDFs; ' + overCount + ' file(s) were not added. Run them as a second batch.', 'warning');
-                      if (oversizedNames.length) addToast('Skipped ' + oversizedNames.length + ' PDF(s) over this device\'s ' + Math.round(batchBudget.perFileBytes / 1048576) + ' MB per-file safety limit: ' + oversizedNames.slice(0, 3).join(', ') + (oversizedNames.length > 3 ? '…' : ''), 'warning');
-                      if (overTotal) addToast('This device\'s ' + Math.round(batchBudget.totalBytes / 1048576) + ' MB batch memory budget was reached; ' + overTotal + ' file(s) were not added. Run them as a second batch.', 'warning');
+                      if (overCount) addToast(tr('educator_hub.batch_over_count', 'Batch limit is 60 PDFs; {count} file(s) were not added. Run them as a second batch.', { count: overCount }), 'warning');
+                      if (oversizedNames.length) addToast(tr('educator_hub.batch_oversized', "Skipped {count} PDF(s) over this device's {mb} MB per-file safety limit: {names}", { count: oversizedNames.length, mb: Math.round(batchBudget.perFileBytes / 1048576), names: oversizedNames.slice(0, 3).join(', ') + (oversizedNames.length > 3 ? '…' : '') }), 'warning');
+                      if (overTotal) addToast(tr('educator_hub.batch_over_budget', "This device's {mb} MB batch memory budget was reached; {count} file(s) were not added. Run them as a second batch.", { mb: Math.round(batchBudget.totalBytes / 1048576), count: overTotal }), 'warning');
                       if (acceptedPdfFiles.length <= 1) {
-                          addToast('At least two PDFs must remain after the batch safety limits are applied.', 'warning');
+                          addToast(tr('educator_hub.batch_too_few_remaining', 'At least two PDFs must remain after the batch safety limits are applied.'), 'warning');
                           return;
                       }
 
@@ -726,7 +777,7 @@ function EducatorHubModal(props) {
                               files: acceptedPdfFiles
                           }));
                       } catch (error) {
-                          addToast('Could not start the PDF batch: ' + String((error && error.message) || error || 'unknown error'), 'error');
+                          addToast(tr('educator_hub.batch_start_failed', 'Could not start the PDF batch: {error}', { error: String((error && error.message) || error || 'unknown error') }), 'error');
                           return;
                       }
                       const intakeJob = { token: intakeToken, reader: null, cancelRead: null, cancelled: false };
@@ -741,11 +792,11 @@ function EducatorHubModal(props) {
                           return;
                       }
                       _setPdfBatchIntakeProgressIfMounted({ completed: 0, total: acceptedPdfFiles.length, currentIndex: 0, currentName: '', totalBytes: acceptedBytes });
-                      addToast('Preparing ' + acceptedPdfFiles.length + ' PDFs for batch remediation…', 'info');
+                      addToast(tr('educator_hub.batch_preparing', 'Preparing {count} PDFs for batch remediation…', { count: acceptedPdfFiles.length }), 'info');
 
                       const skippedCount = files.length - pdfFiles.length;
                       if (skippedCount > 0) {
-                          addToast(skippedCount + ' non-PDF file' + (skippedCount === 1 ? ' was' : 's were') + ' skipped; PDF batch remediation accepts PDFs only.', 'warning');
+                          addToast(tr('educator_hub.batch_skipped_non_pdf', '{count} non-PDF file(s) were skipped; PDF batch remediation accepts PDFs only.', { count: skippedCount }), 'warning');
                       }
 
                       // Read sequentially so selection order is deterministic and only one
@@ -822,7 +873,7 @@ function EducatorHubModal(props) {
                               return;
                           }
                           if (outcome.error) {
-                              addToast('Could not read "' + (file.name || 'PDF') + '": ' + String((outcome.error && outcome.error.message) || outcome.error), 'error');
+                              addToast(tr('educator_hub.batch_read_failed', 'Could not read "{name}": {error}', { name: file.name || 'PDF', error: String((outcome.error && outcome.error.message) || outcome.error) }), 'error');
                               _setPdfBatchIntakeProgressIfMounted({ completed: index + 1, total: acceptedPdfFiles.length, currentIndex: index + 1, currentName: file.name || 'PDF', totalBytes: acceptedBytes });
                               continue;
                           }
@@ -839,7 +890,7 @@ function EducatorHubModal(props) {
                       if (readyFiles.length === 0) {
                           if (pdfBatchIntakeRef.current === intakeJob) pdfBatchIntakeRef.current = null;
                           _setPdfBatchIntakeProgressIfMounted(null);
-                          addToast('None of the selected PDFs could be read.', 'error');
+                          addToast(tr('educator_hub.batch_none_read', 'None of the selected PDFs could be read.'), 'error');
                           return;
                       }
                       if (pdfBatchIntakeRef.current === intakeJob) pdfBatchIntakeRef.current = null;
@@ -852,7 +903,7 @@ function EducatorHubModal(props) {
                           fileName: readyFiles.length + ' files',
                           fileSize: readyFiles.reduce((sum, file) => sum + file.fileSize, 0)
                       });
-                      addToast(readyFiles.length + ' PDFs are ready for batch remediation.', 'success');
+                      addToast(tr('educator_hub.batch_ready', '{count} PDFs are ready for batch remediation.', { count: readyFiles.length }), 'success');
                       setShowEducatorHub(false);
                   };
                   input.click();
@@ -906,7 +957,7 @@ function EducatorHubModal(props) {
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <h3 className="text-sm font-black uppercase tracking-wide text-indigo-800">{tr('educator_hub.section_extend_title', 'Extend and discover')}</h3>
-                    <p className="text-xs text-slate-500 mt-1">{tr('educator_hub.section_extend_desc', 'Find community resources, professional learning, and leadership-level tools.')}</p>
+                    <p className="text-xs text-slate-600 mt-1">{tr('educator_hub.section_extend_desc', 'Find community resources, professional learning, and leadership-level tools.')}</p>
                   </div>
                   <button type="button" data-hub-section-toggle="extend" aria-expanded={!hubCollapsedSections.includes('extend')} aria-label={hubCollapsedSections.includes('extend') ? tr('hub.expand_section', 'Expand section') : tr('hub.collapse_section', 'Collapse section')} onClick={() => toggleHubSection('extend')} className="min-h-11 min-w-11 rounded-lg border border-slate-300 bg-white text-slate-700 text-lg font-black hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubCollapsedSections.includes('extend') ? '+' : '-'}</button>
                 </div>

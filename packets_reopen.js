@@ -8,7 +8,7 @@
 //   env    { verify: AlloPacketVerify, creditLine: AlloPacketBuilder.creditLine, codeName: AlloPacketBuilder.codeName,
 //            activities: the activity ids the page offers, wordSounds: every Word Sounds activity id,
 //            labels: the sound labels of the dictionary, seeds: { A: 1, B: 2, C: 3 } }
-//   { ok, kind: 'words' | 'check' | 'math' | 'vocab' | 'results' | 'other',
+//   { ok, kind: 'words' | 'check' | 'math' | 'vocab' | 'symbol' | 'results' | 'other',
 //     why: one plain sentence when the file cannot be used here, page: { href, name } (the page that makes it),
 //     teacherCode: true when a check had a teacher code (it cannot be read back),
 //     title, activities, words, version ('A' | 'B' | 'C' | ''), pictures, learner, items,
@@ -31,6 +31,7 @@
     check: { href: 'packets-check.html', name: 'Make a math check' },
     math: { href: 'packets-math-practice.html', name: 'Make math fact practice' },
     vocab: { href: 'packets-vocab.html', name: 'Make vocabulary practice' },
+    symbol: { href: 'packets-symbol-runner.html', name: 'Make Symbol Runner practice' },
     results: { href: 'packets-results.html', name: 'Add up results' },
     verify: { href: 'packets-verify.html', name: 'Look inside a file' },
   };
@@ -127,7 +128,7 @@
 
   function read(input, env) {
     var e = env || {};
-    var out = { ok: false, kind: 'other', why: '', page: null, teacherCode: false, title: '', activities: [], words: [], version: '', pictures: false, learner: '', items: 0, own: {}, notes: [] };
+    var out = { ok: false, kind: 'other', why: '', page: null, teacherCode: false, title: '', activities: [], words: [], version: '', pictures: false, directionsOnce: false, learner: '', items: 0, own: {}, notes: [] };
     var no = function (kind, why, page) { out.kind = kind; out.why = why; out.page = page || null; return out; };
     if (!e.verify || typeof e.verify.readParts !== 'function') return no('other', 'This page could not read the file. Load the page again.');
     var parts = e.verify.readParts(input);
@@ -141,6 +142,7 @@
     var packet = isObject(m.packet) ? m.packet : {};
     // Vocabulary practice and vocabulary checks (packet_vocab_builder.js) are made, and opened again, on their own page.
     if (blocks.length && blocks.every(function (block) { return /^vocab_/.test(block.activity); })) return no('vocab', 'This is vocabulary ' + (packet.mode === 'check' || lesson.mode === 'probe' ? 'check' : 'practice') + '. Make vocabulary practice makes it, and can open it again.', PAGES.vocab);
+    if (blocks.length && blocks.every(function (block) { return block.activity === 'symbol_runner'; })) return no('symbol', 'This is Symbol Runner ' + (packet.mode === 'check' || lesson.mode === 'probe' ? 'check' : 'practice') + '. Make Symbol Runner practice makes it, and can open it again.', PAGES.symbol);
     if (packet.mode === 'check' || packet.mode === 'probe' || lesson.mode === 'probe') {
       out.teacherCode = isObject(lesson.check) && isObject(lesson.check.lock);
       return no('check', 'This is a math check. Make a math check makes it.' + (out.teacherCode ? ' A teacher code cannot be read back from a file: set the teacher code again there.' : ''), PAGES.check);
@@ -182,6 +184,7 @@
     // so showed every choice.
     var level = isObject(m.builder) ? m.builder.choices : null;
     out.choices = level === 'easy' || level === 'medium' || level === 'all' ? level : 'all';
+    out.directionsOnce = !!(lesson && lesson.instructionsOnce === true) || !!(isObject(m.builder) && m.builder.directionsOnce === true);
     if (typeof m.learner === 'string') out.learner = typeof e.codeName === 'function' ? e.codeName(m.learner) : m.learner.slice(0, 40);
 
     // The teacher's own sounds, recordings and pictures, for the words the manifest names.
@@ -249,11 +252,13 @@
     var blocks = list(lesson.blocks).filter(function (block) { return isObject(block) && typeof block.activity === 'string' && Array.isArray(block.items); });
     var check = packet.mode === 'check' || packet.mode === 'probe' || lesson.mode === 'probe';
     var kind = blocks.length && blocks.every(function (block) { return /^vocab_/.test(block.activity); }) ? 'vocab'
+      : blocks.length && blocks.every(function (block) { return block.activity === 'symbol_runner'; }) ? 'symbol'
       : check ? 'check' : blocks.length && blocks.every(function (block) { return /^math_/.test(block.activity); }) ? 'math' : 'words';
     return { parts: parts, lesson: lesson, manifest: m, blocks: blocks, kind: kind };
   }
   function elsewhere(kind, out) {
     var said = { vocab: 'This is vocabulary practice or a vocabulary check. Make vocabulary practice makes it, and can open it again.',
+      symbol: 'This is Symbol Runner practice or a Symbol Runner check. Make Symbol Runner practice makes it, and can open it again.',
       check: 'This is a math check. Make a math check makes it, and can open it again.', math: 'This is math fact practice. Make math fact practice makes it, and can open it again.',
       words: 'This is Word Sounds practice. Make Word Sounds practice makes it, and can open it again.' };
     out.kind = kind; out.why = said[kind] || 'This file was not made on this page.'; out.page = PAGES[kind] || null;

@@ -806,7 +806,7 @@
             type: 'button',
             ref: closeButtonRef,
             onClick: onClose,
-            className: 'min-w-11 min-h-11 p-2 -m-1 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 focus-visible:ring-offset-2 transition-colors text-xl',
+            className: 'min-w-11 min-h-11 p-2 shrink-0 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 focus-visible:ring-offset-2 transition-colors text-xl',
             'aria-label': tr(t, 'timeline_studio.close', 'Close Timeline Studio')
           }, '×')
         ),

@@ -72,10 +72,10 @@ describe('print and preview shells declare a language', () => {
         ['view_gemini_bridge', 1],
     ];
     const toolShells = [
-        ['sel_hub/sel_tool_crisiscompanion.js', 1], ['sel_hub/sel_tool_digitalwellbeing.js', 1], ['sel_hub/sel_tool_upstander.js', 1],
-        ['stem_lab/stem_tool_applab.js', 1], ['stem_lab/stem_tool_cyberdefense.js', 1], ['stem_lab/stem_tool_ecosystem.js', 1],
+        ['sel_hub/sel_tool_crisiscompanion.js', 1], ['sel_hub/sel_tool_cultureexplorer.js', 1], ['sel_hub/sel_tool_digitalwellbeing.js', 1], ['sel_hub/sel_tool_upstander.js', 1],
+        ['stem_lab/stem_tool_applab.js', 1], ['stem_lab/stem_tool_cellular.js', 1], ['stem_lab/stem_tool_cyberdefense.js', 1], ['stem_lab/stem_tool_ecosystem.js', 1],
         ['stem_lab/stem_tool_forge.js', 1], ['stem_lab/stem_tool_fractions.js', 5], ['stem_lab/stem_tool_geometryworld.js', 2],
-        ['stem_lab/stem_tool_lifeskills.js', 1], ['stem_lab/stem_tool_openbim.js', 1], ['stem_lab/stem_tool_printingpress.js', 1],
+        ['stem_lab/stem_tool_heatlab.js', 1], ['stem_lab/stem_tool_lifeskills.js', 1], ['stem_lab/stem_tool_openbim.js', 1], ['stem_lab/stem_tool_printingpress.js', 1],
         ['stem_lab/stem_tool_renewables.js', 1], ['stem_lab/stem_tool_typingpractice.js', 1],
         ['stem_lab/stem_tool_birdlab.js', 1], ['stem_lab/stem_tool_freeforms.js', 1], ['stem_lab/stem_tool_weldlab.js', 1],
     ];
@@ -85,6 +85,19 @@ describe('print and preview shells declare a language', () => {
                 const text = read(copy);
                 expect((text.match(/<html>(?=[\s\S]{0,200}?<head[\s>])/gi) || []).length, copy + ' has a document shell without lang').toBe(0);
                 expect((text.match(/<html lang=(?=[\s\S]{0,400}?<head[\s>])/gi) || []).length, copy).toBeGreaterThanOrEqual(count);
+            }
+        });
+    }
+    for (const file of ['sel_hub/sel_tool_cultureexplorer.js', 'stem_lab/stem_tool_cellular.js', 'stem_lab/stem_tool_heatlab.js']) {
+        it(file + ' matches all desktop mirrors and injects page language/rtl safely', () => {
+            const sourceText = read(file);
+            expect(sourceText).toMatch(/pageLang/);
+            expect(sourceText).toMatch(/dir="rtl"/);
+            for (const prefix of ['desktop/web-app/public/', 'desktop/app-build/', 'desktop/web-app/build/']) {
+                const mirror = prefix + file;
+                if (fs.existsSync(path.join(ROOT, mirror))) {
+                    expect(read(mirror), mirror).toBe(sourceText);
+                }
             }
         });
     }

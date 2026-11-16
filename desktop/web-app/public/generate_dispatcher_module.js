@@ -8959,7 +8959,7 @@ Return ONLY JSON:
              console.log('[DBQ] Parsed successfully. ' + metaInfo);
          } catch (parseErr) {
              warnLog("DBQ Parse Error:", parseErr);
-             console.error('[DBQ] JSON parse failed. Raw response (first 1000 chars):', String(result || '').substring(0, 1000));
+             console.error('[DBQ] JSON parse failed. Raw response length:', String(result || '').length);
              throw new Error("Failed to parse DBQ JSON. The AI response was not valid.");
          }
       } else if (type === 'lesson-plan') {

@@ -11,7 +11,9 @@ describe('Glossary WCAG 2.2 interaction safeguards', () => {
   });
 
   it('restricts modal focus to rendered, exposed controls', () => {
-    expect(source).toContain("el.getAttribute('aria-hidden') !== 'true' && el.getClientRects().length > 0");
+    expect(source).toContain("el.getAttribute('aria-hidden') === 'true'");
+    expect(source).toContain("el.closest('[hidden], [inert], [aria-hidden=\"true\"]')");
+    expect(source).toContain('filter(isGlossaryFocusableVisible)');
     expect(source).toContain('document.activeElement === container');
     expect(source).toContain('(e.shiftKey ? last : first).focus()');
     expect(source).toContain('document.activeElement === drawer');

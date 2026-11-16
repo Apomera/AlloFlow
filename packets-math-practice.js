@@ -615,6 +615,62 @@
       reader.readAsText(file);
     });
   }
+  function applyRehearseHash() {
+    var hash = window.location ? String(window.location.hash || '') : '';
+    var match = /^#rehearse=([^&]+)(?:&known=(.+))?$/i.exec(hash);
+    if (!match) return false;
+    try { window.history.replaceState(null, '', window.location.href.split('#')[0]); } catch (_) {}
+    var decode = function (part) {
+      try { return decodeURIComponent(part || ''); } catch (_) { return String(part || ''); }
+    };
+    var seen = Object.create(null), blockedKnown = Object.create(null);
+    var missedFacts = [], knownFacts = [];
+    decode(match[1]).split(/[,;\n]+/).forEach(function (tok) {
+      var part = String(tok || '').trim();
+      if (!part || missedFacts.length >= builder.MAX_FACTS) return;
+      var parsed = [];
+      try { parsed = builder.parseFacts(part); } catch (_) { parsed = []; }
+      parsed.forEach(function (f) {
+        var key = builder.factKey(f);
+        if (seen[key] || missedFacts.length >= builder.MAX_FACTS) return;
+        seen[key] = true;
+        blockedKnown[key] = true;
+        var turn = builder.turnaround(f);
+        if (turn) blockedKnown[builder.factKey(turn)] = true;
+        missedFacts.push(f);
+      });
+    });
+    if (!missedFacts.length) return false;
+    if (match[2]) {
+      decode(match[2]).split(/[,;\n]+/).forEach(function (tok) {
+        var part = String(tok || '').trim();
+        if (!part || missedFacts.length + knownFacts.length >= builder.MAX_FACTS) return;
+        var parsed = [];
+        try { parsed = builder.parseFacts(part); } catch (_) { parsed = []; }
+        parsed.forEach(function (f) {
+          var key = builder.factKey(f);
+          if (seen[key] || blockedKnown[key] || missedFacts.length + knownFacts.length >= builder.MAX_FACTS) return;
+          seen[key] = true;
+          knownFacts.push(f);
+        });
+      });
+    }
+    state.kind = OWN;
+    state.facts = missedFacts.concat(knownFacts).map(word).join('\n');
+    state.title = 'Practice missed math facts';
+    if (knownFacts.length >= 3) {
+      state.method = 'rehearsal';
+      state.known[OWN] = knownFacts.map(builder.factKey);
+    } else {
+      state.method = 'ccc';
+      delete state.known[OWN];
+    }
+    remember();
+    drawStep1();
+    goTo(2, true);
+    return true;
+  }
+
   // A file handed over by "Change this file" on Open a practice file or check (packets-open.html, packets_handoff.js).
   function takeHanded() {
     var handoff = window.AlloPacketHandoff;
@@ -725,7 +781,7 @@
     show('batch', !!(window.AlloPacketZip && typeof builder.withCodeName === 'function'));
     show('loading', false);
     goTo(1, true);
-    takeHanded();
+    if (!applyRehearseHash()) takeHanded();
   }
 
   try { start(); } catch (error) {

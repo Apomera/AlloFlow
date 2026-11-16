@@ -36,7 +36,8 @@
         '.og-root[data-og-theme="dark"] button:focus-visible, .og-root[data-og-theme="dark"] input:focus-visible, .og-root[data-og-theme="dark"] select:focus-visible, .og-root[data-og-theme="dark"] [tabindex]:focus-visible { outline-color: #facc15 !important; }',
         '.og-root[data-og-theme="contrast"] button:focus-visible, .og-root[data-og-theme="contrast"] input:focus-visible, .og-root[data-og-theme="contrast"] select:focus-visible, .og-root[data-og-theme="contrast"] [tabindex]:focus-visible { outline: 3px solid #ffff00 !important; outline-offset: 3px !important; }',
         '@media (forced-colors: active) { .og-root { forced-color-adjust: none; } .og-root button, .og-root input, .og-root select, .og-root textarea { forced-color-adjust: auto; } }',
-        '.og-root :focus:not(:focus-visible) { outline: none !important; }'
+        '.og-root :focus:not(:focus-visible) { outline: none !important; }',
+        '.theme-contrast .og-root [aria-current="step"], .theme-contrast .og-root [role="status"], .og-root[data-og-theme="contrast"] [aria-current="step"], .og-root[data-og-theme="contrast"] [role="status"] { background: #000000 !important; background-color: #000000 !important; color: #ffff00 !important; border-color: #ffff00 !important; }'
       ].join('\n');
       document.head.appendChild(css);
     }
@@ -3599,9 +3600,9 @@
               style: Object.assign({}, styles.transportButton, loopEnabled ? styles.loopButtonOn : null),
               onClick: toggleLoopMode,
               'aria-pressed': loopEnabled,
-              'aria-label': loopEnabled ? 'Turn loop mode off' : 'Turn loop mode on'
+              'aria-label': loopEnabled ? 'Loop On — turn loop mode off' : 'Loop Off — turn loop mode on'
             }, loopEnabled ? 'Loop On' : 'Loop Off'),
-            h('button', { style: styles.transportButton, onClick: resetDemo, 'aria-label': 'Reset demo pattern' }, 'Reset'),
+            h('button', { style: styles.transportButton, onClick: resetDemo, 'aria-label': 'Reset — demo pattern' }, 'Reset'),
             h('button', {
               style: Object.assign({}, styles.transportButton, !canUndo ? styles.disabledButton : null),
               onClick: undoProject,
@@ -4953,7 +4954,7 @@
     swingValue: { minWidth: '34px', color: '#475569', fontSize: '12px', fontWeight: 900 },
     themeLabel: { minHeight: '40px', display: 'inline-flex', alignItems: 'center', gap: '6px', flex: '1 1 148px', color: '#334155', fontSize: '12px', fontWeight: 800, lineHeight: 1.15, boxSizing: 'border-box', minWidth: 0, flexWrap: 'wrap' },
     themeSelect: { width: '100%', maxWidth: '100%', minWidth: 0, flex: '1 1 112px', minHeight: '34px', border: '1px solid #9ca3af', background: '#ffffff', color: '#111827', padding: '0 8px', fontWeight: 800, boxSizing: 'border-box' },
-    iconButton: { flex: '0 0 auto', width: '40px', minWidth: '40px', height: '40px', border: '1px solid #9ca3af', background: '#111827', color: '#ffffff', fontWeight: 800, lineHeight: 1, cursor: 'pointer' },
+    iconButton: { flex: '0 0 auto', width: '40px', minWidth: '40px', height: '40px', padding: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #9ca3af', background: '#111827', color: '#ffffff', fontWeight: 800, lineHeight: 1, cursor: 'pointer' },
     playheadPanel: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 160px), 1fr))', gap: '10px', alignItems: 'center', padding: '10px 16px', borderBottom: '1px solid #d1d5db', background: '#f8fafc', flex: '0 0 auto', minWidth: 0 },
     playheadTrack: { position: 'relative', minHeight: '16px', border: '1px solid #64748b', background: '#e2e8f0', overflow: 'hidden' },
     playheadFill: { position: 'absolute', inset: '0 auto 0 0', background: '#0f766e' },

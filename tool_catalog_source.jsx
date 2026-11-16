@@ -30,7 +30,7 @@ const TOOL_CATALOG = [
   {
     id: 'analysis',
     description: 'Analyzes source text for key ideas, vocabulary, structure.',
-    whenToUse: 'ALWAYS include as first resource.',
+    whenToUse: 'Include first only when the exact current source has not been checked. Reuse an existing source check.',
     placeFirst: true,
     inAutofill: true,
     sidebarKey: 'sidebar.tool_analysis',

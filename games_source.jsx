@@ -60,6 +60,7 @@ const printGlossarySheet = (node, labels = {}) => {
   let win = null;
   try { win = window.open('', '_blank'); } catch (_) { win = null; }
   if (win) {
+    try { win.opener = null; } catch (_) {}
     try {
       const styles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'))
         .map(el => el.tagName === 'LINK' ? '<link rel="stylesheet" href="' + esc(el.href) + '">' : el.outerHTML).join('');
@@ -541,7 +542,7 @@ const GameReviewScreen = ({ score, title, items, onPlayAgain, onClose, t, onPrac
   const correct = items.filter(i => i.status === 'correct').length;
   const total = items.length;
   return (
-    <div role="region" aria-labelledby={reviewTitleId} className={`mt-4 bg-white rounded-2xl border-2 border-indigo-100 shadow-lg overflow-hidden${useReducedMotion() ? '' : ' animate-in fade-in slide-in-from-bottom-2 duration-300'}`}>
+    <div role="region" aria-labelledby={reviewTitleId} className={`mt-4 bg-white rounded-2xl border-2 border-indigo-100 shadow-lg overflow-hidden${useReducedMotion() ? '' : ' animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-2 duration-300'}`}>
       <div className="bg-gradient-to-r from-indigo-700 to-purple-700 p-4 text-white text-center">
         <h3 ref={reviewTitleRef} tabIndex={-1} id={reviewTitleId} aria-describedby={reviewTitleId + '-summary'} className="text-xl font-black">{title || "Review"}</h3>
         <div id={reviewTitleId + '-summary'} className="flex flex-wrap items-center justify-center gap-3 mt-2">
@@ -822,7 +823,7 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete, r
               <span className={`relative inline-flex items-center gap-1 text-[0.6875rem] font-bold border px-2 py-0.5 rounded-full ${!useReducedMotion() ? 'transition-all' : ''} ${scoreDelta !== null ? (scoreDelta > 0 ? `ring-2 ring-emerald-400 ${!useReducedMotion() ? 'scale-105' : ''}` : `ring-2 ring-red-400 ${!useReducedMotion() ? 'scale-105' : ''}`) : ''} ${isFullscreen ? 'bg-indigo-500/20 text-indigo-100 border-indigo-400/40' : 'bg-indigo-100 text-indigo-700 border-indigo-200'}`}>
                 <Trophy size={10} className="text-yellow-500" aria-hidden="true" /> {t('memory.score')}: {score}
                 {scoreDelta !== null && (
-                  <span className={`absolute -top-5 right-0 text-[0.6875rem] font-black pointer-events-none ${scoreDelta > 0 ? 'text-emerald-500' : 'text-red-500'} ${!useReducedMotion() ? 'animate-in fade-in slide-in-from-bottom-1 duration-300' : ''}`}>
+                  <span className={`absolute -top-5 right-0 text-[0.6875rem] font-black pointer-events-none ${scoreDelta > 0 ? 'text-emerald-500' : 'text-red-500'} ${!useReducedMotion() ? 'animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-1 duration-300' : ''}`}>
                     {scoreDelta > 0 ? `+${scoreDelta}` : scoreDelta}
                   </span>
                 )}
@@ -895,13 +896,13 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete, r
           const labelColor = isFullscreen ? 'text-slate-600' : 'text-slate-600';
           const valueColor = isFullscreen ? 'text-white' : 'text-slate-900';
           return (
-          <div role="status" className={`flex flex-col items-center justify-center py-8 px-4 text-center${useReducedMotion() ? '' : ' animate-in zoom-in duration-300'}`}>
+          <div role="status" className={`flex flex-col items-center justify-center py-8 px-4 text-center${useReducedMotion() ? '' : ' animate-in motion-reduce:animate-none zoom-in duration-300'}`}>
             {!useReducedMotion() && <ConfettiExplosion />}
             <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-4 shadow-lg ${isFullscreen ? 'bg-yellow-400/20 text-yellow-300 ring-2 ring-yellow-400/40' : 'bg-yellow-100 text-yellow-700'}`}>
               <Trophy size={40} className="fill-current" aria-hidden="true" />
             </div>
             <h2 className={`text-2xl font-black mb-3 ${isFullscreen ? 'text-white' : 'text-slate-800'}`}>{t('memory.victory')}</h2>
-            <div role="group" className={`flex items-center gap-1 mb-4 ${!useReducedMotion() ? 'animate-in zoom-in duration-500' : ''}`} aria-label={`${stars} out of 3 stars`}>
+            <div role="group" className={`flex items-center gap-1 mb-4 ${!useReducedMotion() ? 'animate-in motion-reduce:animate-none zoom-in duration-500' : ''}`} aria-label={`${stars} out of 3 stars`}>
               {[0, 1, 2].map(i => (
                 <Star
                   key={i}
@@ -1316,7 +1317,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
   };
   const reset = () => startMatchingRound(originalRoundRef.current);
   return (
-    <div ref={matchingDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="matching-game-title" className={`allo-glossary-print-dialog glossary-matching-dialog fixed inset-0 z-[100] bg-slate-50 flex flex-col overflow-hidden${useReducedMotion() ? '' : ' animate-in fade-in duration-300'}`}>
+    <div ref={matchingDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="matching-game-title" className={`allo-glossary-print-dialog glossary-matching-dialog fixed inset-0 z-[100] bg-slate-50 flex flex-col overflow-hidden${useReducedMotion() ? '' : ' animate-in motion-reduce:animate-none fade-in duration-300'}`}>
         <GlossaryPrintStyles />
         <section className="glossary-matching-sheet">
             <h2>{t('matching.print_title')}</h2>
@@ -1349,7 +1350,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                          <GitMerge size={10} className="text-slate-600"/> {t('matching.pairs') || 'Pairs'}: {connections.length}/{items.length}
                      </span>
                      {isChecked && (
-                         <span className={`inline-flex items-center gap-1 text-[0.6875rem] font-bold border px-2 py-0.5 rounded-full ${score === items.length * 25 ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-indigo-100 text-indigo-700 border-indigo-200'} ${!useReducedMotion() ? 'animate-in zoom-in duration-300' : ''}`}>
+                         <span className={`inline-flex items-center gap-1 text-[0.6875rem] font-bold border px-2 py-0.5 rounded-full ${score === items.length * 25 ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-indigo-100 text-indigo-700 border-indigo-200'} ${!useReducedMotion() ? 'animate-in motion-reduce:animate-none zoom-in duration-300' : ''}`}>
                              <Trophy size={10} className="text-yellow-500"/> {t('matching.score_display')}: {score} pts
                          </span>
                      )}
@@ -1950,7 +1951,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
      // bestScore intentionally preserved across resets within the same game session.
   };
   return (
-    <div ref={timelineDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="timeline-game-title" className={`fixed inset-0 z-[100] bg-slate-50 flex flex-col${reducedMotion ? '' : ' animate-in fade-in duration-300'}`}>
+    <div ref={timelineDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="timeline-game-title" className={`fixed inset-0 z-[100] bg-slate-50 flex flex-col${reducedMotion ? '' : ' animate-in motion-reduce:animate-none fade-in duration-300'}`}>
        <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
        <div className="p-4 bg-indigo-600 text-white flex flex-wrap justify-between items-center gap-3 shrink-0 shadow-md z-20">
            <div>
@@ -1989,11 +1990,11 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
            <div className="max-w-3xl mx-auto relative min-h-full pb-20">
                {!isWon && (
                    <div className="sticky top-0 z-30 flex flex-col items-center gap-2 mb-8">
-                       <div className={`bg-white/90 backdrop-blur-sm px-6 py-2 rounded-full border border-indigo-100 shadow-sm text-indigo-600 text-xs font-bold uppercase tracking-wider flex items-center gap-2${reducedMotion ? '' : ' animate-in slide-in-from-top-2'}`}>
+                       <div className={`bg-white/90 backdrop-blur-sm px-6 py-2 rounded-full border border-indigo-100 shadow-sm text-indigo-600 text-xs font-bold uppercase tracking-wider flex items-center gap-2${reducedMotion ? '' : ' animate-in motion-reduce:animate-none slide-in-from-top-2'}`}>
                            <ArrowDown size={14} aria-hidden="true" /> {t('timeline.game.arrange_instruction')} <ArrowDown size={14} aria-hidden="true" />
                        </div>
                        {progressionLabel && (
-                           <div className={`bg-indigo-600 text-white px-4 py-1.5 rounded-full text-xs font-bold flex flex-col items-center gap-0.5 shadow-md${reducedMotion ? '' : ' animate-in slide-in-from-top-3'}`}>
+                           <div className={`bg-indigo-600 text-white px-4 py-1.5 rounded-full text-xs font-bold flex flex-col items-center gap-0.5 shadow-md${reducedMotion ? '' : ' animate-in motion-reduce:animate-none slide-in-from-top-3'}`}>
                                <div className="flex items-center gap-2">
                                    <span className="opacity-70">{t('timeline.order_by')}</span> {progressionLabel}
                                </div>
@@ -2070,7 +2071,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                        </div>
                                        <div className="pe-6 sm:px-2">
                                            {isWon && (item.date || item.date_en) && (
-                                               <div className={`inline-block px-2 py-0.5 rounded-md text-[11px] font-black uppercase tracking-wider mb-2 bg-green-100 text-green-800 ${reducedMotion ? '' : 'animate-in zoom-in'}`}>
+                                               <div className={`inline-block px-2 py-0.5 rounded-md text-[11px] font-black uppercase tracking-wider mb-2 bg-green-100 text-green-800 ${reducedMotion ? '' : 'animate-in motion-reduce:animate-none zoom-in'}`}>
                                                    {item.date}
                                                </div>
                                            )}
@@ -2747,7 +2748,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
       return () => clearTimeout(id);
   }, [hasUsedKeyboardCard, hintAutoHidden]);
   return (
-    <div ref={conceptSortDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="concept-sort-game-title" className={`fixed inset-0 z-[200] bg-slate-50 flex flex-col${useReducedMotion() ? '' : ' animate-in fade-in duration-300'}`} data-help-key="concept_sort_game">
+    <div ref={conceptSortDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="concept-sort-game-title" className={`fixed inset-0 z-[200] bg-slate-50 flex flex-col${useReducedMotion() ? '' : ' animate-in motion-reduce:animate-none fade-in duration-300'}`} data-help-key="concept_sort_game">
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{announcement}</div>
       <div className="p-4 bg-indigo-600 text-white flex justify-between items-center shrink-0 shadow-md z-20" style={{ flexWrap: 'wrap', gap: '0.5rem' }}>
         <div>
@@ -3312,7 +3313,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
   const vennShared = useMemo(() => items.filter(i => i.currentZone === 'shared'), [items]);
   const vennBank = useMemo(() => items.filter(i => i.currentZone === 'bank'), [items]);
   return (
-      <div ref={vennDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="venn-game-title" className={`fixed inset-0 z-[200] bg-slate-50 flex flex-col${reducedMotion ? '' : ' animate-in zoom-in-95'}`} data-help-key="venn_game_container">
+      <div ref={vennDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="venn-game-title" className={`fixed inset-0 z-[200] bg-slate-50 flex flex-col${reducedMotion ? '' : ' animate-in motion-reduce:animate-none zoom-in-95'}`} data-help-key="venn_game_container">
           <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
           <div className="bg-indigo-600 p-3 sm:p-4 text-white flex flex-wrap justify-between items-center gap-3 shadow-md z-30">
               <h3 id="venn-game-title" className="font-bold text-xl flex items-center gap-2" data-help-key="venn_header">
@@ -3359,7 +3360,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                         const first = focusable[0], last = focusable[focusable.length - 1];
                         if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
                         else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
-                      }} className={`relative z-10 bg-white p-8 rounded-3xl text-center shadow-2xl ${!reducedMotion ? 'animate-in zoom-in-95 duration-300' : ''}`}>
+                      }} className={`relative z-10 bg-white p-8 rounded-3xl text-center shadow-2xl ${!reducedMotion ? 'animate-in motion-reduce:animate-none zoom-in-95 duration-300' : ''}`}>
                         <h2 id="venn-victory-title" className="text-4xl font-black text-indigo-600 mb-2">{t('concept_map.venn.victory_title')}</h2>
                         <p id="venn-victory-description" className="text-slate-600">{t('concept_map.venn.victory_desc')}</p>
                         <div className="mt-6 flex flex-wrap justify-center gap-3">
@@ -3379,7 +3380,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                     <div
                         ref={moveMenuRef}
                         style={{ maxHeight: 'calc(100dvh - 2rem)', overflowY: 'auto' }}
-                        className={`bg-white p-6 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-3 max-w-md w-full${reducedMotion ? '' : ' animate-in zoom-in duration-200'}`}
+                        className={`bg-white p-6 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-3 max-w-md w-full${reducedMotion ? '' : ' animate-in motion-reduce:animate-none zoom-in duration-200'}`}
                         role="dialog"
                         aria-modal="true"
                         aria-labelledby="venn-move-menu-title"
@@ -3446,7 +3447,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                                 aria-label={t('concept_map.venn.item_aria', { item: getText(item), zone: getTitle('setA') })}
                                 aria-pressed={keyboardSelectedItemId === item.id}
                                 onClick={(event) => toggleKeyboardSelection(event, item)}
-                                data-help-key="venn_sorted_item" className={`min-h-11 bg-white text-rose-700 px-3 py-1.5 rounded-lg shadow-sm text-xs font-bold border-b-2 border-rose-200 cursor-pointer hover:bg-rose-50 focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 ${reducedMotion ? '' : 'animate-in zoom-in'} ${keyboardSelectedItemId === item.id ? `ring-4 ring-yellow-400 z-50 ${reducedMotion ? '' : 'scale-110'}` : ''}`}
+                                data-help-key="venn_sorted_item" className={`min-h-11 bg-white text-rose-700 px-3 py-1.5 rounded-lg shadow-sm text-xs font-bold border-b-2 border-rose-200 cursor-pointer hover:bg-rose-50 focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 ${reducedMotion ? '' : 'animate-in motion-reduce:animate-none zoom-in'} ${keyboardSelectedItemId === item.id ? `ring-4 ring-yellow-400 z-50 ${reducedMotion ? '' : 'scale-110'}` : ''}`}
                               >
                                 <span lang={getTextLang(item)}>{getText(item)}</span>
                               </button>
@@ -3471,7 +3472,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                                 aria-label={t('concept_map.venn.item_aria', { item: getText(item), zone: getTitle('setB') })}
                                 aria-pressed={keyboardSelectedItemId === item.id}
                                 onClick={(event) => toggleKeyboardSelection(event, item)}
-                                data-help-key="venn_sorted_item" className={`min-h-11 bg-white text-blue-700 px-3 py-1.5 rounded-lg shadow-sm text-xs font-bold border-b-2 border-blue-200 cursor-pointer hover:bg-blue-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${reducedMotion ? '' : 'animate-in zoom-in'} ${keyboardSelectedItemId === item.id ? `ring-4 ring-yellow-400 z-50 ${reducedMotion ? '' : 'scale-110'}` : ''}`}
+                                data-help-key="venn_sorted_item" className={`min-h-11 bg-white text-blue-700 px-3 py-1.5 rounded-lg shadow-sm text-xs font-bold border-b-2 border-blue-200 cursor-pointer hover:bg-blue-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${reducedMotion ? '' : 'animate-in motion-reduce:animate-none zoom-in'} ${keyboardSelectedItemId === item.id ? `ring-4 ring-yellow-400 z-50 ${reducedMotion ? '' : 'scale-110'}` : ''}`}
                               >
                                 <span lang={getTextLang(item)}>{getText(item)}</span>
                               </button>
@@ -3497,7 +3498,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                                 aria-label={t('concept_map.venn.item_aria', { item: getText(item), zone: t('concept_map.venn.shared_label') })}
                                 aria-pressed={keyboardSelectedItemId === item.id}
                                 onClick={(event) => toggleKeyboardSelection(event, item)}
-                                data-help-key="venn_sorted_item" className={`min-h-11 bg-white text-purple-700 px-2 py-1 rounded shadow-sm text-[11px] font-bold border-b-2 border-purple-200 cursor-pointer hover:bg-purple-50 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${reducedMotion ? '' : 'animate-in zoom-in'} ${keyboardSelectedItemId === item.id ? `ring-4 ring-yellow-400 z-50 ${reducedMotion ? '' : 'scale-110'}` : ''}`}
+                                data-help-key="venn_sorted_item" className={`min-h-11 bg-white text-purple-700 px-2 py-1 rounded shadow-sm text-[11px] font-bold border-b-2 border-purple-200 cursor-pointer hover:bg-purple-50 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${reducedMotion ? '' : 'animate-in motion-reduce:animate-none zoom-in'} ${keyboardSelectedItemId === item.id ? `ring-4 ring-yellow-400 z-50 ${reducedMotion ? '' : 'scale-110'}` : ''}`}
                               >
                                 <span lang={getTextLang(item)}>{getText(item)}</span>
                               </button>
@@ -3512,7 +3513,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                   {vennBank.map(item => (
                       <div
                           key={item.id}
-                          className={`min-h-11 bg-white rounded-xl shadow-sm border-b-4 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 text-slate-700 font-bold text-sm flex items-center justify-center gap-1.5 text-center ${reducedMotion ? '' : 'animate-in zoom-in duration-300'} ${keyboardSelectedItemId === item.id ? `ring-4 ring-yellow-400 border-yellow-500 z-50 ${reducedMotion ? '' : 'scale-110'}` : ''} ${draggedItem && draggedItem.id === item.id ? `opacity-30 ${reducedMotion ? '' : 'scale-95'}` : ''}`}
+                          className={`min-h-11 bg-white rounded-xl shadow-sm border-b-4 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 text-slate-700 font-bold text-sm flex items-center justify-center gap-1.5 text-center ${reducedMotion ? '' : 'animate-in motion-reduce:animate-none zoom-in duration-300'} ${keyboardSelectedItemId === item.id ? `ring-4 ring-yellow-400 border-yellow-500 z-50 ${reducedMotion ? '' : 'scale-110'}` : ''} ${draggedItem && draggedItem.id === item.id ? `opacity-30 ${reducedMotion ? '' : 'scale-95'}` : ''}`}
                       >
                           <button
                               type="button"
@@ -3764,7 +3765,7 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
       return (
           <div
               key={item.id}
-              className={`min-h-11 bg-white rounded-xl shadow-sm border-2 ${toneClass} flex items-center justify-center gap-1.5 text-center ${reducedMotion ? '' : 'animate-in zoom-in duration-300'} ${keyboardSelectedItemId === item.id ? `ring-4 ring-yellow-400 z-50 ${reducedMotion ? '' : 'scale-110'}` : ''} ${draggedItem && draggedItem.id === item.id ? `opacity-30 ${reducedMotion ? '' : 'scale-95'}` : ''}`}
+              className={`min-h-11 bg-white rounded-xl shadow-sm border-2 ${toneClass} flex items-center justify-center gap-1.5 text-center ${reducedMotion ? '' : 'animate-in motion-reduce:animate-none zoom-in duration-300'} ${keyboardSelectedItemId === item.id ? `ring-4 ring-yellow-400 z-50 ${reducedMotion ? '' : 'scale-110'}` : ''} ${draggedItem && draggedItem.id === item.id ? `opacity-30 ${reducedMotion ? '' : 'scale-95'}` : ''}`}
           >
               <button
                   type="button"
@@ -3784,7 +3785,7 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
       );
   };
   return (
-      <div ref={gameContainerRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="cause-effect-game-title" className={`fixed inset-0 z-[200] bg-slate-50 flex flex-col${reducedMotion ? '' : ' animate-in zoom-in-95'}`}>
+      <div ref={gameContainerRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="cause-effect-game-title" className={`fixed inset-0 z-[200] bg-slate-50 flex flex-col${reducedMotion ? '' : ' animate-in motion-reduce:animate-none zoom-in-95'}`}>
           <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
           <div className="bg-gradient-to-r from-orange-700 to-teal-700 p-3 sm:p-4 text-white flex flex-wrap justify-between items-center gap-3 shadow-md z-30">
               <div>
@@ -3824,7 +3825,7 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                         const first = focusable[0], last = focusable[focusable.length - 1];
                         if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
                         else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
-                      }} className={`relative z-10 bg-white p-8 rounded-3xl text-center shadow-2xl ${!reducedMotion ? 'animate-in zoom-in-95 duration-300' : ''}`}>
+                      }} className={`relative z-10 bg-white p-8 rounded-3xl text-center shadow-2xl ${!reducedMotion ? 'animate-in motion-reduce:animate-none zoom-in-95 duration-300' : ''}`}>
                         <h2 id="cause-effect-win-title" className="text-4xl font-black text-indigo-600 mb-2">{t('concept_map.venn.victory_title') || 'Perfect!'}</h2>
                         <p id="cause-effect-win-description" className="text-slate-600">{t('games.ce_sort.victory_desc') || 'You sorted all causes and effects correctly!'}</p>
                         <p className="text-2xl font-black text-yellow-500 mt-2">{score} pts</p>
@@ -3841,7 +3842,7 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                     <div
                         ref={moveMenuRef}
                         style={{ maxHeight: 'calc(100dvh - 2rem)', overflowY: 'auto' }}
-                        className={`bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 max-w-md w-full${reducedMotion ? '' : ' animate-in zoom-in duration-200'}`}
+                        className={`bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 max-w-md w-full${reducedMotion ? '' : ' animate-in motion-reduce:animate-none zoom-in duration-200'}`}
                         role="dialog"
                         aria-modal="true"
                         aria-labelledby="cause-effect-move-menu-title"
@@ -4158,7 +4159,7 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
         key={item.id}
         draggable={inBank}
         onDragStart={inBank ? (event) => handleDragStart(event, item) : undefined}
-        className={`flex items-center gap-1.5 rounded-xl ${inBank ? 'bg-white shadow-sm border-b-4 border-slate-200' : 'bg-white shadow-sm'} ${selected ? 'ring-4 ring-yellow-400 border-yellow-500 z-30' : ''} ${reducedMotion ? '' : 'animate-in zoom-in duration-300'}`}
+        className={`flex items-center gap-1.5 rounded-xl ${inBank ? 'bg-white shadow-sm border-b-4 border-slate-200' : 'bg-white shadow-sm'} ${selected ? 'ring-4 ring-yellow-400 border-yellow-500 z-30' : ''} ${reducedMotion ? '' : 'animate-in motion-reduce:animate-none zoom-in duration-300'}`}
       >
         <button
           type="button"
@@ -4208,7 +4209,7 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
     chip: 'text-indigo-800 border-s-4 border-indigo-400 hover:bg-indigo-50 focus:ring-indigo-500'
   };
   return (
-    <div ref={gameContainerRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="tchart-game-title" className={`fixed inset-0 z-[200] bg-slate-50 flex flex-col${reducedMotion ? '' : ' animate-in zoom-in-95'}` }>
+    <div ref={gameContainerRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="tchart-game-title" className={`fixed inset-0 z-[200] bg-slate-50 flex flex-col${reducedMotion ? '' : ' animate-in motion-reduce:animate-none zoom-in-95'}` }>
       <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
       <div className="bg-gradient-to-r from-cyan-700 to-indigo-700 p-4 text-white flex flex-wrap justify-between items-center gap-3 shadow-md z-30">
         <div>
@@ -4265,7 +4266,7 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
             <div
               ref={moveMenuRef}
               style={{ maxHeight: 'calc(100dvh - 2rem)', overflowY: 'auto' }}
-              className={`bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 max-w-md w-full ${reducedMotion ? '' : 'animate-in zoom-in duration-200'}`}
+              className={`bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 max-w-md w-full ${reducedMotion ? '' : 'animate-in motion-reduce:animate-none zoom-in duration-200'}`}
               role="dialog"
               aria-modal="true"
               aria-labelledby="tchart-move-menu-title"
@@ -4519,7 +4520,7 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
         key={item.id}
         draggable={isBank}
         onDragStart={isBank ? (event) => handleDragStart(event, item) : undefined}
-        className={`flex items-center gap-1 rounded-lg bg-white shadow-sm ${selected ? 'ring-4 ring-yellow-400 border-yellow-500 z-30' : ''} ${reducedMotion ? '' : 'animate-in zoom-in duration-300'}`}
+        className={`flex items-center gap-1 rounded-lg bg-white shadow-sm ${selected ? 'ring-4 ring-yellow-400 border-yellow-500 z-30' : ''} ${reducedMotion ? '' : 'animate-in motion-reduce:animate-none zoom-in duration-300'}`}
       >
         <button
           type="button"
@@ -4536,7 +4537,7 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
     );
   };
   return (
-    <div ref={gameContainerRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="multi-bucket-game-title" className={`fixed inset-0 z-[200] bg-slate-50 flex flex-col${reducedMotion ? '' : ' animate-in zoom-in-95'}` }>
+    <div ref={gameContainerRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="multi-bucket-game-title" className={`fixed inset-0 z-[200] bg-slate-50 flex flex-col${reducedMotion ? '' : ' animate-in motion-reduce:animate-none zoom-in-95'}` }>
       <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
       <div className={`bg-gradient-to-r ${headerGradient} p-4 text-white flex flex-wrap justify-between items-center gap-3 shadow-md z-30`}>
         <div>
@@ -4583,7 +4584,7 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
             <div
               ref={moveMenuRef}
               style={{ maxHeight: 'calc(100dvh - 2rem)', overflowY: 'auto' }}
-              className={`bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 max-w-md w-full${reducedMotion ? '' : ' animate-in zoom-in duration-200'}`}
+              className={`bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 max-w-md w-full${reducedMotion ? '' : ' animate-in motion-reduce:animate-none zoom-in duration-200'}`}
               role="dialog"
               aria-modal="true"
               aria-labelledby="multi-bucket-move-title"
@@ -5124,7 +5125,7 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
   if (shuffledSteps.length === 0) return null;
 
   return (
-    <div ref={pipelineDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="pipeline-game-title" className={`fixed inset-0 z-[200] bg-slate-50 flex flex-col${useReducedMotion() ? '' : ' animate-in zoom-in-95'}` }>
+    <div ref={pipelineDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="pipeline-game-title" className={`fixed inset-0 z-[200] bg-slate-50 flex flex-col${useReducedMotion() ? '' : ' animate-in motion-reduce:animate-none zoom-in-95'}` }>
       <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
       <div className="bg-gradient-to-r from-indigo-700 via-purple-700 to-indigo-700 p-4 text-white flex justify-between items-center shadow-md z-30">
         <div>
@@ -5784,7 +5785,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
     }));
   };
   return (
-    <div ref={crosswordDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="crossword-game-title" className="allo-glossary-print-dialog glossary-crossword-dialog fixed inset-0 z-[100] bg-white flex flex-col motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300" data-help-key="crossword_game_container">
+    <div ref={crosswordDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="crossword-game-title" className="allo-glossary-print-dialog glossary-crossword-dialog fixed inset-0 z-[100] bg-white flex flex-col motion-safe:animate-in motion-reduce:animate-none motion-safe:fade-in motion-safe:duration-300" data-help-key="crossword_game_container">
       <GlossaryPrintStyles />
       <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
       {/* no-print: W2 rendered this under emulateMedia('print') and the indigo
@@ -6117,7 +6118,7 @@ const SyntaxScramble = React.memo(({ text, onClose, playSound, onScoreUpdate, on
     setCurrentSentenceIndex(prev => prev + 1);
   };
   return (
-    <div role="presentation" className={`fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4${useReducedMotion() ? '' : ' animate-in zoom-in-95'}` }>
+    <div role="presentation" className={`fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4${useReducedMotion() ? '' : ' animate-in motion-reduce:animate-none zoom-in-95'}` }>
       <div ref={syntaxDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="syntax-game-title" className="bg-white w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         <div className="bg-indigo-600 p-4 text-white flex flex-wrap gap-3 justify-between items-center">
            <h3 id="syntax-game-title" className="font-bold text-xl flex items-center gap-2"><Layout size={24} aria-hidden="true"/> {t('games.syntax.title')}</h3>
@@ -6131,7 +6132,7 @@ const SyntaxScramble = React.memo(({ text, onClose, playSound, onScoreUpdate, on
            {sentences.length === 0 ? (
                <p role="status" className="w-full rounded-xl border border-amber-300 bg-amber-50 p-5 text-amber-900">{gameMessage(t, 'games.syntax.empty', 'Add a sentence with at least four words and fewer than 150 characters to play Syntax Scramble.')}</p>
            ) : gameStatus === 'complete' ? (
-               <div role="status" aria-labelledby="syntax-complete-title" className={`text-center${useReducedMotion() ? '' : ' animate-in zoom-in'}` }>
+               <div role="status" aria-labelledby="syntax-complete-title" className={`text-center${useReducedMotion() ? '' : ' animate-in motion-reduce:animate-none zoom-in'}` }>
                    {!useReducedMotion() && <ConfettiExplosion />}
                    <Trophy size={64} className="text-yellow-500 mx-auto mb-4" aria-hidden="true"/>
                    <h2 id="syntax-complete-title" className="text-3xl font-black text-slate-800 mb-2">{t('games.syntax.complete')}</h2>
@@ -6345,7 +6346,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
       };
   }, []);
   return (
-    <div ref={bingoDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="bingo-generator-title" className="allo-glossary-print-dialog glossary-bingo-dialog fixed inset-0 z-[100] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300">
+    <div ref={bingoDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="bingo-generator-title" className="allo-glossary-print-dialog glossary-bingo-dialog fixed inset-0 z-[100] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 motion-safe:animate-in motion-reduce:animate-none motion-safe:fade-in motion-safe:duration-300">
         <GlossaryPrintStyles />
         <div className="bg-white w-full max-w-6xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh] p-6 relative bingo-modal-container">
             <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
@@ -6490,7 +6491,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                 <div className="flex-grow flex flex-col md:flex-row gap-4 overflow-y-auto">
                     <div className="flex-grow shrink-0 min-w-0 bg-slate-100 rounded-2xl border-4 border-teal-500 flex flex-col items-center justify-center p-4 sm:p-8 text-center relative shadow-inner">
                         {currentCallIndex >= 0 ? (
-                            <div role="status" aria-live="polite" className="motion-safe:animate-in motion-safe:zoom-in motion-safe:duration-300 max-w-3xl">
+                            <div role="status" aria-live="polite" className="motion-safe:animate-in motion-reduce:animate-none motion-safe:zoom-in motion-safe:duration-300 max-w-3xl">
                                 <div className="mb-6">
                                     <span className="bg-teal-100 text-teal-800 text-xs font-black uppercase tracking-widest px-3 py-1 rounded-full border border-teal-200">{t('bingo.current_clue')}</span>
                                 </div>
@@ -6536,7 +6537,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                             {isHistoryVisible ? (
                                 <>
                                     {callerQueue.slice(0, currentCallIndex + 1).reverse().map((item, i) => (
-                                        <div key={currentCallIndex - i} className={`bg-white p-3 rounded border shadow-sm flex items-center justify-between motion-safe:animate-in motion-safe:slide-in-from-left-2 ${i === 0 ? 'border-teal-400 ring-1 ring-teal-200' : 'border-slate-400'}`}>
+                                        <div key={currentCallIndex - i} className={`bg-white p-3 rounded border shadow-sm flex items-center justify-between motion-safe:animate-in motion-reduce:animate-none motion-safe:slide-in-from-left-2 ${i === 0 ? 'border-teal-400 ring-1 ring-teal-200' : 'border-slate-400'}`}>
                                             <span className="font-bold text-slate-800 text-sm">{item.term}</span>
                                             <span className="text-[0.6875rem] text-slate-600 font-mono">#{currentCallIndex - i + 1}</span>
                                         </div>
@@ -7013,7 +7014,7 @@ const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete 
       }
   };
   return (
-    <div ref={studentBingoDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="student-bingo-title" className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center p-2 sm:p-4 motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-95 motion-safe:duration-300">
+    <div ref={studentBingoDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="student-bingo-title" className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center p-2 sm:p-4 motion-safe:animate-in motion-reduce:animate-none motion-safe:fade-in motion-safe:zoom-in-95 motion-safe:duration-300">
         <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
         {isWon && !reducedMotion && <ConfettiExplosion />}
         <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden border-4 border-indigo-500 flex flex-col max-h-[90vh]">
@@ -7065,7 +7066,7 @@ const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete 
                                     {isMarked && (
                                         <span className="absolute top-1 right-1 flex items-center justify-center z-10 pointer-events-none" aria-hidden="true">
                                             {cell.type === 'free' ? (
-                                                <Star size={32} className="text-yellow-500 fill-yellow-400 drop-shadow-sm motion-safe:animate-in motion-safe:zoom-in motion-safe:duration-300" />
+                                                <Star size={32} className="text-yellow-500 fill-yellow-400 drop-shadow-sm motion-safe:animate-in motion-reduce:animate-none motion-safe:zoom-in motion-safe:duration-300" />
                                             ) : (
                                                 <span className="w-4 h-4 rounded-full bg-indigo-700 text-white flex items-center justify-center text-xs font-black">✓</span>
                                             )}
@@ -7094,7 +7095,7 @@ const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete 
                 </div>
             </div>
             {isWon && (
-                <div role="status" className="p-4 bg-green-100 border-t border-green-200 text-center motion-safe:animate-in motion-safe:slide-in-from-bottom-4 motion-safe:duration-300">
+                <div role="status" className="p-4 bg-green-100 border-t border-green-200 text-center motion-safe:animate-in motion-reduce:animate-none motion-safe:slide-in-from-bottom-4 motion-safe:duration-300">
                     <h3 className="text-2xl font-black text-green-700 motion-safe:animate-bounce">{t('bingo.win_header')}</h3>
                     <p className="text-green-800 text-sm">{t('bingo.win_message')}</p>
                 </div>
@@ -7273,7 +7274,7 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate, 
       ? hintCells.slice(0, hintLevel).join('') + '_ '.repeat(Math.max(0, hintCells.length - hintLevel)).trim()
       : null;
   return (
-    <div ref={scrambleDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="word-scramble-title" className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 motion-safe:animate-in motion-safe:zoom-in-95">
+    <div ref={scrambleDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="word-scramble-title" className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 motion-safe:animate-in motion-reduce:animate-none motion-safe:zoom-in-95">
         <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col relative max-h-[95vh] overflow-y-auto p-4 sm:p-8 text-center border-4 border-indigo-500">
             <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
             <GameReadingSettingsButton className="absolute top-4 right-16 text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 focus-visible:ring-indigo-600" />
@@ -7295,7 +7296,7 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate, 
             </div>
             <div className="flex-grow flex flex-col items-center justify-center min-h-[300px] bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 p-3 sm:p-6 gap-4 sm:gap-6">
                 {isGameOver ? (
-                    <div role="status" className="text-center motion-safe:animate-in motion-safe:zoom-in">
+                    <div role="status" className="text-center motion-safe:animate-in motion-reduce:animate-none motion-safe:zoom-in">
                         {!useReducedMotion() && <ConfettiExplosion />}
                         <Trophy size={64} className="text-yellow-500 mx-auto mb-4" aria-hidden="true"/>
                         <h2 className="text-3xl font-black text-slate-800 mb-2">{t('games.syntax.complete')}</h2>
@@ -7337,7 +7338,7 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate, 
                             {gameGraphemes(scrambled).map((char, idx) => (
                                 <div
                                     key={`${currentIndex}-${idx}`}
-                                    className="w-12 h-12 sm:w-16 sm:h-16 bg-white border-b-4 border-indigo-300 rounded-lg flex items-center justify-center text-2xl sm:text-4xl font-black text-indigo-900 shadow-sm uppercase motion-safe:animate-in motion-safe:zoom-in"
+                                    className="w-12 h-12 sm:w-16 sm:h-16 bg-white border-b-4 border-indigo-300 rounded-lg flex items-center justify-center text-2xl sm:text-4xl font-black text-indigo-900 shadow-sm uppercase motion-safe:animate-in motion-reduce:animate-none motion-safe:zoom-in"
                                     style={{ animationDelay: `${idx * 50}ms` }}
                                 >
                                     {char}
@@ -7349,11 +7350,11 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate, 
                           {' · '}{gameMessage(t, 'games.scramble.hint_cost_note', 'Each hint reduces this word by 3 points, down to 0.')}
                         </p>
                         {hintText && (
-                            <div className="bg-amber-50 border-2 border-amber-300 text-amber-800 px-4 py-2 rounded-xl font-mono text-xl tracking-[0.3em] font-bold motion-safe:animate-in motion-safe:fade-in">
+                            <div className="bg-amber-50 border-2 border-amber-300 text-amber-800 px-4 py-2 rounded-xl font-mono text-xl tracking-[0.3em] font-bold motion-safe:animate-in motion-reduce:animate-none motion-safe:fade-in">
                                 {hintText}
                             </div>
                         )}
-                        <div className="flex flex-col gap-3 w-full max-w-xs motion-safe:animate-in motion-safe:slide-in-from-bottom-4 motion-safe:fade-in">
+                        <div className="flex flex-col gap-3 w-full max-w-xs motion-safe:animate-in motion-reduce:animate-none motion-safe:slide-in-from-bottom-4 motion-safe:fade-in">
                             <input
                                 ref={scrambleInputRef}
                                 type="text"
@@ -8092,7 +8093,7 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
                 if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
                 else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
               }}
-              className={`bg-white rounded-2xl shadow-2xl border-2 border-indigo-500 p-5 max-w-lg w-full ${reducedMotion ? '' : 'animate-in zoom-in-95 duration-200'}`}
+              className={`bg-white rounded-2xl shadow-2xl border-2 border-indigo-500 p-5 max-w-lg w-full ${reducedMotion ? '' : 'animate-in motion-reduce:animate-none zoom-in-95 duration-200'}`}
             >
               <h3 id="multi-zone-move-title" className="font-black text-slate-800 text-center mb-3">Choose a destination</h3>
               <DiagramSortTip hints={sortHints} onToggle={() => setAnnouncement(sortHints.toggle(keyboardSelectedItemId))} t={t} />
@@ -8129,7 +8130,7 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
                 if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
                 else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
               }}
-              className={`bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full text-center${reducedMotion ? '' : ' animate-in zoom-in-95 duration-300'}`}
+              className={`bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full text-center${reducedMotion ? '' : ' animate-in motion-reduce:animate-none zoom-in-95 duration-300'}`}
             >
               <div className="text-5xl mb-3" aria-hidden="true">🎉</div>
               <h3 id="multi-zone-win-title" className="text-2xl font-black text-slate-800 mb-2">{t('games.bucket_sort.all_sorted') || 'All sorted!'}</h3>

@@ -23,7 +23,7 @@ describe('Gemini Bridge WCAG dialog behavior', () => {
 
   it('uses explicit non-submit types for every button', () => {
     const jsxButtons = source.match(/<button\b[\s\S]*?>/g) || [];
-    expect(jsxButtons).toHaveLength(30);
+    expect(jsxButtons).toHaveLength(32);
     for (const button of jsxButtons) expect(button).toContain('type="button"');
     expect(source.match(/React\.createElement\('button', \{ type: 'button'/g)).toHaveLength(8);
   });

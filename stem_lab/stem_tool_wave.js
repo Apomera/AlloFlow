@@ -20,13 +20,28 @@ window.StemLab = window.StemLab || {
     document.head.appendChild(st);
   })();
 
-  // WCAG 1.4.3 high contrast: host buttons go black with green ink; drop the gradient painted over that black
+  // WCAG 1.4.3 high contrast & dark-remap -900/-950 ink parity (stem-tool-shell-contrast sets #1e293b on .bg-*-50)
   (function() {
-    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-wave-hc-css')) return;
-    var st = document.createElement('style');
-    st.id = 'allo-wave-hc-css';
-    st.textContent = ".theme-contrast [data-stem-tool-shell=\"wave\"] button[class*=\"bg-gradient\"]{background-image:none!important}";
-    document.head.appendChild(st);
+    if (typeof document === 'undefined' || !document.head) return;
+    if (!document.getElementById('allo-wave-hc-css')) {
+      var st = document.createElement('style');
+      st.id = 'allo-wave-hc-css';
+      st.textContent = ".theme-contrast [data-stem-tool-shell=\"wave\"] button[class*=\"bg-gradient\"]{background-image:none!important}";
+      document.head.appendChild(st);
+    }
+    if (!document.getElementById('allo-wave-dark-remap-css')) {
+      var stDark = document.createElement('style');
+      stDark.id = 'allo-wave-dark-remap-css';
+      stDark.textContent =
+        ".theme-dark [data-stem-tool-shell=\"wave\"] :is(.text-amber-900,.text-amber-950){color:#fef3c7!important}" +
+        ".theme-dark [data-stem-tool-shell=\"wave\"] :is(.text-cyan-900,.text-cyan-950){color:#cffafe!important}" +
+        ".theme-dark [data-stem-tool-shell=\"wave\"] :is(.text-sky-900,.text-sky-950){color:#e0f2fe!important}" +
+        ".theme-dark [data-stem-tool-shell=\"wave\"] :is(.text-indigo-900,.text-indigo-950){color:#e0e7ff!important}" +
+        ".theme-dark [data-stem-tool-shell=\"wave\"] :is(.text-fuchsia-900,.text-fuchsia-950){color:#fae8ff!important}" +
+        ".theme-dark [data-stem-tool-shell=\"wave\"] :is(.text-emerald-900,.text-emerald-950,.text-teal-900,.text-teal-950){color:#d1fae5!important}" +
+        ".theme-dark [data-stem-tool-shell=\"wave\"] :is(.text-rose-900,.text-rose-950,.text-pink-900,.text-red-900){color:#ffe4e6!important}";
+      document.head.appendChild(stDark);
+    }
   })();
 
   // WCAG 4.1.3: Status live region for dynamic content announcements
@@ -45,10 +60,16 @@ window.StemLab = window.StemLab || {
 
   // "Play Sound" oscillator lives at module scope — NOT in toolData, where the
   // live AudioContext would get captured by Snapshot's Object.assign({}, d).
-  var _waveAudio = { ctx: null, osc: null, osc2: null };
+  var _waveAudio = { ctx: null, osc: null, gain: null, osc2: null, gain2: null, dopplerFlyby: null };
   function _waveAudioStop() {
+    try { if (_waveAudio.dopplerFlyby && _waveAudio.dopplerFlyby.timer) clearTimeout(_waveAudio.dopplerFlyby.timer); } catch (e) {}
     try { if (_waveAudio.ctx) _waveAudio.ctx.close(); } catch (e) {}
-    _waveAudio.ctx = null; _waveAudio.osc = null; _waveAudio.osc2 = null;
+    _waveAudio.ctx = null;
+    _waveAudio.osc = null;
+    _waveAudio.gain = null;
+    _waveAudio.osc2 = null;
+    _waveAudio.gain2 = null;
+    _waveAudio.dopplerFlyby = null;
   }
 
   // ═════════════════════════════════════════════════════════════════════
@@ -61,6 +82,13 @@ window.StemLab = window.StemLab || {
     { id: 'seawater', icon: '🌊', labelKey: 'stem.wave.medium_seawater', label: 'Seawater', speed: 1500 },
     { id: 'string', icon: '🎸', labelKey: 'stem.wave.medium_string', label: 'Guitar String', speed: 71 },
     { id: 'shallow', icon: '🫧', labelKey: 'stem.wave.medium_shallow', label: 'Ripple Tank', speed: 120 }
+  ];
+
+  var WAVE_STRING_PRESETS = [
+    { id: 'nylon_e4', icon: '\uD83C\uDFB8', labelKey: 'stem.wave.str_nylon', label: 'Nylon Guitar E4', tensionN: 70, tension: 70, densityGm: 0.6 },
+    { id: 'steel_g3', icon: '\uD83E\uDE95', labelKey: 'stem.wave.str_steel', label: 'Steel Acoustic G3', tensionN: 135, tension: 135, densityGm: 1.5 },
+    { id: 'violin_a4', icon: '\uD83C\uDFBB', labelKey: 'stem.wave.str_violin', label: 'Violin A4', tensionN: 60, tension: 60, densityGm: 1.5 },
+    { id: 'bass_e1', icon: '\uD83C\uDFB5', labelKey: 'stem.wave.str_bass', label: 'Bass Wound E1', tensionN: 180, tension: 180, densityGm: 18.0 }
   ];
 
   var WAVE_MISSIONS = [
@@ -206,11 +234,24 @@ window.StemLab = window.StemLab || {
   var WAVE_VALID_TABS = { explore: 1, missions: 1, analyze: 1, notebook: 1, library: 1, all: 1 };
   var WAVE_VALID_BANDS = { '3-5': 1, '6-8': 1, '9-12': 1 };
   var WAVE_VALID_BOUNDARIES = { bothFixed: 1, openOpen: 1, fixedFree: 1 };
-  var WAVE_VALID_RIPPLE_BARRIERS = { none: 1, singleSlit: 1, doubleSlit: 1, obstacle: 1 };
-  var WAVE_VALID_PACKET_MODES = { continuous: 1, packet: 1 };
+  var WAVE_VALID_RIPPLE_BARRIERS = { none: 1, singleSlit: 1, doubleSlit: 1, obstacle: 1, grating: 1 };
+  var WAVE_VALID_PACKET_MODES = { continuous: 1, packet: 1, collide: 1 };
+  var WAVE_VALID_COLLIDE_POLARITIES = { same: 1, opposite: 1 };
+  var WAVE_VALID_FILTERS = { none: 1, lowpass: 1, highpass: 1, oddOnly: 1 };
   var WAVE_VALID_LONGITUDINAL_MODES = { traveling: 1, standing: 1 };
   var WAVE_VALID_PROBE_SCOPES = { time: 1, lissajous: 1 };
-  var WAVE_VALID_DS_PLOTS = { freqWavelength: 1, ampEnergy: 1, dopplerMach: 1, snellAngles: 1, phasedBeam: 1 };
+  var WAVE_VALID_POLARIZATIONS = { s: 1, p: 1 };
+  var WAVE_VALID_DOPPLER_REGIMES = { acoustic: 1, relativistic: 1 };
+  var WAVE_VALID_DS_PLOTS = { freqWavelength: 1, ampEnergy: 1, dopplerMach: 1, snellAngles: 1, phasedBeam: 1, mersenneTension: 1, fresnelBrewster: 1, airTempSpeed: 1, resonanceCurve: 1, ftirTunneling: 1, inverseSquareDb: 1, youngFringeSpacing: 1, adcBitSqnr: 1, dopplerOffsetAngle: 1 };
+  var WAVE_INTERVAL_PRESETS = {
+    '1:1': { ratio: 1.0, label: 'Unison (1:1)', consonance: 'pure' },
+    '5:4': { ratio: 1.25, label: 'Major 3rd (5:4)', consonance: 'consonant' },
+    '4:3': { ratio: 4 / 3, label: 'Fourth (4:3)', consonance: 'consonant' },
+    '3:2': { ratio: 1.5, label: 'Fifth (3:2)', consonance: 'consonant' },
+    '2:1': { ratio: 2.0, label: 'Octave (2:1)', consonance: 'pure' }
+  };
+  var WAVE_VALID_INTERVAL_LOCKS = { none: 1, '1:1': 1, '5:4': 1, '4:3': 1, '3:2': 1, '2:1': 1 };
+  var WAVE_VALID_SPREADING_LAWS = { spherical: 1, cylindrical: 1 };
 
   function waveHasOwn(map, key) {
     return typeof key === 'string' && Object.prototype.hasOwnProperty.call(map, key);
@@ -341,6 +382,484 @@ window.StemLab = window.StemLab || {
     return (norm / Math.PI) - 1;
   }
 
+  function waveComputeStringSpeed(tensionN, densityGm) {
+    var T = waveClampNum(tensionN, 10, 400, 120);
+    var muGm = waveClampNum(densityGm, 0.5, 20, 3.0);
+    var rawV = Math.sqrt(T / (muGm / 1000));
+    return waveClampNum(Math.round(rawV * 10) / 10, 50, 1500, 200);
+  }
+
+  function waveComputeBrewsterAngle(medium2Ratio) {
+    var r = waveClampNum(medium2Ratio, 0.25, 2.0, 0.6);
+    var deg = Math.atan(1 / r) * 180 / Math.PI;
+    return Math.round(deg * 100) / 100;
+  }
+
+  function waveWavelengthNmToHex(nm) {
+    var w = isFinite(nm) ? nm : 656.3;
+    if (w < 380) return '#a78bfa';
+    if (w < 440) return '#818cf8';
+    if (w < 490) return '#38bdf8';
+    if (w < 530) return '#34d399';
+    if (w < 580) return '#a3e635';
+    if (w < 610) return '#facc15';
+    if (w < 645) return '#fb923c';
+    if (w <= 750) return '#ef4444';
+    return '#dc2626';
+  }
+
+  function waveComputeRelativisticDoppler(f0, sourceSpeedC, observerSpeedC) {
+    var baseF = waveClampNum(f0, 0.2, 2000, 2);
+    var betaS = Math.min(0.95, Math.max(0, isFinite(sourceSpeedC) ? sourceSpeedC : 0.3));
+    var betaO = waveClampNum(observerSpeedC, -0.8, 0.8, 0);
+    var gamma = 1 / Math.sqrt(Math.max(1e-6, 1 - betaS * betaS));
+    var betaApp = Math.max(-0.99, Math.min(0.99, (betaS + betaO) / Math.max(1e-6, 1 + betaS * betaO)));
+    var betaRec = Math.max(-0.99, Math.min(0.99, (betaS + betaO) / Math.max(1e-6, 1 + betaS * betaO)));
+    var dopApp = Math.sqrt((1 + betaApp) / Math.max(1e-6, 1 - betaApp));
+    var dopRec = Math.sqrt((1 - betaRec) / Math.max(1e-6, 1 + betaRec));
+    var fApp = baseF * dopApp;
+    var fRec = baseF * dopRec;
+    var zApp = (1 / Math.max(1e-6, dopApp)) - 1;
+    var zRec = (1 / Math.max(1e-6, dopRec)) - 1;
+    var hAlpha0 = 656.3;
+    var hAlphaAppNm = hAlpha0 * (1 + zApp);
+    var hAlphaRecNm = hAlpha0 * (1 + zRec);
+    return {
+      betaS: betaS,
+      betaO: betaO,
+      gamma: gamma,
+      approachingFreq: fApp,
+      recedingFreq: fRec,
+      redshiftApp: zApp,
+      redshiftRec: zRec,
+      hAlphaAppNm: hAlphaAppNm,
+      hAlphaRecNm: hAlphaRecNm
+    };
+  }
+
+  function waveComputePluckWeights(pluckPos) {
+    var xp = waveClampNum(pluckPos, 0.05, 0.95, 0.5);
+    var raw = [];
+    var maxW = 0;
+    for (var n = 1; n <= 5; n++) {
+      var val = Math.abs(Math.sin(n * Math.PI * xp)) / (n * n);
+      if (val < 1e-3) val = 0;
+      raw.push(val);
+      if (val > maxW) maxW = val;
+    }
+    if (maxW <= 1e-6) return [1, 0, 0, 0, 0];
+    var out = [];
+    for (var i = 0; i < 5; i++) {
+      var scaled = Math.round((raw[i] / maxW) * 100) / 100;
+      out.push(waveClampNum(scaled, 0, 1, 0));
+    }
+    return out;
+  }
+
+  function waveComputeAirSoundSpeed(tempC) {
+    var tc = waveClampNum(tempC, -30, 60, 20);
+    var rawV = 331.3 * Math.sqrt(Math.max(0.1, 1 + tc / 273.15));
+    return waveClampNum(Math.round(rawV * 10) / 10, 50, 1500, 343.2);
+  }
+
+  function waveComputeResonatorResponse(driveFreqRatio, resonatorQ, boundary, baseFreqOpt) {
+    var r = waveClampNum(driveFreqRatio, 0.25, 6.5, 1.0);
+    var Q = Math.round(waveClampNum(resonatorQ, 5, 80, 20));
+    var f1 = waveClampNum(baseFreqOpt, 0.5, 10, 2);
+    var bMode = waveHasOwn(WAVE_VALID_BOUNDARIES, boundary) ? boundary : 'bothFixed';
+    var nearestMode = 1;
+    var bestDist = Infinity;
+    var bestModeGain = -1;
+    var sumSq = 0;
+    for (var m = 1; m <= 6; m++) {
+      var rm = waveStandingGeometry(m, bMode).freqMultiplier;
+      var um = r / rm;
+      var gm = 1 / Math.sqrt(Q * Q * Math.pow(1 - um * um, 2) + um * um);
+      sumSq += gm * gm;
+      var dist = Math.abs(r - rm);
+      if (dist < bestDist - 1e-6 || (Math.abs(dist - bestDist) <= 1e-6 && gm > bestModeGain)) {
+        bestDist = dist;
+        bestModeGain = gm;
+        nearestMode = m;
+      }
+    }
+    var gainNorm = Math.min(1, Math.sqrt(sumSq));
+    var rNearest = waveStandingGeometry(nearestMode, bMode).freqMultiplier;
+    var uNear = r / rNearest;
+    var phaseLagRad = Math.atan2(uNear / Q, 1 - uNear * uNear);
+    var phaseLagDeg = Math.round((phaseLagRad * 180 / Math.PI) * 10) / 10;
+    var fwhmHz = Math.round(((rNearest * f1) / Q) * 1000) / 1000;
+    var driveFreqHz = Math.round((r * f1) * 100) / 100;
+    var resonantFreqHz = Math.round((rNearest * f1) * 100) / 100;
+    return {
+      driveFreqRatio: r,
+      resonatorQ: Q,
+      nearestMode: nearestMode,
+      nearestModeRatio: rNearest,
+      gainNorm: Math.round(gainNorm * 10000) / 10000,
+      gainPct: Math.round(gainNorm * 1000) / 10,
+      amplificationFactor: Math.round(gainNorm * Q * 100) / 100,
+      phaseLagRad: phaseLagRad,
+      phaseLagDeg: phaseLagDeg,
+      fwhmHz: fwhmHz,
+      driveFreqHz: driveFreqHz,
+      resonantFreqHz: resonantFreqHz,
+      isAtResonance: gainNorm >= 0.707
+    };
+  }
+
+  function waveComputeEvanescentTunneling(wavelength1, medium2Ratio, incidentAngleDeg, ftirEnabled, ftirGapLambda) {
+    var lam1 = Math.max(0.01, Number(wavelength1) || 171.5);
+    var r = waveClampNum(medium2Ratio, 0.25, 2.0, 0.6);
+    var th1Deg = waveClampNum(incidentAngleDeg, 0, 85, 0);
+    var gapLam = waveClampNum(ftirGapLambda, 0.05, 1.5, 0.25);
+    var sinTh1 = Math.sin(th1Deg * Math.PI / 180);
+    var invRSq = 1 / (r * r);
+    var isTIR = r > 1 && (r * sinTh1) > 1.000001;
+    var gapMeters = Math.round(gapLam * lam1 * 100) / 100;
+    if (!isTIR) {
+      return {
+        isTIR: false,
+        penetrationLambda: null,
+        penetrationMeters: null,
+        barrierOpacityEta: 0,
+        tunnelTransmission: 0,
+        tunnelTransmissionPct: 0,
+        potentialTunnelPct: 0,
+        ftirReflectivity: 1,
+        gapMeters: gapMeters
+      };
+    }
+    var radicand = Math.max(1e-6, sinTh1 * sinTh1 - invRSq);
+    var penetrationLambda = Math.min(20, 1 / (2 * Math.PI * Math.sqrt(radicand)));
+    var penetrationMeters = penetrationLambda * lam1;
+    var eta = gapLam / Math.max(1e-6, penetrationLambda);
+    var coshEta = Math.cosh(Math.min(20, eta));
+    var tunnelRaw = 1 / (coshEta * coshEta);
+    var tunnelTransmission = ftirEnabled ? Math.max(0, Math.min(1, tunnelRaw)) : 0;
+    var ftirReflectivity = Math.sqrt(Math.max(0, 1 - tunnelTransmission));
+    return {
+      isTIR: true,
+      penetrationLambda: Math.round(penetrationLambda * 1000) / 1000,
+      penetrationMeters: Math.round(penetrationMeters * 100) / 100,
+      barrierOpacityEta: Math.round(eta * 1000) / 1000,
+      tunnelTransmission: Math.round(tunnelTransmission * 10000) / 10000,
+      tunnelTransmissionPct: Math.round(tunnelTransmission * 1000) / 10,
+      potentialTunnelPct: Math.round(tunnelRaw * 1000) / 10,
+      ftirReflectivity: Math.round(ftirReflectivity * 10000) / 10000,
+      gapMeters: gapMeters
+    };
+  }
+
+  function waveComputeOceanDispersion(waterDepthRatio) {
+    var hOverLam = waveClampNum(waterDepthRatio, 0.02, 1.0, 0.5);
+    var kh = 2 * Math.PI * hOverLam;
+    var twoKh = 2 * kh;
+    var ratioTerm = twoKh > 40 ? 0 : (twoKh / Math.max(1e-9, Math.sinh(twoKh)));
+    var vgOverVp = Math.max(0.5, Math.min(1.0, 0.5 * (1 + ratioTerm)));
+    var regime = hOverLam < 0.05 ? 'shallow' : (hOverLam <= 0.5 ? 'intermediate' : 'deep');
+    var phaseFactor = Math.round(Math.sqrt(Math.tanh(kh)) * 1000) / 1000;
+    return {
+      depthRatio: hOverLam,
+      kh: Math.round(kh * 1000) / 1000,
+      vgOverVp: Math.round(vgOverVp * 1000) / 1000,
+      phaseFactor: phaseFactor,
+      regime: regime
+    };
+  }
+
+  function waveComputeBeatConsonance(f1, f2, a1, a2, phase2Rad) {
+    var freq1 = Math.max(0.1, isFinite(Number(f1)) ? Number(f1) : 2);
+    var freq2 = Math.max(0.1, isFinite(Number(f2)) ? Number(f2) : 3);
+    var amp1 = Math.max(0, isFinite(Number(a1)) ? Number(a1) : 50);
+    var amp2 = Math.max(0, isFinite(Number(a2)) ? Number(a2) : 30);
+    var ph2 = isFinite(Number(phase2Rad)) ? Number(phase2Rad) : 0;
+    var beatFreqHz = Math.round(Math.abs(freq1 - freq2) * 100) / 100;
+    var beatPeriodS = beatFreqHz > 0.01 ? Math.round((1 / beatFreqHz) * 100) / 100 : null;
+    var carrierFreqHz = Math.round(((freq1 + freq2) / 2) * 100) / 100;
+    var sumAmp = amp1 + amp2;
+    var modDepth = sumAmp > 0 ? Math.round((2 * Math.min(amp1, amp2) / sumAmp) * 1000) / 1000 : 0;
+    var modDepthPct = Math.round(modDepth * 1000) / 10;
+    var peakAmp = Math.round(sumAmp * 10) / 10;
+    var troughAmp = Math.round(Math.abs(amp1 - amp2) * 10) / 10;
+    var ratio = Math.round((freq2 / freq1) * 1000) / 1000;
+    var matchedInterval = null;
+    var minRatioErr = Infinity;
+    Object.keys(WAVE_INTERVAL_PRESETS).forEach(function(k) {
+      var preset = WAVE_INTERVAL_PRESETS[k];
+      var err = Math.abs(ratio - preset.ratio);
+      if (err <= 0.018 && err < minRatioErr) {
+        minRatioErr = err;
+        matchedInterval = k;
+      }
+    });
+    var centsOff = null;
+    if (matchedInterval) {
+      centsOff = Math.round(1200 * (Math.log(ratio / WAVE_INTERVAL_PRESETS[matchedInterval].ratio) / Math.LN2) * 10) / 10;
+    }
+    var classification = 'rough';
+    if (matchedInterval === '1:1' || matchedInterval === '2:1') {
+      if (matchedInterval === '1:1' && Math.abs(Math.cos(ph2) + 1) < 0.08 && Math.abs(amp1 - amp2) <= 5) {
+        classification = 'destructive';
+      } else {
+        classification = 'pure';
+      }
+    } else if (matchedInterval) {
+      classification = 'consonant';
+    } else if (beatFreqHz > 0.01 && beatFreqHz <= 2.5) {
+      classification = 'slow-beat';
+    } else if (beatFreqHz > 2.5 && beatFreqHz <= 8.0) {
+      classification = 'rough';
+    } else {
+      classification = 'complex';
+    }
+    return {
+      beatFreqHz: beatFreqHz,
+      beatPeriodS: beatPeriodS,
+      carrierFreqHz: carrierFreqHz,
+      modDepth: modDepth,
+      modDepthPct: modDepthPct,
+      peakAmp: peakAmp,
+      troughAmp: troughAmp,
+      ratio: ratio,
+      matchedInterval: matchedInterval,
+      centsOff: centsOff,
+      classification: classification
+    };
+  }
+
+  function waveComputeAcousticAttenuation(sourceDb, sourceAmp, listenerDistMeters, spreadingLaw) {
+    var srcDb = isFinite(Number(sourceDb)) ? Number(sourceDb) : 64.0;
+    var amp0 = Math.max(1, isFinite(Number(sourceAmp)) ? Number(sourceAmp) : 50);
+    var r = waveClampNum(listenerDistMeters, 1, 20, 4);
+    var law = waveHasOwn(WAVE_VALID_SPREADING_LAWS, spreadingLaw) ? spreadingLaw : 'spherical';
+    var exponent = law === 'cylindrical' ? 1 : 2;
+    var intensityRatio = Math.pow(1 / r, exponent);
+    var amplitudeFactor = Math.sqrt(intensityRatio);
+    var dropDb = Math.round((10 * exponent * (Math.log(r) / Math.LN10)) * 10) / 10;
+    var listenerDb = Math.round((srcDb - dropDb) * 10) / 10;
+    var localAmp = Math.round((amp0 * amplitudeFactor) * 100) / 100;
+    return {
+      listenerDistMeters: r,
+      spreadingLaw: law,
+      exponent: exponent,
+      intensityRatio: Math.round(intensityRatio * 10000) / 10000,
+      intensityPct: Math.round(intensityRatio * 1000) / 10,
+      amplitudeFactor: Math.round(amplitudeFactor * 10000) / 10000,
+      dropDb: dropDb,
+      dbPerDoubling: law === 'cylindrical' ? 3.01 : 6.02,
+      listenerDb: listenerDb,
+      localAmp: localAmp
+    };
+  }
+
+  function waveComputeRippleInterferenceGeometry(rawState) {
+    var s = waveNormalizeState(rawState);
+    var refW = 400;
+    var refH = 210;
+    var lambdaPx = refW / Math.max(0.5, s.frequency * 2);
+    var barX = refW * 0.36;
+    var screenDistPx = refW - barX;
+    var dSepPx;
+    var effSources = 2;
+    if (s.rippleBarrier === 'doubleSlit') {
+      dSepPx = 2 * Math.min(refH * 0.34, Math.max(s.rippleSeparation * 0.5, s.slitWidth * refH * 0.5 + 16));
+      effSources = 2;
+    } else if (s.rippleBarrier === 'grating') {
+      dSepPx = Math.min((refH * 0.68) / Math.max(1, s.gratingSlits - 1), Math.max(s.slitWidth * refH + 10, s.rippleSeparation * 0.48));
+      effSources = s.gratingSlits;
+      screenDistPx = refW - barX;
+    } else if (s.rippleBarrier === 'singleSlit' || s.rippleBarrier === 'obstacle') {
+      dSepPx = Math.max(8, s.slitWidth * refH);
+      effSources = 1;
+    } else {
+      var p1x = s.rippleSrc1 ? s.rippleSrc1.x * refW : (refW / 2 - s.rippleSeparation / 2);
+      var p1y = s.rippleSrc1 ? s.rippleSrc1.y * refH : (refH / 2);
+      var p2x = s.rippleSrc2 ? s.rippleSrc2.x * refW : (refW / 2 + s.rippleSeparation / 2);
+      var p2y = s.rippleSrc2 ? s.rippleSrc2.y * refH : (refH / 2);
+      dSepPx = Math.max(4, Math.hypot(p2x - p1x, p2y - p1y));
+      screenDistPx = Math.max(60, refW * 0.45);
+    }
+    var fringeSpacingPx = Math.round(((lambdaPx * screenDistPx) / Math.max(4, dSepPx)) * 100) / 100;
+    var nodalPathShiftPx = Math.round((lambdaPx * 0.5) * 100) / 100;
+    var maxNodalOrder = Math.max(0, Math.floor((dSepPx / lambdaPx) - 0.5));
+    var nodalAnglesDeg = [];
+    if (effSources >= 2) {
+      for (var ord = 0; ord <= maxNodalOrder; ord++) {
+        var sVal = ((ord + 0.5) * lambdaPx) / Math.max(4, dSepPx);
+        if (sVal < 1) {
+          var deg = Math.round((Math.asin(sVal) * 180 / Math.PI) * 10) / 10;
+          nodalAnglesDeg.push(deg);
+        }
+      }
+    }
+    var nodalCount = effSources >= 2 ? (nodalAnglesDeg.length * 2) : 0;
+    var firstMinimumDeg = nodalAnglesDeg.length > 0 ? nodalAnglesDeg[0] : Math.round((Math.asin(Math.min(1, lambdaPx / Math.max(4, dSepPx))) * 180 / Math.PI) * 10) / 10;
+    return {
+      lambdaPx: Math.round(lambdaPx * 100) / 100,
+      dSepPx: Math.round(dSepPx * 100) / 100,
+      screenDistPx: Math.round(screenDistPx * 10) / 10,
+      fringeSpacingPx: fringeSpacingPx,
+      nodalPathShiftPx: nodalPathShiftPx,
+      nodalLineCount: nodalCount,
+      nodalAnglesDeg: nodalAnglesDeg,
+      firstMinimumDeg: firstMinimumDeg
+    };
+  }
+
+  function waveQuantizeAdcSample(normVal, adcBitDepth) {
+    var bits = Math.round(waveClampNum(adcBitDepth, 2, 16, 8));
+    var levels = Math.pow(2, bits);
+    var v = Math.max(-1, Math.min(0.999999, Number(normVal) || 0));
+    var idx = Math.max(0, Math.min(levels - 1, Math.floor(((v + 1) * 0.5) * levels)));
+    return Math.round((-1 + (idx + 0.5) * (2 / levels)) * 100000) / 100000;
+  }
+
+  function waveComputeDigitalSampling(f1Hz, sampleRateRatio, adcBitDepth) {
+    var f1 = waveClampNum(f1Hz, 0.5, 10, 2);
+    var ratio = waveClampNum(sampleRateRatio, 1.2, 16, 8);
+    var bits = Math.round(waveClampNum(adcBitDepth, 2, 16, 8));
+    var sampleRateHz = Math.round(f1 * ratio * 100) / 100;
+    var nyquistFreqHz = Math.round(sampleRateHz * 0.5 * 100) / 100;
+    var quantizationLevels = Math.pow(2, bits);
+    var lsbStepNorm = Math.round((2 / quantizationLevels) * 100000) / 100000;
+    var sqnrDb = Math.round((6.0206 * bits + 1.7609) * 10) / 10;
+    var isFundamentalAliased = ratio < 2;
+    var foldMultiple = Math.round(f1 / Math.max(1e-6, sampleRateHz));
+    var aliasFreqHz = Math.round(Math.abs(f1 - foldMultiple * sampleRateHz) * 100) / 100;
+    var maxUnaliasedHarmonic = Math.max(0, Math.floor(ratio * 0.5 - 1e-9));
+    return {
+      sampleRateRatio: ratio,
+      sampleRateHz: sampleRateHz,
+      nyquistFreqHz: nyquistFreqHz,
+      adcBitDepth: bits,
+      quantizationLevels: quantizationLevels,
+      lsbStepNorm: lsbStepNorm,
+      sqnrDb: sqnrDb,
+      isFundamentalAliased: isFundamentalAliased,
+      aliasFreqHz: aliasFreqHz,
+      maxUnaliasedHarmonic: maxUnaliasedHarmonic
+    };
+  }
+
+  function waveComputeStandingDecomposition(uFrac, phaseRad, harmonic, boundary) {
+    var u = waveClampNum(uFrac, 0, 1, 0.5);
+    var h = Math.max(1, Math.min(6, Math.round(Number(harmonic) || 1)));
+    var phi = isFinite(Number(phaseRad)) ? Number(phaseRad) : 0;
+    var bnd = waveHasOwn(WAVE_VALID_BOUNDARIES, boundary) ? boundary : 'bothFixed';
+    var kL;
+    var yForward;
+    var yBackward;
+    if (bnd === 'openOpen') {
+      kL = h * Math.PI;
+      yForward = 0.5 * Math.cos(kL * u - phi);
+      yBackward = 0.5 * Math.cos(kL * u + phi);
+    } else if (bnd === 'fixedFree') {
+      kL = (2 * h - 1) * Math.PI * 0.5;
+      yForward = 0.5 * Math.sin(kL * u - phi);
+      yBackward = 0.5 * Math.sin(kL * u + phi);
+    } else {
+      kL = h * Math.PI;
+      yForward = 0.5 * Math.sin(kL * u - phi);
+      yBackward = 0.5 * Math.sin(kL * u + phi);
+    }
+    var yStanding = yForward + yBackward;
+    var potentialFrac = Math.cos(phi) * Math.cos(phi);
+    var kineticFrac = Math.sin(phi) * Math.sin(phi);
+    return {
+      u: u,
+      phaseRad: phi,
+      kL: kL,
+      yForward: yForward,
+      yBackward: yBackward,
+      yStanding: yStanding,
+      potentialFrac: potentialFrac,
+      kineticFrac: kineticFrac,
+      totalEnergyNorm: potentialFrac + kineticFrac
+    };
+  }
+
+  function waveComputeOffAxisDoppler(f0Hz, sourceSpeedMach, observerAngleDeg, dopplerRegime) {
+    var f0 = waveClampNum(f0Hz, 0.5, 10, 2);
+    var srcM = waveClampNum(sourceSpeedMach, 0, 1.5, 0.3);
+    var thetaDeg = waveClampNum(observerAngleDeg, 0, 90, 0);
+    var isRel = dopplerRegime === 'relativistic';
+    var thetaRad = (thetaDeg * Math.PI) / 180;
+    var cosTheta = Math.cos(thetaRad);
+    var effSpeed = isRel ? Math.min(0.95, srcM) : srcM;
+    var radialMach = Math.round(effSpeed * cosTheta * 10000) / 10000;
+    var radarCosinePct = Math.round(cosTheta * 1000) / 10;
+    var gamma = isRel ? (1 / Math.sqrt(Math.max(1e-6, 1 - effSpeed * effSpeed))) : 1;
+    var transverseFreqHz = Math.round((f0 / gamma) * 1000) / 1000;
+    var observedFreqHz;
+    if (isRel) {
+      observedFreqHz = Math.round((f0 / (gamma * Math.max(1e-6, 1 - effSpeed * cosTheta))) * 1000) / 1000;
+    } else {
+      var denom = 1 - effSpeed * cosTheta;
+      observedFreqHz = denom > 0.05 ? (Math.round((f0 / denom) * 1000) / 1000) : Infinity;
+    }
+    return {
+      observerAngleDeg: thetaDeg,
+      cosTheta: cosTheta,
+      radarCosinePct: radarCosinePct,
+      radialMach: radialMach,
+      observedFreqHz: observedFreqHz,
+      transverseFreqHz: transverseFreqHz,
+      gamma: gamma,
+      isTransverseRedshift: isRel && thetaDeg >= 85 && effSpeed > 0.02
+    };
+  }
+
+  function waveGratingIntensityFactor(sinTheta, dOverLambda, nSlits, phaseDiffRad) {
+    var N = Math.max(2, Math.min(6, Math.round(Number(nSlits) || 4)));
+    var sTh = Math.max(-1, Math.min(1, Number(sinTheta) || 0));
+    var dLam = Math.max(0.1, Number(dOverLambda) || 1);
+    var dPhi = isFinite(Number(phaseDiffRad)) ? Number(phaseDiffRad) : 0;
+    var beta = Math.PI * dLam * sTh + 0.5 * dPhi;
+    var sinBeta = Math.sin(beta);
+    if (Math.abs(sinBeta) < 1e-6) return 1;
+    var ratio = Math.sin(N * beta) / (N * sinBeta);
+    return Math.max(0, Math.min(1, ratio * ratio));
+  }
+
+  function waveFilterHarmonicGain(order, filterMode, cutoffHarmonic) {
+    var h = Math.max(1, Math.round(Number(order) || 1));
+    var hc = Math.max(1, Math.min(12, Math.round(Number(cutoffHarmonic) || 3)));
+    if (filterMode === 'lowpass') return h <= hc ? 1 : 0;
+    if (filterMode === 'highpass') return h >= hc ? 1 : 0;
+    if (filterMode === 'oddOnly') return (h % 2 === 1) ? 1 : 0;
+    return 1;
+  }
+
+  function waveEvalPulseCollision(u, phaseFrac, polarity) {
+    var uc = waveClampNum(u, 0, 1, 0.5);
+    var pfRaw = Number(phaseFrac);
+    var pf = isFinite(pfRaw) ? (((pfRaw % 1) + 1) % 1) : 0;
+    var sign2 = polarity === 'same' ? 1 : -1;
+    var c1 = 0.12 + 0.76 * pf;
+    var c2 = 0.88 - 0.76 * pf;
+    var sigma = 0.065;
+    var y1 = Math.exp(-((uc - c1) * (uc - c1)) / (2 * sigma * sigma));
+    var y2 = sign2 * Math.exp(-((uc - c2) * (uc - c2)) / (2 * sigma * sigma));
+    return { c1: c1, c2: c2, y1: y1, y2: y2, yNet: y1 + y2 };
+  }
+
+  function waveCompareSnapshot(currentRaw, snapEntry) {
+    var cur = waveNormalizeState(currentRaw);
+    var curMet = waveComputeMetrics(cur);
+    var snapPatch = (snapEntry && typeof snapEntry === 'object')
+      ? ((snapEntry.statePatch && typeof snapEntry.statePatch === 'object') ? snapEntry.statePatch : snapEntry)
+      : {};
+    var snapNorm = waveNormalizeState(snapPatch);
+    var snapMet = waveComputeMetrics(snapNorm);
+    return {
+      deltaFreq: Math.round((cur.frequency - snapNorm.frequency) * 100) / 100,
+      deltaWavelength: Math.round((curMet.wavelength - snapMet.wavelength) * 100) / 100,
+      deltaSpeed: Math.round((cur.waveSpeed - snapNorm.waveSpeed) * 10) / 10,
+      energyRatio: Math.round((curMet.energy / Math.max(1, snapMet.energy)) * 100) / 100
+    };
+  }
+
   function waveReadPersistedMastery() {
     var merged = {};
     try {
@@ -428,10 +947,19 @@ window.StemLab = window.StemLab || {
     var sBoundary = waveHasOwn(WAVE_VALID_BOUNDARIES, src.standingBoundary) ? src.standingBoundary : 'bothFixed';
     var rBarrier = waveHasOwn(WAVE_VALID_RIPPLE_BARRIERS, src.rippleBarrier) ? src.rippleBarrier : 'none';
     var pMode = waveHasOwn(WAVE_VALID_PACKET_MODES, src.packetMode) ? src.packetMode : 'continuous';
+    var colPol = waveHasOwn(WAVE_VALID_COLLIDE_POLARITIES, src.collidePolarity) ? src.collidePolarity : 'opposite';
+    var sFilter = waveHasOwn(WAVE_VALID_FILTERS, src.spectrumFilter) ? src.spectrumFilter : 'none';
     var lMode = waveHasOwn(WAVE_VALID_LONGITUDINAL_MODES, src.longitudinalMode) ? src.longitudinalMode : 'traveling';
     var pScope = waveHasOwn(WAVE_VALID_PROBE_SCOPES, src.probeScopeMode) ? src.probeScopeMode : 'time';
+    var fPol = waveHasOwn(WAVE_VALID_POLARIZATIONS, src.fresnelPolarization) ? src.fresnelPolarization : 's';
+    var dRegime = waveHasOwn(WAVE_VALID_DOPPLER_REGIMES, src.dopplerRegime) ? src.dopplerRegime : 'acoustic';
     var dsPlot = waveHasOwn(WAVE_VALID_DS_PLOTS, src.dataStudioPlot) ? src.dataStudioPlot : 'freqWavelength';
+    var iLock = waveHasOwn(WAVE_VALID_INTERVAL_LOCKS, src.intervalLock) ? src.intervalLock : 'none';
+    var spreadLaw = waveHasOwn(WAVE_VALID_SPREADING_LAWS, src.spreadingLaw) ? src.spreadingLaw : 'spherical';
     var hWeights = waveNormalizeWeights(src.harmonicWeights);
+    var strMech = !!src.stringMechanics;
+    var strTension = waveClampNum(src.stringTension, 10, 400, 120);
+    var strDensity = waveClampNum(src.stringDensityGm, 0.5, 20, 3.0);
 
     var rSrc1 = (src.rippleSrc1 && typeof src.rippleSrc1 === 'object' && isFinite(Number(src.rippleSrc1.x)) && isFinite(Number(src.rippleSrc1.y)))
       ? { x: waveClampNum(src.rippleSrc1.x, 0.05, 0.95, 0.4), y: waveClampNum(src.rippleSrc1.y, 0.05, 0.95, 0.5) }
@@ -507,7 +1035,12 @@ window.StemLab = window.StemLab || {
           var obsSpd = waveClampNum(r.observerSpeed, -0.8, 0.8, 0);
           var m2R = waveClampNum(r.medium2Ratio, 0.25, 2.0, 0.6);
           var th1 = waveClampNum(r.incidentAngleDeg, 0, 85, 0);
-          var appDef = srcSpd < 0.99 ? (fVal * (1 + obsSpd) / Math.max(0.05, 1 - srcSpd)) : null;
+          var dReg = waveHasOwn(WAVE_VALID_DOPPLER_REGIMES, r.dopplerRegime) ? r.dopplerRegime : 'acoustic';
+          var fPolRow = waveHasOwn(WAVE_VALID_POLARIZATIONS, r.fresnelPolarization) ? r.fresnelPolarization : 's';
+          var airT = waveClampNum(r.airTempC, -30, 60, 20);
+          var appDef = dReg === 'relativistic'
+            ? waveComputeRelativisticDoppler(fVal, srcSpd, obsSpd).approachingFreq
+            : (srcSpd < 0.99 ? (fVal * (1 + obsSpd) / Math.max(0.05, 1 - srcSpd)) : null);
           var sT2 = m2R * Math.sin((th1 * Math.PI) / 180);
           var refDef = (m2R > 1 && sT2 > 1.000001) ? null : (Math.asin(Math.max(-1, Math.min(1, sT2))) * 180 / Math.PI);
           return {
@@ -523,6 +1056,12 @@ window.StemLab = window.StemLab || {
             energy: waveClampNum(r.energy, 1, 20000, aVal * aVal),
             sourceSpeed: srcSpd,
             observerSpeed: obsSpd,
+            dopplerRegime: dReg,
+            fresnelPolarization: fPolRow,
+            reflectedEnergyPct: waveClampNum(r.reflectedEnergyPct, 0, 100, 0),
+            redshiftRec: (typeof r.redshiftRec === 'number' && isFinite(r.redshiftRec)) ? r.redshiftRec : 0,
+            airTempC: airT,
+            pluckPosition: waveClampNum(r.pluckPosition, 0.05, 0.95, 0.5),
             approachingFreq: (typeof r.approachingFreq === 'number' && isFinite(r.approachingFreq)) ? r.approachingFreq : appDef,
             incidentAngleDeg: th1,
             refractedAngleDeg: (typeof r.refractedAngleDeg === 'number' && isFinite(r.refractedAngleDeg)) ? r.refractedAngleDeg : refDef,
@@ -531,7 +1070,88 @@ window.StemLab = window.StemLab || {
             groupVelocity: waveClampNum(r.groupVelocity, 10, 4000, vsVal),
             ripplePhaseDiff: waveClampNum(r.ripplePhaseDiff, -3.1416, 3.1416, 0),
             beamSteerAngleDeg: (typeof r.beamSteerAngleDeg === 'number' && isFinite(r.beamSteerAngleDeg)) ? waveClampNum(r.beamSteerAngleDeg, -90, 90, 0) : 0,
+            stringTension: waveClampNum(r.stringTension, 10, 400, 120),
+            stringDensityGm: waveClampNum(r.stringDensityGm, 0.5, 20, 3.0),
+            driveFreqRatio: waveClampNum(r.driveFreqRatio, 0.25, 6.5, 1.0),
+            resonatorQ: Math.round(waveClampNum(r.resonatorQ, 5, 80, 20)),
+            resonatorGainPct: waveClampNum(r.resonatorGainPct, 0, 100, 100),
+            ftirGapLambda: waveClampNum(r.ftirGapLambda, 0.05, 1.5, 0.25),
+            transmittedEnergyPct: waveClampNum(r.transmittedEnergyPct, 0, 100, 100 - waveClampNum(r.reflectedEnergyPct, 0, 100, 0)),
+            waterDepthRatio: waveClampNum(r.waterDepthRatio, 0.02, 1.0, 0.5),
+            listenerDistMeters: waveClampNum(r.listenerDistMeters, 1, 20, 4),
+            attenuatedDb: r.attenuatedDb != null && isFinite(Number(r.attenuatedDb)) ? Number(r.attenuatedDb) : null,
+            rippleFringeSpacingPx: r.rippleFringeSpacingPx != null && isFinite(Number(r.rippleFringeSpacingPx)) ? Number(r.rippleFringeSpacingPx) : null,
+            adcBitDepth: Math.round(waveClampNum(r.adcBitDepth, 2, 16, 8)),
+            adcSqnrDb: r.adcSqnrDb != null && isFinite(Number(r.adcSqnrDb)) ? Number(r.adcSqnrDb) : null,
+            dopplerOffsetAngleDeg: waveClampNum(r.dopplerOffsetAngleDeg, 0, 90, 0),
+            offAxisObsFreq: r.offAxisObsFreq != null && isFinite(Number(r.offAxisObsFreq)) ? Number(r.offAxisObsFreq) : null,
             note: typeof r.note === 'string' ? r.note.slice(0, 140) : ''
+          };
+        })
+      : [];
+
+    var savedSnapshots = Array.isArray(src.savedSnapshots)
+      ? src.savedSnapshots.slice(-8).filter(function(sn) { return sn && typeof sn === 'object'; }).map(function(sn, idx) {
+          var sp = (sn.statePatch && typeof sn.statePatch === 'object') ? sn.statePatch : sn;
+          return {
+            id: typeof sn.id === 'string' ? sn.id.slice(0, 64) : ('snap-' + idx),
+            label: typeof sn.label === 'string' ? sn.label.slice(0, 120) : ('Snapshot #' + (idx + 1)),
+            timestamp: waveClampNum(sn.timestamp, 0, 9999999999999, 0),
+            statePatch: {
+              waveMode: waveHasOwn(WAVE_VALID_MODES, sp.waveMode) ? sp.waveMode : 'free',
+              waveType: waveHasOwn(WAVE_VALID_TYPES, sp.waveType) ? sp.waveType : 'sine',
+              frequency: waveClampNum(sp.frequency, 0.5, 10, 2),
+              amplitude: waveClampNum(sp.amplitude, 5, 100, 50),
+              waveSpeed: waveClampNum(sp.waveSpeed, 50, 1500, 343),
+              harmonic: Math.round(waveClampNum(sp.harmonic, 1, 6, 1)),
+              standingBoundary: waveHasOwn(WAVE_VALID_BOUNDARIES, sp.standingBoundary) ? sp.standingBoundary : 'bothFixed',
+              stringMechanics: !!sp.stringMechanics,
+              stringTension: waveClampNum(sp.stringTension, 10, 400, 120),
+              stringDensityGm: waveClampNum(sp.stringDensityGm, 0.5, 20, 3.0),
+              resonatorDriven: !!sp.resonatorDriven,
+              driveFreqRatio: waveClampNum(sp.driveFreqRatio, 0.25, 6.5, 1.0),
+              resonatorQ: Math.round(waveClampNum(sp.resonatorQ, 5, 80, 20)),
+              rippleBarrier: waveHasOwn(WAVE_VALID_RIPPLE_BARRIERS, sp.rippleBarrier) ? sp.rippleBarrier : 'none',
+              gratingSlits: Math.round(waveClampNum(sp.gratingSlits, 2, 6, 4)),
+              ripplePhaseDiff: waveClampNum(sp.ripplePhaseDiff, -3.1416, 3.1416, 0),
+              medium2Ratio: waveClampNum(sp.medium2Ratio, 0.25, 2.0, 0.6),
+              incidentAngleDeg: waveClampNum(sp.incidentAngleDeg, 0, 85, 0),
+              reflectivity: waveClampNum(sp.reflectivity, 0, 1, 0.9),
+              impedanceCoupled: !!sp.impedanceCoupled,
+              antiReflectionCoating: !!sp.antiReflectionCoating,
+              fresnelPolarization: waveHasOwn(WAVE_VALID_POLARIZATIONS, sp.fresnelPolarization) ? sp.fresnelPolarization : 's',
+              ftirEnabled: !!sp.ftirEnabled,
+              ftirGapLambda: waveClampNum(sp.ftirGapLambda, 0.05, 1.5, 0.25),
+              sourceSpeed: waveClampNum(sp.sourceSpeed, 0, 1.5, 0.3),
+              observerSpeed: waveClampNum(sp.observerSpeed, -0.8, 0.8, 0),
+              dopplerRegime: waveHasOwn(WAVE_VALID_DOPPLER_REGIMES, sp.dopplerRegime) ? sp.dopplerRegime : 'acoustic',
+              packetMode: waveHasOwn(WAVE_VALID_PACKET_MODES, sp.packetMode) ? sp.packetMode : 'continuous',
+              dispersionRatio: waveClampNum(sp.dispersionRatio, 0.5, 1.5, 1.0),
+              oceanDepthCoupled: !!sp.oceanDepthCoupled,
+              waterDepthRatio: waveClampNum(sp.waterDepthRatio, 0.02, 1.0, 0.5),
+              collidePolarity: waveHasOwn(WAVE_VALID_COLLIDE_POLARITIES, sp.collidePolarity) ? sp.collidePolarity : 'opposite',
+              longitudinalMode: waveHasOwn(WAVE_VALID_LONGITUDINAL_MODES, sp.longitudinalMode) ? sp.longitudinalMode : 'traveling',
+              airTempCoupled: !!sp.airTempCoupled,
+              airTempC: waveClampNum(sp.airTempC, -30, 60, 20),
+              spectrumFilter: waveHasOwn(WAVE_VALID_FILTERS, sp.spectrumFilter) ? sp.spectrumFilter : 'none',
+              filterCutoffHarmonic: Math.round(waveClampNum(sp.filterCutoffHarmonic, 1, 12, 3)),
+              pluckPosition: waveClampNum(sp.pluckPosition, 0.05, 0.95, 0.5),
+              showSecond: !!sp.showSecond,
+              amplitude2: waveClampNum(sp.amplitude2, 10, 80, 30),
+              frequency2: waveClampNum(sp.frequency2, 0.5, 10, 3),
+              phase2: waveClampNum(sp.phase2, 0, 6.2832, 0),
+              intervalLock: waveHasOwn(WAVE_VALID_INTERVAL_LOCKS, sp.intervalLock) ? sp.intervalLock : 'none',
+              showBeatEnvelope: !!sp.showBeatEnvelope,
+              distanceAttenuation: !!sp.distanceAttenuation,
+              listenerDistMeters: waveClampNum(sp.listenerDistMeters, 1, 20, 4),
+              spreadingLaw: waveHasOwn(WAVE_VALID_SPREADING_LAWS, sp.spreadingLaw) ? sp.spreadingLaw : 'spherical',
+              showNodalLines: !!sp.showNodalLines,
+              digitalSampling: !!sp.digitalSampling,
+              sampleRateRatio: waveClampNum(sp.sampleRateRatio, 1.2, 16, 8),
+              adcBitDepth: Math.round(waveClampNum(sp.adcBitDepth, 2, 16, 8)),
+              showTravelingComponents: !!sp.showTravelingComponents,
+              dopplerOffsetAngleDeg: waveClampNum(sp.dopplerOffsetAngleDeg, 0, 90, 0)
+            }
           };
         })
       : [];
@@ -556,27 +1176,57 @@ window.StemLab = window.StemLab || {
       amplitude2: waveClampNum(src.amplitude2, 10, 80, 30),
       frequency2: waveClampNum(src.frequency2, 0.5, 10, 3),
       phase2: waveClampNum(src.phase2, 0, 6.2832, 0),
+      intervalLock: iLock,
+      showBeatEnvelope: !!src.showBeatEnvelope,
       harmonic: Math.round(waveClampNum(src.harmonic, 1, 6, 1)),
       standingBoundary: sBoundary,
+      showTravelingComponents: !!src.showTravelingComponents,
+      stringMechanics: strMech,
+      stringTension: strTension,
+      stringDensityGm: strDensity,
+      resonatorDriven: !!src.resonatorDriven,
+      driveFreqRatio: waveClampNum(src.driveFreqRatio, 0.25, 6.5, 1.0),
+      resonatorQ: Math.round(waveClampNum(src.resonatorQ, 5, 80, 20)),
       packetMode: pMode,
       dispersionRatio: waveClampNum(src.dispersionRatio, 0.5, 1.5, 1.0),
+      oceanDepthCoupled: !!src.oceanDepthCoupled,
+      waterDepthRatio: waveClampNum(src.waterDepthRatio, 0.02, 1.0, 0.5),
+      collidePolarity: colPol,
       longitudinalMode: lMode,
       showDisplacementCurve: !!src.showDisplacementCurve,
+      distanceAttenuation: !!src.distanceAttenuation,
+      listenerDistMeters: waveClampNum(src.listenerDistMeters, 1, 20, 4),
+      spreadingLaw: spreadLaw,
+      airTempCoupled: !!src.airTempCoupled,
+      airTempC: waveClampNum(src.airTempC, -30, 60, 20),
       damping: !!src.damping,
       dampingAlpha: waveClampNum(src.dampingAlpha, 0.1, 2.0, 0.5),
       sourceSpeed: waveClampNum(src.sourceSpeed, 0, 1.5, 0.3),
       observerSpeed: waveClampNum(src.observerSpeed, -0.8, 0.8, 0),
+      dopplerRegime: dRegime,
+      dopplerOffsetAngleDeg: waveClampNum(src.dopplerOffsetAngleDeg, 0, 90, 0),
       rippleSeparation: waveClampNum(src.rippleSeparation, 20, 200, 80),
       ripplePhaseDiff: waveClampNum(src.ripplePhaseDiff, -3.1416, 3.1416, 0),
       rippleBarrier: rBarrier,
+      gratingSlits: Math.round(waveClampNum(src.gratingSlits, 2, 6, 4)),
       slitWidth: waveNormalizeSlitWidth(src.slitWidth),
       showIntensityScreen: !!src.showIntensityScreen,
+      showNodalLines: !!src.showNodalLines,
       harmonicWeights: hWeights,
+      spectrumFilter: sFilter,
+      filterCutoffHarmonic: Math.round(waveClampNum(src.filterCutoffHarmonic, 1, 12, 3)),
+      pluckPosition: waveClampNum(src.pluckPosition, 0.05, 0.95, 0.5),
+      digitalSampling: !!src.digitalSampling,
+      sampleRateRatio: waveClampNum(src.sampleRateRatio, 1.2, 16, 8),
+      adcBitDepth: Math.round(waveClampNum(src.adcBitDepth, 2, 16, 8)),
       dampingCoeff: waveClampNum(src.dampingCoeff, 0, 0.01, 0.002),
       reflectionEnd: src.reflectionEnd === 'free' ? 'free' : 'fixed',
       reflectivity: waveClampNum(src.reflectivity, 0, 1, 0.9),
       impedanceCoupled: !!src.impedanceCoupled,
       antiReflectionCoating: !!src.antiReflectionCoating,
+      fresnelPolarization: fPol,
+      ftirEnabled: !!src.ftirEnabled,
+      ftirGapLambda: waveClampNum(src.ftirGapLambda, 0.05, 1.5, 0.25),
       medium2Ratio: waveClampNum(src.medium2Ratio, 0.25, 2.0, 0.6),
       incidentAngleDeg: waveClampNum(src.incidentAngleDeg, 0, 85, 0),
       wallFrac: wallFrac,
@@ -586,6 +1236,9 @@ window.StemLab = window.StemLab || {
       probeX: waveClampNum(src.probeX, 0.0, 1.0, 0.62),
       probeY: waveClampNum(src.probeY, 0.05, 0.95, 0.32),
       probeScopeMode: pScope,
+      showRuler: !!src.showRuler,
+      rulerX1: waveClampNum(src.rulerX1, 0.04, 0.96, 0.25),
+      rulerX2: waveClampNum(src.rulerX2, 0.04, 0.96, 0.75),
       workspaceTab: wsTab,
       dataStudioPlot: dsPlot,
       learnerBand: lBand,
@@ -595,6 +1248,7 @@ window.StemLab = window.StemLab || {
       modesVisited: modesVisited,
       matchedOnce: !!(src.matchedOnce || src.matchXpClaimed),
       experimentLog: experimentLog,
+      savedSnapshots: savedSnapshots,
       cerPromptId: typeof src.cerPromptId === 'string' && WAVE_CER_PROMPTS.some(function(p) { return p.id === src.cerPromptId; }) ? src.cerPromptId : WAVE_CER_PROMPTS[0].id,
       cerClaim: typeof src.cerClaim === 'string' ? src.cerClaim.slice(0, 1500) : '',
       cerEvidence: typeof src.cerEvidence === 'string' ? src.cerEvidence.slice(0, 1500) : '',
@@ -618,6 +1272,17 @@ window.StemLab = window.StemLab || {
       standingHunt: standingHunt,
       waveMastery: (src.waveMastery && typeof src.waveMastery === 'object' && !Array.isArray(src.waveMastery)) ? src.waveMastery : {}
     };
+    if (normalized.stringMechanics && normalized.waveMode === 'standing' && normalized.standingBoundary === 'bothFixed') {
+      normalized.waveSpeed = waveComputeStringSpeed(normalized.stringTension, normalized.stringDensityGm);
+    } else if (normalized.airTempCoupled && normalized.waveMode === 'longitudinal') {
+      normalized.waveSpeed = waveComputeAirSoundSpeed(normalized.airTempC);
+    }
+    if (normalized.oceanDepthCoupled && normalized.waveMode === 'free' && normalized.packetMode === 'packet') {
+      normalized.dispersionRatio = Math.round(waveComputeOceanDispersion(normalized.waterDepthRatio).vgOverVp * 100) / 100;
+    }
+    if (normalized.intervalLock !== 'none' && WAVE_INTERVAL_PRESETS[normalized.intervalLock]) {
+      normalized.frequency2 = waveClampNum(Math.round(normalized.frequency * WAVE_INTERVAL_PRESETS[normalized.intervalLock].ratio * 100) / 100, 0.5, 10, normalized.frequency2);
+    }
     normalized.waveMastery = waveComputeMastery(normalized);
     return normalized;
   }
@@ -632,11 +1297,14 @@ window.StemLab = window.StemLab || {
     // Standing resonator geometry (fixed-fixed, open-open, closed-open)
     var standGeom = waveStandingGeometry(s.harmonic, s.standingBoundary);
 
-    // Snell's Law, Fresnel Impedance Coupling, Quarter-Wave Coating & Total Internal Reflection
+    // Snell's Law, Fresnel TE(s)/TM(p) Impedance Coupling, Brewster's Angle, Quarter-Wave Coating & TIR
     var theta1Rad = (s.incidentAngleDeg * Math.PI) / 180;
     var sinTheta2 = s.medium2Ratio * Math.sin(theta1Rad);
     var criticalAngleDeg = s.medium2Ratio > 1 ? (Math.asin(Math.min(1, 1 / s.medium2Ratio)) * 180 / Math.PI) : null;
+    var brewsterAngleDeg = waveComputeBrewsterAngle(s.medium2Ratio);
+    var isTM = s.fresnelPolarization === 'p';
     var isTotalInternalReflection = s.medium2Ratio > 1 && sinTheta2 > 1.000001;
+    var isBrewsterMatch = s.impedanceCoupled && isTM && !s.antiReflectionCoating && !isTotalInternalReflection && Math.abs(s.incidentAngleDeg - brewsterAngleDeg) <= 1.25;
     var refractedAngleDeg = isTotalInternalReflection ? null : (Math.asin(Math.max(-1, Math.min(1, sinTheta2))) * 180 / Math.PI);
     var effectiveReflectivity = isTotalInternalReflection ? 1 : s.reflectivity;
     var effectivePhaseFlip = s.reflectionEnd === 'free' ? 1 : -1;
@@ -656,8 +1324,12 @@ window.StemLab = window.StemLab || {
             effectivePhaseFlip = 1;
           } else {
             var cosThetaC = Math.sqrt(Math.max(0, 1 - sinThetaC * sinThetaC));
-            var r1 = (coatRatio * cosTheta1 - cosThetaC) / Math.max(1e-9, coatRatio * cosTheta1 + cosThetaC);
-            var r2 = (coatRatio * cosThetaC - cosTheta2) / Math.max(1e-9, coatRatio * cosThetaC + cosTheta2);
+            var r1 = isTM
+              ? (coatRatio * cosThetaC - cosTheta1) / Math.max(1e-9, coatRatio * cosThetaC + cosTheta1)
+              : (coatRatio * cosTheta1 - cosThetaC) / Math.max(1e-9, coatRatio * cosTheta1 + cosThetaC);
+            var r2 = isTM
+              ? (coatRatio * cosTheta2 - cosThetaC) / Math.max(1e-9, coatRatio * cosTheta2 + cosThetaC)
+              : (coatRatio * cosThetaC - cosTheta2) / Math.max(1e-9, coatRatio * cosThetaC + cosTheta2);
             var deltaFilm = Math.PI * cosThetaC;
             var rNumSq = r1 * r1 + r2 * r2 + 2 * r1 * r2 * Math.cos(deltaFilm);
             var rDenSq = 1 + r1 * r1 * r2 * r2 + 2 * r1 * r2 * Math.cos(deltaFilm);
@@ -665,10 +1337,11 @@ window.StemLab = window.StemLab || {
             effectivePhaseFlip = (r1 + r2 * Math.cos(deltaFilm)) < 0 ? -1 : 1;
           }
         } else {
-          var fresDen = s.medium2Ratio * cosTheta1 + cosTheta2;
-          var rFresnel = fresDen > 1e-9 ? ((s.medium2Ratio * cosTheta1 - cosTheta2) / fresDen) : 0;
+          var fresDen = isTM ? (s.medium2Ratio * cosTheta2 + cosTheta1) : (s.medium2Ratio * cosTheta1 + cosTheta2);
+          var rFresnel = fresDen > 1e-9 ? ((isTM ? (s.medium2Ratio * cosTheta2 - cosTheta1) : (s.medium2Ratio * cosTheta1 - cosTheta2)) / fresDen) : 0;
           effectiveReflectivity = Math.min(1, Math.abs(rFresnel));
           if (Math.abs(rFresnel) > 1e-6) effectivePhaseFlip = rFresnel < 0 ? -1 : 1;
+          else effectivePhaseFlip = 1;
         }
       } else if (s.antiReflectionCoating) {
         effectiveReflectivity = s.reflectivity * Math.abs(Math.cos((Math.PI / 2) * cosTheta1));
@@ -676,16 +1349,39 @@ window.StemLab = window.StemLab || {
     } else if (s.impedanceCoupled) {
       effectivePhaseFlip = 1;
     }
+    var evan = waveComputeEvanescentTunneling(wavelength, s.medium2Ratio, s.incidentAngleDeg, s.ftirEnabled, s.ftirGapLambda);
+    if (isTotalInternalReflection && s.ftirEnabled) {
+      effectiveReflectivity = evan.ftirReflectivity;
+    }
     var standingWaveRatio = effectiveReflectivity >= 0.999 ? Infinity : (1 + effectiveReflectivity) / Math.max(1e-6, 1 - effectiveReflectivity);
 
     var transmittedAmpRatio = Math.sqrt(Math.max(0, 1 - effectiveReflectivity * effectiveReflectivity));
     var transmittedEnergyPct = Math.round((1 - effectiveReflectivity * effectiveReflectivity) * 100);
     var medium2Speed = s.waveSpeed * s.medium2Ratio;
     var medium2Wavelength = medium2Speed / s.frequency;
+    var isRelativistic = s.dopplerRegime === 'relativistic';
     var machNumber = s.sourceSpeed;
-    var approachingFreq = machNumber < 0.99 ? (s.frequency * (1 + s.observerSpeed) / Math.max(0.05, 1 - machNumber)) : Infinity;
-    var recedingFreq = s.frequency * Math.max(0.1, 1 - s.observerSpeed) / (1 + machNumber);
-    var machAngleDeg = machNumber >= 1 ? (Math.asin(Math.min(1, 1 / machNumber)) * 180 / Math.PI) : null;
+    var relKinematics = isRelativistic ? waveComputeRelativisticDoppler(s.frequency, s.sourceSpeed, s.observerSpeed) : null;
+    var approachingFreq = relKinematics
+      ? relKinematics.approachingFreq
+      : (machNumber < 0.99 ? (s.frequency * (1 + s.observerSpeed) / Math.max(0.05, 1 - machNumber)) : Infinity);
+    var recedingFreq = relKinematics
+      ? relKinematics.recedingFreq
+      : (s.frequency * Math.max(0.1, 1 - s.observerSpeed) / (1 + machNumber));
+    var isSupersonic = !isRelativistic && machNumber >= 1;
+    var machAngleDeg = isSupersonic ? (Math.asin(Math.min(1, 1 / machNumber)) * 180 / Math.PI) : null;
+    var relativisticGamma = relKinematics ? relKinematics.gamma : 1;
+    var redshiftApp = relKinematics ? relKinematics.redshiftApp : 0;
+    var redshiftRec = relKinematics ? relKinematics.redshiftRec : 0;
+    var hAlphaAppNm = relKinematics ? relKinematics.hAlphaAppNm : 656.3;
+    var hAlphaRecNm = relKinematics ? relKinematics.hAlphaRecNm : 656.3;
+    var airTempSpeed = waveComputeAirSoundSpeed(s.airTempC);
+    var kundtTubeResonantHz = Math.round(((s.harmonic * s.waveSpeed) / 2) * 10) / 10;
+    var resResp = waveComputeResonatorResponse(s.driveFreqRatio, s.resonatorQ, s.standingBoundary, s.frequency);
+    var oceanDisp = waveComputeOceanDispersion(s.waterDepthRatio);
+    var dampingLossDb = Math.round(((60 * s.dampingAlpha) / Math.LN10) * 10) / 10;
+    var dampingDecayFrac = Math.round((1 / (3 * s.dampingAlpha)) * 1000) / 1000;
+    var dampingHalfEnergyMeters = Math.round(((s.waveSpeed * Math.LN2) / (6 * s.dampingAlpha)) * 10) / 10;
 
     // Dispersion & wave packet kinematics
     var phaseVelocity = s.waveSpeed;
@@ -694,16 +1390,32 @@ window.StemLab = window.StemLab || {
 
     // Acoustic intensity level estimate (relative dB scale anchored at 50 dB for A = 10)
     var soundLevelDb = Math.round((50 + 20 * (Math.log(Math.max(1, s.amplitude) / 10) / Math.LN10)) * 10) / 10;
+    var acousticAtten = waveComputeAcousticAttenuation(soundLevelDb, s.amplitude, s.listenerDistMeters, s.spreadingLaw);
+    var beatConsonance = waveComputeBeatConsonance(s.frequency, s.frequency2, s.amplitude, s.amplitude2, s.phase2);
+    var rippleGeom = waveComputeRippleInterferenceGeometry(s);
+    var digSamp = waveComputeDigitalSampling(s.frequency, s.sampleRateRatio, s.adcBitDepth);
+    var offAxisDop = waveComputeOffAxisDoppler(s.frequency, s.sourceSpeed, s.dopplerOffsetAngleDeg, s.dopplerRegime);
 
-    // Ripple diffraction estimate & phased-array beam steering angle
+    // Mersenne's laws & Sonar round-trip echo kinematics
+    var stringDerivedSpeed = waveComputeStringSpeed(s.stringTension, s.stringDensityGm);
+    var mersenneFundamental1m = Math.round((stringDerivedSpeed / 2) * 10) / 10;
+    var sonarWallFrac = s.wallFrac != null ? s.wallFrac : 0.75;
+    var sonarRangeMeters = Math.round((sonarWallFrac * 100) * 10) / 10;
+    var sonarEchoMs = Math.round(((2 * sonarRangeMeters) / Math.max(1, s.waveSpeed)) * 1000 * 10) / 10;
+
+    // Ripple diffraction estimate, N-slit grating resolving power & phased-array beam steering angle
     var rippleLambdaPx = 600 / (s.frequency * 2);
     var rippleSlitPx = s.slitWidth * 360;
     var diffractionSinTheta1 = Math.min(1, rippleLambdaPx / Math.max(4, rippleSlitPx));
     var diffractionAngleDeg = Math.asin(diffractionSinTheta1) * 180 / Math.PI;
     var refLambda = 400 / (s.frequency * 2);
+    var gPitchRef = Math.min((210 * 0.68) / Math.max(1, s.gratingSlits - 1), Math.max(s.slitWidth * 210 + 10, s.rippleSeparation * 0.48));
+    var gratingFirstOrderDeg = Math.asin(Math.min(1, refLambda / Math.max(4, gPitchRef))) * 180 / Math.PI;
     var effSepRef;
     if (s.rippleBarrier === 'doubleSlit') {
       effSepRef = 2 * Math.min(210 * 0.34, Math.max(s.rippleSeparation * 0.5, s.slitWidth * 210 * 0.5 + 16));
+    } else if (s.rippleBarrier === 'grating') {
+      effSepRef = gPitchRef;
     } else {
       var p1x = s.rippleSrc1 ? s.rippleSrc1.x * 400 : (200 - s.rippleSeparation / 2);
       var p1y = s.rippleSrc1 ? s.rippleSrc1.y * 210 : 105;
@@ -727,6 +1439,16 @@ window.StemLab = window.StemLab || {
       dispersionRegime: dispersionRegime,
       longitudinalMode: s.longitudinalMode,
       soundLevelDb: soundLevelDb,
+      stringMechanics: s.stringMechanics,
+      stringTension: s.stringTension,
+      stringDensityGm: s.stringDensityGm,
+      stringDerivedSpeed: stringDerivedSpeed,
+      mersenneFundamental1m: mersenneFundamental1m,
+      sonarRangeMeters: sonarRangeMeters,
+      sonarEchoMs: sonarEchoMs,
+      gratingSlits: s.gratingSlits,
+      gratingResolvingPower: s.gratingSlits,
+      gratingFirstOrderDeg: gratingFirstOrderDeg,
       standingBoundary: s.standingBoundary,
       effectiveHarmonic: standGeom.effectiveHarmonic,
       harmonicFreq: standGeom.freqMultiplier * s.frequency,
@@ -735,6 +1457,9 @@ window.StemLab = window.StemLab || {
       standingWavelengthFormula: standGeom.wavelengthFormula,
       incidentAngleDeg: s.incidentAngleDeg,
       criticalAngleDeg: criticalAngleDeg,
+      brewsterAngleDeg: brewsterAngleDeg,
+      fresnelPolarization: s.fresnelPolarization,
+      isBrewsterMatch: isBrewsterMatch,
       refractedAngleDeg: refractedAngleDeg,
       isTotalInternalReflection: isTotalInternalReflection,
       impedanceCoupled: s.impedanceCoupled,
@@ -749,15 +1474,91 @@ window.StemLab = window.StemLab || {
       reflectedEnergyPct: 100 - transmittedEnergyPct,
       medium2Speed: medium2Speed,
       medium2Wavelength: medium2Wavelength,
+      dopplerRegime: s.dopplerRegime,
+      isSupersonic: isSupersonic,
       machNumber: machNumber,
       observerSpeed: s.observerSpeed,
       approachingFreq: approachingFreq,
       recedingFreq: recedingFreq,
       machAngleDeg: machAngleDeg,
+      relativisticGamma: relativisticGamma,
+      redshiftApp: redshiftApp,
+      redshiftRec: redshiftRec,
+      hAlphaAppNm: hAlphaAppNm,
+      hAlphaRecNm: hAlphaRecNm,
+      airTempCoupled: s.airTempCoupled,
+      airTempC: s.airTempC,
+      airTempSpeed: airTempSpeed,
+      kundtTubeResonantHz: kundtTubeResonantHz,
+      resonatorDriven: s.resonatorDriven,
+      driveFreqRatio: s.driveFreqRatio,
+      resonatorQ: s.resonatorQ,
+      resonatorGainNorm: resResp.gainNorm,
+      resonatorGainPct: resResp.gainPct,
+      resonatorPhaseDeg: resResp.phaseLagDeg,
+      resonatorFwhmHz: resResp.fwhmHz,
+      resonatorDriveHz: resResp.driveFreqHz,
+      resonatorIsPeak: resResp.isAtResonance,
+      resonatorNearestMode: resResp.nearestMode,
+      ftirEnabled: s.ftirEnabled,
+      ftirGapLambda: s.ftirGapLambda,
+      evanescentPenetrationLambda: evan.penetrationLambda,
+      evanescentPenetrationMeters: evan.penetrationMeters,
+      tunnelTransmissionPct: evan.tunnelTransmissionPct,
+      potentialTunnelPct: evan.potentialTunnelPct,
+      oceanDepthCoupled: s.oceanDepthCoupled,
+      waterDepthRatio: s.waterDepthRatio,
+      oceanRegime: oceanDisp.regime,
+      oceanVgOverVp: oceanDisp.vgOverVp,
+      dampingLossDb: dampingLossDb,
+      dampingDecayFrac: dampingDecayFrac,
+      dampingHalfEnergyMeters: dampingHalfEnergyMeters,
+      pluckPosition: s.pluckPosition,
       diffractionAngleDeg: diffractionAngleDeg,
       ripplePhaseDiff: s.ripplePhaseDiff,
       beamSteerAngleDeg: beamSteerAngleDeg,
-      beatFreq: s.showSecond ? Math.abs(s.frequency - s.frequency2) : 0
+      beatFreq: s.showSecond ? beatConsonance.beatFreqHz : 0,
+      intervalLock: s.intervalLock,
+      showBeatEnvelope: s.showBeatEnvelope,
+      beatModDepthPct: beatConsonance.modDepthPct,
+      beatPeriodS: beatConsonance.beatPeriodS,
+      intervalRatio: beatConsonance.ratio,
+      matchedInterval: beatConsonance.matchedInterval,
+      consonanceClass: beatConsonance.classification,
+      carrierFreqHz: beatConsonance.carrierFreqHz,
+      beatPeakAmp: beatConsonance.peakAmp,
+      beatTroughAmp: beatConsonance.troughAmp,
+      distanceAttenuation: s.distanceAttenuation,
+      listenerDistMeters: acousticAtten.listenerDistMeters,
+      spreadingLaw: acousticAtten.spreadingLaw,
+      attenuatedDb: acousticAtten.listenerDb,
+      attenuationDropDb: acousticAtten.dropDb,
+      intensityPctAtListener: acousticAtten.intensityPct,
+      dbPerDoubling: acousticAtten.dbPerDoubling,
+      listenerAmplitudeFactor: acousticAtten.amplitudeFactor,
+      showNodalLines: s.showNodalLines,
+      rippleFringeSpacingPx: rippleGeom.fringeSpacingPx,
+      rippleNodalCount: rippleGeom.nodalLineCount,
+      rippleFirstMinDeg: rippleGeom.firstMinimumDeg,
+      rippleLambdaPx: rippleGeom.lambdaPx,
+      rippleEffSepPx: rippleGeom.dSepPx,
+      digitalSampling: s.digitalSampling,
+      sampleRateRatio: digSamp.sampleRateRatio,
+      sampleRateHz: digSamp.sampleRateHz,
+      nyquistFreqHz: digSamp.nyquistFreqHz,
+      adcBitDepth: digSamp.adcBitDepth,
+      adcQuantizationLevels: digSamp.quantizationLevels,
+      adcSqnrDb: digSamp.sqnrDb,
+      isFundamentalAliased: digSamp.isFundamentalAliased,
+      aliasFreqHz: digSamp.aliasFreqHz,
+      maxUnaliasedHarmonic: digSamp.maxUnaliasedHarmonic,
+      showTravelingComponents: s.showTravelingComponents,
+      dopplerOffsetAngleDeg: offAxisDop.observerAngleDeg,
+      offAxisCosTheta: offAxisDop.cosTheta,
+      offAxisRadarPct: offAxisDop.radarCosinePct,
+      offAxisRadialMach: offAxisDop.radialMach,
+      offAxisObsFreq: offAxisDop.observedFreqHz,
+      transverseRelFreq: offAxisDop.transverseFreqHz
     };
   }
 
@@ -795,6 +1596,15 @@ window.StemLab = window.StemLab || {
     var distToInt = Math.min(fracMod, 1 - fracMod);
     var distToHalf = Math.abs(fracMod - 0.5);
     var interferenceClass = distToHalf <= 0.12 ? 'destructive' : (distToInt <= 0.12 ? 'constructive' : 'partial');
+    var gratingIntensityNorm = null;
+    if (s.rippleBarrier === 'grating') {
+      var dxBar = px - cW * 0.30;
+      var dyBar = py - cH * 0.5;
+      var sinThProbe = dxBar > 2 ? (dyBar / Math.hypot(dxBar, dyBar)) : 0;
+      var gPitchProbe = Math.min((cH * 0.68) / Math.max(1, s.gratingSlits - 1), Math.max(s.slitWidth * cH + 10 * dprScale, sepPx * 0.48));
+      gratingIntensityNorm = Math.round(waveGratingIntensityFactor(sinThProbe, gPitchProbe / rippleWL, s.gratingSlits, s.ripplePhaseDiff) * 1000) / 1000;
+      interferenceClass = gratingIntensityNorm >= 0.65 ? 'constructive' : (gratingIntensityNorm <= 0.08 ? 'destructive' : 'partial');
+    }
 
     // Standing wave node/antinode geometry across all 3 boundary modes (and closed acoustic tube)
     var envelopeFrac = Math.abs(waveStandingEnvelope(s.probeX, s.harmonic, s.standingBoundary));
@@ -808,7 +1618,7 @@ window.StemLab = window.StemLab || {
     var region = s.probeX <= wallFrac ? 'medium1' : 'medium2';
     var localSpeed = region === 'medium1' ? s.waveSpeed : s.waveSpeed * s.medium2Ratio;
     var localWavelength = localSpeed / s.frequency;
-    var localAmplitude = region === 'medium1' ? s.amplitude : (metrics.isTotalInternalReflection ? 0 : s.amplitude * Math.sqrt(Math.max(0, 1 - metrics.effectiveReflectivity * metrics.effectiveReflectivity)));
+    var localAmplitude = region === 'medium1' ? s.amplitude : ((metrics.isTotalInternalReflection && !s.ftirEnabled) ? 0 : s.amplitude * Math.sqrt(Math.max(0, 1 - metrics.effectiveReflectivity * metrics.effectiveReflectivity)));
 
     // Longitudinal pressure phase at snapshot t = 0 (supports traveling + Kundt standing tube)
     var pressurePhase = (s.longitudinalMode === 'standing')
@@ -820,15 +1630,21 @@ window.StemLab = window.StemLab || {
 
     // Particle SHM kinematics & deterministic 48-sample oscilloscope y(t) trace
     var angularFreq = 2 * Math.PI * s.frequency;
+    var resGainScale = s.resonatorDriven ? metrics.resonatorGainNorm : 1;
+    var longDistScale = (s.waveMode === 'longitudinal' && s.longitudinalMode === 'traveling' && s.distanceAttenuation)
+      ? waveComputeAcousticAttenuation(metrics.soundLevelDb, s.amplitude, 1 + s.probeX * 19, s.spreadingLaw).amplitudeFactor
+      : 1;
     var effAmp = s.waveMode === 'standing'
-      ? s.amplitude * envelopeFrac
+      ? s.amplitude * envelopeFrac * resGainScale
       : s.waveMode === 'reflection'
         ? localAmplitude
         : (s.waveMode === 'longitudinal' && s.longitudinalMode === 'standing')
           ? s.amplitude * dispEnvelope
-          : s.waveMode === 'free' && s.damping
-            ? s.amplitude * Math.exp(-s.dampingAlpha * s.probeX * 3)
-            : s.amplitude;
+          : (s.waveMode === 'longitudinal' && s.distanceAttenuation)
+            ? s.amplitude * longDistScale
+            : s.waveMode === 'free' && s.damping
+              ? s.amplitude * Math.exp(-s.dampingAlpha * s.probeX * 3)
+              : s.amplitude;
     var maxVelocity = angularFreq * effAmp;
     var maxAcceleration = angularFreq * angularFreq * effAmp;
 
@@ -837,7 +1653,7 @@ window.StemLab = window.StemLab || {
       var uTime = ti / 48;
       var ySample;
       if (s.waveMode === 'standing') {
-        ySample = waveStandingEnvelope(s.probeX, s.harmonic, s.standingBoundary) * Math.cos(4 * Math.PI * uTime);
+        ySample = waveStandingEnvelope(s.probeX, s.harmonic, s.standingBoundary) * resGainScale * Math.cos(4 * Math.PI * uTime);
       } else if (s.waveMode === 'longitudinal' && s.longitudinalMode === 'standing') {
         ySample = Math.sin(s.harmonic * Math.PI * s.probeX) * Math.cos(4 * Math.PI * uTime);
       } else if ((s.waveMode === 'free' || s.waveMode === 'spectrum') && s.showSecond) {
@@ -883,7 +1699,7 @@ window.StemLab = window.StemLab || {
       } else {
         var ampScale = s.amplitude > 0 ? (effAmp / s.amplitude) : 0;
         if (s.waveMode === 'standing') {
-          var sEnvL = waveStandingEnvelope(s.probeX, s.harmonic, s.standingBoundary);
+          var sEnvL = waveStandingEnvelope(s.probeX, s.harmonic, s.standingBoundary) * resGainScale;
           lxVal = sEnvL * Math.cos(4 * Math.PI * uLis);
           lyVal = -sEnvL * Math.sin(4 * Math.PI * uLis);
         } else if (s.waveMode === 'longitudinal' && s.longitudinalMode === 'standing') {
@@ -915,6 +1731,7 @@ window.StemLab = window.StemLab || {
       netCycleDiff: netCycleDiff,
       deltaRMeters: deltaRMeters,
       interferenceClass: interferenceClass,
+      gratingIntensityNorm: gratingIntensityNorm,
       envelopeFrac: envelopeFrac,
       standingClass: standingClass,
       region: region,
@@ -944,7 +1761,29 @@ window.StemLab = window.StemLab || {
     else if (axis === 'dopplerMach') sweepPoints = [0, 0.2, 0.4, 0.6, 0.8];
     else if (axis === 'snellAngles') sweepPoints = [10, 20, 30, 40, 50];
     else if (axis === 'phasedBeam') sweepPoints = [-3.1416, -1.5708, 0, 1.5708, 3.1416];
-    else sweepPoints = [1, 2, 4, 6, 8];
+    else if (axis === 'mersenneTension') sweepPoints = [25, 50, 100, 200, 400];
+    else if (axis === 'fresnelBrewster') sweepPoints = [0, 20, 40, waveComputeBrewsterAngle(base.medium2Ratio), 75];
+    else if (axis === 'airTempSpeed') sweepPoints = [-20, 0, 20, 40, 60];
+    else if (axis === 'resonanceCurve') {
+      var r0Peak = waveStandingGeometry(base.harmonic, base.standingBoundary).freqMultiplier;
+      sweepPoints = [
+        Math.max(0.25, Math.round((r0Peak - 0.30) * 100) / 100),
+        Math.max(0.25, Math.round((r0Peak - 0.10) * 100) / 100),
+        r0Peak,
+        Math.min(6.5, Math.round((r0Peak + 0.10) * 100) / 100),
+        Math.min(6.5, Math.round((r0Peak + 0.30) * 100) / 100)
+      ];
+    } else if (axis === 'ftirTunneling') {
+      sweepPoints = [0.05, 0.20, 0.40, 0.75, 1.20];
+    } else if (axis === 'inverseSquareDb') {
+      sweepPoints = [1, 2, 4, 8, 16];
+    } else if (axis === 'youngFringeSpacing') {
+      sweepPoints = [40, 80, 120, 160, 200];
+    } else if (axis === 'adcBitSqnr') {
+      sweepPoints = [2, 4, 8, 12, 16];
+    } else if (axis === 'dopplerOffsetAngle') {
+      sweepPoints = [0, 30, 45, 60, 90];
+    } else sweepPoints = [1, 2, 4, 6, 8];
 
     return sweepPoints.map(function(val, idx) {
       var patch = {};
@@ -952,6 +1791,15 @@ window.StemLab = window.StemLab || {
       else if (axis === 'dopplerMach') patch = { waveMode: 'doppler', sourceSpeed: val };
       else if (axis === 'snellAngles') patch = { waveMode: 'reflection', incidentAngleDeg: val };
       else if (axis === 'phasedBeam') patch = { waveMode: 'ripple', rippleBarrier: 'none', ripplePhaseDiff: val };
+      else if (axis === 'mersenneTension') patch = { waveMode: 'standing', standingBoundary: 'bothFixed', stringMechanics: true, stringTension: val, waveSpeed: waveComputeStringSpeed(val, base.stringDensityGm) };
+      else if (axis === 'fresnelBrewster') patch = { waveMode: 'reflection', impedanceCoupled: true, antiReflectionCoating: false, fresnelPolarization: 'p', incidentAngleDeg: val };
+      else if (axis === 'airTempSpeed') patch = { waveMode: 'longitudinal', airTempCoupled: true, airTempC: val };
+      else if (axis === 'resonanceCurve') patch = { waveMode: 'standing', resonatorDriven: true, driveFreqRatio: val };
+      else if (axis === 'ftirTunneling') patch = { waveMode: 'reflection', medium2Ratio: Math.max(1.5, base.medium2Ratio > 1.05 ? base.medium2Ratio : 1.5), incidentAngleDeg: Math.max(55, base.incidentAngleDeg), ftirEnabled: true, ftirGapLambda: val };
+      else if (axis === 'inverseSquareDb') patch = { waveMode: 'longitudinal', longitudinalMode: 'traveling', distanceAttenuation: true, listenerDistMeters: val };
+      else if (axis === 'youngFringeSpacing') patch = { waveMode: 'ripple', rippleBarrier: 'doubleSlit', showNodalLines: true, rippleSeparation: val };
+      else if (axis === 'adcBitSqnr') patch = { waveMode: 'spectrum', digitalSampling: true, adcBitDepth: val };
+      else if (axis === 'dopplerOffsetAngle') patch = { waveMode: 'doppler', dopplerOffsetAngleDeg: val };
       else patch = { frequency: val };
       var st = waveNormalizeState(Object.assign({}, base, patch));
       var met = waveComputeMetrics(st);
@@ -968,6 +1816,13 @@ window.StemLab = window.StemLab || {
         energy: Math.round(met.energy),
         sourceSpeed: st.sourceSpeed,
         observerSpeed: st.observerSpeed,
+        dopplerRegime: st.dopplerRegime,
+        fresnelPolarization: st.fresnelPolarization,
+        reflectedEnergyPct: met.reflectedEnergyPct,
+        transmittedEnergyPct: met.transmittedEnergyPct,
+        redshiftRec: Math.round(met.redshiftRec * 1000) / 1000,
+        airTempC: st.airTempC,
+        pluckPosition: st.pluckPosition,
         approachingFreq: isFinite(met.approachingFreq) ? Math.round(met.approachingFreq * 100) / 100 : null,
         incidentAngleDeg: st.incidentAngleDeg,
         refractedAngleDeg: (typeof met.refractedAngleDeg === 'number' && isFinite(met.refractedAngleDeg)) ? Math.round(met.refractedAngleDeg * 10) / 10 : null,
@@ -976,6 +1831,20 @@ window.StemLab = window.StemLab || {
         groupVelocity: Math.round(met.groupVelocity * 10) / 10,
         ripplePhaseDiff: st.ripplePhaseDiff,
         beamSteerAngleDeg: Math.round(met.beamSteerAngleDeg * 10) / 10,
+        stringTension: st.stringTension,
+        stringDensityGm: st.stringDensityGm,
+        driveFreqRatio: st.driveFreqRatio,
+        resonatorQ: st.resonatorQ,
+        resonatorGainPct: met.resonatorGainPct,
+        ftirGapLambda: st.ftirGapLambda,
+        waterDepthRatio: st.waterDepthRatio,
+        listenerDistMeters: st.listenerDistMeters,
+        attenuatedDb: met.attenuatedDb,
+        rippleFringeSpacingPx: met.rippleFringeSpacingPx,
+        adcBitDepth: st.adcBitDepth,
+        adcSqnrDb: met.adcSqnrDb,
+        dopplerOffsetAngleDeg: st.dopplerOffsetAngleDeg,
+        offAxisObsFreq: isFinite(met.offAxisObsFreq) ? met.offAxisObsFreq : null,
         note: 'sweep:' + axis
       };
     });
@@ -989,6 +1858,8 @@ window.StemLab = window.StemLab || {
     var magSum = 0;
     var weightedFreqSum = 0;
     var higherPowerSum = 0;
+    var rawPowerSum = 0;
+    var filteredPowerSum = 0;
     for (var hh = 1; hh <= maxHarm; hh++) {
       var dre = 0, dim = 0;
       for (var kk = 0; kk < NSAMP; kk++) {
@@ -997,22 +1868,32 @@ window.StemLab = window.StemLab || {
         dre += yk * Math.cos(hh * ph);
         dim += yk * Math.sin(hh * ph);
       }
-      var mag = (2 * Math.sqrt(dre * dre + dim * dim)) / NSAMP;
+      var cosCoeff = (2 * dre) / NSAMP;
+      var sinCoeff = (2 * dim) / NSAMP;
+      var rawMag = (2 * Math.sqrt(dre * dre + dim * dim)) / NSAMP;
+      var gain = waveFilterHarmonicGain(hh, s.spectrumFilter, s.filterCutoffHarmonic);
+      var mag = rawMag * gain;
       var hFreq = hh * s.frequency;
       magSum += mag;
       weightedFreqSum += hFreq * mag;
+      rawPowerSum += rawMag * rawMag;
+      filteredPowerSum += mag * mag;
       if (hh >= 2) higherPowerSum += mag * mag;
-      harmonics.push({ order: hh, freq: hFreq, mag: mag });
+      harmonics.push({ order: hh, freq: hFreq, rawMag: rawMag, gain: gain, mag: mag, cosCoeff: cosCoeff, sinCoeff: sinCoeff });
     }
     var fundMag = harmonics.length > 0 ? Math.abs(harmonics[0].mag) : 0;
     var spectralCentroidHz = magSum > 1e-6 ? Math.round((weightedFreqSum / magSum) * 100) / 100 : s.frequency;
     var thdPct = fundMag > 1e-6 ? Math.round((Math.sqrt(higherPowerSum) / fundMag) * 1000) / 10 : 0;
+    var retainedEnergyPct = rawPowerSum > 1e-9 ? Math.round((filteredPowerSum / rawPowerSum) * 1000) / 10 : 100;
     var secondComponent = s.showSecond ? { freq: s.frequency2, relAmp: s.amplitude2 / Math.max(1, s.amplitude) } : null;
     return {
       harmonics: harmonics,
       secondComponent: secondComponent,
       spectralCentroidHz: spectralCentroidHz,
-      thdPct: thdPct
+      thdPct: thdPct,
+      retainedEnergyPct: retainedEnergyPct,
+      spectrumFilter: s.spectrumFilter,
+      filterCutoffHarmonic: s.filterCutoffHarmonic
     };
   }
 
@@ -1024,36 +1905,61 @@ window.StemLab = window.StemLab || {
     var modeLabel = s.waveMode;
 
     if (s.waveMode === 'standing') {
-      if (s.standingBoundary === 'bothFixed') {
-        formula = 'y(x,t) = A sin(nπx/L) cos(ωt)   [λₙ = 2L/n]';
-      } else if (s.standingBoundary === 'openOpen') {
-        formula = 'y(x,t) = A cos(nπx/L) cos(ωt)   [λₙ = 2L/n]';
+      if (s.resonatorDriven) {
+        formula = 'G(r) = 1 / √[Q²(1 − r²)² + r²],   Δf = fₙ / Q   [Lorentzian Driven Resonator]';
+        detail = 'f_d/f₁ = ' + s.driveFreqRatio.toFixed(2) + ', Q = ' + s.resonatorQ + ', Gain = ' + m.resonatorGainPct.toFixed(1) + '%, φ = ' + m.resonatorPhaseDeg.toFixed(1) + '°, Δf = ' + m.resonatorFwhmHz.toFixed(3) + ' Hz';
+      } else if (s.standingBoundary === 'bothFixed' && s.stringMechanics) {
+        formula = 'fₙ = (n / 2L) √(T / μ),   v = √(T / μ)   [Mersenne\'s Laws]';
+        detail = 'T = ' + s.stringTension + ' N, μ = ' + s.stringDensityGm.toFixed(2) + ' g/m → v = ' + m.stringDerivedSpeed.toFixed(1) + ' m/s, n = ' + s.harmonic + ', f = ' + m.harmonicFreq.toFixed(1) + ' Hz';
+      } else if (s.showTravelingComponents) {
+        formula = 'y(x,t) = ½ y₊(x − vt) + ½ y₋(x + vt),   PE/E = cos²(ωt), KE/E = sin²(ωt)   [Counter-Propagating Superposition]';
+        detail = 'v = ±' + s.waveSpeed + ' m/s, n_eff = ' + m.effectiveHarmonic + ', f = ' + m.harmonicFreq.toFixed(1) + ' Hz, Nodes = ' + m.nodesCount + ', Antinodes = ' + m.antinodesCount;
       } else {
-        formula = 'y(x,t) = A sin((2k−1)πx/(2L)) cos(ωt)   [λₖ = 4L/(2k−1)]';
+        if (s.standingBoundary === 'bothFixed') {
+          formula = 'y(x,t) = A sin(nπx/L) cos(ωt)   [λₙ = 2L/n]';
+        } else if (s.standingBoundary === 'openOpen') {
+          formula = 'y(x,t) = A cos(nπx/L) cos(ωt)   [λₙ = 2L/n]';
+        } else {
+          formula = 'y(x,t) = A sin((2k−1)πx/(2L)) cos(ωt)   [λₖ = 4L/(2k−1)]';
+        }
+        detail = 'n_eff = ' + m.effectiveHarmonic + ', f = ' + m.harmonicFreq.toFixed(1) + ' Hz, Nodes = ' + m.nodesCount + ', Antinodes = ' + m.antinodesCount + ' (' + m.standingWavelengthFormula + ')';
       }
-      detail = 'n_eff = ' + m.effectiveHarmonic + ', f = ' + m.harmonicFreq.toFixed(1) + ' Hz, Nodes = ' + m.nodesCount + ', Antinodes = ' + m.antinodesCount + ' (' + m.standingWavelengthFormula + ')';
     } else if (s.waveMode === 'ripple') {
-      if (s.rippleBarrier === 'singleSlit' || s.rippleBarrier === 'obstacle') {
+      if (s.rippleBarrier === 'grating') {
+        formula = 'd sin θₘ = mλ,   R = mN   [N-Slit Diffraction Grating]';
+        detail = 'N = ' + s.gratingSlits + ' slits, R₁ = ' + m.gratingResolvingPower + ', θ₁ = ' + m.gratingFirstOrderDeg.toFixed(1) + '°, Δφ = ' + Math.round(s.ripplePhaseDiff * 180 / Math.PI) + '°';
+      } else if (s.rippleBarrier === 'singleSlit' || s.rippleBarrier === 'obstacle') {
         formula = 'a sin θ₁ = λ   [Diffraction First Minimum]';
         detail = 'θ₁ = ' + m.diffractionAngleDeg.toFixed(1) + '°, λ = ' + m.wavelength.toFixed(1) + ' m, slit = ' + Math.round(s.slitWidth * 100) + '%';
       } else if (Math.abs(s.ripplePhaseDiff) > 0.05) {
         formula = 'sin θ₀ = (Δφ / 2π) · (λ / d)   [Phased-Array Steering]';
         detail = 'Δφ = ' + Math.round(s.ripplePhaseDiff * 180 / Math.PI) + '°, Beam θ₀ = ' + (m.beamSteerAngleDeg >= 0 ? '+' : '') + m.beamSteerAngleDeg.toFixed(1) + '°, d = ' + s.rippleSeparation + ' px';
+      } else if (s.showNodalLines) {
+        formula = '|r₁ − r₂| = (n + ½)λ,   Δy ≈ λL / d   [Destructive Nodal Hyperbolas]';
+        detail = 'Δy = ' + m.rippleFringeSpacingPx.toFixed(1) + ' px, Nodal lines = ' + m.rippleNodalCount + ', θ_min,1 = ' + m.rippleFirstMinDeg.toFixed(1) + '°, d = ' + m.rippleEffSepPx.toFixed(0) + ' px';
       } else {
         formula = 'Δr = |r₁ − r₂| = mλ   [Two-Source Interference]';
         detail = 'd = ' + s.rippleSeparation + ' px, Δφ = 0°, θ₀ = 0.0°, λ = ' + m.wavelength.toFixed(1) + ' m';
       }
     } else if (s.waveMode === 'reflection') {
       var swrTxt = isFinite(m.standingWaveRatio) ? m.standingWaveRatio.toFixed(2) : '∞';
-      if (m.isTotalInternalReflection) {
-        formula = 'θ₁ > θ_c = arcsin(v₁ / v₂)   [Total Internal Reflection]';
-        detail = 'θ₁ = ' + s.incidentAngleDeg + '° > θ_c = ' + (m.criticalAngleDeg != null ? m.criticalAngleDeg.toFixed(1) + '°' : '—') + ', R = 100%, SWR = ∞';
+      if (m.isTotalInternalReflection && s.ftirEnabled) {
+        formula = 'T = sech²(g / dₚ),   dₚ = λ₁ / (2π √(sin²θ₁ − (v₁/v₂)²))   [FTIR Evanescent Tunneling]';
+        detail = 'dₚ = ' + (m.evanescentPenetrationLambda != null ? m.evanescentPenetrationLambda.toFixed(2) : '—') + 'λ₁, Gap g = ' + s.ftirGapLambda.toFixed(2) + 'λ₁, Tunnel T = ' + m.tunnelTransmissionPct.toFixed(1) + '%, Reflected R = ' + m.reflectedEnergyPct + '%';
+      } else if (m.isTotalInternalReflection) {
+        formula = 'θ₁ > θ_c = arcsin(v₁ / v₂),   dₚ = λ₁ / (2π √(sin²θ₁ − (v₁/v₂)²))   [TIR Evanescent]';
+        detail = 'θ₁ = ' + s.incidentAngleDeg + '° > θ_c = ' + (m.criticalAngleDeg != null ? m.criticalAngleDeg.toFixed(1) + '°' : '—') + ', dₚ = ' + (m.evanescentPenetrationLambda != null ? m.evanescentPenetrationLambda.toFixed(2) : '—') + 'λ₁, R = 100%, SWR = ∞';
       } else if (s.antiReflectionCoating) {
         formula = 'd = λ_c/4,  v_c = √(v₁v₂)   [λ/4 Anti-Reflection Coating]';
         detail = 'v_c = ' + Math.round(m.coatingSpeed) + ' m/s, d = ' + m.quarterWaveThickness.toFixed(1) + ' m, R = ' + m.reflectedEnergyPct + '%, SWR = ' + swrTxt;
       } else if (s.impedanceCoupled) {
-        formula = 'rₛ = (v₂ cos θ₁ − v₁ cos θ₂) / (v₂ cos θ₁ + v₁ cos θ₂)   [Fresnel]';
-        detail = 'v₂/v₁ = ' + s.medium2Ratio.toFixed(2) + ', |r| = ' + m.effectiveReflectivity.toFixed(2) + ', R = ' + m.reflectedEnergyPct + '%, SWR = ' + swrTxt;
+        if (s.fresnelPolarization === 'p') {
+          formula = 'rₚ = (v₂ cos θ₂ − v₁ cos θ₁) / (v₂ cos θ₂ + v₁ cos θ₁)   [Brewster TM, θ_B = arctan(v₁/v₂)]';
+          detail = 'θ₁ = ' + s.incidentAngleDeg + '°, θ_B = ' + m.brewsterAngleDeg.toFixed(1) + '°, |rₚ| = ' + m.effectiveReflectivity.toFixed(3) + ', R = ' + m.reflectedEnergyPct + '%';
+        } else {
+          formula = 'rₛ = (v₂ cos θ₁ − v₁ cos θ₂) / (v₂ cos θ₁ + v₁ cos θ₂)   [Fresnel TE]';
+          detail = 'v₂/v₁ = ' + s.medium2Ratio.toFixed(2) + ', |rₛ| = ' + m.effectiveReflectivity.toFixed(2) + ', R = ' + m.reflectedEnergyPct + '%, SWR = ' + swrTxt;
+        }
       } else {
         formula = 'sin θ₂ / sin θ₁ = v₂ / v₁,   SWR = (1 + |r|) / (1 − |r|)';
         detail = 'θ₁ = ' + s.incidentAngleDeg + '°, θ₂ = ' + (m.refractedAngleDeg != null ? m.refractedAngleDeg.toFixed(1) + '°' : 'TIR') + ', R = ' + m.reflectedEnergyPct + '%, SWR = ' + swrTxt;
@@ -1061,13 +1967,32 @@ window.StemLab = window.StemLab || {
     } else if (s.waveMode === 'longitudinal') {
       if (s.longitudinalMode === 'standing') {
         formula = 'Δx = A sin(nπx/L)cos(ωt),  ΔP ∝ −cos(nπx/L)   [Kundt 90° Shift]';
-        detail = 'Harmonic #' + s.harmonic + ', f = ' + s.frequency.toFixed(1) + ' Hz, Nodes = ' + (s.harmonic + 1) + ', λ = ' + m.wavelength.toFixed(1) + ' m';
+        detail = 'Harmonic #' + s.harmonic + ', f_n(1m) = ' + m.kundtTubeResonantHz.toFixed(1) + ' Hz, Nodes = ' + (s.harmonic + 1) + (s.airTempCoupled ? (', T = ' + s.airTempC + '°C, v = ' + s.waveSpeed + ' m/s') : (', λ = ' + m.wavelength.toFixed(1) + ' m'));
+      } else if (s.distanceAttenuation) {
+        formula = s.spreadingLaw === 'cylindrical'
+          ? 'I(r) = I₀(r₀/r),   ΔL = −10 log₁₀(r/r₀)   [Cylindrical −3 dB/doubling]'
+          : 'I(r) = I₀(r₀/r)²,   ΔL = −20 log₁₀(r/r₀)   [Inverse-Square −6 dB/doubling]';
+        detail = 'r = ' + m.listenerDistMeters.toFixed(1) + ' m, L(r) = ' + m.attenuatedDb.toFixed(1) + ' dB (−' + m.attenuationDropDb.toFixed(1) + ' dB), I/I₀ = ' + m.intensityPctAtListener.toFixed(1) + '%';
+      } else if (s.airTempCoupled) {
+        formula = 'v(T) = 331.3 √(1 + T_C / 273.15) m/s   [Thermal Speed of Sound]';
+        detail = 'T = ' + s.airTempC + ' °C, v_air = ' + s.waveSpeed + ' m/s, f = ' + s.frequency + ' Hz, λ = ' + m.wavelength.toFixed(1) + ' m';
       } else {
         formula = 'Δx(x,t) = A sin(kx − ωt),  ΔP(x,t) = −BAk cos(kx − ωt)';
         detail = 'A = ' + s.amplitude + ', f = ' + s.frequency + ' Hz, v = ' + s.waveSpeed + ' m/s, λ = ' + m.wavelength.toFixed(1) + ' m';
       }
     } else if (s.waveMode === 'doppler') {
-      if (s.sourceSpeed >= 1) {
+      if (s.dopplerOffsetAngleDeg > 0) {
+        if (s.dopplerRegime === 'relativistic') {
+          formula = "f'(θ) = f₀ / [γ(1 − β cos θ)],   f'(90°) = f₀ / γ   [Off-Axis & Transverse Relativistic Doppler]";
+          detail = 'θ = ' + s.dopplerOffsetAngleDeg.toFixed(0) + '°, cos θ = ' + m.offAxisCosTheta.toFixed(2) + ', γ = ' + m.relativisticGamma.toFixed(2) + ', f\'(θ) = ' + m.offAxisObsFreq.toFixed(2) + ' Hz, f\'(90°) = ' + m.transverseRelFreq.toFixed(2) + ' Hz';
+        } else {
+          formula = "f'(θ) = f₀ / (1 − M cos θ),   v_rad = vₛ cos θ   [Off-Axis Radar Cosine Doppler]";
+          detail = 'θ = ' + s.dopplerOffsetAngleDeg.toFixed(0) + '°, cos θ = ' + m.offAxisRadarPct.toFixed(0) + '%, M_rad = ' + m.offAxisRadialMach.toFixed(2) + ', f\'(θ) = ' + (isFinite(m.offAxisObsFreq) ? (m.offAxisObsFreq.toFixed(2) + ' Hz') : 'Shock');
+        }
+      } else if (s.dopplerRegime === 'relativistic') {
+        formula = "f' = f · √((1 ± β) / (1 ∓ β)),   1 + z = √((1 + β) / (1 − β))   [Relativistic Light]";
+        detail = 'β_s = ' + Math.min(0.95, s.sourceSpeed).toFixed(2) + 'c, γ = ' + m.relativisticGamma.toFixed(2) + ', z_rec = +' + m.redshiftRec.toFixed(3) + ', Hα_rec = ' + m.hAlphaRecNm.toFixed(1) + ' nm';
+      } else if (s.sourceSpeed >= 1) {
         formula = 'sin μ = c / vₛ = 1 / M   [Mach Shock Cone]';
         detail = 'Mach M = ' + m.machNumber.toFixed(2) + ', Half-Angle μ = ' + (m.machAngleDeg != null ? m.machAngleDeg.toFixed(1) + '°' : '90.0°') + ', v_o = ' + s.observerSpeed.toFixed(2) + 'c';
       } else {
@@ -1076,17 +2001,33 @@ window.StemLab = window.StemLab || {
       }
     } else if (s.waveMode === 'spectrum') {
       var specInfo = waveComputeSpectrum(s, 12);
-      formula = 'y(t) = Σₕ aₕ sin(hωt)   [Fourier Harmonic Synthesis]';
-      detail = 'f₁ = ' + s.frequency.toFixed(1) + ' Hz, Centroid = ' + specInfo.spectralCentroidHz.toFixed(2) + ' Hz, THD = ' + specInfo.thdPct.toFixed(1) + '%';
+      if (s.digitalSampling) {
+        formula = 'f_Nyq = fₛ / 2,   f_alias = |f − k·fₛ|,   SQNR ≈ 6.02b + 1.76 dB   [Nyquist–Shannon & ADC]';
+        detail = 'fₛ = ' + m.sampleRateHz.toFixed(1) + ' Hz, f_Nyq = ' + m.nyquistFreqHz.toFixed(1) + ' Hz, ' + m.adcBitDepth + '-bit (' + m.adcQuantizationLevels + ' lvls, SQNR=' + m.adcSqnrDb.toFixed(1) + ' dB)' + (m.isFundamentalAliased ? (', ALIAS f=' + m.aliasFreqHz.toFixed(2) + ' Hz') : '');
+      } else if (s.spectrumFilter !== 'none') {
+        formula = 'y_filt(t) = Σₕ H(h) aₕ sin(hωt)   [Harmonic Filter]';
+        detail = 'Filter=' + s.spectrumFilter + (s.spectrumFilter === 'lowpass' || s.spectrumFilter === 'highpass' ? (' (Hc=' + s.filterCutoffHarmonic + ')') : '') + ', Retained=' + specInfo.retainedEnergyPct.toFixed(1) + '%, Centroid=' + specInfo.spectralCentroidHz.toFixed(2) + ' Hz, THD=' + specInfo.thdPct.toFixed(1) + '%';
+      } else {
+        formula = 'y(t) = Σₕ aₕ sin(hωt)   [Fourier Harmonic Synthesis]';
+        detail = 'f₁ = ' + s.frequency.toFixed(1) + ' Hz, Centroid = ' + specInfo.spectralCentroidHz.toFixed(2) + ' Hz, THD = ' + specInfo.thdPct.toFixed(1) + '%';
+      }
+    } else if (s.packetMode === 'collide') {
+      formula = 'y(x,t) = f₊(x − vt) ' + (s.collidePolarity === 'same' ? '+ f₋(x + vt)' : '− f₋(x + vt)') + '   [Pulse Superposition]';
+      detail = (s.collidePolarity === 'same' ? 'Crest + Crest (2A peak at overlap)' : 'Crest + Trough (0 net at overlap)') + ' — pulses pass through unchanged';
+    } else if (s.packetMode === 'packet' && s.oceanDepthCoupled) {
+      formula = 'ω² = gk tanh(kh),   v_g/v_p = ½[1 + 2kh / sinh(2kh)]   [Airy Ocean Dispersion]';
+      detail = 'h/λ = ' + s.waterDepthRatio.toFixed(2) + ' (' + m.oceanRegime + '), v_g/v_p = ' + s.dispersionRatio.toFixed(2) + ', v_g = ' + Math.round(m.groupVelocity) + ' m/s, v_p = ' + Math.round(m.phaseVelocity) + ' m/s';
     } else if (s.packetMode === 'packet') {
       formula = 'y(x,t) = A exp[−(x − v_g t)²/(2σ²)] · sin(kx − ωt)';
       detail = 'v_g / v_p = ' + s.dispersionRatio.toFixed(2) + ' (' + m.dispersionRegime + '), v_g = ' + Math.round(m.groupVelocity) + ' m/s, v_p = ' + Math.round(m.phaseVelocity) + ' m/s';
     } else if (s.showSecond) {
-      formula = 'y(x,t) = y₁(x,t) + A₂ sin(k₂x − ω₂t + φ₂)   [Superposition]';
-      detail = 'f₁ = ' + s.frequency + ' Hz, f₂ = ' + s.frequency2 + ' Hz, f_beat = ' + m.beatFreq.toFixed(2) + ' Hz, φ₂ = ' + s.phase2.toFixed(2) + ' rad';
+      formula = s.showBeatEnvelope
+        ? 'A_env(x,t) = √(A₁² + A₂² + 2A₁A₂ cos(Δkx − Δωt − φ₂)),   f_beat = |f₁ − f₂|'
+        : 'y(x,t) = y₁(x,t) + A₂ sin(k₂x − ω₂t + φ₂)   [Superposition]';
+      detail = 'f₁ = ' + s.frequency + ' Hz, f₂ = ' + s.frequency2 + ' Hz' + (s.intervalLock !== 'none' ? (' (' + s.intervalLock + ')') : '') + ', f_beat = ' + m.beatFreq.toFixed(2) + ' Hz, Mod = ' + m.beatModDepthPct.toFixed(0) + '%';
     } else if (s.damping) {
       formula = 'y(x,t) = A exp(−αx) · sin(2πft − kx)   [Damped Traveling Wave]';
-      detail = 'α = ' + s.dampingAlpha.toFixed(2) + ', A = ' + s.amplitude + ', f = ' + s.frequency + ' Hz, λ = ' + m.wavelength.toFixed(1) + ' m';
+      detail = 'α = ' + s.dampingAlpha.toFixed(2) + ', Loss = −' + m.dampingLossDb.toFixed(1) + ' dB, x₁/₂ = ' + m.dampingHalfEnergyMeters.toFixed(1) + ' m, λ = ' + m.wavelength.toFixed(1) + ' m';
     }
     return { formula: formula, detail: detail, modeLabel: modeLabel };
   }
@@ -1184,19 +2125,219 @@ window.StemLab = window.StemLab || {
     return { ok: ok, id: def.id, msg: msg, reward: def.reward };
   }
 
+  function waveComputeRulerReadout(rawState) {
+    var s = waveNormalizeState(rawState);
+    var met = waveComputeMetrics(s);
+    var x1 = waveClampNum(s.rulerX1, 0.04, 0.96, 0.25);
+    var x2 = waveClampNum(s.rulerX2, 0.04, 0.96, 0.75);
+    var lo = Math.min(x1, x2);
+    var hi = Math.max(x1, x2);
+    var spanFrac = Math.round((hi - lo) * 1000) / 1000;
+    var baseWl = met.wavelength;
+    var spanCycles = 0;
+    var spanMeters = 0;
+    var modeWavelength = baseWl;
+
+    if (s.waveMode === 'standing') {
+      var standGeom = waveStandingGeometry(s.harmonic, s.standingBoundary);
+      spanCycles = spanFrac * (standGeom.freqMultiplier * 0.5);
+      spanMeters = spanCycles * baseWl;
+    } else if (s.waveMode === 'longitudinal' && s.longitudinalMode === 'standing') {
+      spanCycles = spanFrac * (Math.max(1, s.harmonic) * 0.5);
+      spanMeters = spanCycles * baseWl;
+    } else if (s.waveMode === 'ripple') {
+      spanCycles = spanFrac * (s.frequency * 2);
+      spanMeters = spanFrac * s.waveSpeed;
+    } else if (s.waveMode === 'reflection') {
+      var wf = s.wallFrac != null ? s.wallFrac : 0.75;
+      var f1 = Math.max(0, Math.min(hi, wf) - lo);
+      var f2 = Math.max(0, hi - Math.max(lo, wf));
+      var ratio = Math.max(0.15, s.medium2Ratio);
+      spanCycles = (f1 * s.frequency) + ((f2 * s.frequency) / ratio);
+      spanMeters = (f1 * s.waveSpeed) + (f2 * s.waveSpeed * ratio);
+      if (f2 > f1 && f1 <= 0.02) modeWavelength = baseWl * ratio;
+    } else {
+      spanCycles = spanFrac * s.frequency;
+      spanMeters = spanFrac * s.waveSpeed;
+    }
+    var fracMod = spanCycles - Math.floor(spanCycles);
+    var distToHalf = Math.abs(fracMod - 0.5);
+    var distToInt = Math.min(fracMod, 1 - fracMod);
+    return {
+      x1: Math.round(x1 * 1000) / 1000,
+      x2: Math.round(x2 * 1000) / 1000,
+      lo: Math.round(lo * 1000) / 1000,
+      hi: Math.round(hi * 1000) / 1000,
+      spanFrac: spanFrac,
+      spanCycles: Math.round(spanCycles * 100) / 100,
+      spanMeters: Math.round(spanMeters * 100) / 100,
+      wavelength: Math.round(modeWavelength * 100) / 100,
+      impliedSpeed: Math.round((s.frequency * modeWavelength) * 10) / 10,
+      isHalfMultiple: spanCycles >= 0.25 && distToHalf <= 0.08,
+      isWholeMultiple: spanCycles >= 0.5 && distToInt <= 0.08
+    };
+  }
+
+  function waveSnapRulerSpan(rawState, targetCycles) {
+    var s = waveNormalizeState(rawState);
+    var reqCycles = Math.max(0.25, Math.min(4, Number(targetCycles) || 1));
+    var lo = Math.min(s.rulerX1, s.rulerX2);
+    var cyclesPerWidth = s.frequency;
+    if (s.waveMode === 'standing') {
+      cyclesPerWidth = waveStandingGeometry(s.harmonic, s.standingBoundary).freqMultiplier * 0.5;
+    } else if (s.waveMode === 'longitudinal' && s.longitudinalMode === 'standing') {
+      cyclesPerWidth = Math.max(1, s.harmonic) * 0.5;
+    } else if (s.waveMode === 'ripple') {
+      cyclesPerWidth = s.frequency * 2;
+    } else if (s.waveMode === 'reflection') {
+      var wf = s.wallFrac != null ? s.wallFrac : 0.75;
+      if (lo >= wf) cyclesPerWidth = s.frequency / Math.max(0.15, s.medium2Ratio);
+    }
+    var spanFrac = Math.min(0.92, Math.max(0.05, reqCycles / Math.max(0.25, cyclesPerWidth)));
+    var nx1 = Math.max(0.04, Math.min(0.96 - spanFrac, lo));
+    var nx2 = Math.min(0.96, nx1 + spanFrac);
+    return {
+      rulerX1: Math.round(nx1 * 1000) / 1000,
+      rulerX2: Math.round(nx2 * 1000) / 1000
+    };
+  }
+
+  function waveComputeAudioParams(rawState) {
+    var s = waveNormalizeState(rawState);
+    var met = waveComputeMetrics(s);
+    var pr = waveComputeProbeReadout(s);
+    var rawF1 = s.frequency;
+    if (s.waveMode === 'standing') {
+      rawF1 = s.resonatorDriven ? met.resonatorDriveHz : met.harmonicFreq;
+    } else if (s.waveMode === 'longitudinal' && s.longitudinalMode === 'standing') {
+      rawF1 = Math.max(1, s.harmonic) * s.frequency;
+    } else if (s.waveMode === 'doppler') {
+      rawF1 = met.isSupersonic ? s.frequency : met.approachingFreq;
+    }
+    var f1Hz = Math.max(50, Math.min(4000, Math.round((rawF1 * 100) * 10) / 10));
+    var hasOsc2 = !!(s.showSecond && (s.waveMode === 'free' || s.waveMode === 'spectrum'));
+    var ampNorm = waveClampNum(s.amplitude, 5, 100, 50) / 100;
+    var maxGain = hasOsc2 ? 0.14 : 0.24;
+    var probeScale = 1;
+    if (s.probeEnabled) {
+      if (s.waveMode === 'standing') probeScale = pr.envelopeFrac;
+      else if (s.waveMode === 'longitudinal' && s.longitudinalMode === 'standing') probeScale = pr.dispEnvelope;
+      else if (s.waveMode === 'reflection') {
+        var wf = s.wallFrac != null ? s.wallFrac : 0.75;
+        probeScale = s.probeX > wf ? (pr.localAmplitude / Math.max(1, s.amplitude)) : 1;
+      } else if (s.waveMode === 'free' && s.damping) {
+        probeScale = Math.exp(-s.dampingAlpha * s.probeX * 3);
+      }
+    }
+    var resonatorGainScale = (s.waveMode === 'standing' && s.resonatorDriven) ? Math.max(0.08, met.resonatorGainNorm) : 1;
+    var filterGainScale = 1;
+    if ((s.waveMode === 'spectrum' || s.waveMode === 'free') && s.spectrumFilter !== 'none') {
+      var filtSpec = waveComputeSpectrum(s, 12);
+      filterGainScale = Math.max(0.05, Math.sqrt((filtSpec.retainedEnergyPct || 0) / 100));
+    }
+    var distAudioScale = (s.waveMode === 'longitudinal' && s.longitudinalMode === 'traveling' && s.distanceAttenuation)
+      ? Math.max(0.08, met.listenerAmplitudeFactor)
+      : 1;
+    var gain1 = Math.max(0.002, Math.min(0.24, Math.round((ampNorm * maxGain * Math.max(0.01, probeScale) * filterGainScale * resonatorGainScale * distAudioScale) * 10000) / 10000));
+    var f2Hz = hasOsc2 ? Math.max(50, Math.min(4000, Math.round((s.frequency2 * 100) * 10) / 10)) : 0;
+    var amp2Norm = waveClampNum(s.amplitude2, 10, 80, 30) / 100;
+    var probeScale2 = (s.probeEnabled && s.waveMode === 'free' && s.damping) ? Math.exp(-s.dampingAlpha * s.probeX * 3) : 1;
+    var gain2 = hasOsc2 ? Math.max(0.002, Math.min(0.14, Math.round((amp2Norm * 0.14 * probeScale2) * 10000) / 10000)) : 0;
+    return {
+      f1Hz: f1Hz,
+      gain1: gain1,
+      hasOsc2: hasOsc2,
+      f2Hz: f2Hz,
+      gain2: gain2,
+      probeScale: Math.round(probeScale * 1000) / 1000
+    };
+  }
+
+  function waveBuildCerEvidence(rawState) {
+    var s = waveNormalizeState(rawState);
+    var met = waveComputeMetrics(s);
+    var mode = s.waveMode || 'free';
+    var parts = [
+      '[' + mode + '] f=' + s.frequency + 'Hz, A=' + s.amplitude + ', v=' + s.waveSpeed + 'm/s, \u03BB=' + met.wavelength.toFixed(1) + 'm'
+    ];
+    if (mode === 'standing') {
+      parts.push('boundary=' + s.standingBoundary + ', n=' + s.harmonic + ', \u03BB_n=' + met.standingWavelengthFormula + ', f_n=' + met.harmonicFreq.toFixed(1) + ' Hz, nodes=' + met.nodesCount + ', antinodes=' + met.antinodesCount + (s.showTravelingComponents ? ', decomp=y+(x-vt)+y-(x+vt)' : '') + (s.stringMechanics ? (', T=' + s.stringTension + 'N, \u03BC=' + s.stringDensityGm.toFixed(2) + 'g/m') : '') + (s.resonatorDriven ? (', fd/f1=' + s.driveFreqRatio.toFixed(2) + ', Q=' + s.resonatorQ + ', Gain=' + met.resonatorGainPct.toFixed(1) + '%') : ''));
+    } else if (mode === 'doppler') {
+      if (s.dopplerRegime === 'relativistic') {
+        parts.push('regime=relativistic, \u03B2_s=' + Math.min(0.95, s.sourceSpeed).toFixed(2) + 'c, \u03B3=' + met.relativisticGamma.toFixed(2) + ', z_rec=' + met.redshiftRec.toFixed(3) + ', H\u03B1_app=' + met.hAlphaAppNm.toFixed(1) + 'nm, H\u03B1_rec=' + met.hAlphaRecNm.toFixed(1) + 'nm' + (s.dopplerOffsetAngleDeg > 0 ? (', \u03B8=' + s.dopplerOffsetAngleDeg + '\u00B0, f(\u03B8)=' + met.offAxisObsFreq.toFixed(2) + 'Hz') : ''));
+      } else {
+        parts.push('M=' + s.sourceSpeed.toFixed(2) + ', v_o=' + s.observerSpeed.toFixed(2) + ', f\'_app=' + (met.isSupersonic ? 'supersonic' : met.approachingFreq.toFixed(2) + ' Hz') + ', f\'_rec=' + met.recedingFreq.toFixed(2) + ' Hz' + (met.machAngleDeg != null ? (', Mach \u03BC=' + met.machAngleDeg.toFixed(1) + '\u00B0') : '') + (s.dopplerOffsetAngleDeg > 0 ? (', \u03B8=' + s.dopplerOffsetAngleDeg + '\u00B0(cos=' + met.offAxisRadarPct.toFixed(0) + '%), f(\u03B8)=' + (isFinite(met.offAxisObsFreq) ? met.offAxisObsFreq.toFixed(2) + 'Hz' : 'shock')) : ''));
+      }
+    } else if (mode === 'reflection') {
+      parts.push('v2/v1=' + s.medium2Ratio.toFixed(2) + ', \u03B81=' + s.incidentAngleDeg + '\u00B0, \u03B82=' + (met.refractedAngleDeg != null ? met.refractedAngleDeg.toFixed(1) + '\u00B0' : 'TIR') + (met.evanescentPenetrationLambda != null ? (', dp=' + met.evanescentPenetrationLambda.toFixed(2) + '\u03BB1') : '') + (s.ftirEnabled ? (', FTIR gap=' + s.ftirGapLambda.toFixed(2) + '\u03BB1, T=' + met.tunnelTransmissionPct.toFixed(1) + '%') : '') + (s.impedanceCoupled ? (', pol=' + s.fresnelPolarization.toUpperCase() + ', \u03B8B=' + met.brewsterAngleDeg.toFixed(1) + '\u00B0') : '') + ', |r|=' + met.effectiveReflectivity.toFixed(2) + ', R=' + met.reflectedEnergyPct + '%, T_E=' + met.transmittedEnergyPct + '%, SWR=' + (isFinite(met.standingWaveRatio) ? met.standingWaveRatio.toFixed(2) : '\u221E') + ', echo=' + met.sonarEchoMs.toFixed(1) + 'ms');
+    } else if (mode === 'ripple') {
+      parts.push('barrier=' + s.rippleBarrier + (s.rippleBarrier === 'grating' ? ('(' + s.gratingSlits + ' slits, R1=' + met.gratingResolvingPower + ')') : '') + (s.showNodalLines ? (', \u0394y=' + met.rippleFringeSpacingPx.toFixed(1) + 'px, nodal=' + met.rippleNodalCount) : '') + ', \u03B8_diff=' + met.diffractionAngleDeg.toFixed(1) + '\u00B0, \u0394\u03C6=' + Math.round((s.ripplePhaseDiff || 0) * 180 / Math.PI) + '\u00B0, \u03B8_steer=' + met.beamSteerAngleDeg.toFixed(1) + '\u00B0');
+    } else if (mode === 'longitudinal') {
+      parts.push('submode=' + s.longitudinalMode + ', SPL=' + met.soundLevelDb.toFixed(1) + ' dB' + (s.longitudinalMode === 'traveling' && s.distanceAttenuation ? (', r=' + met.listenerDistMeters.toFixed(1) + 'm(' + s.spreadingLaw + ')=' + met.attenuatedDb.toFixed(1) + 'dB') : '') + (s.airTempCoupled ? (', T=' + s.airTempC + '\u00B0C') : '') + (s.longitudinalMode === 'standing' ? (', pipe n=' + s.harmonic + ', f_n=' + met.kundtTubeResonantHz.toFixed(1) + 'Hz') : ''));
+    } else if (mode === 'spectrum') {
+      var spec = waveComputeSpectrum(s);
+      parts.push((s.spectrumFilter !== 'none' ? ('filter=' + s.spectrumFilter + '(Hc=' + s.filterCutoffHarmonic + '), retained=' + spec.retainedEnergyPct.toFixed(1) + '%, ') : '') + (s.digitalSampling ? ('ADC fs=' + met.sampleRateHz.toFixed(1) + 'Hz(fNyq=' + met.nyquistFreqHz.toFixed(1) + 'Hz,' + met.adcBitDepth + 'b SQNR=' + met.adcSqnrDb.toFixed(1) + 'dB' + (met.isFundamentalAliased ? ',ALIAS=' + met.aliasFreqHz.toFixed(2) + 'Hz' : '') + '), ') : '') + (s.waveType === 'custom' ? ('pluck=' + Math.round(s.pluckPosition * 100) + '%, ') : '') + 'centroid=' + spec.spectralCentroidHz.toFixed(2) + ' Hz, THD=' + spec.thdPct.toFixed(1) + '%');
+    } else if (s.showSecond) {
+      parts.push('wave2(A2=' + s.amplitude2 + ', f2=' + s.frequency2 + ' Hz' + (s.intervalLock !== 'none' ? (', lock=' + s.intervalLock) : '') + ', \u0394f=' + met.beatFreq.toFixed(2) + ' Hz, mod=' + met.beatModDepthPct.toFixed(0) + '%, \u03C62=' + (s.phase2 / Math.PI).toFixed(2) + '\u03C0)');
+    } else if (s.packetMode === 'packet') {
+      parts.push('packet vg/vp=' + s.dispersionRatio.toFixed(2) + ' (' + met.dispersionRegime + ', vg=' + met.groupVelocity.toFixed(1) + ' m/s' + (s.oceanDepthCoupled ? (', ocean h/\u03BB=' + s.waterDepthRatio.toFixed(2) + ' ' + met.oceanRegime) : '') + ')');
+    } else if (s.packetMode === 'collide') {
+      parts.push('pulse collision (' + s.collidePolarity + ')');
+    }
+    if (mode === 'free' && s.damping) {
+      parts.push('damping \u03B1=' + s.dampingAlpha.toFixed(1) + ' (-' + met.dampingLossDb.toFixed(1) + ' dB, x1/2=' + met.dampingHalfEnergyMeters.toFixed(1) + 'm)');
+    }
+    if (s.probeEnabled) {
+      var pr = waveComputeProbeReadout(s);
+      parts.push('probe x=' + Math.round(s.probeX * 100) + '% (' + pr.cyclesFromLeft.toFixed(2) + '\u03BB' + (mode === 'ripple' ? (', \u0394r=' + pr.deltaRLambda.toFixed(2) + '\u03BB ' + pr.interferenceClass) : mode === 'standing' ? (', ' + pr.standingClass + ' ' + Math.round(pr.envelopeFrac * 100) + '%A') : '') + ')');
+    }
+    if (s.showRuler) {
+      var rr = waveComputeRulerReadout(s);
+      parts.push('ruler \u0394x=' + rr.spanCycles.toFixed(2) + '\u03BB (' + rr.spanMeters.toFixed(1) + ' m)');
+    }
+    return parts.join(' | ');
+  }
+
   window.StemLab._wave = {
     MEDIA_PRESETS: WAVE_MEDIA_PRESETS,
+    STRING_PRESETS: WAVE_STRING_PRESETS,
     FOURIER_PRESETS: WAVE_FOURIER_PRESETS,
     MISSIONS: WAVE_MISSIONS,
     CER_PROMPTS: WAVE_CER_PROMPTS,
     MASTERY_IDS: WAVE_MASTERY_IDS,
     MASTERY_TOTAL: WAVE_MASTERY_IDS.length,
+    QUIZ_COUNT: 14,
+    MYTHS_COUNT: 7,
     waveVal: waveValPure,
+    computeStringSpeed: waveComputeStringSpeed,
+    computeBrewsterAngle: waveComputeBrewsterAngle,
+    wavelengthNmToHex: waveWavelengthNmToHex,
+    computeRelativisticDoppler: waveComputeRelativisticDoppler,
+    computePluckWeights: waveComputePluckWeights,
+    computeAirSoundSpeed: waveComputeAirSoundSpeed,
+    computeResonatorResponse: waveComputeResonatorResponse,
+    computeEvanescentTunneling: waveComputeEvanescentTunneling,
+    computeOceanDispersion: waveComputeOceanDispersion,
+    computeBeatConsonance: waveComputeBeatConsonance,
+    computeAcousticAttenuation: waveComputeAcousticAttenuation,
+    computeRippleInterferenceGeometry: waveComputeRippleInterferenceGeometry,
+    quantizeAdcSample: waveQuantizeAdcSample,
+    computeDigitalSampling: waveComputeDigitalSampling,
+    computeStandingDecomposition: waveComputeStandingDecomposition,
+    computeOffAxisDoppler: waveComputeOffAxisDoppler,
+    gratingIntensityFactor: waveGratingIntensityFactor,
+    filterHarmonicGain: waveFilterHarmonicGain,
+    evalPulseCollision: waveEvalPulseCollision,
+    compareSnapshot: waveCompareSnapshot,
     standingEnvelope: waveStandingEnvelope,
     standingGeometry: waveStandingGeometry,
     normalizeState: waveNormalizeState,
     computeWaveMetrics: waveComputeMetrics,
     computeProbeReadout: waveComputeProbeReadout,
+    computeRulerReadout: waveComputeRulerReadout,
+    snapRulerSpan: waveSnapRulerSpan,
+    computeAudioParams: waveComputeAudioParams,
+    buildCerEvidence: waveBuildCerEvidence,
     computeSpectrum: waveComputeSpectrum,
     governingEquation: waveGoverningEquation,
     buildSweepRows: waveBuildSweepRows,
@@ -1338,6 +2479,7 @@ window.StemLab = window.StemLab || {
               var patch = typeof patchOrFn === 'function' ? patchOrFn(cur) : (patchOrFn || {});
               var merged = waveNormalizeState(Object.assign({}, cur, patch), gradeLevel);
               merged.waveMastery = waveSyncMasterySlot(waveComputeMastery(merged));
+              try { if (typeof syncOscFromState === 'function') syncOscFromState(merged); } catch (e) {}
               return Object.assign({}, prev, { wave: merged });
             });
           };
@@ -1358,6 +2500,8 @@ window.StemLab = window.StemLab || {
 
           var waveMetrics = waveComputeMetrics(d);
           var probeReadout = waveComputeProbeReadout(d);
+          var rulerReadout = waveComputeRulerReadout(d);
+          var audioParams = waveComputeAudioParams(d);
           var masteryMap = waveComputeMastery(d);
           var masteryCount = WAVE_MASTERY_IDS.filter(function(id) { return !!masteryMap[id]; }).length;
           var udlBand = WAVE_VALID_BANDS[d.learnerBand] ? d.learnerBand : waveInferBand(gradeLevel);
@@ -1465,7 +2609,8 @@ window.StemLab = window.StemLab || {
               ripple1: null, ripple2: null, // null = use default positions; { x, y } when dragged
               wallX: null,                   // null = use default wall pos
               probe: null,                   // { x, y } when Wave Probe is dragged
-              activeHandle: null,            // 'r1' | 'r2' | 'wall' | 'probe' during a drag
+              ruler1: null, ruler2: null,    // x-coords (canvas px) when λ-caliper jaws are dragged
+              activeHandle: null,            // 'r1' | 'r2' | 'wall' | 'probe' | 'ruler1' | 'ruler2' during a drag
               dragOffset: { x: 0, y: 0 }
             };
 
@@ -1494,6 +2639,15 @@ window.StemLab = window.StemLab || {
                 var r2 = canvasEl._drag.ripple2 || defaults2;
                 if (Math.hypot(pt.x - r1.x, pt.y - r1.y) < hitR) return 'r1';
                 if (Math.hypot(pt.x - r2.x, pt.y - r2.y) < hitR) return 'r2';
+              }
+              if (canvasEl.dataset.showRuler === 'true') {
+                var rY = Math.round(canvasEl.height * 0.12);
+                var rx1Ds = parseFloat(canvasEl.dataset.rulerX1 || '0.25');
+                var rx2Ds = parseFloat(canvasEl.dataset.rulerX2 || '0.75');
+                var rx1Pos = canvasEl._drag.ruler1 != null ? canvasEl._drag.ruler1 : ((isFinite(rx1Ds) ? rx1Ds : 0.25) * canvasEl.width);
+                var rx2Pos = canvasEl._drag.ruler2 != null ? canvasEl._drag.ruler2 : ((isFinite(rx2Ds) ? rx2Ds : 0.75) * canvasEl.width);
+                if (Math.hypot(pt.x - rx1Pos, pt.y - rY) < hitR) return 'ruler1';
+                if (Math.hypot(pt.x - rx2Pos, pt.y - rY) < hitR) return 'ruler2';
               }
               if (canvasEl.dataset.probeEnabled === 'true') {
                 var _pxDs = parseFloat(canvasEl.dataset.probeX || '0.62');
@@ -1524,6 +2678,14 @@ window.StemLab = window.StemLab || {
               } else if (handle === 'r2') {
                 var r2 = canvasEl._drag.ripple2 || { x: pt.x, y: pt.y };
                 canvasEl._drag.dragOffset = { x: r2.x - pt.x, y: r2.y - pt.y };
+              } else if (handle === 'ruler1') {
+                var r1Ds = parseFloat(canvasEl.dataset.rulerX1 || '0.25');
+                var curR1 = canvasEl._drag.ruler1 != null ? canvasEl._drag.ruler1 : ((isFinite(r1Ds) ? r1Ds : 0.25) * canvasEl.width);
+                canvasEl._drag.dragOffset = { x: curR1 - pt.x, y: 0 };
+              } else if (handle === 'ruler2') {
+                var r2Ds = parseFloat(canvasEl.dataset.rulerX2 || '0.75');
+                var curR2 = canvasEl._drag.ruler2 != null ? canvasEl._drag.ruler2 : ((isFinite(r2Ds) ? r2Ds : 0.75) * canvasEl.width);
+                canvasEl._drag.dragOffset = { x: curR2 - pt.x, y: 0 };
               } else if (handle === 'probe') {
                 var _pxDs2 = parseFloat(canvasEl.dataset.probeX || '0.62');
                 var _pyDs2 = parseFloat(canvasEl.dataset.probeY || '0.32');
@@ -1552,6 +2714,8 @@ window.StemLab = window.StemLab || {
               newY = Math.max(20, Math.min(canvasEl.height - 20, newY));
               if (canvasEl._drag.activeHandle === 'r1') canvasEl._drag.ripple1 = { x: newX, y: newY };
               else if (canvasEl._drag.activeHandle === 'r2') canvasEl._drag.ripple2 = { x: newX, y: newY };
+              else if (canvasEl._drag.activeHandle === 'ruler1') canvasEl._drag.ruler1 = Math.max(canvasEl.width * 0.04, Math.min(canvasEl.width * 0.96, newX));
+              else if (canvasEl._drag.activeHandle === 'ruler2') canvasEl._drag.ruler2 = Math.max(canvasEl.width * 0.04, Math.min(canvasEl.width * 0.96, newX));
               else if (canvasEl._drag.activeHandle === 'probe') canvasEl._drag.probe = { x: newX, y: newY };
               else if (canvasEl._drag.activeHandle === 'wall') canvasEl._drag.wallX = newX;
             }
@@ -1564,6 +2728,8 @@ window.StemLab = window.StemLab || {
               try {
                 if (hd === 'r1' && canvasEl._drag.ripple1) upd('rippleSrc1', { x: canvasEl._drag.ripple1.x / canvasEl.width, y: canvasEl._drag.ripple1.y / canvasEl.height });
                 else if (hd === 'r2' && canvasEl._drag.ripple2) upd('rippleSrc2', { x: canvasEl._drag.ripple2.x / canvasEl.width, y: canvasEl._drag.ripple2.y / canvasEl.height });
+                else if (hd === 'ruler1' && canvasEl._drag.ruler1 != null) upd('rulerX1', Math.round((canvasEl._drag.ruler1 / canvasEl.width) * 1000) / 1000);
+                else if (hd === 'ruler2' && canvasEl._drag.ruler2 != null) upd('rulerX2', Math.round((canvasEl._drag.ruler2 / canvasEl.width) * 1000) / 1000);
                 else if (hd === 'probe' && canvasEl._drag.probe) {
                   updPatch({
                     probeX: Math.round((canvasEl._drag.probe.x / canvasEl.width) * 1000) / 1000,
@@ -1596,6 +2762,8 @@ window.StemLab = window.StemLab || {
             if (d.rippleSrc2) canvasEl._drag.ripple2 = { x: d.rippleSrc2.x * cW, y: d.rippleSrc2.y * cH };
             if (d.wallFrac != null) canvasEl._drag.wallX = d.wallFrac * cW;
             canvasEl._drag.probe = { x: d.probeX * cW, y: d.probeY * cH };
+            canvasEl._drag.ruler1 = d.rulerX1 * cW;
+            canvasEl._drag.ruler2 = d.rulerX2 * cW;
 
             var _waveResizeObserver = null;
             function handleWaveResize() {
@@ -1611,6 +2779,8 @@ window.StemLab = window.StemLab || {
               if (canvasEl._drag.ripple2) canvasEl._drag.ripple2 = { x: canvasEl._drag.ripple2.x * rx, y: canvasEl._drag.ripple2.y * ry };
               if (canvasEl._drag.wallX != null) canvasEl._drag.wallX = canvasEl._drag.wallX * rx;
               if (canvasEl._drag.probe) canvasEl._drag.probe = { x: canvasEl._drag.probe.x * rx, y: canvasEl._drag.probe.y * ry };
+              if (canvasEl._drag.ruler1 != null) canvasEl._drag.ruler1 = canvasEl._drag.ruler1 * rx;
+              if (canvasEl._drag.ruler2 != null) canvasEl._drag.ruler2 = canvasEl._drag.ruler2 * rx;
             }
             if (typeof ResizeObserver === 'function') {
               try {
@@ -1741,7 +2911,9 @@ window.StemLab = window.StemLab || {
               rSrc1: d.rippleSrc1 ? (d.rippleSrc1.x + ',' + d.rippleSrc1.y) : '',
               rSrc2: d.rippleSrc2 ? (d.rippleSrc2.x + ',' + d.rippleSrc2.y) : '',
               probeX: String(d.probeX),
-              probeY: String(d.probeY)
+              probeY: String(d.probeY),
+              rulerX1: String(d.rulerX1),
+              rulerX2: String(d.rulerX2)
             };
 
             function parseCsvPair(str) {
@@ -1783,12 +2955,29 @@ window.StemLab = window.StemLab || {
                 var nPx = parseFloat(dsPx), nPy = parseFloat(dsPy);
                 if (isFinite(nPx) && isFinite(nPy)) canvasEl._drag.probe = { x: nPx * cW, y: nPy * cH };
               }
+              var dsRx1 = canvasEl.dataset.rulerX1 || '';
+              var dsRx2 = canvasEl.dataset.rulerX2 || '';
+              if (dsRx1 !== (ls.rulerX1 || '') || dsRx2 !== (ls.rulerX2 || '')) {
+                ls.rulerX1 = dsRx1; ls.rulerX2 = dsRx2;
+                var nRx1 = parseFloat(dsRx1), nRx2 = parseFloat(dsRx2);
+                if (isFinite(nRx1)) canvasEl._drag.ruler1 = nRx1 * cW;
+                if (isFinite(nRx2)) canvasEl._drag.ruler2 = nRx2 * cW;
+              }
               canvasEl._lastSynced = ls;
             }
 
             // Step-while-paused hook (Pause/Step buttons + Space key live in React;
             // tick is closure-local, so expose a nudge function on the element).
             canvasEl._waveStep = function (n) { tick += n; };
+            canvasEl._waveSnapCollision = function () {
+              var curSpeed = parseFloat(canvasEl.dataset.speed || '1');
+              if (!isFinite(curSpeed) || curSpeed <= 0) curSpeed = 1;
+              canvasEl.dataset.paused = 'true';
+              canvasEl.dataset.packetMode = 'collide';
+              tick = 0.50 / (0.045 * curSpeed);
+              cancelWaveFrame();
+              draw();
+            };
 
             function draw() {
               if (!waveAlive) return;
@@ -2216,7 +3405,20 @@ window.StemLab = window.StemLab || {
                 var boundary = canvasEl.dataset.standingBoundary || 'bothFixed';
                 var standGeo = waveStandingGeometry(harmonic, boundary);
                 var standMid = cH / 2;
-                var standPhase = Math.cos(tick * 0.05 * speed * standGeo.freqMultiplier);
+                var resDriven = canvasEl.dataset.resonatorDriven === 'true';
+                var driveRatio = parseFloat(canvasEl.dataset.driveFreqRatio || '1');
+                if (!isFinite(driveRatio) || driveRatio <= 0) driveRatio = 1;
+                var resGain = parseFloat(canvasEl.dataset.resonatorGain || '1');
+                if (!isFinite(resGain) || resGain < 0) resGain = 1;
+                var resGainNorm = parseFloat(canvasEl.dataset.resonatorGainNorm || '1');
+                if (!isFinite(resGainNorm) || resGainNorm < 0) resGainNorm = 1;
+                var resPhaseDeg = parseFloat(canvasEl.dataset.resonatorPhaseDeg || '0');
+                if (!isFinite(resPhaseDeg)) resPhaseDeg = 0;
+                var standScale = resDriven ? Math.max(0.08, Math.min(1.18, resGainNorm)) : 1;
+                var driverOmegaT = tick * 0.05 * speed * standGeo.freqMultiplier * (resDriven ? driveRatio : 1);
+                var standPhase = resDriven
+                  ? Math.cos(driverOmegaT - resPhaseDeg * Math.PI / 180)
+                  : Math.cos(tick * 0.05 * speed * standGeo.freqMultiplier);
                 var antiCount = Math.max(1, standGeo.antinodePositions.length);
                 var lobeWidth = cW / antiCount;
 
@@ -2237,19 +3439,34 @@ window.StemLab = window.StemLab || {
                 ctx.restore();
 
                 var uDen = Math.max(1, cW - 1);
-                function traceStandingEnvelope(sign) {
+                var standAmpPx = resDriven ? Math.min(amp * standScale * dpr, cH * 0.44) : (amp * dpr);
+                function traceStandingEnvelope(sign, pxAmpOpt) {
+                  var useAmp = pxAmpOpt != null ? pxAmpOpt : standAmpPx;
                   ctx.beginPath();
                   for (var ex = 0; ex < cW; ex++) {
-                    var envY = waveStandingEnvelope(ex / uDen, harmonic, boundary) * amp * dpr * sign;
+                    var envY = waveStandingEnvelope(ex / uDen, harmonic, boundary) * useAmp * sign;
                     var envPy = standMid - envY;
                     if (ex === 0) ctx.moveTo(ex, envPy); else ctx.lineTo(ex, envPy);
                   }
                 }
 
+                // Ghosted 100% peak envelope outline when resonator drive is active
+                if (resDriven) {
+                  var ghostAmpPx = Math.min(amp * dpr, cH * 0.44);
+                  ctx.save();
+                  ctx.strokeStyle = 'rgba(148,163,184,0.55)';
+                  ctx.lineWidth = 1.4 * dpr;
+                  ctx.setLineDash([5 * dpr, 4 * dpr]);
+                  traceStandingEnvelope(1, ghostAmpPx); ctx.stroke();
+                  traceStandingEnvelope(-1, ghostAmpPx); ctx.stroke();
+                  ctx.setLineDash([]);
+                  ctx.restore();
+                }
+
                 // Filled maximum-displacement envelope.
                 ctx.save(); ctx.globalAlpha = 0.15; ctx.fillStyle = accent;
                 traceStandingEnvelope(1);
-                for (var ex2 = cW - 1; ex2 >= 0; ex2--) ctx.lineTo(ex2, standMid + waveStandingEnvelope(ex2 / uDen, harmonic, boundary) * amp * dpr);
+                for (var ex2 = cW - 1; ex2 >= 0; ex2--) ctx.lineTo(ex2, standMid + waveStandingEnvelope(ex2 / uDen, harmonic, boundary) * standAmpPx);
                 ctx.closePath(); ctx.fill(); ctx.restore();
 
                 // Fine dashed envelope boundaries keep maximum displacement visible.
@@ -2303,7 +3520,7 @@ window.StemLab = window.StemLab || {
                 function traceStandingWave() {
                   ctx.beginPath();
                   for (var sxw = 0; sxw < cW; sxw++) {
-                    var standY = waveStandingEnvelope(sxw / uDen, harmonic, boundary) * standPhase * amp * dpr;
+                    var standY = waveStandingEnvelope(sxw / uDen, harmonic, boundary) * standPhase * standAmpPx;
                     var standPy = standMid - standY;
                     if (sxw === 0) ctx.moveTo(sxw, standPy); else ctx.lineTo(sxw, standPy);
                   }
@@ -2313,6 +3530,61 @@ window.StemLab = window.StemLab || {
                 traceStandingWave(); ctx.lineWidth=3*dpr; ctx.shadowBlur=10; ctx.stroke();
                 traceStandingWave(); ctx.save(); ctx.globalAlpha=.3; ctx.strokeStyle='#fff'; ctx.lineWidth=.8*dpr; ctx.shadowBlur=0; ctx.stroke(); ctx.restore();
                 ctx.shadowBlur=0;
+
+                if (canvasEl.dataset.showTravelingComponents === 'true') {
+                  var decompPhi = resDriven ? (driverOmegaT - resPhaseDeg * Math.PI / 180) : (tick * 0.05 * speed * standGeo.freqMultiplier);
+                  ctx.save();
+                  ctx.lineWidth = 1.8 * dpr;
+                  ctx.setLineDash([6 * dpr, 4 * dpr]);
+                  ctx.strokeStyle = '#38bdf8';
+                  ctx.beginPath();
+                  for (var xf = 0; xf < cW; xf += 2) {
+                    var df = waveComputeStandingDecomposition(xf / uDen, decompPhi, harmonic, boundary);
+                    var fy = standMid - df.yForward * standAmpPx;
+                    if (xf === 0) ctx.moveTo(xf, fy); else ctx.lineTo(xf, fy);
+                  }
+                  ctx.stroke();
+
+                  ctx.setLineDash([3 * dpr, 3 * dpr]);
+                  ctx.strokeStyle = '#f472b6';
+                  ctx.beginPath();
+                  for (var xb = 0; xb < cW; xb += 2) {
+                    var db = waveComputeStandingDecomposition(xb / uDen, decompPhi, harmonic, boundary);
+                    var by = standMid - db.yBackward * standAmpPx;
+                    if (xb === 0) ctx.moveTo(xb, by); else ctx.lineTo(xb, by);
+                  }
+                  ctx.stroke();
+                  ctx.setLineDash([]);
+
+                  var eDecomp = waveComputeStandingDecomposition(0.5, decompPhi, harmonic, boundary);
+                  var pePct = Math.round(eDecomp.potentialFrac * 100);
+                  var kePct = 100 - pePct;
+                  var dkHudW = Math.min(cW - 20 * dpr, 236 * dpr);
+                  var dkHudH = 22 * dpr;
+                  var dkHudX = 10 * dpr;
+                  var dkHudY = cH - dkHudH - 8 * dpr;
+                  ctx.fillStyle = 'rgba(15,23,42,0.88)';
+                  ctx.fillRect(dkHudX, dkHudY, dkHudW, dkHudH);
+                  ctx.strokeStyle = 'rgba(56,189,248,0.65)';
+                  ctx.lineWidth = 1 * dpr;
+                  ctx.strokeRect(dkHudX, dkHudY, dkHudW, dkHudH);
+                  ctx.font = 'bold ' + (8.5 * dpr) + 'px monospace';
+                  ctx.textAlign = 'left';
+                  ctx.textBaseline = 'middle';
+                  ctx.fillStyle = '#7dd3fc';
+                  ctx.fillText('\u2192y\u208A + \u2190y\u208B', dkHudX + 6 * dpr, dkHudY + dkHudH / 2);
+                  var barX0 = dkHudX + 68 * dpr;
+                  var barW0 = 74 * dpr;
+                  var barY0 = dkHudY + 6 * dpr;
+                  var barH0 = 10 * dpr;
+                  ctx.fillStyle = '#38bdf8';
+                  ctx.fillRect(barX0, barY0, barW0 * eDecomp.potentialFrac, barH0);
+                  ctx.fillStyle = '#f472b6';
+                  ctx.fillRect(barX0 + barW0 * eDecomp.potentialFrac, barY0, barW0 * eDecomp.kineticFrac, barH0);
+                  ctx.fillStyle = '#f8fafc';
+                  ctx.fillText('PE ' + pePct + '% KE ' + kePct + '%', barX0 + barW0 + 6 * dpr, dkHudY + dkHudH / 2);
+                  ctx.restore();
+                }
 
                 // Accessible HTML below carries the legend; compact N/A marks stay
                 // on-canvas as direct spatial labels.
@@ -2328,12 +3600,54 @@ window.StemLab = window.StemLab || {
                   ctx.shadowColor='#22c55e'; ctx.shadowBlur=12; ctx.fillStyle='#22c55e'; ctx.beginPath(); ctx.arc(anx,standMid,pulseR,0,Math.PI*2); ctx.fill();
                   ctx.shadowBlur=0; ctx.fillStyle='#fff'; var antiLabelX=Math.max(10*dpr,Math.min(cW-10*dpr,anx)); ctx.fillText('A',antiLabelX,standMid-12*dpr);
                 }
+                if (resDriven) {
+                  var resIsPeak = canvasEl.dataset.resonatorIsPeak === 'true' || resGainNorm >= 0.707;
+                  var drvX = 14 * dpr;
+                  var drvSpan = Math.min(amp * 0.42 * dpr, cH * 0.22);
+                  var drvY = standMid - Math.cos(driverOmegaT) * drvSpan;
+                  ctx.save();
+                  ctx.strokeStyle = 'rgba(251,191,36,0.55)';
+                  ctx.lineWidth = 1.6 * dpr;
+                  ctx.setLineDash([3 * dpr, 3 * dpr]);
+                  ctx.beginPath();
+                  ctx.moveTo(drvX, standMid - drvSpan - 4 * dpr);
+                  ctx.lineTo(drvX, standMid + drvSpan + 4 * dpr);
+                  ctx.stroke();
+                  ctx.setLineDash([]);
+                  ctx.fillStyle = '#fbbf24';
+                  ctx.shadowColor = '#f59e0b';
+                  ctx.shadowBlur = 8 * dpr;
+                  ctx.beginPath();
+                  ctx.arc(drvX, drvY, 5.5 * dpr, 0, Math.PI * 2);
+                  ctx.fill();
+                  ctx.shadowBlur = 0;
+                  ctx.font = 'bold ' + (9 * dpr) + 'px sans-serif';
+                  ctx.fillStyle = '#fde68a';
+                  ctx.fillText('DRV', drvX + 12 * dpr, drvY - 9 * dpr);
+                  var hudTxt = (resIsPeak ? 'RESONANCE' : 'DETUNED') + ' \u00B7 G=' + resGain.toFixed(1) + '\u00D7 (' + Math.round(resGainNorm * 100) + '%) \u00B7 \u03C6=-' + Math.round(resPhaseDeg) + '\u00B0';
+                  ctx.font = 'bold ' + (10 * dpr) + 'px monospace';
+                  var hudW = Math.min(cW - 20 * dpr, Math.max(175 * dpr, hudTxt.length * 6.3 * dpr + 16 * dpr));
+                  var hudH = 22 * dpr;
+                  var hudX = Math.max(8 * dpr, cW - hudW - 10 * dpr);
+                  var hudY = 10 * dpr;
+                  ctx.fillStyle = 'rgba(15,23,42,0.88)';
+                  ctx.fillRect(hudX, hudY, hudW, hudH);
+                  ctx.strokeStyle = resIsPeak ? '#34d399' : '#fbbf24';
+                  ctx.lineWidth = 1.2 * dpr;
+                  ctx.strokeRect(hudX, hudY, hudW, hudH);
+                  ctx.fillStyle = resIsPeak ? '#6ee7b7' : '#fde68a';
+                  ctx.textAlign = 'center';
+                  ctx.textBaseline = 'middle';
+                  ctx.fillText(hudTxt, hudX + hudW / 2, hudY + hudH / 2);
+                  ctx.restore();
+                }
                 ctx.textAlign='start'; ctx.textBaseline='alphabetic';
 
               } else if (currentMode === 'free') {
                 // Free wave mode
-                // Draw main wave as a layered instrument trace.
-                var packetMode = canvasEl.dataset.packetMode === 'packet' ? 'packet' : 'continuous';
+                // Draw main wave as a layered instrument trace, wave packet, or counter-propagating collision.
+                var packetMode = (canvasEl.dataset.packetMode === 'packet' || canvasEl.dataset.packetMode === 'collide') ? canvasEl.dataset.packetMode : 'continuous';
+                var collidePolarity = canvasEl.dataset.collidePolarity === 'same' ? 'same' : 'opposite';
                 var dispRatio = parseFloat(canvasEl.dataset.dispersionRatio || '1.0');
                 if (!isFinite(dispRatio)) dispRatio = 1.0;
                 dispRatio = Math.max(0.5, Math.min(1.5, dispRatio));
@@ -2344,6 +3658,61 @@ window.StemLab = window.StemLab || {
                   if (du > 0.5) du = 1 - du;
                   return Math.exp(-(du * du) / (2 * 0.11 * 0.11));
                 }
+                if (packetMode === 'collide') {
+                  var colPf = (((tick * 0.045 * speed) % 1) + 1) % 1;
+                  var colScale = Math.min(amp * dpr, cH * 0.22);
+                  var colSample0 = waveEvalPulseCollision(0, colPf, collidePolarity);
+                  ctx.save();
+                  ctx.setLineDash([4 * dpr, 3 * dpr]);
+                  ctx.lineWidth = 1.8 * dpr;
+                  ctx.strokeStyle = '#22d3ee';
+                  ctx.beginPath();
+                  for (var cx1 = 0; cx1 <= cW; cx1 += 2) {
+                    var cp1 = waveEvalPulseCollision(cx1 / Math.max(1, cW), colPf, collidePolarity);
+                    var cy1 = cH / 2 - cp1.y1 * colScale;
+                    if (cx1 === 0) ctx.moveTo(cx1, cy1); else ctx.lineTo(cx1, cy1);
+                  }
+                  ctx.stroke();
+
+                  ctx.strokeStyle = '#f472b6';
+                  ctx.beginPath();
+                  for (var cx2 = 0; cx2 <= cW; cx2 += 2) {
+                    var cp2 = waveEvalPulseCollision(cx2 / Math.max(1, cW), colPf, collidePolarity);
+                    var cy2 = cH / 2 - cp2.y2 * colScale;
+                    if (cx2 === 0) ctx.moveTo(cx2, cy2); else ctx.lineTo(cx2, cy2);
+                  }
+                  ctx.stroke();
+
+                  ctx.setLineDash([]);
+                  ctx.lineWidth = 3 * dpr;
+                  ctx.strokeStyle = collidePolarity === 'same' ? '#fde047' : '#a78bfa';
+                  ctx.shadowColor = collidePolarity === 'same' ? '#fbbf24' : '#a78bfa';
+                  ctx.shadowBlur = 8;
+                  ctx.beginPath();
+                  for (var cxn = 0; cxn <= cW; cxn += 2) {
+                    var cpn = waveEvalPulseCollision(cxn / Math.max(1, cW), colPf, collidePolarity);
+                    var cyn = cH / 2 - cpn.yNet * colScale;
+                    if (cxn === 0) ctx.moveTo(cxn, cyn); else ctx.lineTo(cxn, cyn);
+                  }
+                  ctx.stroke();
+                  ctx.shadowBlur = 0;
+
+                  ctx.font = 'bold ' + Math.round(10 * dpr) + 'px sans-serif';
+                  ctx.fillStyle = '#22d3ee';
+                  ctx.fillText('P\u2081 \u2192', Math.max(8 * dpr, Math.min(cW - 42 * dpr, colSample0.c1 * cW - 14 * dpr)), cH / 2 - colScale - 8 * dpr);
+                  ctx.fillStyle = '#f472b6';
+                  var p2Y = collidePolarity === 'same' ? (cH / 2 - colScale - 22 * dpr) : (cH / 2 + colScale + 16 * dpr);
+                  ctx.fillText('\u2190 P\u2082', Math.max(8 * dpr, Math.min(cW - 42 * dpr, colSample0.c2 * cW - 14 * dpr)), p2Y);
+
+                  var colTag = 'Pulse Collision (' + (collidePolarity === 'same' ? 'Same: 2A Crest' : 'Opposite: Nodal Cancel') + ')';
+                  ctx.font = 'bold ' + Math.round(11 * dpr) + 'px sans-serif';
+                  var colTw = ctx.measureText(colTag).width;
+                  ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+                  ctx.fillRect(cW - colTw - 26 * dpr, 12 * dpr, colTw + 16 * dpr, 22 * dpr);
+                  ctx.fillStyle = collidePolarity === 'same' ? '#fde047' : '#c4b5fd';
+                  ctx.fillText(colTag, cW - colTw - 18 * dpr, 27 * dpr);
+                  ctx.restore();
+                } else {
                 ctx.lineWidth = 3 * dpr;
                 ctx.strokeStyle = accent;
                 ctx.shadowColor = accent;
@@ -2415,6 +3784,7 @@ window.StemLab = window.StemLab || {
                 }
                 ctx.restore();
                 ctx.shadowBlur = 0;
+                }
 
                 // ── Match the Waveform target ──
 
@@ -2486,7 +3856,7 @@ window.StemLab = window.StemLab || {
 
                 // Draw second wave if enabled
 
-                if (showSecond) {
+                if (showSecond && packetMode !== 'collide') {
 
                   ctx.lineWidth = 2 * dpr;
 
@@ -2559,6 +3929,38 @@ window.StemLab = window.StemLab || {
 
                   ctx.setLineDash([]); ctx.shadowBlur = 0;
 
+                  if (canvasEl.dataset.showBeatEnvelope === 'true') {
+                    var dFreqEnv = freq - freq2;
+                    ctx.save();
+                    ctx.strokeStyle = '#fbbf24';
+                    ctx.lineWidth = 1.8 * dpr;
+                    ctx.setLineDash([4 * dpr, 4 * dpr]);
+                    for (var envSign = -1; envSign <= 1; envSign += 2) {
+                      ctx.beginPath();
+                      for (var exs = 0; exs <= cW; exs += 3) {
+                        var eu = exs / cW;
+                        var dThetaEnv = eu * Math.PI * 2 * dFreqEnv - tick * 0.04 * dFreqEnv * speed - phase2Val;
+                        var envLocal = Math.sqrt(amp * amp + amp2 * amp2 + 2 * amp * amp2 * Math.cos(dThetaEnv));
+                        if (dampOn) envLocal *= Math.exp(-dampAlpha * eu * 3);
+                        var epy = cH / 2 - envSign * envLocal * dpr;
+                        if (exs === 0) ctx.moveTo(exs, epy); else ctx.lineTo(exs, epy);
+                      }
+                      ctx.stroke();
+                    }
+                    ctx.setLineDash([]);
+                    var beatHzHud = Math.abs(dFreqEnv).toFixed(2);
+                    var modHud = Math.round((2 * Math.min(amp, amp2) / Math.max(1, amp + amp2)) * 100);
+                    var lockHud = canvasEl.dataset.intervalLock && canvasEl.dataset.intervalLock !== 'none' ? (' \u00B7 ' + canvasEl.dataset.intervalLock) : '';
+                    var bHud = 'Beat ' + beatHzHud + ' Hz \u00B7 Mod ' + modHud + '%' + lockHud;
+                    ctx.font = 'bold ' + Math.round(9 * dpr) + 'px sans-serif';
+                    var bHudW = ctx.measureText(bHud).width + 12 * dpr;
+                    ctx.fillStyle = 'rgba(15,23,42,0.86)';
+                    ctx.fillRect(cW - bHudW - 10 * dpr, 8 * dpr, bHudW, 18 * dpr);
+                    ctx.fillStyle = '#fde68a';
+                    ctx.fillText(bHud, cW - bHudW - 4 * dpr, 20 * dpr);
+                    ctx.restore();
+                  }
+
                 }
 
                 // (Main/second/superposition legend moved to the HTML overlays and the
@@ -2579,6 +3981,7 @@ window.StemLab = window.StemLab || {
                 var rippleWL = Math.max(20, cW / (freq * 2));
                 var rippleDamp = parseFloat(canvasEl.dataset.dampingCoeff || '0.002');
                 var rBarrier = canvasEl.dataset.rippleBarrier || 'none';
+                var rGratingN = Math.max(2, Math.min(6, parseInt(canvasEl.dataset.gratingSlits || '4', 10) || 4));
                 var rSlitFrac = parseFloat(canvasEl.dataset.slitWidth || '0.08');
                 if (!isFinite(rSlitFrac)) rSlitFrac = 0.08;
                 var showIScreen = canvasEl.dataset.showIntensityScreen === 'true';
@@ -2592,6 +3995,11 @@ window.StemLab = window.StemLab || {
                 var slit1Y = rippleCy - slitHalfGap;
                 var slit2Y = rippleCy + slitHalfGap;
                 var obsHalf = Math.max(16 * dpr, rSlitPx * 0.85);
+                var gratingSpan = Math.min(cH * 0.72, Math.max(rippleSep, (rGratingN - 1) * Math.max(rSlitPx * 1.45, 22 * dpr)));
+                var gratingPitch = rGratingN > 1 ? gratingSpan / (rGratingN - 1) : 0;
+                var gratingTop = rippleCy - gratingSpan * 0.5;
+                var gratingWallHalf = Math.min(rSlitHalf, gratingPitch * 0.34);
+                var gratingCenters = [];
                 var huygensPts = [];
                 if (rBarrier === 'singleSlit') {
                   for (var hsi = 0; hsi < 5; hsi++) {
@@ -2602,6 +4010,13 @@ window.StemLab = window.StemLab || {
                     var offsetD = (rSlitPx * (hdi + 0.5)) / 3 - rSlitHalf;
                     huygensPts.push({ x: barX, y: slit1Y + offsetD, srcIdx: 0 });
                     huygensPts.push({ x: barX, y: slit2Y + offsetD, srcIdx: 1 });
+                  }
+                } else if (rBarrier === 'grating') {
+                  for (var gsi = 0; gsi < rGratingN; gsi++) {
+                    var gCy = gratingTop + gsi * gratingPitch;
+                    gratingCenters.push(gCy);
+                    huygensPts.push({ x: barX, y: gCy - gratingWallHalf * 0.4, srcIdx: gsi });
+                    huygensPts.push({ x: barX, y: gCy + gratingWallHalf * 0.4, srcIdx: gsi });
                   }
                 } else if (rBarrier === 'obstacle') {
                   for (var hoi = 0; hoi < 4; hoi++) {
@@ -2646,7 +4061,7 @@ window.StemLab = window.StemLab || {
                         var hdx = rcx - huygensPts[hi].x;
                         var hdy = rcy - huygensPts[hi].y;
                         var hd = Math.sqrt(hdx * hdx + hdy * hdy);
-                        var hPhaseOff = huygensPts[hi].srcIdx === 1 ? rPhaseDiff : 0;
+                        var hPhaseOff = (huygensPts[hi].srcIdx || 0) * rPhaseDiff;
                         hAcc += Math.sin(2 * Math.PI * ((barX + hd) / rippleWL - omegaRippleT) + hPhaseOff) * Math.exp(-rippleDamp * hd);
                       }
                       if (rBarrier === 'obstacle' && (rcy < rippleCy - obsHalf || rcy > rippleCy + obsHalf)) {
@@ -2743,26 +4158,98 @@ window.StemLab = window.StemLab || {
                     drawWallSeg(0, slit1Y - rSlitHalf);
                     drawWallSeg(slit1Y + rSlitHalf, slit2Y - rSlitHalf);
                     drawWallSeg(slit2Y + rSlitHalf, cH);
+                  } else if (rBarrier === 'grating' && gratingCenters.length >= 2) {
+                    drawWallSeg(0, gratingCenters[0] - gratingWallHalf);
+                    for (var gwi = 0; gwi < gratingCenters.length - 1; gwi++) {
+                      drawWallSeg(gratingCenters[gwi] + gratingWallHalf, gratingCenters[gwi + 1] - gratingWallHalf);
+                    }
+                    drawWallSeg(gratingCenters[gratingCenters.length - 1] + gratingWallHalf, cH);
                   } else {
                     drawWallSeg(rippleCy - obsHalf, rippleCy + obsHalf);
                   }
                   ctx.fillStyle = 'rgba(226,232,240,0.9)';
                   ctx.font = 'bold ' + (10 * dpr) + 'px sans-serif';
-                  var barLabel = rBarrier === 'singleSlit' ? 'Single Slit' : rBarrier === 'doubleSlit' ? 'Double Slit' : 'Obstacle';
+                  var barLabel = rBarrier === 'singleSlit' ? 'Single Slit' : rBarrier === 'doubleSlit' ? 'Double Slit' : rBarrier === 'grating' ? ('Grating (' + rGratingN + ' Slits)') : 'Obstacle';
                   ctx.fillText(barLabel, barX + 10 * dpr, 18 * dpr);
                   ctx.restore();
                 }
 
+                // Analytical destructive nodal-hyperbola overlay & fringe geometry HUD when showNodalLines is active
+                if (canvasEl.dataset.showNodalLines === 'true' && (rBarrier === 'none' || rBarrier === 'doubleSlit' || (rBarrier === 'grating' && gratingCenters.length >= 2))) {
+                  var nP1 = rBarrier === 'doubleSlit'
+                    ? { x: barX, y: slit1Y }
+                    : (rBarrier === 'grating' ? { x: barX, y: gratingCenters[0] } : { x: src1x, y: src1y });
+                  var nP2 = rBarrier === 'doubleSlit'
+                    ? { x: barX, y: slit2Y }
+                    : (rBarrier === 'grating' ? { x: barX, y: gratingCenters[1] } : { x: src2x, y: src2y });
+                  var nDx = nP2.x - nP1.x;
+                  var nDy = nP2.y - nP1.y;
+                  var nSep = Math.hypot(nDx, nDy);
+                  if (nSep > rippleWL * 0.52) {
+                    var ux = nDx / nSep, uy = nDy / nSep;
+                    var vx = -uy, vy = ux;
+                    var midNx = (nP1.x + nP2.x) * 0.5;
+                    var midNy = (nP1.y + nP2.y) * 0.5;
+                    var halfC = nSep * 0.5;
+                    var maxOrderN = Math.min(8, Math.ceil(nSep / Math.max(4, rippleWL)) + 1);
+                    var nDrawn = 0;
+                    ctx.save();
+                    ctx.strokeStyle = 'rgba(251,191,36,0.78)';
+                    ctx.lineWidth = 1.4 * dpr;
+                    ctx.setLineDash([4 * dpr, 4 * dpr]);
+                    for (var ordIdx = -maxOrderN; ordIdx <= maxOrderN; ordIdx++) {
+                      var mHalf = ordIdx + 0.5;
+                      var deltaN = (mHalf - rPhaseDiff / (2 * Math.PI)) * rippleWL;
+                      if (Math.abs(deltaN) >= nSep - 1 || Math.abs(deltaN) < 1e-4) continue;
+                      var hypA = Math.abs(deltaN) * 0.5;
+                      var hypB = Math.sqrt(Math.max(0.5, halfC * halfC - hypA * hypA));
+                      var sgnN = deltaN >= 0 ? 1 : -1;
+                      var prevStarted = false;
+                      ctx.beginPath();
+                      for (var ti = -30; ti <= 30; ti++) {
+                        var tau = ti * 0.1;
+                        var ePos = Math.exp(tau), eNeg = Math.exp(-tau);
+                        var coshT = 0.5 * (ePos + eNeg);
+                        var sinhT = 0.5 * (ePos - eNeg);
+                        var hx = midNx + sgnN * hypA * coshT * ux + hypB * sinhT * vx;
+                        var hy = midNy + sgnN * hypA * coshT * uy + hypB * sinhT * vy;
+                        if (rBarrier !== 'none' && hx < barX + 1) {
+                          prevStarted = false;
+                          continue;
+                        }
+                        if (!prevStarted) { ctx.moveTo(hx, hy); prevStarted = true; }
+                        else ctx.lineTo(hx, hy);
+                      }
+                      ctx.stroke();
+                      nDrawn++;
+                    }
+                    ctx.setLineDash([]);
+                    var dyHud = canvasEl.dataset.rippleFringeSpacing || '';
+                    var nodalHudTxt = 'Nodal |r\u2081\u2212r\u2082|=(n+\u00BD)\u03BB \u00B7 ' + nDrawn + ' lines' + (dyHud ? (' \u00B7 \u0394y=' + dyHud + 'px') : '');
+                    ctx.font = 'bold ' + Math.round(9 * dpr) + 'px sans-serif';
+                    var nHudW = ctx.measureText(nodalHudTxt).width + 12 * dpr;
+                    ctx.fillStyle = 'rgba(15,23,42,0.86)';
+                    ctx.fillRect(10 * dpr, 8 * dpr, nHudW, 18 * dpr);
+                    ctx.fillStyle = '#fde68a';
+                    ctx.fillText(nodalHudTxt, 16 * dpr, 20 * dpr);
+                    ctx.restore();
+                  }
+                }
+
                 // Phased-array main-lobe beam steering vector when |Δφ| > 0.05
-                if (Math.abs(rPhaseDiff) > 0.05 && (rBarrier === 'none' || rBarrier === 'doubleSlit')) {
-                  var b1Pt = rBarrier === 'doubleSlit' ? { x: barX, y: slit1Y } : { x: src1x, y: src1y };
-                  var b2Pt = rBarrier === 'doubleSlit' ? { x: barX, y: slit2Y } : { x: src2x, y: src2y };
+                if (Math.abs(rPhaseDiff) > 0.05 && (rBarrier === 'none' || rBarrier === 'doubleSlit' || (rBarrier === 'grating' && gratingCenters.length >= 2))) {
+                  var b1Pt = rBarrier === 'doubleSlit'
+                    ? { x: barX, y: slit1Y }
+                    : (rBarrier === 'grating' ? { x: barX, y: gratingCenters[0] } : { x: src1x, y: src1y });
+                  var b2Pt = rBarrier === 'doubleSlit'
+                    ? { x: barX, y: slit2Y }
+                    : (rBarrier === 'grating' ? { x: barX, y: gratingCenters[1] } : { x: src2x, y: src2y });
                   var bDx = b2Pt.x - b1Pt.x;
                   var bDy = b2Pt.y - b1Pt.y;
                   var bLen = Math.hypot(bDx, bDy);
                   if (bLen > 4) {
-                    var midBx = (b1Pt.x + b2Pt.x) * 0.5;
-                    var midBy = (b1Pt.y + b2Pt.y) * 0.5;
+                    var midBx = rBarrier === 'grating' ? barX : (b1Pt.x + b2Pt.x) * 0.5;
+                    var midBy = rBarrier === 'grating' ? rippleCy : (b1Pt.y + b2Pt.y) * 0.5;
                     var bxHat = bDx / bLen;
                     var byHat = bDy / bLen;
                     var sinBeam = Math.max(-1, Math.min(1, (rPhaseDiff / (2 * Math.PI)) * (rippleWL / bLen)));
@@ -2816,7 +4303,9 @@ window.StemLab = window.StemLab || {
                     ? [{ x: src1x, y: src1y, phaseOff: 0 }, { x: src2x, y: src2y, phaseOff: rPhaseDiff }]
                     : (rBarrier === 'doubleSlit'
                       ? [{ x: barX, y: slit1Y, phaseOff: 0 }, { x: barX, y: slit2Y, phaseOff: rPhaseDiff }]
-                      : huygensPts);
+                      : (rBarrier === 'grating'
+                        ? gratingCenters.map(function (gcy, gi) { return { x: barX, y: gcy, phaseOff: gi * rPhaseDiff }; })
+                        : huygensPts));
                   var iSamples = 64;
                   var iVals = [];
                   var maxI = 0.0001;
@@ -2870,6 +4359,15 @@ window.StemLab = window.StemLab || {
                 // (Old amp*15*dpr gave ~1500px swings — pure visual noise.)
                 var longMode = canvasEl.dataset.longitudinalMode === 'standing' ? 'standing' : 'traveling';
                 var showDispCurve = canvasEl.dataset.showDisplacementCurve === 'true';
+                var distAttenOn = canvasEl.dataset.distanceAttenuation === 'true' && longMode === 'traveling';
+                var distMetersHud = Math.max(1, Math.min(20, parseFloat(canvasEl.dataset.listenerDistMeters || '4') || 4));
+                var spreadLawHud = canvasEl.dataset.spreadingLaw === 'cylindrical' ? 'cylindrical' : 'spherical';
+                var distExpHud = spreadLawHud === 'cylindrical' ? 0.5 : 1;
+                function longSpatialScale(uPos) {
+                  if (!distAttenOn) return 1;
+                  var rHere = 1 + Math.max(0, Math.min(1, uPos)) * 19;
+                  return Math.pow(1 / rHere, distExpHud);
+                }
                 var longHarmonic = Math.max(1, Math.min(8, parseInt(canvasEl.dataset.harmonic || '2', 10) || 2));
                 var waveScaleK = longMode === 'standing' ? (Math.PI * longHarmonic) : (2 * Math.PI * freq);
                 var longAmp = (amp / 100) * cW / Math.max(0.5, waveScaleK);
@@ -2879,13 +4377,13 @@ window.StemLab = window.StemLab || {
                   if (longMode === 'standing') {
                     return Math.sin(longHarmonic * Math.PI * uPos) * tStandFactor;
                   }
-                  return Math.sin(2 * Math.PI * (uPos * freq - t * freq * 0.05));
+                  return Math.sin(2 * Math.PI * (uPos * freq - t * freq * 0.05)) * longSpatialScale(uPos);
                 }
                 function longPressureFrac(uPos) {
                   if (longMode === 'standing') {
                     return -Math.cos(longHarmonic * Math.PI * uPos) * tStandFactor;
                   }
-                  return -Math.cos(2 * Math.PI * (uPos * freq - t * freq * 0.05));
+                  return -Math.cos(2 * Math.PI * (uPos * freq - t * freq * 0.05)) * longSpatialScale(uPos);
                 }
 
                 // Moving or standing pressure field behind the particles: warm bands are
@@ -2999,6 +4497,26 @@ window.StemLab = window.StemLab || {
                   for(var la=25*dpr+longArrowOffset;la<cW-20*dpr;la+=100*dpr){ctx.beginPath();ctx.moveTo(la-8*dpr,midY+34*dpr);ctx.lineTo(la+8*dpr,midY+34*dpr);ctx.lineTo(la+3*dpr,midY+30*dpr);ctx.moveTo(la+8*dpr,midY+34*dpr);ctx.lineTo(la+3*dpr,midY+38*dpr);ctx.stroke();}
                   ctx.restore();
                 }
+                if (distAttenOn) {
+                  ctx.save();
+                  var micX = 14 * dpr + ((distMetersHud - 1) / 19) * (cW - 28 * dpr);
+                  ctx.strokeStyle = 'rgba(251,191,36,0.88)';
+                  ctx.lineWidth = 1.6 * dpr;
+                  ctx.setLineDash([4 * dpr, 3 * dpr]);
+                  ctx.beginPath(); ctx.moveTo(micX, tubeTop - 10 * dpr); ctx.lineTo(micX, tubeTop + tubeHeight + 12 * dpr); ctx.stroke();
+                  ctx.setLineDash([]);
+                  ctx.fillStyle = '#fbbf24';
+                  ctx.beginPath(); ctx.arc(micX, midY, 4.5 * dpr, 0, Math.PI * 2); ctx.fill();
+                  var attenDbHud = canvasEl.dataset.attenuatedDb || '';
+                  var micHudTxt = 'MIC r=' + distMetersHud.toFixed(1) + 'm \u00B7 ' + (attenDbHud ? (attenDbHud + ' dB') : '') + ' (' + (spreadLawHud === 'cylindrical' ? '1/r' : '1/r\u00B2') + ')';
+                  ctx.font = 'bold ' + Math.round(9 * dpr) + 'px sans-serif';
+                  var micHudW = ctx.measureText(micHudTxt).width + 12 * dpr;
+                  ctx.fillStyle = 'rgba(15,23,42,0.86)';
+                  ctx.fillRect(cW - micHudW - 10 * dpr, 8 * dpr, micHudW, 18 * dpr);
+                  ctx.fillStyle = '#fde68a';
+                  ctx.fillText(micHudTxt, cW - micHudW - 4 * dpr, 20 * dpr);
+                  ctx.restore();
+                }
                 // Misconception-buster: highlight ONE tracer particle (gold) against a dashed
                 // marker at its equilibrium (rest) position, so students SEE it only jiggles
                 // back and forth in place \u2014 the wave travels right, but matter does not move with it.
@@ -3029,14 +4547,17 @@ window.StemLab = window.StemLab || {
                 // ========== DOPPLER EFFECT & MACH CONE MODE ==========
                 var sourceSpeed = parseFloat(canvasEl.dataset.sourceSpeed || '0.3');
                 if (!isFinite(sourceSpeed) || sourceSpeed < 0) sourceSpeed = 0.3;
+                var dopplerRegime = canvasEl.dataset.dopplerRegime === 'relativistic' ? 'relativistic' : 'acoustic';
+                var isRelLight = dopplerRegime === 'relativistic';
+                var effSrcMach = isRelLight ? Math.min(0.95, sourceSpeed) : sourceSpeed;
                 var obsSpeed = parseFloat(canvasEl.dataset.observerSpeed || '0');
                 if (!isFinite(obsSpeed)) obsSpeed = 0;
                 obsSpeed = Math.max(-0.8, Math.min(0.8, obsSpeed));
                 var midY_d = cH / 2;
                 var waveSpeedPx = 3 * dpr;
-                var sourceSpeedPx = sourceSpeed * waveSpeedPx;
+                var sourceSpeedPx = effSrcMach * waveSpeedPx;
                 // Keep stationary source visible at left-center; moving source sweeps & wraps cleanly
-                var sourceX = sourceSpeed < 0.01 ? (cW * 0.35) : (((t * sourceSpeedPx) % (cW + 140 * dpr)) - 70 * dpr);
+                var sourceX = effSrcMach < 0.01 ? (cW * 0.35) : (((t * sourceSpeedPx) % (cW + 140 * dpr)) - 70 * dpr);
 
                 // Draw expanding wavefronts emitted from source's true past positions
                 ctx.lineWidth = 1.4 * dpr;
@@ -3047,17 +4568,28 @@ window.StemLab = window.StemLab || {
                   var radius = age * waveSpeedPx;
                   if (radius > 0 && radius < cW * 1.4) {
                     var frontAlpha = Math.max(0.06, 0.95 - age / (numFronts * 7));
-                    ctx.strokeStyle = sourceSpeed >= 1.0
-                      ? 'rgba(251,191,36,' + (frontAlpha * 0.78).toFixed(2) + ')'
-                      : 'rgba(96,165,250,' + frontAlpha.toFixed(2) + ')';
-                    ctx.beginPath();
-                    ctx.arc(emitX, midY_d, radius, 0, 2 * Math.PI);
-                    ctx.stroke();
+                    if (isRelLight && effSrcMach > 0.02) {
+                      ctx.strokeStyle = 'rgba(56,189,248,' + frontAlpha.toFixed(2) + ')';
+                      ctx.beginPath();
+                      ctx.arc(emitX, midY_d, radius, -Math.PI * 0.5, Math.PI * 0.5);
+                      ctx.stroke();
+                      ctx.strokeStyle = 'rgba(248,113,113,' + frontAlpha.toFixed(2) + ')';
+                      ctx.beginPath();
+                      ctx.arc(emitX, midY_d, radius, Math.PI * 0.5, Math.PI * 1.5);
+                      ctx.stroke();
+                    } else {
+                      ctx.strokeStyle = (!isRelLight && effSrcMach >= 1.0)
+                        ? 'rgba(251,191,36,' + (frontAlpha * 0.78).toFixed(2) + ')'
+                        : 'rgba(96,165,250,' + frontAlpha.toFixed(2) + ')';
+                      ctx.beginPath();
+                      ctx.arc(emitX, midY_d, radius, 0, 2 * Math.PI);
+                      ctx.stroke();
+                    }
                   }
                 }
 
-                // Supersonic Mach shock cone (sin μ = 1/M) when M >= 1.0
-                if (sourceSpeed >= 1.0) {
+                // Supersonic Mach shock cone (sin μ = 1/M) when acoustic & M >= 1.0
+                if (!isRelLight && sourceSpeed >= 1.0) {
                   var sinMu = Math.min(1, 1 / sourceSpeed);
                   var cosMu = Math.sqrt(Math.max(0, 1 - sinMu * sinMu));
                   var coneLen = cW * 0.85;
@@ -3086,6 +4618,15 @@ window.StemLab = window.StemLab || {
                   ctx.font = 'bold ' + (10 * dpr) + 'px sans-serif';
                   ctx.textAlign = 'center';
                   ctx.fillText('MACH ' + sourceSpeed.toFixed(2), Math.max(55 * dpr, Math.min(cW - 55 * dpr, sourceX)), 24 * dpr);
+                  ctx.textAlign = 'start';
+                  ctx.restore();
+                } else if (isRelLight) {
+                  var relGCanvas = 1 / Math.sqrt(Math.max(1e-6, 1 - effSrcMach * effSrcMach));
+                  ctx.save();
+                  ctx.fillStyle = '#c4b5fd';
+                  ctx.font = 'bold ' + (9.5 * dpr) + 'px sans-serif';
+                  ctx.textAlign = 'center';
+                  ctx.fillText('RELATIVISTIC \u03B3=' + relGCanvas.toFixed(2) + ' (\u03B2=' + effSrcMach.toFixed(2) + 'c)', Math.max(95 * dpr, Math.min(cW - 95 * dpr, sourceX)), 24 * dpr);
                   ctx.textAlign = 'start';
                   ctx.restore();
                 }
@@ -3137,44 +4678,93 @@ window.StemLab = window.StemLab || {
                   ctx.restore();
                 }
 
-                // Audible Doppler synced to right-hand observer O2 (supports general moving observer)
+                // Off-axis observer station O_theta, radar cos(theta) radial vector & transverse relativistic readout
+                var offsetAngDeg = parseFloat(canvasEl.dataset.dopplerOffsetAngle || '0') || 0;
+                var obsThetaX = obs2X;
+                var obsThetaY = midY_d;
+                if (offsetAngDeg > 0) {
+                  var thetaR = (offsetAngDeg * Math.PI) / 180;
+                  var rSight = Math.min(cW * 0.28, cH * 0.36);
+                  var refAnchorX = cW * 0.52;
+                  obsThetaX = refAnchorX + Math.cos(thetaR) * rSight;
+                  obsThetaY = midY_d - Math.sin(thetaR) * rSight;
+                  var offRes = waveComputeOffAxisDoppler(freq, sourceSpeed, offsetAngDeg, dopplerRegime);
+                  ctx.save();
+                  ctx.strokeStyle = 'rgba(251,191,36,0.75)';
+                  ctx.lineWidth = 1.6 * dpr;
+                  ctx.setLineDash([4 * dpr, 3 * dpr]);
+                  ctx.beginPath();
+                  ctx.moveTo(sourceX, midY_d);
+                  ctx.lineTo(obsThetaX, obsThetaY);
+                  ctx.stroke();
+                  ctx.setLineDash([]);
+                  ctx.strokeStyle = 'rgba(167,139,250,0.65)';
+                  ctx.lineWidth = 1.4 * dpr;
+                  ctx.beginPath();
+                  ctx.arc(refAnchorX, midY_d, 26 * dpr, -thetaR, 0);
+                  ctx.stroke();
+                  ctx.fillStyle = isRelLight ? '#a78bfa' : '#f59e0b';
+                  ctx.beginPath(); ctx.arc(obsThetaX, obsThetaY, 8 * dpr, 0, Math.PI * 2); ctx.fill();
+                  ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.4 * dpr; ctx.stroke();
+                  ctx.fillStyle = '#0f172a';
+                  ctx.font = 'bold ' + (8 * dpr) + 'px sans-serif';
+                  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                  ctx.fillText('O\u03B8', obsThetaX, obsThetaY);
+
+                  var offTag = '\u03B8=' + offsetAngDeg.toFixed(0) + '\u00B0 \u00B7 cos\u03B8=' + offRes.radarCosinePct.toFixed(0) + '% \u00B7 f\'(\u03B8)=' + (isFinite(offRes.observedFreqHz) ? (offRes.observedFreqHz.toFixed(2) + 'Hz') : 'Shock') + (offRes.isTransverseRedshift ? ' \u00B7 90\u00B0 \u03B3-Redshift' : '');
+                  ctx.font = 'bold ' + (9.5 * dpr) + 'px monospace';
+                  var offW = Math.min(cW - 20 * dpr, offTag.length * 6.0 * dpr + 16 * dpr);
+                  var offH = 20 * dpr;
+                  ctx.fillStyle = 'rgba(15,23,42,0.88)';
+                  ctx.fillRect(10 * dpr, 10 * dpr, offW, offH);
+                  ctx.strokeStyle = isRelLight ? '#a78bfa' : '#f59e0b';
+                  ctx.lineWidth = 1.2 * dpr;
+                  ctx.strokeRect(10 * dpr, 10 * dpr, offW, offH);
+                  ctx.fillStyle = isRelLight ? '#ddd6fe' : '#fde68a';
+                  ctx.fillText(offTag, 10 * dpr + offW / 2, 10 * dpr + offH / 2);
+                  ctx.restore();
+                }
+
+                // Audible Doppler synced to right-hand observer O2 or off-axis station O_theta
                 if (_waveAudio.osc && _waveAudio.ctx) {
-                  var _dNum = sourceX < obs2X ? Math.max(0.15, 1 + obsSpeed) : Math.max(0.15, 1 - obsSpeed);
-                  var _dDen = sourceX < obs2X ? (1 - Math.min(sourceSpeed, 0.95)) : (1 + sourceSpeed);
-                  var _dShift = Math.max(0.25, freq * (_dNum / _dDen));
+                  var _dShift;
+                  if (offsetAngDeg > 0) {
+                    var losDx = obsThetaX - sourceX;
+                    var losDy = obsThetaY - midY_d;
+                    var losDist = Math.max(1, Math.hypot(losDx, losDy));
+                    var instCos = losDx / losDist;
+                    if (isRelLight) {
+                      var _gOff = 1 / Math.sqrt(Math.max(1e-6, 1 - effSrcMach * effSrcMach));
+                      _dShift = Math.max(0.25, freq / (_gOff * Math.max(0.15, 1 - effSrcMach * instCos)));
+                    } else {
+                      _dShift = Math.max(0.25, freq / Math.max(0.15, 1 - effSrcMach * instCos));
+                    }
+                  } else if (isRelLight) {
+                    var _relD = waveComputeRelativisticDoppler(freq, sourceSpeed, obsSpeed);
+                    _dShift = Math.max(0.25, sourceX < obs2X ? _relD.approachingFreq : _relD.recedingFreq);
+                  } else {
+                    var _dNum = sourceX < obs2X ? Math.max(0.15, 1 + obsSpeed) : Math.max(0.15, 1 - obsSpeed);
+                    var _dDen = sourceX < obs2X ? (1 - Math.min(sourceSpeed, 0.95)) : (1 + sourceSpeed);
+                    _dShift = Math.max(0.25, freq * (_dNum / _dDen));
+                  }
                   var _dHz = Math.max(50, Math.min(4000, _dShift * 100));
                   try { _waveAudio.osc.frequency.setTargetAtTime(_dHz, _waveAudio.ctx.currentTime, 0.08); } catch (e) {}
                 }
 
               } else if (currentMode === 'spectrum') {
-                // ========== FFT / SPECTRUM MODE ==========
+                // ========== FFT / SPECTRUM MODE + HARMONIC FILTER BENCH ==========
                 var midY_s = cH / 2;
+                var specFilter = WAVE_VALID_FILTERS[canvasEl.dataset.spectrumFilter] ? canvasEl.dataset.spectrumFilter : 'none';
+                var specCutoff = Math.max(1, Math.min(12, parseInt(canvasEl.dataset.filterCutoff || '3', 10) || 3));
+                var digOn = canvasEl.dataset.digitalSampling === 'true';
+                var srRatio = Math.max(0.5, Math.min(20, parseFloat(canvasEl.dataset.sampleRateRatio || '8') || 8));
+                var adcBits = Math.max(1, Math.min(16, parseInt(canvasEl.dataset.adcBitDepth || '8', 10) || 8));
+                var digMeta = digOn ? waveComputeDigitalSampling(freq, srRatio, adcBits) : null;
 
-                // Time-domain waveform (top half) — includes phase2Val when Wave 2 is active
-                ctx.strokeStyle = '#60a5fa';
-                ctx.lineWidth = 2 * dpr;
-                ctx.shadowColor = '#60a5fa';
-                ctx.shadowBlur = 8;
-                ctx.setLineDash([]);
-                ctx.beginPath();
-                for (var sx = 0; sx < cW; sx += 2) {
-                  var sv = amp * waveVal(2 * Math.PI * (sx / cW * freq - t * freq * 0.05), waveType);
-                  if (showSecond) sv += amp2 * Math.sin(2 * Math.PI * (sx / cW * freq2 - t * freq2 * 0.05) + phase2Val);
-                  var normDenom = Math.max(100, amp + (showSecond ? amp2 : 0));
-                  var sy = midY_s * 0.5 + (sv / normDenom) * (midY_s * 0.38);
-                  if (sx === 0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
-                }
-                ctx.stroke();
-                ctx.shadowBlur = 0;
-
-                // Divider line
-                ctx.strokeStyle = 'rgba(255,255,255,0.15)';
-                ctx.lineWidth = 1;
-                ctx.beginPath(); ctx.moveTo(0, midY_s); ctx.lineTo(cW, midY_s); ctx.stroke();
-
-                // Frequency domain (bottom half): DFT of one period of Wave 1 + optional Wave 2 f2 peak
+                // Compute 12-harmonic DFT first so both time-domain and spectrum share coefficients & filter gains
                 var NSAMP = 256, maxHarm = 12;
-                var harmMag = [], maxMag = 1e-6;
+                var harmCos = [], harmSin = [], harmRawMag = [], harmGain = [], harmFiltMag = [];
+                var maxRawMag = 1e-6;
                 for (var hh = 1; hh <= maxHarm; hh++) {
                   var dre = 0, dim = 0;
                   for (var kk = 0; kk < NSAMP; kk++) {
@@ -3183,31 +4773,265 @@ window.StemLab = window.StemLab || {
                     dre += yk * Math.cos(hh * ph);
                     dim += yk * Math.sin(hh * ph);
                   }
-                  var hmag = 2 * Math.sqrt(dre * dre + dim * dim) / NSAMP;
-                  harmMag.push(hmag);
-                  if (hmag > maxMag) maxMag = hmag;
+                  var hCos = 2 * dre / NSAMP;
+                  var hSin = 2 * dim / NSAMP;
+                  var hRaw = Math.sqrt(hCos * hCos + hSin * hSin);
+                  var hGn = waveFilterHarmonicGain(hh, specFilter, specCutoff);
+                  var hFilt = hRaw * hGn;
+                  harmCos.push(hCos);
+                  harmSin.push(hSin);
+                  harmRawMag.push(hRaw);
+                  harmGain.push(hGn);
+                  harmFiltMag.push(hFilt);
+                  if (hRaw > maxRawMag) maxRawMag = hRaw;
                 }
-                var wave2Mag = showSecond ? (amp2 / Math.max(1, amp)) * Math.max(0.5, harmMag[0]) : 0;
-                var normMaxMag = Math.max(maxMag, wave2Mag);
+
+                var evalSpecY = function (sxVal) {
+                  var phVal = 2 * Math.PI * (sxVal / cW * freq - t * freq * 0.05);
+                  var outV = 0;
+                  if (specFilter === 'none') {
+                    outV = amp * waveVal(phVal, waveType);
+                  } else {
+                    var fS = 0;
+                    for (var fhI = 0; fhI < maxHarm; fhI++) {
+                      if (harmGain[fhI] > 0) {
+                        var hOrd = fhI + 1;
+                        fS += harmGain[fhI] * (harmCos[fhI] * Math.cos(hOrd * phVal) + harmSin[fhI] * Math.sin(hOrd * phVal));
+                      }
+                    }
+                    outV = amp * fS;
+                  }
+                  if (showSecond) outV += amp2 * Math.sin(2 * Math.PI * (sxVal / cW * freq2 - t * freq2 * 0.05) + phase2Val);
+                  return outV;
+                };
+
+                // Time-domain waveform (top half) — shows ghosted original + filtered reconstruction when filter active
+                var normDenom = Math.max(100, amp + (showSecond ? amp2 : 0));
+                if (specFilter !== 'none') {
+                  ctx.save();
+                  ctx.strokeStyle = 'rgba(148,163,184,0.45)';
+                  ctx.lineWidth = 1.5 * dpr;
+                  ctx.setLineDash([4 * dpr, 4 * dpr]);
+                  ctx.beginPath();
+                  for (var rx = 0; rx < cW; rx += 2) {
+                    var rv = amp * waveVal(2 * Math.PI * (rx / cW * freq - t * freq * 0.05), waveType);
+                    if (showSecond) rv += amp2 * Math.sin(2 * Math.PI * (rx / cW * freq2 - t * freq2 * 0.05) + phase2Val);
+                    var rsy = midY_s * 0.5 + (rv / normDenom) * (midY_s * 0.38);
+                    if (rx === 0) ctx.moveTo(rx, rsy); else ctx.lineTo(rx, rsy);
+                  }
+                  ctx.stroke();
+                  ctx.restore();
+                }
+
+                ctx.strokeStyle = specFilter !== 'none' ? '#34d399' : '#60a5fa';
+                ctx.lineWidth = 2 * dpr;
+                ctx.shadowColor = specFilter !== 'none' ? '#34d399' : '#60a5fa';
+                ctx.shadowBlur = 8;
+                ctx.setLineDash([]);
+                ctx.beginPath();
+                for (var sx = 0; sx < cW; sx += 2) {
+                  var sv = evalSpecY(sx);
+                  var sy = midY_s * 0.5 + (sv / normDenom) * (midY_s * 0.38);
+                  if (sx === 0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
+                }
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+
+                // Nyquist-Shannon Digital Sampling & ADC Quantization Overlay (top half)
+                if (digOn && digMeta) {
+                  ctx.save();
+                  // Faint quantization grid ticks when bit depth <= 4
+                  if (adcBits <= 4) {
+                    var nGridLvls = Math.pow(2, adcBits);
+                    ctx.strokeStyle = 'rgba(251,191,36,0.16)';
+                    ctx.lineWidth = 1;
+                    for (var ql = 1; ql < nGridLvls; ql++) {
+                      var qFrac = (2 * ql / nGridLvls) - 1;
+                      var qGridY = midY_s * 0.5 + qFrac * (midY_s * 0.38);
+                      ctx.beginPath();
+                      ctx.moveTo(0, qGridY);
+                      ctx.lineTo(cW, qGridY);
+                      ctx.stroke();
+                    }
+                  }
+                  // Zero-order hold staircase + quantized sample dots
+                  var totalCycles = Math.max(0.25, freq * srRatio);
+                  var dtSampPx = cW / totalCycles;
+                  var nSampsPlot = Math.min(260, Math.floor(totalCycles) + 1);
+                  var dotStep = Math.max(1, Math.ceil(nSampsPlot / 90));
+                  var prevSampleY = null;
+                  ctx.strokeStyle = '#f59e0b';
+                  ctx.lineWidth = 2 * dpr;
+                  ctx.setLineDash([]);
+                  ctx.beginPath();
+                  for (var spI = 0; spI <= nSampsPlot; spI++) {
+                    var sxSamp = spI * dtSampPx;
+                    if (sxSamp > cW) break;
+                    var rawNorm = Math.max(-1, Math.min(1, evalSpecY(sxSamp) / normDenom));
+                    var qNormVal = waveQuantizeAdcSample(rawNorm, adcBits);
+                    var qSy = midY_s * 0.5 + qNormVal * (midY_s * 0.38);
+                    if (spI === 0) {
+                      ctx.moveTo(sxSamp, qSy);
+                    } else {
+                      ctx.lineTo(sxSamp, prevSampleY);
+                      ctx.lineTo(sxSamp, qSy);
+                    }
+                    prevSampleY = qSy;
+                  }
+                  if (prevSampleY !== null) {
+                    ctx.lineTo(cW, prevSampleY);
+                  }
+                  ctx.stroke();
+                  // Sample marker dots
+                  for (var spDot = 0; spDot <= nSampsPlot; spDot += dotStep) {
+                    var dxSamp = spDot * dtSampPx;
+                    if (dxSamp > cW) break;
+                    var dRawNorm = Math.max(-1, Math.min(1, evalSpecY(dxSamp) / normDenom));
+                    var dQNorm = waveQuantizeAdcSample(dRawNorm, adcBits);
+                    var dQy = midY_s * 0.5 + dQNorm * (midY_s * 0.38);
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.beginPath();
+                    ctx.arc(dxSamp, dQy, 3 * dpr, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = '#fef3c7';
+                    ctx.lineWidth = 1 * dpr;
+                    ctx.stroke();
+                  }
+                  // Reconstructed wagon-wheel alias sinusoid when fundamental violates Nyquist (srRatio < 2)
+                  if (digMeta.isFundamentalAliased) {
+                    var mAliasFold = Math.round(freq / digMeta.sampleRateHz);
+                    var signedAliasFreq = freq - mAliasFold * digMeta.sampleRateHz;
+                    ctx.strokeStyle = '#fb7185';
+                    ctx.lineWidth = 2 * dpr;
+                    ctx.setLineDash([6 * dpr, 4 * dpr]);
+                    ctx.beginPath();
+                    for (var ax = 0; ax < cW; ax += 2) {
+                      var aPh = 2 * Math.PI * (ax / cW * signedAliasFreq - t * freq * 0.05);
+                      var av = amp * waveVal(aPh, waveType);
+                      var asy = midY_s * 0.5 + (av / normDenom) * (midY_s * 0.38);
+                      if (ax === 0) ctx.moveTo(ax, asy); else ctx.lineTo(ax, asy);
+                    }
+                    ctx.stroke();
+                  }
+                  ctx.restore();
+                }
+
+                // Divider line
+                ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+                ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.moveTo(0, midY_s); ctx.lineTo(cW, midY_s); ctx.stroke();
+
+                // Frequency domain (bottom half)
+                var wave2Mag = showSecond ? (amp2 / Math.max(1, amp)) * Math.max(0.5, harmRawMag[0]) : 0;
+                var normMaxMag = Math.max(maxRawMag, wave2Mag);
                 var maxFreqDisp = Math.max((maxHarm + 1) * freq, showSecond ? freq2 * 1.15 : 0);
                 var plotBottom = cH - 14 * dpr, plotTop = midY_s + 14 * dpr;
+
+                // Nyquist boundary & alias zone in bottom frequency plot
+                if (digOn && digMeta) {
+                  ctx.save();
+                  var nyqX = 20 * dpr + Math.min(1, digMeta.nyquistFreqHz / maxFreqDisp) * (cW - 40 * dpr);
+                  if (digMeta.nyquistFreqHz < maxFreqDisp) {
+                    ctx.fillStyle = 'rgba(244,63,94,0.09)';
+                    ctx.fillRect(nyqX, plotTop - 4 * dpr, (cW - 20 * dpr) - nyqX, plotBottom - plotTop + 4 * dpr);
+                    ctx.strokeStyle = '#f43f5e';
+                    ctx.lineWidth = 1.6 * dpr;
+                    ctx.setLineDash([4 * dpr, 3 * dpr]);
+                    ctx.beginPath();
+                    ctx.moveTo(nyqX, plotTop - 4 * dpr);
+                    ctx.lineTo(nyqX, plotBottom);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.fillStyle = '#fda4af';
+                    ctx.font = 'bold ' + (7.5 * dpr) + 'px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('Nyquist f\u209B/2', Math.max(46 * dpr, Math.min(cW - 46 * dpr, nyqX)), plotTop + 6 * dpr);
+                  }
+                  ctx.restore();
+                }
+
                 for (var hb = 1; hb <= maxHarm; hb++) {
-                  var rel = harmMag[hb - 1] / normMaxMag;
-                  if (rel < 0.012) continue;
+                  var rawRel = harmRawMag[hb - 1] / normMaxMag;
+                  var filtRel = harmFiltMag[hb - 1] / normMaxMag;
+                  if (rawRel < 0.012 && filtRel < 0.012) continue;
                   var hx = 20 * dpr + (hb * freq / maxFreqDisp) * (cW - 40 * dpr);
-                  var hBarH = rel * (plotBottom - plotTop);
+                  if (specFilter !== 'none' && harmGain[hb - 1] < 0.5 && rawRel >= 0.012) {
+                    var gBarH = rawRel * (plotBottom - plotTop);
+                    ctx.save();
+                    ctx.fillStyle = 'rgba(148,163,184,0.16)';
+                    ctx.strokeStyle = 'rgba(148,163,184,0.45)';
+                    ctx.setLineDash([3 * dpr, 2 * dpr]);
+                    ctx.lineWidth = 1 * dpr;
+                    ctx.fillRect(hx - 3 * dpr, plotBottom - gBarH, 6 * dpr, gBarH);
+                    ctx.strokeRect(hx - 3 * dpr, plotBottom - gBarH, 6 * dpr, gBarH);
+                    ctx.restore();
+                  }
+                  if (filtRel < 0.012) continue;
+                  var hBarH = filtRel * (plotBottom - plotTop);
                   var hue = ((hb - 1) / maxHarm) * 270;
                   ctx.fillStyle = 'hsla(' + hue + ', 80%, 60%, 0.9)';
                   ctx.fillRect(hx - 3 * dpr, plotBottom - hBarH, 6 * dpr, hBarH);
                   ctx.fillStyle = 'hsla(' + hue + ', 90%, 80%, 0.95)';
                   ctx.fillRect(hx - 3 * dpr, plotBottom - hBarH, 6 * dpr, 3 * dpr);
-                  if (rel > 0.08) {
+                  // Draw folded alias spectral bar inside [0, f_s/2] when harmonic exceeds Nyquist
+                  if (digOn && digMeta && (hb * freq) > digMeta.nyquistFreqHz + 1e-6) {
+                    var fFolded = Math.abs(hb * freq - Math.round((hb * freq) / digMeta.sampleRateHz) * digMeta.sampleRateHz);
+                    var foldX = 20 * dpr + (fFolded / maxFreqDisp) * (cW - 40 * dpr);
+                    ctx.save();
+                    ctx.fillStyle = 'rgba(251,113,133,0.34)';
+                    ctx.strokeStyle = '#fb7185';
+                    ctx.setLineDash([2 * dpr, 2 * dpr]);
+                    ctx.lineWidth = 1.2 * dpr;
+                    ctx.fillRect(foldX - 2.5 * dpr, plotBottom - hBarH, 5 * dpr, hBarH);
+                    ctx.strokeRect(foldX - 2.5 * dpr, plotBottom - hBarH, 5 * dpr, hBarH);
+                    ctx.restore();
+                  }
+                  if (filtRel > 0.08) {
                     ctx.fillStyle = 'rgba(255,255,255,0.8)';
                     ctx.font = (5.5 * dpr) + 'px sans-serif';
                     ctx.textAlign = 'center';
                     ctx.fillText(hb + 'f\u2081', hx, plotBottom - hBarH - 4 * dpr);
                     ctx.textAlign = 'left';
                   }
+                }
+
+                // Cutoff frequency marker line for lowpass / highpass filters
+                if (specFilter === 'lowpass' || specFilter === 'highpass') {
+                  var cutHarmPos = specFilter === 'lowpass' ? (specCutoff + 0.5) : Math.max(0.5, specCutoff - 0.5);
+                  var cutX = 20 * dpr + (cutHarmPos * freq / maxFreqDisp) * (cW - 40 * dpr);
+                  ctx.save();
+                  ctx.strokeStyle = '#fbbf24';
+                  ctx.lineWidth = 1.6 * dpr;
+                  ctx.setLineDash([5 * dpr, 3 * dpr]);
+                  ctx.beginPath();
+                  ctx.moveTo(cutX, plotTop - 4 * dpr);
+                  ctx.lineTo(cutX, plotBottom);
+                  ctx.stroke();
+                  ctx.setLineDash([]);
+                  ctx.fillStyle = '#fde68a';
+                  ctx.font = 'bold ' + (8 * dpr) + 'px sans-serif';
+                  ctx.textAlign = 'center';
+                  ctx.fillText((specFilter === 'lowpass' ? 'LP Hc=' : 'HP Hc=') + specCutoff, Math.max(36 * dpr, Math.min(cW - 36 * dpr, cutX)), plotTop + 6 * dpr);
+                  ctx.restore();
+                }
+
+                // Top-right Nyquist & ADC HUD pill when digital sampling is active
+                if (digOn && digMeta) {
+                  ctx.save();
+                  var hudSpecTxt = 'ADC ' + adcBits + '-bit | f\u209B=' + digMeta.sampleRateHz.toFixed(1) + 'Hz | SQNR ' + digMeta.sqnrDb.toFixed(1) + 'dB' + (digMeta.isFundamentalAliased ? (' | ALIAS ' + digMeta.aliasFreqHz.toFixed(1) + 'Hz') : '');
+                  ctx.font = 'bold ' + (7.5 * dpr) + 'px sans-serif';
+                  var hudSpecW = ctx.measureText(hudSpecTxt).width + 14 * dpr;
+                  var hudSpecX = Math.max(8 * dpr, cW - hudSpecW - 8 * dpr);
+                  var hudSpecY = 6 * dpr;
+                  ctx.fillStyle = digMeta.isFundamentalAliased ? 'rgba(136,19,55,0.86)' : 'rgba(15,23,42,0.86)';
+                  ctx.strokeStyle = digMeta.isFundamentalAliased ? 'rgba(251,113,133,0.75)' : 'rgba(251,191,36,0.65)';
+                  ctx.lineWidth = 1 * dpr;
+                  ctx.fillRect(hudSpecX, hudSpecY, hudSpecW, 18 * dpr);
+                  ctx.strokeRect(hudSpecX, hudSpecY, hudSpecW, 18 * dpr);
+                  ctx.fillStyle = digMeta.isFundamentalAliased ? '#fecdd3' : '#fde68a';
+                  ctx.textAlign = 'left';
+                  ctx.fillText(hudSpecTxt, hudSpecX + 7 * dpr, hudSpecY + 12 * dpr);
+                  ctx.restore();
                 }
 
                 // Render Wave 2 spectral line when Show Second Wave is enabled
@@ -3249,6 +5073,8 @@ window.StemLab = window.StemLab || {
                 var refReflectivity = parseFloat(canvasEl.dataset.reflectivity || '0.9');
                 var impCoupled = canvasEl.dataset.impedanceCoupled === 'true';
                 var arCoatingActive = canvasEl.dataset.antiReflectionCoating === 'true';
+                var fresPol = canvasEl.dataset.fresnelPolarization === 'p' ? 'p' : 's';
+                var brewsterMatch = canvasEl.dataset.brewsterMatch === 'true';
                 var medium2Ratio = parseFloat(canvasEl.dataset.medium2Ratio || '0.6');
                 if (!isFinite(medium2Ratio) || medium2Ratio <= 0) medium2Ratio = 0.6;
                 var incDeg = parseFloat(canvasEl.dataset.incidentAngle || '0');
@@ -3257,12 +5083,29 @@ window.StemLab = window.StemLab || {
                 var sinTheta1 = Math.sin(incDeg * Math.PI / 180);
                 var sinTheta2 = medium2Ratio * sinTheta1;
                 var isTIR = medium2Ratio > 1 && sinTheta2 > 1.000001;
+                var ftirOn = isTIR && canvasEl.dataset.ftirEnabled === 'true';
+                var ftirGapLam = parseFloat(canvasEl.dataset.ftirGapLambda || '0.25');
+                if (!isFinite(ftirGapLam) || ftirGapLam <= 0) ftirGapLam = 0.25;
+                var dpLambda = parseFloat(canvasEl.dataset.penetrationDepthLambda || '');
+                var tunnelPct = parseFloat(canvasEl.dataset.tunnelTransmissionPct || '0');
+                if (!isFinite(tunnelPct) || tunnelPct < 0) tunnelPct = 0;
                 var dsEffRef = parseFloat(canvasEl.dataset.effectiveReflectivity || '');
-                var effReflectivity = isTIR ? 1.0 : (isFinite(dsEffRef) ? Math.max(0, Math.min(1, dsEffRef)) : refReflectivity);
+                var effReflectivity = (isTIR && !(ftirOn && isFinite(dsEffRef)))
+                  ? 1.0
+                  : (isFinite(dsEffRef) ? Math.max(0, Math.min(1, dsEffRef)) : refReflectivity);
                 if (canvasEl.dataset.effectivePhaseFlip === '1' || canvasEl.dataset.effectivePhaseFlip === '-1') {
                   phaseFlip = parseInt(canvasEl.dataset.effectivePhaseFlip, 10);
                 }
-                var transAmp = isTIR ? 0 : Math.sqrt(Math.max(0, 1 - effReflectivity * effReflectivity));
+                var transAmp = (isTIR && !ftirOn) ? 0 : Math.sqrt(Math.max(0, 1 - effReflectivity * effReflectivity));
+                var tirRoom = Math.max(30 * dpr, cW - wallX - 24 * dpr);
+                var visLambdaPx = ftirOn
+                  ? Math.min(Math.max(34 * dpr, cW / Math.max(1, freq)), tirRoom / 1.15)
+                  : Math.max(40 * dpr, cW / Math.max(1, freq));
+                var dpValLam = (isFinite(dpLambda) && dpLambda > 0) ? dpLambda : 0.28;
+                var dpPx = Math.max(7 * dpr, dpValLam * visLambdaPx);
+                var wall2X = ftirOn
+                  ? Math.min(cW - 18 * dpr, wallX + Math.max(8 * dpr, ftirGapLam * visLambdaPx))
+                  : cW;
                 var refAmp = amp * dpr;
                 var k = 2 * Math.PI * freq / cW;
                 var k2 = k / medium2Ratio;
@@ -3280,10 +5123,17 @@ window.StemLab = window.StemLab || {
                 reflectedField.addColorStop(1, 'rgba(244,114,182,0.02)');
                 ctx.fillStyle = reflectedField; ctx.fillRect(0, 0, wallX, cH);
                 if (isTIR && wallX < cW - 10) {
-                  var evanField = ctx.createLinearGradient(wallX, 0, wallX + Math.min(90 * dpr, cW - wallX), 0);
-                  evanField.addColorStop(0, 'rgba(251,191,36,0.22)');
-                  evanField.addColorStop(1, 'rgba(251,191,36,0)');
-                  ctx.fillStyle = evanField; ctx.fillRect(wallX, 0, cW - wallX, cH);
+                  var evanEndX = ftirOn ? wall2X : cW;
+                  var evanField = ctx.createLinearGradient(wallX, 0, Math.min(evanEndX, wallX + Math.max(36 * dpr, dpPx * 2.2)), 0);
+                  evanField.addColorStop(0, 'rgba(251,191,36,0.24)');
+                  evanField.addColorStop(1, ftirOn ? 'rgba(251,191,36,0.05)' : 'rgba(251,191,36,0)');
+                  ctx.fillStyle = evanField; ctx.fillRect(wallX, 0, Math.max(0, evanEndX - wallX), cH);
+                  if (ftirOn && wall2X < cW - 10) {
+                    var ftirField = ctx.createLinearGradient(wall2X, 0, cW, 0);
+                    ftirField.addColorStop(0, 'rgba(52,211,153,' + (0.20 * transAmp).toFixed(3) + ')');
+                    ftirField.addColorStop(1, 'rgba(52,211,153,0.04)');
+                    ctx.fillStyle = ftirField; ctx.fillRect(wall2X, 0, cW - wall2X, cH);
+                  }
                 } else if (effReflectivity < 0.999 && wallX < cW - 10) {
                   var transField = ctx.createLinearGradient(wallX, 0, cW, 0);
                   transField.addColorStop(0, 'rgba(52,211,153,' + (0.18 * transAmp).toFixed(3) + ')');
@@ -3342,16 +5192,55 @@ window.StemLab = window.StemLab || {
                   ctx.strokeStyle = '#fbbf24';
                   ctx.lineWidth = 2.2 * dpr;
                   ctx.setLineDash([4 * dpr, 3 * dpr]);
-                  var decaySpan = Math.max(40 * dpr, (cW - wallX) * 0.45);
+                  var evanStopX = ftirOn ? wall2X : cW;
                   ctx.beginPath();
-                  for (var ex = wallX; ex <= cW; ex += 2) {
-                    var evDecay = Math.exp(-3.0 * (ex - wallX) / decaySpan);
+                  for (var ex = wallX; ex <= evanStopX; ex += 2) {
+                    var evDecay = Math.exp(-(ex - wallX) / dpPx);
                     var ey = midY_r - 0.65 * refAmp * evDecay * Math.sin(k * wallX - omega * t);
                     if (ex === wallX) ctx.moveTo(ex, ey); else ctx.lineTo(ex, ey);
                   }
                   ctx.stroke();
                   ctx.setLineDash([]);
+                  var dpTickX = wallX + dpPx;
+                  if (dpTickX < (ftirOn ? wall2X : cW - 14 * dpr)) {
+                    ctx.strokeStyle = 'rgba(251,191,36,0.55)';
+                    ctx.lineWidth = 1.2 * dpr;
+                    ctx.setLineDash([3 * dpr, 3 * dpr]);
+                    ctx.beginPath();
+                    ctx.moveTo(dpTickX, midY_r - refAmp * 0.55);
+                    ctx.lineTo(dpTickX, midY_r + refAmp * 0.55);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.fillStyle = '#fde68a';
+                    ctx.font = 'bold ' + (8.5 * dpr) + 'px sans-serif';
+                    ctx.fillText('d\u209A=' + dpValLam.toFixed(2) + '\u03BB', dpTickX + 4 * dpr, midY_r - refAmp * 0.55 - 3 * dpr);
+                  }
                   ctx.restore();
+                  if (ftirOn && wall2X < cW - 8 * dpr) {
+                    ctx.save();
+                    ctx.strokeStyle = '#22d3ee';
+                    ctx.lineWidth = 2 * dpr;
+                    ctx.setLineDash([5 * dpr, 3 * dpr]);
+                    ctx.beginPath();
+                    ctx.moveTo(wall2X, 18 * dpr);
+                    ctx.lineTo(wall2X, cH - 18 * dpr);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    if (transAmp > 0.02) {
+                      ctx.strokeStyle = '#34d399';
+                      ctx.shadowColor = '#34d399';
+                      ctx.shadowBlur = 10;
+                      ctx.lineWidth = 2.6 * dpr;
+                      ctx.beginPath();
+                      for (var ftx = wall2X; ftx <= cW; ftx += 2) {
+                        var ftPhase = k * wallX + k * (ftx - wall2X) - omega * t;
+                        var fty = midY_r - transAmp * refAmp * Math.sin(ftPhase);
+                        if (ftx === wall2X) ctx.moveTo(ftx, fty); else ctx.lineTo(ftx, fty);
+                      }
+                      ctx.stroke();
+                    }
+                    ctx.restore();
+                  }
                 } else if (effReflectivity < 0.999 && wallX < cW - 4) {
                   ctx.save();
                   ctx.strokeStyle = '#34d399';
@@ -3377,9 +5266,11 @@ window.StemLab = window.StemLab || {
                 var arrowOffset=(tick*1.2*speed)%(90*dpr);
                 for(var ia=35*dpr+arrowOffset;ia<wallX-20*dpr;ia+=90*dpr)drawEnergyArrow(ia,54*dpr,1,'#60a5fa',.72);
                 for(var ra=wallX-35*dpr-arrowOffset;ra>20*dpr;ra-=90*dpr)drawEnergyArrow(ra,72*dpr,-1,'#f472b6',.42+.3*effReflectivity);
-                if (!isTIR && effReflectivity < 0.999) {
-                  var transArrowOffset = (tick * 1.2 * speed * medium2Ratio) % (90 * dpr);
-                  for (var ta = wallX + 24 * dpr + transArrowOffset; ta < cW - 18 * dpr; ta += 90 * dpr) {
+                if ((ftirOn && transAmp > 0.03) || (!isTIR && effReflectivity < 0.999)) {
+                  var transStartArrow = ftirOn ? (wall2X + 16 * dpr) : (wallX + 24 * dpr);
+                  var transArrowSpeed = ftirOn ? 1 : medium2Ratio;
+                  var transArrowOffset = (tick * 1.2 * speed * transArrowSpeed) % (90 * dpr);
+                  for (var ta = transStartArrow + transArrowOffset; ta < cW - 18 * dpr; ta += 90 * dpr) {
                     drawEnergyArrow(ta, 54 * dpr, 1, '#34d399', Math.max(0.25, 0.8 * transAmp));
                   }
                 }
@@ -3407,12 +5298,16 @@ window.StemLab = window.StemLab || {
                   ctx.moveTo(wallX - Math.cos(th1) * rayLen, rayCy - Math.sin(th1) * rayLen);
                   ctx.lineTo(wallX, rayCy);
                   ctx.stroke();
-                  // Reflected ray
+                  // Reflected ray (dims toward 0 at Brewster's angle in TM p-polarization)
+                  ctx.save();
+                  ctx.globalAlpha = Math.max(0.12, effReflectivity);
+                  if (effReflectivity < 0.03) ctx.setLineDash([2 * dpr, 3 * dpr]);
                   ctx.strokeStyle = '#f472b6';
                   ctx.beginPath();
                   ctx.moveTo(wallX, rayCy);
                   ctx.lineTo(wallX - Math.cos(th1) * rayLen, rayCy + Math.sin(th1) * rayLen);
                   ctx.stroke();
+                  ctx.restore();
                   if (!isTIR && effReflectivity < 0.999) {
                     var th2 = Math.asin(Math.max(-1, Math.min(1, sinTheta2)));
                     ctx.strokeStyle = '#34d399';
@@ -3420,6 +5315,11 @@ window.StemLab = window.StemLab || {
                     ctx.moveTo(wallX, rayCy);
                     ctx.lineTo(wallX + Math.cos(th2) * rayLen, rayCy + Math.sin(th2) * rayLen);
                     ctx.stroke();
+                  }
+                  if (impCoupled) {
+                    ctx.fillStyle = brewsterMatch ? '#38bdf8' : 'rgba(226,232,240,0.85)';
+                    ctx.font = 'bold ' + (8 * dpr) + 'px sans-serif';
+                    ctx.fillText(brewsterMatch ? '90\u00B0 BREWSTER R=0%' : (fresPol === 'p' ? 'TM (p-pol)' : 'TE (s-pol)'), Math.max(8 * dpr, wallX - rayLen - 34 * dpr), rayCy - rayLen * 0.45);
                   }
                   ctx.restore();
                 }
@@ -3472,14 +5372,16 @@ window.StemLab = window.StemLab || {
 
                 // Medium & end-type labels
                 if (impCoupled) {
-                  ctx.fillStyle = arCoatingActive ? '#22d3ee' : (phaseFlip < 0 ? '#f472b6' : '#34d399');
+                  ctx.fillStyle = brewsterMatch ? '#38bdf8' : (arCoatingActive ? '#22d3ee' : (phaseFlip < 0 ? '#f472b6' : '#34d399'));
                   ctx.font = 'bold ' + (10 * dpr) + 'px sans-serif';
                   ctx.fillText('IMPEDANCE LOCK', Math.max(12 * dpr, wallX - 46 * dpr), 18 * dpr);
                   ctx.fillStyle = 'rgba(255,255,255,0.72)';
                   ctx.font = (9 * dpr) + 'px sans-serif';
-                  var lockSub = arCoatingActive
-                    ? '(\u03BB/4 AR: |r|=' + effReflectivity.toFixed(2) + ')'
-                    : (phaseFlip < 0 ? '(v\u2082<v\u2081: \u03C0 flip)' : '(v\u2082>v\u2081: upright)');
+                  var lockSub = brewsterMatch
+                    ? '(TM p-pol: Brewster R=0%)'
+                    : (arCoatingActive
+                      ? '(\u03BB/4 AR: |r|=' + effReflectivity.toFixed(2) + ')'
+                      : (fresPol.toUpperCase() + '-pol ' + (phaseFlip < 0 ? '(\u03C0 flip)' : '(upright)')));
                   ctx.fillText(lockSub, Math.max(12 * dpr, wallX - 46 * dpr), 29 * dpr);
                 } else {
                   ctx.fillStyle = endType === 'fixed' ? '#ef4444' : '#22c55e';
@@ -3490,13 +5392,23 @@ window.StemLab = window.StemLab || {
                   ctx.fillText(endType === 'fixed' ? '(phase inverts)' : '(phase preserved)', Math.max(12 * dpr, wallX - 36 * dpr), 29 * dpr);
                 }
                 if ((isTIR || effReflectivity < 0.999) && wallX < cW - 115 * dpr) {
-                  ctx.fillStyle = 'rgba(110,231,183,0.9)';
-                  ctx.font = 'bold ' + (9 * dpr) + 'px sans-serif';
-                  ctx.fillText('MEDIUM 2 (v\u2082=' + medium2Ratio.toFixed(2) + 'v\u2081)', wallX + 14 * dpr, 18 * dpr);
-                  if (isTIR) {
+                  if (ftirOn) {
                     ctx.fillStyle = '#fbbf24';
                     ctx.font = 'bold ' + (9 * dpr) + 'px sans-serif';
-                    ctx.fillText('TIR \u2014 Evanescent Decay', wallX + 14 * dpr, 30 * dpr);
+                    ctx.fillText('FTIR GAP d=' + ftirGapLam.toFixed(2) + '\u03BB', wallX + 10 * dpr, 18 * dpr);
+                    ctx.fillStyle = '#34d399';
+                    ctx.font = 'bold ' + (9 * dpr) + 'px sans-serif';
+                    var m3X = Math.min(cW - 115 * dpr, Math.max(wallX + 10 * dpr, wall2X + 8 * dpr));
+                    ctx.fillText('M3 PRISM \u00B7 T=' + tunnelPct.toFixed(1) + '%', m3X, 30 * dpr);
+                  } else {
+                    ctx.fillStyle = 'rgba(110,231,183,0.9)';
+                    ctx.font = 'bold ' + (9 * dpr) + 'px sans-serif';
+                    ctx.fillText('MEDIUM 2 (v\u2082=' + medium2Ratio.toFixed(2) + 'v\u2081)', wallX + 14 * dpr, 18 * dpr);
+                    if (isTIR) {
+                      ctx.fillStyle = '#fbbf24';
+                      ctx.font = 'bold ' + (9 * dpr) + 'px sans-serif';
+                      ctx.fillText('TIR \u2014 Evanescent d\u209A=' + dpValLam.toFixed(2) + '\u03BB', wallX + 14 * dpr, 30 * dpr);
+                    }
                   }
                 }
               }
@@ -3589,6 +5501,67 @@ window.StemLab = window.StemLab || {
                 ctx.restore();
               }
 
+              // Interactive Wavelength Caliper Ruler overlay
+              if (canvasEl.dataset.showRuler === 'true') {
+                var rx1Ds = parseFloat(canvasEl.dataset.rulerX1 || '0.25');
+                var rx2Ds = parseFloat(canvasEl.dataset.rulerX2 || '0.75');
+                var rX1Px = canvasEl._drag.ruler1 != null ? canvasEl._drag.ruler1 : ((isFinite(rx1Ds) ? rx1Ds : 0.25) * cW);
+                var rX2Px = canvasEl._drag.ruler2 != null ? canvasEl._drag.ruler2 : ((isFinite(rx2Ds) ? rx2Ds : 0.75) * cW);
+                rX1Px = Math.max(cW * 0.04, Math.min(cW * 0.96, rX1Px));
+                rX2Px = Math.max(cW * 0.04, Math.min(cW * 0.96, rX2Px));
+                var loPx = Math.min(rX1Px, rX2Px);
+                var hiPx = Math.max(rX1Px, rX2Px);
+                var rY = Math.round(cH * 0.12);
+                var rrDraw = waveComputeRulerReadout({
+                  waveMode: currentMode,
+                  frequency: freq,
+                  waveSpeed: parseFloat(canvasEl.dataset.waveSpeed || '343') || 343,
+                  harmonic: parseInt(canvasEl.dataset.harmonic || '1', 10) || 1,
+                  standingBoundary: canvasEl.dataset.standingBoundary || 'bothFixed',
+                  longitudinalMode: canvasEl.dataset.longitudinalMode || 'traveling',
+                  medium2Ratio: parseFloat(canvasEl.dataset.medium2Ratio || '0.6') || 0.6,
+                  wallFrac: (canvasEl.dataset.wallFrac !== '' && canvasEl.dataset.wallFrac != null) ? parseFloat(canvasEl.dataset.wallFrac) : null,
+                  rulerX1: rX1Px / cW,
+                  rulerX2: rX2Px / cW
+                });
+                ctx.save();
+                ctx.fillStyle = 'rgba(34,211,238,0.08)';
+                ctx.fillRect(loPx, rY, Math.max(2, hiPx - loPx), Math.max(10, cH * 0.78 - rY));
+                ctx.strokeStyle = 'rgba(103,232,249,0.75)';
+                ctx.lineWidth = 1.4 * dpr;
+                ctx.setLineDash([4 * dpr, 4 * dpr]);
+                ctx.beginPath();
+                ctx.moveTo(rX1Px, rY); ctx.lineTo(rX1Px, cH * 0.80);
+                ctx.moveTo(rX2Px, rY); ctx.lineTo(rX2Px, cH * 0.80);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.strokeStyle = rrDraw.isWholeMultiple ? '#34d399' : (rrDraw.isHalfMultiple ? '#fbbf24' : '#67e8f9');
+                ctx.lineWidth = 2.4 * dpr;
+                ctx.beginPath(); ctx.moveTo(loPx, rY); ctx.lineTo(hiPx, rY); ctx.stroke();
+                [
+                  { x: rX1Px, active: canvasEl._drag.activeHandle === 'ruler1' },
+                  { x: rX2Px, active: canvasEl._drag.activeHandle === 'ruler2' }
+                ].forEach(function (jaw) {
+                  ctx.fillStyle = jaw.active ? '#ffffff' : '#22d3ee';
+                  ctx.strokeStyle = '#0f172a';
+                  ctx.lineWidth = 1.5 * dpr;
+                  ctx.beginPath(); ctx.arc(jaw.x, rY, 6 * dpr, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                });
+                var rBadge = '\u0394x = ' + rrDraw.spanCycles.toFixed(2) + '\u03BB (' + rrDraw.spanMeters.toFixed(1) + ' m)';
+                ctx.font = 'bold ' + Math.round(9.5 * dpr) + 'px monospace';
+                var rbW = ctx.measureText(rBadge).width + 14 * dpr;
+                var rbX = Math.max(8 * dpr, Math.min(cW - rbW - 8 * dpr, (loPx + hiPx) / 2 - rbW / 2));
+                var rbY = Math.max(4 * dpr, rY - 22 * dpr);
+                ctx.fillStyle = 'rgba(15,23,42,0.88)';
+                ctx.fillRect(rbX, rbY, rbW, 17 * dpr);
+                ctx.strokeStyle = '#22d3ee';
+                ctx.lineWidth = 1 * dpr;
+                ctx.strokeRect(rbX, rbY, rbW, 17 * dpr);
+                ctx.fillStyle = rrDraw.isWholeMultiple ? '#6ee7b7' : '#e0f2fe';
+                ctx.fillText(rBadge, rbX + 7 * dpr, rbY + 12 * dpr);
+                ctx.restore();
+              }
+
               scheduleWaveFrame();
 
             }
@@ -3603,9 +5576,25 @@ window.StemLab = window.StemLab || {
           // With the second wave shown, a second oscillator plays f2 so
           // superposition (and beats, when f1≈f2) is audible, not just visible.
 
-          var applyOscWaveform = function (actx, osc, wType, weightsOpt) {
+          var applyOscWaveform = function (actx, osc, wType, weightsOpt, filterOpt, cutoffOpt) {
             if (!osc) return;
-            if (wType === 'custom' && actx && typeof actx.createPeriodicWave === 'function') {
+            var fMode = WAVE_VALID_FILTERS[filterOpt] ? filterOpt : 'none';
+            if (fMode !== 'none' && actx && typeof actx.createPeriodicWave === 'function') {
+              var fSpec = waveComputeSpectrum({
+                waveType: wType || 'sine',
+                harmonicWeights: weightsOpt,
+                spectrumFilter: fMode,
+                filterCutoffHarmonic: cutoffOpt || 3
+              }, 12);
+              var fReal = new Float32Array(13);
+              var fImag = new Float32Array(13);
+              for (var fi = 0; fi < fSpec.harmonics.length && fi < 12; fi++) {
+                var fh = fSpec.harmonics[fi];
+                fReal[fh.order] = fh.cosCoeff * fh.gain;
+                fImag[fh.order] = fh.sinCoeff * fh.gain;
+              }
+              osc.setPeriodicWave(actx.createPeriodicWave(fReal, fImag));
+            } else if (wType === 'custom' && actx && typeof actx.createPeriodicWave === 'function') {
               var wArr = waveNormalizeWeights(weightsOpt);
               var real = new Float32Array(7);
               var imag = new Float32Array(7);
@@ -3614,6 +5603,56 @@ window.StemLab = window.StemLab || {
             } else {
               osc.type = wType === 'custom' ? 'sine' : (wType || 'sine');
             }
+          };
+
+          var setAudioParamSmooth = function (param, targetVal, actx) {
+            if (!param || !isFinite(targetVal)) return;
+            try {
+              if (actx && typeof param.setTargetAtTime === 'function') {
+                param.setTargetAtTime(targetVal, actx.currentTime || 0, 0.025);
+              } else {
+                param.value = targetVal;
+              }
+            } catch (e) {
+              try { param.value = targetVal; } catch (_) {}
+            }
+          };
+
+          var syncOscFromState = function (st) {
+            if (!_waveAudio.ctx || !_waveAudio.osc) return;
+            try {
+              var actx = _waveAudio.ctx;
+              var ap = waveComputeAudioParams(st);
+              setAudioParamSmooth(_waveAudio.osc.frequency, ap.f1Hz, actx);
+              setAudioParamSmooth(_waveAudio.gain, ap.gain1, actx);
+              var desiredType = st.waveType || 'sine';
+              if (st.waveMode === 'standing' || st.waveMode === 'longitudinal' || st.waveMode === 'doppler') desiredType = 'sine';
+              var activeFilter = (st.waveMode === 'spectrum' || st.waveMode === 'free') ? (st.spectrumFilter || 'none') : 'none';
+              applyOscWaveform(actx, _waveAudio.osc, desiredType, st.harmonicWeights, activeFilter, st.filterCutoffHarmonic);
+
+              if (ap.hasOsc2) {
+                if (!_waveAudio.osc2) {
+                  var o2 = actx.createOscillator();
+                  var g2 = actx.createGain();
+                  o2.type = 'sine';
+                  o2.frequency.value = ap.f2Hz;
+                  g2.gain.value = ap.gain2;
+                  o2.connect(g2);
+                  g2.connect(actx.destination);
+                  o2.start();
+                  _waveAudio.osc2 = o2;
+                  _waveAudio.gain2 = g2;
+                } else {
+                  setAudioParamSmooth(_waveAudio.osc2.frequency, ap.f2Hz, actx);
+                  setAudioParamSmooth(_waveAudio.gain2, ap.gain2, actx);
+                }
+              } else if (_waveAudio.osc2) {
+                try { _waveAudio.osc2.stop(); _waveAudio.osc2.disconnect(); } catch (e) {}
+                try { if (_waveAudio.gain2) _waveAudio.gain2.disconnect(); } catch (e) {}
+                _waveAudio.osc2 = null;
+                _waveAudio.gain2 = null;
+              }
+            } catch (e) {}
           };
 
           var toggleSound = function () {
@@ -3627,29 +5666,32 @@ window.StemLab = window.StemLab || {
             try {
 
               var actx = new (window.AudioContext || window.webkitAudioContext)();
+              if (actx.state === 'suspended' && typeof actx.resume === 'function') actx.resume();
+              var ap = waveComputeAudioParams(d);
               var osc = actx.createOscillator();
               var gain = actx.createGain();
-              applyOscWaveform(actx, osc, d.waveType || 'sine', d.harmonicWeights);
-              var initOscHz = (waveMode === 'doppler' && !waveMetrics.isSupersonic)
-                ? Math.max(50, Math.min(4000, waveMetrics.approachingFreq * 100))
-                : Math.max(50, Math.min(4000, d.frequency * 100));
-              osc.frequency.value = initOscHz;
-              gain.gain.value = d.showSecond ? 0.09 : 0.15;
+              var initType = (waveMode === 'standing' || waveMode === 'longitudinal' || waveMode === 'doppler') ? 'sine' : (d.waveType || 'sine');
+              var initFilter = (waveMode === 'spectrum' || waveMode === 'free') ? (d.spectrumFilter || 'none') : 'none';
+              applyOscWaveform(actx, osc, initType, d.harmonicWeights, initFilter, d.filterCutoffHarmonic);
+              osc.frequency.value = ap.f1Hz;
+              gain.gain.value = ap.gain1;
               osc.connect(gain);
               gain.connect(actx.destination);
               osc.start();
               _waveAudio.ctx = actx;
               _waveAudio.osc = osc;
-              if (d.showSecond) {
+              _waveAudio.gain = gain;
+              if (ap.hasOsc2) {
                 var osc2 = actx.createOscillator();
                 var gain2 = actx.createGain();
                 osc2.type = 'sine';
-                osc2.frequency.value = (d.frequency2 || 3) * 100;
-                gain2.gain.value = 0.09;
+                osc2.frequency.value = ap.f2Hz;
+                gain2.gain.value = ap.gain2;
                 osc2.connect(gain2);
                 gain2.connect(actx.destination);
                 osc2.start();
                 _waveAudio.osc2 = osc2;
+                _waveAudio.gain2 = gain2;
               }
               upd('soundPlaying', true);
 
@@ -3666,13 +5708,58 @@ window.StemLab = window.StemLab || {
           var syncOsc = function (opts) {
             if (!_waveAudio.osc) return;
             try {
-              if (opts.dopplerFreq != null) _waveAudio.osc.frequency.value = Math.max(50, Math.min(4000, opts.dopplerFreq * 100));
-              if (opts.freq != null) _waveAudio.osc.frequency.value = opts.freq * 100;
-              if (opts.type || opts.weights) {
-                applyOscWaveform(_waveAudio.ctx, _waveAudio.osc, opts.type || d.waveType || 'sine', opts.weights || d.harmonicWeights);
+              var nextSt = Object.assign({}, d);
+              if (opts && opts.freq != null) nextSt.frequency = opts.freq;
+              if (opts && opts.freq2 != null) nextSt.frequency2 = opts.freq2;
+              if (opts && opts.type) nextSt.waveType = opts.type;
+              if (opts && opts.weights) nextSt.harmonicWeights = opts.weights;
+              if (opts && opts.spectrumFilter != null) nextSt.spectrumFilter = opts.spectrumFilter;
+              if (opts && opts.filterCutoffHarmonic != null) nextSt.filterCutoffHarmonic = opts.filterCutoffHarmonic;
+              syncOscFromState(nextSt);
+              if (opts && opts.dopplerFreq != null) {
+                setAudioParamSmooth(_waveAudio.osc.frequency, Math.max(50, Math.min(4000, opts.dopplerFreq * 100)), _waveAudio.ctx);
               }
-              if (opts.freq2 != null && _waveAudio.osc2) _waveAudio.osc2.frequency.value = opts.freq2 * 100;
             } catch (e) {}
+          };
+
+          var playDopplerFlyby = function () {
+            try {
+              var f0Hz = Math.max(60, Math.min(3000, d.frequency * 100));
+              var fHiHz = (!waveMetrics.isSupersonic && isFinite(waveMetrics.approachingFreq))
+                ? Math.max(60, Math.min(3500, waveMetrics.approachingFreq * 100))
+                : Math.max(80, Math.min(3500, f0Hz * 2.2));
+              var fLoHz = Math.max(50, Math.min(2500, (waveMetrics.recedingFreq || d.frequency * 0.7) * 100));
+              if (_waveAudio.dopplerFlyby && _waveAudio.dopplerFlyby.timer) {
+                try { clearTimeout(_waveAudio.dopplerFlyby.timer); } catch (e) {}
+              }
+              var sharedCtx = _waveAudio.ctx;
+              var ownCtx = !sharedCtx;
+              var actx = sharedCtx || new (window.AudioContext || window.webkitAudioContext)();
+              if (actx.state === 'suspended' && typeof actx.resume === 'function') actx.resume();
+              var oscF = actx.createOscillator();
+              var gainF = actx.createGain();
+              var now = actx.currentTime || 0;
+              oscF.type = 'sawtooth';
+              oscF.frequency.setValueAtTime(fHiHz, now);
+              oscF.frequency.exponentialRampToValueAtTime(Math.max(50, f0Hz), now + 0.85);
+              oscF.frequency.exponentialRampToValueAtTime(Math.max(50, fLoHz), now + 1.65);
+              gainF.gain.setValueAtTime(0.01, now);
+              gainF.gain.exponentialRampToValueAtTime(0.18, now + 0.85);
+              gainF.gain.exponentialRampToValueAtTime(0.008, now + 1.75);
+              oscF.connect(gainF);
+              gainF.connect(actx.destination);
+              oscF.start(now);
+              oscF.stop(now + 1.8);
+              var timer = setTimeout(function () {
+                try { oscF.disconnect(); gainF.disconnect(); } catch (e) {}
+                if (ownCtx) { try { actx.close(); } catch (e) {} }
+                if (_waveAudio.dopplerFlyby && _waveAudio.dopplerFlyby.timer === timer) _waveAudio.dopplerFlyby = null;
+              }, 1900);
+              _waveAudio.dopplerFlyby = { timer: timer, osc: oscF, gain: gainF };
+              if (typeof announceToSR === 'function') announceToSR(__alloT('stem.wave.announce_flyby', 'Doppler fly-by sweep: ') + Math.round(fHiHz) + ' Hz down to ' + Math.round(fLoHz) + ' Hz.');
+            } catch (e) {
+              if (typeof addToast === 'function') addToast(t('stem.wave.u26a0_audio_not_supported_in', '⚠ Audio not supported in this browser'), 'error');
+            }
           };
 
 
@@ -3687,7 +5774,7 @@ window.StemLab = window.StemLab || {
 
               awardStemXP('wave-match', 15, __alloT('stem.wave.xp_matched_wave', 'Matched a wave exactly!'));
 
-              upd('matchXpClaimed', true);
+              updPatch({ matchXpClaimed: true, matchedOnce: true });
 
               addToast('\u2705 Excellent match! Equation mastered! +15 XP', 'success');
 
@@ -3833,11 +5920,67 @@ window.StemLab = window.StemLab || {
               } },
 
             { q: __alloT('stem.wave.quiz7_q', 'The speed of a wave equals:'), a: 'Frequency \u00D7 Wavelength', opts: ['Amplitude \u00D7 Frequency', 'Frequency \u00D7 Wavelength', 'Period \u00D7 Amplitude', 'None of these'],
-              demo: { expSection: 'discoverWave' },
+              demo: { waveMode: 'free', frequency: 2, waveSpeed: 343, expSection: 'discoverWave' },
               wrongFeedback: {
                 'Amplitude \u00D7 Frequency': __alloT('stem.wave.quiz7_fb_amp_freq', 'Amplitude carries ENERGY, not speed. v = f \u00D7 \u03BB: waves per second \u00D7 length of each wave = distance per second.'),
                 'Period \u00D7 Amplitude': __alloT('stem.wave.quiz7_fb_period_amp', 'Period is just 1/frequency and amplitude is height \u2014 multiplying them gives nothing physical. v = f \u00D7 \u03BB.'),
                 'None of these': __alloT('stem.wave.quiz7_fb_none', 'One of them IS right: v = f \u00D7 \u03BB \u2014 how many waves pass per second times how long each one is.')
+              } },
+
+            { q: __alloT('stem.wave.quiz8_q', 'Compared to a string fixed at both ends, what is the fundamental wavelength of a pipe with one end closed and one end free?'), a: '\u03BB = 4L (quarter-wave)', opts: ['\u03BB = 4L (quarter-wave)', '\u03BB = 2L (half-wave)', 'No nodes form', 'All even harmonics fit'],
+              demo: { waveMode: 'standing', standingBoundary: 'fixedFree', harmonic: 1 },
+              wrongFeedback: {
+                '\u03BB = 2L (half-wave)': __alloT('stem.wave.quiz8_fb_half', 'Both ends fixed fits one half-wave (\u03BB = 2L). One closed end forces a node at the bottom and an antinode at the opening \u2014 a quarter-wave (\u03BB = 4L).'),
+                'No nodes form': __alloT('stem.wave.quiz8_fb_nonodes', 'The fixed/closed end is always a displacement node with zero motion.'),
+                'All even harmonics fit': __alloT('stem.wave.quiz8_fb_even', 'Fixed-free boundary conditions only allow ODD harmonics (1f, 3f, 5f...).')
+              } },
+
+            { q: __alloT('stem.wave.quiz9_q', 'Two waves at 3.0 Hz and 3.5 Hz overlap. What beat frequency will you hear?'), a: '0.5 Hz', opts: ['0.5 Hz', '3.25 Hz', '6.5 Hz', '1.05 Hz'],
+              demo: { waveMode: 'free', showSecond: true, frequency: 3, frequency2: 3.5, amplitude: 50, amplitude2: 50 },
+              wrongFeedback: {
+                '3.25 Hz': __alloT('stem.wave.quiz9_fb_avg', '3.25 Hz is the average pitch you hear inside each pulse; the loudness pulses at the DIFFERENCE f_beat = |f\u2081 \u2212 f\u2082| = 0.5 Hz.'),
+                '6.5 Hz': __alloT('stem.wave.quiz9_fb_sum', 'Beats depend on how often the two waves drift in and out of phase: |f\u2081 \u2212 f\u2082|, not f\u2081 + f\u2082.'),
+                '1.05 Hz': __alloT('stem.wave.quiz9_fb_mul', 'Subtract the two frequencies rather than dividing or scaling them: |3.5 \u2212 3.0| = 0.5 Hz.')
+              } },
+
+            { q: __alloT('stem.wave.quiz10_q', 'When a sound source moves faster than the speed of sound (Mach > 1), what forms behind it?'), a: 'A conical shock wave', opts: ['A conical shock wave', 'All sound disappears completely', 'Pitch freezes at f\u2080', 'Waves bounce backward'],
+              demo: { waveMode: 'doppler', sourceSpeed: 1.5 },
+              wrongFeedback: {
+                'All sound disappears completely': __alloT('stem.wave.quiz10_fb_disappear', 'Sound still radiates from every point along the path \u2014 the circular wavefronts pile up together into a sharp sonic boom cone.'),
+                'Pitch freezes at f\u2080': __alloT('stem.wave.quiz10_fb_freeze', 'When M > 1, the source outruns its own wavefronts; observers only hear them all arrive together along the Mach cone.'),
+                'Waves bounce backward': __alloT('stem.wave.quiz10_fb_back', 'Waves still expand outward spherically at v_sound; the source simply outruns the forward edge.')
+              } },
+
+            { q: __alloT('stem.wave.quiz11_q', 'When a wave enters a slower medium (v\u2082 < v\u2081), which property stays constant across the boundary?'), a: 'Frequency f', opts: ['Frequency f', 'Wavelength \u03BB', 'Wave speed v', 'Refracted angle'],
+              demo: { waveMode: 'reflection', medium2Ratio: 0.5, reflectivity: 0.5, impedanceCoupled: true },
+              wrongFeedback: {
+                'Wavelength \u03BB': __alloT('stem.wave.quiz11_fb_lambda', 'Because v = f\u03BB and v drops while f stays fixed, wavelength \u03BB MUST shrink proportionally in Medium 2.'),
+                'Wave speed v': __alloT('stem.wave.quiz11_fb_speed', 'Wave speed v changes at the interface because the two media have different physical stiffness/density or index.'),
+                'Refracted angle': __alloT('stem.wave.quiz11_fb_angle', 'Snell\u2019s law bends the ray toward the normal when entering a slower medium.')
+              } },
+
+            { q: __alloT('stem.wave.quiz12_q', 'An anti-reflection coating cancels boundary reflections best when its optical thickness equals:'), a: '\u03BB/4 inside the coating', opts: ['\u03BB/4 inside the coating', '1\u03BB inside the coating', '2\u03BB inside the coating', 'Any thickness works'],
+              demo: { waveMode: 'reflection', impedanceCoupled: true, antiReflectionCoating: true, incidentAngleDeg: 0, medium2Ratio: 0.5 },
+              wrongFeedback: {
+                '1\u03BB inside the coating': __alloT('stem.wave.quiz12_fb_1l', 'A round-trip through 1\u03BB adds 2\u03BB path delay, putting both reflected waves BACK in phase (constructive)! \u03BB/4 makes the round-trip \u03BB/2 so they cancel.'),
+                '2\u03BB inside the coating': __alloT('stem.wave.quiz12_fb_2l', 'An integer wavelength round-trip reinforces the reflection instead of canceling it. You want a \u03BB/2 round-trip = \u03BB/4 thickness.'),
+                'Any thickness works': __alloT('stem.wave.quiz12_fb_any', 'Exact destructive interference requires a half-wavelength round-trip path difference: d = \u03BB_coating / 4.')
+              } },
+
+            { q: __alloT('stem.wave.quiz13_q', 'In a two-source ripple phased array, how can you steer the main interference beam without moving the sources?'), a: 'Shift relative phase \u0394\u03C6', opts: ['Shift relative phase \u0394\u03C6', 'Double both amplitudes equally', 'Pause the simulation', 'Change background theme'],
+              demo: { waveMode: 'ripple', rippleBarrier: 'none', ripplePhaseDiff: Math.PI / 2 },
+              wrongFeedback: {
+                'Double both amplitudes equally': __alloT('stem.wave.quiz13_fb_amp', 'Scaling both sources equally makes the pattern stronger everywhere without tilting its direction.'),
+                'Pause the simulation': __alloT('stem.wave.quiz13_fb_pause', 'Pausing freezes motion in time; tilting the beam direction comes from advancing one source\u2019s phase relative to the other.'),
+                'Change background theme': __alloT('stem.wave.quiz13_fb_theme', 'Try dragging the Source Phase Offset (\u0394\u03C6) slider in Ripple Tank mode to tilt the constructive beam.')
+              } },
+
+            { q: __alloT('stem.wave.quiz14_q', 'In a dispersive wave packet with group velocity slower than phase velocity (v_g < v_p), what do individual crests appear to do?'), a: 'Roll forward through the packet', opts: ['Roll forward through the packet', 'Remain frozen inside the packet', 'Disappear before the left edge', 'Move backward slower than the packet'],
+              demo: { waveMode: 'free', packetMode: 'packet', dispersionRatio: 0.6 },
+              wrongFeedback: {
+                'Remain frozen inside the packet': __alloT('stem.wave.quiz14_fb_frozen', 'Crests stay locked to the envelope only in a NON-dispersive medium where v_g = v_p.'),
+                'Disappear before the left edge': __alloT('stem.wave.quiz14_fb_left', 'When v_p > v_g (normal dispersion, like deep water waves), crests originate at the trailing tail and race forward through the packet.'),
+                'Move backward slower than the packet': __alloT('stem.wave.quiz14_fb_back', 'In normal dispersion (0 < v_g < v_p), crests still travel forward faster than the envelope moves.')
               } },
 
           ];
@@ -3859,6 +6002,12 @@ window.StemLab = window.StemLab || {
               energy: Math.round(waveMetrics.energy),
               sourceSpeed: d.sourceSpeed,
               observerSpeed: d.observerSpeed,
+              dopplerRegime: d.dopplerRegime || 'acoustic',
+              fresnelPolarization: d.fresnelPolarization || 's',
+              reflectedEnergyPct: waveMetrics.reflectedEnergyPct,
+              redshiftRec: Math.round(waveMetrics.redshiftRec * 1000) / 1000,
+              airTempC: d.airTempC,
+              pluckPosition: d.pluckPosition,
               approachingFreq: isFinite(waveMetrics.approachingFreq) ? Math.round(waveMetrics.approachingFreq * 100) / 100 : null,
               incidentAngleDeg: d.incidentAngleDeg,
               refractedAngleDeg: (typeof waveMetrics.refractedAngleDeg === 'number' && isFinite(waveMetrics.refractedAngleDeg)) ? Math.round(waveMetrics.refractedAngleDeg * 10) / 10 : null,
@@ -3867,17 +6016,38 @@ window.StemLab = window.StemLab || {
               groupVelocity: Math.round(waveMetrics.groupVelocity * 10) / 10,
               ripplePhaseDiff: d.ripplePhaseDiff || 0,
               beamSteerAngleDeg: Math.round(waveMetrics.beamSteerAngleDeg * 10) / 10,
+              stringTension: d.stringTension,
+              stringDensityGm: d.stringDensityGm,
+              driveFreqRatio: d.driveFreqRatio,
+              resonatorQ: d.resonatorQ,
+              resonatorGainPct: waveMetrics.resonatorGainPct,
+              ftirGapLambda: d.ftirGapLambda,
+              tunnelTransmissionPct: waveMetrics.tunnelTransmissionPct,
+              waterDepthRatio: d.waterDepthRatio,
+              listenerDistMeters: d.listenerDistMeters,
+              attenuatedDb: waveMetrics.attenuatedDb,
+              rippleFringeSpacingPx: waveMetrics.rippleFringeSpacingPx,
+              adcBitDepth: d.adcBitDepth,
+              adcSqnrDb: waveMetrics.adcSqnrDb,
+              dopplerOffsetAngleDeg: d.dopplerOffsetAngleDeg,
+              offAxisObsFreq: isFinite(waveMetrics.offAxisObsFreq) ? waveMetrics.offAxisObsFreq : null,
               note: waveMode === 'doppler'
-                ? ('M=' + d.sourceSpeed.toFixed(2) + (Math.abs(d.observerSpeed || 0) > 0.01 ? ', vo=' + d.observerSpeed.toFixed(2) : ''))
+                ? (d.dopplerRegime === 'relativistic'
+                  ? ('Rel \u03B2=' + Math.min(0.95, d.sourceSpeed).toFixed(2) + 'c, z=+' + waveMetrics.redshiftRec.toFixed(3) + (d.dopplerOffsetAngleDeg > 0 ? ', \u03B8=' + d.dopplerOffsetAngleDeg + '\u00B0' : ''))
+                  : ('M=' + d.sourceSpeed.toFixed(2) + (Math.abs(d.observerSpeed || 0) > 0.01 ? ', vo=' + d.observerSpeed.toFixed(2) : '') + (d.dopplerOffsetAngleDeg > 0 ? ', \u03B8=' + d.dopplerOffsetAngleDeg + '\u00B0' : '')))
                 : waveMode === 'reflection'
-                  ? ('R=' + waveMetrics.effectiveReflectivity.toFixed(2) + ', v2/v1=' + d.medium2Ratio.toFixed(2) + ((d.incidentAngleDeg || 0) > 0 ? ', \u03B81=' + d.incidentAngleDeg + '\u00B0' : '') + (d.antiReflectionCoating ? ', \u03BB/4 AR' : ''))
+                  ? ((d.impedanceCoupled ? (d.fresnelPolarization || 's').toUpperCase() + '-pol ' : '') + 'R=' + waveMetrics.reflectedEnergyPct + '%, v2/v1=' + d.medium2Ratio.toFixed(2) + ((d.incidentAngleDeg || 0) > 0 ? ', \u03B81=' + d.incidentAngleDeg + '\u00B0' : '') + (d.antiReflectionCoating ? ', \u03BB/4 AR' : '') + (d.ftirEnabled ? ', FTIR d=' + d.ftirGapLambda.toFixed(2) + '\u03BB' : ''))
                   : waveMode === 'standing'
-                    ? ((d.standingBoundary || 'bothFixed') + ', n=' + (d.harmonic || 1))
+                    ? ((d.standingBoundary || 'bothFixed') + ', n=' + (d.harmonic || 1) + (d.showTravelingComponents ? ', decomp' : '') + (d.resonatorDriven ? (', drv=' + d.driveFreqRatio.toFixed(2) + ' Q=' + d.resonatorQ) : '') + ((d.stringMechanics && (d.standingBoundary || 'bothFixed') === 'bothFixed') ? (', T=' + d.stringTension + 'N, \u03BC=' + d.stringDensityGm.toFixed(1) + 'g/m') : ''))
                     : waveMode === 'longitudinal'
-                      ? (d.longitudinalMode === 'standing' ? ('Kundt n=' + (d.harmonic || 2)) : activeWaveType)
+                      ? ((d.airTempCoupled ? ('Air ' + d.airTempC + '\u00B0C ') : '') + (d.longitudinalMode === 'standing' ? ('Kundt n=' + (d.harmonic || 2)) : activeWaveType))
                       : waveMode === 'ripple'
-                        ? ((d.rippleBarrier || 'none') + (Math.abs(d.ripplePhaseDiff || 0) > 0.05 ? (', \u0394\u03C6=' + Math.round((d.ripplePhaseDiff || 0) * 180 / Math.PI) + '\u00B0') : ''))
-                        : (d.packetMode === 'packet' ? ('packet vg/vp=' + d.dispersionRatio.toFixed(2)) : activeWaveType)
+                        ? ((d.rippleBarrier || 'none') + (d.rippleBarrier === 'grating' ? (' N=' + (d.gratingSlits || 4)) : '') + (Math.abs(d.ripplePhaseDiff || 0) > 0.05 ? (', \u0394\u03C6=' + Math.round((d.ripplePhaseDiff || 0) * 180 / Math.PI) + '\u00B0') : ''))
+                        : (waveMode === 'spectrum' && d.digitalSampling
+                          ? ('ADC fs=' + waveMetrics.sampleRateHz.toFixed(1) + 'Hz,' + d.adcBitDepth + 'b')
+                          : (waveMode === 'spectrum' && activeWaveType === 'custom'
+                            ? ('pluck=' + Math.round(d.pluckPosition * 100) + '%')
+                            : (d.packetMode === 'collide' ? ('collide:' + (d.collidePolarity || 'opposite')) : (d.packetMode === 'packet' ? (d.oceanDepthCoupled ? ('ocean h/\u03BB=' + d.waterDepthRatio.toFixed(2)) : ('packet vg/vp=' + d.dispersionRatio.toFixed(2))) : activeWaveType))))
             };
             updPatch(function(cur) {
               var nextLog = cur.experimentLog.concat([newRow]).slice(-25);
@@ -3902,14 +6072,15 @@ window.StemLab = window.StemLab || {
             if (typeof addToast === 'function') addToast('⚡ ' + __alloT('stem.wave.toast_sweep_logged', 'Logged 5-point parameter sweep to Experiment Log.'), 'success');
           };
 
-          var openWaveInDataStudio = function() {
-            var dsAxis = WAVE_VALID_DS_PLOTS[d.dataStudioPlot] ? d.dataStudioPlot : 'freqWavelength';
-            var rowsSource = d.experimentLog.length > 0 ? d.experimentLog : waveBuildSweepRows(d, dsAxis, 1);
+          var getWaveAxisSpec = function(axisId) {
             var DS_AXIS_CONFIG = {
               freqWavelength: {
                 title: __alloT('stem.wave.ds_chart_title', 'Wave Simulator: Frequency vs. Wavelength'),
                 xLabel: __alloT('stem.wave.ds_x_label', 'Frequency f (Hz)'),
                 yLabel: __alloT('stem.wave.ds_y_label', 'Wavelength λ (m)'),
+                xShort: 'f (Hz)',
+                yShort: '\u03BB (m)',
+                extraCols: [],
                 mapRow: function(row, idx) {
                   return {
                     label: '#' + (row.n || (idx + 1)) + ' (' + row.mode + ', f=' + row.frequency + 'Hz)',
@@ -3922,6 +6093,11 @@ window.StemLab = window.StemLab || {
                 title: __alloT('stem.wave.ds_amp_title', 'Wave Simulator: Amplitude vs. Relative Energy (A²)'),
                 xLabel: __alloT('stem.wave.ds_amp_x', 'Amplitude A'),
                 yLabel: __alloT('stem.wave.ds_amp_y', 'Relative Energy (A²)'),
+                xShort: 'A',
+                yShort: 'A\u00B2',
+                extraCols: [
+                  { hdr: 'SPL (dB)', render: function(r) { return r.soundLevelDb != null ? r.soundLevelDb.toFixed(1) : '\u2014'; } }
+                ],
                 mapRow: function(row, idx) {
                   var eVal = row.energy != null ? row.energy : (row.amplitude * row.amplitude);
                   return {
@@ -3935,6 +6111,12 @@ window.StemLab = window.StemLab || {
                 title: __alloT('stem.wave.ds_doppler_title', 'Wave Simulator: Source Speed (M) vs. Approaching Frequency'),
                 xLabel: __alloT('stem.wave.ds_doppler_x', 'Source Speed (Mach M)'),
                 yLabel: __alloT('stem.wave.ds_doppler_y', 'Approaching Frequency f\' (Hz)'),
+                xShort: 'Mach M',
+                yShort: 'f\u2032 (Hz)',
+                extraCols: [
+                  { hdr: 'Mach M', render: function(r) { return r.sourceSpeed != null ? Number(r.sourceSpeed).toFixed(2) : '\u2014'; } },
+                  { hdr: "f\u2032 (Hz)", render: function(r) { return r.approachingFreq != null ? r.approachingFreq.toFixed(2) : '\u2014'; } }
+                ],
                 mapRow: function(row, idx) {
                   var ms = row.sourceSpeed != null ? row.sourceSpeed : d.sourceSpeed;
                   var af = row.approachingFreq != null ? row.approachingFreq : (row.frequency / Math.max(0.05, 1 - Math.min(0.95, ms || 0)));
@@ -3949,6 +6131,12 @@ window.StemLab = window.StemLab || {
                 title: __alloT('stem.wave.ds_snell_title', 'Wave Simulator: Incident Angle θ₁ vs. Refracted Angle θ₂'),
                 xLabel: __alloT('stem.wave.ds_snell_x', 'Incident Angle θ₁ (deg)'),
                 yLabel: __alloT('stem.wave.ds_snell_y', 'Refracted Angle θ₂ (deg)'),
+                xShort: '\u03B8\u2081 (\u00B0)',
+                yShort: '\u03B8\u2082 (\u00B0)',
+                extraCols: [
+                  { hdr: '\u03B8\u2081 (\u00B0)', render: function(r) { return r.incidentAngleDeg != null ? r.incidentAngleDeg : '\u2014'; } },
+                  { hdr: '\u03B8\u2082 (\u00B0)', render: function(r) { return r.refractedAngleDeg != null ? r.refractedAngleDeg.toFixed(1) : 'TIR'; } }
+                ],
                 mapRow: function(row, idx) {
                   var th1 = row.incidentAngleDeg != null ? row.incidentAngleDeg : (d.incidentAngleDeg || 0);
                   var th2 = row.refractedAngleDeg != null ? row.refractedAngleDeg : 90;
@@ -3963,6 +6151,12 @@ window.StemLab = window.StemLab || {
                 title: __alloT('stem.wave.ds_phased_title', 'Wave Simulator: Phase Offset Δφ vs. Beam Steer Angle θ₀'),
                 xLabel: __alloT('stem.wave.ds_phased_x', 'Phase Offset Δφ (deg)'),
                 yLabel: __alloT('stem.wave.ds_phased_y', 'Steered Beam Angle θ₀ (deg)'),
+                xShort: '\u0394\u03C6 (\u00B0)',
+                yShort: '\u03B8\u2080 (\u00B0)',
+                extraCols: [
+                  { hdr: '\u0394\u03C6 (\u00B0)', render: function(r) { return Math.round((((r.ripplePhaseDiff != null ? r.ripplePhaseDiff : 0) * 180) / Math.PI)); } },
+                  { hdr: '\u03B8\u2080 (\u00B0)', render: function(r) { return r.beamSteerAngleDeg != null ? r.beamSteerAngleDeg.toFixed(1) : '\u2014'; } }
+                ],
                 mapRow: function(row, idx) {
                   var dpDeg = Math.round((((row.ripplePhaseDiff != null ? row.ripplePhaseDiff : (d.ripplePhaseDiff || 0)) * 180) / Math.PI) * 10) / 10;
                   var bDeg = row.beamSteerAngleDeg != null ? row.beamSteerAngleDeg : 0;
@@ -3972,9 +6166,201 @@ window.StemLab = window.StemLab || {
                     value: Math.round(bDeg * 10) / 10
                   };
                 }
+              },
+              mersenneTension: {
+                title: __alloT('stem.wave.ds_mersenne_title', 'Wave Simulator: String Tension T vs. Wave Speed v'),
+                xLabel: __alloT('stem.wave.ds_mersenne_x', 'String Tension T (N)'),
+                yLabel: __alloT('stem.wave.ds_mersenne_y', 'Wave Speed v = \u221A(T/\u03BC) (m/s)'),
+                xShort: 'T (N)',
+                yShort: 'v (m/s)',
+                extraCols: [
+                  { hdr: 'T (N)', render: function(r) { return r.stringTension != null ? Number(r.stringTension).toFixed(0) : '\u2014'; } },
+                  { hdr: '\u03BC (g/m)', render: function(r) { return r.stringDensityGm != null ? Number(r.stringDensityGm).toFixed(2) : '\u2014'; } }
+                ],
+                mapRow: function(row, idx) {
+                  var tv = row.stringTension != null ? row.stringTension : d.stringTension;
+                  var spdV = row.waveSpeed != null ? row.waveSpeed : waveComputeStringSpeed(tv, row.stringDensityGm != null ? row.stringDensityGm : d.stringDensityGm);
+                  return {
+                    label: '#' + (row.n || (idx + 1)) + ' (T=' + Math.round(tv) + 'N)',
+                    x: tv,
+                    value: Math.round(spdV * 10) / 10
+                  };
+                }
+              },
+              fresnelBrewster: {
+                title: __alloT('stem.wave.ds_brewster_title', 'Wave Simulator: Incident Angle θ₁ vs. TM Reflectance R (%)'),
+                xLabel: __alloT('stem.wave.ds_brewster_x', 'Incident Angle θ₁ (deg)'),
+                yLabel: __alloT('stem.wave.ds_brewster_y', 'TM Reflectance R (%)'),
+                xShort: '\u03B8\u2081 (\u00B0)',
+                yShort: 'R (%)',
+                extraCols: [
+                  { hdr: 'Pol', render: function(r) { return (r.fresnelPolarization || 's').toUpperCase(); } },
+                  { hdr: 'R (%)', render: function(r) { return r.reflectedEnergyPct != null ? r.reflectedEnergyPct + '%' : '\u2014'; } }
+                ],
+                mapRow: function(row, idx) {
+                  var th1b = row.incidentAngleDeg != null ? row.incidentAngleDeg : (d.incidentAngleDeg || 0);
+                  var rPct = row.reflectedEnergyPct != null ? row.reflectedEnergyPct : waveMetrics.reflectedEnergyPct;
+                  return {
+                    label: '#' + (row.n || (idx + 1)) + ' (θ1=' + Number(th1b).toFixed(1) + '°)',
+                    x: th1b,
+                    value: Math.round(rPct)
+                  };
+                }
+              },
+              airTempSpeed: {
+                title: __alloT('stem.wave.ds_airtemp_title', 'Wave Simulator: Air Temperature T vs. Speed of Sound v'),
+                xLabel: __alloT('stem.wave.ds_airtemp_x', 'Air Temperature T (°C)'),
+                yLabel: __alloT('stem.wave.ds_airtemp_y', 'Speed of Sound v(T) (m/s)'),
+                xShort: 'T (\u00B0C)',
+                yShort: 'v (m/s)',
+                extraCols: [
+                  { hdr: 'T (\u00B0C)', render: function(r) { return r.airTempC != null ? r.airTempC : '\u2014'; } },
+                  { hdr: 'v (m/s)', render: function(r) { return r.waveSpeed != null ? Number(r.waveSpeed).toFixed(1) : '\u2014'; } }
+                ],
+                mapRow: function(row, idx) {
+                  var tc = row.airTempC != null ? row.airTempC : (d.airTempC != null ? d.airTempC : 20);
+                  var vAir = row.waveSpeed != null ? row.waveSpeed : waveComputeAirSoundSpeed(tc);
+                  return {
+                    label: '#' + (row.n || (idx + 1)) + ' (T=' + tc + '°C)',
+                    x: tc,
+                    value: Math.round(vAir * 10) / 10
+                  };
+                }
+              },
+              resonanceCurve: {
+                title: __alloT('stem.wave.ds_resonance_title', 'Wave Simulator: Drive Ratio r vs. Resonator Gain (%)'),
+                xLabel: __alloT('stem.wave.ds_resonance_x', 'Drive Frequency Ratio (f_drv / f_1)'),
+                yLabel: __alloT('stem.wave.ds_resonance_y', 'Normalized Gain |H| (%)'),
+                xShort: 'f_drv / f\u2081',
+                yShort: 'Gain (%)',
+                extraCols: [
+                  { hdr: 'Q', render: function(r) { return r.resonatorQ != null ? String(r.resonatorQ) : '\u2014'; } },
+                  { hdr: 'Gain %', render: function(r) { return r.resonatorGainPct != null ? Number(r.resonatorGainPct).toFixed(1) + '%' : '\u2014'; } }
+                ],
+                mapRow: function(row, idx) {
+                  var rDrv = row.driveFreqRatio != null ? row.driveFreqRatio : (d.driveFreqRatio || 1);
+                  var gPct = row.resonatorGainPct != null
+                    ? row.resonatorGainPct
+                    : waveComputeResonatorResponse(rDrv, row.resonatorQ != null ? row.resonatorQ : d.resonatorQ, d.standingBoundary, row.frequency || d.frequency).gainPct;
+                  return {
+                    label: '#' + (row.n || (idx + 1)) + ' (r=' + Number(rDrv).toFixed(2) + ')',
+                    x: Number(rDrv),
+                    value: Math.round(Number(gPct) * 10) / 10
+                  };
+                }
+              },
+              ftirTunneling: {
+                title: __alloT('stem.wave.ds_ftir_title', 'Wave Simulator: Barrier Gap (d / \u03BB\u2081) vs. FTIR Transmission (%)'),
+                xLabel: __alloT('stem.wave.ds_ftir_x', 'Normalized Air Gap (d / \u03BB\u2081)'),
+                yLabel: __alloT('stem.wave.ds_ftir_y', 'Tunnel Transmission T (%)'),
+                xShort: 'd / \u03BB\u2081',
+                yShort: 'T (%)',
+                extraCols: [
+                  { hdr: 'd/\u03BB\u2081', render: function(r) { return r.ftirGapLambda != null ? Number(r.ftirGapLambda).toFixed(2) : '\u2014'; } },
+                  { hdr: 'T (%)', render: function(r) { return r.transmittedEnergyPct != null ? r.transmittedEnergyPct + '%' : '\u2014'; } }
+                ],
+                mapRow: function(row, idx) {
+                  var gapL = row.ftirGapLambda != null ? row.ftirGapLambda : (d.ftirGapLambda || 0.25);
+                  var tPct = row.tunnelTransmissionPct != null
+                    ? row.tunnelTransmissionPct
+                    : (row.transmittedEnergyPct != null ? row.transmittedEnergyPct : waveMetrics.tunnelTransmissionPct);
+                  return {
+                    label: '#' + (row.n || (idx + 1)) + ' (d=' + Number(gapL).toFixed(2) + '\u03BB)',
+                    x: Number(gapL),
+                    value: Math.round(Number(tPct) * 10) / 10
+                  };
+                }
+              },
+              inverseSquareDb: {
+                title: __alloT('stem.wave.ds_invsq_title', 'Wave Simulator: Distance (r) vs. Sound Level (dB)'),
+                xLabel: __alloT('stem.wave.ds_invsq_x', 'Listener Distance r (m)'),
+                yLabel: __alloT('stem.wave.ds_invsq_y', 'Sound Level at r (dB)'),
+                xShort: 'r (m)',
+                yShort: 'L(r) dB',
+                extraCols: [
+                  { hdr: 'r (m)', render: function(r) { return r.listenerDistMeters != null ? Number(r.listenerDistMeters).toFixed(1) + ' m' : '\u2014'; } },
+                  { hdr: 'L(r) dB', render: function(r) { return r.attenuatedDb != null ? Number(r.attenuatedDb).toFixed(1) + ' dB' : '\u2014'; } }
+                ],
+                mapRow: function(row, idx) {
+                  var distM = row.listenerDistMeters != null ? row.listenerDistMeters : (d.listenerDistMeters || 4);
+                  var lvlDb = row.attenuatedDb != null ? row.attenuatedDb : waveMetrics.attenuatedDb;
+                  return {
+                    label: '#' + (row.n || (idx + 1)) + ' (r=' + Number(distM).toFixed(1) + 'm)',
+                    x: Number(distM),
+                    value: Math.round(Number(lvlDb) * 10) / 10
+                  };
+                }
+              },
+              youngFringeSpacing: {
+                title: __alloT('stem.wave.ds_young_title', 'Wave Simulator: Slit Separation (d) vs. Fringe Spacing (\u0394y)'),
+                xLabel: __alloT('stem.wave.ds_young_x', 'Source / Slit Separation d (px)'),
+                yLabel: __alloT('stem.wave.ds_young_y', 'Fringe Spacing \u0394y (px)'),
+                xShort: 'd (px)',
+                yShort: '\u0394y (px)',
+                extraCols: [
+                  { hdr: 'd (px)', render: function(r) { return r.rippleSeparation != null ? r.rippleSeparation + ' px' : '\u2014'; } },
+                  { hdr: '\u0394y (px)', render: function(r) { return r.rippleFringeSpacingPx != null ? Number(r.rippleFringeSpacingPx).toFixed(1) + ' px' : '\u2014'; } }
+                ],
+                mapRow: function(row, idx) {
+                  var sepPx = row.rippleSeparation != null ? row.rippleSeparation : (d.rippleSeparation || 80);
+                  var dyPx = row.rippleFringeSpacingPx != null ? row.rippleFringeSpacingPx : waveMetrics.rippleFringeSpacingPx;
+                  return {
+                    label: '#' + (row.n || (idx + 1)) + ' (d=' + sepPx + 'px)',
+                    x: Number(sepPx),
+                    value: Math.round(Number(dyPx) * 10) / 10
+                  };
+                }
+              },
+              adcBitSqnr: {
+                title: __alloT('stem.wave.ds_adc_title', 'Wave Simulator: ADC Bit Depth (b) vs. Quantization SQNR (dB)'),
+                xLabel: __alloT('stem.wave.ds_adc_x', 'ADC Bit Depth b (bits)'),
+                yLabel: __alloT('stem.wave.ds_adc_y', 'Quantization SQNR (dB)'),
+                xShort: 'b (bits)',
+                yShort: 'SQNR (dB)',
+                extraCols: [
+                  { hdr: 'Bits', render: function(r) { return r.adcBitDepth != null ? (r.adcBitDepth + '-bit') : '\u2014'; } },
+                  { hdr: 'SQNR (dB)', render: function(r) { return r.adcSqnrDb != null ? Number(r.adcSqnrDb).toFixed(1) + ' dB' : '\u2014'; } }
+                ],
+                mapRow: function(row, idx) {
+                  var bVal = row.adcBitDepth != null ? row.adcBitDepth : (d.adcBitDepth || 8);
+                  var sqVal = row.adcSqnrDb != null ? row.adcSqnrDb : waveComputeDigitalSampling(row.frequency || d.frequency, d.sampleRateRatio, bVal).sqnrDb;
+                  return {
+                    label: '#' + (row.n || (idx + 1)) + ' (' + bVal + '-bit)',
+                    x: Number(bVal),
+                    value: Math.round(Number(sqVal) * 10) / 10
+                  };
+                }
+              },
+              dopplerOffsetAngle: {
+                title: __alloT('stem.wave.ds_dopoff_title', 'Wave Simulator: Observer Angle (\u03B8) vs. Observed Frequency f\u2032(\u03B8)'),
+                xLabel: __alloT('stem.wave.ds_dopoff_x', 'Observer Angle \u03B8 (deg)'),
+                yLabel: __alloT('stem.wave.ds_dopoff_y', 'Observed Frequency f\u2032(\u03B8) (Hz)'),
+                xShort: '\u03B8 (\u00B0)',
+                yShort: 'f\u2032(\u03B8) Hz',
+                extraCols: [
+                  { hdr: '\u03B8 (\u00B0)', render: function(r) { return r.dopplerOffsetAngleDeg != null ? r.dopplerOffsetAngleDeg + '\u00B0' : '\u2014'; } },
+                  { hdr: 'f\u2032(\u03B8) Hz', render: function(r) { return r.offAxisObsFreq != null ? Number(r.offAxisObsFreq).toFixed(2) : '\u2014'; } }
+                ],
+                mapRow: function(row, idx) {
+                  var angV = row.dopplerOffsetAngleDeg != null ? row.dopplerOffsetAngleDeg : (d.dopplerOffsetAngleDeg || 0);
+                  var fObs = row.offAxisObsFreq != null
+                    ? row.offAxisObsFreq
+                    : waveComputeOffAxisDoppler(row.frequency || d.frequency, row.sourceSpeed != null ? row.sourceSpeed : d.sourceSpeed, angV, row.dopplerRegime || d.dopplerRegime).observedFreqHz;
+                  return {
+                    label: '#' + (row.n || (idx + 1)) + ' (\u03B8=' + angV + '\u00B0)',
+                    x: Number(angV),
+                    value: isFinite(Number(fObs)) ? (Math.round(Number(fObs) * 100) / 100) : 0
+                  };
+                }
               }
             };
-            var cfg = DS_AXIS_CONFIG[dsAxis] || DS_AXIS_CONFIG.freqWavelength;
+            return DS_AXIS_CONFIG[axisId] || DS_AXIS_CONFIG.freqWavelength;
+          };
+
+          var openWaveInDataStudio = function() {
+            var dsAxis = WAVE_VALID_DS_PLOTS[d.dataStudioPlot] ? d.dataStudioPlot : 'freqWavelength';
+            var rowsSource = d.experimentLog.length > 0 ? d.experimentLog : waveBuildSweepRows(d, dsAxis, 1);
+            var cfg = getWaveAxisSpec(dsAxis);
             var dsRows = rowsSource.map(cfg.mapRow);
             if (typeof setLabToolData === 'function') {
               setLabToolData(function(prev) {
@@ -4002,19 +6388,39 @@ window.StemLab = window.StemLab || {
               if (typeof addToast === 'function') addToast(__alloT('stem.wave.toast_no_rows_csv', 'Log at least one trial before exporting CSV.'), 'info');
               return;
             }
-            var lines = ['Trial,Mode,Waveform,Frequency_Hz,Amplitude,WaveSpeed_mps,Wavelength_m,Period_s,Energy_A2,SourceSpeed_Mach,ObserverSpeed_Mach,ApproachingFreq_Hz,IncidentAngle_deg,RefractedAngle_deg,GroupVel_mps,SPL_dB,PhaseOffset_rad,BeamSteer_deg,Note'];
+            var lines = ['Trial,Mode,Waveform,Frequency_Hz,Amplitude,WaveSpeed_mps,Wavelength_m,Period_s,Energy_A2,SourceSpeed_Mach,ObserverSpeed_Mach,DopplerRegime,ApproachingFreq_Hz,IncidentAngle_deg,RefractedAngle_deg,FresnelPol,Reflectance_Pct,Redshift_z,GroupVel_mps,SPL_dB,AirTemp_C,PhaseOffset_rad,BeamSteer_deg,StringTension_N,LinearDensity_gm,PluckPos,DriveRatio_r,Resonator_Q,ResonatorGain_Pct,FTIRGap_Lambda,WaterDepth_Ratio,ListenerDist_m,AttenuatedSPL_dB,FringeSpacing_px,ADC_Bits,ADC_SQNR_dB,DopplerOffset_deg,OffAxisFreq_Hz,Note'];
             rows.forEach(function(r) {
               lines.push([
                 r.n, r.mode, r.waveType, r.frequency, r.amplitude, r.waveSpeed, r.wavelength, r.period, r.energy,
                 r.sourceSpeed != null ? r.sourceSpeed : '',
                 r.observerSpeed != null ? r.observerSpeed : '',
+                r.dopplerRegime || '',
                 r.approachingFreq != null ? r.approachingFreq : '',
                 r.incidentAngleDeg != null ? r.incidentAngleDeg : '',
                 r.refractedAngleDeg != null ? r.refractedAngleDeg : '',
+                r.fresnelPolarization || '',
+                r.reflectedEnergyPct != null ? r.reflectedEnergyPct : '',
+                r.redshiftRec != null ? r.redshiftRec : '',
                 r.groupVelocity != null ? r.groupVelocity : '',
                 r.soundLevelDb != null ? r.soundLevelDb : '',
+                r.airTempC != null ? r.airTempC : '',
                 r.ripplePhaseDiff != null ? r.ripplePhaseDiff : '',
                 r.beamSteerAngleDeg != null ? r.beamSteerAngleDeg : '',
+                r.stringTension != null ? r.stringTension : '',
+                r.stringDensityGm != null ? r.stringDensityGm : '',
+                r.pluckPosition != null ? r.pluckPosition : '',
+                r.driveFreqRatio != null ? r.driveFreqRatio : '',
+                r.resonatorQ != null ? r.resonatorQ : '',
+                r.resonatorGainPct != null ? r.resonatorGainPct : '',
+                r.ftirGapLambda != null ? r.ftirGapLambda : '',
+                r.waterDepthRatio != null ? r.waterDepthRatio : '',
+                r.listenerDistMeters != null ? r.listenerDistMeters : '',
+                r.attenuatedDb != null ? r.attenuatedDb : '',
+                r.rippleFringeSpacingPx != null ? r.rippleFringeSpacingPx : '',
+                r.adcBitDepth != null ? r.adcBitDepth : '',
+                r.adcSqnrDb != null ? r.adcSqnrDb : '',
+                r.dopplerOffsetAngleDeg != null ? r.dopplerOffsetAngleDeg : '',
+                r.offAxisObsFreq != null ? r.offAxisObsFreq : '',
                 '"' + String(r.note || '').replace(/"/g, '""') + '"'
               ].join(','));
             });
@@ -4262,7 +6668,7 @@ window.StemLab = window.StemLab || {
 
                 className: "px-4 py-2 rounded-lg text-xs font-bold transition-all " + ((_waveAudio.ctx && d.soundPlaying) ? ('bg-emerald-700 text-white ' + (reducedMotion ? '' : 'animate-pulse ') + 'shadow-sm') : 'transition-colors bg-white text-slate-700 border border-slate-300 hover:border-emerald-400 hover:bg-emerald-50 active:scale-[0.97]')
 
-              }, (_waveAudio.ctx && d.soundPlaying) ? '\uD83D\uDD0A ' + __alloT('stem.wave.btn_stop_sound', 'Stop Sound') : '\uD83D\uDD08 ' + __alloT('stem.wave.btn_play_sound', 'Play Sound') + ' (' + (d.frequency * 100) + 'Hz)')
+              }, (_waveAudio.ctx && d.soundPlaying) ? '\uD83D\uDD0A ' + __alloT('stem.wave.btn_stop_sound', 'Stop Sound') : '\uD83D\uDD08 ' + __alloT('stem.wave.btn_play_sound', 'Play Sound') + ' (' + Math.round(audioParams.f1Hz) + 'Hz)')
 
             ),
 
@@ -4371,7 +6777,11 @@ window.StemLab = window.StemLab || {
                 "data-show-intensity-screen": d.showIntensityScreen ? 'true' : 'false',
                 "data-harmonic-weights": waveNormalizeWeights(d.harmonicWeights).join(','),
                 "data-incident-angle": (typeof d.incidentAngleDeg === 'number' && isFinite(d.incidentAngleDeg)) ? d.incidentAngleDeg : 0,
-                "data-packet-mode": d.packetMode === 'packet' ? 'packet' : 'continuous',
+                "data-packet-mode": (d.packetMode === 'packet' || d.packetMode === 'collide') ? d.packetMode : 'continuous',
+                "data-collide-polarity": d.collidePolarity === 'same' ? 'same' : 'opposite',
+                "data-grating-slits": String(d.gratingSlits || 4),
+                "data-spectrum-filter": d.spectrumFilter || 'none',
+                "data-filter-cutoff": String(d.filterCutoffHarmonic || 3),
                 "data-dispersion-ratio": (typeof d.dispersionRatio === 'number' && isFinite(d.dispersionRatio)) ? d.dispersionRatio : 1.0,
                 "data-longitudinal-mode": d.longitudinalMode === 'standing' ? 'standing' : 'traveling',
                 "data-show-displacement-curve": d.showDisplacementCurve ? 'true' : 'false',
@@ -4379,20 +6789,74 @@ window.StemLab = window.StemLab || {
                 "data-ripple-phase-diff": (typeof d.ripplePhaseDiff === 'number' && isFinite(d.ripplePhaseDiff)) ? d.ripplePhaseDiff : 0,
                 "data-impedance-coupled": d.impedanceCoupled ? 'true' : 'false',
                 "data-anti-reflection-coating": d.antiReflectionCoating ? 'true' : 'false',
+                "data-fresnel-polarization": d.fresnelPolarization || 's',
+                "data-brewster-match": waveMetrics.isBrewsterMatch ? 'true' : 'false',
+                "data-doppler-regime": d.dopplerRegime || 'acoustic',
                 "data-effective-reflectivity": waveMetrics.effectiveReflectivity.toFixed(4),
                 "data-effective-phase-flip": String(waveMetrics.effectivePhaseFlip),
+                "data-resonator-driven": d.resonatorDriven ? 'true' : 'false',
+                "data-drive-freq-ratio": String(d.driveFreqRatio),
+                "data-resonator-q": String(d.resonatorQ),
+                "data-resonator-gain": String(Math.round(waveMetrics.resonatorGainNorm * d.resonatorQ * 100) / 100),
+                "data-resonator-gain-norm": String(waveMetrics.resonatorGainNorm),
+                "data-resonator-gain-pct": String(waveMetrics.resonatorGainPct),
+                "data-resonator-phase-deg": String(waveMetrics.resonatorPhaseDeg),
+                "data-resonator-is-peak": waveMetrics.resonatorIsPeak ? 'true' : 'false',
+                "data-ftir-enabled": d.ftirEnabled ? 'true' : 'false',
+                "data-ftir-gap-lambda": String(d.ftirGapLambda),
+                "data-penetration-depth-lambda": waveMetrics.evanescentPenetrationLambda != null ? String(waveMetrics.evanescentPenetrationLambda) : '',
+                "data-tunnel-transmission-pct": String(waveMetrics.tunnelTransmissionPct),
+                "data-ocean-depth-coupled": d.oceanDepthCoupled ? 'true' : 'false',
+                "data-water-depth-ratio": String(d.waterDepthRatio),
+                "data-ocean-regime": String(waveMetrics.oceanRegime || 'deep'),
+                "data-interval-lock": String(d.intervalLock || 'none'),
+                "data-show-beat-envelope": d.showBeatEnvelope ? 'true' : 'false',
+                "data-distance-attenuation": d.distanceAttenuation ? 'true' : 'false',
+                "data-listener-dist-meters": String(d.listenerDistMeters),
+                "data-spreading-law": String(d.spreadingLaw || 'spherical'),
+                "data-attenuated-db": String(waveMetrics.attenuatedDb.toFixed(1)),
+                "data-show-nodal-lines": d.showNodalLines ? 'true' : 'false',
+                "data-ripple-fringe-spacing": String(waveMetrics.rippleFringeSpacingPx.toFixed(1)),
+                "data-show-ruler": d.showRuler ? 'true' : 'false',
+                "data-ruler-x1": String(d.rulerX1),
+                "data-ruler-x2": String(d.rulerX2),
+                "data-show-traveling-components": d.showTravelingComponents ? 'true' : 'false',
+                "data-doppler-offset-angle": String(d.dopplerOffsetAngleDeg),
+                "data-digital-sampling": d.digitalSampling ? 'true' : 'false',
+                "data-sample-rate-ratio": String(d.sampleRateRatio),
+                "data-adc-bit-depth": String(d.adcBitDepth),
 
                 onKeyDown: function (e) {
                   var nv;
                   var say = function (id, msg) { if (typeof canvasNarrate === 'function') canvasNarrate('wave', id, msg, { debounce: 600 }); };
 
-                  if (e.key === 'ArrowUp') { e.preventDefault(); nv = Math.min(100, (d.amplitude || 50) + 5); upd('amplitude', nv); say('key_amp', __alloT('stem.wave.narrate_amplitude', 'Amplitude') + ' ' + nv); }
+                  if (e.shiftKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+                    e.preventDefault();
+                    var nextPx = d.probeX;
+                    var nextPy = d.probeY;
+                    if (e.key === 'ArrowRight') nextPx = Math.min(0.95, Math.round((d.probeX + 0.02) * 100) / 100);
+                    else if (e.key === 'ArrowLeft') nextPx = Math.max(0.05, Math.round((d.probeX - 0.02) * 100) / 100);
+                    else if (e.key === 'ArrowUp') nextPy = Math.max(0.08, Math.round((d.probeY - 0.02) * 100) / 100);
+                    else if (e.key === 'ArrowDown') nextPy = Math.min(0.92, Math.round((d.probeY + 0.02) * 100) / 100);
+                    var nextPr = waveComputeProbeReadout(Object.assign({}, d, { probeEnabled: true, probeX: nextPx, probeY: nextPy }));
+                    updPatch({ probeEnabled: true, probeX: nextPx, probeY: nextPy });
+                    var probeMsg = __alloT('stem.wave.narrate_probe_pos', 'Probe ') + Math.round(nextPx * 100) + '%: ';
+                    if (waveMode === 'standing') probeMsg += nextPr.standingClass + ', ' + Math.round(nextPr.envelopeFrac * 100) + '% A';
+                    else if (waveMode === 'ripple') probeMsg += '\u0394r=' + nextPr.deltaRLambda.toFixed(2) + '\u03BB, ' + nextPr.interferenceClass;
+                    else if (waveMode === 'reflection') probeMsg += nextPr.region + ', \u03BB=' + nextPr.localWavelength.toFixed(1) + ' m';
+                    else probeMsg += nextPr.cyclesFromLeft.toFixed(2) + '\u03BB';
+                    say('key_probe_move', probeMsg);
+                  }
 
-                  else if (e.key === 'ArrowDown') { e.preventDefault(); nv = Math.max(5, (d.amplitude || 50) - 5); upd('amplitude', nv); say('key_amp', __alloT('stem.wave.narrate_amplitude', 'Amplitude') + ' ' + nv); }
+                  else if (e.key === 'ArrowUp') { e.preventDefault(); nv = Math.min(100, (d.amplitude || 50) + 5); upd('amplitude', nv); checkWaveMatch(nv, d.frequency); say('key_amp', __alloT('stem.wave.narrate_amplitude', 'Amplitude') + ' ' + nv); }
 
-                  else if (e.key === 'ArrowRight') { e.preventDefault(); nv = Math.min(10, Math.round(((d.frequency || 2) + 0.5) * 10) / 10); upd('frequency', nv); syncOsc({ freq: nv }); say('key_freq', __alloT('stem.wave.narrate_frequency', 'Frequency') + ' ' + nv + __alloT('stem.wave.narrate_hertz', ' hertz')); }
+                  else if (e.key === 'ArrowDown') { e.preventDefault(); nv = Math.max(5, (d.amplitude || 50) - 5); upd('amplitude', nv); checkWaveMatch(nv, d.frequency); say('key_amp', __alloT('stem.wave.narrate_amplitude', 'Amplitude') + ' ' + nv); }
 
-                  else if (e.key === 'ArrowLeft') { e.preventDefault(); nv = Math.max(0.5, Math.round(((d.frequency || 2) - 0.5) * 10) / 10); upd('frequency', nv); syncOsc({ freq: nv }); say('key_freq', __alloT('stem.wave.narrate_frequency', 'Frequency') + ' ' + nv + __alloT('stem.wave.narrate_hertz', ' hertz')); }
+                  else if (e.key === 'ArrowRight') { e.preventDefault(); nv = Math.min(10, Math.round(((d.frequency || 2) + 0.5) * 10) / 10); upd('frequency', nv); syncOsc({ freq: nv }); checkWaveMatch(d.amplitude, nv); say('key_freq', __alloT('stem.wave.narrate_frequency', 'Frequency') + ' ' + nv + __alloT('stem.wave.narrate_hertz', ' hertz')); }
+
+                  else if (e.key === 'ArrowLeft') { e.preventDefault(); nv = Math.max(0.5, Math.round(((d.frequency || 2) - 0.5) * 10) / 10); upd('frequency', nv); syncOsc({ freq: nv }); checkWaveMatch(d.amplitude, nv); say('key_freq', __alloT('stem.wave.narrate_frequency', 'Frequency') + ' ' + nv + __alloT('stem.wave.narrate_hertz', ' hertz')); }
+
+                  else if (e.key === '.' && d.paused) { e.preventDefault(); var cvStep = canvasRef._lastCanvas; if (cvStep && cvStep._waveStep) cvStep._waveStep(8); say('key_step', __alloT('stem.wave.narrate_step', 'Stepped frame forward')); }
 
                   else if (e.key === '+' || e.key === '=') { e.preventDefault(); nv = Math.min(3, Math.round((((typeof d.speed === 'number' && isFinite(d.speed)) ? d.speed : 1) + 0.25) * 100) / 100); upd('speed', nv); say('key_speed', __alloT('stem.wave.animation_speed', 'Animation speed') + ' ' + nv + ' x'); }
 
@@ -4404,7 +6868,7 @@ window.StemLab = window.StemLab || {
 
                 },
 
-                style: { width: "100%", height: "100%", display: "block", background: "transparent", touchAction: (d.probeEnabled || waveMode === 'ripple' || waveMode === 'reflection') ? 'none' : 'pan-y' }
+                style: { width: "100%", height: "100%", display: "block", background: "transparent", touchAction: (d.probeEnabled || d.showRuler || waveMode === 'ripple' || waveMode === 'reflection') ? 'none' : 'pan-y' }
 
               }),
 
@@ -4488,6 +6952,15 @@ window.StemLab = window.StemLab || {
                   }, '\uD83D\uDCCD ' + (d.probeEnabled ? __alloT('stem.wave.btn_probe_on', 'Probe ON') : __alloT('stem.wave.btn_probe_off', 'Wave Probe'))),
                   React.createElement("button", {
                     type: 'button',
+                    'data-wave-ruler-toggle': 'true',
+                    'aria-pressed': !!d.showRuler,
+                    'aria-label': __alloT('stem.wave.aria_toggle_ruler', 'Toggle on-canvas wavelength caliper ruler'),
+                    style: { minHeight: 44 },
+                    onClick: function() { upd('showRuler', !d.showRuler); },
+                    className: "px-3 py-2 rounded-lg text-xs font-bold transition-colors " + (d.showRuler ? 'bg-cyan-700 text-white shadow-sm' : 'bg-white text-slate-800 border border-slate-300 hover:bg-cyan-50')
+                  }, '\uD83D\uDCCF ' + (d.showRuler ? __alloT('stem.wave.btn_ruler_on', 'Caliper ON') : __alloT('stem.wave.btn_ruler_off', '\u03BB Caliper'))),
+                  React.createElement("button", {
+                    type: 'button',
                     'data-wave-log-trial': 'true',
                     'aria-label': __alloT('stem.wave.aria_log_trial', 'Record current wave trial to the experiment log'),
                     style: { minHeight: 44 },
@@ -4529,12 +7002,95 @@ window.StemLab = window.StemLab || {
                   'aria-label': __alloT('stem.wave.aria_select_medium', 'Set medium speed to ') + mLabel + ' (' + mp.speed + ' m/s)',
                   style: { minHeight: 44 },
                   onClick: function() {
-                    upd('waveSpeed', mp.speed);
+                    updPatch({ waveSpeed: mp.speed, stringMechanics: false, airTempCoupled: false });
                     if (typeof addToast === 'function') addToast(mp.icon + ' ' + mLabel + ' (' + mp.speed + ' m/s)', 'info');
                   },
                   className: "px-3 py-2 rounded-lg text-xs font-bold transition-colors " + (mAct ? 'bg-cyan-700 text-white shadow-sm' : 'bg-slate-50 text-slate-800 border border-slate-300 hover:bg-cyan-50')
                 }, mp.icon + ' ' + mLabel + ' (' + mp.speed + ')');
               })
+            ),
+
+            // ── Interactive Wavelength Caliper Ruler Card ──
+            d.showRuler && React.createElement("div", {
+              'data-wave-ruler-panel': 'true',
+              role: 'region',
+              'aria-label': __alloT('stem.wave.aria_ruler_panel', 'Wavelength caliper ruler controls and readout'),
+              className: "mb-3 p-3 rounded-xl border-2 border-cyan-400 bg-cyan-50 space-y-2 shadow-sm"
+            },
+              React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" },
+                React.createElement("div", null,
+                  React.createElement("h4", { className: "m-0 text-sm font-black text-cyan-900" }, '\uD83D\uDCCF ' + __alloT('stem.wave.ruler_title', 'Wavelength Caliper Ruler (\u03BB)')),
+                  React.createElement("p", { className: "m-0 text-xs text-cyan-900" }, __alloT('stem.wave.ruler_hint', 'Drag the cyan caliper jaws on the canvas or snap directly to 0.5\u03BB / 1.0\u03BB.'))
+                ),
+                React.createElement("div", { className: "flex flex-wrap items-center gap-1.5" },
+                  React.createElement("button", {
+                    type: 'button',
+                    'data-wave-ruler-snap': '0.5',
+                    style: { minHeight: 44 },
+                    'aria-label': __alloT('stem.wave.aria_snap_half', 'Snap caliper jaws to half a wavelength'),
+                    onClick: function() { updPatch(waveSnapRulerSpan(d, 0.5)); },
+                    className: "px-3 py-2 rounded-lg text-xs font-bold bg-white text-cyan-900 border border-cyan-400 hover:bg-cyan-100 transition-colors"
+                  }, __alloT('stem.wave.btn_snap_half', 'Snap 0.5\u03BB')),
+                  React.createElement("button", {
+                    type: 'button',
+                    'data-wave-ruler-snap': '1',
+                    style: { minHeight: 44 },
+                    'aria-label': __alloT('stem.wave.aria_snap_one', 'Snap caliper jaws to one full wavelength'),
+                    onClick: function() { updPatch(waveSnapRulerSpan(d, 1)); },
+                    className: "px-3 py-2 rounded-lg text-xs font-bold bg-cyan-700 text-white hover:bg-cyan-800 transition-colors"
+                  }, __alloT('stem.wave.btn_snap_one', 'Snap 1.0\u03BB'))
+                )
+              ),
+              React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-3" },
+                React.createElement("div", { className: "bg-white rounded-lg p-2.5 border border-cyan-200" },
+                  React.createElement("label", { htmlFor: 'wave-ruler-x1-slider', className: "block text-xs font-bold text-slate-800" }, __alloT('stem.wave.ruler_x1_label', 'Left Jaw X\u2081: ') + Math.round(d.rulerX1 * 100) + '%'),
+                  React.createElement("input", {
+                    id: 'wave-ruler-x1-slider',
+                    type: 'range',
+                    min: 0.04, max: 0.96, step: 0.01,
+                    value: d.rulerX1,
+                    style: { minHeight: 44 },
+                    'aria-label': __alloT('stem.wave.aria_ruler_x1', 'Wavelength caliper jaw 1 horizontal position'),
+                    'aria-valuetext': Math.round(d.rulerX1 * 100) + __alloT('stem.wave.aria_pct_across', '% across canvas'),
+                    onChange: function(e) { upd('rulerX1', parseFloat(e.target.value)); },
+                    className: "w-full accent-cyan-700"
+                  })
+                ),
+                React.createElement("div", { className: "bg-white rounded-lg p-2.5 border border-cyan-200" },
+                  React.createElement("label", { htmlFor: 'wave-ruler-x2-slider', className: "block text-xs font-bold text-slate-800" }, __alloT('stem.wave.ruler_x2_label', 'Right Jaw X\u2082: ') + Math.round(d.rulerX2 * 100) + '%'),
+                  React.createElement("input", {
+                    id: 'wave-ruler-x2-slider',
+                    type: 'range',
+                    min: 0.04, max: 0.96, step: 0.01,
+                    value: d.rulerX2,
+                    style: { minHeight: 44 },
+                    'aria-label': __alloT('stem.wave.aria_ruler_x2', 'Wavelength caliper jaw 2 horizontal position'),
+                    'aria-valuetext': Math.round(d.rulerX2 * 100) + __alloT('stem.wave.aria_pct_across', '% across canvas'),
+                    onChange: function(e) { upd('rulerX2', parseFloat(e.target.value)); },
+                    className: "w-full accent-cyan-700"
+                  })
+                )
+              ),
+              React.createElement("div", { 'data-wave-ruler-readout': 'true', className: "grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs" },
+                React.createElement("div", { className: "p-2 rounded-lg bg-white border border-cyan-200" },
+                  React.createElement("span", { className: "block font-bold text-slate-600 uppercase text-[0.625rem]" }, __alloT('stem.wave.ruler_span_cycles', 'Cycles Spanned')),
+                  React.createElement("span", { className: "font-mono font-black text-cyan-900" }, rulerReadout.spanCycles.toFixed(2) + '\u03BB')
+                ),
+                React.createElement("div", { className: "p-2 rounded-lg bg-white border border-cyan-200" },
+                  React.createElement("span", { className: "block font-bold text-slate-600 uppercase text-[0.625rem]" }, __alloT('stem.wave.ruler_span_meters', 'Span Distance')),
+                  React.createElement("span", { className: "font-mono font-black text-slate-900" }, rulerReadout.spanMeters.toFixed(1) + ' m')
+                ),
+                React.createElement("div", { className: "p-2 rounded-lg bg-white border border-cyan-200" },
+                  React.createElement("span", { className: "block font-bold text-slate-600 uppercase text-[0.625rem]" }, __alloT('stem.wave.ruler_lambda', 'Local Wavelength')),
+                  React.createElement("span", { className: "font-mono font-black text-emerald-800" }, rulerReadout.wavelength.toFixed(1) + ' m')
+                ),
+                React.createElement("div", { className: "p-2 rounded-lg bg-white border border-cyan-200" },
+                  React.createElement("span", { className: "block font-bold text-slate-600 uppercase text-[0.625rem]" }, __alloT('stem.wave.ruler_match', 'Cycle Alignment')),
+                  React.createElement("span", { className: "font-black " + (rulerReadout.isWholeMultiple ? 'text-emerald-700' : rulerReadout.isHalfMultiple ? 'text-amber-700' : 'text-slate-700') },
+                    rulerReadout.isWholeMultiple ? __alloT('stem.wave.ruler_whole', 'Full n\u03BB cycle') : (rulerReadout.isHalfMultiple ? __alloT('stem.wave.ruler_half', 'Half (n+\u00BD)\u03BB') : __alloT('stem.wave.ruler_custom', 'Fraction'))
+                  )
+                )
+              )
             ),
 
             // ── Interactive Wave Probe Telemetry Card ──
@@ -4603,7 +7159,7 @@ window.StemLab = window.StemLab || {
                   ),
                   React.createElement("div", { className: "p-2 rounded-lg bg-white border border-amber-200" },
                     React.createElement("span", { className: "block font-bold text-slate-600 uppercase text-[0.625rem]" }, __alloT('stem.wave.probe_interference', 'Interference')),
-                    React.createElement("span", { className: "font-black " + (probeReadout.interferenceClass === 'constructive' ? 'text-emerald-700' : probeReadout.interferenceClass === 'destructive' ? 'text-rose-700' : 'text-amber-800') }, probeReadout.interferenceClass.toUpperCase())
+                    React.createElement("span", { className: "font-black " + (probeReadout.interferenceClass === 'constructive' ? 'text-emerald-700' : probeReadout.interferenceClass === 'destructive' ? 'text-rose-700' : 'text-amber-800') }, probeReadout.interferenceClass.toUpperCase() + (d.rippleBarrier === 'grating' ? (' · ' + Math.round((probeReadout.gratingIntensityNorm || 0) * 100) + '% I\u2080') : ''))
                   )
                 ),
                 waveMode === 'standing' && React.createElement(React.Fragment, null,
@@ -4804,8 +7360,220 @@ window.StemLab = window.StemLab || {
                     })
                   );
                 })
+              ),
+              React.createElement("div", {
+                'data-wave-pluck-sculptor': 'true',
+                className: "pt-2.5 border-t border-cyan-200 flex flex-col gap-2"
+              },
+                React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" },
+                  React.createElement("label", {
+                    htmlFor: 'wave-pluck-position-slider',
+                    className: "text-xs font-black text-slate-900"
+                  }, '\uD83C\uDFB8 ' + __alloT('stem.wave.pluck_title', 'Young\u2013Helmholtz Pluck x\u209a/L: ') + Math.round((d.pluckPosition || 0.5) * 100) + '% (w\u2099\u221D|sin(n\u03C0x\u209a)|/n\u00B2)'),
+                  React.createElement("div", { className: "flex flex-wrap gap-1.5" },
+                    [
+                      { id: 'bridge', xp: 0.1, label: __alloT('stem.wave.pluck_bridge', '10% Bridge') },
+                      { id: 'fifth', xp: 0.2, label: __alloT('stem.wave.pluck_fifth', '20% (H\u2085=0)') },
+                      { id: 'third', xp: 0.33, label: __alloT('stem.wave.pluck_third', '33% (H\u2083=0)') },
+                      { id: 'center', xp: 0.5, label: __alloT('stem.wave.pluck_center', '50% (H\u2082,H\u2084=0)') }
+                    ].map(function (pp) {
+                      var pAct = Math.abs((d.pluckPosition || 0.5) - pp.xp) < 0.025;
+                      return React.createElement("button", {
+                        key: pp.id,
+                        type: 'button',
+                        'data-wave-pluck-preset': pp.id,
+                        'aria-pressed': pAct,
+                        'aria-label': __alloT('stem.wave.aria_pluck_preset', 'Pluck string at ') + pp.label,
+                        style: { minHeight: 44 },
+                        onClick: function () {
+                          var pw = waveComputePluckWeights(pp.xp);
+                          var nextW = [pw[0], pw[1], pw[2], pw[3], pw[4], 0];
+                          updPatch({ waveType: 'custom', pluckPosition: pp.xp, harmonicWeights: nextW });
+                          syncOsc({ type: 'custom', weights: nextW });
+                        },
+                        className: "px-2.5 py-2 rounded-md text-xs font-bold transition-colors " + (pAct ? 'bg-cyan-700 text-white shadow-sm' : 'bg-white text-cyan-900 border border-cyan-400 hover:bg-cyan-100')
+                      }, pp.label);
+                    })
+                  )
+                ),
+                React.createElement("input", {
+                  id: 'wave-pluck-position-slider',
+                  'data-wave-pluck-slider': 'true',
+                  type: 'range',
+                  min: 0.05, max: 0.95, step: 0.01,
+                  value: d.pluckPosition || 0.5,
+                  style: { minHeight: 44 },
+                  'aria-label': __alloT('stem.wave.aria_pluck_slider', 'String pluck position as fraction of string length L'),
+                  'aria-valuetext': Math.round((d.pluckPosition || 0.5) * 100) + __alloT('stem.wave.vt_pluck_pct', ' percent along string length'),
+                  onChange: function (e) {
+                    var xpVal = parseFloat(e.target.value);
+                    var pw = waveComputePluckWeights(xpVal);
+                    var nextW = [pw[0], pw[1], pw[2], pw[3], pw[4], 0];
+                    updPatch({ waveType: 'custom', pluckPosition: xpVal, harmonicWeights: nextW });
+                    syncOsc({ type: 'custom', weights: nextW });
+                  },
+                  className: "w-full accent-cyan-700"
+                })
               )
             ),
+
+            waveMode === 'spectrum' && (function () {
+              var specMeta = waveComputeSpectrum(d, 12);
+              return React.createElement("div", {
+                'data-wave-filter-bench': 'true',
+                role: 'region',
+                'aria-label': __alloT('stem.wave.aria_filter_bench', 'Harmonic spectral filter bench'),
+                className: "mb-3 p-3 rounded-lg border border-cyan-300 bg-cyan-50 space-y-2.5"
+              },
+                React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" },
+                  React.createElement("span", { className: "text-xs font-black text-cyan-950" }, '\uD83C\uDFDA\uFE0F ' + __alloT('stem.wave.filter_bench_title', 'Harmonic Filter Bench (Timbre & Fourier Sculpture)')),
+                  React.createElement("span", {
+                    'data-wave-filter-readout': 'true',
+                    className: "text-[0.6875rem] font-mono font-bold px-2.5 py-1 rounded-full border",
+                    style: isContrast
+                      ? { backgroundColor: '#000000', color: '#ffff00', borderColor: '#ffff00' }
+                      : { backgroundColor: '#0f172a', color: '#f8fafc', borderColor: '#334155' }
+                  }, 'Retained E: ' + specMeta.retainedEnergyPct.toFixed(1) + '% · Centroid: ' + specMeta.spectralCentroidHz.toFixed(2) + ' Hz · THD: ' + specMeta.thdPct.toFixed(1) + '%')
+                ),
+                React.createElement("div", { className: "flex flex-wrap items-center gap-2" },
+                  React.createElement("div", {
+                    role: 'group',
+                    'aria-label': __alloT('stem.wave.aria_filter_mode_group', 'Harmonic spectral filter modes'),
+                    className: "flex flex-wrap gap-1.5"
+                  },
+                    [
+                      { id: 'none', label: __alloT('stem.wave.filter_none', 'Bypass (All)'), aria: __alloT('stem.wave.aria_filter_none', 'Bypass spectral filter and pass all harmonics') },
+                      { id: 'lowpass', label: __alloT('stem.wave.filter_lowpass', 'Low-Pass (h \u2264 Hc)'), aria: __alloT('stem.wave.aria_filter_lowpass', 'Low-pass filter keeping harmonics up to cutoff Hc') },
+                      { id: 'highpass', label: __alloT('stem.wave.filter_highpass', 'High-Pass (h \u2265 Hc)'), aria: __alloT('stem.wave.aria_filter_highpass', 'High-pass filter keeping harmonics at or above cutoff Hc') },
+                      { id: 'oddOnly', label: __alloT('stem.wave.filter_odd', 'Odd Harmonics Only'), aria: __alloT('stem.wave.aria_filter_odd', 'Keep only odd harmonics in the waveform and audio') }
+                    ].map(function (fm) {
+                      var fAct = (d.spectrumFilter || 'none') === fm.id;
+                      return React.createElement("button", {
+                        key: fm.id,
+                        type: 'button',
+                        'data-wave-filter-mode': fm.id,
+                        'aria-pressed': fAct,
+                        'aria-label': fm.aria,
+                        style: { minHeight: 44 },
+                        onClick: function () {
+                          upd('spectrumFilter', fm.id);
+                          syncOsc({ spectrumFilter: fm.id, filterCutoffHarmonic: d.filterCutoffHarmonic });
+                        },
+                        className: "px-3 py-2 rounded-lg text-xs font-bold transition-colors " + (fAct ? 'bg-cyan-700 text-white shadow-sm' : 'bg-white text-cyan-900 border border-cyan-400 hover:bg-cyan-100')
+                      }, fm.label);
+                    })
+                  ),
+                  (d.spectrumFilter === 'lowpass' || d.spectrumFilter === 'highpass') && React.createElement("div", { className: "flex items-center gap-2 ml-auto bg-white px-2.5 py-1 rounded-lg border border-cyan-200" },
+                    React.createElement("label", { htmlFor: 'wave-filter-cutoff-slider', className: "text-xs font-bold text-slate-900 whitespace-nowrap" }, __alloT('stem.wave.filter_cutoff_label', 'Cutoff Hc:') + ' ' + (d.filterCutoffHarmonic || 3)),
+                    React.createElement("input", {
+                      id: 'wave-filter-cutoff-slider',
+                      'data-wave-filter-cutoff': 'true',
+                      type: 'range',
+                      min: 1, max: 12, step: 1,
+                      value: d.filterCutoffHarmonic || 3,
+                      style: { minHeight: 44 },
+                      'aria-label': __alloT('stem.wave.aria_filter_cutoff', 'Cutoff harmonic order Hc'),
+                      'aria-valuetext': 'H' + (d.filterCutoffHarmonic || 3) + ' (' + ((d.filterCutoffHarmonic || 3) * d.frequency).toFixed(1) + ' Hz)',
+                      onChange: function (e) {
+                        var hcV = parseInt(e.target.value, 10) || 3;
+                        upd('filterCutoffHarmonic', hcV);
+                        syncOsc({ spectrumFilter: d.spectrumFilter, filterCutoffHarmonic: hcV });
+                      },
+                      className: "w-28 accent-cyan-700"
+                    })
+                  )
+                )
+              );
+            })(),
+
+            waveMode === 'spectrum' && (function () {
+              var digMeta = waveComputeDigitalSampling(d.frequency, d.sampleRateRatio, d.adcBitDepth);
+              var nyqAliasTxt = digMeta.isFundamentalAliased
+                ? (__alloT('stem.wave.nyquist_alias_tag', 'ALIAS ') + digMeta.aliasFreqHz.toFixed(1) + ' Hz')
+                : __alloT('stem.wave.nyquist_clean_tag', 'Nyquist OK');
+              return React.createElement("div", {
+                'data-wave-nyquist-bench': 'true',
+                role: 'region',
+                'aria-label': __alloT('stem.wave.aria_nyquist_bench', 'Nyquist-Shannon sampling, aliasing and ADC quantization bench'),
+                className: "mb-3 p-3 rounded-lg border border-amber-300 bg-amber-50 space-y-2.5"
+              },
+                React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" },
+                  React.createElement("span", { className: "text-xs font-black text-amber-950" }, '\uD83D\uDCE1 ' + __alloT('stem.wave.nyquist_bench_title', 'Nyquist\u2013Shannon Sampling, Aliasing & ADC Quantization Bench')),
+                  React.createElement("span", {
+                    'data-wave-nyquist-readout': 'true',
+                    className: "text-[0.6875rem] font-mono font-bold px-2.5 py-1 rounded-full border",
+                    style: isContrast
+                      ? { backgroundColor: '#000000', color: '#ffff00', borderColor: '#ffff00' }
+                      : { backgroundColor: '#0f172a', color: '#f8fafc', borderColor: '#334155' }
+                  }, 'f\u209B = ' + digMeta.sampleRateHz.toFixed(1) + ' Hz (' + digMeta.sampleRateRatio.toFixed(2) + '\u00D7f\u2081) · f_Nyq = ' + digMeta.nyquistFreqHz.toFixed(1) + ' Hz · ' + digMeta.adcBitDepth + '-bit (' + digMeta.quantizationLevels + ' lvls) · SQNR = ' + digMeta.sqnrDb.toFixed(1) + ' dB · ' + nyqAliasTxt)
+                ),
+                React.createElement("div", { className: "flex flex-wrap items-center gap-2" },
+                  React.createElement("button", {
+                    type: 'button',
+                    'data-wave-digital-sampling-toggle': 'true',
+                    'aria-pressed': !!d.digitalSampling,
+                    'aria-label': __alloT('stem.wave.aria_digital_sampling_toggle', 'Toggle digital ADC sample-and-hold and aliasing overlay'),
+                    style: { minHeight: 44 },
+                    onClick: function () { upd('digitalSampling', !d.digitalSampling); },
+                    className: "px-3 py-2 rounded-lg text-xs font-bold transition-colors " + (d.digitalSampling ? 'bg-amber-800 text-white shadow-sm' : 'bg-white text-amber-950 border border-amber-500 hover:bg-amber-100')
+                  }, d.digitalSampling ? '\u2713 ' + __alloT('stem.wave.nyquist_toggle_on', 'ADC Overlay On') : __alloT('stem.wave.nyquist_toggle_off', 'Enable ADC & Nyquist Overlay')),
+                  React.createElement("button", {
+                    type: 'button',
+                    'data-wave-nyquist-alias-demo': 'true',
+                    'aria-label': __alloT('stem.wave.aria_nyquist_alias_demo', 'Set sub-Nyquist 1.25x sampling ratio and 4-bit ADC to demonstrate aliasing'),
+                    style: { minHeight: 44 },
+                    onClick: function () { updPatch({ digitalSampling: true, sampleRateRatio: 1.25, adcBitDepth: 4 }); },
+                    className: "px-3 py-2 rounded-lg text-xs font-bold transition-colors bg-rose-800 text-white hover:bg-rose-900 shadow-sm"
+                  }, '\u26A1 ' + __alloT('stem.wave.nyquist_alias_demo', 'Sub-Nyquist Alias Demo (1.25\u00D7, 4-bit)')),
+                  React.createElement("button", {
+                    type: 'button',
+                    'data-wave-nyquist-safe-demo': 'true',
+                    'aria-label': __alloT('stem.wave.aria_nyquist_safe_demo', 'Reset ADC sampling bench to oversampled 8x and 8-bit resolution'),
+                    style: { minHeight: 44 },
+                    onClick: function () { updPatch({ digitalSampling: true, sampleRateRatio: 8, adcBitDepth: 8 }); },
+                    className: "px-3 py-2 rounded-lg text-xs font-bold transition-colors bg-white text-slate-900 border border-slate-400 hover:bg-slate-100"
+                  }, __alloT('stem.wave.nyquist_safe_demo', 'Clean 8\u00D7 / 8-bit'))
+                ),
+                React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-2.5" },
+                  React.createElement("div", { className: "p-2.5 rounded-lg bg-white border border-amber-200 flex flex-col gap-1" },
+                    React.createElement("label", {
+                      htmlFor: 'wave-sample-rate-slider',
+                      className: "text-xs font-bold text-slate-900"
+                    }, __alloT('stem.wave.sample_rate_ratio_label', 'Sampling Ratio (f\u209B/f\u2081):') + ' ' + Number(d.sampleRateRatio || 8).toFixed(2) + '\u00D7 (' + digMeta.sampleRateHz.toFixed(1) + ' Hz)'),
+                    React.createElement("input", {
+                      id: 'wave-sample-rate-slider',
+                      'data-wave-sample-rate-ratio': 'true',
+                      type: 'range',
+                      min: 1, max: 16, step: 0.25,
+                      value: d.sampleRateRatio || 8,
+                      style: { minHeight: 44 },
+                      'aria-label': __alloT('stem.wave.aria_sample_rate_slider', 'Sampling rate ratio f s over fundamental frequency f 1'),
+                      'aria-valuetext': Number(d.sampleRateRatio || 8).toFixed(2) + __alloT('stem.wave.vt_sample_rate_suffix', ' times fundamental frequency'),
+                      onChange: function (e) { updPatch({ digitalSampling: true, sampleRateRatio: parseFloat(e.target.value) }); },
+                      className: "w-full accent-amber-700"
+                    })
+                  ),
+                  React.createElement("div", { className: "p-2.5 rounded-lg bg-white border border-amber-200 flex flex-col gap-1" },
+                    React.createElement("label", {
+                      htmlFor: 'wave-adc-bits-slider',
+                      className: "text-xs font-bold text-slate-900"
+                    }, __alloT('stem.wave.adc_bits_label', 'ADC Bit Depth (N):') + ' ' + (d.adcBitDepth || 8) + __alloT('stem.wave.adc_bits_suffix', '-bit') + ' (' + digMeta.quantizationLevels + ' ' + __alloT('stem.wave.adc_lvls_label', 'levels') + ')'),
+                    React.createElement("input", {
+                      id: 'wave-adc-bits-slider',
+                      'data-wave-adc-bit-depth': 'true',
+                      type: 'range',
+                      min: 2, max: 16, step: 1,
+                      value: d.adcBitDepth || 8,
+                      style: { minHeight: 44 },
+                      'aria-label': __alloT('stem.wave.aria_adc_bits_slider', 'ADC bit depth quantization resolution'),
+                      'aria-valuetext': (d.adcBitDepth || 8) + __alloT('stem.wave.vt_adc_sqnr_mid', ' bit ADC SQNR ') + digMeta.sqnrDb.toFixed(1) + __alloT('stem.wave.vt_db_suffix', ' decibels'),
+                      onChange: function (e) { updPatch({ digitalSampling: true, adcBitDepth: parseInt(e.target.value, 10) || 8 }); },
+                      className: "w-full accent-amber-700"
+                    })
+                  )
+                )
+              );
+            })(),
 
             // Standing resonator boundary selector + Harmonic selector (standing mode only)
 
@@ -4837,11 +7605,11 @@ window.StemLab = window.StemLab || {
                 })
               ),
 
-              React.createElement("span", { className: "text-xs font-bold text-cyan-700" }, __alloT('stem.wave.standing_harmonic_label', 'Harmonic:')),
+              React.createElement("span", { className: "text-xs font-bold text-cyan-800" }, __alloT('stem.wave.standing_harmonic_label', 'Harmonic:')),
 
               [1, 2, 3, 4, 5, 6].map(function (h) {
 
-                return React.createElement("button", { key: h, type: 'button', style: { minWidth: 44, minHeight: 44 }, 'aria-pressed': (d.harmonic || 1) === h, onClick: function () { upd('harmonic', h); }, className: "min-w-[44px] min-h-[44px] px-3 py-2 rounded-lg text-sm font-black transition-all " + ((d.harmonic || 1) === h ? 'bg-cyan-700 text-white shadow-md scale-105' : 'transition-colors bg-cyan-50 text-cyan-800 border border-cyan-600 hover:bg-cyan-100 active:scale-[0.97]') }, h);
+                return React.createElement("button", { key: h, type: 'button', 'data-wave-harmonic': String(h), style: { minWidth: 44, minHeight: 44 }, 'aria-pressed': (d.harmonic || 1) === h, onClick: function () { upd('harmonic', h); }, className: "min-w-[44px] min-h-[44px] px-3 py-2 rounded-lg text-sm font-black transition-all " + ((d.harmonic || 1) === h ? 'bg-cyan-700 text-white shadow-md scale-105' : 'transition-colors bg-cyan-50 text-cyan-800 border border-cyan-600 hover:bg-cyan-100 active:scale-[0.97]') }, h);
 
               }),
 
@@ -4864,6 +7632,282 @@ window.StemLab = window.StemLab || {
               React.createElement("p", null, "\u2022 " + __alloT('stem.wave.standing_frequency_label', 'Frequency:') + " f = " + waveMetrics.harmonicFreq.toFixed(1) + " Hz (eff. harmonic " + waveMetrics.effectiveHarmonic + ")")
 
             ),
+
+            waveMode === 'standing' && (function () {
+              var decompMid = waveComputeStandingDecomposition(0.5, 0, d.harmonic || 1, d.standingBoundary || 'bothFixed');
+              return React.createElement("div", {
+                'data-wave-traveling-decomp-bench': 'true',
+                role: 'region',
+                'aria-label': __alloT('stem.wave.aria_traveling_decomp_bench', 'Standing wave counter-propagating traveling-wave decomposition bench'),
+                className: "mb-3 p-3 rounded-lg border border-fuchsia-300 bg-fuchsia-50 space-y-2"
+              },
+                React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" },
+                  React.createElement("span", { className: "text-xs font-black text-fuchsia-950" }, '\u2194\uFE0F ' + __alloT('stem.wave.traveling_decomp_title', 'Counter-Propagating Traveling-Wave Decomposition (y = y\u208A + y\u208B)')),
+                  React.createElement("span", {
+                    'data-wave-traveling-decomp-readout': 'true',
+                    className: "text-[0.6875rem] font-mono font-bold px-2.5 py-1 rounded-full border",
+                    style: isContrast
+                      ? { backgroundColor: '#000000', color: '#ffff00', borderColor: '#ffff00' }
+                      : { backgroundColor: '#0f172a', color: '#f8fafc', borderColor: '#334155' }
+                  }, 'kL = ' + decompMid.kL.toFixed(2) + ' rad \u00B7 y\u208A(x\u2212vt) + y\u208B(x+vt) \u00B7 PE\u2194KE @ 2f = ' + (2 * waveMetrics.harmonicFreq).toFixed(1) + ' Hz')
+                ),
+                React.createElement("div", { className: "flex flex-wrap items-center gap-2.5" },
+                  React.createElement("button", {
+                    type: 'button',
+                    'data-wave-traveling-decomp-toggle': 'true',
+                    'aria-pressed': !!d.showTravelingComponents,
+                    'aria-label': __alloT('stem.wave.aria_traveling_decomp_toggle', 'Toggle counter-propagating forward and backward traveling wave components and PE/KE energy bar'),
+                    style: { minHeight: 44 },
+                    onClick: function () { upd('showTravelingComponents', !d.showTravelingComponents); },
+                    className: "px-3 py-2 rounded-lg text-xs font-bold transition-colors " + (d.showTravelingComponents ? 'bg-fuchsia-800 text-white shadow-sm' : 'bg-white text-fuchsia-950 border border-fuchsia-500 hover:bg-fuchsia-100')
+                  }, d.showTravelingComponents ? '\u2713 ' + __alloT('stem.wave.traveling_decomp_on', 'Traveling Waves y\u208A/y\u208B On') : __alloT('stem.wave.traveling_decomp_off', 'Decompose into y\u208A + y\u208B & PE/KE')),
+                  React.createElement("span", { className: "text-[0.6875rem] text-slate-800 flex-1 min-w-[220px]" }, __alloT('stem.wave.traveling_decomp_note', 'Shows cyan forward wave y\u208A(x\u2212vt) and rose reflected wave y\u208B(x+vt) summing into stationary nodes, plus live potential (PE) \u2194 kinetic (KE) energy sloshing.'))
+                )
+              );
+            })(),
+
+            waveMode === 'standing' && (d.standingBoundary || 'bothFixed') === 'bothFixed' && React.createElement("div", {
+              'data-wave-string-bench': 'true',
+              role: 'region',
+              'aria-label': __alloT('stem.wave.aria_string_bench', 'Standing string mechanics and Mersenne laws bench'),
+              className: "mb-3 p-3 rounded-lg border border-indigo-300 bg-indigo-50 space-y-2.5"
+            },
+              React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" },
+                React.createElement("span", { className: "text-xs font-black text-indigo-950" }, '\uD83C\uDFBB ' + __alloT('stem.wave.string_bench_title', "Mersenne's Laws String Bench: v = \u221A(T/\u03BC)")),
+                React.createElement("div", { className: "flex flex-wrap items-center gap-2" },
+                  React.createElement("button", {
+                    type: 'button',
+                    'data-wave-string-toggle': 'true',
+                    'aria-pressed': !!d.stringMechanics,
+                    'aria-label': __alloT('stem.wave.aria_string_toggle', 'Couple string wave speed v to tension T and linear density mu'),
+                    style: { minHeight: 44 },
+                    onClick: function () {
+                      if (!d.stringMechanics) {
+                        var nextSpd = waveComputeStringSpeed(d.stringTension, d.stringDensityGm);
+                        updPatch({ stringMechanics: true, waveSpeed: nextSpd });
+                      } else {
+                        upd('stringMechanics', false);
+                      }
+                    },
+                    className: "px-3 py-2 rounded-lg text-xs font-bold transition-colors " + (d.stringMechanics ? 'bg-indigo-700 text-white shadow-sm' : 'bg-white text-indigo-900 border border-indigo-400 hover:bg-indigo-100')
+                  }, d.stringMechanics ? '\uD83D\uDD17 ' + __alloT('stem.wave.string_coupled_on', 'String Mechanics: ON') : __alloT('stem.wave.string_coupled_off', 'Couple T/\u03BC to Speed v')),
+                  React.createElement("button", {
+                    type: 'button',
+                    'data-wave-standing-to-spectrum': 'true',
+                    'aria-label': __alloT('stem.wave.aria_standing_to_spectrum', 'Pluck this tuned string and analyze its harmonic spectrum'),
+                    style: { minHeight: 44 },
+                    onClick: function () {
+                      var pw = waveComputePluckWeights(d.pluckPosition);
+                      var nextW = [pw[0], pw[1], pw[2], pw[3], pw[4], 0];
+                      updPatch({ waveMode: 'spectrum', waveType: 'custom', harmonicWeights: nextW });
+                      syncOsc({ type: 'custom', weights: nextW });
+                    },
+                    className: "px-3 py-2 rounded-lg text-xs font-bold bg-white text-indigo-900 border border-indigo-400 hover:bg-indigo-100 transition-colors"
+                  }, '\uD83D\uDCCA ' + __alloT('stem.wave.btn_pluck_in_spectrum', 'Pluck String in Spectrum')),
+                  React.createElement("span", {
+                    'data-wave-mersenne-readout': 'true',
+                    className: "text-[0.6875rem] font-mono font-bold px-2.5 py-1 rounded-full border",
+                    style: isContrast
+                      ? { backgroundColor: '#000000', color: '#ffff00', borderColor: '#ffff00' }
+                      : { backgroundColor: '#0f172a', color: '#f8fafc', borderColor: '#334155' }
+                  }, 'v = ' + waveMetrics.stringDerivedSpeed.toFixed(1) + ' m/s · f\u2099 = ' + waveMetrics.harmonicFreq.toFixed(1) + ' Hz')
+                )
+              ),
+              React.createElement("div", {
+                role: 'group',
+                'aria-label': __alloT('stem.wave.aria_string_presets', 'Musical string instrument presets'),
+                className: "flex flex-wrap gap-1.5"
+              },
+                WAVE_STRING_PRESETS.map(function (sp) {
+                  var spLabel = sp.labelKey ? __alloT(sp.labelKey, sp.label) : sp.label;
+                  var spAct = !!d.stringMechanics && Math.abs(d.stringTension - sp.tensionN) < 1 && Math.abs(d.stringDensityGm - sp.densityGm) < 0.05;
+                  return React.createElement("button", {
+                    key: sp.id,
+                    type: 'button',
+                    'data-wave-string-preset': sp.id,
+                    'aria-pressed': spAct,
+                    'aria-label': __alloT('stem.wave.aria_apply_string_preset', 'Apply string preset: ') + spLabel,
+                    style: { minHeight: 44 },
+                    onClick: function () {
+                      var nv = waveComputeStringSpeed(sp.tensionN, sp.densityGm);
+                      updPatch({ stringMechanics: true, stringTension: sp.tensionN, stringDensityGm: sp.densityGm, waveSpeed: nv });
+                      if (typeof addToast === 'function') addToast(sp.icon + ' ' + spLabel + ' (v=' + nv.toFixed(1) + ' m/s)', 'info');
+                    },
+                    className: "px-2.5 py-2 rounded-lg text-xs font-bold transition-colors " + (spAct ? 'bg-indigo-800 text-white shadow-sm' : 'bg-white text-indigo-900 border border-indigo-400 hover:bg-indigo-100')
+                  }, sp.icon + ' ' + spLabel);
+                })
+              ),
+              React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-3" },
+                React.createElement("div", { className: "bg-white rounded-lg p-2.5 border border-indigo-200" },
+                  React.createElement("label", { htmlFor: 'wave-string-tension-slider', className: "block text-xs font-bold text-slate-900" }, __alloT('stem.wave.string_tension_label', 'String Tension T: ') + Math.round(d.stringTension) + ' N'),
+                  React.createElement("input", {
+                    id: 'wave-string-tension-slider',
+                    'data-wave-string-tension': 'true',
+                    type: 'range',
+                    min: 10, max: 400, step: 5,
+                    value: d.stringTension,
+                    style: { minHeight: 44 },
+                    'aria-label': __alloT('stem.wave.aria_string_tension', 'String tension T in newtons'),
+                    'aria-valuetext': Math.round(d.stringTension) + ' N — v = ' + waveMetrics.stringDerivedSpeed.toFixed(1) + ' m/s',
+                    onChange: function (e) {
+                      var nT = parseFloat(e.target.value);
+                      var nV = waveComputeStringSpeed(nT, d.stringDensityGm);
+                      updPatch({ stringMechanics: true, stringTension: nT, waveSpeed: nV });
+                    },
+                    className: "w-full accent-indigo-700"
+                  })
+                ),
+                React.createElement("div", { className: "bg-white rounded-lg p-2.5 border border-indigo-200" },
+                  React.createElement("label", { htmlFor: 'wave-string-density-slider', className: "block text-xs font-bold text-slate-900" }, __alloT('stem.wave.string_density_label', 'Linear Density \u03BC: ') + d.stringDensityGm.toFixed(2) + ' g/m'),
+                  React.createElement("input", {
+                    id: 'wave-string-density-slider',
+                    'data-wave-string-density': 'true',
+                    type: 'range',
+                    min: 0.5, max: 20, step: 0.1,
+                    value: d.stringDensityGm,
+                    style: { minHeight: 44 },
+                    'aria-label': __alloT('stem.wave.aria_string_density', 'String linear mass density mu in grams per meter'),
+                    'aria-valuetext': d.stringDensityGm.toFixed(2) + ' g/m — v = ' + waveMetrics.stringDerivedSpeed.toFixed(1) + ' m/s',
+                    onChange: function (e) {
+                      var nMu = parseFloat(e.target.value);
+                      var nV = waveComputeStringSpeed(d.stringTension, nMu);
+                      updPatch({ stringMechanics: true, stringDensityGm: nMu, waveSpeed: nV });
+                    },
+                    className: "w-full accent-indigo-700"
+                  })
+                )
+              )
+            ),
+
+            // Driven Standing-Wave Resonator & Q-Factor Bench (standing mode)
+            waveMode === 'standing' && (function () {
+              var snapMode = waveStandingGeometry(d.harmonic || 1, d.standingBoundary);
+              var svgW = 360, svgH = 116, padL = 28, padR = 12, padT = 14, padB = 22;
+              var plotW = svgW - padL - padR, plotH = svgH - padT - padB;
+              var rMin = 0.25, rMax = 6.5;
+              var toX = function (rv) { return padL + ((rv - rMin) / (rMax - rMin)) * plotW; };
+              var toY = function (gn) { return padT + (1 - Math.max(0, Math.min(1, gn))) * plotH; };
+              var rSamples = [];
+              for (var si = 0; si <= 60; si++) rSamples.push(rMin + (si / 60) * (rMax - rMin));
+              var modeMarks = [];
+              for (var mi = 1; mi <= 6; mi++) {
+                var rmVal = waveStandingGeometry(mi, d.standingBoundary).freqMultiplier;
+                if (rmVal >= rMin && rmVal <= rMax) {
+                  modeMarks.push({ mode: mi, ratio: rmVal });
+                  rSamples.push(rmVal, Math.max(rMin, rmVal - 0.025), Math.min(rMax, rmVal + 0.025), Math.max(rMin, rmVal - 0.08), Math.min(rMax, rmVal + 0.08));
+                }
+              }
+              rSamples.sort(function (a, b) { return a - b; });
+              var polyPts = [];
+              for (var ri = 0; ri < rSamples.length; ri++) {
+                var rVal = rSamples[ri];
+                var rRes = waveComputeResonatorResponse(rVal, d.resonatorQ, d.standingBoundary, d.frequency);
+                polyPts.push(toX(rVal).toFixed(1) + ',' + toY(rRes.gainNorm).toFixed(1));
+              }
+              var areaPts = [toX(rMin).toFixed(1) + ',' + (padT + plotH).toFixed(1)].concat(polyPts, [toX(rMax).toFixed(1) + ',' + (padT + plotH).toFixed(1)]).join(' ');
+              var curX = toX(d.driveFreqRatio);
+              var curY = toY(waveMetrics.resonatorGainNorm);
+              var halfPowerY = toY(0.707);
+              var bgSvg = isContrast ? '#000000' : '#0f172a';
+              var curColor = waveMetrics.resonatorIsPeak ? '#34d399' : '#fbbf24';
+              return React.createElement("div", {
+                'data-wave-resonator-bench': 'true',
+                role: 'region',
+                'aria-label': __alloT('stem.wave.aria_resonator_bench', 'Driven standing wave resonator and quality factor Q bench'),
+                className: "mb-3 p-3 rounded-lg border border-sky-300 bg-sky-50 space-y-2.5"
+              },
+                React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" },
+                  React.createElement("span", { className: "text-xs font-black text-sky-950" }, '\uD83D\uDD14 ' + __alloT('stem.wave.resonator_bench_title', 'Driven Resonator & Lorentzian Q-Factor Bench')),
+                  React.createElement("div", { className: "flex flex-wrap items-center gap-2" },
+                    React.createElement("button", {
+                      type: 'button',
+                      'data-wave-resonator-toggle': 'true',
+                      'aria-pressed': !!d.resonatorDriven,
+                      'aria-label': __alloT('stem.wave.aria_resonator_toggle', 'Toggle driven harmonic resonator response'),
+                      style: { minHeight: 44 },
+                      onClick: function () { upd('resonatorDriven', !d.resonatorDriven); },
+                      className: "px-3 py-2 rounded-lg text-xs font-bold transition-colors " + (d.resonatorDriven ? 'bg-sky-800 text-white shadow-sm' : 'bg-white text-sky-900 border border-sky-400 hover:bg-sky-100')
+                    }, d.resonatorDriven ? '\uD83D\uDD17 ' + __alloT('stem.wave.resonator_on', 'Resonator Drive: ON') : __alloT('stem.wave.resonator_off', 'Enable Resonator Drive')),
+                    React.createElement("button", {
+                      type: 'button',
+                      'data-wave-resonator-snap': 'true',
+                      'aria-label': __alloT('stem.wave.aria_resonator_snap', 'Snap drive frequency ratio to selected standing wave harmonic peak'),
+                      style: { minHeight: 44 },
+                      onClick: function () {
+                        updPatch({ resonatorDriven: true, driveFreqRatio: snapMode.freqMultiplier });
+                      },
+                      className: "px-3 py-2 rounded-lg text-xs font-bold bg-white text-sky-900 border border-sky-400 hover:bg-sky-100 transition-colors"
+                    }, '\uD83C\uDFAF ' + __alloT('stem.wave.btn_snap_mode', 'Snap to Mode f') + ' (' + snapMode.freqMultiplier + 'f\u2081)'),
+                    React.createElement("span", {
+                      'data-wave-resonator-readout': 'true',
+                      className: "text-[0.6875rem] font-mono font-bold px-2.5 py-1 rounded-full border",
+                      style: isContrast
+                        ? { backgroundColor: '#000000', color: '#ffff00', borderColor: '#ffff00' }
+                        : { backgroundColor: '#0f172a', color: '#f8fafc', borderColor: '#334155' }
+                    }, (waveMetrics.resonatorIsPeak ? 'RESONANCE' : 'DETUNED') + ' \u00B7 Gain=' + waveMetrics.resonatorGainPct.toFixed(1) + '% \u00B7 \u03C6=-' + waveMetrics.resonatorPhaseDeg.toFixed(0) + '\u00B0 \u00B7 FWHM=' + waveMetrics.resonatorFwhmHz.toFixed(2) + ' Hz')
+                  )
+                ),
+                React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-3" },
+                  React.createElement("div", { className: "bg-white rounded-lg p-2.5 border border-sky-200" },
+                    React.createElement("label", { htmlFor: 'wave-drive-ratio-slider', className: "block text-xs font-bold text-slate-900" }, __alloT('stem.wave.drive_ratio_label', 'Drive Freq Ratio (f_drv / f\u2081): ') + d.driveFreqRatio.toFixed(2) + '\u00D7 (' + waveMetrics.resonatorDriveHz.toFixed(2) + ' Hz)'),
+                    React.createElement("input", {
+                      id: 'wave-drive-ratio-slider',
+                      'data-wave-drive-ratio-slider': 'true',
+                      type: 'range',
+                      min: 0.25, max: 6.5, step: 0.05,
+                      value: d.driveFreqRatio,
+                      style: { minHeight: 44 },
+                      'aria-label': __alloT('stem.wave.aria_drive_ratio', 'Drive frequency ratio f_drv over f_1'),
+                      'aria-valuetext': d.driveFreqRatio.toFixed(2) + __alloT('stem.wave.aria_times_f1_gain', ' times f1, gain ') + waveMetrics.resonatorGainPct.toFixed(1) + '%',
+                      onChange: function (e) { updPatch({ resonatorDriven: true, driveFreqRatio: parseFloat(e.target.value) }); },
+                      className: "w-full accent-sky-700"
+                    })
+                  ),
+                  React.createElement("div", { className: "bg-white rounded-lg p-2.5 border border-sky-200" },
+                    React.createElement("label", { htmlFor: 'wave-resonator-q-slider', className: "block text-xs font-bold text-slate-900" }, __alloT('stem.wave.resonator_q_label', 'Quality Factor Q: ') + d.resonatorQ + ' (FWHM ' + waveMetrics.resonatorFwhmHz.toFixed(2) + ' Hz)'),
+                    React.createElement("input", {
+                      id: 'wave-resonator-q-slider',
+                      'data-wave-resonator-q-slider': 'true',
+                      type: 'range',
+                      min: 5, max: 80, step: 1,
+                      value: d.resonatorQ,
+                      style: { minHeight: 44 },
+                      'aria-label': __alloT('stem.wave.aria_resonator_q', 'Resonator quality factor Q'),
+                      'aria-valuetext': 'Q = ' + d.resonatorQ + __alloT('stem.wave.aria_fwhm_eq', ', FWHM = ') + waveMetrics.resonatorFwhmHz.toFixed(2) + ' ' + __alloT('stem.wave.unit_hz', 'Hz'),
+                      onChange: function (e) { updPatch({ resonatorDriven: true, resonatorQ: parseInt(e.target.value, 10) }); },
+                      className: "w-full accent-sky-700"
+                    })
+                  )
+                ),
+                React.createElement("svg", {
+                  'data-wave-resonance-curve': 'true',
+                  viewBox: '0 0 ' + svgW + ' ' + svgH,
+                  role: 'img',
+                  'aria-label': __alloT('stem.wave.aria_resonance_curve', 'Lorentzian resonator gain curve versus drive frequency ratio'),
+                  className: "w-full max-w-[460px] h-auto rounded-lg border border-slate-700 block",
+                  style: { backgroundColor: bgSvg }
+                },
+                  React.createElement("title", null, __alloT('stem.wave.svg_resonance_title', 'Lorentzian Resonance Gain Curve |H(r)| vs. Drive Ratio')),
+                  React.createElement("rect", { x: 0, y: 0, width: svgW, height: svgH, rx: 6, fill: bgSvg }),
+                  React.createElement("line", { x1: padL, y1: halfPowerY, x2: svgW - padR, y2: halfPowerY, stroke: '#475569', strokeDasharray: '4 3', strokeWidth: 1 }),
+                  React.createElement("text", { x: padL + 3, y: halfPowerY - 3, fill: '#94a3b8', fontSize: 8, fontWeight: 'bold' }, '-3 dB (70.7%)'),
+                  modeMarks.map(function (mm) {
+                    var mx = toX(mm.ratio);
+                    return React.createElement("g", { key: 'mode-' + mm.mode },
+                      React.createElement("line", { x1: mx, y1: padT, x2: mx, y2: padT + plotH, stroke: 'rgba(148,163,184,0.3)', strokeDasharray: '2 3', strokeWidth: 1 }),
+                      React.createElement("text", { x: mx, y: svgH - 6, textAnchor: 'middle', fill: '#94a3b8', fontSize: 8 }, 'm' + mm.mode)
+                    );
+                  }),
+                  React.createElement("polygon", { points: areaPts, fill: 'rgba(56,189,248,0.18)' }),
+                  React.createElement("polyline", { points: polyPts.join(' '), fill: 'none', stroke: '#38bdf8', strokeWidth: 2 }),
+                  React.createElement("line", { x1: curX, y1: padT, x2: curX, y2: padT + plotH, stroke: curColor, strokeWidth: 1.3, strokeDasharray: '3 2' }),
+                  React.createElement("circle", { cx: curX, cy: curY, r: 4.5, fill: curColor, stroke: '#0f172a', strokeWidth: 1.5 }),
+                  React.createElement("text", { x: Math.min(svgW - 76, Math.max(padL + 4, curX + 6)), y: Math.max(padT + 10, curY - 6), fill: curColor, fontSize: 8.5, fontWeight: 'bold' }, 'r=' + d.driveFreqRatio.toFixed(2) + ' (' + waveMetrics.resonatorGainPct.toFixed(0) + '%)'),
+                  React.createElement("text", { x: 4, y: padT + 6, fill: '#cbd5e1', fontSize: 8 }, '100%'),
+                  React.createElement("text", { x: 4, y: padT + plotH, fill: '#cbd5e1', fontSize: 8 }, '0%')
+                )
+              );
+            })(),
 
             // Controls
 
@@ -4897,8 +7941,16 @@ window.StemLab = window.StemLab || {
                     if (s.k === 'speed') return val + __alloT('stem.wave.vt_speed', ' times animation speed');
                     return val + __alloT('stem.wave.vt_medium', ' meters per second through the medium');
                   })(), onChange: function (e) {
-                    var v = parseFloat(e.target.value); upd(s.k, v);
-                    if (s.k === 'frequency') syncOsc({ freq: v });
+                    var v = parseFloat(e.target.value);
+                    if (s.k === 'waveSpeed') updPatch({ waveSpeed: v, stringMechanics: false, airTempCoupled: false });
+                    else if (s.k === 'frequency' && d.intervalLock !== 'none' && WAVE_INTERVAL_PRESETS[d.intervalLock]) {
+                      var lockedF2 = waveClampNum(Math.round(v * WAVE_INTERVAL_PRESETS[d.intervalLock].ratio * 100) / 100, 0.5, 10, d.frequency2);
+                      updPatch({ frequency: v, frequency2: lockedF2 });
+                      syncOsc({ freq: v, freq2: lockedF2 });
+                    } else {
+                      upd(s.k, v);
+                      if (s.k === 'frequency') syncOsc({ freq: v });
+                    }
                     if (s.k === 'amplitude' || s.k === 'frequency') { checkWaveMatch(s.k === 'amplitude' ? v : d.amplitude, s.k === 'frequency' ? v : d.frequency); }
                     // Canvas Narration: parameter change
                     if (typeof canvasNarrate === 'function') {
@@ -4942,7 +7994,7 @@ window.StemLab = window.StemLab || {
 
                   React.createElement("label", { htmlFor: "wave-second-frequency", className: "block text-xs text-pink-800 font-bold" }, __alloT('stem.wave.aria_second_frequency', 'Second wave frequency')),
 
-                  React.createElement("input", { id: "wave-second-frequency", style: { minHeight: 44 }, type: "range", min: 0.5, max: 10, step: 0.5, value: d.frequency2 || 3, 'aria-label': __alloT('stem.wave.aria_second_frequency', 'Second wave frequency'), onChange: e => { var v2 = parseFloat(e.target.value); upd('frequency2', v2); syncOsc({ freq2: v2 }); }, className: "w-full accent-pink-500" }),
+                  React.createElement("input", { id: "wave-second-frequency", style: { minHeight: 44 }, type: "range", min: 0.5, max: 10, step: 0.05, value: d.frequency2 || 3, 'aria-label': __alloT('stem.wave.aria_second_frequency', 'Second wave frequency'), onChange: e => { var v2 = parseFloat(e.target.value); updPatch({ frequency2: v2, intervalLock: 'none' }); syncOsc({ freq2: v2 }); }, className: "w-full accent-pink-500" }),
 
                   React.createElement("span", { className: "text-[0.6875rem] text-pink-800 font-bold" }, (d.frequency2 || 3) + " Hz")
 
@@ -4958,6 +8010,61 @@ window.StemLab = window.StemLab || {
 
                   React.createElement("p", { id: "wave-second-phase-help", className: "text-xs text-pink-800" }, __alloT("stem.wave.phase_offset_help", "Shifts the second wave within its cycle. 0 means no phase shift; π is half a cycle."))
 
+                ),
+
+                React.createElement("div", {
+                  role: 'group',
+                  'data-wave-consonance-bench': 'true',
+                  'aria-label': __alloT('stem.wave.aria_consonance_bench', 'Just-intonation interval lock and beat envelope bench'),
+                  className: "flex flex-wrap items-center gap-2 pt-2 border-t border-pink-200 w-full"
+                },
+                  React.createElement("span", { className: "text-xs font-bold text-pink-900" }, __alloT('stem.wave.interval_lock_label', 'Interval Lock f\u2082/f\u2081:')),
+                  [
+                    { id: 'none', key: 'free', label: __alloT('stem.wave.interval_free', 'Free'), aria: __alloT('stem.wave.aria_interval_free', 'Unlock second wave frequency ratio') },
+                    { id: '1:1', key: '1_1', label: '1:1', aria: __alloT('stem.wave.aria_interval_1_1', 'Lock second wave to 1 to 1 unison ratio') },
+                    { id: '5:4', key: '5_4', label: '5:4', aria: __alloT('stem.wave.aria_interval_5_4', 'Lock second wave to 5 to 4 major third ratio') },
+                    { id: '4:3', key: '4_3', label: '4:3', aria: __alloT('stem.wave.aria_interval_4_3', 'Lock second wave to 4 to 3 perfect fourth ratio') },
+                    { id: '3:2', key: '3_2', label: '3:2', aria: __alloT('stem.wave.aria_interval_3_2', 'Lock second wave to 3 to 2 perfect fifth ratio') },
+                    { id: '2:1', key: '2_1', label: '2:1', aria: __alloT('stem.wave.aria_interval_2_1', 'Lock second wave to 2 to 1 octave ratio') }
+                  ].map(function (iv) {
+                    var ivAct = (d.intervalLock || 'none') === iv.id;
+                    return React.createElement("button", {
+                      key: iv.id,
+                      type: 'button',
+                      'data-wave-interval-btn': iv.id,
+                      'aria-pressed': ivAct,
+                      'aria-label': iv.aria,
+                      style: { minHeight: 44, minWidth: 44 },
+                      onClick: function () {
+                        if (iv.id === 'none') {
+                          upd('intervalLock', 'none');
+                        } else {
+                          var fLocked = waveClampNum(Math.round(d.frequency * WAVE_INTERVAL_PRESETS[iv.id].ratio * 100) / 100, 0.5, 10, d.frequency2);
+                          updPatch({ showSecond: true, intervalLock: iv.id, frequency2: fLocked });
+                          syncOsc({ freq2: fLocked });
+                        }
+                      },
+                      className: "px-2.5 py-2 rounded-lg text-xs font-bold transition-colors " + (ivAct ? 'bg-pink-800 text-white shadow-sm' : 'bg-white text-pink-900 border border-pink-400 hover:bg-pink-100')
+                    }, iv.label);
+                  }),
+                  React.createElement("button", {
+                    type: 'button',
+                    'data-wave-beat-envelope-toggle': 'true',
+                    'aria-pressed': !!d.showBeatEnvelope,
+                    'aria-label': __alloT('stem.wave.aria_beat_envelope_toggle', 'Toggle analytical beat modulation envelope overlay'),
+                    style: { minHeight: 44 },
+                    onClick: function () { upd('showBeatEnvelope', !d.showBeatEnvelope); },
+                    className: "px-3 py-2 rounded-lg text-xs font-bold transition-colors " + (d.showBeatEnvelope ? 'bg-amber-800 text-white shadow-sm' : 'bg-white text-pink-900 border border-pink-400 hover:bg-pink-100')
+                  }, '\u3030 ' + __alloT('stem.wave.btn_beat_envelope', 'Beat Envelope A(x,t)')),
+                  React.createElement("span", {
+                    'data-wave-consonance-readout': 'true',
+                    className: "text-[0.6875rem] font-mono font-bold px-2.5 py-1 rounded-full border ml-auto",
+                    style: isContrast
+                      ? { backgroundColor: '#000000', color: '#ffff00', borderColor: '#ffff00' }
+                      : isDark
+                        ? { backgroundColor: '#0f172a', color: '#e2e8f0', borderColor: '#334155' }
+                        : { backgroundColor: '#ffffff', color: '#831843', borderColor: '#f472b6' }
+                  }, 'f_beat=' + waveMetrics.beatFreq.toFixed(2) + ' Hz \u00B7 Mod=' + waveMetrics.beatModDepthPct.toFixed(0) + '% \u00B7 ' + (waveMetrics.matchedInterval ? ('Just ' + waveMetrics.matchedInterval) : ('f\u2082/f\u2081=' + waveMetrics.intervalRatio.toFixed(2))) + ' (' + waveMetrics.consonanceClass + ')')
                 )
 
               ),
@@ -4966,7 +8073,7 @@ window.StemLab = window.StemLab || {
                 type: 'button',
                 style: { minHeight: 44 },
                 onClick: function () {
-                  updPatch({ showSecond: true, frequency: 4, frequency2: 4.5, amplitude: 45, amplitude2: 45, phase2: 0 });
+                  updPatch({ showSecond: true, intervalLock: 'none', showBeatEnvelope: true, frequency: 4, frequency2: 4.5, amplitude: 45, amplitude2: 45, phase2: 0 });
                   syncOsc({ freq: 4, freq2: 4.5 });
                   if (typeof addToast === 'function') addToast('\uD83C\uDFB5 ' + __alloT('stem.wave.toast_beats', 'Beats: 4 Hz + 4.5 Hz \u2014 watch (and hear) the slow 0.5 Hz pulse'), 'info');
                 },
@@ -4994,7 +8101,8 @@ window.StemLab = window.StemLab || {
                 },
                   [
                     { id: 'continuous', label: __alloT('stem.wave.packet_continuous', 'Continuous Wave'), aria: __alloT('stem.wave.aria_packet_continuous', 'Switch to continuous periodic wave') },
-                    { id: 'packet', label: '\uD83D\uDCE6 ' + __alloT('stem.wave.packet_burst', 'Wave Packet (Group vs. Phase)'), aria: __alloT('stem.wave.aria_packet_burst', 'Switch to localized Gaussian wave packet with group velocity envelope') }
+                    { id: 'packet', label: '\uD83D\uDCE6 ' + __alloT('stem.wave.packet_burst', 'Wave Packet (Group vs. Phase)'), aria: __alloT('stem.wave.aria_packet_burst', 'Switch to localized Gaussian wave packet with group velocity envelope') },
+                    { id: 'collide', label: '\uD83D\uDCA5 ' + __alloT('stem.wave.packet_collide', 'Colliding Pulses'), aria: __alloT('stem.wave.aria_packet_collide', 'Launch two counter-propagating Gaussian wave pulses to inspect superposition') }
                   ].map(function(pm) {
                     var pmAct = (d.packetMode || 'continuous') === pm.id;
                     return React.createElement("button", {
@@ -5017,49 +8125,159 @@ window.StemLab = window.StemLab || {
                     : { backgroundColor: '#0f172a', color: '#f8fafc', borderColor: '#334155' }
                 }, 'v_p = ' + waveMetrics.phaseVelocity.toFixed(0) + ' m/s · v_g = ' + waveMetrics.groupVelocity.toFixed(0) + ' m/s (' + waveMetrics.dispersionRatio.toFixed(2) + '\u00D7)')
               ),
-              (d.packetMode || 'continuous') === 'packet' && React.createElement("div", { className: "flex flex-wrap items-center gap-3 pt-2 border-t border-cyan-200" },
-                React.createElement("label", { className: "text-xs font-bold text-cyan-900 flex items-center gap-2" },
-                  __alloT('stem.wave.dispersion_ratio_label', 'Group/Phase Ratio (v_g / v_p):'),
-                  React.createElement("input", {
-                    'data-wave-dispersion-slider': 'true',
-                    type: 'range',
-                    min: 0.5, max: 1.5, step: 0.05,
-                    value: d.dispersionRatio,
-                    style: { minHeight: 44 },
-                    'aria-label': __alloT('stem.wave.aria_dispersion_ratio', 'Group to phase velocity dispersion ratio'),
-                    'aria-valuetext': d.dispersionRatio.toFixed(2) + __alloT('stem.wave.aria_times_vp', ' times phase speed'),
-                    onChange: function(e) { upd('dispersionRatio', parseFloat(e.target.value)); },
-                    className: "w-28 accent-cyan-700"
-                  }),
-                  React.createElement("span", { className: "font-mono font-black w-12 text-right" }, d.dispersionRatio.toFixed(2) + '\u00D7')
-                ),
-                React.createElement("div", { className: "flex flex-wrap gap-1.5" },
+              (d.packetMode || 'continuous') === 'collide' && React.createElement("div", {
+                'data-wave-collide-controls': 'true',
+                className: "flex flex-wrap items-center gap-2 pt-2 border-t border-cyan-200"
+              },
+                React.createElement("span", { className: "text-xs font-bold text-cyan-900" }, __alloT('stem.wave.collide_polarity_label', 'Pulse Polarity:')),
+                React.createElement("div", {
+                  role: 'group',
+                  'aria-label': __alloT('stem.wave.aria_collide_polarity_group', 'Counter-propagating pulse polarity'),
+                  className: "flex flex-wrap gap-1.5"
+                },
                   [
-                    { label: __alloT('stem.wave.disp_normal', '0.5\u00D7 Normal (Deep Water)'), val: 0.5 },
-                    { label: __alloT('stem.wave.disp_none', '1.0\u00D7 Non-Dispersive'), val: 1.0 },
-                    { label: __alloT('stem.wave.disp_anom', '1.5\u00D7 Anomalous (Capillary)'), val: 1.5 }
-                  ].map(function(dp) {
-                    var dpAct = Math.abs(d.dispersionRatio - dp.val) < 0.03;
+                    { id: 'opposite', label: __alloT('stem.wave.collide_opposite', 'Opposite (Cancel)'), aria: __alloT('stem.wave.aria_collide_opposite', 'Opposite polarity pulses for temporary nodal cancellation at overlap') },
+                    { id: 'same', label: __alloT('stem.wave.collide_same', 'Same (2A Crest)'), aria: __alloT('stem.wave.aria_collide_same', 'Same polarity pulses for constructive double-amplitude crest at overlap') }
+                  ].map(function (cp) {
+                    var cpAct = (d.collidePolarity || 'opposite') === cp.id;
                     return React.createElement("button", {
-                      key: dp.val,
+                      key: cp.id,
                       type: 'button',
-                      'data-wave-disp-preset': String(dp.val),
-                      'aria-pressed': dpAct,
-                      'aria-label': __alloT('stem.wave.aria_disp_preset', 'Set dispersion ratio to ') + dp.label,
+                      'data-wave-collide-polarity': cp.id,
+                      'aria-pressed': cpAct,
+                      'aria-label': cp.aria,
                       style: { minHeight: 44 },
-                      onClick: function() { upd('dispersionRatio', dp.val); },
-                      className: "px-2.5 py-2 rounded-lg text-xs font-bold transition-colors " + (dpAct ? 'bg-cyan-700 text-white' : 'bg-white text-cyan-800 border border-cyan-400 hover:bg-cyan-100')
-                    }, dp.label);
+                      onClick: function () { upd('collidePolarity', cp.id); },
+                      className: "px-3 py-2 rounded-lg text-xs font-bold transition-colors " + (cpAct ? 'bg-cyan-700 text-white shadow-sm' : 'bg-white text-cyan-900 border border-cyan-400 hover:bg-cyan-100')
+                    }, cp.label);
                   })
+                ),
+                React.createElement("button", {
+                  type: 'button',
+                  'data-wave-collide-snap': 'true',
+                  'aria-label': __alloT('stem.wave.aria_collide_snap', 'Pause and snap counter-propagating pulses right at center overlap'),
+                  style: { minHeight: 44 },
+                  onClick: function () {
+                    updPatch({ packetMode: 'collide', paused: true });
+                    var c = canvasRef._lastCanvas;
+                    if (c && typeof c._waveSnapCollision === 'function') c._waveSnapCollision();
+                  },
+                  className: "ml-auto px-3 py-2 rounded-lg text-xs font-bold bg-indigo-700 text-white hover:bg-indigo-800 transition-colors"
+                }, '\u23F8 ' + __alloT('stem.wave.btn_collide_snap', 'Pause at Overlap'))
+              ),
+              (d.packetMode || 'continuous') === 'packet' && React.createElement("div", { className: "flex flex-col gap-2.5 pt-2 border-t border-cyan-200" },
+                React.createElement("div", { className: "flex flex-wrap items-center gap-3" },
+                  React.createElement("label", { className: "text-xs font-bold text-cyan-900 flex items-center gap-2" },
+                    __alloT('stem.wave.dispersion_ratio_label', 'Group/Phase Ratio (v_g / v_p):'),
+                    React.createElement("input", {
+                      'data-wave-dispersion-slider': 'true',
+                      type: 'range',
+                      min: 0.5, max: 1.5, step: 0.05,
+                      value: d.dispersionRatio,
+                      style: { minHeight: 44 },
+                      'aria-label': __alloT('stem.wave.aria_dispersion_ratio', 'Group to phase velocity dispersion ratio'),
+                      'aria-valuetext': d.dispersionRatio.toFixed(2) + __alloT('stem.wave.aria_times_vp', ' times phase speed'),
+                      onChange: function(e) { updPatch({ oceanDepthCoupled: false, dispersionRatio: parseFloat(e.target.value) }); },
+                      className: "w-28 accent-cyan-700"
+                    }),
+                    React.createElement("span", { className: "font-mono font-black w-12 text-right" }, d.dispersionRatio.toFixed(2) + '\u00D7')
+                  ),
+                  React.createElement("div", { className: "flex flex-wrap gap-1.5" },
+                    [
+                      { label: __alloT('stem.wave.disp_normal', '0.5\u00D7 Normal (Deep Water)'), val: 0.5 },
+                      { label: __alloT('stem.wave.disp_none', '1.0\u00D7 Non-Dispersive'), val: 1.0 },
+                      { label: __alloT('stem.wave.disp_anom', '1.5\u00D7 Anomalous (Capillary)'), val: 1.5 }
+                    ].map(function(dp) {
+                      var dpAct = !d.oceanDepthCoupled && Math.abs(d.dispersionRatio - dp.val) < 0.03;
+                      return React.createElement("button", {
+                        key: dp.val,
+                        type: 'button',
+                        'data-wave-disp-preset': String(dp.val),
+                        'aria-pressed': dpAct,
+                        'aria-label': __alloT('stem.wave.aria_disp_preset', 'Set dispersion ratio to ') + dp.label,
+                        style: { minHeight: 44 },
+                        onClick: function() { updPatch({ oceanDepthCoupled: false, dispersionRatio: dp.val }); },
+                        className: "px-2.5 py-2 rounded-lg text-xs font-bold transition-colors " + (dpAct ? 'bg-cyan-700 text-white' : 'bg-white text-cyan-800 border border-cyan-400 hover:bg-cyan-100')
+                      }, dp.label);
+                    })
+                  )
+                ),
+                React.createElement("div", {
+                  'data-wave-ocean-bench': 'true',
+                  role: 'region',
+                  'aria-label': __alloT('stem.wave.aria_ocean_bench', 'Airy ocean water depth dispersion calculator'),
+                  className: "flex flex-wrap items-center gap-2.5 p-2.5 rounded-lg bg-teal-50 border border-teal-300"
+                },
+                  React.createElement("button", {
+                    type: 'button',
+                    'data-wave-ocean-depth-toggle': 'true',
+                    'aria-pressed': !!d.oceanDepthCoupled,
+                    'aria-label': __alloT('stem.wave.aria_ocean_depth_toggle', 'Couple wave packet dispersion to Airy water depth ratio h over wavelength'),
+                    style: { minHeight: 44 },
+                    onClick: function () {
+                      if (!d.oceanDepthCoupled) {
+                        var od = waveComputeOceanDispersion(d.waterDepthRatio);
+                        updPatch({ oceanDepthCoupled: true, waterDepthRatio: od.depthRatio, dispersionRatio: od.vgOverVp });
+                      } else {
+                        upd('oceanDepthCoupled', false);
+                      }
+                    },
+                    className: "px-2.5 py-2 rounded-lg text-xs font-bold transition-colors " + (d.oceanDepthCoupled ? 'bg-teal-800 text-white shadow-sm' : 'bg-white text-teal-900 border border-teal-400 hover:bg-teal-100')
+                  }, d.oceanDepthCoupled ? '\uD83C\uDF0A ' + __alloT('stem.wave.ocean_depth_on', 'Water Depth Lock: ON') : __alloT('stem.wave.ocean_depth_off', 'Lock to Water Depth (h/\u03BB)')),
+                  React.createElement("label", { className: "text-xs font-bold text-teal-950 flex items-center gap-2" },
+                    __alloT('stem.wave.ocean_depth_label', 'Depth h/\u03BB:'),
+                    React.createElement("input", {
+                      'data-wave-ocean-depth-slider': 'true',
+                      type: 'range',
+                      min: 0.02, max: 1.0, step: 0.02,
+                      value: d.waterDepthRatio,
+                      style: { minHeight: 44 },
+                      'aria-label': __alloT('stem.wave.aria_ocean_depth_slider', 'Normalized water depth h divided by wavelength'),
+                      'aria-valuetext': __alloT('stem.wave.aria_h_over_lambda_eq', 'h/lambda = ') + d.waterDepthRatio.toFixed(2) + ', ' + waveMetrics.oceanRegime + ' ' + __alloT('stem.wave.aria_regime_vgvp_eq', 'regime, vg/vp = ') + waveMetrics.oceanVgOverVp.toFixed(2),
+                      onChange: function (e) {
+                        var nextOd = waveComputeOceanDispersion(parseFloat(e.target.value));
+                        updPatch({ oceanDepthCoupled: true, waterDepthRatio: nextOd.depthRatio, dispersionRatio: nextOd.vgOverVp });
+                      },
+                      className: "w-24 accent-teal-700"
+                    }),
+                    React.createElement("span", { className: "font-mono font-black w-10 text-right" }, d.waterDepthRatio.toFixed(2))
+                  ),
+                  [
+                    { id: 'shallow', label: __alloT('stem.wave.ocean_shallow', 'Shallow Tsunami (0.03)'), val: 0.03 },
+                    { id: 'intermediate', label: __alloT('stem.wave.ocean_shelf', 'Coastal Shelf (0.18)'), val: 0.18 },
+                    { id: 'deep', label: __alloT('stem.wave.ocean_deep', 'Deep Swell (0.80)'), val: 0.80 }
+                  ].map(function (op) {
+                    var opAct = !!d.oceanDepthCoupled && Math.abs(d.waterDepthRatio - op.val) < 0.025;
+                    return React.createElement("button", {
+                      key: op.id,
+                      type: 'button',
+                      'data-wave-ocean-preset': op.id,
+                      'aria-pressed': opAct,
+                      'aria-label': __alloT('stem.wave.aria_ocean_preset', 'Apply ocean depth preset: ') + op.label,
+                      style: { minHeight: 44 },
+                      onClick: function () {
+                        var odP = waveComputeOceanDispersion(op.val);
+                        updPatch({ packetMode: 'packet', oceanDepthCoupled: true, waterDepthRatio: odP.depthRatio, dispersionRatio: odP.vgOverVp });
+                      },
+                      className: "px-2.5 py-2 rounded-lg text-xs font-bold transition-colors " + (opAct ? 'bg-teal-800 text-white' : 'bg-white text-teal-900 border border-teal-400 hover:bg-teal-100')
+                    }, op.label);
+                  }),
+                  React.createElement("span", {
+                    'data-wave-ocean-readout': 'true',
+                    className: "text-[0.6875rem] font-mono font-bold px-2.5 py-1 rounded-full border ml-auto",
+                    style: isContrast
+                      ? { backgroundColor: '#000000', color: '#ffff00', borderColor: '#ffff00' }
+                      : { backgroundColor: '#0f172a', color: '#f8fafc', borderColor: '#334155' }
+                  }, String(waveMetrics.oceanRegime || 'deep').toUpperCase() + ' \u00B7 h/\u03BB=' + d.waterDepthRatio.toFixed(2) + ' \u00B7 vg/vp=' + waveMetrics.oceanVgOverVp.toFixed(2) + '\u00D7')
                 )
               )
             ),
 
             // Damping toggle (free mode only)
 
-            waveMode === 'free' && React.createElement("div", { className: "flex flex-wrap items-center gap-3 mb-3 p-2.5 bg-amber-50 rounded-lg border border-amber-200" },
+            waveMode === 'free' && React.createElement("div", { className: "flex flex-wrap items-center gap-2.5 mb-3 p-2.5 bg-amber-50 rounded-lg border border-amber-200" },
 
-              React.createElement("label", { style: { minHeight: 44 }, className: "text-xs font-bold text-amber-800 flex items-center gap-1.5 cursor-pointer" },
+              React.createElement("label", { style: { minHeight: 44 }, className: "text-xs font-bold text-amber-900 flex items-center gap-1.5 cursor-pointer" },
 
                 React.createElement("input", { type: "checkbox", checked: !!d.damping, 'aria-label': __alloT('stem.wave.aria_enable_damping', 'Enable damping'), onChange: e => upd('damping', e.target.checked), className: "accent-amber-600" }),
 
@@ -5067,13 +8285,39 @@ window.StemLab = window.StemLab || {
 
               ),
 
-              d.damping && React.createElement("div", { className: "flex items-center gap-2" },
+              d.damping && React.createElement("div", { className: "flex flex-wrap items-center gap-2 flex-1" },
 
-                React.createElement("span", { className: "text-[0.6875rem] text-amber-800 font-bold" }, "\u03B1:"),
+                React.createElement("span", { className: "text-[0.6875rem] text-amber-900 font-bold" }, "\u03B1:"),
 
                 React.createElement("input", { style: { minHeight: 44 }, type: "range", min: 0.1, max: 2.0, step: 0.1, value: d.dampingAlpha || 0.5, 'aria-label': __alloT('stem.wave.aria_damping_coeff', 'Damping coefficient'), onChange: e => upd('dampingAlpha', parseFloat(e.target.value)), className: "w-24 accent-amber-600" }),
 
-                React.createElement("span", { className: "text-[0.6875rem] text-amber-800 font-bold" }, (d.dampingAlpha || 0.5).toFixed(1))
+                React.createElement("span", { className: "text-[0.6875rem] text-amber-900 font-bold font-mono" }, (d.dampingAlpha || 0.5).toFixed(1)),
+
+                [
+                  { id: 'light', label: __alloT('stem.wave.damp_light', 'Light (0.2)'), val: 0.2 },
+                  { id: 'moderate', label: __alloT('stem.wave.damp_mod', 'Moderate (0.6)'), val: 0.6 },
+                  { id: 'heavy', label: __alloT('stem.wave.damp_heavy', 'Heavy (1.5)'), val: 1.5 }
+                ].map(function (da) {
+                  var daAct = Math.abs((d.dampingAlpha || 0.5) - da.val) < 0.05;
+                  return React.createElement("button", {
+                    key: da.id,
+                    type: 'button',
+                    'data-wave-damping-preset': da.id,
+                    'aria-pressed': daAct,
+                    'aria-label': __alloT('stem.wave.aria_damping_preset', 'Set damping coefficient alpha to ') + da.label,
+                    style: { minHeight: 44 },
+                    onClick: function () { updPatch({ damping: true, dampingAlpha: da.val }); },
+                    className: "px-2 py-1.5 rounded-lg text-xs font-bold transition-colors " + (daAct ? 'bg-amber-800 text-white' : 'bg-white text-amber-900 border border-amber-400 hover:bg-amber-100')
+                  }, da.label);
+                }),
+
+                React.createElement("span", {
+                  'data-wave-damping-readout': 'true',
+                  className: "text-[0.6875rem] font-mono font-bold px-2.5 py-1 rounded-full border ml-auto",
+                  style: isContrast
+                    ? { backgroundColor: '#000000', color: '#ffff00', borderColor: '#ffff00' }
+                    : { backgroundColor: '#0f172a', color: '#f8fafc', borderColor: '#334155' }
+                }, '-' + waveMetrics.dampingLossDb.toFixed(1) + ' dB \u00B7 x\u2081/\u2082=' + waveMetrics.dampingHalfEnergyMeters.toFixed(1) + ' m \u00B7 1/e=' + Math.round(waveMetrics.dampingDecayFrac * 100) + '%')
 
               )
 
@@ -5094,6 +8338,7 @@ window.StemLab = window.StemLab || {
                     { id: 'none', label: '\uD83D\uDCA7 ' + __alloT('stem.wave.rb_none', 'Two Sources'), aria: __alloT('stem.wave.aria_rb_none', 'Two free coherent point sources with no barrier') },
                     { id: 'singleSlit', label: '\u2551 ' + __alloT('stem.wave.rb_single_slit', 'Single Slit'), aria: __alloT('stem.wave.aria_rb_single_slit', 'Single slit aperture diffraction barrier') },
                     { id: 'doubleSlit', label: '\u2AFC ' + __alloT('stem.wave.rb_double_slit', 'Double Slit'), aria: __alloT('stem.wave.aria_rb_double_slit', 'Double slit Young interference barrier') },
+                    { id: 'grating', label: '\u2502\u2502\u2502 ' + __alloT('stem.wave.rb_grating', 'Diffraction Grating'), aria: __alloT('stem.wave.aria_rb_grating', 'Multi-slit diffraction grating with sharp principal maxima') },
                     { id: 'obstacle', label: '\u2B1B ' + __alloT('stem.wave.rb_obstacle', 'Obstacle'), aria: __alloT('stem.wave.aria_rb_obstacle', 'Opaque obstacle showing edge diffraction shadow') }
                   ].map(function (rb) {
                     var rbAct = (d.rippleBarrier || 'none') === rb.id;
@@ -5117,7 +8362,46 @@ window.StemLab = window.StemLab || {
                   style: { minHeight: 44 },
                   onClick: function () { upd('showIntensityScreen', !d.showIntensityScreen); },
                   className: "ml-auto px-3 py-2 rounded-md text-xs font-bold transition-colors " + (d.showIntensityScreen ? 'bg-amber-800 text-white shadow-sm' : 'bg-white text-indigo-800 border border-indigo-400 hover:bg-indigo-100')
-                }, '\uD83D\uDCCA ' + __alloT('stem.wave.btn_intensity_screen', 'I(y) Screen'))
+                }, '\uD83D\uDCCA ' + __alloT('stem.wave.btn_intensity_screen', 'I(y) Screen')),
+                React.createElement("button", {
+                  type: 'button',
+                  'data-wave-nodal-overlay-toggle': 'true',
+                  'aria-pressed': !!d.showNodalLines,
+                  'aria-label': __alloT('stem.wave.aria_nodal_toggle', 'Toggle analytical destructive nodal hyperbola overlay and Young fringe geometry'),
+                  style: { minHeight: 44 },
+                  onClick: function () { upd('showNodalLines', !d.showNodalLines); },
+                  className: "px-3 py-2 rounded-md text-xs font-bold transition-colors " + (d.showNodalLines ? 'bg-amber-800 text-white shadow-sm' : 'bg-white text-indigo-800 border border-indigo-400 hover:bg-indigo-100')
+                }, '\uD83D\uDD00 ' + __alloT('stem.wave.btn_nodal_lines', 'Nodal Hyperbolas'))
+              ),
+
+              d.rippleBarrier === 'grating' && React.createElement("div", {
+                'data-wave-grating-controls': 'true',
+                className: "flex items-center flex-wrap gap-2 pt-1.5 pb-1.5 border-y border-indigo-200"
+              },
+                React.createElement("span", { className: "text-xs font-bold text-indigo-900" }, __alloT('stem.wave.grating_slits_label', 'Grating Slits (N):')),
+                React.createElement("div", {
+                  role: 'group',
+                  'aria-label': __alloT('stem.wave.aria_grating_slits_group', 'Number of diffraction grating slits N'),
+                  className: "flex flex-wrap gap-1"
+                },
+                  [3, 4, 5, 6].map(function (nSlits) {
+                    var nAct = (d.gratingSlits || 4) === nSlits;
+                    return React.createElement("button", {
+                      key: nSlits,
+                      type: 'button',
+                      'data-wave-grating-slits': String(nSlits),
+                      'aria-pressed': nAct,
+                      'aria-label': __alloT('stem.wave.aria_grating_slit_count', 'Set diffraction grating slit count to ') + nSlits,
+                      style: { minWidth: 44, minHeight: 44 },
+                      onClick: function () { upd('gratingSlits', nSlits); },
+                      className: "px-2.5 py-2 rounded-md text-xs font-black transition-colors " + (nAct ? 'bg-indigo-800 text-white shadow-sm' : 'bg-white text-indigo-900 border border-indigo-400 hover:bg-indigo-100')
+                    }, nSlits + ' Slits');
+                  })
+                ),
+                React.createElement("span", {
+                  'data-wave-grating-badge': 'true',
+                  className: "px-2.5 py-1 rounded-full bg-white border border-indigo-300 text-xs font-bold text-indigo-900 ml-auto"
+                }, (d.gratingSlits || 4) + ' slits · R\u2081 = N = ' + waveMetrics.gratingResolvingPower + ' · \u03B8\u2081 = ' + waveMetrics.gratingFirstOrderDeg.toFixed(1) + '\u00B0')
               ),
 
               React.createElement("div", { className: "flex items-center flex-wrap gap-4" },
@@ -5177,7 +8461,7 @@ window.StemLab = window.StemLab || {
 
               ),
 
-              (!d.rippleBarrier || d.rippleBarrier === 'none' || d.rippleBarrier === 'doubleSlit') && React.createElement("div", {
+              (!d.rippleBarrier || d.rippleBarrier === 'none' || d.rippleBarrier === 'doubleSlit' || d.rippleBarrier === 'grating') && React.createElement("div", {
                 'data-wave-phased-array-controls': 'true',
                 className: "flex items-center flex-wrap gap-2.5 pt-2 border-t border-indigo-200"
               },
@@ -5220,6 +8504,15 @@ window.StemLab = window.StemLab || {
                     }, pr.label);
                   })
                 ),
+                React.createElement("span", {
+                  'data-wave-ripple-fringe-readout': 'true',
+                  className: "px-2.5 py-1 rounded-full border text-xs font-bold",
+                  style: isContrast
+                    ? { backgroundColor: '#000000', color: '#ffff00', borderColor: '#ffff00' }
+                    : isDark
+                      ? { backgroundColor: '#0f172a', color: '#e2e8f0', borderColor: '#334155' }
+                      : { backgroundColor: '#ffffff', color: '#312e81', borderColor: '#a5b4fc' }
+                }, '\u0394y = ' + waveMetrics.rippleFringeSpacingPx.toFixed(1) + ' px \u00B7 Nodal: ' + waveMetrics.rippleNodalCount + ' \u00B7 \u03B8\u2081 = ' + waveMetrics.rippleFirstMinDeg.toFixed(1) + '\u00B0'),
                 React.createElement("span", {
                   'data-wave-beam-steer-badge': 'true',
                   className: "px-2.5 py-1 rounded-full bg-white border border-indigo-300 text-xs font-bold text-indigo-900 ml-auto"
@@ -5300,6 +8593,44 @@ window.StemLab = window.StemLab || {
                   onClick: function () { upd('antiReflectionCoating', !d.antiReflectionCoating); },
                   className: "px-3 py-2 rounded-lg text-xs font-bold transition-colors " + (d.antiReflectionCoating ? 'bg-cyan-800 text-white hover:bg-cyan-900 shadow-sm' : 'bg-white text-cyan-900 border border-cyan-500 hover:bg-cyan-50')
                 }, '\uD83D\uDC53 ' + __alloT('stem.wave.btn_ar_coating', '\u03BB/4 AR Coating')),
+                React.createElement("div", {
+                  role: 'group',
+                  'data-wave-fresnel-pol-group': 'true',
+                  'aria-label': __alloT('stem.wave.aria_fresnel_pol_group', 'Fresnel polarization state: s-polarized TE or p-polarized TM'),
+                  className: "flex rounded-lg overflow-hidden border border-indigo-400"
+                },
+                  [
+                    { id: 's', label: __alloT('stem.wave.pol_s_te', 's-Pol (TE)') },
+                    { id: 'p', label: __alloT('stem.wave.pol_p_tm', 'p-Pol (TM)') }
+                  ].map(function (pol) {
+                    var pActive = (d.fresnelPolarization || 's') === pol.id;
+                    return React.createElement("button", {
+                      key: pol.id,
+                      type: 'button',
+                      'data-wave-fresnel-pol': pol.id,
+                      'aria-pressed': pActive,
+                      'aria-label': __alloT('stem.wave.aria_fresnel_pol_btn', 'Select polarization ') + pol.label,
+                      style: { minHeight: 44, minWidth: 44 },
+                      onClick: function () { updPatch({ impedanceCoupled: true, fresnelPolarization: pol.id }); },
+                      className: "px-3 py-2 text-xs font-bold transition-colors " + (pActive ? 'bg-indigo-800 text-white' : 'bg-white text-indigo-950 hover:bg-indigo-50')
+                    }, pol.label);
+                  })
+                ),
+                React.createElement("button", {
+                  type: 'button',
+                  'data-wave-snap-brewster': 'true',
+                  style: { minHeight: 44 },
+                  'aria-label': __alloT('stem.wave.aria_snap_brewster', 'Enable TM p-polarization and snap incident angle to Brewster angle for zero glare'),
+                  onClick: function () {
+                    updPatch({
+                      impedanceCoupled: true,
+                      antiReflectionCoating: false,
+                      fresnelPolarization: 'p',
+                      incidentAngleDeg: waveComputeBrewsterAngle(d.medium2Ratio)
+                    });
+                  },
+                  className: "px-3 py-2 rounded-lg text-xs font-bold bg-sky-800 text-white hover:bg-sky-900 transition-colors"
+                }, '\uD83D\uDD76\uFE0F ' + __alloT('stem.wave.btn_snap_brewster', 'Snap \u03B8_B (') + waveMetrics.brewsterAngleDeg.toFixed(1) + '\u00B0)'),
                 React.createElement("button", {
                   type: 'button',
                   style: { minHeight: 44 },
@@ -5321,6 +8652,14 @@ window.StemLab = window.StemLab || {
                   'data-wave-swr-badge': 'true',
                   className: "px-2.5 py-1 rounded-full bg-white border border-indigo-300 font-bold text-indigo-900"
                 }, 'SWR: ' + (isFinite(waveMetrics.standingWaveRatio) ? waveMetrics.standingWaveRatio.toFixed(2) : '\u221E') + (d.antiReflectionCoating ? (' · d=' + waveMetrics.quarterWaveThickness.toFixed(1) + 'm') : '')),
+                React.createElement("span", {
+                  'data-wave-brewster-badge': 'true',
+                  className: "px-2.5 py-1 rounded-full bg-white border border-sky-300 font-bold text-sky-900"
+                }, '\u03B8_B (TM): ' + waveMetrics.brewsterAngleDeg.toFixed(1) + '\u00B0 (' + (d.fresnelPolarization || 's').toUpperCase() + '-pol)'),
+                React.createElement("span", {
+                  'data-wave-sonar-badge': 'true',
+                  className: "px-2.5 py-1 rounded-full bg-white border border-cyan-300 font-bold text-cyan-900"
+                }, '\uD83D\uDD0A ' + __alloT('stem.wave.sonar_range_prefix', 'Range: ') + waveMetrics.sonarRangeMeters.toFixed(1) + ' m · Echo: ' + waveMetrics.sonarEchoMs.toFixed(1) + ' ms'),
                 React.createElement("span", { className: "px-2.5 py-1 rounded-full bg-white border border-cyan-300 font-bold text-cyan-800" },
                   '\u03B8c: ' + ((typeof waveMetrics.criticalAngleDeg === 'number' && isFinite(waveMetrics.criticalAngleDeg)) ? waveMetrics.criticalAngleDeg.toFixed(1) + '\u00B0' : 'N/A') + ' · \u03B8\u2082: ' + (waveMetrics.isTotalInternalReflection ? 'TIR (100% R)' : ((typeof waveMetrics.refractedAngleDeg === 'number' && isFinite(waveMetrics.refractedAngleDeg)) ? waveMetrics.refractedAngleDeg.toFixed(1) + '\u00B0' : '0.0\u00B0'))
                 ),
@@ -5333,11 +8672,96 @@ window.StemLab = window.StemLab || {
                       ? { backgroundColor: '#78350f', color: '#fef3c7', borderColor: '#f59e0b' }
                       : { backgroundColor: '#fef3c7', color: '#78350f', borderColor: '#d97706' }
                 }, '\u26A1 ' + __alloT('stem.wave.badge_tir_active', 'Total Internal Reflection (\u03B8\u2081 > \u03B8c)')),
+                waveMetrics.isBrewsterMatch && React.createElement("span", {
+                  'data-wave-brewster-match-badge': 'true',
+                  className: "px-2.5 py-1 rounded-full border font-black",
+                  style: (ctx && ctx.isContrast)
+                    ? { backgroundColor: '#000000', color: '#00ff88', borderColor: '#00ff88' }
+                    : (ctx && ctx.isDark)
+                      ? { backgroundColor: '#0c4a6e', color: '#e0f2fe', borderColor: '#38bdf8' }
+                      : { backgroundColor: '#e0f2fe', color: '#0c4a6e', borderColor: '#0284c7' }
+                }, '\u2728 ' + __alloT('stem.wave.badge_brewster_match', 'Brewster Glare-Free (R=0%)')),
                 React.createElement("span", { className: "text-[0.6875rem] text-amber-900 ml-auto" },
                   React.createElement("span", { style: { color: (ctx && ctx.isContrast) ? '#ffff00' : (ctx && ctx.isDark) ? '#fcd34d' : '#92400e', fontWeight: 700 } }, '— ' + __alloT('stem.wave.refl_solid', 'solid')), __alloT('stem.wave.refl_solid_desc', ': M1 net · '),
                   React.createElement("span", { style: { color: (ctx && ctx.isContrast) ? '#00ff88' : (ctx && ctx.isDark) ? '#6ee7b7' : '#047857', fontWeight: 700 } }, '— ' + __alloT('stem.wave.refl_green', 'green')), __alloT('stem.wave.refl_green_desc', ': M2 transmitted · '),
                   React.createElement("span", { style: { color: (ctx && ctx.isContrast) ? '#ff80bf' : (ctx && ctx.isDark) ? '#f9a8d4' : '#be185d', fontWeight: 700 } }, '‑‑ ' + __alloT('stem.wave.refl_dashed', 'dashed')), __alloT('stem.wave.refl_dashed_desc', ': reflected'))
-              )
+              ),
+              (function () {
+                var activateFtir = function (gapVal) {
+                  var patch = { ftirEnabled: true };
+                  if (gapVal != null) patch.ftirGapLambda = gapVal;
+                  if (!waveMetrics.isTotalInternalReflection) {
+                    var nextR = d.medium2Ratio > 1.05 ? d.medium2Ratio : 1.5;
+                    var nextCrit = (Math.asin(1 / nextR) * 180) / Math.PI;
+                    patch.impedanceCoupled = true;
+                    patch.medium2Ratio = nextR;
+                    patch.incidentAngleDeg = Math.max(d.incidentAngleDeg || 0, Math.min(82, Math.ceil(nextCrit + 12)));
+                  }
+                  updPatch(patch);
+                };
+                return React.createElement("div", {
+                  'data-wave-ftir-bench': 'true',
+                  role: 'region',
+                  'aria-label': __alloT('stem.wave.aria_ftir_bench', 'Evanescent decay depth and frustrated total internal reflection optical tunneling bench'),
+                  className: "w-full mt-1 pt-2.5 border-t border-amber-300/80 flex flex-wrap items-center gap-2.5"
+                },
+                  React.createElement("button", {
+                    type: 'button',
+                    'data-wave-ftir-toggle': 'true',
+                    'aria-pressed': !!d.ftirEnabled,
+                    'aria-label': __alloT('stem.wave.aria_ftir_toggle', 'Toggle frustrated total internal reflection second prism barrier tunneling'),
+                    style: { minHeight: 44 },
+                    onClick: function () {
+                      if (!d.ftirEnabled) activateFtir(null);
+                      else upd('ftirEnabled', false);
+                    },
+                    className: "px-3 py-2 rounded-lg text-xs font-bold transition-colors " + (d.ftirEnabled ? 'bg-amber-800 text-white shadow-sm' : 'bg-white text-amber-900 border border-amber-500 hover:bg-amber-100')
+                  }, d.ftirEnabled ? '\uD83D\uDD2C ' + __alloT('stem.wave.ftir_on', 'FTIR Prism Gap: ON') : __alloT('stem.wave.ftir_off', 'Enable FTIR Prism Tunneling')),
+                  React.createElement("label", { className: "text-xs font-bold text-amber-950 flex items-center gap-2" },
+                    __alloT('stem.wave.ftir_gap_label', 'Air Gap d/\u03BB\u2081:'),
+                    React.createElement("input", {
+                      'data-wave-ftir-gap-slider': 'true',
+                      type: 'range',
+                      min: 0.05, max: 1.5, step: 0.05,
+                      value: d.ftirGapLambda,
+                      style: { minHeight: 44 },
+                      'aria-label': __alloT('stem.wave.aria_ftir_gap', 'Frustrated TIR prism air gap in multiples of incident wavelength'),
+                      'aria-valuetext': d.ftirGapLambda.toFixed(2) + __alloT('stem.wave.aria_wavelengths_trans', ' wavelengths, transmission ') + waveMetrics.tunnelTransmissionPct.toFixed(1) + '%',
+                      onChange: function (e) { activateFtir(parseFloat(e.target.value)); },
+                      className: "w-24 accent-amber-700"
+                    }),
+                    React.createElement("span", { className: "font-mono font-black w-12 text-right" }, d.ftirGapLambda.toFixed(2) + '\u03BB')
+                  ),
+                  [
+                    { id: '0.10', label: __alloT('stem.wave.ftir_narrow', '0.10\u03BB Tight'), val: 0.10 },
+                    { id: '0.25', label: __alloT('stem.wave.ftir_mid', '0.25\u03BB Coupled'), val: 0.25 },
+                    { id: '1.00', label: __alloT('stem.wave.ftir_wide', '1.00\u03BB Decoupled'), val: 1.00 }
+                  ].map(function (gp) {
+                    var gpAct = !!d.ftirEnabled && Math.abs(d.ftirGapLambda - gp.val) < 0.025;
+                    return React.createElement("button", {
+                      key: gp.id,
+                      type: 'button',
+                      'data-wave-ftir-preset': gp.id,
+                      'aria-pressed': gpAct,
+                      'aria-label': __alloT('stem.wave.aria_ftir_preset', 'Set FTIR barrier gap to ') + gp.label,
+                      style: { minHeight: 44 },
+                      onClick: function () { activateFtir(gp.val); },
+                      className: "px-2 py-1.5 rounded-lg text-xs font-bold transition-colors " + (gpAct ? 'bg-amber-800 text-white' : 'bg-white text-amber-900 border border-amber-400 hover:bg-amber-100')
+                    }, gp.label);
+                  }),
+                  React.createElement("span", {
+                    'data-wave-ftir-readout': 'true',
+                    className: "text-[0.6875rem] font-mono font-bold px-2.5 py-1 rounded-full border ml-auto",
+                    style: isContrast
+                      ? { backgroundColor: '#000000', color: '#ffff00', borderColor: '#ffff00' }
+                      : { backgroundColor: '#0f172a', color: '#f8fafc', borderColor: '#334155' }
+                  }, waveMetrics.isTotalInternalReflection
+                    ? ('d\u209A=' + (waveMetrics.evanescentPenetrationLambda || 0).toFixed(2) + '\u03BB \u00B7 ' + (d.ftirEnabled
+                      ? ('FTIR T=' + waveMetrics.tunnelTransmissionPct.toFixed(1) + '% \u00B7 R=' + waveMetrics.reflectedEnergyPct + '%')
+                      : ('TIR R=100% (T@gap=' + waveMetrics.potentialTunnelPct.toFixed(1) + '%)')))
+                    : __alloT('stem.wave.ftir_need_tir', 'Raise v\u2082/v\u2081 > 1 & \u03B8\u2081 > \u03B8c for TIR & d\u209A'))
+                );
+              })()
             ),
 
             // Longitudinal Kundt's Tube & Sound Pressure Level controls
@@ -5402,12 +8826,144 @@ window.StemLab = window.StemLab || {
                   onClick: function() { upd('showDisplacementCurve', !d.showDisplacementCurve); },
                   className: "px-3 py-2 rounded-lg text-xs font-bold transition-colors " + (d.showDisplacementCurve ? 'bg-cyan-700 text-white shadow-sm' : 'bg-white text-cyan-800 border border-cyan-400 hover:bg-cyan-100')
                 }, '\u3030 ' + __alloT('stem.wave.disp_curve_btn', 'Overlay \u0394x(x) vs \u0394P(x) (90\u00B0 Quadrature)'))
+              ),
+              React.createElement("div", {
+                'data-wave-air-temp-bench': 'true',
+                className: "flex flex-wrap items-center gap-2.5 pt-2 border-t border-sky-200"
+              },
+                React.createElement("button", {
+                  type: 'button',
+                  'data-wave-air-temp-toggle': 'true',
+                  'aria-pressed': !!d.airTempCoupled,
+                  'aria-label': __alloT('stem.wave.aria_air_temp_toggle', 'Couple sound speed in air to air temperature in degrees Celsius'),
+                  style: { minHeight: 44 },
+                  onClick: function () {
+                    if (!d.airTempCoupled) {
+                      updPatch({ airTempCoupled: true, waveSpeed: waveComputeAirSoundSpeed(d.airTempC) });
+                    } else {
+                      upd('airTempCoupled', false);
+                    }
+                  },
+                  className: "px-3 py-2 rounded-lg text-xs font-bold transition-colors " + (d.airTempCoupled ? 'bg-sky-800 text-white shadow-sm' : 'bg-white text-sky-900 border border-sky-400 hover:bg-sky-100')
+                }, d.airTempCoupled ? '\uD83C\uDF21\uFE0F ' + __alloT('stem.wave.air_temp_on', 'Thermal Air Speed: ON') : '\uD83C\uDF21\uFE0F ' + __alloT('stem.wave.air_temp_off', 'Couple v_air(T)')),
+                React.createElement("label", {
+                  htmlFor: 'wave-air-temp-slider',
+                  className: "text-xs font-bold text-sky-950 flex items-center gap-2"
+                },
+                  __alloT('stem.wave.air_temp_label', 'Air Temp T:'),
+                  React.createElement("input", {
+                    id: 'wave-air-temp-slider',
+                    'data-wave-air-temp-slider': 'true',
+                    type: 'range',
+                    min: -30, max: 60, step: 1,
+                    value: d.airTempC,
+                    style: { minHeight: 44 },
+                    'aria-label': __alloT('stem.wave.aria_air_temp_slider', 'Air temperature in degrees Celsius'),
+                    'aria-valuetext': d.airTempC + ' \u00B0C \u2014 v = ' + waveMetrics.airTempSpeed.toFixed(1) + ' m/s',
+                    onChange: function (e) {
+                      var tc = parseFloat(e.target.value);
+                      updPatch({ airTempCoupled: true, airTempC: tc, waveSpeed: waveComputeAirSoundSpeed(tc) });
+                    },
+                    className: "w-28 accent-sky-700"
+                  })
+                ),
+                React.createElement("span", {
+                  'data-wave-air-temp-readout': 'true',
+                  className: "text-[0.6875rem] font-mono font-bold px-2.5 py-1 rounded-full border",
+                  style: isContrast
+                    ? { backgroundColor: '#000000', color: '#ffff00', borderColor: '#ffff00' }
+                    : isDark
+                      ? { backgroundColor: '#0f172a', color: '#e2e8f0', borderColor: '#334155' }
+                      : { backgroundColor: '#ffffff', color: '#0c4a6e', borderColor: '#7dd3fc' }
+                }, 'T=' + d.airTempC + '\u00B0C · v=' + waveMetrics.airTempSpeed.toFixed(1) + ' m/s' + ((d.longitudinalMode || 'traveling') === 'standing' ? (' · f\u2099(1m)=' + waveMetrics.kundtTubeResonantHz.toFixed(1) + ' Hz') : ''))
+              ),
+              (d.longitudinalMode || 'traveling') === 'traveling' && React.createElement("div", {
+                'data-wave-acoustic-dist-bench': 'true',
+                className: "flex flex-wrap items-center gap-2.5 pt-2 border-t border-sky-200 w-full"
+              },
+                React.createElement("button", {
+                  type: 'button',
+                  'data-wave-dist-atten-toggle': 'true',
+                  'aria-pressed': !!d.distanceAttenuation,
+                  'aria-label': __alloT('stem.wave.aria_dist_atten_toggle', 'Toggle inverse-square or cylindrical acoustic distance attenuation'),
+                  style: { minHeight: 44 },
+                  onClick: function () { upd('distanceAttenuation', !d.distanceAttenuation); },
+                  className: "px-3 py-2 rounded-lg text-xs font-bold transition-colors " + (d.distanceAttenuation ? 'bg-amber-800 text-white shadow-sm' : 'bg-white text-sky-900 border border-sky-400 hover:bg-sky-100')
+                }, d.distanceAttenuation ? '\uD83C\uDFA4 ' + __alloT('stem.wave.dist_atten_on', 'Distance Attenuation: ON') : '\uD83C\uDFA4 ' + __alloT('stem.wave.dist_atten_off', 'Enable 1/r\u00B2 Mic Distance')),
+                [
+                  { id: 'spherical', label: __alloT('stem.wave.law_spherical', '1/r\u00B2 Spherical (-6 dB/2\u00D7)'), aria: __alloT('stem.wave.aria_law_spherical', 'Use 3D spherical inverse-square acoustic spreading') },
+                  { id: 'cylindrical', label: __alloT('stem.wave.law_cylindrical', '1/r Waveguide (-3 dB/2\u00D7)'), aria: __alloT('stem.wave.aria_law_cylindrical', 'Use cylindrical waveguide 1 over r spreading') }
+                ].map(function (law) {
+                  var lAct = (d.spreadingLaw || 'spherical') === law.id;
+                  return React.createElement("button", {
+                    key: law.id,
+                    type: 'button',
+                    'data-wave-spreading-law': law.id,
+                    'aria-pressed': lAct,
+                    'aria-label': law.aria,
+                    style: { minHeight: 44, minWidth: 44 },
+                    onClick: function () { updPatch({ distanceAttenuation: true, spreadingLaw: law.id }); },
+                    className: "px-2.5 py-2 rounded-lg text-xs font-bold transition-colors " + (lAct ? 'bg-sky-800 text-white shadow-sm' : 'bg-white text-sky-900 border border-sky-400 hover:bg-sky-100')
+                  }, law.label);
+                }),
+                React.createElement("label", {
+                  htmlFor: 'wave-listener-dist-slider',
+                  className: "text-xs font-bold text-sky-950 flex items-center gap-2"
+                },
+                  __alloT('stem.wave.listener_dist_label', 'Mic Distance r (m):'),
+                  React.createElement("input", {
+                    id: 'wave-listener-dist-slider',
+                    'data-wave-listener-dist-slider': 'true',
+                    type: 'range',
+                    min: 1, max: 20, step: 0.5,
+                    value: d.listenerDistMeters,
+                    style: { minHeight: 44 },
+                    'aria-label': __alloT('stem.wave.aria_listener_dist', 'Listener microphone distance in meters'),
+                    'aria-valuetext': d.listenerDistMeters.toFixed(1) + ' ' + __alloT('stem.wave.unit_meters_level', 'meters, level ') + waveMetrics.attenuatedDb.toFixed(1) + ' ' + __alloT('stem.wave.unit_db', 'decibels'),
+                    onChange: function (e) { updPatch({ distanceAttenuation: true, listenerDistMeters: parseFloat(e.target.value) }); },
+                    className: "w-28 accent-sky-700"
+                  })
+                ),
+                React.createElement("span", {
+                  'data-wave-dist-atten-readout': 'true',
+                  className: "text-[0.6875rem] font-mono font-bold px-2.5 py-1 rounded-full border",
+                  style: isContrast
+                    ? { backgroundColor: '#000000', color: '#ffff00', borderColor: '#ffff00' }
+                    : isDark
+                      ? { backgroundColor: '#0f172a', color: '#e2e8f0', borderColor: '#334155' }
+                      : { backgroundColor: '#ffffff', color: '#0c4a6e', borderColor: '#7dd3fc' }
+                }, 'r=' + waveMetrics.listenerDistMeters.toFixed(1) + 'm \u00B7 L(r)=' + waveMetrics.attenuatedDb.toFixed(1) + ' dB (\u2212' + waveMetrics.attenuationDropDb.toFixed(1) + ' dB) \u00B7 I/I\u2080=' + waveMetrics.intensityPctAtListener.toFixed(1) + '%')
               )
             ),
 
-            // Doppler & Mach Cone controls
+            // Doppler, Mach Cone & Relativistic Light Spectrograph controls
 
             waveMode === 'doppler' && React.createElement("div", { 'data-wave-doppler-controls': 'true', className: "flex items-center flex-wrap gap-3 mb-3 p-3 bg-rose-50 rounded-lg border border-rose-200" },
+
+              React.createElement("div", {
+                role: 'group',
+                'data-wave-doppler-regime-group': 'true',
+                'aria-label': __alloT('stem.wave.aria_doppler_regime_group', 'Doppler physics regime: acoustic sound or relativistic electromagnetic light'),
+                className: "flex flex-wrap items-center gap-2 w-full pb-2 border-b border-rose-200"
+              },
+                React.createElement("span", { className: "text-xs font-black text-rose-950 uppercase tracking-wide" }, __alloT('stem.wave.doppler_regime_label', 'Regime:')),
+                [
+                  { id: 'acoustic', label: '\uD83D\uDD0A ' + __alloT('stem.wave.doppler_regime_acoustic', 'Sound (Mach)') },
+                  { id: 'relativistic', label: '\uD83C\uDF20 ' + __alloT('stem.wave.doppler_regime_rel', 'Light / EM (Relativistic c)') }
+                ].map(function (reg) {
+                  var rAct = (d.dopplerRegime || 'acoustic') === reg.id;
+                  return React.createElement("button", {
+                    key: reg.id,
+                    type: 'button',
+                    'data-wave-doppler-regime': reg.id,
+                    'aria-pressed': rAct,
+                    'aria-label': __alloT('stem.wave.aria_doppler_regime_btn', 'Switch Doppler regime to ') + reg.label,
+                    style: { minHeight: 44 },
+                    onClick: function () { upd('dopplerRegime', reg.id); },
+                    className: "px-3 py-2 rounded-lg text-xs font-bold transition-colors " + (rAct ? 'bg-rose-800 text-white shadow-sm' : 'bg-white text-rose-900 border border-rose-300 hover:bg-rose-100')
+                  }, reg.label);
+                })
+              ),
 
               React.createElement("label", { className: "text-xs font-bold text-rose-800 flex items-center gap-2" },
 
@@ -5415,7 +8971,9 @@ window.StemLab = window.StemLab || {
 
                 React.createElement("input", { 'data-wave-source-speed-slider': 'true', style: { minHeight: 44 }, type: "range", min: 0.0, max: 1.50, step: 0.05, value: (typeof d.sourceSpeed === 'number' && isFinite(d.sourceSpeed)) ? d.sourceSpeed : 0.3, 'aria-label': __alloT('stem.wave.aria_source_speed', 'Source speed as fraction of wave speed'), onChange: e => upd('sourceSpeed', parseFloat(e.target.value)), className: "w-32 accent-rose-600" }),
 
-                React.createElement("span", { className: "inline-block w-14 text-right font-mono" }, 'M ' + (((typeof d.sourceSpeed === 'number' && isFinite(d.sourceSpeed)) ? d.sourceSpeed : 0.3)).toFixed(2))
+                React.createElement("span", { className: "inline-block w-24 text-right font-mono" }, (d.dopplerRegime === 'relativistic'
+                  ? ('\u03B2 ' + Math.min(0.95, ((typeof d.sourceSpeed === 'number' && isFinite(d.sourceSpeed)) ? d.sourceSpeed : 0.3)).toFixed(2) + 'c')
+                  : ('M ' + (((typeof d.sourceSpeed === 'number' && isFinite(d.sourceSpeed)) ? d.sourceSpeed : 0.3)).toFixed(2))))
 
               ),
 
@@ -5453,7 +9011,9 @@ window.StemLab = window.StemLab || {
                     onChange: function(e) {
                       var nvObs = parseFloat(e.target.value);
                       upd('observerSpeed', nvObs);
-                      if (!waveMetrics.isSupersonic) {
+                      if (d.dopplerRegime === 'relativistic') {
+                        syncOsc({ dopplerFreq: waveComputeRelativisticDoppler(d.frequency || 2, d.sourceSpeed || 0, nvObs).approachingFreq });
+                      } else if (!waveMetrics.isSupersonic) {
                         var df = (d.frequency || 2) * Math.max(0.15, 1 + nvObs) / Math.max(0.05, 1 - Math.min(0.95, d.sourceSpeed || 0));
                         syncOsc({ dopplerFreq: df });
                       }
@@ -5485,13 +9045,112 @@ window.StemLab = window.StemLab || {
 
               (function() {
                 var _m = (typeof d.sourceSpeed === 'number' && isFinite(d.sourceSpeed)) ? d.sourceSpeed : 0.3;
-                var _f0 = d.frequency || 2;
-                var _isSup = _m >= 1.0;
+                var _isRel = d.dopplerRegime === 'relativistic';
+                var _isSup = !_isRel && _m >= 1.0;
+                var mapNmToX = function(nm) {
+                  var clampedNm = Math.max(380, Math.min(950, nm));
+                  return Math.round((20 + ((clampedNm - 380) / (950 - 380)) * 320) * 10) / 10;
+                };
+                var xRest = mapNmToX(656.3);
+                var xApp = mapNmToX(waveMetrics.hAlphaAppNm);
+                var xRec = mapNmToX(waveMetrics.hAlphaRecNm);
                 return React.createElement(React.Fragment, null,
-                  !_isSup && React.createElement("span", { 'data-wave-doppler-approaching': 'true', className: "text-[0.6875rem] font-bold text-red-800 bg-red-100 border border-red-300 rounded-full px-2.5 py-1" }, __alloT('stem.wave.doppler_approaching', 'O\u2082 approaching') + " f\u2032 = " + waveMetrics.approachingFreq.toFixed(1) + " Hz"),
+                  !_isSup && React.createElement("span", { 'data-wave-doppler-approaching': 'true', className: "text-[0.6875rem] font-bold text-red-800 bg-red-100 border border-red-300 rounded-full px-2.5 py-1" }, __alloT('stem.wave.doppler_approaching', 'O\u2082 approaching') + " f\u2032 = " + waveMetrics.approachingFreq.toFixed(_isRel ? 2 : 1) + " Hz"),
                   _isSup && React.createElement("span", { 'data-wave-mach-badge': 'true', className: "text-[0.6875rem] font-bold rounded-full px-2.5 py-1 border", style: isContrast ? { backgroundColor: '#000000', color: '#ffff00', borderColor: '#ffff00' } : isDark ? { backgroundColor: '#78350f', color: '#fef3c7', borderColor: '#f59e0b' } : { backgroundColor: '#fef3c7', color: '#78350f', borderColor: '#d97706' } }, '\u26A1 ' + __alloT('stem.wave.doppler_mach_cone_badge', 'Mach Cone \u03BC = ') + (waveMetrics.machAngleDeg != null ? waveMetrics.machAngleDeg.toFixed(1) : '90.0') + '\u00B0'),
-                  React.createElement("span", { className: "text-[0.6875rem] font-bold text-sky-800 bg-sky-100 border border-sky-300 rounded-full px-2.5 py-1" }, __alloT('stem.wave.doppler_receding', 'O\u2081 receding') + " f\u2032 = " + waveMetrics.recedingFreq.toFixed(1) + " Hz"),
-                  React.createElement("span", { className: "text-[0.6875rem] text-rose-800 italic" }, (_waveAudio.ctx && d.soundPlaying) ? "\uD83D\uDD0A " + __alloT('stem.wave.doppler_tone_bends', 'the tone bends as the source passes the observer') : "\u25B6 " + __alloT('stem.wave.doppler_press_play', 'press Play Sound to HEAR the shift'))
+                  React.createElement("span", { className: "text-[0.6875rem] font-bold text-sky-800 bg-sky-100 border border-sky-300 rounded-full px-2.5 py-1" }, __alloT('stem.wave.doppler_receding', 'O\u2081 receding') + " f\u2032 = " + waveMetrics.recedingFreq.toFixed(_isRel ? 2 : 1) + " Hz"),
+                  _isRel && React.createElement("span", {
+                    'data-wave-relativistic-badges': 'true',
+                    className: "text-[0.6875rem] font-bold rounded-full px-2.5 py-1 border",
+                    style: isContrast ? { backgroundColor: '#000000', color: '#ffff00', borderColor: '#ffff00' } : isDark ? { backgroundColor: '#312e81', color: '#e0e7ff', borderColor: '#818cf8' } : { backgroundColor: '#eef2ff', color: '#312e81', borderColor: '#6366f1' }
+                  }, '\u03B3 = ' + waveMetrics.relativisticGamma.toFixed(2) + ' · z_rec = ' + (waveMetrics.redshiftRec >= 0 ? '+' : '') + waveMetrics.redshiftRec.toFixed(3)),
+                  React.createElement("button", {
+                    type: 'button',
+                    'data-wave-doppler-flyby': 'true',
+                    style: { minHeight: 44 },
+                    'aria-label': __alloT('stem.wave.aria_doppler_flyby', 'Play 2 second Doppler siren fly-by pitch sweep from approaching to receding frequency'),
+                    onClick: playDopplerFlyby,
+                    className: "px-3 py-2 rounded-lg text-xs font-bold bg-rose-700 text-white hover:bg-rose-800 transition-colors shadow-sm"
+                  }, '\uD83D\uDE97 ' + __alloT('stem.wave.btn_doppler_flyby', 'Hear Fly-By Sweep')),
+                  React.createElement("span", { className: "text-[0.6875rem] text-rose-800 italic" }, (_waveAudio.ctx && d.soundPlaying) ? "\uD83D\uDD0A " + __alloT('stem.wave.doppler_tone_bends', 'the tone bends as the source passes the observer') : "\u25B6 " + __alloT('stem.wave.doppler_press_play', 'press Play Sound to HEAR the shift')),
+                  _isRel && React.createElement("div", { className: "w-full pt-2 border-t border-rose-200" },
+                    React.createElement("svg", {
+                      'data-wave-halpha-spectrograph': 'true',
+                      role: 'img',
+                      'aria-label': __alloT('stem.wave.aria_halpha_spectrograph', 'Balmer H-alpha optical Doppler emission spectrograph comparing rest, blueshifted approaching, and redshifted receding wavelengths'),
+                      viewBox: '0 0 360 66',
+                      className: 'w-full h-16 rounded-lg border border-slate-700 block',
+                      style: { backgroundColor: isContrast ? '#000000' : '#0f172a' }
+                    },
+                      React.createElement("line", { x1: 20, y1: 44, x2: 340, y2: 44, stroke: '#475569', strokeWidth: 1 }),
+                      React.createElement("line", { x1: xRest, y1: 12, x2: xRest, y2: 44, stroke: '#e2e8f0', strokeWidth: 1.5, strokeDasharray: '3 3' }),
+                      React.createElement("line", { x1: xApp, y1: 10, x2: xApp, y2: 44, stroke: waveWavelengthNmToHex(waveMetrics.hAlphaAppNm), strokeWidth: 3.5 }),
+                      React.createElement("line", { x1: xRec, y1: 10, x2: xRec, y2: 44, stroke: waveWavelengthNmToHex(waveMetrics.hAlphaRecNm), strokeWidth: 3.5 }),
+                      React.createElement("text", { x: 180, y: 12, textAnchor: 'middle', fill: '#f8fafc', fontSize: 9.5, fontFamily: 'monospace', fontWeight: 'bold' }, 'H\u03B1\u2080 656.3 nm  |  App: ' + waveMetrics.hAlphaAppNm.toFixed(1) + ' nm  |  Rec: ' + waveMetrics.hAlphaRecNm.toFixed(1) + ' nm'),
+                      React.createElement("text", { x: 20, y: 58, textAnchor: 'start', fill: '#cbd5e1', fontSize: 8.5, fontFamily: 'monospace' }, '380 nm (UV/Violet)'),
+                      React.createElement("text", { x: xRest, y: 58, textAnchor: 'middle', fill: '#e2e8f0', fontSize: 8.5, fontFamily: 'monospace' }, '656.3'),
+                      React.createElement("text", { x: 340, y: 58, textAnchor: 'end', fill: '#cbd5e1', fontSize: 8.5, fontFamily: 'monospace' }, '950 nm (NIR)')
+                    )
+                  )
+                );
+              })(),
+
+              (function () {
+                var offD = waveComputeOffAxisDoppler(d.frequency || 2, d.sourceSpeed, d.dopplerOffsetAngleDeg, d.dopplerRegime);
+                return React.createElement("div", {
+                  'data-wave-doppler-offset-bench': 'true',
+                  role: 'region',
+                  'aria-label': __alloT('stem.wave.aria_doppler_offset_bench', 'Off-axis observer angle, radar cosine effect, and transverse relativistic Doppler bench'),
+                  className: "w-full pt-2.5 mt-1 border-t border-rose-200 flex flex-col gap-2"
+                },
+                  React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" },
+                    React.createElement("span", { className: "text-xs font-black text-rose-950" }, '\uD83D\uDCD0 ' + __alloT('stem.wave.doppler_offset_title', 'Off-Axis Observer O\u03B8, Radar Cosine & Transverse Shift')),
+                    React.createElement("span", {
+                      'data-wave-doppler-offset-readout': 'true',
+                      className: "text-[0.6875rem] font-mono font-bold px-2.5 py-1 rounded-full border",
+                      style: isContrast
+                        ? { backgroundColor: '#000000', color: '#ffff00', borderColor: '#ffff00' }
+                        : { backgroundColor: '#0f172a', color: '#f8fafc', borderColor: '#334155' }
+                    }, '\u03B8 = ' + Math.round(offD.observerAngleDeg) + '\u00B0 \u00B7 cos\u03B8 = ' + offD.radarCosinePct.toFixed(1) + '% \u00B7 f\u2032(\u03B8) = ' + offD.observedFreqHz.toFixed(2) + ' Hz \u00B7 f\u2032(90\u00B0) = ' + offD.transverseFreqHz.toFixed(2) + ' Hz' + (offD.isTransverseRedshift ? (' (\u03B3=' + offD.gamma.toFixed(2) + ' time-dilation redshift)') : ''))
+                  ),
+                  React.createElement("div", { className: "flex flex-wrap items-center gap-2" },
+                    React.createElement("div", {
+                      role: 'group',
+                      'aria-label': __alloT('stem.wave.aria_doppler_angle_presets', 'Off-axis observer angle presets'),
+                      className: "flex flex-wrap gap-1.5"
+                    },
+                      [0, 30, 60, 90].map(function (ang) {
+                        var angAct = Math.abs((d.dopplerOffsetAngleDeg || 0) - ang) < 0.6;
+                        return React.createElement("button", {
+                          key: ang,
+                          type: 'button',
+                          'data-wave-doppler-angle-preset': String(ang),
+                          'aria-pressed': angAct,
+                          'aria-label': __alloT('stem.wave.aria_doppler_angle_preset', 'Set off-axis observer angle theta to ') + ang + __alloT('stem.wave.vt_degrees', ' degrees'),
+                          style: { minWidth: 44, minHeight: 44 },
+                          onClick: function () { upd('dopplerOffsetAngleDeg', ang); },
+                          className: "px-2.5 py-2 rounded-lg text-xs font-bold transition-colors " + (angAct ? 'bg-rose-800 text-white shadow-sm' : 'bg-white text-rose-900 border border-rose-300 hover:bg-rose-100')
+                        }, ang + '\u00B0' + (ang === 0 ? ' ' + __alloT('stem.wave.doppler_ang_headon', 'Head-on') : ang === 90 ? ' ' + __alloT('stem.wave.doppler_ang_transverse', 'Transverse') : ''));
+                      })
+                    ),
+                    React.createElement("div", { className: "flex items-center gap-2 ml-auto bg-white px-2.5 py-1 rounded-lg border border-rose-200 flex-1 min-w-[200px]" },
+                      React.createElement("label", {
+                        htmlFor: 'wave-doppler-offset-angle',
+                        className: "text-xs font-bold text-slate-900 whitespace-nowrap"
+                      }, __alloT('stem.wave.doppler_offset_slider_label', 'Angle \u03B8:') + ' ' + Math.round(d.dopplerOffsetAngleDeg || 0) + '\u00B0'),
+                      React.createElement("input", {
+                        id: 'wave-doppler-offset-angle',
+                        'data-wave-doppler-offset-slider': 'true',
+                        type: 'range',
+                        min: 0, max: 90, step: 1,
+                        value: d.dopplerOffsetAngleDeg || 0,
+                        style: { minHeight: 44 },
+                        'aria-label': __alloT('stem.wave.aria_doppler_offset_slider', 'Off-axis observer angle theta in degrees from 0 head-on to 90 transverse'),
+                        'aria-valuetext': Math.round(d.dopplerOffsetAngleDeg || 0) + __alloT('stem.wave.vt_deg_cos_mid', ' degrees cosine ') + offD.radarCosinePct.toFixed(0) + __alloT('stem.wave.vt_pct_radial', ' percent radial'),
+                        onChange: function (e) { upd('dopplerOffsetAngleDeg', parseFloat(e.target.value) || 0); },
+                        className: "w-full accent-rose-700"
+                      })
+                    )
+                  )
                 );
               })()
 
@@ -5649,7 +9308,10 @@ window.StemLab = window.StemLab || {
                 { myth: __alloT('stem.wave.myth1_myth', 'Waves carry water (or air) along with them.'), truth: __alloT('stem.wave.myth1_truth', 'Waves carry ENERGY, not matter. Each bit of the medium oscillates around its home spot and hands the motion on to its neighbor.'), btn: __alloT('stem.wave.myth1_btn', 'Watch the gold tracer'), demo: { waveMode: 'longitudinal' } },
                 { myth: __alloT('stem.wave.myth2_myth', 'A bigger (louder) wave travels faster.'), truth: __alloT('stem.wave.myth2_truth', 'Speed is set by the MEDIUM — tension, density, temperature. Cranking amplitude adds energy, not speed: the crests arrive no sooner.'), btn: __alloT('stem.wave.myth2_btn', 'Crank amplitude, watch the speed'), demo: { waveMode: 'free', amplitude: 95 } },
                 { myth: __alloT('stem.wave.myth3_myth', 'Sound can travel through empty space.'), truth: __alloT('stem.wave.myth3_truth', 'Sound is matter compressing matter. In a vacuum there is nothing to push, so space is silent. Light is different — EM waves need no medium.'), btn: __alloT('stem.wave.myth3_btn', 'See what sound really is'), demo: { waveMode: 'longitudinal' } },
-                { myth: __alloT('stem.wave.myth4_myth', 'When waves cancel, their energy is destroyed.'), truth: __alloT('stem.wave.myth4_truth', 'Energy is never destroyed — it redistributes. The dark bands in the ripple tank sit right next to extra-bright ones; the total stays constant.'), btn: __alloT('stem.wave.myth4_btn', 'Find the dark bands'), demo: { waveMode: 'ripple' } }
+                { myth: __alloT('stem.wave.myth4_myth', 'When waves cancel, their energy is destroyed.'), truth: __alloT('stem.wave.myth4_truth', 'Energy is never destroyed — it redistributes. The dark bands in the ripple tank sit right next to extra-bright ones; the total stays constant.'), btn: __alloT('stem.wave.myth4_btn', 'Find the dark bands'), demo: { waveMode: 'ripple' } },
+                { myth: __alloT('stem.wave.myth5_myth', 'Frequency changes when a wave slows down in a denser medium.'), truth: __alloT('stem.wave.myth5_truth', 'The boundary is driven f times every second, so frequency f stays locked across the boundary — wavelength λ shrinks directly with wave speed v.'), btn: __alloT('stem.wave.myth5_btn', 'Watch λ shrink at the wall'), demo: { waveMode: 'reflection', medium2Ratio: 0.45, reflectivity: 0.4, impedanceCoupled: true } },
+                { myth: __alloT('stem.wave.myth6_myth', 'Only a moving siren creates the Doppler effect — moving yourself doesn’t shift pitch.'), truth: __alloT('stem.wave.myth6_truth', 'Any relative motion between source and listener changes how many crests arrive per second. Walk toward a stationary horn and the pitch climbs too!'), btn: __alloT('stem.wave.myth6_btn', 'Move observer toward source'), demo: { waveMode: 'doppler', sourceSpeed: 0.5, observerSpeed: 0.25 } },
+                { myth: __alloT('stem.wave.myth7_myth', 'Standing waves have no waves traveling inside them.'), truth: __alloT('stem.wave.myth7_truth', 'A standing wave is literally two identical waves racing left and right at equal speeds whose crests and troughs lock into fixed nodes.'), btn: __alloT('stem.wave.myth7_btn', 'Inspect standing harmonic #3'), demo: { waveMode: 'standing', harmonic: 3, standingBoundary: 'bothFixed' } }
               ];
               var mythsOpen = !!d.mythsOpen;
               var mythTheme = isContrast
@@ -5763,20 +9425,30 @@ window.StemLab = window.StemLab || {
                   updPatch({
                     frequency: 2, amplitude: 50, waveType: 'sine', waveSpeed: 343,
                     speed: 1, showSecond: false, amplitude2: 30, frequency2: 3, phase2: 0,
+                    intervalLock: 'none', showBeatEnvelope: false,
                     harmonic: 1, standingBoundary: 'bothFixed',
-                    packetMode: 'continuous', dispersionRatio: 1.0, longitudinalMode: 'traveling',
-                    showDisplacementCurve: false, observerSpeed: 0,
-                    rippleBarrier: 'none', slitWidth: 0.08, showIntensityScreen: false, ripplePhaseDiff: 0,
+                    stringMechanics: false, stringTension: 120, stringDensityGm: 3.0,
+                    resonatorDriven: false, driveFreqRatio: 1.0, resonatorQ: 20,
+                    packetMode: 'continuous', dispersionRatio: 1.0, oceanDepthCoupled: false, waterDepthRatio: 0.5, collidePolarity: 'opposite', longitudinalMode: 'traveling',
+                    showDisplacementCurve: false, observerSpeed: 0, dopplerRegime: 'acoustic',
+                    distanceAttenuation: false, listenerDistMeters: 4, spreadingLaw: 'spherical',
+                    airTempCoupled: false, airTempC: 20,
+                    rippleBarrier: 'none', gratingSlits: 4, slitWidth: 0.08, showIntensityScreen: false, showNodalLines: false, ripplePhaseDiff: 0,
+                    spectrumFilter: 'none', filterCutoffHarmonic: 3, pluckPosition: 0.5,
                     harmonicWeights: [1, 0, 0, 0, 0, 0], incidentAngleDeg: 0,
+                    showTravelingComponents: false, dopplerOffsetAngleDeg: 0,
+                    digitalSampling: false, sampleRateRatio: 8, adcBitDepth: 8,
                     damping: false, dampingAlpha: 0.5, sourceSpeed: 0.3,
                     rippleSeparation: 80, dampingCoeff: 0.002, reflectionEnd: 'fixed',
-                    reflectivity: 0.9, impedanceCoupled: false, antiReflectionCoating: false,
+                    reflectivity: 0.9, impedanceCoupled: false, antiReflectionCoating: false, fresnelPolarization: 's',
+                    ftirEnabled: false, ftirGapLambda: 0.25,
                     medium2Ratio: 0.6, wallFrac: null, rippleSrc1: null, rippleSrc2: null,
                     probeScopeMode: 'time',
+                    showRuler: false, rulerX1: 0.25, rulerX2: 0.75,
                     matchTarget: null, matchXpClaimed: false
                   });
-                  syncOsc({ freq: 2, type: 'sine', weights: [1, 0, 0, 0, 0, 0], freq2: 3 });
-                  var c = canvasRef._lastCanvas; if (c && c._drag) { c._drag.ripple1 = null; c._drag.ripple2 = null; c._drag.wallX = null; }
+                  syncOsc({ freq: 2, type: 'sine', weights: [1, 0, 0, 0, 0, 0], freq2: 3, spectrumFilter: 'none', filterCutoffHarmonic: 3 });
+                  var c = canvasRef._lastCanvas; if (c && c._drag) { c._drag.ripple1 = null; c._drag.ripple2 = null; c._drag.wallX = null; c._drag.ruler1 = null; c._drag.ruler2 = null; }
                   if (typeof addToast === 'function') addToast('\u21BB ' + __alloT('stem.wave.toast_controls_reset', 'Controls reset to defaults'), 'info');
                 },
                 className: "transition-colors ml-auto px-3 py-2 rounded-lg text-xs font-bold bg-white text-slate-700 border border-slate-300 hover:border-slate-500 hover:bg-slate-50 active:scale-[0.97]"
@@ -5837,7 +9509,7 @@ window.StemLab = window.StemLab || {
                   type: 'button',
                   style: { minHeight: 44 },
                   onClick: function () {
-                    updPatch(d.quiz.demo);
+                    updPatch(Object.assign({ workspaceTab: 'explore' }, d.quiz.demo));
                     if (typeof addToast === 'function') addToast('\uD83D\uDC40 ' + __alloT('stem.wave.toast_sim_setup', 'Sim set up to demonstrate this \u2014 watch the wave'), 'info');
                   },
                   className: "transition-colors ml-2 px-3 py-2 rounded-md text-xs font-bold bg-white border " + (d.quiz.chosen === d.quiz.a ? 'border-emerald-500 text-emerald-800 hover:bg-emerald-100' : 'border-red-500 text-red-800 hover:bg-red-100') + " active:scale-[0.97]"
@@ -5846,7 +9518,151 @@ window.StemLab = window.StemLab || {
 
             ),
 
-            React.createElement("button", { type: 'button', style: { minHeight: 44 }, "aria-label": __alloT('stem.wave.snapshot', 'Snapshot'), onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wv-' + Date.now(), tool: 'wave', label: 'A=' + d.amplitude + ' f=' + d.frequency, data: Object.assign({}, d), timestamp: Date.now() }]); addToast('\uD83D\uDCF8 ' + __alloT('stem.wave.toast_snapshot_saved', 'Snapshot saved!'), 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-indigo-700 hover:bg-indigo-800 rounded-full shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 " + __alloT('stem.wave.snapshot', 'Snapshot')),
+            React.createElement("button", {
+              type: 'button',
+              'data-wave-snapshot-btn': 'true',
+              style: { minHeight: 44 },
+              "aria-label": __alloT('stem.wave.aria_save_snapshot', 'Save wave snapshot for comparison and restore'),
+              onClick: function () {
+                var snapLabel = '[' + waveMode + '] f=' + d.frequency + 'Hz, A=' + d.amplitude + ', v=' + d.waveSpeed + 'm/s';
+                var snapPatch = {
+                  waveMode: waveMode,
+                  waveType: d.waveType || 'sine',
+                  frequency: d.frequency,
+                  amplitude: d.amplitude,
+                  waveSpeed: d.waveSpeed,
+                  harmonic: d.harmonic,
+                  standingBoundary: d.standingBoundary || 'bothFixed',
+                  stringMechanics: !!d.stringMechanics,
+                  stringTension: d.stringTension,
+                  stringDensityGm: d.stringDensityGm,
+                  resonatorDriven: !!d.resonatorDriven,
+                  driveFreqRatio: d.driveFreqRatio,
+                  resonatorQ: d.resonatorQ,
+                  rippleBarrier: d.rippleBarrier || 'none',
+                  gratingSlits: d.gratingSlits || 4,
+                  showNodalLines: !!d.showNodalLines,
+                  ripplePhaseDiff: d.ripplePhaseDiff || 0,
+                  medium2Ratio: d.medium2Ratio,
+                  incidentAngleDeg: d.incidentAngleDeg || 0,
+                  reflectivity: d.reflectivity,
+                  impedanceCoupled: !!d.impedanceCoupled,
+                  antiReflectionCoating: !!d.antiReflectionCoating,
+                  fresnelPolarization: d.fresnelPolarization || 's',
+                  ftirEnabled: !!d.ftirEnabled,
+                  ftirGapLambda: d.ftirGapLambda,
+                  sourceSpeed: d.sourceSpeed,
+                  observerSpeed: d.observerSpeed || 0,
+                  dopplerRegime: d.dopplerRegime || 'acoustic',
+                  packetMode: d.packetMode || 'continuous',
+                  dispersionRatio: d.dispersionRatio || 1,
+                  oceanDepthCoupled: !!d.oceanDepthCoupled,
+                  waterDepthRatio: d.waterDepthRatio,
+                  damping: !!d.damping,
+                  dampingAlpha: d.dampingAlpha,
+                  collidePolarity: d.collidePolarity || 'opposite',
+                  longitudinalMode: d.longitudinalMode || 'traveling',
+                  distanceAttenuation: !!d.distanceAttenuation,
+                  listenerDistMeters: d.listenerDistMeters,
+                  spreadingLaw: d.spreadingLaw || 'spherical',
+                  airTempCoupled: !!d.airTempCoupled,
+                  airTempC: d.airTempC,
+                  spectrumFilter: d.spectrumFilter || 'none',
+                  filterCutoffHarmonic: d.filterCutoffHarmonic || 3,
+                  pluckPosition: d.pluckPosition,
+                  showSecond: !!d.showSecond,
+                  amplitude2: d.amplitude2,
+                  frequency2: d.frequency2,
+                  phase2: d.phase2 || 0,
+                  intervalLock: d.intervalLock || 'none',
+                  showBeatEnvelope: !!d.showBeatEnvelope,
+                  showTravelingComponents: !!d.showTravelingComponents,
+                  dopplerOffsetAngleDeg: d.dopplerOffsetAngleDeg || 0,
+                  digitalSampling: !!d.digitalSampling,
+                  sampleRateRatio: d.sampleRateRatio || 8,
+                  adcBitDepth: d.adcBitDepth || 8
+                };
+                var snapId = 'wv-' + Date.now() + '-' + (d.savedSnapshots.length + 1);
+                var snapEntry = { id: snapId, label: snapLabel, timestamp: Date.now(), statePatch: snapPatch };
+                updPatch(function (cur) {
+                  var nextSnaps = (Array.isArray(cur.savedSnapshots) ? cur.savedSnapshots : []).concat([snapEntry]).slice(-8);
+                  return { savedSnapshots: nextSnaps };
+                });
+                if (typeof setToolSnapshots === 'function') {
+                  setToolSnapshots(function (prev) { return (Array.isArray(prev) ? prev : []).concat([{ id: snapId, tool: 'wave', label: 'A=' + d.amplitude + ' f=' + d.frequency, data: Object.assign({}, snapPatch), timestamp: snapEntry.timestamp }]); });
+                }
+                if (typeof addToast === 'function') addToast('\uD83D\uDCF8 ' + __alloT('stem.wave.toast_snapshot_saved', 'Snapshot saved!'), 'success');
+              },
+              className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-indigo-700 hover:bg-indigo-800 rounded-full shadow-md hover:shadow-lg transition-all"
+            }, "\uD83D\uDCF8 " + __alloT('stem.wave.snapshot', 'Snapshot')),
+
+            d.savedSnapshots && d.savedSnapshots.length > 0 && React.createElement("div", {
+              'data-wave-snapshots-tray': 'true',
+              role: 'region',
+              'aria-label': __alloT('stem.wave.aria_snapshots_tray', 'Saved wave snapshots comparison and restore tray'),
+              className: "mt-3 p-3 rounded-xl border-2 border-indigo-200 bg-white space-y-2 shadow-sm"
+            },
+              React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" },
+                React.createElement("h4", { className: "m-0 text-xs font-black text-indigo-900 uppercase tracking-wide" }, '\uD83D\uDCF8 ' + __alloT('stem.wave.snapshots_tray_title', 'Saved Snapshots (Compare & Restore) — ') + d.savedSnapshots.length + '/8'),
+                React.createElement("button", {
+                  type: 'button',
+                  'data-wave-snapshots-clear': 'true',
+                  'aria-label': __alloT('stem.wave.aria_snapshots_clear', 'Clear all saved wave snapshots'),
+                  style: { minHeight: 44 },
+                  onClick: function () { upd('savedSnapshots', []); },
+                  className: "px-3 py-2 rounded-lg text-xs font-bold bg-white text-rose-800 border border-rose-300 hover:bg-rose-50 transition-colors"
+                }, '\uD83D\uDDD1 ' + __alloT('stem.wave.btn_clear_snapshots', 'Clear All'))
+              ),
+              React.createElement("div", { className: "space-y-1.5" },
+                d.savedSnapshots.map(function (snap) {
+                  var diff = waveCompareSnapshot(d, snap);
+                  return React.createElement("div", {
+                    key: snap.id,
+                    'data-wave-snapshot-item': snap.id,
+                    className: "p-2 rounded-lg border border-indigo-100 bg-indigo-50/70 flex flex-wrap items-center justify-between gap-2 text-xs"
+                  },
+                    React.createElement("div", { className: "space-y-0.5" },
+                      React.createElement("div", { className: "font-bold text-slate-900" }, snap.label),
+                      React.createElement("div", { className: "font-mono text-[0.6875rem] text-indigo-900" },
+                        '\u0394f=' + (diff.deltaFreq >= 0 ? '+' : '') + diff.deltaFreq.toFixed(1) + 'Hz · \u0394\u03BB=' + (diff.deltaWavelength >= 0 ? '+' : '') + diff.deltaWavelength.toFixed(1) + 'm · \u0394v=' + (diff.deltaSpeed >= 0 ? '+' : '') + diff.deltaSpeed.toFixed(0) + 'm/s · E ratio=' + diff.energyRatio.toFixed(2) + '\u00D7'
+                      )
+                    ),
+                    React.createElement("div", { className: "flex items-center gap-1.5" },
+                      React.createElement("button", {
+                        type: 'button',
+                        'data-wave-snapshot-restore': snap.id,
+                        'aria-label': __alloT('stem.wave.aria_snapshot_restore', 'Restore snapshot: ') + snap.label,
+                        style: { minHeight: 44 },
+                        onClick: function () {
+                          updPatch(Object.assign({}, snap.statePatch));
+                          syncOsc({
+                            freq: snap.statePatch.frequency,
+                            freq2: snap.statePatch.frequency2,
+                            type: snap.statePatch.waveType,
+                            spectrumFilter: snap.statePatch.spectrumFilter,
+                            filterCutoffHarmonic: snap.statePatch.filterCutoffHarmonic
+                          });
+                          if (typeof addToast === 'function') addToast('\u21BB ' + __alloT('stem.wave.toast_snapshot_restored', 'Restored ') + snap.label, 'success');
+                        },
+                        className: "px-3 py-2 rounded-lg text-xs font-bold bg-indigo-700 text-white hover:bg-indigo-800 transition-colors"
+                      }, '\u21BB ' + __alloT('stem.wave.btn_restore', 'Restore')),
+                      React.createElement("button", {
+                        type: 'button',
+                        'data-wave-snapshot-delete': snap.id,
+                        'aria-label': __alloT('stem.wave.aria_snapshot_delete', 'Delete snapshot: ') + snap.label,
+                        style: { minWidth: 44, minHeight: 44 },
+                        onClick: function () {
+                          updPatch(function (cur) {
+                            return { savedSnapshots: (Array.isArray(cur.savedSnapshots) ? cur.savedSnapshots : []).filter(function (item) { return item.id !== snap.id; }) };
+                          });
+                        },
+                        className: "px-2.5 py-2 rounded-lg text-xs font-bold bg-white text-rose-800 border border-rose-300 hover:bg-rose-50 transition-colors"
+                      }, '\u2715')
+                    )
+                  );
+                })
+              )
+            ),
 
             // ── AI Wave Tutor (reading-level aware) ──
             (function () {
@@ -5866,11 +9682,27 @@ window.StemLab = window.StemLab || {
                 var lv = LEVELS.find(function (L) { return L.id === aiLevel; }) || LEVELS[1];
                 var waveModeCur = d.waveMode || 'free';
                 var waveTypeCur = d.waveType || 'sine';
+                var modeDetails = 'Wave speed: ' + (d.waveSpeed || 343) + ' m/s, wavelength: ' + waveMetrics.wavelength.toFixed(2) + ' m. ';
+                if (waveModeCur === 'standing') modeDetails += 'Harmonic n=' + d.harmonic + ' (' + d.standingBoundary + '), f_n=' + waveMetrics.harmonicFreq.toFixed(1) + ' Hz, ' + waveMetrics.nodesCount + ' nodes. ';
+                else if (waveModeCur === 'doppler') modeDetails += 'Source speed Mach ' + d.sourceSpeed.toFixed(2) + ', observer speed ' + (d.observerSpeed || 0).toFixed(2) + ', approaching f\'=' + waveMetrics.approachingFreq.toFixed(1) + ' Hz, receding f\'=' + waveMetrics.recedingFreq.toFixed(1) + ' Hz. ';
+                else if (waveModeCur === 'reflection') modeDetails += 'Medium 2 speed ratio v2/v1=' + d.medium2Ratio.toFixed(2) + ', incident angle=' + d.incidentAngleDeg + ' deg, reflectivity R=' + waveMetrics.effectiveReflectivity.toFixed(2) + '. ';
+                else if (waveModeCur === 'ripple') modeDetails += 'Barrier=' + d.rippleBarrier + ', phase offset=' + Math.round((d.ripplePhaseDiff || 0) * 180 / Math.PI) + ' deg. ';
+                else if (waveModeCur === 'longitudinal') modeDetails += 'Submode=' + d.longitudinalMode + ', sound level=' + waveMetrics.soundLevelDb.toFixed(1) + ' dB. ';
+                var uiLangName = '';
+                try {
+                  var langCode = (ctx && ctx.lang) || (typeof document !== 'undefined' && document.documentElement && document.documentElement.lang) || '';
+                  if (langCode && !/^en\b/i.test(String(langCode).trim()) && typeof Intl !== 'undefined' && Intl.DisplayNames) {
+                    uiLangName = new Intl.DisplayNames(['en'], { type: 'language' }).of(String(langCode).trim()) || String(langCode).trim();
+                  }
+                } catch (e) {}
                 var prompt = 'Explain this wave setup ' + lv.hint + '. '
                   + 'Wave mode: ' + waveModeCur + '. Wave type: ' + waveTypeCur + '. Frequency: ' + (d.frequency || 2) + ' Hz. Amplitude: ' + (d.amplitude || 50) + '. '
-                  + (d.showSecond ? 'A second wave is also showing for comparison. ' : '')
+                  + modeDetails
+                  + (d.showSecond ? ('Second wave active: f2=' + d.frequency2 + ' Hz, A2=' + d.amplitude2 + ', beat=' + waveMetrics.beatFreq.toFixed(1) + ' Hz. ') : '')
+                  + (d.probeEnabled ? ('Probe at ' + Math.round(d.probeX * 100) + '% reads ' + probeReadout.cyclesFromLeft.toFixed(2) + ' wavelengths. ') : '')
                   + 'In 3 short sentences: (1) What the student is seeing on screen. (2) Which property changes the wave the most (and how). (3) One everyday example of this wave behavior. '
-                  + 'No markdown, no bullets, no headings. Plain prose.';
+                  + 'No markdown, no bullets, no headings. Plain prose.'
+                  + (uiLangName ? (' Write your entire response in ' + uiLangName + '.') : '');
                 callGemini(prompt, false, false, 0.5).then(function (resp) {
                   updPatch({ aiExplain: String(resp || '').trim(), aiLoading: false });
                   if (typeof announceToSR === 'function') announceToSR(__alloT('stem.wave.announce_explanation_ready', 'Explanation ready.'));
@@ -6074,7 +9906,16 @@ window.StemLab = window.StemLab || {
                     { id: 'ampEnergy', label: __alloT('stem.wave.ds_ax_ae', 'A vs. Energy (A\u00B2)') },
                     { id: 'dopplerMach', label: __alloT('stem.wave.ds_ax_dm', 'Mach M vs. f\u2032') },
                     { id: 'snellAngles', label: __alloT('stem.wave.ds_ax_snell', 'Snell \u03B8\u2081 vs. \u03B8\u2082') },
-                    { id: 'phasedBeam', label: __alloT('stem.wave.ds_ax_phased', 'Phased \u0394\u03C6 vs. \u03B8\u2080') }
+                    { id: 'phasedBeam', label: __alloT('stem.wave.ds_ax_phased', 'Phased \u0394\u03C6 vs. \u03B8\u2080') },
+                    { id: 'mersenneTension', label: __alloT('stem.wave.ds_ax_mersenne', 'Mersenne T vs. v') },
+                    { id: 'fresnelBrewster', label: __alloT('stem.wave.ds_ax_brewster', 'Fresnel \u03B8\u2081 vs. R (%)') },
+                    { id: 'airTempSpeed', label: __alloT('stem.wave.ds_ax_airtemp', 'Air T (\u00B0C) vs. v') },
+                    { id: 'resonanceCurve', label: __alloT('stem.wave.ds_ax_resonance', 'Resonator r vs. Gain') },
+                    { id: 'ftirTunneling', label: __alloT('stem.wave.ds_ax_ftir', 'FTIR d/\u03BB vs. T (%)') },
+                    { id: 'inverseSquareDb', label: __alloT('stem.wave.ds_ax_invsq', 'Dist r vs. dB (1/r\u00B2)') },
+                    { id: 'youngFringeSpacing', label: __alloT('stem.wave.ds_ax_young', 'Slit d vs. \u0394y (px)') },
+                    { id: 'adcBitSqnr', label: __alloT('stem.wave.ds_ax_adc', 'ADC Bits vs. SQNR (dB)') },
+                    { id: 'dopplerOffsetAngle', label: __alloT('stem.wave.ds_ax_dopoff', 'Doppler Angle \u03B8 vs. f\u2032') }
                   ].map(function(ax) {
                     var axAct = (d.dataStudioPlot || 'freqWavelength') === ax.id;
                     return React.createElement("button", {
@@ -6091,32 +9932,122 @@ window.StemLab = window.StemLab || {
                 ),
                 d.experimentLog.length === 0
                   ? React.createElement("p", { className: "p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-700 m-0" }, __alloT('stem.wave.analyze_empty', 'No trials logged yet. Adjust frequency or medium speed above and click Log Trial.'))
-                  : React.createElement("div", { className: "overflow-x-auto" },
-                      React.createElement("table", { 'data-wave-log-table': 'true', className: "min-w-full text-xs border-collapse border border-slate-200" },
-                        React.createElement("thead", null,
-                          React.createElement("tr", { className: "bg-slate-100" },
-                            ['#', __alloT('stem.wave.col_mode', 'Mode'), __alloT('stem.wave.col_type', 'Type'), 'f (Hz)', 'A', 'v (m/s)', '\u03BB (m)', 'T (s)', __alloT('stem.wave.col_energy', 'Energy')].map(function(hdr) {
-                              return React.createElement("th", { key: hdr, scope: 'col', className: "px-2.5 py-2 text-left font-black text-slate-800 border-b border-slate-300" }, hdr);
-                            })
+                  : (function() {
+                      var dsAxisId = WAVE_VALID_DS_PLOTS[d.dataStudioPlot] ? d.dataStudioPlot : 'freqWavelength';
+                      var axSpec = getWaveAxisSpec(dsAxisId);
+                      var rawPts = d.experimentLog.map(function(row, idx) {
+                        var mapped = axSpec.mapRow(row, idx);
+                        return { x: Number(mapped.x), y: Number(mapped.value), label: mapped.label };
+                      }).filter(function(p) { return isFinite(p.x) && isFinite(p.y); });
+                      var plotNode = null;
+                      if (rawPts.length >= 2) {
+                        var minX = rawPts[0].x, maxX = rawPts[0].x, minY = rawPts[0].y, maxY = rawPts[0].y;
+                        var sumX = 0, sumY = 0;
+                        rawPts.forEach(function(p) {
+                          if (p.x < minX) minX = p.x;
+                          if (p.x > maxX) maxX = p.x;
+                          if (p.y < minY) minY = p.y;
+                          if (p.y > maxY) maxY = p.y;
+                          sumX += p.x; sumY += p.y;
+                        });
+                        var meanX = sumX / rawPts.length;
+                        var meanY = sumY / rawPts.length;
+                        var ssXX = 0, ssYY = 0, ssXY = 0;
+                        rawPts.forEach(function(p) {
+                          var dx = p.x - meanX, dy = p.y - meanY;
+                          ssXX += dx * dx; ssYY += dy * dy; ssXY += dx * dy;
+                        });
+                        var slope = ssXX > 0 ? (ssXY / ssXX) : 0;
+                        var intercept = meanY - slope * meanX;
+                        var r2 = (ssXX > 0 && ssYY > 0) ? Math.min(1, Math.max(0, (ssXY * ssXY) / (ssXX * ssYY))) : 1;
+                        var spanX = maxX - minX || 1;
+                        var spanY = maxY - minY || 1;
+                        var padL = 50, padR = 16, padT = 16, padB = 30;
+                        var svgW = 420, svgH = 176;
+                        var plotW = svgW - padL - padR;
+                        var plotH = svgH - padT - padB;
+                        var toSvgX = function(xv) { return padL + ((xv - minX) / spanX) * plotW; };
+                        var toSvgY = function(yv) { return padT + plotH - ((yv - minY) / spanY) * plotH; };
+                        var ty1 = slope * minX + intercept;
+                        var ty2 = slope * maxX + intercept;
+                        plotNode = React.createElement("div", { className: "p-3 rounded-xl border border-cyan-200 bg-slate-50 space-y-2" },
+                          React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 text-xs" },
+                            React.createElement("span", { className: "font-black text-slate-800" }, '\uD83D\uDCC8 ' + axSpec.title),
+                            React.createElement("span", {
+                              'data-wave-inline-r2': 'true',
+                              className: "px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-900 border border-indigo-300 font-mono font-bold"
+                            }, 'R\u00B2 = ' + r2.toFixed(3) + ' (n=' + rawPts.length + ')')
+                          ),
+                          React.createElement("svg", {
+                            'data-wave-inline-plot': 'true',
+                            role: 'img',
+                            'aria-label': __alloT('stem.wave.aria_inline_plot', 'Scatter plot of logged wave trials showing linear trend and R squared fit'),
+                            viewBox: '0 0 ' + svgW + ' ' + svgH,
+                            className: "w-full h-44 rounded-lg bg-white border border-slate-200"
+                          },
+                            React.createElement("line", { x1: padL, y1: padT, x2: padL, y2: padT + plotH, stroke: '#64748b', strokeWidth: 1.5 }),
+                            React.createElement("line", { x1: padL, y1: padT + plotH, x2: padL + plotW, y2: padT + plotH, stroke: '#64748b', strokeWidth: 1.5 }),
+                            ssXX > 0 && React.createElement("line", {
+                              x1: toSvgX(minX), y1: Math.max(padT, Math.min(padT + plotH, toSvgY(ty1))),
+                              x2: toSvgX(maxX), y2: Math.max(padT, Math.min(padT + plotH, toSvgY(ty2))),
+                              stroke: '#6366f1', strokeWidth: 2, strokeDasharray: '5,4'
+                            }),
+                            rawPts.map(function(pt, pi) {
+                              return React.createElement("circle", {
+                                key: 'pt-' + pi,
+                                cx: toSvgX(pt.x),
+                                cy: toSvgY(pt.y),
+                                r: 4.5,
+                                fill: '#0e7490',
+                                stroke: '#ffffff',
+                                strokeWidth: 1.5
+                              });
+                            }),
+                            React.createElement("text", { x: padL + plotW / 2, y: svgH - 6, textAnchor: 'middle', fill: '#334155', fontSize: 10, fontWeight: 'bold' }, axSpec.xLabel),
+                            React.createElement("text", { x: 14, y: padT + plotH / 2, textAnchor: 'middle', fill: '#334155', fontSize: 10, fontWeight: 'bold', transform: 'rotate(-90 14 ' + (padT + plotH / 2) + ')' }, axSpec.yShort)
                           )
-                        ),
-                        React.createElement("tbody", null,
-                          d.experimentLog.map(function(row, rIdx) {
-                            return React.createElement("tr", { key: row.id || rIdx, className: rIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
-                              React.createElement("td", { className: "px-2.5 py-1.5 font-mono font-bold text-slate-800" }, row.n),
-                              React.createElement("td", { className: "px-2.5 py-1.5 font-semibold text-slate-800" }, row.mode),
-                              React.createElement("td", { className: "px-2.5 py-1.5 text-slate-700" }, row.waveType),
-                              React.createElement("td", { className: "px-2.5 py-1.5 font-mono text-cyan-800 font-bold" }, row.frequency),
-                              React.createElement("td", { className: "px-2.5 py-1.5 font-mono text-slate-800" }, row.amplitude),
-                              React.createElement("td", { className: "px-2.5 py-1.5 font-mono text-slate-800" }, row.waveSpeed),
-                              React.createElement("td", { className: "px-2.5 py-1.5 font-mono text-emerald-800 font-bold" }, row.wavelength.toFixed(2)),
-                              React.createElement("td", { className: "px-2.5 py-1.5 font-mono text-slate-800" }, row.period.toFixed(3)),
-                              React.createElement("td", { className: "px-2.5 py-1.5 font-mono text-slate-800" }, Math.round(row.energy))
-                            );
-                          })
+                        );
+                      }
+                      var baseHeaders = ['#', __alloT('stem.wave.col_mode', 'Mode'), __alloT('stem.wave.col_type', 'Type'), 'f (Hz)', 'A', 'v (m/s)', '\u03BB (m)', 'T (s)', __alloT('stem.wave.col_energy', 'Energy')];
+                      var extraCols = axSpec.extraCols || [];
+                      return React.createElement(React.Fragment, null,
+                        plotNode,
+                        React.createElement("div", {
+                          className: "overflow-x-auto rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600",
+                          tabIndex: 0,
+                          role: 'region',
+                          'aria-label': __alloT('stem.wave.aria_log_table_scroll', 'Scrollable wave experiment log table')
+                        },
+                          React.createElement("table", { 'data-wave-log-table': 'true', className: "min-w-full text-xs border-collapse border border-slate-200" },
+                            React.createElement("thead", null,
+                              React.createElement("tr", { className: "bg-slate-100" },
+                                baseHeaders.concat(extraCols.map(function(c) { return c.hdr; })).map(function(hdr) {
+                                  return React.createElement("th", { key: hdr, scope: 'col', className: "px-2.5 py-2 text-left font-black text-slate-800 border-b border-slate-300" }, hdr);
+                                })
+                              )
+                            ),
+                            React.createElement("tbody", null,
+                              d.experimentLog.map(function(row, rIdx) {
+                                return React.createElement("tr", { key: row.id || rIdx, className: rIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
+                                  React.createElement("td", { className: "px-2.5 py-1.5 font-mono font-bold text-slate-800" }, row.n),
+                                  React.createElement("td", { className: "px-2.5 py-1.5 font-semibold text-slate-800" }, row.mode),
+                                  React.createElement("td", { className: "px-2.5 py-1.5 text-slate-700" }, row.waveType),
+                                  React.createElement("td", { className: "px-2.5 py-1.5 font-mono text-cyan-800 font-bold" }, row.frequency),
+                                  React.createElement("td", { className: "px-2.5 py-1.5 font-mono text-slate-800" }, row.amplitude),
+                                  React.createElement("td", { className: "px-2.5 py-1.5 font-mono text-slate-800" }, row.waveSpeed),
+                                  React.createElement("td", { className: "px-2.5 py-1.5 font-mono text-emerald-800 font-bold" }, row.wavelength.toFixed(2)),
+                                  React.createElement("td", { className: "px-2.5 py-1.5 font-mono text-slate-800" }, row.period.toFixed(3)),
+                                  React.createElement("td", { className: "px-2.5 py-1.5 font-mono text-slate-800" }, Math.round(row.energy)),
+                                  extraCols.map(function(c, ci) {
+                                    return React.createElement("td", { key: 'ex-' + ci, className: "px-2.5 py-1.5 font-mono text-indigo-800 font-bold" }, c.render(row));
+                                  })
+                                );
+                              })
+                            )
+                          )
                         )
-                      )
-                    ),
+                      );
+                    })(),
                 React.createElement("div", { className: "pt-2 border-t border-slate-200" },
                   React.createElement("h5", { className: "text-xs font-black uppercase tracking-wide text-slate-800 mb-2" }, __alloT('stem.wave.spectrum_table_heading', 'Live Harmonic Spectrum Components (') + activeWaveType + ')'),
                   React.createElement("div", { 'data-wave-spectrum-summary': 'true', className: "flex flex-wrap gap-2 mb-2 text-xs" },
@@ -6127,7 +10058,12 @@ window.StemLab = window.StemLab || {
                       __alloT('stem.wave.spec_thd', 'THD: ') + specData.thdPct.toFixed(1) + '%'
                     )
                   ),
-                  React.createElement("div", { className: "overflow-x-auto" },
+                  React.createElement("div", {
+                    className: "overflow-x-auto rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600",
+                    tabIndex: 0,
+                    role: 'region',
+                    'aria-label': __alloT('stem.wave.aria_spectrum_table_scroll', 'Scrollable harmonic spectrum table')
+                  },
                     React.createElement("table", { className: "min-w-full text-xs border-collapse border border-slate-200" },
                       React.createElement("thead", null,
                         React.createElement("tr", { className: "bg-slate-100" },
@@ -6215,8 +10151,7 @@ window.StemLab = window.StemLab || {
                     'aria-label': __alloT('stem.wave.aria_cer_insert', 'Insert live wave measurements into Evidence box'),
                     style: { minHeight: 44 },
                     onClick: function() {
-                      var snippet = '[' + waveMode + '] f=' + d.frequency + 'Hz, A=' + d.amplitude + ', v=' + d.waveSpeed + 'm/s, \u03BB=' + waveMetrics.wavelength.toFixed(1) + 'm'
-                        + (d.probeEnabled ? (', probe \u0394r=' + probeReadout.deltaRLambda.toFixed(2) + '\u03BB (' + probeReadout.interferenceClass + ')') : '');
+                      var snippet = waveBuildCerEvidence(d);
                       upd('cerEvidence', (d.cerEvidence ? (d.cerEvidence + '\n') : '') + snippet);
                       if (typeof addToast === 'function') addToast('\uD83D\uDCCB ' + __alloT('stem.wave.toast_inserted_evidence', 'Live telemetry added to Evidence'), 'info');
                     },
@@ -6247,8 +10182,32 @@ window.StemLab = window.StemLab || {
                   React.createElement("h5", { className: "text-xs font-black uppercase tracking-wide text-slate-800 m-0" }, '\uD83D\uDD17 ' + __alloT('stem.wave.bridges_heading', 'Cross-Tool STEM Bridges')),
                   React.createElement("div", { className: "flex flex-wrap gap-2" },
                     [
-                      { id: 'opticsLab', label: '\uD83D\uDD26 ' + __alloT('stem.wave.bridge_optics', 'Optics Lab (Refraction & Lenses)'), fn: function() { if (typeof setStemLabTool === 'function') setStemLabTool('opticsLab'); } },
-                      { id: 'musicSynth', label: '\uD83C\uDFB9 ' + __alloT('stem.wave.bridge_music', 'Music Synth (Harmonics & Pitch)'), fn: function() { if (typeof setStemLabTool === 'function') setStemLabTool('musicSynth'); } },
+                      { id: 'opticsLab', label: '\uD83D\uDD26 ' + __alloT('stem.wave.bridge_optics', 'Optics Lab (Refraction & Lenses)'), fn: function() {
+                        var opPatch;
+                        if (waveMode === 'reflection') {
+                          var n2Opt = Math.max(1.0, Math.min(2.5, Math.round((1.0 / Math.max(0.15, d.medium2Ratio || 0.6)) * 1000) / 1000));
+                          opPatch = { mode: 'refraction', refrN1: 1.0, refrN2: n2Opt, refrTheta1: d.incidentAngleDeg > 0 ? Math.round(d.incidentAngleDeg) : 30 };
+                        } else if (waveMode === 'ripple' && d.rippleBarrier === 'singleSlit') {
+                          opPatch = { mode: 'diffraction', diffMode: 'single', diffSlitWidth: Math.round(Math.max(10, Math.min(80, (d.slitWidth || 0.08) * 400))) };
+                        } else {
+                          opPatch = { mode: 'interference', intSlitSep: Math.max(0.02, Math.min(0.4, Math.round((0.05 + ((d.rippleSeparation || 80) - 30) * 0.002) * 100) / 100)) };
+                        }
+                        if (typeof setLabToolData === 'function') {
+                          setLabToolData(function(prev) {
+                            return Object.assign({}, prev, { opticsLab: Object.assign({}, (prev && prev.opticsLab) || {}, opPatch) });
+                          });
+                        }
+                        if (typeof setStemLabTool === 'function') setStemLabTool('opticsLab');
+                      } },
+                      { id: 'musicSynth', label: '\uD83C\uDFB9 ' + __alloT('stem.wave.bridge_music', 'Music Synth (Harmonics & Pitch)'), fn: function() {
+                        var musicWave = (activeWaveType === 'square' || activeWaveType === 'sawtooth' || activeWaveType === 'triangle') ? activeWaveType : 'sine';
+                        if (typeof setLabToolData === 'function') {
+                          setLabToolData(function(prev) {
+                            return Object.assign({}, prev, { musicSynth: Object.assign({}, (prev && prev.musicSynth) || {}, { synthTab: 'play', synthEngine: (waveMode === 'standing' ? 'plucked' : 'standard'), waveType: musicWave }) });
+                          });
+                        }
+                        if (typeof setStemLabTool === 'function') setStemLabTool('musicSynth');
+                      } },
                       { id: 'physics', label: '\uD83C\uDFAF ' + __alloT('stem.wave.bridge_physics', 'Projectile Lab (Motion & Graphs)'), fn: function() { if (typeof setStemLabTool === 'function') setStemLabTool('physics'); } },
                       { id: 'dataStudio', label: '\uD83D\uDCCA ' + __alloT('stem.wave.bridge_datastudio', 'Data Studio (Scatter Plot f vs \u03BB)'), fn: openWaveInDataStudio }
                     ].map(function(br) {
@@ -6559,6 +10518,9 @@ window.StemLab = window.StemLab || {
                 React.createElement('div', { className: 'text-[0.6875rem] text-slate-600' }, __alloT('stem.wave.label_examples', 'Examples: '), w.examples.join(', '))
               );
             })
+          ),
+          React.createElement('div', { className: 'mt-2' },
+            renderTryInSimBtn('types_transverse_vs_longitudinal', __alloT('stem.wave.try_types_long', 'Compare Compression & Displacement Wave'), { waveMode: 'longitudinal', longitudinalMode: 'traveling', showDisplacementCurve: true, frequency: 3 })
           )
         );
       }
@@ -6578,6 +10540,9 @@ window.StemLab = window.StemLab || {
                 React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, q.def)
               );
             })
+          ),
+          React.createElement('div', { className: 'mt-2' },
+            renderTryInSimBtn('quantities_ruler_probe', __alloT('stem.wave.try_quantities_ruler', 'Measure \u03BB & Probe Kinematics Live'), { waveMode: 'free', showRuler: true, rulerX1: 0.2, rulerX2: 0.7, probeEnabled: true, probeX: 0.45 })
           )
         );
       }
@@ -6592,6 +10557,9 @@ window.StemLab = window.StemLab || {
                 React.createElement('div', { className: 'text-[0.6875rem] text-slate-700' }, f.purpose)
               );
             })
+          ),
+          React.createElement('div', { className: 'mt-2' },
+            renderTryInSimBtn('formulas_standing_decomp', __alloT('stem.wave.try_formulas_decomp', 'Standing Superposition y\u208A + y\u208B Live'), { waveMode: 'standing', standingBoundary: 'bothFixed', harmonic: 2, showTravelingComponents: true })
           )
         );
       }
@@ -6614,8 +10582,11 @@ window.StemLab = window.StemLab || {
           ),
           React.createElement('div', { className: 'p-2.5 rounded-md bg-amber-50 border border-amber-200 text-[0.6875rem] text-amber-700' },
             React.createElement('strong', null, '💡 ' + __alloT('stem.wave.sec_beats_label', 'Beats: ')), __alloT('stem.wave.sec_beats_text', 'Two waves of slightly different frequency interfere alternately constructively + destructively. Beat frequency = |f₁ − f₂|. Musicians use this to tune by ear.')
+          ),
+          React.createElement('div', { className: 'flex flex-wrap gap-2 mt-1' },
+            renderTryInSimBtn('interference_beats', 'Beats & Superposition', { waveMode: 'free', showSecond: true, frequency: 4, frequency2: 4.5, amplitude: 45, amplitude2: 45, phase2: 0 }),
+            renderTryInSimBtn('interference_collide', __alloT('stem.wave.try_pulse_collide', 'Counter-Propagating Pulse Cancellation'), { waveMode: 'free', packetMode: 'collide', collidePolarity: 'opposite', showSecond: false, amplitude: 55 })
           )
-          , renderTryInSimBtn('interference_beats', 'Beats & Superposition', { waveMode: 'free', showSecond: true, frequency: 4, frequency2: 4.5, amplitude: 45, amplitude2: 45, phase2: 0 })
         );
       }
 
@@ -6643,7 +10614,10 @@ window.StemLab = window.StemLab || {
               '• ' + __alloT('stem.wave.doppler_app_cmb', 'Cosmic microwave background: small Doppler shifts reveal early-universe structure.')
             )
           ),
-          renderTryInSimBtn('doppler_moving_pair', 'Moving Source & Observer', { waveMode: 'doppler', sourceSpeed: 0.4, observerSpeed: 0.3, frequency: 3 })
+          React.createElement('div', { className: 'flex flex-wrap gap-2 mt-2' },
+            renderTryInSimBtn('doppler_moving_pair', 'Moving Source & Observer', { waveMode: 'doppler', dopplerRegime: 'acoustic', sourceSpeed: 0.4, observerSpeed: 0.3, frequency: 3 }),
+            renderTryInSimBtn('doppler_relativistic_halpha', __alloT('stem.wave.try_rel_doppler', 'Galaxy Redshift (Relativistic H\u03B1)'), { waveMode: 'doppler', dopplerRegime: 'relativistic', sourceSpeed: 0.6, observerSpeed: 0, frequency: 4 })
+          )
         );
       }
 
@@ -6662,6 +10636,9 @@ window.StemLab = window.StemLab || {
                 React.createElement('div', { className: 'text-[0.6875rem] text-slate-700' }, __alloT('stem.wave.label_uses', 'Uses: '), s.uses)
               );
             })
+          ),
+          React.createElement('div', { className: 'mt-2' },
+            renderTryInSimBtn('em_spectrum_redshift', __alloT('stem.wave.try_em_transverse', 'Relativistic EM Transverse Redshift (\u03B8=90\u00B0)'), { waveMode: 'doppler', dopplerRegime: 'relativistic', sourceSpeed: 0.75, dopplerOffsetAngleDeg: 90, frequency: 4 })
           )
         );
       }
@@ -6680,6 +10657,9 @@ window.StemLab = window.StemLab || {
                 )
               );
             })
+          ),
+          React.createElement('div', { className: 'mt-2' },
+            renderTryInSimBtn('colors_grating_dispersion', __alloT('stem.wave.try_colors_grating', '6-Slit Optical Grating Interference Screen'), { waveMode: 'ripple', rippleBarrier: 'grating', gratingSlits: 6, slitWidth: 0.08, showIntensityScreen: true, frequency: 5 })
           )
         );
       }
@@ -6701,8 +10681,12 @@ window.StemLab = window.StemLab || {
           ),
           React.createElement('div', { className: 'mt-3 p-2.5 rounded-md bg-purple-50 border border-purple-200 text-[0.6875rem] text-purple-700' },
             React.createElement('strong', null, '💡 ' + __alloT('stem.wave.harm_callout_label', 'Why instruments sound different: ')), __alloT('stem.wave.harm_callout_text', 'A note at 440 Hz on a violin and a flute both have fundamental at 440 Hz. The MIX of higher harmonics (the spectrum) is different — that\'s timbre. Pure sine = boring; rich harmonic content = recognizable instrument.')
+          ),
+          React.createElement('div', { className: 'flex flex-wrap gap-2 mt-1' },
+            renderTryInSimBtn('harmonics_kundt', 'Kundt Standing Tube (n=3)', { waveMode: 'longitudinal', longitudinalMode: 'standing', harmonic: 3, showDisplacementCurve: true }),
+            renderTryInSimBtn('harmonics_lowpass', __alloT('stem.wave.try_harmonic_filter', 'Sawtooth Low-Pass Filter (Hc=3)'), { waveMode: 'spectrum', waveType: 'sawtooth', spectrumFilter: 'lowpass', filterCutoffHarmonic: 3, frequency: 3 }),
+            renderTryInSimBtn('harmonics_resonator', __alloT('stem.wave.try_driven_resonator', 'Driven Q=30 Standing Resonator (2f\u2081)'), { waveMode: 'standing', standingBoundary: 'bothFixed', harmonic: 2, resonatorDriven: true, driveFreqRatio: 2.0, resonatorQ: 30 })
           )
-          , renderTryInSimBtn('harmonics_kundt', 'Kundt Standing Tube (n=3)', { waveMode: 'longitudinal', longitudinalMode: 'standing', harmonic: 3, showDisplacementCurve: true })
         );
       }
 
@@ -6713,7 +10697,10 @@ window.StemLab = window.StemLab || {
           React.createElement('div', { className: 'space-y-2' },
             STANDING_WAVE_INSTRUMENTS.map(function(s, i) {
               var tryNode = i === 0
-                ? renderTryInSimBtn('inst_both_fixed', s.instrument, { waveMode: 'standing', standingBoundary: 'bothFixed', harmonic: 2 })
+                ? React.createElement('div', { className: 'flex flex-wrap gap-2' },
+                    renderTryInSimBtn('inst_both_fixed', s.instrument, { waveMode: 'standing', standingBoundary: 'bothFixed', harmonic: 2 }),
+                    renderTryInSimBtn('inst_mersenne_violin', __alloT('stem.wave.try_mersenne_violin', 'Mersenne Violin A4 String (T=60N, \u03BC=1.5g/m)'), { waveMode: 'standing', standingBoundary: 'bothFixed', stringMechanics: true, stringTension: 60, stringDensityGm: 1.5, harmonic: 1 })
+                  )
                 : i === 1
                   ? renderTryInSimBtn('inst_open_open', s.instrument, { waveMode: 'standing', standingBoundary: 'openOpen', harmonic: 2 })
                   : i === 2
@@ -6755,7 +10742,8 @@ window.StemLab = window.StemLab || {
           ),
           React.createElement('div', { className: 'mt-3 p-2.5 rounded-md bg-red-50 border border-red-300 text-[0.6875rem] text-red-700' },
             React.createElement('strong', null, '⚠ ' + __alloT('stem.wave.db_callout_label', 'Permanent hearing loss: ')), __alloT('stem.wave.db_callout_text', 'OSHA: 85 dB for 8 hours, 90 dB for 4 hours, etc. (each +5 dB halves safe exposure time). Wear ear protection at concerts, with power tools, at firing ranges.')
-          )
+          ),
+          renderTryInSimBtn('decibels_attenuation', __alloT('stem.wave.try_decibels_attenuation', 'Inverse-Square dB Attenuation (6 dB/doubling)'), { waveMode: 'longitudinal', longitudinalMode: 'traveling', distanceAttenuation: true, listenerDistMeters: 4, spreadingLaw: 'spherical', amplitude: 80 })
         );
       }
 
@@ -7327,7 +11315,9 @@ window.StemLab = window.StemLab || {
                 ? renderTryInSimBtn('diff_single_slit', d.fact, { waveMode: 'ripple', rippleBarrier: 'singleSlit', slitWidth: 0.08, showIntensityScreen: true })
                 : i === 1
                   ? renderTryInSimBtn('diff_double_slit', d.fact, { waveMode: 'ripple', rippleBarrier: 'doubleSlit', slitWidth: 0.08, showIntensityScreen: true })
-                  : null;
+                  : i === 2
+                    ? renderTryInSimBtn('diff_grating_5slit', d.fact, { waveMode: 'ripple', rippleBarrier: 'grating', gratingSlits: 5, slitWidth: 0.08, showIntensityScreen: true, ripplePhaseDiff: 0 })
+                    : null;
               return React.createElement('div', { key: 'd'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 React.createElement('div', { className: 'text-[0.75rem] font-black text-slate-800 mb-1' }, d.fact),
                 React.createElement('div', { className: 'text-[0.6875rem] font-mono text-cyan-700 font-bold mb-1' }, d.formula),
@@ -7349,7 +11339,8 @@ window.StemLab = window.StemLab || {
                 React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, p.detail)
               );
             })
-          )
+          ),
+          renderTryInSimBtn('pol_brewster_demo', __alloT('stem.wave.try_brewster_tm', 'Brewster Angle Glare Elimination (TM p-pol)'), { waveMode: 'reflection', impedanceCoupled: true, antiReflectionCoating: false, fresnelPolarization: 'p', medium2Ratio: 0.6, incidentAngleDeg: 59 })
         );
       }
 
@@ -7364,6 +11355,10 @@ window.StemLab = window.StemLab || {
                 React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, q.detail)
               );
             })
+          ),
+          React.createElement('div', { className: 'flex flex-wrap gap-2 mt-2' },
+            renderTryInSimBtn('quantum_tunneling', __alloT('stem.wave.try_quantum_tunneling', 'Evanescent Barrier Tunneling (FTIR d=0.25\u03BB)'), { waveMode: 'reflection', medium2Ratio: 1.5, incidentAngleDeg: 55, ftirEnabled: true, ftirGapLambda: 0.25, impedanceCoupled: true }),
+            renderTryInSimBtn('quantum_box_packet', __alloT('stem.wave.try_quantum_packet', 'Wave Packet Localization'), { waveMode: 'free', packetMode: 'packet', dispersionRatio: 0.75, frequency: 4 })
           )
         );
       }
@@ -7394,6 +11389,10 @@ window.StemLab = window.StemLab || {
                 React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, f.detail)
               );
             })
+          ),
+          React.createElement('div', { className: 'flex flex-wrap gap-2 mt-2' },
+            renderTryInSimBtn('seismic_pwave', __alloT('stem.wave.try_seismic_p', 'Seismic P-Wave (Longitudinal)'), { waveMode: 'longitudinal', longitudinalMode: 'traveling', airTempCoupled: false, waveSpeed: 600, frequency: 2 }),
+            renderTryInSimBtn('seismic_refract', __alloT('stem.wave.try_seismic_refract', 'Crust-Mantle Refraction (v\u2082 = 1.6v\u2081)'), { waveMode: 'reflection', medium2Ratio: 1.6, incidentAngleDeg: 30, impedanceCoupled: true, ftirEnabled: false })
           )
         );
       }
@@ -7424,7 +11423,10 @@ window.StemLab = window.StemLab || {
               );
             })
           ),
-          renderTryInSimBtn('ocean_deep_packet', 'Deep-Water Wave Packet (vg = 0.5 vp)', { waveMode: 'free', packetMode: 'packet', dispersionRatio: 0.5, frequency: 4, waveSpeed: 1500 })
+          React.createElement('div', { className: 'flex flex-wrap gap-2 mt-2' },
+            renderTryInSimBtn('ocean_deep_packet', 'Deep-Water Wave Packet (vg = 0.5 vp)', { waveMode: 'free', packetMode: 'packet', dispersionRatio: 0.5, oceanDepthCoupled: true, waterDepthRatio: 0.80, frequency: 4, waveSpeed: 1500 }),
+            renderTryInSimBtn('ocean_tsunami_shallow', __alloT('stem.wave.try_ocean_tsunami', 'Shallow Tsunami Dispersion (h/\u03BB = 0.03)'), { waveMode: 'free', packetMode: 'packet', oceanDepthCoupled: true, waterDepthRatio: 0.03, frequency: 2, waveSpeed: 200 })
+          )
         );
       }
 
@@ -7453,7 +11455,8 @@ window.StemLab = window.StemLab || {
         return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📡 ' + __alloT('stem.wave.sec_radar_title', 'Radar, sonar, and active ranging')),
           React.createElement('div', { className: 'flex flex-wrap gap-2 mb-3' },
-            renderTryInSimBtn('radar_phased_array', __alloT('stem.wave.try_radar_phased', 'Steered Phased-Array Radar Lobe'), { waveMode: 'ripple', rippleBarrier: 'none', ripplePhaseDiff: -1.5708, showIntensityScreen: true, frequency: 3, rippleSeparation: 80 })
+            renderTryInSimBtn('radar_phased_array', __alloT('stem.wave.try_radar_phased', 'Steered Phased-Array Radar Lobe'), { waveMode: 'ripple', rippleBarrier: 'none', ripplePhaseDiff: -1.5708, showIntensityScreen: true, frequency: 3, rippleSeparation: 80 }),
+            renderTryInSimBtn('radar_sonar_echo', __alloT('stem.wave.try_sonar_echo', 'Sonar Boundary Echo Ranging (2d/v\u2081)'), { waveMode: 'reflection', waveSpeed: 1482, reflectivity: 0.85, wallFrac: 0.65, incidentAngleDeg: 0 })
           ),
           React.createElement('div', { className: 'space-y-2' },
             RADAR_SONAR.map(function(r, i) {
@@ -7476,6 +11479,9 @@ window.StemLab = window.StemLab || {
                 React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, s.detail)
               );
             })
+          ),
+          React.createElement('div', { className: 'flex flex-wrap gap-2 mt-2' },
+            renderTryInSimBtn('shockwave_mach15', __alloT('stem.wave.try_mach_cone', 'Mach 1.5 Supersonic Shock Cone'), { waveMode: 'doppler', dopplerRegime: 'acoustic', sourceSpeed: 1.5, observerSpeed: 0 })
           )
         );
       }
@@ -7622,6 +11628,9 @@ window.StemLab = window.StemLab || {
                 })
               )
             )
+          ),
+          React.createElement('div', { className: 'mt-2' },
+            renderTryInSimBtn('recordings_nyquist_adc', __alloT('stem.wave.try_recordings_adc', 'PCM Bit-Depth & Nyquist Aliasing Bench'), { waveMode: 'spectrum', waveType: 'sine', digitalSampling: true, sampleRateRatio: 8, adcBitDepth: 4, frequency: 3 })
           )
         );
       }
@@ -7801,6 +11810,9 @@ window.StemLab = window.StemLab || {
                 React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, f.detail)
               );
             })
+          ),
+          React.createElement('div', { className: 'mt-2' },
+            renderTryInSimBtn('cameras_ar_lens_coating', __alloT('stem.wave.try_cameras_ar', 'Quarter-Wave MgF\u2082 Lens AR Coating (R\u22480%)'), { waveMode: 'reflection', impedanceCoupled: true, antiReflectionCoating: true, medium2Ratio: 0.66, incidentAngleDeg: 15 })
           )
         );
       }
@@ -7893,7 +11905,8 @@ window.StemLab = window.StemLab || {
                 })
               )
             )
-          )
+          ),
+          renderTryInSimBtn('stars_halpha_redshift', __alloT('stem.wave.try_stars_redshift', 'Test H\u03B1 Redshift in Relativistic Doppler'), { waveMode: 'doppler', dopplerRegime: 'relativistic', sourceSpeed: 0.45, observerSpeed: 0, frequency: 4 })
         );
       }
 
@@ -7952,7 +11965,8 @@ window.StemLab = window.StemLab || {
                 })
               )
             )
-          )
+          ),
+          renderTryInSimBtn('noise_spectral_filter', __alloT('stem.wave.try_noise_filter', 'Fourier Low-Pass Noise Filter Bench'), { waveMode: 'spectrum', waveType: 'sawtooth', spectrumFilter: 'lowpass', filterCutoffHarmonic: 3 })
         );
       }
 
@@ -8093,7 +12107,8 @@ window.StemLab = window.StemLab || {
                 })
               )
             )
-          )
+          ),
+          renderTryInSimBtn('animal_echolocation_sonar', __alloT('stem.wave.try_animal_sonar', 'Bat/Dolphin Ultrasonic Sonar Ping'), { waveMode: 'free', frequency: 8, amplitude: 55, waveSpeed: 343, packetMode: 'packet', wallFrac: 0.72 })
         );
       }
 
@@ -8120,7 +12135,8 @@ window.StemLab = window.StemLab || {
                 })
               )
             )
-          )
+          ),
+          renderTryInSimBtn('instrument_fifths_beats', __alloT('stem.wave.try_instrument_fifth', 'String Fifth (3:2) & Tuning Beat Bench'), { waveMode: 'free', showSecond: true, intervalLock: '3:2', showBeatEnvelope: true, frequency: 4, amplitude: 50, amplitude2: 50 })
         );
       }
 
@@ -8201,7 +12217,8 @@ window.StemLab = window.StemLab || {
                 })
               )
             )
-          )
+          ),
+          renderTryInSimBtn('air_temp_sound_demo', __alloT('stem.wave.try_air_temp_sound', 'Air Temperature & Sound Speed Lab (T\u00B0C)'), { waveMode: 'longitudinal', longitudinalMode: 'standing', airTempCoupled: true, airTempC: 35, harmonic: 2 })
         );
       }
 
@@ -8422,7 +12439,8 @@ window.StemLab = window.StemLab || {
                 React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, f.detail)
               );
             })
-          )
+          ),
+          renderTryInSimBtn('laser_grating_bench', __alloT('stem.wave.try_laser_grating', 'Coherent Laser 4-Slit Grating & Screen'), { waveMode: 'ripple', rippleBarrier: 'grating', gratingSlits: 4, slitWidth: 0.1, showIntensityScreen: true, showNodalLines: true })
         );
       }
 
@@ -8477,7 +12495,8 @@ window.StemLab = window.StemLab || {
                 React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, m.detail)
               );
             })
-          )
+          ),
+          renderTryInSimBtn('music_pluck_sculptor', __alloT('stem.wave.try_pluck_sculptor', 'Young\u2013Helmholtz Pluck Node Suppressor (x/L)'), { waveMode: 'spectrum', waveType: 'custom', pluckPosition: 0.5, harmonicWeights: [1, 0, 0.11, 0, 0.04, 0] })
         );
       }
 
@@ -8492,7 +12511,8 @@ window.StemLab = window.StemLab || {
                 React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, p.notes)
               );
             })
-          )
+          ),
+          renderTryInSimBtn('ear_canal_resonator', __alloT('stem.wave.try_ear_resonator', 'Cochlea & Ear-Canal Resonance Probe (Q=25)'), { waveMode: 'standing', standingBoundary: 'fixedFree', resonatorDriven: true, driveFreqRatio: 1.0, resonatorQ: 25, probeEnabled: true, probeX: 0.5 })
         );
       }
 
@@ -8510,7 +12530,8 @@ window.StemLab = window.StemLab || {
                 React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, m.notes)
               );
             })
-          )
+          ),
+          renderTryInSimBtn('ultrasound_tissue_echo', __alloT('stem.wave.try_ultrasound_echo', 'Diagnostic Ultrasound Tissue Interface Echo'), { waveMode: 'reflection', impedanceCoupled: true, medium2Ratio: 1.45, incidentAngleDeg: 18, waveSpeed: 1500 })
         );
       }
 
@@ -8524,6 +12545,9 @@ window.StemLab = window.StemLab || {
                 React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, s.detail)
               );
             })
+          ),
+          React.createElement('div', { className: 'mt-2' },
+            renderTryInSimBtn('satellites_phased_downlink', __alloT('stem.wave.try_satellites_link', 'Satellite Inverse-Square Link Budget (1/r\u00B2)'), { waveMode: 'longitudinal', distanceAttenuation: true, listenerDistMeters: 12, spreadingLaw: 'spherical', amplitude: 75 })
           )
         );
       }
@@ -8538,7 +12562,8 @@ window.StemLab = window.StemLab || {
                 React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, g.detail)
               );
             })
-          )
+          ),
+          renderTryInSimBtn('ligo_phase_canceller', __alloT('stem.wave.try_ligo_canceller', 'LIGO Dark-Port \u03C0-Phase Interferometer'), { waveMode: 'free', showSecond: true, frequency: 3, frequency2: 3, amplitude: 50, amplitude2: 50, phase2: 3.1416, showBeatEnvelope: true })
         );
       }
 

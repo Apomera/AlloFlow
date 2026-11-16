@@ -195,6 +195,37 @@ function readVisualSupportSnapshot() {
     return { profileId: "default", boards: [], schedules: [] };
   }
 }
+function persistVisualScheduleProgress(profileId, scheduleId, nextNowId, nextCompletedMap) {
+  try {
+    const storage = typeof window !== "undefined" ? window.localStorage : null;
+    if (!storage || !scheduleId) return false;
+    const scopedKey = "alloSchedules__" + (profileId || "default");
+    const scopedRaw = storage.getItem(scopedKey);
+    const fallbackRaw = scopedRaw != null ? scopedRaw : storage.getItem("alloSchedules");
+    const parsed = JSON.parse(fallbackRaw || "[]");
+    if (!Array.isArray(parsed)) return false;
+    let changed = false;
+    const updated = parsed.map(function(sched) {
+      if (!sched || typeof sched !== "object" || sched.id !== scheduleId) return sched;
+      changed = true;
+      const items = Array.isArray(sched.items) ? sched.items.map(function(it, idx) {
+        if (!it || typeof it !== "object") return it;
+        const hasIdFlag = nextCompletedMap && Object.prototype.hasOwnProperty.call(nextCompletedMap, it.id);
+        const complete = hasIdFlag ? !!nextCompletedMap[it.id] : !!(nextCompletedMap && Object.prototype.hasOwnProperty.call(nextCompletedMap, idx) ? nextCompletedMap[idx] : it.complete);
+        return Object.assign({}, it, { complete });
+      }) : [];
+      return Object.assign({}, sched, {
+        nowId: typeof nextNowId === "string" ? nextNowId : sched.nowId || "",
+        items
+      });
+    });
+    if (!changed) return false;
+    storage.setItem(scopedKey, JSON.stringify(updated));
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
 function VisualSupportBoardCard(props) {
   const { board, cardIndex, categoryBackgrounds, pauseAnimations, onSpeak } = props;
   const tr = props.tr || function(key, fallback, params) {
@@ -260,14 +291,45 @@ function VisualSupportsModal(props) {
     const dialog = dialogRef.current;
     if (!dialog) return void 0;
     const previousFocus = document.activeElement;
+    const backgroundState = [];
+    const seenNodes = /* @__PURE__ */ new Set();
+    for (let branch = dialog; branch && branch !== document.body && branch.parentElement; branch = branch.parentElement) {
+      Array.from(branch.parentElement.children).forEach(function(sibling) {
+        if (sibling === branch || seenNodes.has(sibling) || /^(?:SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName)) return;
+        seenNodes.add(sibling);
+        backgroundState.push({
+          node: sibling,
+          hadInert: sibling.hasAttribute("inert"),
+          ariaHidden: sibling.getAttribute("aria-hidden")
+        });
+        sibling.setAttribute("inert", "");
+        sibling.setAttribute("aria-hidden", "true");
+      });
+    }
+    const prevBodyOverflow = document.body ? document.body.style.overflow : "";
+    if (document.body) document.body.style.overflow = "hidden";
+    const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
+    const trap = { root: dialog };
+    trapStack.push(trap);
+    const isTopTrap = function() {
+      return trapStack[trapStack.length - 1] === trap;
+    };
     const getFocusable = function() {
-      return Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+      return Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])')).filter(function(element) {
+        if (element.hidden || element.getAttribute("aria-hidden") === "true" || element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+        const closedDetails = element.closest("details:not([open])");
+        if (closedDetails && !(element.tagName === "SUMMARY" && element.parentElement === closedDetails)) return false;
+        const style = typeof window.getComputedStyle === "function" ? window.getComputedStyle(element) : null;
+        return !style || style.display !== "none" && style.visibility !== "hidden";
+      });
     };
     const first = getFocusable()[0];
     (first || dialog).focus();
     const onKeyDown = function(event) {
+      if (!dialog.isConnected || event.isComposing || event.keyCode === 229 || !isTopTrap()) return;
       if (event.key === "Escape") {
         event.preventDefault();
+        event.stopPropagation();
         setShowVisualSupports(false);
         return;
       }
@@ -280,7 +342,10 @@ function VisualSupportsModal(props) {
       }
       const firstItem = focusable[0];
       const lastItem = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === firstItem) {
+      if (!dialog.contains(document.activeElement) || document.activeElement === dialog) {
+        event.preventDefault();
+        (event.shiftKey ? lastItem : firstItem).focus();
+      } else if (event.shiftKey && document.activeElement === firstItem) {
         event.preventDefault();
         lastItem.focus();
       } else if (!event.shiftKey && document.activeElement === lastItem) {
@@ -288,16 +353,31 @@ function VisualSupportsModal(props) {
         firstItem.focus();
       }
     };
-    dialog.addEventListener("keydown", onKeyDown);
+    document.addEventListener("keydown", onKeyDown);
     return function() {
-      dialog.removeEventListener("keydown", onKeyDown);
-      if (previousFocus && typeof previousFocus.focus === "function") previousFocus.focus();
+      document.removeEventListener("keydown", onKeyDown);
+      if (document.body) document.body.style.overflow = prevBodyOverflow;
+      backgroundState.forEach(function({ node, hadInert, ariaHidden }) {
+        if (!node || !node.isConnected) return;
+        if (!hadInert) node.removeAttribute("inert");
+        if (ariaHidden == null) node.removeAttribute("aria-hidden");
+        else node.setAttribute("aria-hidden", ariaHidden);
+      });
+      const wasTopTrap = isTopTrap();
+      const trapIndex = trapStack.indexOf(trap);
+      if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
+      if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus.isConnected) {
+        if (typeof previousFocus.focus === "function") previousFocus.focus();
+      }
     };
   }, [setShowVisualSupports]);
   const [supportData, setSupportData] = React.useState(readVisualSupportSnapshot);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [scheduleProgress, setScheduleProgress] = React.useState({});
+  const scheduleProgressRef = React.useRef(scheduleProgress);
+  scheduleProgressRef.current = scheduleProgress;
   const [statusMessage, setStatusMessage] = React.useState("");
+  const activeProfileId = props.activeStudentProfileId || typeof window !== "undefined" && window.__alloActiveStudentProfileId || supportData.profileId || "default";
   const refreshSupports = React.useCallback(function() {
     setSupportData(readVisualSupportSnapshot());
   }, []);
@@ -334,17 +414,42 @@ function VisualSupportsModal(props) {
   const speakSupportText = React.useCallback(function(text, description) {
     const cleanText = visualSupportText(text, "");
     if (!cleanText) return;
+    try {
+      if (typeof window.__alloIsGlobalMuted === "function" ? window.__alloIsGlobalMuted() : window._alloGlobalMute) {
+        setStatusMessage("");
+        return;
+      }
+    } catch (_) {
+    }
     const say = function(key, fallback, params) {
       return vsTr(tRef.current, key, fallback, params);
     };
     setStatusMessage(say("reading", "Reading {name}", { name: description || cleanText }));
+    const langHint = props.language || typeof window !== "undefined" && (window.__alloVoiceLang || window.__alloTextLanguage) || typeof document !== "undefined" && document.documentElement && document.documentElement.lang || "";
     try {
+      const player = typeof window !== "undefined" ? window.AlloSpeechPlayer : null;
+      if (player && typeof player.speak === "function") {
+        Promise.resolve(player.speak(cleanText, {
+          language: langHint || void 0,
+          reason: "visual-supports"
+        })).then(function(id) {
+          setStatusMessage(id != null ? say("finished_reading", "Finished reading {name}", { name: description || cleanText }) : say("read_failed", "Could not read that support aloud."));
+        }).catch(function() {
+          setStatusMessage(say("read_failed", "Could not read that support aloud."));
+        });
+        return;
+      }
       if (!window.speechSynthesis || typeof window.SpeechSynthesisUtterance !== "function") {
         setStatusMessage(say("read_unavailable", "Read aloud is not available in this browser."));
         return;
       }
       window.speechSynthesis.cancel();
       const utterance = new window.SpeechSynthesisUtterance(cleanText);
+      if (typeof langHint === "string" && langHint.trim()) utterance.lang = langHint.trim();
+      const rate = Number(typeof window !== "undefined" ? window.__alloPlaybackRate : NaN);
+      if (Number.isFinite(rate) && rate > 0) utterance.rate = Math.max(0.5, Math.min(2, rate));
+      const volume = Number(typeof window !== "undefined" ? window.__alloVoiceVolume : NaN);
+      if (Number.isFinite(volume)) utterance.volume = Math.max(0, Math.min(1, volume));
       utterance.onend = function() {
         setStatusMessage(say("finished_reading", "Finished reading {name}", { name: description || cleanText }));
       };
@@ -355,29 +460,67 @@ function VisualSupportsModal(props) {
     } catch (e) {
       setStatusMessage(say("read_failed", "Could not read that support aloud."));
     }
-  }, []);
+  }, [props.language]);
   const setCurrentScheduleStep = function(schedule, stepIndex) {
+    const currentProgress = scheduleProgressRef.current[schedule.id] || getInitialScheduleProgress(schedule);
+    const nextProgress = Object.assign({}, currentProgress, { current: stepIndex });
+    const items = Array.isArray(schedule.items) ? schedule.items : [];
+    const nextNowId = items[stepIndex] ? items[stepIndex].id : "";
+    const completedById = {};
+    items.forEach(function(it, idx) {
+      if (it && it.id) completedById[it.id] = !!(nextProgress.completed && nextProgress.completed[idx]);
+    });
+    persistVisualScheduleProgress(activeProfileId, schedule.id, nextNowId, completedById);
     setScheduleProgress(function(previous) {
       return Object.assign({}, previous, {
         [schedule.id]: Object.assign({}, previous[schedule.id] || getInitialScheduleProgress(schedule), { current: stepIndex })
       });
     });
+    setSupportData(function(previous) {
+      if (!previous || !Array.isArray(previous.schedules)) return previous;
+      return Object.assign({}, previous, {
+        schedules: previous.schedules.map(function(sched) {
+          return sched && sched.id === schedule.id ? Object.assign({}, sched, { nowId: nextNowId }) : sched;
+        })
+      });
+    });
     setStatusMessage(tr("step_now", "{step} is now the current step.", { step: schedule.items[stepIndex] ? schedule.items[stepIndex].label : tr("step_n", "Step {n}", { n: stepIndex + 1 }) }));
   };
   const toggleScheduleStepComplete = function(schedule, stepIndex) {
+    const currentProgress = scheduleProgressRef.current[schedule.id] || getInitialScheduleProgress(schedule);
+    const completed = Object.assign({}, currentProgress.completed || {});
+    completed[stepIndex] = !completed[stepIndex];
+    let current = Number.isInteger(currentProgress.current) ? currentProgress.current : 0;
+    const items = Array.isArray(schedule.items) ? schedule.items : [];
+    if (completed[stepIndex] && current === stepIndex) {
+      const nextIncomplete = items.findIndex(function(_, index) {
+        return index > stepIndex && !completed[index];
+      });
+      if (nextIncomplete >= 0) current = nextIncomplete;
+    }
+    const nextNowId = items[current] ? items[current].id : "";
+    const completedById = {};
+    items.forEach(function(it, idx) {
+      if (it && it.id) completedById[it.id] = !!completed[idx];
+    });
+    persistVisualScheduleProgress(activeProfileId, schedule.id, nextNowId, completedById);
     setScheduleProgress(function(previous) {
-      const currentProgress = previous[schedule.id] || getInitialScheduleProgress(schedule);
-      const completed = Object.assign({}, currentProgress.completed || {});
-      completed[stepIndex] = !completed[stepIndex];
-      let current = Number.isInteger(currentProgress.current) ? currentProgress.current : 0;
-      if (completed[stepIndex] && current === stepIndex) {
-        const nextIncomplete = schedule.items.findIndex(function(_, index) {
-          return index > stepIndex && !completed[index];
-        });
-        if (nextIncomplete >= 0) current = nextIncomplete;
-      }
       return Object.assign({}, previous, {
         [schedule.id]: { current, completed }
+      });
+    });
+    setSupportData(function(previous) {
+      if (!previous || !Array.isArray(previous.schedules)) return previous;
+      return Object.assign({}, previous, {
+        schedules: previous.schedules.map(function(sched) {
+          if (!sched || sched.id !== schedule.id) return sched;
+          return Object.assign({}, sched, {
+            nowId: nextNowId,
+            items: Array.isArray(sched.items) ? sched.items.map(function(it, idx) {
+              return Object.assign({}, it, { complete: !!completed[idx] });
+            }) : []
+          });
+        })
       });
     });
     setStatusMessage(tr("step_updated", "{step} completion updated.", { step: schedule.items[stepIndex] ? schedule.items[stepIndex].label : tr("step_n", "Step {n}", { n: stepIndex + 1 }) }));

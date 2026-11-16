@@ -343,6 +343,8 @@ let _ommlToolsPromise = null;
 async function _latexToOmml(latex) {
   try {
     if (!latex || typeof window === 'undefined') return null;
+    const _loc = window.location;
+    if (_loc && /^(localhost|127\.0\.0\.1|\[::1\])$/i.test(_loc.hostname || '') && String(_loc.pathname || '').indexOf('/app/') === 0 && (!window.temml || !window.temml.renderToString)) return null;
     if (!_ommlToolsPromise) {
       _ommlToolsPromise = (async () => {
         if (!window.temml || !window.temml.renderToString) {
@@ -351,6 +353,8 @@ async function _latexToOmml(latex) {
             const tryAt = (i) => {
               if (i >= urls.length) { reject(new Error('temml load failed')); return; }
               const s = document.createElement('script');
+              s.crossOrigin = 'anonymous';
+              s.referrerPolicy = 'no-referrer';
               s.src = urls[i];
               s.onload = () => (window.temml ? resolve(null) : reject(new Error('temml missing after load')));
               s.onerror = () => { try { s.remove(); } catch (_) {} tryAt(i + 1); };
@@ -1289,6 +1293,7 @@ function _normTokenForDiffShared(s) {
 // tests/view_pdf_audit_docx_spec.test.js extracts this function at runtime
 // (anti-drift pattern); keep the "// end _htmlToDocxSpec" marker intact.
 function _htmlToStructuredText(html, markdown) {
+  const opts = arguments.length > 2 ? arguments[2] : undefined;
   // Self-contained inside _htmlToStructuredText (extracted standalone by structured_text_export / wave4_6 tests).
   const _chosenSelectText = (sel) => {
     if (!sel) return '';
@@ -1316,8 +1321,78 @@ function _htmlToStructuredText(html, markdown) {
       });
     }
   });
+  doc.querySelectorAll('select[hidden]').forEach((sel) => {
+    const chosenText = _chosenSelectText(sel);
+    if (chosenText) sel.replaceWith(doc.createTextNode(' \u2014 ' + chosenText));
+    else sel.remove();
+  });
+  if (!(opts && opts.includeTeacherOnly)) {
+    const _teacherSel = typeof _ALLO_TEACHER_ONLY_SEL === 'string'
+      ? _ALLO_TEACHER_ONLY_SEL
+      : '.teacher-view,[data-allo-teacher-only],[data-teacher-only],.teacher-only,.answer-key,.alloflow-teacher-copy-banner,.alloflow-cs-answer-key,.alloflow-glossary-worksheet-key,.alloflow-math-solution,.alloflow-fluency-key,.alloflow-teacher-plan,.alloflow-teacher-annotations,.alloflow-teacher-annotations-by-resource,.alloflow-gm-check-btn,.alloflow-gm-feedback,.alloflow-match-check-btn,.alloflow-match-feedback,.alloflow-teacher-notes,.alloflow-rubric-key,.alloflow-model-answer,.alloflow-sample-response,.alloflow-scoring-guide,#alloflow-interactive-object-profile,[data-teacher-note],[data-answer-key]';
+    doc.querySelectorAll(_teacherSel).forEach((el) => el.remove());
+  }
   doc.querySelectorAll('button.alloflow-inline-term').forEach((btn) => btn.replaceWith(doc.createTextNode(btn.textContent || '')));
-  doc.querySelectorAll('.alloflow-reading-tools-shell,.alloflow-hud-bar,#alloflow-step-pager,#alloflow-term-popover,.alloflow-term-popover,.alloflow-export-prompt-overlay,.alloflow-save-bar,.alloflow-turnin-bar,.alloflow-keycap,.alloflow-inline-chart svg,.alloflow-glossary-card-actions,.alloflow-glossary-card-controls,.alloflow-glossary-progress,.alloflow-quiz-feedback,annotation,annotation-xml,[data-allo-footnote-backlink],details.allo-math-source,details.allo-chart-data > summary,details.allo-image-desc > summary,button,[hidden],[aria-hidden="true"],' + _chromeSel).forEach((el) => el.remove());
+  doc.querySelectorAll('.alloflow-reading-tools-shell,.alloflow-hud-bar,#alloflow-step-pager,#alloflow-term-popover,.alloflow-term-popover,.alloflow-export-prompt-overlay,.alloflow-save-bar,.alloflow-turnin-bar,.alloflow-keycap,.alloflow-inline-chart svg,.alloflow-glossary-card-actions,.alloflow-glossary-card-controls,.alloflow-glossary-progress,.alloflow-quiz-feedback,annotation,annotation-xml,[data-allo-footnote-backlink],details.allo-math-source,details.allo-chart-data > summary,details.allo-image-desc > summary,button,[hidden],[aria-hidden="true"],del[data-allo-change-id],[data-allo-change-kind="structure-delete"],' + _chromeSel).forEach((el) => el.remove());
+  const _cleanSp = (s) => String(s || '').replace(/\s+/g, ' ').trim();
+  const _mathAtom = (s) => (/^[A-Za-z0-9.]+$/.test(s) ? s : '(' + s + ')');
+  const _mathScript = (s) => (/^-?[A-Za-z0-9]+$/.test(s) ? s : '(' + s + ')');
+  const _walkMath = (node) => {
+    if (!node) return '';
+    if (node.nodeType === 3) return String(node.textContent || '');
+    if (node.nodeType !== 1) return '';
+    const t = String(node.tagName || '').toLowerCase();
+    if (t === 'annotation' || t === 'annotation-xml') return '';
+    const ch = Array.from(node.children || []);
+    if (t === 'mfrac' && ch.length >= 2) {
+      const n = _cleanSp(_walkMath(ch[0]));
+      const d = _cleanSp(_walkMath(ch[1]));
+      return (n && d) ? _mathAtom(n) + '/' + _mathAtom(d) : _cleanSp(n + ' ' + d);
+    }
+    if (t === 'msup' && ch.length >= 2) {
+      const b = _cleanSp(_walkMath(ch[0]));
+      const e = _cleanSp(_walkMath(ch[1]));
+      return b ? _mathAtom(b) + '^' + _mathScript(e) : e;
+    }
+    if (t === 'msub' && ch.length >= 2) {
+      const b = _cleanSp(_walkMath(ch[0]));
+      const s = _cleanSp(_walkMath(ch[1]));
+      return b ? _mathAtom(b) + '_' + _mathScript(s) : s;
+    }
+    if (t === 'msubsup' && ch.length >= 3) {
+      const b = _cleanSp(_walkMath(ch[0]));
+      const s = _cleanSp(_walkMath(ch[1]));
+      const e = _cleanSp(_walkMath(ch[2]));
+      return b ? _mathAtom(b) + '_' + _mathScript(s) + '^' + _mathScript(e) : '';
+    }
+    if (t === 'msqrt') {
+      const inner = _cleanSp(Array.from(node.childNodes || []).map(_walkMath).join(''));
+      return inner ? 'sqrt(' + inner + ')' : '';
+    }
+    if (t === 'mroot' && ch.length >= 2) {
+      const b = _cleanSp(_walkMath(ch[0]));
+      const idx = _cleanSp(_walkMath(ch[1]));
+      return (b && idx) ? 'root(' + idx + ', ' + b + ')' : _cleanSp(b);
+    }
+    return Array.from(node.childNodes || []).map(_walkMath).join('');
+  };
+  doc.querySelectorAll('math').forEach((mathEl) => {
+    const aria = _cleanSp(mathEl.getAttribute('aria-label') || mathEl.getAttribute('alttext') || '');
+    const latex = _cleanSp(mathEl.getAttribute('data-allo-latex') || '');
+    const readable = aria || _cleanSp(_walkMath(mathEl)) || latex;
+    mathEl.replaceWith(doc.createTextNode(readable ? ' ' + readable + ' ' : ''));
+  });
+  if (typeof _replaceAccessibleMathAndSvgForSpeech === 'function') {
+    _replaceAccessibleMathAndSvgForSpeech(doc.body || doc, { doc, includeTeacherOnly: true });
+  } else {
+    doc.querySelectorAll('svg').forEach((svgEl) => {
+      if (svgEl.closest && svgEl.closest('.alloflow-inline-chart')) { svgEl.remove(); return; }
+      if (svgEl.getAttribute('aria-hidden') === 'true' || svgEl.getAttribute('role') === 'presentation' || svgEl.getAttribute('role') === 'none') { svgEl.remove(); return; }
+      const label = _cleanSp(svgEl.getAttribute('aria-label') || Array.from(svgEl.querySelectorAll('title, desc')).map((n) => (n.textContent || '').trim()).filter(Boolean).join('. '));
+      if (label) svgEl.replaceWith(doc.createTextNode(' ' + label + ' '));
+      else svgEl.remove();
+    });
+  }
   const lines = [];
   const mdTick = String.fromCharCode(96);
   const clean = (value) => String(value || '').replace(/\s+/g, ' ').trim();
@@ -1344,6 +1419,14 @@ function _htmlToStructuredText(html, markdown) {
       return _chosenSelectText(node) || '________';
     }
     let text = Array.from(node.childNodes || []).map(inline).join('');
+    if (tag === 'sup') {
+      const st = clean(text);
+      return st ? '^' + (/^[A-Za-z0-9]+$/.test(st) ? st : '(' + st + ')') : '';
+    }
+    if (tag === 'sub') {
+      const st = clean(text);
+      return st ? '_' + (/^[A-Za-z0-9]+$/.test(st) ? st : '(' + st + ')') : '';
+    }
     if (markdown && tag === 'a' && node.getAttribute('href')) text = '[' + (text || node.getAttribute('href')) + '](' + node.getAttribute('href').replace(/([()\\])/g, '\\$1') + ')';
     if (markdown && (tag === 'strong' || tag === 'b')) text = '**' + text + '**';
     if (markdown && (tag === 'em' || tag === 'i')) text = '*' + text + '*';
@@ -1464,6 +1547,7 @@ function _htmlToDocxSpec(html) {
     if (el && el.id === 'alloflow-term-popover') return true;
     const upperTag = String(el.tagName || '').toUpperCase();
     if (upperTag === 'ANNOTATION' || upperTag === 'ANNOTATION-XML') return true;
+    if ((upperTag === 'DEL' && el.hasAttribute && el.hasAttribute('data-allo-change-id')) || (el.getAttribute && el.getAttribute('data-allo-change-kind') === 'structure-delete')) return true;
     if (upperTag === 'SELECT' && typeof el.matches === 'function' && el.matches('select.alloflow-cs-response, select.alloflow-venn-response')) return false;
     if (el.hasAttribute && (el.hasAttribute('hidden') || el.hasAttribute('data-allo-page-element') || el.hasAttribute('data-allo-footnote-backlink'))) return true;
     if (el.getAttribute && el.getAttribute('aria-hidden') === 'true') return true;
@@ -1478,8 +1562,11 @@ function _htmlToDocxSpec(html) {
   };
   const _mathReadableText = (mathEl) => {
     if (!mathEl) return '';
-    const spoken = _cleanXml(mathEl.getAttribute('aria-label') || mathEl.getAttribute('alttext') || '').replace(/\s+/g, ' ').trim();
+    const _cleanSp = (s) => _cleanXml(String(s || '')).replace(/\s+/g, ' ').trim();
+    const spoken = _cleanSp(mathEl.getAttribute('aria-label') || mathEl.getAttribute('alttext') || '');
     if (spoken) return spoken;
+    const _mathAtom = (s) => (/^[A-Za-z0-9.]+$/.test(s) ? s : '(' + s + ')');
+    const _mathScript = (s) => (/^-?[A-Za-z0-9]+$/.test(s) ? s : '(' + s + ')');
     const walkMath = (node) => {
       if (!node) return '';
       if (node.nodeType === 3) return _cleanXml(node.textContent || '');
@@ -1487,13 +1574,35 @@ function _htmlToDocxSpec(html) {
       const t = (node.tagName || '').toLowerCase();
       if (t === 'annotation' || t === 'annotation-xml') return '';
       const ch = Array.from(node.children || []);
-      if (t === 'mfrac' && ch.length >= 2) return '(' + walkMath(ch[0]) + ')/(' + walkMath(ch[1]) + ')';
-      if (t === 'msup' && ch.length >= 2) return walkMath(ch[0]) + '^' + walkMath(ch[1]);
-      if (t === 'msub' && ch.length >= 2) return walkMath(ch[0]) + '_' + walkMath(ch[1]);
-      if (t === 'msqrt') return 'sqrt(' + Array.from(node.childNodes || []).map(walkMath).join('') + ')';
-      return Array.from(node.childNodes || []).map(walkMath).join(' ');
+      if (t === 'mfrac' && ch.length >= 2) return '(' + _cleanSp(walkMath(ch[0])) + ')/(' + _cleanSp(walkMath(ch[1])) + ')';
+      if (t === 'msup' && ch.length >= 2) {
+        const b = _cleanSp(walkMath(ch[0]));
+        const e = _cleanSp(walkMath(ch[1]));
+        return b ? _mathAtom(b) + '^' + _mathScript(e) : e;
+      }
+      if (t === 'msub' && ch.length >= 2) {
+        const b = _cleanSp(walkMath(ch[0]));
+        const s = _cleanSp(walkMath(ch[1]));
+        return b ? _mathAtom(b) + '_' + _mathScript(s) : s;
+      }
+      if (t === 'msubsup' && ch.length >= 3) {
+        const b = _cleanSp(walkMath(ch[0]));
+        const s = _cleanSp(walkMath(ch[1]));
+        const e = _cleanSp(walkMath(ch[2]));
+        return b ? _mathAtom(b) + '_' + _mathScript(s) + '^' + _mathScript(e) : '';
+      }
+      if (t === 'msqrt') {
+        const inner = _cleanSp(Array.from(node.childNodes || []).map(walkMath).join(''));
+        return inner ? 'sqrt(' + inner + ')' : '';
+      }
+      if (t === 'mroot' && ch.length >= 2) {
+        const b = _cleanSp(walkMath(ch[0]));
+        const idx = _cleanSp(walkMath(ch[1]));
+        return (b && idx) ? 'root(' + idx + ', ' + b + ')' : b;
+      }
+      return Array.from(node.childNodes || []).map(walkMath).join('');
     };
-    return _cleanXml(walkMath(mathEl).replace(/\s+/g, ' ').trim() || (mathEl.getAttribute('data-allo-latex') || '').trim());
+    return _cleanSp(walkMath(mathEl)) || _cleanSp(mathEl.getAttribute('data-allo-latex') || '');
   };
   const inlineRuns = (el, fmt) => {
     fmt = fmt || {};
@@ -1605,7 +1714,7 @@ function _htmlToDocxSpec(html) {
     return out;
   };
   const _runsText = (runs) => runs.map((r) => r.text || '').join('').trim();
-  const pushParagraph = (runs, opts) => { if (_runsText(runs)) { blocks.push({ type: 'paragraph', runs, ...(opts && opts.hanging ? { hanging: true } : {}), ...(opts && opts.centered ? { centered: true } : {}) }); counts.paragraphs++; } };
+  const pushParagraph = (runs, opts) => { if (_runsText(runs)) { blocks.push({ type: 'paragraph', runs, ...(opts && opts.hanging ? { hanging: true } : {}), ...(opts && opts.centered ? { centered: true } : {}), ...(opts && opts.indented ? { indented: true } : {}) }); counts.paragraphs++; } };
   const pushMixedParagraph = (el, opts) => {
     let pending = [];
     const flush = () => { if (pending.length) { pushParagraph(inlineRuns({ childNodes: pending }, {}), opts); pending = []; } };
@@ -1626,17 +1735,44 @@ function _htmlToDocxSpec(html) {
     blocks.push({ type: 'image', src: /^data:image\//.test(src) ? src : null, alt, width: img.getAttribute('width'), height: img.getAttribute('height'), latex: img.getAttribute('data-allo-latex') || null });
     counts.images++;
   };
-  const listItems = (listEl, level, items) => {
+  const listItems = (listEl, level, items, ordered) => {
+    const isOrd = ordered !== undefined ? !!ordered : (String(listEl.tagName || '').toUpperCase() === 'OL');
     const kids = listEl.children || [];
+    const blockTags = new Set(['P', 'DIV', 'BLOCKQUOTE', 'PRE']);
     for (let i = 0; i < kids.length; i++) {
       const li = kids[i];
       if (li.tagName !== 'LI' || _isControlEl(li)) continue;
-      // inline content only — nested lists handled recursively below
-      const liInline = { childNodes: Array.prototype.filter.call(li.childNodes, (c) => !(c.nodeType === 1 && (c.tagName === 'UL' || c.tagName === 'OL'))) };
-      const runs = inlineRuns(liInline, {});
-      if (_runsText(runs) || runs.some((r) => r.img)) items.push({ runs, level });
+      // inline content + separated block children — nested lists handled recursively below
+      const runs = [];
+      let inlineBuf = [];
+      const flushBuf = (needBr) => {
+        if (!inlineBuf.length) return;
+        const seg = inlineRuns({ childNodes: inlineBuf }, {});
+        inlineBuf = [];
+        if (!seg.length) return;
+        if (needBr && runs.length && !runs[runs.length - 1].br) runs.push({ br: true });
+        runs.push(...seg);
+      };
+      const liNodes = li.childNodes || [];
+      for (let k = 0; k < liNodes.length; k++) {
+        const c = liNodes[k];
+        if (c.nodeType === 1 && (c.tagName === 'UL' || c.tagName === 'OL')) continue;
+        if (c.nodeType === 1 && blockTags.has(String(c.tagName || '').toUpperCase())) {
+          flushBuf(true);
+          const bSeg = inlineRuns(c, {});
+          if (bSeg.length) {
+            if (runs.length && !runs[runs.length - 1].br) runs.push({ br: true });
+            runs.push(...bSeg);
+          }
+        } else {
+          inlineBuf.push(c);
+        }
+      }
+      flushBuf(runs.length > 0);
+      if (_runsText(runs) || runs.some((r) => r.img)) items.push({ runs, level, ordered: isOrd });
       for (let j = 0; j < li.children.length; j++) {
-        if (li.children[j].tagName === 'UL' || li.children[j].tagName === 'OL') listItems(li.children[j], level + 1, items);
+        const chTag = String(li.children[j].tagName || '').toUpperCase();
+        if (chTag === 'UL' || chTag === 'OL') listItems(li.children[j], level + 1, items, chTag === 'OL');
       }
     }
   };
@@ -1704,11 +1840,12 @@ function _htmlToDocxSpec(html) {
         // title-page lines (title/author/affiliation/course) are centered in any
         // mode — a title page is inherently centered.
         const isRef = (n.classList && n.classList.contains('allo-ref-entry')) || (n.closest && n.closest('.allo-references, [data-allo-bibliography="1"]'));
-        if (tag === 'P' && n.querySelector && n.querySelector('img')) pushMixedParagraph(n, { hanging: !!isRef, centered: !!_inTitlePage });
-        else pushParagraph(inlineRuns(n, tag === 'DT' ? { bold: true } : {}), { hanging: !!isRef, centered: !!_inTitlePage });
+        const isIndented = !isRef && (tag === 'BLOCKQUOTE' || tag === 'DD' || !!(n.closest && (n.closest('blockquote') || n.closest('dd'))));
+        if (tag === 'P' && n.querySelector && n.querySelector('img')) pushMixedParagraph(n, { hanging: !!isRef, centered: !!_inTitlePage, indented: isIndented });
+        else pushParagraph(inlineRuns(n, tag === 'DT' ? { bold: true } : {}), { hanging: !!isRef, centered: !!_inTitlePage, indented: isIndented });
         continue;
       }
-      if (tag === 'UL' || tag === 'OL') { const items = []; listItems(n, 0, items); if (items.length) { blocks.push({ type: 'list', ordered: tag === 'OL', items }); counts.lists++; } continue; }
+      if (tag === 'UL' || tag === 'OL') { const items = []; listItems(n, 0, items, tag === 'OL'); if (items.length) { blocks.push({ type: 'list', ordered: tag === 'OL', items }); counts.lists++; } continue; }
       if (tag === 'TABLE') {
         const rows = [];
         const trs = Array.from(n.querySelectorAll('tr')).filter((tr) => tr.closest('table') === n);
@@ -1877,19 +2014,48 @@ function _odtRuns(runs, footnotes) {
 // honor it.level via numbering/bullet indent, but the ODT + DTBook serializers used to emit every
 // item at the top level (audit #24). Shared so both stay consistent. itemOpen(it) returns the item's
 // OPEN markup INCLUDING its content but NOT its close, so a child list nests inside it before the close.
-function _buildNestedListXml(items, listOpenTag, itemOpen, itemCloseTag, listCloseTag) {
+function _buildNestedListXml(items, listOpenTag, itemOpen, itemCloseTag, listCloseTag, wrapperItemOpen) {
   let out = '';
   let depth = 0;
   const open = [];
+  const closeStack = [];
+  const orderedStack = [];
+  const openTagFor = (it) => (typeof listOpenTag === 'function' ? listOpenTag(it) : listOpenTag);
+  const closeTagFor = (it) => (typeof listCloseTag === 'function' ? listCloseTag(it) : listCloseTag);
+  const wrapOpen = wrapperItemOpen || ((itemCloseTag === '</text:list-item>') ? '<text:list-item>' : '<li>');
   for (const it of (items || [])) {
-    const L = Math.max(1, (it.level || 0) + 1);
-    while (depth < L) { out += listOpenTag; depth++; open[depth] = false; }
-    while (depth > L) { if (open[depth]) { out += itemCloseTag; open[depth] = false; } out += listCloseTag; depth--; }
+    const L = Math.max(1, (it && it.level || 0) + 1);
+    const itOrd = it && it.ordered !== undefined ? !!it.ordered : undefined;
+    if (depth === L && itOrd !== undefined && orderedStack[depth] !== undefined && orderedStack[depth] !== itOrd) {
+      if (open[depth]) { out += itemCloseTag; open[depth] = false; }
+      out += (closeStack[depth] || closeTagFor(it));
+      depth--;
+    }
+    while (depth < L) {
+      if (depth > 0 && !open[depth]) {
+        out += wrapOpen;
+        open[depth] = true;
+      }
+      out += openTagFor(it);
+      depth++;
+      closeStack[depth] = closeTagFor(it);
+      orderedStack[depth] = itOrd;
+      open[depth] = false;
+    }
+    while (depth > L) {
+      if (open[depth]) { out += itemCloseTag; open[depth] = false; }
+      out += (closeStack[depth] || closeTagFor(it));
+      depth--;
+    }
     if (open[depth]) out += itemCloseTag;
     out += itemOpen(it);
     open[depth] = true;
   }
-  while (depth > 0) { if (open[depth]) { out += itemCloseTag; open[depth] = false; } out += listCloseTag; depth--; }
+  while (depth > 0) {
+    if (open[depth]) { out += itemCloseTag; open[depth] = false; }
+    out += (closeStack[depth] || closeTagFor(null));
+    depth--;
+  }
   return out;
 }
 
@@ -1951,8 +2117,35 @@ function _imageDisplayPx(info, widthAttr, heightAttr) {
   return { width: Math.max(24, Math.round(width * scale)), height: Math.max(24, Math.round(height * scale)) };
 }
 
+const _CJK_LANGS = new Set(['zh', 'ja', 'ko', 'yue', 'wuu']);
+const _CTL_LANGS = new Set(['ar', 'fa', 'he', 'iw', 'ps', 'sd', 'ug', 'ur', 'yi', 'hi', 'bn', 'ta', 'te', 'ml', 'kn', 'mr', 'gu', 'pa', 'or', 'si', 'th', 'lo', 'km', 'my', 'bo', 'am', 'ti']);
+function _parseOdtBcp47(langTag) {
+  const raw = String(langTag || '').trim();
+  const parts = raw.split(/[-_]/).filter(Boolean);
+  const primary = /^[A-Za-z]{2,3}$/.test(parts[0] || '') ? parts[0].toLowerCase() : 'none';
+  const rest = parts.slice(1);
+  const scriptPart = rest.find((p) => /^[A-Za-z]{4}$/.test(p));
+  const script = scriptPart ? (scriptPart[0].toUpperCase() + scriptPart.slice(1).toLowerCase()) : '';
+  const regionPart = rest.find((p) => /^(?:[A-Za-z]{2}|[0-9]{3})$/.test(p));
+  const country = regionPart ? regionPart.toUpperCase() : '';
+  const foAttrs = 'fo:language="' + _expXmlEsc(primary) + '"'
+    + (country ? ' fo:country="' + _expXmlEsc(country) + '"' : '')
+    + (script ? ' fo:script="' + _expXmlEsc(script) + '"' : '');
+  const asianAttrs = _CJK_LANGS.has(primary)
+    ? ' style:language-asian="' + _expXmlEsc(primary) + '"'
+      + (country ? ' style:country-asian="' + _expXmlEsc(country) + '"' : '')
+      + (script ? ' style:script-asian="' + _expXmlEsc(script) + '"' : '')
+    : '';
+  const complexAttrs = _CTL_LANGS.has(primary)
+    ? ' style:language-complex="' + _expXmlEsc(primary) + '"'
+      + (country ? ' style:country-complex="' + _expXmlEsc(country) + '"' : '')
+      + (script ? ' style:script-complex="' + _expXmlEsc(script) + '"' : '')
+    : '';
+  return { raw, primary, script, country, foAttrs, asianAttrs, complexAttrs, allAttrs: foAttrs + asianAttrs + complexAttrs };
+}
 function _htmlToOdtContentXml(html, imageAssets) {
   const spec = _htmlToDocxSpec(html);
+  const _isRtl = !!spec.rtl;
   const body = [];
   const _odtLangs = new Set();
   const _collectLangs = (runs) => (runs || []).forEach((run) => { if (run && run.lang) _odtLangs.add(run.lang); });
@@ -1963,24 +2156,25 @@ function _htmlToOdtContentXml(html, imageAssets) {
   }
   Object.keys(spec.footnotes || {}).forEach((key) => _collectLangs(spec.footnotes[key]));
   const _odtLangStyles = Array.from(_odtLangs).map((language) => {
-    const parts = String(language).split(/[-_]/);
-    const primary = /^[A-Za-z]{2,3}$/.test(parts[0] || '') ? parts[0].toLowerCase() : 'none';
-    const region = parts.slice(1).find((part) => /^(?:[A-Za-z]{2}|[0-9]{3})$/.test(part));
-    return '<style:style style:name="' + _odtLangStyleName(language) + '" style:family="text"><style:text-properties fo:language="' + _expXmlEsc(primary) + '"' + (region ? ' fo:country="' + _expXmlEsc(region.toUpperCase()) + '"' : '') + '/></style:style>';
+    const _parsed = _parseOdtBcp47(language);
+    return '<style:style style:name="' + _odtLangStyleName(language) + '" style:family="text"><style:text-properties ' + _parsed.allAttrs + '/></style:style>';
   }).join('');
   const imageBySrc = new Map((imageAssets || []).map((asset) => [asset.src, asset]));
   let tableSeq = 0, imageFrameSeq = 0;
+  const _pStyle = _isRtl ? 'Standard_RTL' : 'Standard';
+  const _pIndentStyle = _isRtl ? 'P_Indent_RTL' : 'P_Indent';
   for (const b of (spec.blocks || [])) {
     if (b.type === 'heading') {
       const lvl = Math.min(6, Math.max(1, b.level || 1));
-      body.push('<text:h text:style-name="Heading_20_' + lvl + '" text:outline-level="' + lvl + '">' + _odtRuns(b.runs, spec.footnotes) + '</text:h>');
+      const _hStyle = _isRtl ? ('Heading_20_' + lvl + '_RTL') : ('Heading_20_' + lvl);
+      body.push('<text:h text:style-name="' + _hStyle + '" text:outline-level="' + lvl + '">' + _odtRuns(b.runs, spec.footnotes) + '</text:h>');
     } else if (b.type === 'paragraph') {
-      body.push('<text:p text:style-name="Standard">' + _odtRuns(b.runs, spec.footnotes) + '</text:p>');
+      body.push('<text:p text:style-name="' + (b.indented ? _pIndentStyle : _pStyle) + '">' + _odtRuns(b.runs, spec.footnotes) + '</text:p>');
     } else if (b.type === 'list') {
       body.push(_buildNestedListXml(b.items,
-        '<text:list text:style-name="' + (b.ordered ? 'L_Number' : 'L_Bullet') + '">',
-        (it) => '<text:list-item><text:p text:style-name="Standard">' + _odtRuns(it.runs, spec.footnotes) + '</text:p>',
-        '</text:list-item>', '</text:list>')); // nested by it.level (audit #24)
+        (it) => '<text:list text:style-name="' + ((it && it.ordered !== undefined ? it.ordered : b.ordered) ? 'L_Number' : 'L_Bullet') + '">',
+        (it) => '<text:list-item><text:p text:style-name="' + _pStyle + '">' + _odtRuns(it.runs, spec.footnotes) + '</text:p>',
+        '</text:list-item>', '</text:list>')); // nested by it.level & per-item ordered
     } else if (b.type === 'table') {
       // Merge parity (#10): ODF merges = table:number-columns/rows-spanned on the
       // anchor cell + <table:covered-table-cell/> placeholders for every covered
@@ -2000,7 +2194,7 @@ function _htmlToOdtContentXml(html, imageAssets) {
           if (!c) break;
           const cs = Math.max(1, c.colSpan || 1), rs = Math.max(1, c.rowSpan || 1);
           const _cellStyle = c.header ? 'TableHeaderCell' : 'TableCell';
-          const _paraStyle = c.header ? 'P_TableHeader' : 'Standard';
+          const _paraStyle = _isRtl ? (c.header ? 'P_TableHeader_RTL' : 'Standard_RTL') : (c.header ? 'P_TableHeader' : 'Standard');
           out += '<table:table-cell table:style-name="' + _cellStyle + '" office:value-type="string"'
             + (cs > 1 ? ' table:number-columns-spanned="' + cs + '"' : '')
             + (rs > 1 ? ' table:number-rows-spanned="' + rs + '"' : '')
@@ -2029,7 +2223,7 @@ function _htmlToOdtContentXml(html, imageAssets) {
       let _hdr = 0;
       while (_hdr < _rows.length && _rows[_hdr].header) _hdr++;
       const _hdrXml = _hdr > 0 ? '<table:table-header-rows>' + _rows.slice(0, _hdr).map(_odtRow).join('') + '</table:table-header-rows>' : '';
-      body.push('<table:table table:name="Table' + (++tableSeq) + '">' +
+      body.push('<table:table table:name="Table' + (++tableSeq) + '"' + (_isRtl ? ' table:style-name="Table_RTL"' : '') + '>' +
         _colXml +
         _hdrXml + _rows.slice(_hdr).map(_odtRow).join('') +
         '</table:table>');
@@ -2040,14 +2234,20 @@ function _htmlToOdtContentXml(html, imageAssets) {
         const widthIn = Math.max(0.25, size.width / 96).toFixed(3);
         const heightIn = Math.max(0.25, size.height / 96).toFixed(3);
         const alt = _expXmlEsc(b.alt || 'Image');
-        body.push('<text:p text:style-name="Standard"><draw:frame draw:name="Image' + (++imageFrameSeq) + '" text:anchor-type="as-char" svg:width="' + widthIn + 'in" svg:height="' + heightIn + 'in" draw:z-index="0">' +
+        body.push('<text:p text:style-name="' + _pStyle + '"><draw:frame draw:name="Image' + (++imageFrameSeq) + '" text:anchor-type="as-char" svg:width="' + widthIn + 'in" svg:height="' + heightIn + 'in" draw:z-index="0">' +
           '<draw:image xlink:href="' + _expXmlEsc(asset.path) + '" xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad"/>' +
           '<svg:title>' + alt + '</svg:title><svg:desc>' + alt + '</svg:desc></draw:frame></text:p>');
-      } else if (b.alt) body.push('<text:p text:style-name="Standard">[Image: ' + _expXmlEsc(b.alt) + ']</text:p>');
+      } else if (b.alt) body.push('<text:p text:style-name="' + _pStyle + '">[Image: ' + _expXmlEsc(b.alt) + ']</text:p>');
     } else if (b.type === 'pagebreak') {
       body.push('<text:p text:style-name="P_PageBreak"/>');
     }
   }
+  const _odtRtlStyles = _isRtl
+    ? '<style:style style:name="Standard_RTL" style:family="paragraph" style:parent-style-name="Standard"><style:paragraph-properties style:writing-mode="rl-tb" fo:text-align="end"/></style:style>'
+      + [1, 2, 3, 4, 5, 6].map((n) => '<style:style style:name="Heading_20_' + n + '_RTL" style:family="paragraph" style:parent-style-name="Heading_20_' + n + '"><style:paragraph-properties style:writing-mode="rl-tb" fo:text-align="end"/></style:style>').join('')
+      + '<style:style style:name="P_TableHeader_RTL" style:family="paragraph"><style:paragraph-properties style:writing-mode="rl-tb" fo:text-align="end"/><style:text-properties fo:font-weight="bold"/></style:style>'
+      + '<style:style style:name="Table_RTL" style:family="table"><style:table-properties style:writing-mode="rl-tb"/></style:style>'
+    : '';
   return '<?xml version="1.0" encoding="UTF-8"?>\n' +
     '<office:document-content xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0" xmlns:draw="urn:oasis:names:tc:opendocument:xmlns:drawing:1.0" xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" xmlns:xlink="http://www.w3.org/1999/xlink" office:version="1.2">\n' +
     '<office:automatic-styles>' +
@@ -2061,6 +2261,9 @@ function _htmlToOdtContentXml(html, imageAssets) {
     '<style:style style:name="T_Underline" style:family="text"><style:text-properties style:text-underline-style="solid" style:text-underline-width="auto" style:text-underline-color="font-color"/></style:style>' +
     _odtLangStyles +
     '<style:style style:name="P_TableHeader" style:family="paragraph"><style:text-properties fo:font-weight="bold"/></style:style>' +
+    '<style:style style:name="P_Indent" style:family="paragraph" style:parent-style-name="Standard"><style:paragraph-properties fo:margin-left="0.5in"/></style:style>' +
+    '<style:style style:name="P_Indent_RTL" style:family="paragraph" style:parent-style-name="Standard_RTL"><style:paragraph-properties fo:margin-right="0.5in" style:writing-mode="rl-tb" fo:text-align="end"/></style:style>' +
+    _odtRtlStyles +
     '<style:style style:name="TableCell" style:family="table-cell"><style:table-cell-properties fo:border="0.75pt solid #94A3B8" fo:padding="0.06in"/></style:style>' +
     '<style:style style:name="TableHeaderCell" style:family="table-cell"><style:table-cell-properties fo:background-color="#E2E8F0" fo:border="0.75pt solid #64748B" fo:padding="0.06in"/></style:style>' +
     '<style:style style:name="P_PageBreak" style:family="paragraph"><style:paragraph-properties fo:break-before="page"/></style:style>' +
@@ -2141,7 +2344,8 @@ function _htmlToDtbookXml(html, lang, uid) {
   const ensureContentLevel = () => { if (depth === 0) { out.push('<level1>'); out.push('<h1>' + title + '</h1>'); depth = 1; } };
   for (const b of (spec.blocks || [])) {
     if (b.type === 'heading') {
-      const lvl = Math.min(6, Math.max(1, b.level || 1));
+      const rawLvl = Math.min(6, Math.max(1, b.level || 1));
+      const lvl = Math.min(rawLvl, depth + 1);
       while (depth >= lvl) { out.push('</level' + depth + '>'); depth--; }
       while (depth < lvl) { depth++; out.push('<level' + depth + '>'); }
       const _h = _expDtbookRuns(b.runs);
@@ -2154,11 +2358,18 @@ function _htmlToDtbookXml(html, lang, uid) {
       out.push('<p>' + _expDtbookRuns(b.runs) + '</p>');
     } else if (b.type === 'list') {
       ensureContentLevel();
-      out.push(_buildNestedListXml(b.items, '<list type="' + (b.ordered ? 'ol' : 'ul') + '">',
-        (it) => '<li>' + _expDtbookRuns(it.runs), '</li>', '</list>')); // nested by it.level (audit #24)
+      out.push(_buildNestedListXml(b.items,
+        (it) => '<list type="' + ((it && it.ordered !== undefined ? it.ordered : b.ordered) ? 'ol' : 'ul') + '">',
+        (it) => '<li>' + _expDtbookRuns(it.runs), '</li>', '</list>')); // nested by it.level & per-item ordered
     } else if (b.type === 'table') {
       ensureContentLevel();
-      out.push('<table>' + (b.rows || []).map((r) => '<tr>' + (r.cells || []).map((c) => { const tg = c.header ? 'th' : 'td'; return '<' + tg + '>' + _expDtbookRuns(c.runs) + '</' + tg + '>'; }).join('') + '</tr>').join('') + '</table>');
+      out.push('<table>' + (b.rows || []).map((r) => '<tr>' + (r.cells || []).map((c) => {
+        const tg = c.header ? 'th' : 'td';
+        const cs = Math.max(1, c.colSpan || 1), rs = Math.max(1, c.rowSpan || 1);
+        const sc = c.header && /^(?:row|col|rowgroup|colgroup)$/i.test(String(c.scope || '').trim())
+          ? ' scope="' + String(c.scope).trim().toLowerCase() + '"' : '';
+        return '<' + tg + sc + (cs > 1 ? ' colspan="' + cs + '"' : '') + (rs > 1 ? ' rowspan="' + rs + '"' : '') + '>' + _expDtbookRuns(c.runs) + '</' + tg + '>';
+      }).join('') + '</tr>').join('') + '</table>');
     } else if (b.type === 'image') {
       ensureContentLevel();
       // alt-only degrade as a plain labelled paragraph — a DTBook <imggroup> with no <img> child
@@ -2197,17 +2408,35 @@ function _htmlToDtbookXml(html, lang, uid) {
 // from the document headings so DAISY players get a real navigable TOC.
 function _htmlToDaisyNcx(html, title, uid) {
   const spec = _htmlToDocxSpec(html);
+  const L = spec.lang || 'en';
   const heads = (spec.blocks || []).filter((b) => b.type === 'heading');
+  const stack = [];
+  let maxDepth = 1;
   let i = 0;
-  const navPoints = heads.map((h) => {
+  const navChunks = [];
+  heads.forEach((h) => {
     i++;
+    const rawLvl = Math.min(6, Math.max(1, h.level || 1));
+    const curDepth = stack.length ? stack[stack.length - 1] : 0;
+    const lvl = Math.min(rawLvl, curDepth + 1);
+    while (stack.length && stack[stack.length - 1] >= lvl) {
+      stack.pop();
+      navChunks.push('</navPoint>');
+    }
+    if (lvl > maxDepth) maxDepth = lvl;
     const label = _expXmlEsc((h.runs || []).map((r) => r.text || '').join('') || ('Section ' + i));
-    return '<navPoint id="np' + i + '" playOrder="' + i + '"><navLabel><text>' + label + '</text></navLabel><content src="book.smil#par' + i + '"/></navPoint>';
-  }).join('\n');
+    navChunks.push('<navPoint id="np' + i + '" playOrder="' + i + '"><navLabel><text>' + label + '</text></navLabel><content src="book.smil#par' + i + '"/>');
+    stack.push(lvl);
+  });
+  while (stack.length) {
+    stack.pop();
+    navChunks.push('</navPoint>');
+  }
+  const navPoints = navChunks.join('\n');
   return '<?xml version="1.0" encoding="utf-8"?>\n' +
     '<!DOCTYPE ncx PUBLIC "-//NISO//DTD ncx 2005-1//EN" "http://www.daisy.org/z3986/2005/ncx-2005-1.dtd">\n' +
-    '<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">\n' +
-    '<head><meta name="dtb:uid" content="' + _expXmlEsc(uid || 'alloflow-daisy') + '"/><meta name="dtb:generator" content="AlloFlow"/><meta name="dtb:depth" content="1"/><meta name="dtb:totalPageCount" content="0"/><meta name="dtb:maxPageNumber" content="0"/></head>\n' +
+    '<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1" xml:lang="' + _expXmlEsc(L) + '"' + (spec.rtl ? ' dir="rtl"' : '') + '>\n' +
+    '<head><meta name="dtb:uid" content="' + _expXmlEsc(uid || 'alloflow-daisy') + '"/><meta name="dtb:generator" content="AlloFlow"/><meta name="dtb:depth" content="' + maxDepth + '"/><meta name="dtb:totalPageCount" content="0"/><meta name="dtb:maxPageNumber" content="0"/></head>\n' +
     '<docTitle><text>' + _expXmlEsc(title || spec.title || 'Document') + '</text></docTitle>\n' +
     '<navMap>' + (navPoints || '<navPoint id="np1" playOrder="1"><navLabel><text>' + _expXmlEsc(title || 'Document') + '</text></navLabel><content src="book.smil#par1"/></navPoint>') + '</navMap>\n' +
     '</ncx>';
@@ -2282,6 +2511,55 @@ function _moClock(sec) {
   return (Math.round(s * 1000) / 1000) + 's';
 }
 const _ALLO_INTERACTIVE_CHROME_SEL = '.alloflow-cloze-controls,.alloflow-cs-controls,.alloflow-cs-actions,.alloflow-venn-controls,.alloflow-venn-status,.alloflow-venn-place-button,.alloflow-venn-screen-instructions,.alloflow-tl-controls,.alloflow-tl-arrows,.alloflow-glossary-controls,.alloflow-glossary-card-controls,.alloflow-glossary-card-actions,.alloflow-glossary-card-status,.alloflow-gm-controls,.alloflow-gm-status,.alloflow-faq-controls,.alloflow-dir-controls,.alloflow-cornell-controls,.alloflow-ws-controls,.alloflow-quiz-feedback,.alloflow-quiz-check-btn,.alloflow-math-symbolbar,.alloflow-math-symbar,.alloflow-math-controls,.alloflow-dbq-evidence-tracker,.alloflow-export-save-tools,.alloflow-save-status';
+function _alloTeacherOnlySel() {
+  return typeof _ALLO_TEACHER_ONLY_SEL === 'string'
+    ? _ALLO_TEACHER_ONLY_SEL
+    : '.teacher-view, [data-allo-teacher-only], [data-teacher-only], .teacher-only, .answer-key, .alloflow-teacher-copy-banner, .alloflow-cs-answer-key, .alloflow-glossary-worksheet-key, .alloflow-math-solution, .alloflow-fluency-key, .alloflow-teacher-plan, .alloflow-teacher-annotations, .alloflow-teacher-annotations-by-resource, .alloflow-gm-check-btn, .alloflow-gm-feedback, .alloflow-match-check-btn, .alloflow-match-feedback, .alloflow-teacher-notes, .alloflow-rubric-key, .alloflow-model-answer, .alloflow-sample-response, .alloflow-scoring-guide, #alloflow-interactive-object-profile, [data-teacher-note], [data-answer-key]';
+}
+function _alloSpeechMathSvg(root, opts) {
+  if (typeof _replaceAccessibleMathAndSvgForSpeech === 'function') {
+    _replaceAccessibleMathAndSvgForSpeech(root, opts);
+    return;
+  }
+  if (!root || !root.querySelectorAll) return;
+  const doc = (opts && opts.doc) || root.ownerDocument || document;
+  if (!(opts && opts.includeTeacherOnly)) {
+    root.querySelectorAll(_alloTeacherOnlySel()).forEach((el) => { try { el.remove(); } catch (_) {} });
+  }
+  const makeNode = (txt) => {
+    const clean = String(txt || '').replace(/\s+/g, ' ').trim();
+    return doc.createTextNode(clean ? ' ' + clean + ' ' : '');
+  };
+  root.querySelectorAll('math').forEach((mathEl) => {
+    try {
+      if (mathEl.closest && mathEl.closest('[hidden], [aria-hidden="true"]')) { mathEl.remove(); return; }
+      const readable = typeof _alloLinearizeSpeechMath === 'function'
+        ? _alloLinearizeSpeechMath(mathEl)
+        : (() => {
+            let txt = String(mathEl.getAttribute('aria-label') || mathEl.getAttribute('alttext') || '').replace(/\s+/g, ' ').trim();
+            if (!txt) {
+              const clone = mathEl.cloneNode(true);
+              if (clone.querySelectorAll) clone.querySelectorAll('annotation, annotation-xml').forEach((a) => a.remove());
+              txt = String(clone.textContent || '').replace(/\s+/g, ' ').trim() || String(mathEl.getAttribute('data-allo-latex') || '').replace(/\s+/g, ' ').trim();
+            }
+            return txt;
+          })();
+      mathEl.replaceWith(makeNode(readable));
+    } catch (_) {}
+  });
+  root.querySelectorAll('svg').forEach((svgEl) => {
+    try {
+      if (svgEl.closest && svgEl.closest('.alloflow-inline-chart')) { svgEl.remove(); return; }
+      if (svgEl.getAttribute('aria-hidden') === 'true' || svgEl.getAttribute('role') === 'presentation' || svgEl.getAttribute('role') === 'none' || (svgEl.closest && svgEl.closest('[hidden], [aria-hidden="true"]'))) {
+        svgEl.remove();
+        return;
+      }
+      const label = String(svgEl.getAttribute('aria-label') || Array.from(svgEl.querySelectorAll('title, desc')).map((n) => (n.textContent || '').trim()).filter(Boolean).join('. ')).replace(/\s+/g, ' ').trim();
+      if (label) svgEl.replaceWith(makeNode(label));
+      else svgEl.remove();
+    } catch (_) {}
+  });
+}
 function _alloChosenSelectText(sel) {
   if (!sel) return '';
   const opts = sel.options ? Array.from(sel.options) : Array.from(sel.querySelectorAll('option'));
@@ -2383,19 +2661,24 @@ function _alloReplaceFormControlsForText(doc, root, blankToken, alloFieldsOnly, 
 // Assign a stable id to every leaf text block + return the per-block spoken text.
 // Reuses existing ids when present so the SMIL references match the xhtml. Strips
 // non-spoken editor chrome (same intent as _audioReadyText) so audio == on-screen.
-function _collectMoSegments(html) {
+function _collectMoSegments(html, opts) {
   const doc = new DOMParser().parseFromString(html || '', 'text/html');
   const root = doc.body || doc.documentElement;
-  if (!root) return { segments: [], bodyHtml: '', lang: 'en' };
+  const _moLang = (doc.documentElement && doc.documentElement.getAttribute('lang')) || 'en';
+  const _moRtl = /<(?:html|body)\b[^>]*\bdir\s*=\s*['"]?rtl\b/i.test(String(html || '')) || /^(?:ar|fa|he|iw|ps|sd|ug|ur|yi)(?:-|$)/i.test(String(_moLang).trim());
+  if (!root) return { segments: [], bodyHtml: '', lang: 'en', rtl: _moRtl };
+  if (!(opts && opts.includeTeacherOnly)) {
+    root.querySelectorAll(_alloTeacherOnlySel()).forEach((el) => el.remove());
+  }
   _alloDedupeVennActivityDom(root);
   _alloUnwrapInlineTermsToSpan(doc, root);
-  root.querySelectorAll('select.alloflow-cs-response[hidden], select.alloflow-venn-response[hidden]').forEach((sel) => {
+  root.querySelectorAll('select[hidden]').forEach((sel) => {
     const chosenTxt = _alloChosenSelectText(sel);
     if (chosenTxt) sel.replaceWith(doc.createTextNode(' \u2014 ' + chosenTxt));
     else sel.remove();
   });
-  root.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], annotation, annotation-xml, [data-allo-footnote-backlink], details.allo-math-source, script, style, .allo-block-controls, .allo-block-remove, ' + _ALLO_INTERACTIVE_CHROME_SEL).forEach((el) => el.remove());
-  const SEL = 'p,h1,h2,h3,h4,h5,h6,li,blockquote,figcaption,caption,dt,dd,th,td,.alloflow-cs-strip,.alloflow-cs-card,.alloflow-tl-strip';
+  root.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], annotation, annotation-xml, [data-allo-footnote-backlink], details.allo-math-source, script, style, .allo-block-controls, .allo-block-remove, del[data-allo-change-id],[data-allo-change-kind="structure-delete"], ' + _ALLO_INTERACTIVE_CHROME_SEL).forEach((el) => el.remove());
+  const SEL = 'p,h1,h2,h3,h4,h5,h6,li,blockquote,figcaption,caption,dt,dd,th,td,pre,.alloflow-cs-strip,.alloflow-cs-card,.alloflow-tl-strip';
   const segments = [];
   // EPUB requires UNIQUE ids and the read-along SMIL references each segment by id. The AI HTML can
   // carry DUPLICATE ids (a real epubcheck RSC-005 + ambiguous media-overlay), and upstream dedup runs
@@ -2421,6 +2704,7 @@ function _collectMoSegments(html) {
     const clone = el.cloneNode(true);
     _alloReplaceFormControlsForText(doc, clone, ' blank ', true, true);
     clone.querySelectorAll('[hidden],[aria-hidden="true"],button,input,select,textarea').forEach((n) => n.remove());
+    _alloSpeechMathSvg(clone, { doc, includeTeacherOnly: true });
     const text = (clone.textContent || '').replace(/\s+/g, ' ').trim();
     if (!text) return;
     let _id = el.getAttribute('id');
@@ -2439,7 +2723,7 @@ function _collectMoSegments(html) {
     bodyHtml = Array.from(root.childNodes).map((n) => _xs.serializeToString(n)).join('').replace(/\sxmlns="([^"]+)"(?=[^<>]*\sxmlns="\1")/g, '');
   } catch (_) { bodyHtml = root.innerHTML; }
   bodyHtml = bodyHtml.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\uFFFE\uFFFF]/g, '');
-  return { segments, bodyHtml, lang: (doc.documentElement.getAttribute('lang') || 'en') };
+  return { segments, bodyHtml, lang: _moLang, rtl: _moRtl };
 }
 // The shared artifact-audio service serializes vetted clips as base64 so an
 // export can consume the exact bytes without keeping a live object URL alive.
@@ -2500,17 +2784,24 @@ function _buildMoSmil(segments, durations, ext, hasAudio) {
 }
 // OPF for the media-overlay ePub: content references its overlay; manifest lists
 // the SMIL + every audio clip; media:duration (global + per-overlay) is required.
-function _buildMoOpf(title, lang, segments, totalSec, modifiedIso, ext, mime, hasAudio, contentProperties) {
+function _buildMoOpf(title, lang, segments, totalSec, modifiedIso, ext, mime, hasAudio, contentProperties, opts) {
   const _ext = ext || 'mp3';
   const _mime = mime || 'audio/mpeg';
-  const _contentProps = Array.isArray(contentProperties) ? contentProperties.filter((p) => p === 'svg' || p === 'mathml') : [];
+  const _allowedProps = new Set(['svg', 'mathml', 'remote-resources']);
+  const _contentProps = Array.isArray(contentProperties) ? contentProperties.filter((p) => _allowedProps.has(p)) : [];
   const _contentPropAttr = _contentProps.length ? ' properties="' + Array.from(new Set(_contentProps)).join(' ') + '"' : '';
+  const _isRtl = !!(opts && opts.rtl) || /^(?:ar|fa|he|iw|ps|sd|ug|ur|yi)(?:-|$)/i.test(String(lang || '').trim());
   // Only manifest the audio clips that actually exist in the zip (a declared item
   // with no file = invalid EPUB). 2026-06-15 review P0 fix.
   const _has = (i) => !hasAudio || hasAudio[i];
-  const audioItems = (segments || []).map((s, i) => _has(i) ? '<item id="aud' + (i + 1) + '" href="audio/seg' + (i + 1) + '.' + _ext + '" media-type="' + _mime + '"/>' : '').filter(Boolean).join('\n');
+  const audioItems = (segments || []).map((s, i) => {
+    if (!_has(i)) return '';
+    const href = (s && typeof s.audioHref === 'string' && s.audioHref) ? s.audioHref : ('audio/seg' + (i + 1) + '.' + _ext);
+    const remoteAttr = (/^(?:https?:)?\/\//i.test(href) || (opts && opts.remoteAudio)) ? ' properties="remote-resources"' : '';
+    return '<item id="aud' + (i + 1) + '" href="' + _expXmlEsc(href) + '" media-type="' + _mime + '"' + remoteAttr + '/>';
+  }).filter(Boolean).join('\n');
   return '<?xml version="1.0" encoding="UTF-8"?>\n' +
-    '<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid" xml:lang="' + _expXmlEsc(lang || 'en') + '" prefix="media: http://www.idpf.org/epub/vocab/overlays/#">\n' +
+    '<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid" xml:lang="' + _expXmlEsc(lang || 'en') + '"' + (_isRtl ? ' dir="rtl"' : '') + ' prefix="media: http://www.idpf.org/epub/vocab/overlays/#">\n' +
     '<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">\n' +
     '<dc:identifier id="uid">alloflow-mo-' + Date.now() + '</dc:identifier>' +
     '<dc:title>' + _expXmlEsc(title) + '</dc:title>' +
@@ -2534,7 +2825,7 @@ function _buildMoOpf(title, lang, segments, totalSec, modifiedIso, ext, mime, ha
     '<item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>\n' +
     '<item id="smil" href="content.smil" media-type="application/smil+xml"/>\n' +
     audioItems + '\n' +
-    '</manifest>\n<spine><itemref idref="content"/></spine>\n</package>';
+    '</manifest>\n<spine' + (_isRtl ? ' page-progression-direction="rtl"' : '') + '><itemref idref="content"/></spine>\n</package>';
 }
 
 // In-house EPUB structural self-check (2026-06-22). NOT a substitute for epubcheck — a
@@ -2680,15 +2971,45 @@ function _altFmtUid(prefix) {
 // the fallback covers hosts without DOMParser. The old inline version self-closed only
 // <br>/<hr>/<img>, missing <input>/<col>/<source>/<wbr> and &mdash;-style entities that
 // are undefined in XML — epubcheck and Apple Books reject the WHOLE book for one of them.
-function _altFmtXhtmlFromHtml(html) {
+function _altFmtXhtmlFromHtml(html, opts) {
   let xhtml;
   try {
     const d = new DOMParser().parseFromString(String(html), 'text/html');
+    if (!(opts && opts.includeTeacherOnly)) {
+      d.querySelectorAll(_alloTeacherOnlySel()).forEach((el) => { try { el.remove(); } catch (_) {} });
+    }
     _alloDedupeVennActivityDom(d);
-    d.querySelectorAll('.alloflow-reading-tools-shell,.alloflow-hud-bar,#alloflow-step-pager,#alloflow-term-popover,.alloflow-term-popover,.alloflow-export-prompt-overlay,.alloflow-save-bar,.alloflow-turnin-bar,.alloflow-keycap,#allo-builder-view-filter,#allo-builder-paper-css,.alloflow-inline-chart svg,annotation,annotation-xml,[data-allo-footnote-backlink],details.allo-math-source,script,' + _ALLO_INTERACTIVE_CHROME_SEL).forEach((el) => el.remove());
+    d.querySelectorAll('.alloflow-reading-tools-shell,.alloflow-hud-bar,#alloflow-step-pager,#alloflow-term-popover,.alloflow-term-popover,.alloflow-export-prompt-overlay,.alloflow-save-bar,.alloflow-turnin-bar,.alloflow-keycap,#allo-builder-view-filter,#allo-builder-paper-css,.alloflow-inline-chart svg,annotation,annotation-xml,[data-allo-footnote-backlink],details.allo-math-source,script,del[data-allo-change-id],[data-allo-change-kind="structure-delete"],' + _ALLO_INTERACTIVE_CHROME_SEL).forEach((el) => el.remove());
+    d.querySelectorAll('ins[data-allo-change-id]').forEach((ins) => { const p = ins.parentNode; if (p) { while (ins.firstChild) p.insertBefore(ins.firstChild, ins); p.removeChild(ins); } });
     _alloReplaceFormControlsForText(d, d.body || d, ' ___ ', false, true);
     _alloUnwrapInlineTermsToSpan(d, d);
-    const usedIds = new Set(Array.from(d.querySelectorAll('[id]')).map((el) => el.getAttribute('id')).filter(Boolean));
+    d.querySelectorAll('button,select,input,textarea').forEach((el) => el.remove());
+    d.querySelectorAll('link[rel~="stylesheet"][href]').forEach((link) => {
+      const href = String(link.getAttribute('href') || '').trim();
+      if (/^(?:https?:)?\/\//i.test(href)) link.remove();
+    });
+    d.querySelectorAll('style').forEach((style) => {
+      const css = style.textContent || '';
+      style.textContent = css
+        .replace(/@import\s+[^;]+;/gi, '')
+        .replace(/@font-face\s*\{[^}]*(?:https?:|\/\/)[^}]*\}/gi, '')
+        .replace(/url\(\s*(['"]?)(?:https?:)?\/\/[^)]+\)/gi, 'none');
+    });
+    d.querySelectorAll('svg').forEach((svg) => {
+      if ((!svg.namespaceURI || svg.namespaceURI === 'http://www.w3.org/1999/xhtml') && !svg.getAttribute('xmlns')) {
+        svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+      }
+    });
+    const usedIds = new Set();
+    Array.from(d.querySelectorAll('[id]')).forEach((el) => {
+      const raw = String(el.getAttribute('id') || '').trim();
+      const base = raw.replace(/\s+/g, '-') || 'allo-id';
+      let cand = base;
+      let dup = 1;
+      while (usedIds.has(cand)) { cand = base + '-' + dup; dup += 1; }
+      usedIds.add(cand);
+      if (cand !== el.getAttribute('id')) el.setAttribute('id', cand);
+    });
     let secSeq = 0;
     d.querySelectorAll('h1,h2,h3').forEach((h) => {
       if (!h.getAttribute('id')) {
@@ -2718,16 +3039,23 @@ function _buildEpubPackageFiles(html, opts) {
   const uid = o.uid || _altFmtUid('alloflow-');
   const nowIso = o.modifiedIso || new Date().toISOString();
   const xmlTitle = _expXmlEsc(title);
-  const contentXhtml = _altFmtXhtmlFromHtml(html);
-  // Declare svg/mathml on the content item or a reading system may refuse to render
-  // an equation it was never told to expect.
+  const isRtl = /\bdir\s*=\s*['"]?rtl\b/i.test(String(html || '')) || /^(?:ar|fa|he|iw|ps|sd|ug|ur|yi)(?:-|$)/i.test(String(lang || ''));
+  let contentXhtml = _altFmtXhtmlFromHtml(html, o);
+  if (isRtl && !/^<html\b[^>]*\bdir=/i.test(contentXhtml)) {
+    contentXhtml = contentXhtml.replace(/^<html\b/i, '<html dir="rtl"');
+  }
+  // Declare svg/mathml/remote-resources on the content item or a reading system may
+  // refuse to render an equation or remote media it was never told to expect.
   const props = [];
-  if (/<svg\b/i.test(contentXhtml)) props.push('svg');
-  if (/<math\b/i.test(contentXhtml)) props.push('mathml');
+  if (/<svg\b/i.test(html)) props.push('svg');
+  if (/<math\b/i.test(html)) props.push('mathml');
+  if (props.indexOf('svg') === -1 && /<svg\b/i.test(String(contentXhtml || ''))) props.push('svg');
+  if (props.indexOf('mathml') === -1 && /<math\b/i.test(String(contentXhtml || ''))) props.push('mathml');
+  if (/<(?:img|audio|video|source|object|iframe)\b[^>]*(?:src|data)\s*=\s*["']?(?:https?:)?\/\//i.test(contentXhtml)) props.push('remote-resources');
   const propAttr = props.length ? ' properties="' + props.join(' ') + '"' : '';
 
   const opf = '<?xml version="1.0" encoding="UTF-8"?>\n' +
-    '<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid" xml:lang="' + _expXmlEsc(lang) + '">\n' +
+    '<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid" xml:lang="' + _expXmlEsc(lang) + '"' + (isRtl ? ' dir="rtl"' : '') + '>\n' +
     '  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">\n' +
     '    <dc:identifier id="uid">' + _expXmlEsc(uid) + '</dc:identifier>\n' +
     '    <dc:title>' + xmlTitle + '</dc:title>\n' +
@@ -2749,13 +3077,19 @@ function _buildEpubPackageFiles(html, opts) {
     '    <item id="content" href="content.xhtml" media-type="application/xhtml+xml"' + propAttr + '/>\n' +
     '    <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>\n' +
     '  </manifest>\n' +
-    '  <spine><itemref idref="content"/></spine>\n' +
+    '  <spine' + (isRtl ? ' page-progression-direction="rtl"' : '') + '><itemref idref="content"/></spine>\n' +
     '</package>';
 
   // Escape the id AND the heading text into nav.xhtml: an unescaped & produced malformed
   // XML, and a heading starting with an inline tag silently lost its entry. Capture the
   // FULL heading, then strip inline tags.
-  const navEsc = (s) => _expXmlEsc(String(s == null ? '' : s));
+  const decodeXmlEntities = (s) => String(s == null ? '' : s).replace(/&#x([0-9a-f]+);|&#(\d+);|&(quot|apos|lt|gt|amp);/gi, (full, hex, dec, named) => {
+    if (hex) { const cp = parseInt(hex, 16); return Number.isFinite(cp) && cp > 0 ? String.fromCodePoint(cp) : full; }
+    if (dec) { const cp = parseInt(dec, 10); return Number.isFinite(cp) && cp > 0 ? String.fromCodePoint(cp) : full; }
+    const k = String(named || '').toLowerCase();
+    return k === 'quot' ? '"' : k === 'apos' ? "'" : k === 'lt' ? '<' : k === 'gt' ? '>' : k === 'amp' ? '&' : full;
+  });
+  const navEsc = (s) => _expXmlEsc(decodeXmlEntities(s));
   const headings = [...String(contentXhtml).matchAll(/<h([1-3])[^>]*\bid="([^"]*)"[^>]*>([\s\S]*?)<\/h\1>/gi)];
   const navItems = headings.length > 0
     ? headings.map((m) => '<li><a href="content.xhtml#' + navEsc(m[2]) + '">' + (navEsc(m[3].replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()) || 'Section') + '</a></li>').join('\n')
@@ -2767,9 +3101,9 @@ function _buildEpubPackageFiles(html, opts) {
     'OEBPS/content.opf': opf,
     'OEBPS/content.xhtml': contentXhtml,
     'OEBPS/nav.xhtml': '<?xml version="1.0" encoding="UTF-8"?>\n' +
-      '<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="' + _expXmlEsc(lang) + '" xml:lang="' + _expXmlEsc(lang) + '">\n' +
-      '<head><title lang="en">Navigation</title></head>\n' +
-      '<body><nav epub:type="toc" role="doc-toc"><h1 lang="en">Table of Contents</h1><ol>' + navItems + '</ol></nav></body>\n' +
+      '<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="' + _expXmlEsc(lang) + '" xml:lang="' + _expXmlEsc(lang) + '"' + (isRtl ? ' dir="rtl"' : '') + '>\n' +
+      '<head><title lang="en" dir="ltr">Navigation</title></head>\n' +
+      '<body><nav epub:type="toc" role="doc-toc"><h1 lang="en" dir="ltr">Table of Contents</h1><ol>' + navItems + '</ol></nav></body>\n' +
       '</html>',
   };
   // Self-check here rather than at each call site, so no caller can skip it. Advisory:
@@ -2784,14 +3118,23 @@ function _buildEpubPackageFiles(html, opts) {
 // separate read-along ePub.
 function _buildDaisyPackageFiles(html, opts) {
   const o = opts || {};
+  let cleanHtml = String(html == null ? '' : html);
+  if (!(o && o.includeTeacherOnly) && cleanHtml && typeof DOMParser !== 'undefined') {
+    try {
+      const d = new DOMParser().parseFromString(cleanHtml, 'text/html');
+      let removed = false;
+      d.querySelectorAll(_alloTeacherOnlySel()).forEach((el) => { try { el.remove(); removed = true; } catch (_) {} });
+      if (removed && d.documentElement) cleanHtml = d.documentElement.outerHTML;
+    } catch (_) {}
+  }
   const title = String(o.title || 'document');
-  const lang = o.lang || _altFmtHtmlLang(html);
+  const lang = o.lang || _altFmtHtmlLang(cleanHtml);
   const uid = o.uid || _altFmtUid('urn:uuid:');
   return {
     files: {
-      'dtbook.xml': _htmlToDtbookXml(html, lang, uid),
-      'navigation.ncx': _htmlToDaisyNcx(html, title, uid),
-      'book.smil': _htmlToDaisySmil(html, uid),
+      'dtbook.xml': _htmlToDtbookXml(cleanHtml, lang, uid),
+      'navigation.ncx': _htmlToDaisyNcx(cleanHtml, title, uid),
+      'book.smil': _htmlToDaisySmil(cleanHtml, uid),
       'package.opf': _DAISY_OPF_XML(title, lang, uid),
     },
     title, lang, uid,
@@ -2802,13 +3145,21 @@ function _buildDaisyPackageFiles(html, opts) {
 // (script/style/head, editor chrome, the AI math/chart source panels), then flattens
 // one line per block. The old tag-strip embossed <style> bodies, shattered a line at
 // every inline tag, and its greedy &[^;]+; could swallow real text across newlines.
-function _altFmtHtmlToPlainText(html) {
+function _alloPrepAltFmtPlainDom(d, opts) {
+  d.querySelectorAll('button.alloflow-inline-term').forEach((btn) => { try { btn.replaceWith(d.createTextNode(btn.textContent || '')); } catch (_) {} });
+  if (!(opts && opts.includeTeacherOnly)) {
+    d.querySelectorAll(_alloTeacherOnlySel()).forEach((el) => { try { el.remove(); } catch (_) {} });
+  }
+  _alloDedupeVennActivityDom(d);
+  _alloReplaceFormControlsForText(d, d.body || d, ' ___ ', false, true);
+}
+function _altFmtHtmlToPlainText(html, opts) {
+  if (!html || typeof html !== 'string') return '';
   try {
     const d = new DOMParser().parseFromString(String(html), 'text/html');
-    d.querySelectorAll('button.alloflow-inline-term').forEach((btn) => { try { btn.replaceWith(d.createTextNode(btn.textContent || '')); } catch (_) {} });
-    _alloDedupeVennActivityDom(d);
-    _alloReplaceFormControlsForText(d, d.body || d, ' ___ ', false, true);
-    d.querySelectorAll('script, style, title, head, .allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], details.allo-math-source, annotation, annotation-xml, [data-allo-footnote-backlink], .alloflow-reading-tools-shell, .alloflow-hud-bar, #alloflow-step-pager, #alloflow-term-popover, .alloflow-term-popover, .alloflow-export-prompt-overlay, .alloflow-save-bar, .alloflow-turnin-bar, .alloflow-keycap, .alloflow-inline-chart svg, [hidden], [aria-hidden="true"], button, select, input, textarea, ' + _ALLO_INTERACTIVE_CHROME_SEL).forEach((el) => { try { el.remove(); } catch (_) {} });
+    _alloPrepAltFmtPlainDom(d, opts);
+    d.querySelectorAll('script, style, title, head, .allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], details.allo-math-source, annotation, annotation-xml, [data-allo-footnote-backlink], .alloflow-reading-tools-shell, .alloflow-hud-bar, #alloflow-step-pager, #alloflow-term-popover, .alloflow-term-popover, .alloflow-export-prompt-overlay, .alloflow-save-bar, .alloflow-turnin-bar, .alloflow-keycap, .alloflow-inline-chart svg, [hidden], [aria-hidden="true"], button, select, input, textarea, del[data-allo-change-id],[data-allo-change-kind="structure-delete"], ' + _ALLO_INTERACTIVE_CHROME_SEL).forEach((el) => { try { el.remove(); } catch (_) {} });
+    _alloSpeechMathSvg(d.body || d, { doc: d, includeTeacherOnly: !!(opts && opts.includeTeacherOnly) });
     d.querySelectorAll('img').forEach((img) => {
       try {
         const alt = String(img.getAttribute('alt') || '').replace(/\s+/g, ' ').trim();
@@ -2829,7 +3180,8 @@ function _altFmtHtmlToPlainText(html) {
     });
     d.querySelectorAll('details.allo-chart-data > summary, details.allo-image-desc > summary').forEach((el) => { try { el.remove(); } catch (_) {} });
     d.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach((el) => { try { el.insertAdjacentText('beforebegin', '\n\n'); el.appendChild(d.createTextNode('\n')); } catch (_) {} });
-    d.querySelectorAll('p,li,tr,figcaption,blockquote,div,br').forEach((el) => { try { el.appendChild(d.createTextNode('\n')); } catch (_) {} });
+    d.querySelectorAll('pre').forEach((el) => { try { el.insertAdjacentText('beforebegin', '\n'); } catch (_) {} });
+    d.querySelectorAll('p,li,tr,figcaption,blockquote,div,dt,dd,pre,br').forEach((el) => { try { el.appendChild(d.createTextNode('\n')); } catch (_) {} });
     return ((d.body && d.body.textContent) || '').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
   } catch (_) {
     return String(html).replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<[^>]*>/g, '\n').replace(/&nbsp;/gi, ' ').replace(/&amp;/gi, '&').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&#?[a-z0-9]+;/gi, ' ').replace(/\n{3,}/g, '\n\n').trim();
@@ -2842,8 +3194,25 @@ function _altFmtHtmlToPlainText(html) {
 // un-embossable garbage under a "BRF" label. Capital sign (,) before each capital;
 // number sign (#) before a 1-0 -> A-J digit run; standard punctuation; 40-cell wrap.
 const _BRF_DIGIT = { '1': 'A', '2': 'B', '3': 'C', '4': 'D', '5': 'E', '6': 'F', '7': 'G', '8': 'H', '9': 'I', '0': 'J' };
-const _BRF_PUNCT = { ',': '1', ';': '2', ':': '3', '.': '4', '!': '6', '?': '8', '(': '"<', ')': '">', "'": "'", '-': '-', '/': '_/', '*': '"9', '&': '@&', '+': '"6', '=': '"7', '<': '@<', '>': '@>' };
-const _BRF_SMART = { '\u2018': "'", '\u2019': "'", '\u2013': '-', '\u2014': '-', '\u2026': '...', '\u00a0': ' ', '\u2022': '*' };
+const _BRF_PUNCT = {
+  ',': '1', ';': '2', ':': '3', '.': '4', '!': '6', '?': '8', '(': '"<', ')': '">', "'": "'", '-': '-', '/': '_/',
+  '*': '"9', '&': '@&', '+': '"6', '=': '"7', '<': '@<', '>': '@>', '%': '.0', '^': '^', '~': '@9',
+  '[': '.<', ']': '.>', '{': '_<', '}': '_>', '_': '..-', '@': '@A', '#': '_?', '$': '$', '\\': '_*'
+};
+const _BRF_SMART = {
+  '\u2018': "'", '\u2019': "'", '\u2013': '-', '\u2014': '-', '\u2026': '...', '\u00a0': ' ', '\u2022': '*',
+  '\u00d7': ' * ', '\u00f7': ' / ', '\u2212': '-', '\u00b1': '+/-', '\u2264': '<=', '\u2265': '>=',
+  '\u2260': '!=', '\u2248': '~=', '\u00b0': ' deg', '\u2192': ' -> ', '\u2190': ' <- ',
+  '\u2194': ' <-> ', '\u21cc': ' <-> ', '\u21d2': ' => ',
+  '\u00b2': '^2', '\u00b3': '^3', '\u00b9': '^1',
+  '\u2070': '^0', '\u2074': '^4', '\u2075': '^5', '\u2076': '^6', '\u2077': '^7', '\u2078': '^8', '\u2079': '^9',
+  '\u2080': '0', '\u2081': '1', '\u2082': '2', '\u2083': '3', '\u2084': '4',
+  '\u2085': '5', '\u2086': '6', '\u2087': '7', '\u2088': '8', '\u2089': '9',
+  '\u03b1': 'alpha', '\u03b2': 'beta', '\u03b3': 'gamma', '\u03b4': 'delta', '\u03b5': 'epsilon',
+  '\u03b8': 'theta', '\u03bb': 'lambda', '\u03bc': 'mu', '\u03c0': 'pi', '\u03c3': 'sigma',
+  '\u03a9': 'Omega', '\u221e': 'infinity', '\u221a': 'sqrt', '\u00bd': '1/2', '\u00bc': '1/4', '\u00be': '3/4'
+};
+const _BRF_SMART_RE = new RegExp('[' + Object.keys(_BRF_SMART).map((k) => k.replace(/[\\\]^-]/g, '\\$&')).join('') + ']', 'g');
 // Private-use sentinels: curly quotes carry openness that a straight " does not, and
 // braille distinguishes an opening quote (8) from a closing one (0). Park them out of
 // band so the ASCII pass cannot confuse them with a literal quote. Written as escapes,
@@ -2879,7 +3248,7 @@ function _brfWrap(line, into, cells) {
 function _altFmtToBRF(src, opts) {
   const cells = (opts && opts.cellsPerLine) || 40;
   let norm = String(src == null ? '' : src).replace(/[\u201c\u00ab]/g, _BRF_OPEN_QUOTE).replace(/[\u201d\u00bb]/g, _BRF_CLOSE_QUOTE);
-  norm = norm.replace(/[\u2018\u2019\u2013\u2014\u2026\u00a0\u2022]/g, (c) => _BRF_SMART[c] || '');
+  norm = norm.replace(_BRF_SMART_RE, (c) => _BRF_SMART[c] || '');
   try { norm = norm.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); } catch (_) {}
   const out = []; let dropped = 0;
   for (const line of norm.replace(/\r\n?/g, '\n').split('\n')) {
@@ -2918,7 +3287,7 @@ function _altFmtToBRF(src, opts) {
 // The in-app handler still prefers window.AlloBraille (UEB Grade 2 via liblouis) and
 // falls back to this; the connector uses this directly and says which grade it used.
 function _buildBrailleBrf(html, opts) {
-  const text = _altFmtHtmlToPlainText(html);
+  const text = _altFmtHtmlToPlainText(html, opts);
   const r = _altFmtToBRF(text, Object.assign({ withMeta: true }, opts || {}));
   return { brf: r.brf, dropped: r.dropped, text, grade: 1, code: 'North American Braille Computer Code (uncontracted)' };
 }
@@ -2980,19 +3349,33 @@ async function _buildDocxBlobFromSpec(spec, d, mode) {
       // Reference-list hanging indent (0.5"): first line flush, continuation
       // lines indented — required by APA-7 / MLA-9 reference lists.
       if (b.hanging) pp.indent = { left: 720, hanging: 720 };
+      else if (b.indented) pp.indent = { left: 720 };
       // Title-page lines (author/affiliation/course) center in any mode.
       if (b.centered && d.AlignmentType) pp.alignment = d.AlignmentType.CENTER;
       children.push(_P(pp));
     }
     else if (b.type === 'list') {
-      // Each ordered list gets its OWN numbering reference (allo-ol-0, allo-ol-1, …)
-      // so a second <ol> restarts at 1 — a single shared 'allo-ol' reference made
-      // every ordered list continue one counter (4, 5, 6 …) in Word.
-      const _olRef = b.ordered ? ('allo-ol-' + (_olCount++)) : null;
+      // Each ordered list or ordered nested sublist gets its own numbering reference
+      // (allo-ol-0, allo-ol-1, …) so mixed <ol>/<ul> nesting and separate lists work cleanly.
+      const _olRefs = {};
+      let _prevOrd = null;
+      let _prevLvl = -1;
       for (const it of b.items) {
+        const _isOrd = it && it.ordered !== undefined ? !!it.ordered : !!b.ordered;
+        const _lvl = it.level || 0;
+        if (_isOrd) {
+          if (!_olRefs[_lvl] || _lvl > _prevLvl || (_lvl === _prevLvl && !_prevOrd)) {
+            _olRefs[_lvl] = 'allo-ol-' + (_olCount++);
+          }
+          for (const k of Object.keys(_olRefs)) {
+            if (Number(k) > _lvl) delete _olRefs[k];
+          }
+        }
+        _prevOrd = _isOrd;
+        _prevLvl = _lvl;
         children.push(_P({
           children: runsTo(it.runs),
-          ...(b.ordered ? { numbering: { reference: _olRef, level: Math.min(it.level || 0, 4) } } : { bullet: { level: Math.min(it.level || 0, 8) } }),
+          ...(_isOrd ? { numbering: { reference: _olRefs[_lvl], level: Math.min(_lvl, 4) } } : { bullet: { level: Math.min(_lvl, 8) } }),
         }));
       }
     } else if (b.type === 'table' && b.rows.length) {
@@ -3445,6 +3828,99 @@ async function _buildPptxBlobFromSlides(deck, P, theme) {
 //     of silence (plain textContent skips alt entirely)
 // Block boundaries gain sentence pauses so headings/cells don't run
 // together. The SR-style serializer is untouched (already curated).
+const _ALLO_TEACHER_ONLY_SEL = '.teacher-view, [data-allo-teacher-only], [data-teacher-only], .teacher-only, .answer-key, .alloflow-teacher-copy-banner, .alloflow-cs-answer-key, .alloflow-glossary-worksheet-key, .alloflow-math-solution, .alloflow-fluency-key, .alloflow-teacher-plan, .alloflow-teacher-annotations, .alloflow-teacher-annotations-by-resource, .alloflow-gm-check-btn, .alloflow-gm-feedback, .alloflow-match-check-btn, .alloflow-match-feedback, .alloflow-teacher-notes, .alloflow-rubric-key, .alloflow-model-answer, .alloflow-sample-response, .alloflow-scoring-guide, #alloflow-interactive-object-profile, [data-teacher-note], [data-answer-key]';
+
+function _alloLinearizeSpeechMath(mathEl) {
+  if (!mathEl) return '';
+  const cleanSp = (s) => String(s == null ? '' : s).replace(/\s+/g, ' ').trim();
+  const explicit = cleanSp((mathEl.getAttribute && (mathEl.getAttribute('aria-label') || mathEl.getAttribute('alttext'))) || '');
+  if (explicit) return explicit;
+  const mathAtom = (s) => (/^[A-Za-z0-9.]+$/.test(s) ? s : '(' + s + ')');
+  const mathScript = (s) => (/^-?[A-Za-z0-9]+$/.test(s) ? s : '(' + s + ')');
+  const walkMath = (node) => {
+    if (!node) return '';
+    if (node.nodeType === 3) return String(node.nodeValue || node.textContent || '');
+    if (node.nodeType !== 1) return '';
+    const t = String(node.tagName || '').toLowerCase();
+    if (t === 'annotation' || t === 'annotation-xml') return '';
+    if (t === 'mspace') return ' ';
+    const ch = Array.from(node.children || []);
+    if (t === 'mfrac' && ch.length >= 2) return '(' + cleanSp(walkMath(ch[0])) + ')/(' + cleanSp(walkMath(ch[1])) + ')';
+    if (t === 'msup' && ch.length >= 2) {
+      const b = cleanSp(walkMath(ch[0]));
+      const e = cleanSp(walkMath(ch[1]));
+      return b ? mathAtom(b) + '^' + mathScript(e) : e;
+    }
+    if (t === 'msub' && ch.length >= 2) {
+      const b = cleanSp(walkMath(ch[0]));
+      const s = cleanSp(walkMath(ch[1]));
+      return b ? mathAtom(b) + '_' + mathScript(s) : s;
+    }
+    if (t === 'msubsup' && ch.length >= 3) {
+      const b = cleanSp(walkMath(ch[0]));
+      const s = cleanSp(walkMath(ch[1]));
+      const e = cleanSp(walkMath(ch[2]));
+      return b ? mathAtom(b) + '_' + mathScript(s) + '^' + mathScript(e) : '';
+    }
+    if (t === 'msqrt') {
+      const inner = cleanSp(Array.from(node.childNodes || []).map(walkMath).join(''));
+      return inner ? 'sqrt(' + inner + ')' : '';
+    }
+    if (t === 'mroot' && ch.length >= 2) {
+      const b = cleanSp(walkMath(ch[0]));
+      const idx = cleanSp(walkMath(ch[1]));
+      return (b && idx) ? 'root(' + idx + ', ' + b + ')' : b;
+    }
+    return Array.from(node.childNodes || []).map(walkMath).join('');
+  };
+  return cleanSp(walkMath(mathEl)) || cleanSp((mathEl.getAttribute && mathEl.getAttribute('data-allo-latex')) || '');
+}
+
+function _replaceAccessibleMathAndSvgForSpeech(root, opts) {
+  if (!root || !root.querySelectorAll) return;
+  const doc = (opts && opts.doc) || root.ownerDocument || document;
+  const includeTeacherOnly = !!(opts && opts.includeTeacherOnly);
+  const preserveLanguageNodes = !!(opts && opts.preserveLanguageNodes);
+  if (!includeTeacherOnly) {
+    root.querySelectorAll(_ALLO_TEACHER_ONLY_SEL).forEach((el) => { try { el.remove(); } catch (_) {} });
+  }
+  const makeSpokenNode = (sourceEl, labelText) => {
+    const clean = String(labelText || '').replace(/\s+/g, ' ').trim();
+    if (!clean) return doc.createTextNode('');
+    if (preserveLanguageNodes) {
+      const span = doc.createElement('span');
+      span.setAttribute('data-allo-spoken-media', '1');
+      const lang = sourceEl && sourceEl.getAttribute && (sourceEl.getAttribute('lang') || sourceEl.getAttribute('xml:lang'));
+      if (lang) span.setAttribute('lang', lang);
+      span.textContent = ' ' + clean + ' ';
+      return span;
+    }
+    return doc.createTextNode(' ' + clean + ' ');
+  };
+  root.querySelectorAll('math').forEach((mathEl) => {
+    try {
+      if (mathEl.closest && mathEl.closest('[hidden], [aria-hidden="true"]')) { mathEl.remove(); return; }
+      const readable = _alloLinearizeSpeechMath(mathEl);
+      mathEl.replaceWith(makeSpokenNode(mathEl, readable));
+    } catch (_) {}
+  });
+  root.querySelectorAll('svg').forEach((svgEl) => {
+    try {
+      if (svgEl.closest && svgEl.closest('.alloflow-inline-chart')) { svgEl.remove(); return; }
+      if (svgEl.getAttribute('aria-hidden') === 'true' || svgEl.getAttribute('role') === 'presentation' || svgEl.getAttribute('role') === 'none' || (svgEl.closest && svgEl.closest('[hidden], [aria-hidden="true"]'))) {
+        svgEl.remove();
+        return;
+      }
+      const label = String(
+        svgEl.getAttribute('aria-label') ||
+        Array.from(svgEl.querySelectorAll('title, desc')).map((n) => (n.textContent || '').trim()).filter(Boolean).join('. ')
+      ).replace(/\s+/g, ' ').trim();
+      if (label) svgEl.replaceWith(makeSpokenNode(svgEl, label));
+      else svgEl.remove();
+    } catch (_) {}
+  });
+}
+
 function _audioReadyText(html, narrationOptions) {
   const options = narrationOptions || {};
   const doc = new DOMParser().parseFromString(html || '', 'text/html');
@@ -3471,7 +3947,8 @@ function _audioReadyText(html, narrationOptions) {
     span.textContent = btn.textContent || '';
     btn.replaceWith(span);
   });
-  root.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], [data-allo-translation-note], [data-allo-plain-note], [data-allo-footnote-backlink], details.allo-math-source, .alloflow-reading-tools-shell, .alloflow-hud-bar, #alloflow-term-popover, .alloflow-term-popover, .alloflow-export-prompt-overlay, .alloflow-save-bar, .alloflow-turnin-bar, .alloflow-keycap, .alloflow-inline-chart svg, [hidden], [aria-hidden="true"], script, style, button, input, select, textarea, ' + _ALLO_INTERACTIVE_CHROME_SEL).forEach((el) => el.remove());
+  root.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], [data-allo-translation-note], [data-allo-plain-note], [data-allo-footnote-backlink], details.allo-math-source, .alloflow-reading-tools-shell, .alloflow-hud-bar, #alloflow-term-popover, .alloflow-term-popover, .alloflow-export-prompt-overlay, .alloflow-save-bar, .alloflow-turnin-bar, .alloflow-keycap, .alloflow-inline-chart svg, [hidden], [aria-hidden="true"], script, style, button, input, select, textarea, del[data-allo-change-id],[data-allo-change-kind="structure-delete"], ' + _ALLO_INTERACTIVE_CHROME_SEL).forEach((el) => el.remove());
+  _replaceAccessibleMathAndSvgForSpeech(root, { doc, includeTeacherOnly: !!options.includeTeacherOnly, preserveLanguageNodes: false });
   root.querySelectorAll('details.allo-chart-data > summary, details.allo-image-desc > summary').forEach((el) => el.remove());
   root.querySelectorAll('details em, figcaption em').forEach((el) => { if (/verify|AI-estimated|AI-generated|Transcribed from the image/i.test(el.textContent || '')) el.remove(); });
   root.querySelectorAll('annotation, annotation-xml, [data-allo-latex-src]').forEach((el) => el.remove());
@@ -3497,13 +3974,20 @@ function _audioReadyText(html, narrationOptions) {
       const alt = (img.getAttribute('alt') || '').trim();
       // A real author figcaption is content — always read it (audit
       // 2026-06-13 [5]); only the ALT is gated by decorative role.
-      const isPres = img.getAttribute('role') === 'presentation' || img.getAttribute('aria-hidden') === 'true';
+      const role = img.getAttribute('role');
+      const isPres = role === 'presentation' || role === 'none' || img.getAttribute('aria-hidden') === 'true';
       const capText = cap ? cap.textContent.trim() : '';
       const say = capText || (isPres ? '' : alt);
       const replacement=options.languageRuns ? imageText(img,capText ? cap : null,say) : doc.createTextNode(say ? ('Image: ' + say + '. ') : '');
       if (cap) cap.remove();
       img.replaceWith(replacement);
     }
+  });
+  root.querySelectorAll('img').forEach((img) => {
+    const role = img.getAttribute('role');
+    const isPres = role === 'presentation' || role === 'none' || img.getAttribute('aria-hidden') === 'true';
+    const alt = isPres ? '' : (img.getAttribute('alt') || '').trim();
+    img.replaceWith(options.languageRuns ? imageText(img, null, alt) : doc.createTextNode(alt ? ('Image: ' + alt + '. ') : ''));
   });
   root.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, blockquote, dd, dt, tr, caption, figcaption, .alloflow-cs-strip, .alloflow-tl-strip').forEach((el) => { el.appendChild(doc.createTextNode('. ')); });
   if(options.languageRuns)return _narrationMergeRuns([...preambleRuns,..._narrationTextRuns(root,options.language)],true);
@@ -3682,11 +4166,9 @@ async function _buildAccessibleOfficeExport({ html, title, format }) {
   zip.file('content.xml', odtParts.contentXml);
   odtParts.images.forEach((image) => zip.file(image.path, image.base64, { base64: true }));
   const lang = ((html.match(/<html[^>]*lang=["']([^"']+)["']/i) || [])[1] || 'en').trim();
-  const langParts = lang.split(/[-_]/);
-  const language = (langParts[0] || 'en').toLowerCase();
-  const country = langParts[1] ? langParts[1].toUpperCase() : 'none';
+  const parsedOdtLang = _parseOdtBcp47(lang);
   const rtl = /<(?:html|body)[^>]*\bdir=["']rtl/i.test(html);
-  let styles = _ODT_STYLES_XML.replace('<style:text-properties style:font-name="Liberation Serif" fo:font-size="12pt"/>', '<style:text-properties style:font-name="Liberation Serif" fo:font-size="12pt" fo:language="' + language + '" fo:country="' + country + '"/>');
+  let styles = _ODT_STYLES_XML.replace('<style:text-properties style:font-name="Liberation Serif" fo:font-size="12pt"/>', '<style:text-properties style:font-name="Liberation Serif" fo:font-size="12pt" ' + parsedOdtLang.allAttrs + '/>');
   if (rtl) styles = styles.replace('<style:default-style style:family="paragraph">', '<style:default-style style:family="paragraph"><style:paragraph-properties style:writing-mode="rl-tb"/>');
   zip.file('styles.xml', styles);
   zip.file('meta.xml', '<?xml version="1.0" encoding="UTF-8"?>\n<office:document-meta xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0" xmlns:dc="http://purl.org/dc/elements/1.1/" office:version="1.2"><office:meta><meta:generator>AlloFlow</meta:generator><dc:title>' + _expXmlEsc(safeTitle) + '</dc:title><dc:language>' + _expXmlEsc(lang) + '</dc:language></office:meta></office:document-meta>');
@@ -3797,8 +4279,9 @@ function _narrationPrepareDocument(doc, options) {
     span.textContent = btn.textContent || '';
     btn.replaceWith(span);
   });
-  doc.querySelectorAll('script,style,button,input,select,textarea,audio,video,template,[hidden],[aria-hidden="true"],.allo-img-controls,[data-alloflow-picker],[data-alloflow-nomsg],[data-allo-footnote-backlink],details.allo-math-source,#allo-reader-bar,#allo-reader-ruler,.alloflow-reading-tools-shell,.alloflow-hud-bar,#alloflow-term-popover,.alloflow-term-popover,.alloflow-export-prompt-overlay,.alloflow-save-bar,.alloflow-turnin-bar,.alloflow-keycap,.alloflow-inline-chart svg,annotation,annotation-xml,[data-allo-latex-src],' + _ALLO_INTERACTIVE_CHROME_SEL).forEach(node=>node.remove());
+  doc.querySelectorAll('script,style,button,input,select,textarea,audio,video,template,[hidden],[aria-hidden="true"],.allo-img-controls,[data-alloflow-picker],[data-alloflow-nomsg],[data-allo-footnote-backlink],details.allo-math-source,#allo-reader-bar,#allo-reader-ruler,.alloflow-reading-tools-shell,.alloflow-hud-bar,#alloflow-term-popover,.alloflow-term-popover,.alloflow-export-prompt-overlay,.alloflow-save-bar,.alloflow-turnin-bar,.alloflow-keycap,.alloflow-inline-chart svg,annotation,annotation-xml,[data-allo-latex-src],del[data-allo-change-id],[data-allo-change-kind="structure-delete"],' + _ALLO_INTERACTIVE_CHROME_SEL).forEach(node=>node.remove());
   doc.querySelectorAll('[style]').forEach(node=>{if(node.style.display==='none'||node.style.visibility==='hidden')node.remove();});
+  _replaceAccessibleMathAndSvgForSpeech(doc.body || doc, { doc, includeTeacherOnly: !!(options && options.includeTeacherOnly), preserveLanguageNodes: !!(options && options.languageRuns) });
 }
 function _narrationTextRuns(node, fallback) {
   const runs=[];
@@ -3812,8 +4295,13 @@ function _narrationTextRuns(node, fallback) {
       return;
     }
     if(/^(math|svg)$/i.test(n.tagName)){
-      const description=n.getAttribute('aria-label')||n.getAttribute('alttext')||(n.tagName.toLowerCase()==='svg'?Array.from(n.querySelectorAll('title,desc')).map(el=>el.textContent.trim()).filter(Boolean).join('. '):'');
-      if(description){runs.push({text:description+'. ',language});return;}
+      const tag=n.tagName.toLowerCase();
+      if(tag==='svg'&&(n.getAttribute('aria-hidden')==='true'||n.getAttribute('role')==='presentation'||n.getAttribute('role')==='none'||(n.closest&&n.closest('.alloflow-inline-chart'))))return;
+      const description=tag==='math'
+        ?_alloLinearizeSpeechMath(n)
+        :(n.getAttribute('aria-label')||n.getAttribute('alttext')||Array.from(n.querySelectorAll('title,desc')).map(el=>el.textContent.trim()).filter(Boolean).join('. '));
+      if(description)runs.push({text:description+'. ',language});
+      return;
     }
     Array.from(n.childNodes).forEach(visit);
   };
@@ -3852,19 +4340,34 @@ function _srStyleTextFromHtml(html, spokenLabels, narrationOptions) {
       if(tag==='p'||tag==='blockquote'||tag==='figcaption'){if(txt&&!node.closest('table'))add(node,node);continue;}
       if(tag==='dt'||tag==='dd'||node.classList?.contains('alloflow-cs-strip')||node.classList?.contains('alloflow-tl-strip')){if(txt)add(node,node,'.');continue;}
       if(tag==='ul'||tag==='ol'){
-        const items=Array.from(node.children).filter(c=>c.tagName&&c.tagName.toLowerCase()==='li');
-        add(node,say(node,tag==='ul'?'list':'numbered',(tag==='ul'?'List, ':'Numbered list, ')+items.length+' item'+(items.length===1?'':'s'),items.length)+'.');
-        items.forEach((li,i)=>{if(readable(li))add(li,(tag==='ul'?say(li,'bullet','Bullet'):say(li,'item','Item '+(i+1),i+1))+'. ',li,'.');});
-        add(node,say(node,'listEnd','List end')+'.');continue;
+        const emitList=(listEl)=>{
+          const lTag=listEl.tagName.toLowerCase();
+          const items=Array.from(listEl.children).filter(c=>c.tagName&&c.tagName.toLowerCase()==='li');
+          add(listEl,say(listEl,lTag==='ul'?'list':'numbered',(lTag==='ul'?'List, ':'Numbered list, ')+items.length+' item'+(items.length===1?'':'s'),items.length)+'.');
+          items.forEach((li,i)=>{
+            const prefix=(lTag==='ul'?say(li,'bullet','Bullet'):say(li,'item','Item '+(i+1),i+1))+'. ';
+            const nestedLists=Array.from(li.querySelectorAll('ul,ol')).filter(sub=>sub.parentElement&&sub.parentElement.closest('li')===li);
+            if(!nestedLists.length){
+              if(readable(li))add(li,prefix,li,'.');
+              return;
+            }
+            const ownClone=li.cloneNode(true);
+            ownClone.querySelectorAll('ul,ol').forEach(sub=>sub.remove());
+            if(readable(ownClone))add(li,prefix,ownClone,'.');
+            nestedLists.forEach(emitList);
+          });
+          add(listEl,say(listEl,'listEnd','List end')+'.');
+        };
+        emitList(node);continue;
       }
       if(tag==='table'){
-        const rows=Array.from(node.querySelectorAll('tr')),cols=rows.length?Math.max.apply(null,rows.map(r=>r.children.length)):0,cap=node.querySelector('caption');
+        const rows=Array.from(node.querySelectorAll('tr')),cols=rows.length?Math.max.apply(null,rows.map(r=>Array.from(r.children).reduce((sum,c)=>sum+Math.max(1,parseInt(c.getAttribute&&c.getAttribute('colspan'),10)||1),0))):0,cap=node.querySelector('caption');
         add(node,say(node,'table','Table'),...(cap&&cap.textContent.trim()?[', ',cap]:[]),', '+say(node,'rows',rows.length+' row'+(rows.length===1?'':'s'),rows.length)+', '+say(node,'columns',cols+' column'+(cols===1?'':'s'),cols)+'.');
         rows.forEach((row,i)=>{const cells=Array.from(row.children).filter(c=>readable(c));if(cells.length)add(row,say(row,'row','Row '+(i+1),i+1)+'. ',...cells.flatMap((cell,index)=>index?['. ',cell]:[cell]),'.');});
         add(node,say(node,'tableEnd','Table end')+'.');continue;
       }
       if(tag==='img'){const alt=(node.getAttribute('alt')||'').trim();if(node.getAttribute('role')!=='presentation'&&node.getAttribute('role')!=='none'&&alt)add(node,say(node,'image','Image')+'. '+alt+'.');continue;}
-      if(options.languageRuns&&(tag==='math'||tag==='svg')){add(node,node);continue;}
+      if(options.languageRuns&&(tag==='math'||tag==='svg'||node.getAttribute('data-allo-spoken-media')==='1')){add(node,node);continue;}
       if(tag==='details'){const sum=node.querySelector('summary');if(sum&&sum.textContent.trim())add(node,say(node,'disclosure','Disclosure section')+', ',sum,'.');walk(node);continue;}
       if(tag==='summary'&&node.parentElement?.tagName==='DETAILS')continue;
       walk(node);
@@ -6514,13 +7017,18 @@ function PdfAuditView(props) {
       // pronunciation and spell-check. Tag the default text style with fo:language
       // (WCAG 3.1.1) and record dc:language in the metadata.
       const _odtLang = ((html.match(/<html[^>]*lang=["']([^"']+)["']/i) || [])[1] || 'en').trim();
-      const _odtLangParts = _odtLang.split(/[-_]/);
-      const _odtLg = (_odtLangParts[0] || 'en').toLowerCase();
-      const _odtCt = _odtLangParts[1] ? _odtLangParts[1].toUpperCase() : 'none';
+      const _odtParsed = _parseOdtBcp47(_odtLang);
+      const _odtLg = _odtParsed.primary === 'none' ? 'en' : _odtParsed.primary;
+      const _odtCt = _odtParsed.country;
+      const _odtLangAttrs = (_odtCt
+        ? 'fo:language="' + _odtLg + '" fo:country="' + _odtCt + '"'
+        : 'fo:language="' + _odtLg + '"')
+        + (_odtParsed.script ? ' fo:script="' + _odtParsed.script + '"' : '')
+        + _odtParsed.asianAttrs + _odtParsed.complexAttrs;
       // RTL (#2): ODF document direction lives in the default paragraph style —
       // style:writing-mode="rl-tb" flips paragraphs, tables, and lists document-wide.
       const _odtRtl = /<(?:html|body)[^>]*\bdir=["']rtl/i.test(html);
-      let _odtStyles = _ODT_STYLES_XML.replace('<style:text-properties style:font-name="Liberation Serif" fo:font-size="12pt"/>', '<style:text-properties style:font-name="Liberation Serif" fo:font-size="12pt" fo:language="' + _odtLg + '" fo:country="' + _odtCt + '"/>');
+      let _odtStyles = _ODT_STYLES_XML.replace('<style:text-properties style:font-name="Liberation Serif" fo:font-size="12pt"/>', '<style:text-properties style:font-name="Liberation Serif" fo:font-size="12pt" ' + _odtLangAttrs + '/>');
       if (_odtRtl) _odtStyles = _odtStyles.replace('<style:default-style style:family="paragraph">', '<style:default-style style:family="paragraph"><style:paragraph-properties style:writing-mode="rl-tb"/>');
       zip.file('styles.xml', _odtStyles);
       zip.file('meta.xml', '<?xml version="1.0" encoding="UTF-8"?>\n<office:document-meta xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0" xmlns:dc="http://purl.org/dc/elements/1.1/" office:version="1.2"><office:meta><meta:generator>AlloFlow</meta:generator><dc:title>' + _expXmlEsc(title) + '</dc:title><dc:language>' + _expXmlEsc(_odtLang) + '</dc:language></office:meta></office:document-meta>');
@@ -6559,7 +7067,7 @@ function PdfAuditView(props) {
     if (!window.JSZip) { addToast(t('toasts.zip_library_loading') || 'Compression library loading — try again in a moment.', 'info'); return; }
     if (typeof callTTS !== 'function') { addToast(t('toasts.mo_no_voice') || 'The voice service is unavailable, so read-along audio can’t be generated right now.', 'error'); return; }
     if (moExport && moExport.status === 'running') { addToast(t('toasts.mo_busy') || 'A read-along export is already running.', 'info'); return; }
-    const { segments, bodyHtml, lang } = _collectMoSegments(html);
+    const { segments, bodyHtml, lang, rtl } = _collectMoSegments(html);
     if (!segments.length) { addToast(t('toasts.mo_no_text') || 'No readable text found to narrate.', 'error'); return; }
     const _confirm = (t('pdf_audit.mo.confirm') || 'Build a read-along ebook? This narrates {n} text sections with text-to-speech — about {n} voice calls, which can take a few minutes.').replace(/\{n\}/g, String(segments.length));
     if (!(await askPdfConfirmation({
@@ -6602,7 +7110,7 @@ function PdfAuditView(props) {
       language: narrationLanguage,
       speed: 1,
     }));
-    const resourceSlug = String(title).replace(/[^a-zA-Z0-9_-]+/g, '-').slice(0, 120) || 'document';
+    const resourceSlug = String(title || '').normalize('NFC').replace(/[^\p{L}\p{M}\p{N}_-]+/gu, '-').replace(/^-+|-+$/g, '').slice(0, 120) || 'document';
     const prepared = await _preparePdfArtifactAudio(artifactSegments, {
       resourceId: 'pdf-audit-readalong-' + resourceSlug,
       resourceType: 'pdf-audit-read-along-epub',
@@ -6657,14 +7165,16 @@ function PdfAuditView(props) {
       const _hasAudio = audioBlobs.map(Boolean); // which segments actually got a clip
       const zip = new window.JSZip();
       const _containerXml = '<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>';
-      let xhtml = '<?xml version="1.0" encoding="utf-8"?>\n<!DOCTYPE html>\n<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="' + _expXmlEsc(epubLang) + '" lang="' + _expXmlEsc(epubLang) + '"><head><meta charset="utf-8"/><title>' + _expXmlEsc(title) + '</title></head><body>' + bodyHtml + '</body></html>';
+      const _rtlAttr = rtl ? ' dir="rtl"' : '';
+      let xhtml = '<?xml version="1.0" encoding="utf-8"?>\n<!DOCTYPE html>\n<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="' + _expXmlEsc(epubLang) + '" lang="' + _expXmlEsc(epubLang) + '"' + _rtlAttr + '><head><meta charset="utf-8"/><title>' + _expXmlEsc(title) + '</title></head><body>' + bodyHtml + '</body></html>';
       xhtml = xhtml.replace(/<br>/g, '<br/>').replace(/<hr>/g, '<hr/>').replace(/<img([^>]*[^/])>/g, '<img$1/>').replace(/&nbsp;/g, '&#160;');
       const _smilXml = _buildMoSmil(segments, durations, ext, _hasAudio);
       const _moContentProperties = [];
       if (/<svg\b/i.test(bodyHtml)) _moContentProperties.push('svg');
       if (/<math\b/i.test(bodyHtml)) _moContentProperties.push('mathml');
-      const _opfXml = _buildMoOpf(title, epubLang, segments, totalSec, null, ext, mime, _hasAudio, _moContentProperties);
-      const _navXhtml = '<?xml version="1.0" encoding="utf-8"?>\n<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="' + _expXmlEsc(epubLang) + '" xml:lang="' + _expXmlEsc(epubLang) + '"><head><title lang="en">Navigation</title></head><body><nav epub:type="toc" role="doc-toc"><h1 lang="en">Contents</h1><ol><li><a href="content.xhtml">' + _expXmlEsc(title) + '</a></li></ol></nav></body></html>';
+      if (/<(?:img|audio|video|source|object|iframe)\b[^>]*(?:src|data)\s*=\s*["']?(?:https?:)?\/\//i.test(bodyHtml)) _moContentProperties.push('remote-resources');
+      const _opfXml = _buildMoOpf(title, epubLang, segments, totalSec, null, ext, mime, _hasAudio, _moContentProperties, { rtl });
+      const _navXhtml = '<?xml version="1.0" encoding="utf-8"?>\n<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="' + _expXmlEsc(epubLang) + '" xml:lang="' + _expXmlEsc(epubLang) + '"' + _rtlAttr + '><head><title lang="en">Navigation</title></head><body><nav epub:type="toc" role="doc-toc"><h1 lang="en">Contents</h1><ol><li><a href="content.xhtml">' + _expXmlEsc(title) + '</a></li></ol></nav></body></html>';
       zip.file('mimetype', 'application/epub+zip', { compression: 'STORE' });
       zip.file('META-INF/container.xml', _containerXml);
       zip.file('OEBPS/content.xhtml', xhtml);
@@ -9289,7 +9799,7 @@ function PdfAuditView(props) {
                             });
                             const topViolations = Object.entries(allViolations).sort((a, b) => b[1] - a[1]).slice(0, 10);
 
-                            const win = window.open('', '_blank');
+                            const win = window.open('', '_blank'); if (win) { try { win.opener = null; } catch (_) {} }
                             if (!win) { addToast(t('toasts.pop_up_blocked'), 'error'); return; }
                             win.document.write(`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Accessibility Review Dashboard</title>
 <style>
@@ -10706,11 +11216,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           · {_successRate}% {t('pdf_audit.history.success') || 'success'} ({_succeeded.length}/{_outcomed.length}{_incomplete.length > 0 ? (', ' + _incomplete.length + ' ' + (t('pdf_audit.history.incomplete') || 'below target')) : ''}{_failed.length > 0 ? (', ' + _failed.length + ' ' + (t('pdf_audit.history.failed') || 'failed') + (_topStage ? (' · ' + (t('pdf_audit.history.mostly_at') || 'mostly at') + ' ' + _topStage) : '')) : ''}{_cancelled.length > 0 ? (', ' + _cancelled.length + ' ' + (t('pdf_audit.history.cancelled') || 'stopped or superseded')) : ''})
                         </span>
                       )}
-                      <button onClick={() => {
+                      <button type="button" onClick={() => {
                         const head = 'date,file,source,outcome,verification,fail_stage,fail_reason,before,after,gain,passes,axe_violations,pages,retries,vision_calls,api_calls,api_ms,duration_s';
-                        const _csv = (v) => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+                        const _csv = (v) => { let s = String(v == null ? '' : v); if (/^\s*[=+\-@|]|^[\t\r\n]/.test(s)) s = "'" + s; return '"' + s.replace(/"/g, '""') + '"'; };
                         const lines = _hist.map((r) => [String(r.at || '').slice(0, 10), _csv(r.fileName || ''), _csv(r.source || 'single'), r.outcome || '', _csv(r.verificationState || ''), _csv(r.failStage || ''), _csv(r.failReason || ''), r.beforeScore != null ? r.beforeScore : '', r.afterScore != null ? r.afterScore : '', (r.beforeScore != null && r.afterScore != null) ? (r.afterScore - r.beforeScore) : '', r.passes != null ? r.passes : '', r.axeViolations != null ? r.axeViolations : '', r.pages != null ? r.pages : '', r.retries != null ? r.retries : '', r.visionCalls != null ? r.visionCalls : '', r.apiCalls != null ? r.apiCalls : '', r.apiMs != null ? r.apiMs : '', r.durationMs != null ? Math.round(r.durationMs / 1000) : ''].join(','));
-                        safeDownloadBlob(new Blob([head + '\n' + lines.join('\n')], { type: 'text/csv' }), 'alloflow-remediation-history.csv');
+                        safeDownloadBlob(new Blob(['\uFEFF' + head + '\n' + lines.join('\n')], { type: 'text/csv;charset=utf-8' }), 'alloflow-remediation-history.csv');
                       }} className="ml-auto px-2 py-0.5 bg-white border border-indigo-300 text-indigo-700 rounded-full font-bold hover:bg-indigo-100 shrink-0">⬇ CSV</button>
                     </div>
                   );
@@ -13255,7 +13765,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           let html;
                           try { html = _viewSanitizeMarkupForExport(generateAuditReportHtml(pdfAuditResult, pendingPdfFile?.name || 'document.pdf'), _docPipeline); }
                           catch (error) { addToast((t('toasts.export_security_unavailable') || 'The report could not be opened safely. Please retry after the security module finishes loading.') + (error?.message ? ' ' + error.message : ''), 'error'); return; }
-                          const w = window.open('', '_blank');
+                          const w = window.open('', '_blank'); if (w) { try { w.opener = null; } catch (_) {} }
                           if (w) {
                             w.document.write(html);
                             w.document.close();
@@ -15817,17 +16327,20 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   var words = node.textContent.split(/(\s+)/);
                                   var span = d.createElement('span');
                                   span.className = 'bionic-wrap';
-                                  span.innerHTML = words.map(function(w) {
-                                    if (/^\s+$/.test(w)) return w;
+                                  words.forEach(function(w) {
+                                    if (/^\s+$/.test(w)) { span.appendChild(d.createTextNode(w)); return; }
                                     var half = Math.ceil(w.length * 0.5);
-                                    return '<strong>' + w.substring(0, half) + '</strong>' + w.substring(half);
-                                  }).join('');
+                                    var st = d.createElement('strong');
+                                    st.textContent = w.substring(0, half);
+                                    span.appendChild(st);
+                                    if (half < w.length) span.appendChild(d.createTextNode(w.substring(half)));
+                                  });
                                   node.parentNode.replaceChild(span, node);
                                 });
                               } else {
                                 btn.style.background = 'transparent'; btn.style.color = '#86efac';
                                 d.querySelectorAll('.bionic-wrap').forEach(function(el) {
-                                  el.outerHTML = el.textContent;
+                                  if (el.parentNode) el.parentNode.replaceChild(d.createTextNode(el.textContent), el);
                                 });
                               }
                             }
@@ -16647,7 +17160,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               let html;
                               try { html = _viewSanitizeMarkupForExport(generateAuditReportHtml(full, pendingPdfFile?.name || 'document.pdf', true), _docPipeline); }
                               catch (error) { addToast((t('toasts.export_security_unavailable') || 'The report could not be opened safely. Please retry after the security module finishes loading.') + (error?.message ? ' ' + error.message : ''), 'error'); return; }
-                              const w = window.open('', '_blank');
+                              const w = window.open('', '_blank'); if (w) { try { w.opener = null; } catch (_) {} }
                               if (w) {
                                 w.document.write(html); w.document.close();
                                 const banner = w.document.createElement('div'); banner.id = 'print-banner';
@@ -17202,7 +17715,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         const blob = new Blob([JSON.stringify(template, null, 2)], { type: 'application/json' });
                         const url = URL.createObjectURL(blob);
                         const a = document.createElement('a'); a.href = url;
-                        a.download = templateName.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase() + '.alloflow-template.json';
+                        a.download = (String(templateName || '').normalize('NFC').replace(/[^\p{L}\p{M}\p{N}]+/gu, '_').replace(/^_+|_+$/g, '').toLowerCase() || 'template') + '.alloflow-template.json';
                         document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
                         addToast(t('toasts.template_2') + templateName + '" saved! Use it in Document Builder to create pre-structured accessible documents.', 'success');
                       }} data-help-key="pdf_audit_view_save_template_btn" className="w-full px-3 py-2 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-600 rounded-xl text-xs font-bold text-amber-700 hover:from-amber-100 hover:to-orange-100 transition-all flex items-center justify-center gap-2">
@@ -18323,7 +18836,7 @@ Return ONLY the plain-language summary.`, false));
                                 const _langAttr = _langCode ? ` lang="${_langCode}"` : '';
                                 const _safeLang = _escSum(lang);
                                 const _safeName = _escSum(pendingPdfFile?.name || 'document');
-                                const win = window.open('', '_blank');
+                                const win = window.open('', '_blank'); if (win) { try { win.opener = null; } catch (_) {} }
                                 if (win) {
                                   win.document.write(`<!DOCTYPE html><html${_langAttr} dir="${dir}"><head><meta charset="UTF-8"><title>Plain Language Summary: ${_safeLang}</title><style>body{font-family:'Lexend',system-ui,sans-serif;max-width:600px;margin:2rem auto;padding:0 1.5rem;line-height:1.8;color:#1e293b;font-size:${level === '3' ? '18' : '16'}px;direction:${dir}}h1{color:#4f46e5;font-size:1.4rem;border-bottom:3px solid #6366f1;padding-bottom:0.5rem}h2{color:#4f46e5;font-size:1.1rem;margin-top:1.5rem}li{margin-bottom:0.5rem}p{margin-bottom:1rem}.badge{display:inline-flex;gap:6px;align-items:center;background:#e0e7ff;color:#4338ca;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;margin-bottom:1rem}.footer{margin-top:2rem;padding-top:1rem;border-top:2px solid #e2e8f0;font-size:11px;color:#94a3b8}@media print{body{font-size:14px;max-width:100%}}</style></head><body><div class="badge">📖 ${_safeLang} · ${gradeLabel}</div><h1>${lang === 'English' ? 'Easy-to-Read Summary' : 'Summary'}</h1>${_summaryHtml}<div class="footer"><p>Source: ${_safeName} · Generated ${new Date().toLocaleDateString()} by AlloFlow</p><button onclick="window.print()" style="margin-top:8px;padding:8px 16px;background:#4f46e5;color:white;border:none;border-radius:6px;font-weight:bold;cursor:pointer">🖨️ Print</button></div></body></html>`);
                                   win.document.close();

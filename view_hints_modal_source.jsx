@@ -31,6 +31,26 @@
  *
  * Icons (read from window globals): Lightbulb, RefreshCw, Save, Sparkles, X
  */
+function _hintsAiDoor(t) {
+  try {
+    if (typeof window !== 'undefined' && typeof window.__alloAiSetupDoorway === 'function') {
+      return window.__alloAiSetupDoorway('text', t);
+    }
+  } catch (_) {}
+  return { disabled: false };
+}
+
+function formatHintTime(timestamp) {
+  if (!timestamp) return '';
+  try {
+    const parsed = new Date(timestamp);
+    if (Number.isNaN(parsed.getTime())) return '';
+    return parsed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  } catch (_) {
+    return '';
+  }
+}
+
 function HintsModal({
   handleApplyHint,
   handleGenerateLessonIdeas,
@@ -50,6 +70,9 @@ function HintsModal({
   const Save = window.Save || (() => null);
   const Sparkles = window.Sparkles || (() => null);
   const X = window.X || (() => null);
+  const hintsAiDoor = _hintsAiDoor(t);
+  const hintsAiOff = !!(hintsAiDoor && (hintsAiDoor.disabled || hintsAiDoor.available === false));
+  const hintsAiTitle = hintsAiOff ? (hintsAiDoor.title || (typeof t === 'function' && t('ai.setup_required')) || 'Set up AI to use this feature') : undefined;
   const dialogRef = React.useRef(null);
   const messages = Array.isArray(toastHistory) ? toastHistory : [];
   const [tab, setTab] = React.useState(initialTab === 'messages' && messages.length ? 'messages' : 'hints');
@@ -63,27 +86,46 @@ function HintsModal({
     const dialog = dialogRef.current;
     if (!dialog) return undefined;
     const previousFocus = document.activeElement;
+    const backgroundState = [];
+    const seenNodes = new Set();
+    for (let branch = dialog; branch && branch !== document.body && branch.parentElement; branch = branch.parentElement) {
+      Array.from(branch.parentElement.children).forEach((sibling) => {
+        if (sibling === branch || seenNodes.has(sibling) || /^(?:SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName)) return;
+        seenNodes.add(sibling);
+        backgroundState.push({
+          node: sibling,
+          hadInert: sibling.hasAttribute('inert'),
+          ariaHidden: sibling.getAttribute('aria-hidden'),
+        });
+        sibling.setAttribute('inert', '');
+        sibling.setAttribute('aria-hidden', 'true');
+      });
+    }
+    const prevBodyOverflow = document.body ? document.body.style.overflow : '';
+    if (document.body) document.body.style.overflow = 'hidden';
     const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
     const trap = { root: dialog };
     trapStack.push(trap);
     const isTopTrap = () => trapStack[trapStack.length - 1] === trap;
     const getFocusable = () => Array.from(dialog.querySelectorAll(
-      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
     )).filter((element) => {
-      if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      if (element.hidden || element.getAttribute('aria-hidden') === 'true' || element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      const closedDetails = element.closest('details:not([open])');
+      if (closedDetails && !(element.tagName === 'SUMMARY' && element.parentElement === closedDetails)) return false;
       const style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(element) : null;
       return !style || (style.display !== 'none' && style.visibility !== 'hidden');
     });
     (getFocusable()[0] || dialog).focus();
     const onKeyDown = (event) => {
-      if (!isTopTrap()) return;
+      if (!dialog.isConnected || event.isComposing || event.keyCode === 229 || !isTopTrap()) return;
       if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); handleSetShowHintsModalToFalse(); return; }
       if (event.key !== 'Tab') return;
       const focusable = getFocusable();
       if (!focusable.length) { event.preventDefault(); dialog.focus(); return; }
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
-      if (!dialog.contains(document.activeElement)) {
+      if (!dialog.contains(document.activeElement) || document.activeElement === dialog) {
         event.preventDefault();
         (event.shiftKey ? last : first).focus();
       } else if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
@@ -92,6 +134,13 @@ function HintsModal({
     document.addEventListener('keydown', onKeyDown);
     return () => {
       document.removeEventListener('keydown', onKeyDown);
+      if (document.body) document.body.style.overflow = prevBodyOverflow;
+      backgroundState.forEach(({ node, hadInert, ariaHidden }) => {
+        if (!node || !node.isConnected) return;
+        if (!hadInert) node.removeAttribute('inert');
+        if (ariaHidden == null) node.removeAttribute('aria-hidden');
+        else node.setAttribute('aria-hidden', ariaHidden);
+      });
       const wasTopTrap = isTopTrap();
       const trapIndex = trapStack.indexOf(trap);
       if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
@@ -132,7 +181,10 @@ function HintsModal({
                         <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600">
                           {t('hints.message_kind_' + (entry.type || 'info')) || (entry.type || 'info')}
                         </span>
-                        <span className="shrink-0 text-[11px] text-slate-600">{new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        {(() => {
+                          const entryTime = formatHintTime(entry.timestamp);
+                          return entryTime ? <span className="shrink-0 text-[11px] text-slate-600">{entryTime}</span> : null;
+                        })()}
                       </div>
                       <p className="text-sm font-medium leading-relaxed text-slate-800">{entry.message}</p>
                     </li>
@@ -165,7 +217,10 @@ function HintsModal({
                   <span className={`text-[11px] font-bold uppercase tracking-wider ${hint.isExtension ? 'text-purple-700' : 'text-yellow-800'}`}>
                     {hint.tool}
                   </span>
-                  <span className="text-[11px] text-slate-600">{new Date(hint.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                  {(() => {
+                    const hintTime = formatHintTime(hint.timestamp);
+                    return hintTime ? <span className="text-[11px] text-slate-600">{hintTime}</span> : null;
+                  })()}
                 </div>
                 <div className="text-sm text-slate-700 font-medium leading-relaxed whitespace-pre-line mb-3">
                   {renderFormattedText(hint.text, false)}
@@ -199,8 +254,9 @@ function HintsModal({
           <button
             type="button"
             onClick={handleGenerateLessonIdeas}
-            disabled={isGeneratingExtension || history.length === 0}
+            disabled={isGeneratingExtension || history.length === 0 || hintsAiOff}
             aria-busy={isGeneratingExtension}
+            title={hintsAiTitle}
             className="w-full min-h-11 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md flex items-center justify-center gap-2"
             data-help-key="hints_generate_extension"
           >

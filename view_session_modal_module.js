@@ -363,6 +363,18 @@ function SessionModal({
   const Maximize = window.Maximize || noop;
   const Minimize = window.Minimize || noop;
   const CheckCircle2 = window.CheckCircle2 || noop;
+  const tr = React.useCallback((key, fallback, params) => {
+    try {
+      const translated = typeof t === "function" ? t(key, params) : "";
+      if (typeof translated === "string" && translated && translated !== key) return translated;
+    } catch (_) {
+    }
+    let text = String(fallback);
+    if (params) Object.keys(params).forEach((name) => {
+      text = text.split(`{${name}}`).join(String(params[name]));
+    });
+    return text;
+  }, [t]);
   const [isProjectionMode, setIsProjectionMode] = React.useState(false);
   const lanJoinUrl = Array.isArray(sessionData?.joinUrls) ? sessionData.joinUrls[0] : "";
   const isLocalOnly = sessionData?.isLocalOnly === true || sessionData?.transport === "local-preview";
@@ -372,6 +384,8 @@ function SessionModal({
   const qrStatusText = liveQrSvg ? "QR validated" : liveQrError ? "QR unavailable" : "QR loading";
   const studentAiLabel = studentAiPolicy === "student-byok" ? "Personal AI optional" : "AI tools off";
   const dialogRef = React.useRef(null);
+  const closeHandlerRef = React.useRef(handleSetShowSessionModalToFalse);
+  closeHandlerRef.current = handleSetShowSessionModalToFalse;
   React.useEffect(function() {
     const dialog = dialogRef.current;
     if (!dialog) return void 0;
@@ -379,14 +393,60 @@ function SessionModal({
     const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
     const trap = { root: dialog };
     trapStack.push(trap);
+    const isolated = [];
+    const seenSiblings = /* @__PURE__ */ new Set();
+    let cursor = dialog;
+    while (cursor && cursor.parentElement) {
+      const parent = cursor.parentElement;
+      Array.from(parent.children).forEach(function(sibling) {
+        if (!sibling || sibling === cursor || seenSiblings.has(sibling) || !sibling.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName)) return;
+        seenSiblings.add(sibling);
+        const hadInert = sibling.hasAttribute("inert");
+        const prevInert = sibling.inert;
+        const ariaHidden = sibling.getAttribute("aria-hidden");
+        isolated.push({ sibling, hadInert, prevInert, ariaHidden });
+        try {
+          sibling.inert = true;
+        } catch (_) {
+        }
+        try {
+          sibling.setAttribute("inert", "");
+        } catch (_) {
+        }
+        try {
+          sibling.setAttribute("aria-hidden", "true");
+        } catch (_) {
+        }
+      });
+      if (parent === document.body) break;
+      cursor = parent;
+    }
+    const scrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: "" });
+    let scrollLocked = false;
+    try {
+      scrollLocked = true;
+      if (++scrollLock.count === 1) {
+        scrollLock.prev = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+      }
+    } catch (_) {
+    }
     const isTopTrap = function() {
       return trapStack[trapStack.length - 1] === trap;
     };
     const getFocusable = function() {
       return Array.from(dialog.querySelectorAll(
-        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
+        'button:not([disabled]), summary, [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
       )).filter(function(element) {
         if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+        let ancestor = element.parentElement;
+        while (ancestor && ancestor !== dialog) {
+          if (ancestor.matches && ancestor.matches("details:not([open])")) {
+            const directSummary = ancestor.querySelector(":scope > summary");
+            if (element !== directSummary) return false;
+          }
+          ancestor = ancestor.parentElement;
+        }
         const style = typeof window.getComputedStyle === "function" ? window.getComputedStyle(element) : null;
         return !style || style.display !== "none" && style.visibility !== "hidden";
       });
@@ -395,10 +455,12 @@ function SessionModal({
     (first || dialog).focus();
     const onKeyDown = function(event) {
       if (!isTopTrap()) return;
+      if (!dialog.isConnected) return;
       if (event.key === "Escape") {
+        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
         event.preventDefault();
         event.stopPropagation();
-        handleSetShowSessionModalToFalse();
+        closeHandlerRef.current && closeHandlerRef.current();
         return;
       }
       if (event.key !== "Tab") return;
@@ -409,7 +471,7 @@ function SessionModal({
         return;
       }
       const firstItem = focusable[0], lastItem = focusable[focusable.length - 1];
-      if (!dialog.contains(document.activeElement)) {
+      if (!dialog.contains(document.activeElement) || document.activeElement === dialog) {
         event.preventDefault();
         (event.shiftKey ? lastItem : firstItem).focus();
       } else if (event.shiftKey && document.activeElement === firstItem) {
@@ -423,12 +485,48 @@ function SessionModal({
     document.addEventListener("keydown", onKeyDown);
     return function() {
       document.removeEventListener("keydown", onKeyDown);
+      try {
+        if (scrollLocked) {
+          scrollLock.count = Math.max(0, scrollLock.count - 1);
+          if (scrollLock.count === 0) document.body.style.overflow = scrollLock.prev;
+        }
+      } catch (_) {
+      }
+      isolated.forEach(function({ sibling, hadInert, prevInert, ariaHidden }) {
+        if (!sibling || !sibling.isConnected) return;
+        if (!hadInert) {
+          try {
+            sibling.inert = false;
+          } catch (_) {
+          }
+          try {
+            sibling.removeAttribute("inert");
+          } catch (_) {
+          }
+        } else {
+          try {
+            sibling.inert = Boolean(prevInert);
+          } catch (_) {
+          }
+        }
+        if (ariaHidden == null) {
+          try {
+            sibling.removeAttribute("aria-hidden");
+          } catch (_) {
+          }
+        } else {
+          try {
+            sibling.setAttribute("aria-hidden", ariaHidden);
+          } catch (_) {
+          }
+        }
+      });
       const wasTopTrap = isTopTrap();
       const trapIndex = trapStack.indexOf(trap);
       if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
-      if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus.isConnected && typeof previousFocus.focus === "function") previousFocus.focus();
+      if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus !== document.documentElement && previousFocus.isConnected && typeof previousFocus.focus === "function") previousFocus.focus();
     };
-  }, [handleSetShowSessionModalToFalse]);
+  }, []);
   const liveJoinUrl = React.useMemo(() => {
     if (mailboxJoinUrl) return mailboxJoinUrl;
     if (isLocalOnly || !activeSessionCode || typeof window === "undefined") return "";
@@ -498,17 +596,17 @@ function SessionModal({
       } catch (_) {
       }
     } else {
-      addToast("Allow pop-ups to test this student join link.", "info");
+      addToast(tr("session.allow_popups_test_link", "Allow pop-ups to test this student join link."), "info");
     }
-  }, [addToast, liveJoinUrl]);
+  }, [addToast, liveJoinUrl, tr]);
   const printLiveQr = React.useCallback(() => {
     if (!liveQrSvg || typeof window === "undefined") {
-      addToast("Wait for the QR code to finish loading before printing.", "info");
+      addToast(tr("session.wait_qr_load", "Wait for the QR code to finish loading before printing."), "info");
       return;
     }
     const popup = window.open("", "_blank", "width=720,height=900");
     if (!popup) {
-      addToast("Allow pop-ups to print this QR code.", "info");
+      addToast(tr("session.allow_popups_print_qr", "Allow pop-ups to print this QR code."), "info");
       return;
     }
     try {

@@ -8,6 +8,124 @@ function LiveSessionDockView(props) {
   const reviewLabel = reviewApi?.organizerReviewText?.(props.t, 'review_title', 'Review organizer reflections') || 'Review organizer reflections';
   const imageApi = window.AlloModules?.LiveAac;
   const MailboxImageStatus = imageApi?.MailboxImageStatus;
+  const fallbackDockRef = React.useRef(null);
+  const resolvedDockRef = liveDockPanelRef || fallbackDockRef;
+  const closeDockRef = React.useRef(setShowLiveDock);
+  closeDockRef.current = setShowLiveDock;
+  React.useEffect(() => {
+    const dialog = resolvedDockRef.current;
+    if (!dialog || typeof document === 'undefined') return undefined;
+    const previousFocus = document.activeElement;
+    const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
+    const trap = { root: dialog };
+    trapStack.push(trap);
+    const isTopTrap = () => trapStack[trapStack.length - 1] === trap;
+    const isolated = [];
+    const seenSiblings = new Set();
+    let cursor = dialog;
+    while (cursor && cursor.parentElement) {
+      const parent = cursor.parentElement;
+      Array.from(parent.children).forEach((sibling) => {
+        if (!sibling || sibling === cursor || seenSiblings.has(sibling) || !sibling.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName)) return;
+        seenSiblings.add(sibling);
+        isolated.push({
+          sibling,
+          hadInert: sibling.hasAttribute('inert'),
+          prevInert: sibling.inert,
+          ariaHidden: sibling.getAttribute('aria-hidden'),
+        });
+        try { sibling.inert = true; } catch (_) {}
+        try { sibling.setAttribute('inert', ''); } catch (_) {}
+        try { sibling.setAttribute('aria-hidden', 'true'); } catch (_) {}
+      });
+      if (parent === document.body) break;
+      cursor = parent;
+    }
+    const body = document.body;
+    const scrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: '' });
+    let scrollLocked = false;
+    try {
+      if (body) {
+        scrollLocked = true;
+        if (++scrollLock.count === 1) { scrollLock.prev = body.style.overflow; body.style.overflow = 'hidden'; }
+      }
+    } catch (_) {}
+    const getFocusable = () => Array.from(dialog.querySelectorAll(
+      'button:not([disabled]), summary, [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
+    )).filter((element) => {
+      if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      let ancestor = element.parentElement;
+      while (ancestor && ancestor !== dialog) {
+        if (ancestor.matches && ancestor.matches('details:not([open])')) {
+          const directSummary = ancestor.querySelector(':scope > summary');
+          if (element !== directSummary) return false;
+        }
+        ancestor = ancestor.parentElement;
+      }
+      const style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(element) : null;
+      return !style || (style.display !== 'none' && style.visibility !== 'hidden');
+    });
+    if (!dialog.contains(document.activeElement) && typeof dialog.focus === 'function') {
+      dialog.focus();
+    }
+    const handleKeyDown = (event) => {
+      if (!isTopTrap()) return;
+      if (!dialog.isConnected) return;
+      if (event.key === 'Escape') {
+        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+        event.preventDefault();
+        event.stopPropagation();
+        if (typeof closeDockRef.current === 'function') closeDockRef.current(false);
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const focusable = getFocusable();
+      if (focusable.length === 0) {
+        event.preventDefault();
+        if (typeof dialog.focus === 'function') dialog.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (!dialog.contains(document.activeElement) || document.activeElement === dialog) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus();
+      } else if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown, true);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown, true);
+      try {
+        if (scrollLocked && body) {
+          scrollLock.count = Math.max(0, scrollLock.count - 1);
+          if (scrollLock.count === 0) body.style.overflow = scrollLock.prev;
+        }
+      } catch (_) {}
+      isolated.forEach(({ sibling, hadInert, prevInert, ariaHidden }) => {
+        if (!sibling || !sibling.isConnected) return;
+        if (!hadInert) {
+          try { sibling.inert = false; } catch (_) {}
+          try { sibling.removeAttribute('inert'); } catch (_) {}
+        } else {
+          try { sibling.inert = Boolean(prevInert); } catch (_) {}
+        }
+        if (ariaHidden == null) { try { sibling.removeAttribute('aria-hidden'); } catch (_) {} }
+        else { try { sibling.setAttribute('aria-hidden', ariaHidden); } catch (_) {} }
+      });
+      const wasTopTrap = isTopTrap();
+      const idx = trapStack.lastIndexOf(trap);
+      if (idx !== -1) trapStack.splice(idx, 1);
+      if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus !== document.documentElement && previousFocus.isConnected && typeof previousFocus.focus === 'function') {
+        try { previousFocus.focus(); } catch (_) {}
+      }
+    };
+  }, [resolvedDockRef]);
   // Resolve each displayed resource once per render. Preparation can finish
   // without replacing History, and only its filtered payload defines receipts.
   const imageEvidenceById = new Map();
@@ -25,7 +143,7 @@ function LiveSessionDockView(props) {
     return evidence;
   };
   return (
-<div ref={liveDockPanelRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label={t('live_dock.title') || 'Live Dashboard'} style={{width:'min(1180px, calc(100vw - 2rem))',maxHeight:'calc(100dvh - 2rem)',boxSizing:'border-box',overflowY:'auto',background:'white',borderRadius:16,border:'1px solid #cbd5e1',boxShadow:'0 24px 72px rgba(15,23,42,0.42)',padding:'1.1rem'}}>
+<div ref={resolvedDockRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label={t('live_dock.title') || 'Live Dashboard'} style={{width:'min(1180px, calc(100vw - 2rem))',maxHeight:'calc(100dvh - 2rem)',boxSizing:'border-box',overflowY:'auto',background:'white',borderRadius:16,border:'1px solid #cbd5e1',boxShadow:'0 24px 72px rgba(15,23,42,0.42)',padding:'1.1rem'}}>
                 <div style={{position:'sticky',top:'-1.1rem',zIndex:4,display:'flex',justifyContent:'space-between',alignItems:'center',gap:8,margin:'-1.1rem -1.1rem 0.7rem',padding:'0.9rem 1.1rem',background:'rgba(255,255,255,0.97)',borderBottom:'1px solid #e2e8f0',borderRadius:'16px 16px 0 0'}}>
                   <div style={{fontWeight:800,color:'#0f172a',fontSize:'0.95rem'}}>{t('live_dock.title') || 'Live Dashboard'}</div>
                   <div style={{display:'flex',alignItems:'center',gap:8}}>
@@ -36,10 +154,10 @@ function LiveSessionDockView(props) {
                     {typeof requestEndLiveSession === 'function' && (
                       <button type="button" data-live-dock-end-session="true" onClick={() => { setShowLiveDock(false); requestEndLiveSession(); }} style={{minHeight:44,background:'#fff1f2',color:'#9f1239',border:'1px solid #fecdd3',borderRadius:8,padding:'0.3rem 0.8rem',cursor:'pointer',fontWeight:700,fontSize:'0.8rem'}}>{t('session.action_end') || 'End Session'}</button>
                     )}
-                    <button onClick={() => setShowLiveDock(false)} aria-label={t('common.close') || 'Close'} style={{minWidth:44,minHeight:44,background:'#f1f5f9',border:'none',borderRadius:6,padding:'0.15rem 0.5rem',cursor:'pointer',fontWeight:700}}>✕</button>
+                    <button type="button" onClick={() => setShowLiveDock(false)} aria-label={t('common.close') || 'Close'} style={{minWidth:44,minHeight:44,background:'#f1f5f9',border:'none',borderRadius:6,padding:'0.15rem 0.5rem',cursor:'pointer',fontWeight:700}}>✕</button>
                   </div>
                 </div>
-                <button onClick={() => { setShowLiveDock(false); setShowSessionModal(true); }} style={{background:'none',border:'none',padding:0,cursor:'pointer',fontFamily:'monospace',fontWeight:800,color:'#1e3a8a',fontSize:'0.85rem'}} aria-label={t('live_dock.session_code_aria') || 'Show session code and projection screen'}>
+                <button type="button" onClick={() => { setShowLiveDock(false); setShowSessionModal(true); }} style={{background:'none',border:'none',padding:0,cursor:'pointer',fontFamily:'monospace',fontWeight:800,color:'#1e3a8a',fontSize:'0.85rem'}} aria-label={t('live_dock.session_code_aria') || 'Show session code and projection screen'}>
                   {(t('live_dock.code_label') || 'Code:') + ' ' + activeSessionCode}
                 </button>
                 {(() => {
@@ -94,12 +212,12 @@ function LiveSessionDockView(props) {
                   ].filter(item => liveOrganizerSummary[item.key] > 0);
                   return (
                     <>
-                      <div style={dockGroupLabel}>Live organizer activity</div>
-                      <section role="status" aria-live="polite" aria-label="Live visual organizer activity status" style={{padding:'0.65rem',border:'1px solid #a5b4fc',borderRadius:10,background:'#eef2ff',color:'#312e81'}}>
+                      <div style={dockGroupLabel}>{t('live_dock.group_organizer') || 'Live organizer activity'}</div>
+                      <section role="status" aria-live="polite" aria-label={t('live_dock.organizer_status_aria') || 'Live visual organizer activity status'} style={{padding:'0.65rem',border:'1px solid #a5b4fc',borderRadius:10,background:'#eef2ff',color:'#312e81'}}>
                         <div style={{display:'flex',alignItems:'flex-start',gap:8,flexWrap:'wrap'}}>
                           <span aria-hidden="true" style={{fontSize:'1.1rem'}}>🧩</span>
                           <div style={{flex:'1 1 180px',minWidth:0}}>
-                            <div style={{fontSize:'0.8rem',fontWeight:900}}>{liveOrganizer.structureType || 'Visual organizer'} is live</div>
+                            <div style={{fontSize:'0.8rem',fontWeight:900}}>{(liveOrganizer.structureType || (t('live_dock.visual_organizer') || 'Visual organizer')) + ' ' + (t('live_dock.is_live') || 'is live')}</div>
                             <div style={{fontSize:'0.65rem',marginTop:2,color:'#4f46e5'}}>
                               {liveOrganizerSummary.total
                                 ? `${liveOrganizerSummary.total} student${liveOrganizerSummary.total === 1 ? '' : 's'} in session`
@@ -112,7 +230,7 @@ function LiveSessionDockView(props) {
                               handleRestoreView(organizerResource, { suppressLiveFollow: true });
                               setShowLiveDock(false);
                             }} style={{border:'1px solid #818cf8',borderRadius:7,background:'white',color:'#3730a3',padding:'0.3rem 0.5rem',fontSize:'0.68rem',fontWeight:900,cursor:organizerResource?'pointer':'not-allowed',opacity:organizerResource?1:0.55}}>
-                              Open activity
+                              {t('live_dock.open_activity') || 'Open activity'}
                             </button>
                             {retryableLiveOrganizerUids.length > 0 && (
                               <button type="button" disabled={interactiveOrganizerRetrying} onClick={() => retryInteractiveOrganizerStudents(retryableLiveOrganizerUids)} style={{border:'1px solid #f59e0b',borderRadius:7,background:'#fffbeb',color:'#92400e',padding:'0.3rem 0.5rem',fontSize:'0.68rem',fontWeight:900,cursor:interactiveOrganizerRetrying?'wait':'pointer',opacity:interactiveOrganizerRetrying?0.65:1}}>
@@ -120,12 +238,12 @@ function LiveSessionDockView(props) {
                               </button>
                             )}
                             <button type="button" disabled={interactiveOrganizerSync.status === 'stopping'} onClick={() => broadcastInteractiveOrganizer(null)} style={{border:'1px solid #fca5a5',borderRadius:7,background:'#fff1f2',color:'#b91c1c',padding:'0.3rem 0.5rem',fontSize:'0.68rem',fontWeight:900,cursor:interactiveOrganizerSync.status === 'stopping'?'wait':'pointer',opacity:interactiveOrganizerSync.status === 'stopping'?0.65:1}}>
-                              {interactiveOrganizerSync.status === 'stopping' ? 'Stopping…' : 'Stop for students'}
+                              {interactiveOrganizerSync.status === 'stopping' ? (t('live_dock.stopping') || 'Stopping…') : (t('live_dock.stop_for_students') || 'Stop for students')}
                             </button>
                           </div>
                         </div>
                         {countBadges.length > 0 && (
-                          <div role="group" aria-label="Student activity launch summary" style={{display:'flex',gap:5,flexWrap:'wrap',marginTop:8}}>
+                          <div role="group" aria-label={t('live_dock.organizer_summary_aria') || 'Student activity launch summary'} style={{display:'flex',gap:5,flexWrap:'wrap',marginTop:8}}>
                             {countBadges.map(item => (
                               <span key={item.key} style={{border:'1px solid '+item.border,borderRadius:999,background:item.background,color:item.color,padding:'0.12rem 0.38rem',fontSize:'0.64rem',fontWeight:900}}>
                                 {liveOrganizerSummary[item.key]} {item.label}
@@ -175,7 +293,7 @@ function LiveSessionDockView(props) {
                   })}
                 <div style={dockGroupLabel}>{t('live_dock.group_run') || 'Run'}</div>
                 <div style={{display:'flex',flexDirection:'column',gap:6}}>
-                  <button style={{...dockCardStyle,border:'1px solid #a5b4fc',background:'#eef2ff',color:'#3730a3'}} onClick={() => {
+                  <button type="button" style={{...dockCardStyle,border:'1px solid #a5b4fc',background:'#eef2ff',color:'#3730a3'}} onClick={() => {
                     const adventureVoteOptions = activeView === 'adventure'
                       ? Array.from(new Set((adventureState?.currentScene?.options || [])
                           .map(option => String(typeof option === 'object' && option?.action ? option.action : option || '').replace(/\s+/g, ' ').trim().slice(0, 180))
@@ -194,7 +312,7 @@ function LiveSessionDockView(props) {
                     <span aria-hidden="true">🗳️</span>{t('live_dock.call_vote') || 'Vote on outcomes'}
                     <span style={{marginLeft:'auto',fontSize:'0.65rem',fontWeight:800,color:'#4f46e5'}}>{activeView === 'adventure' && (adventureState?.currentScene?.options || []).length >= 2 ? (t('live_dock.current_outcomes') || 'current outcomes') : (t('live_dock.edit_choices') || 'edit choices')}</span>
                   </button>
-                  <button style={dockCardStyle} onClick={() => { setLivePollPreset(null); setShowLivePollingPanel(true); setShowLiveDock(false); }}>
+                  <button type="button" style={dockCardStyle} onClick={() => { setLivePollPreset(null); setShowLivePollingPanel(true); setShowLiveDock(false); }}>
                     <span aria-hidden="true">📊</span>{t('live_dock.poll') || 'Poll'}
                   </button>
                   <div style={{...dockCardStyle,cursor:'default',padding:'0.4rem 0.5rem'}}>
@@ -219,7 +337,7 @@ function LiveSessionDockView(props) {
                     </label>
                     {liveSessionQaEnabled && <button type="button" onClick={() => { setLivePollPreset(null); setShowLivePollingPanel(true); setShowLiveDock(false); }} aria-label={t('live_dock.moderate_qa') || 'Open Q&A moderation'} style={{border:'1px solid #7dd3fc',borderRadius:6,background:'#f0f9ff',color:'#075985',padding:'0.3rem 0.45rem',fontSize:'0.64rem',fontWeight:900,cursor:'pointer'}}>{t('live_dock.moderate') || 'Moderate'}</button>}
                   </div>
-                  <button style={dockCardStyle} onClick={() => {
+                  <button type="button" style={dockCardStyle} onClick={() => {
                     setLivePollPreset({
                       type: 'rating',
                       prompt: t('live_dock.quick_check_prompt') || 'How is this landing for you right now?',
@@ -231,7 +349,7 @@ function LiveSessionDockView(props) {
                   }}>
                     <span aria-hidden="true">⚡</span>{t('live_dock.quick_check') || 'Check understanding'}
                   </button>
-                  <button style={dockCardStyle} onClick={() => {
+                  <button type="button" style={dockCardStyle} onClick={() => {
                     setLivePollPreset({
                       type: 'wordcloud',
                       prompt: t('live_dock.word_cloud_prompt') || 'What word or short phrase best captures your thinking?',
@@ -241,7 +359,7 @@ function LiveSessionDockView(props) {
                   }}>
                     <span aria-hidden="true">☁️</span>{t('live_dock.word_cloud') || 'Word Cloud'}
                   </button>
-                  <button style={dockCardStyle} onClick={() => {
+                  <button type="button" style={dockCardStyle} onClick={() => {
                     setLivePollPreset({
                       type: 'freetext',
                       prompt: t('live_dock.feedback_response_prompt') || 'Explain your thinking using evidence from the lesson.',
@@ -254,10 +372,10 @@ function LiveSessionDockView(props) {
                   }}>
                     <span aria-hidden="true">✍️</span>{t('live_dock.feedback_response') || 'Feedback Response'}
                   </button>
-                  <button style={dockCardStyle} onClick={() => { setPictionaryPreparedInteraction(null); setPictionaryInitialMode('pictionary'); setShowPictionaryHost(true); setShowLiveDock(false); }}>
+                  <button type="button" style={dockCardStyle} onClick={() => { setPictionaryPreparedInteraction(null); setPictionaryInitialMode('pictionary'); setShowPictionaryHost(true); setShowLiveDock(false); }}>
                     <span aria-hidden="true">🎨</span>{t('pictionary.button') || 'Concept Pictionary'}
                   </button>
-                  <button style={dockCardStyle} onClick={() => { setPictionaryPreparedInteraction(null); setPictionaryInitialMode('sketch'); setShowPictionaryHost(true); setShowLiveDock(false); }}>
+                  <button type="button" style={dockCardStyle} onClick={() => { setPictionaryPreparedInteraction(null); setPictionaryInitialMode('sketch'); setShowPictionaryHost(true); setShowLiveDock(false); }}>
                     <span aria-hidden="true">✏️</span>{t('live_dock.sketch_response') || 'Sketch Response'}
                   </button>
                 </div>
@@ -271,24 +389,24 @@ function LiveSessionDockView(props) {
                     <span aria-hidden="true">⏱️</span>{t('a11y.task_timer') || 'Class timer'}
                     {isStudyTimerRunning ? <span style={{marginLeft:'auto',fontSize:'0.68rem',fontWeight:800,color:'#15803d',fontVariantNumeric:'tabular-nums'}}>{formatTime(studyTimeLeft)}</span> : null}
                   </button>
-                  <button style={dockCardStyle} onClick={() => toggleSessionMode()}>
+                  <button type="button" style={dockCardStyle} onClick={() => toggleSessionMode()}>
                     <span aria-hidden="true">{sessionData && sessionData.mode === 'sync' ? '🧑‍🏫' : '\uD83C\uDF92'}</span>
                     {(sessionData && sessionData.mode === 'sync') ? (t('session.teacher_paced') || 'Teacher-led') : (t('session.student_paced') || 'Student-paced')}
                     <span style={{marginLeft:'auto',fontSize:'0.68rem',fontWeight:700,color:'#1d4ed8'}}>{t('live_dock.toggle') || 'toggle'}</span>
                   </button>
-                  <button style={dockCardStyle} onClick={() => { setShowLiveDock(false); handleSetShowGroupModalToTrue(); }}>
+                  <button type="button" style={dockCardStyle} onClick={() => { setShowLiveDock(false); handleSetShowGroupModalToTrue(); }}>
                     <span aria-hidden="true">👥</span>{t('groups.manage_button') || 'Groups'}
                   </button>
                 </div>
-                <div style={dockGroupLabel}>Recognize</div>
+                <div style={dockGroupLabel}>{t('live_dock.group_recognize') || 'Recognize'}</div>
                 <div style={{display:'grid',gridTemplateColumns:'1fr auto',gap:6,padding:'0.45rem',background:'#f0fdf4',border:'1px solid #bbf7d0',borderRadius:9}}>
                   <div style={{gridColumn:'1 / -1',display:'grid',gridTemplateColumns:'1fr auto',gap:6,padding:'0.4rem',borderRadius:7,background:'white',border:'1px solid #86efac'}}>
                     <button type="button" role="switch" aria-checked={havenRecognitionConfig.enabled} disabled={havenConfigBusy || havenRewardBusy} onClick={() => handleUpdateHavenRecognitionConfig({ enabled: !havenRecognitionConfig.enabled })} style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,border:'none',background:'transparent',padding:0,color:'#14532d',fontSize:'0.7rem',fontWeight:900,cursor:havenConfigBusy?'wait':'pointer'}}>
-                      <span>{havenRecognitionConfig.enabled ? 'Recognition enabled' : 'Recognition off'}</span>
+                      <span>{havenRecognitionConfig.enabled ? (t('allohaven.recognition_enabled') || 'Recognition enabled') : (t('allohaven.recognition_off') || 'Recognition off')}</span>
                       <span aria-hidden="true" style={{width:30,height:17,borderRadius:999,background:havenRecognitionConfig.enabled?'#16a34a':'#cbd5e1',padding:2,display:'flex',justifyContent:havenRecognitionConfig.enabled?'flex-end':'flex-start'}}><span style={{width:13,height:13,borderRadius:'50%',background:'white',display:'block'}}></span></span>
                     </button>
                     <label style={{display:'flex',alignItems:'center',gap:4,fontSize:'0.66rem',fontWeight:800,color:'#166534'}}>
-                      Session cap
+                      {t('allohaven.session_cap') || 'Session cap'}
                       <select value={havenRecognitionConfig.perStudentTokenCap} disabled={!havenRecognitionConfig.enabled || havenConfigBusy || havenRewardBusy} onChange={(event) => handleUpdateHavenRecognitionConfig({ perStudentTokenCap: Number(event.target.value) })} aria-label={t('allohaven.token_cap_aria') || 'AlloHaven per-student session token cap'} style={{border:'1px solid #86efac',borderRadius:6,background:'white',color:'#14532d',padding:'0.2rem',fontSize:'0.68rem'}}>
                         {ALLOHAVEN_RECOGNITION_CAPS.map(cap => <option key={cap} value={cap}>{cap}</option>)}
                       </select>
@@ -296,7 +414,7 @@ function LiveSessionDockView(props) {
                     <p style={{gridColumn:'1 / -1',margin:0,fontSize:'0.61rem',lineHeight:1.35,color:'#4d7c0f'}}>{havenRecognitionConfig.enabled ? ('Each student can receive up to ' + havenRecognitionConfig.perStudentTokenCap + ' tokens in this session.') : 'Opt in to use recognition in this session. It remains off by default.'}</p>
                   </div>
                   <label style={{display:'flex',flexDirection:'column',gap:3,fontSize:'0.68rem',fontWeight:800,color:'#166534'}}>
-                    Positive progress
+                    {t('allohaven.positive_progress') || 'Positive progress'}
                     <select
                       value={havenRewardReasonId}
                       onChange={(event) => setHavenRewardReasonId(event.target.value)}
@@ -310,7 +428,7 @@ function LiveSessionDockView(props) {
                     </select>
                   </label>
                   <label style={{display:'flex',flexDirection:'column',gap:3,fontSize:'0.68rem',fontWeight:800,color:'#166534'}}>
-                    Tokens
+                    {t('allohaven.tokens_label') || 'Tokens'}
                     <select
                       value={havenRewardAmount}
                       onChange={(event) => setHavenRewardAmount(Number(event.target.value) === 2 ? 2 : 1)}
@@ -333,7 +451,7 @@ function LiveSessionDockView(props) {
                       aria-label={'Recognize all connected students with ' + havenRewardAmount + ' AlloHaven token' + (havenRewardAmount === 1 ? '' : 's') + ' each'}
                       style={{border:'1px solid #15803d',borderRadius:7,background:'#166534',color:'white',padding:'0.3rem 0.48rem',fontSize:'0.68rem',fontWeight:800,cursor:havenRewardBusy?'wait':'pointer',opacity:havenRewardBusy?0.65:1}}
                     >
-                      {havenRewardBusy ? 'Sending…' : '🌿 Recognize class'}
+                      {havenRewardBusy ? (t('common.sending') || 'Sending…') : ('🌿 ' + (t('allohaven.recognize_class') || 'Recognize class'))}
                     </button>
                     {Object.entries((sessionData && sessionData.groups) || {}).map(([groupId, group]) => {
                       const groupUids = Object.keys(rosterEntries).filter(uid => rosterEntries[uid] && rosterEntries[uid].groupId === groupId);
@@ -389,7 +507,7 @@ function LiveSessionDockView(props) {
                     </div>
                   ) : null}
                 </div>
-                <div style={dockGroupLabel}>Class Goals</div>
+                <div style={dockGroupLabel}>{t('live_dock.group_class_goals') || 'Class Goals'}</div>
                 {(() => {
                   // Class Goals (docs/GROUP_CONTINGENCY_DESIGN.md, Ring A):
                   // whole-class interdependent contingencies, earn-only,
@@ -856,6 +974,7 @@ function LiveSessionDockView(props) {
                               ) : null}
                               {entry.resourceId ? (
                                 <button
+                                  type="button"
                                   onClick={() => handleSetStudentResource(uid, null)}
                                   aria-label={(t('live_dock.clear_student_resource_aria') || 'Clear individual resource for') + ' ' + (entry.name || 'student')}
                                   title={t('live_dock.clear_student_resource') || 'Clear individual resource'}
@@ -863,6 +982,7 @@ function LiveSessionDockView(props) {
                                 >✕</button>
                               ) : null}
                               <button
+                                type="button"
                                 onClick={() => handleRecognizeStudent(uid)}
                                 disabled={!canRecognizeStudent}
                                 aria-label={'Recognize ' + (entry.name || 'student') + ' with ' + havenRewardAmount + ' AlloHaven token' + (havenRewardAmount === 1 ? '' : 's')}
@@ -872,6 +992,7 @@ function LiveSessionDockView(props) {
                                 <span aria-hidden="true">🌿</span>+{havenRewardAmount}
                               </button>
                               <button
+                                type="button"
                                 onClick={() => canPushCurrent && handleSetStudentResource(uid, generatedContent.id)}
                                 disabled={!canPushCurrent}
                                 aria-label={(t('live_dock.push_student_resource_aria') || 'Send the current resource to') + ' ' + (entry.name || 'student')}
@@ -897,11 +1018,11 @@ function LiveSessionDockView(props) {
                           <span aria-hidden="true">{meta.emoji}</span>
                           <span style={{fontWeight:700,color:'#0f172a'}}>{entry.name || 'Student'}</span>
                           <span style={{color:'#475569'}}>{t('live_signals.' + entry.signal) || meta.label}</span>
-                          <button onClick={() => clearSignal(uid)} aria-label={(t('live_dock.clear_signal_aria') || 'Clear signal from') + ' ' + (entry.name || 'student')} style={{marginLeft:'auto',background:'white',border:'1px solid #e2e8f0',borderRadius:6,padding:'0.05rem 0.4rem',cursor:'pointer',fontSize:'0.7rem',fontWeight:700,color:'#475569'}}>✓</button>
+                          <button type="button" onClick={() => clearSignal(uid)} aria-label={(t('live_dock.clear_signal_aria') || 'Clear signal from') + ' ' + (entry.name || 'student')} style={{marginLeft:'auto',background:'white',border:'1px solid #e2e8f0',borderRadius:6,padding:'0.05rem 0.4rem',cursor:'pointer',fontSize:'0.7rem',fontWeight:700,color:'#475569'}}>✓</button>
                         </div>
                       );
                     })}
-                    <button onClick={() => activeSignals.forEach(({ uid }) => clearSignal(uid))} style={{background:'none',border:'none',color:'#1d4ed8',cursor:'pointer',fontSize:'0.72rem',fontWeight:700,textAlign:'right',padding:'0.1rem 0'}}>
+                    <button type="button" onClick={() => activeSignals.forEach(({ uid }) => clearSignal(uid))} style={{background:'none',border:'none',color:'#1d4ed8',cursor:'pointer',fontSize:'0.72rem',fontWeight:700,textAlign:'right',padding:'0.1rem 0'}}>
                       {t('live_dock.clear_all_signals') || 'Clear all'}
                     </button>
                   </div>

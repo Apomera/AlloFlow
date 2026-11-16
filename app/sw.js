@@ -118,6 +118,21 @@ async function runtimeAssetResponse(request) {
     return response;
 }
 
+const STATIC_JSON_BANK_PATH = /^\/(?:[A-Za-z0-9_-]+\/)?(?:word_audio_shards\/[A-Za-z0-9_-]+\.json|word_audio_kokoro_bank\.json|packets_vocab\/[A-Za-z0-9_-]+\.json)$/;
+function isJsonBankCacheable(response) {
+    if (!cacheable(response)) return false;
+    const ct = (response.headers.get('Content-Type') || '').toLowerCase();
+    return ct.includes('application/json') || ct.includes('+json');
+}
+async function staticJsonBankResponse(request) {
+    const cache = await caches.open(CACHE_NAME);
+    const stored = await cache.match(request.url);
+    if (isJsonBankCacheable(stored)) return stored;
+    const response = await fetch(request.url, { cache: 'no-cache', credentials: 'omit' });
+    if (response.status === 200 && isJsonBankCacheable(response)) cache.put(request.url, response.clone()).catch(() => {});
+    return response;
+}
+
 self.addEventListener('install', (event) => {
     console.log('[SW] Installing:', CACHE_NAME);
     // Verify the complete boot set before writing any candidate cache entry.
@@ -225,6 +240,11 @@ self.addEventListener('fetch', (event) => {
 
     if (url.pathname.startsWith(STATIC_CODE_PATH) && /\.(?:js|css)$/i.test(url.pathname)) {
         event.respondWith(Promise.resolve(releaseUnavailable()));
+        return;
+    }
+
+    if (url.origin === self.location.origin && STATIC_JSON_BANK_PATH.test(url.pathname) && !url.search) {
+        event.respondWith(staticJsonBankResponse(event.request));
         return;
     }
 

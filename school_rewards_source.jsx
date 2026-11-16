@@ -339,7 +339,7 @@ function srReadClassroomRoster() {
 function srCsvCell(value) {
   const raw = String(value == null ? '' : value);
   // CSV quoting does not stop a spreadsheet from evaluating a formula.
-  const text = /^[\t\r\n]|^\s*[=+\-@]/.test(raw) ? "'" + raw : raw;
+  const text = /^[\t\r\n]|^\s*[=+\-@|]/.test(raw) ? "'" + raw : raw;
   return /[",\r\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
 }
 
@@ -361,8 +361,9 @@ function SrRosterBridge({ tt, addToast }) {
   const count = roster ? roster.groups.filter((group) => selected.has(group.id)).reduce((sum, group) => sum + group.codenames.length, 0) : 0;
   const download = () => {
     const csv = srRosterTemplateCsv(roster, Array.from(selected));
+    const csvWithBom = csv.charCodeAt(0) === 0xFEFF ? csv : '\uFEFF' + csv;
     try {
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+      const blob = new Blob([csvWithBom], { type: 'text/csv;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url; link.download = 'school-rewards-roster-template.csv';
@@ -533,7 +534,8 @@ function SrRecognitionWorksheet({ recognition, tt, addToast }) {
   };
   const download = () => {
     try {
-      const blob = new Blob([srRecognitionCsv(recognition)], { type: 'text/csv;charset=utf-8' });
+      const csv = srRecognitionCsv(recognition);
+      const blob = new Blob([csv.charCodeAt(0) === 0xFEFF ? csv : '\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url; link.download = 'school-rewards-recognition-worksheet.csv';
@@ -726,14 +728,47 @@ function SchoolRewardsPanel(props) {
     addToast(tt('schoolrewards.snippet_copy_failed', 'Clipboard is blocked here. Select the setup function text and press Ctrl+C.'), 'info');
   };
 
+  const onCloseRef = React.useRef(onClose);
+  onCloseRef.current = onClose;
+
   React.useEffect(() => {
     const dialog = dialogRef.current;
-    if (!dialog) return undefined;
+    if (!dialog || typeof document === 'undefined') return undefined;
     const previousFocus = document.activeElement;
     const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
     const trap = { root: dialog };
     trapStack.push(trap);
     const isTopTrap = () => trapStack[trapStack.length - 1] === trap;
+    const isolated = [];
+    const seenSiblings = new Set();
+    let cursor = dialog;
+    while (cursor && cursor.parentElement) {
+      const parent = cursor.parentElement;
+      Array.from(parent.children).forEach((sibling) => {
+        if (!sibling || sibling === cursor || seenSiblings.has(sibling) || !sibling.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName)) return;
+        seenSiblings.add(sibling);
+        isolated.push({
+          sibling,
+          hadInert: sibling.hasAttribute('inert'),
+          prevInert: sibling.inert,
+          ariaHidden: sibling.getAttribute('aria-hidden'),
+        });
+        try { sibling.inert = true; } catch (_) {}
+        try { sibling.setAttribute('inert', ''); } catch (_) {}
+        try { sibling.setAttribute('aria-hidden', 'true'); } catch (_) {}
+      });
+      if (parent === document.body) break;
+      cursor = parent;
+    }
+    const body = document.body;
+    const scrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: '' });
+    let scrollLocked = false;
+    try {
+      if (body) {
+        scrollLocked = true;
+        if (++scrollLock.count === 1) { scrollLock.prev = body.style.overflow; body.style.overflow = 'hidden'; }
+      }
+    } catch (_) {}
     const getFocusable = () => Array.from(dialog.querySelectorAll(
       'button:not([disabled]), [href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), summary, [tabindex]:not([tabindex="-1"])'
     )).filter((el) => {
@@ -744,30 +779,54 @@ function SchoolRewardsPanel(props) {
           if (!summary || !summary.contains(el)) return false;
         }
       }
-      return true;
+      const st = typeof window !== 'undefined' && typeof window.getComputedStyle === 'function' ? window.getComputedStyle(el) : null;
+      return !st || (st.display !== 'none' && st.visibility !== 'hidden');
     });
     const first = getFocusable()[0];
-    (first || dialog).focus();
+    if (!dialog.contains(document.activeElement)) (first || dialog).focus();
     const onKeyDown = (event) => {
-      if (!isTopTrap()) return;
-      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); onClose(); return; }
+      if (event.defaultPrevented || !dialog.isConnected || !isTopTrap()) return;
+      if ((event.nativeEvent && event.nativeEvent.isComposing) || event.isComposing || event.keyCode === 229) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        if (typeof onCloseRef.current === 'function') onCloseRef.current();
+        return;
+      }
       if (event.key !== 'Tab') return;
       const focusable = getFocusable();
       if (focusable.length === 0) { event.preventDefault(); dialog.focus(); return; }
       const firstItem = focusable[0], lastItem = focusable[focusable.length - 1];
-      if (!dialog.contains(document.activeElement)) { event.preventDefault(); (event.shiftKey ? lastItem : firstItem).focus(); }
+      if (!dialog.contains(document.activeElement) || document.activeElement === dialog) { event.preventDefault(); (event.shiftKey ? lastItem : firstItem).focus(); }
       else if (event.shiftKey && document.activeElement === firstItem) { event.preventDefault(); lastItem.focus(); }
       else if (!event.shiftKey && document.activeElement === lastItem) { event.preventDefault(); firstItem.focus(); }
     };
     document.addEventListener('keydown', onKeyDown);
     return () => {
       document.removeEventListener('keydown', onKeyDown);
+      try {
+        if (scrollLocked && body) {
+          scrollLock.count = Math.max(0, scrollLock.count - 1);
+          if (scrollLock.count === 0) body.style.overflow = scrollLock.prev;
+        }
+      } catch (_) {}
+      isolated.forEach(({ sibling, hadInert, prevInert, ariaHidden }) => {
+        if (!sibling || !sibling.isConnected) return;
+        if (!hadInert) {
+          try { sibling.inert = false; } catch (_) {}
+          try { sibling.removeAttribute('inert'); } catch (_) {}
+        } else {
+          try { sibling.inert = Boolean(prevInert); } catch (_) {}
+        }
+        if (ariaHidden == null) { try { sibling.removeAttribute('aria-hidden'); } catch (_) {} }
+        else { try { sibling.setAttribute('aria-hidden', ariaHidden); } catch (_) {} }
+      });
       const wasTop = isTopTrap();
-      const idx = trapStack.indexOf(trap);
+      const idx = trapStack.lastIndexOf(trap);
       if (idx !== -1) trapStack.splice(idx, 1);
-      if (wasTop && previousFocus && previousFocus !== document.body && previousFocus.isConnected && typeof previousFocus.focus === 'function') previousFocus.focus();
+      if (wasTop && previousFocus && previousFocus !== document.body && previousFocus !== document.documentElement && previousFocus.isConnected && typeof previousFocus.focus === 'function') previousFocus.focus();
     };
-  }, [onClose]);
+  }, []);
 
   const stepLabels = {
     approval: tt('schoolrewards.next_approval', 'Confirm district review and the managed account.'),

@@ -88,10 +88,19 @@ function writeOne(key) {
   const output = buildFirstWaveModule(key);
   const rootOutput = path.join(ROOT, config.output);
   const publicOutput = path.join(ROOT, 'desktop', 'web-app', 'public', config.output);
+  const appBuildOutput = path.join(ROOT, 'desktop', 'app-build', config.output);
+  const webBuildOutput = path.join(ROOT, 'desktop', 'web-app', 'build', config.output);
   for (const target of [rootOutput, publicOutput]) {
     const temporary = target + '.build-' + process.pid + '.tmp';
     fs.writeFileSync(temporary, output, 'utf8');
     fs.renameSync(temporary, target);
+  }
+  for (const extraTarget of [appBuildOutput, webBuildOutput]) {
+    if (fs.existsSync(path.dirname(extraTarget))) {
+      const temporary = extraTarget + '.build-' + process.pid + '.tmp';
+      fs.writeFileSync(temporary, output, 'utf8');
+      fs.renameSync(temporary, extraTarget);
+    }
   }
   console.log(`Built ${config.output} (${Buffer.byteLength(output)} bytes)`);
 }

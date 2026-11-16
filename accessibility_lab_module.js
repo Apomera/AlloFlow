@@ -3189,7 +3189,7 @@ body.alloflow-sim-reading-stress > ' + SIM_EXCLUDE + ' li {\
     }
 
     var modal = e('div', {
-      className: 'fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4',
+      className: 'fixed inset-0 z-[300] bg-black/40 flex items-center justify-center p-4',
       'data-alloflow-a11y-lab': 'root',
       onClick: function (ev) { if (ev.target === ev.currentTarget) props.onClose(); },
     },
@@ -3215,7 +3215,7 @@ body.alloflow-sim-reading-stress > ' + SIM_EXCLUDE + ' li {\
           ),
           e('button', {
             ref: closeBtnRef,
-            className: 'px-3 py-1.5 text-sm font-semibold text-slate-600 hover:text-slate-900',
+            className: 'min-w-11 min-h-11 shrink-0 px-3 py-1.5 text-sm font-semibold text-slate-600 hover:text-slate-900',
             onClick: props.onClose,
             'aria-label': tr('a11y_lab.dialog.close_aria', 'Close Accessibility Lab'),
           }, tr('a11y_lab.dialog.close', 'Close'))

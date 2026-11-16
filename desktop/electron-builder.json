@@ -67,6 +67,22 @@
     {
       "from": "../licenses",
       "to": "licenses"
+    },
+    {
+      "from": "../word_audio_shards",
+      "to": "word_audio_shards"
+    },
+    {
+      "from": "../word_audio_kokoro_bank.json",
+      "to": "word_audio_kokoro_bank.json"
+    },
+    {
+      "from": "../packets_vocab",
+      "to": "packets_vocab"
+    },
+    {
+      "from": "../packets_vocab_bank_en.js",
+      "to": "packets_vocab_bank_en.js"
     }
   ],
   "asar": true,

@@ -1035,7 +1035,7 @@ function FabStack(props) {
                   </div>
                   <div className="alloflow-student-tools-grid">
                     {/* Same as the reader's own toolbar: these tools work in Both, so they keep it open. */}
-                    <button
+                    <button type="button"
                       data-student-tool="true"
                       onClick={() => { setInteractionMode('read'); stopPlayback(); setSelectionMenu(null); setRevisionData(null); setIsFluencyMode(false); }}
                       className={`alloflow-student-tool transition-colors shadow-sm motion-reduce:transition-none ${interactionMode === 'read' && !isFluencyMode ? 'bg-indigo-100 text-indigo-700 ring-2 ring-indigo-500' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
@@ -1047,7 +1047,7 @@ function FabStack(props) {
                       <span className="alloflow-student-tool-icon" aria-hidden="true"><Volume2 size={18} /></span>
                       <span className="min-w-0 text-xs font-bold leading-tight">{t('simplified.read_mode')}</span>
                     </button>
-                    <button
+                    <button type="button"
                       data-student-tool="true"
                       onClick={() => { setInteractionMode('define'); stopPlayback(); setSelectionMenu(null); setRevisionData(null); }}
                       className={`alloflow-student-tool transition-colors shadow-sm motion-reduce:transition-none ${interactionMode === 'define' ? 'bg-yellow-100 text-yellow-900 ring-2 ring-yellow-500' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
@@ -1060,7 +1060,7 @@ function FabStack(props) {
                       <span className="min-w-0 text-xs font-bold leading-tight">{t('simplified.define_mode')}</span>
                     </button>
                     {/* Explain mode is all AI calls (see view_simplified); withheld when student AI is hidden. */}
-                    {!studentAiFeaturesHidden && <button
+                    {!studentAiFeaturesHidden && <button type="button"
                       data-student-tool="true"
                       data-help-toggle="true"
                       onClick={() => { setInteractionMode(prev => prev === 'explain' ? 'read' : 'explain'); stopPlayback(); }}
@@ -1080,7 +1080,7 @@ function FabStack(props) {
               <section className="alloflow-student-tools-section px-4 py-3" aria-labelledby="alloflow-student-tools-focus-heading">
                 <h3 id="alloflow-student-tools-focus-heading" className="mb-2 text-[11px] font-black uppercase tracking-[0.16em] text-slate-500">{t('student_tools.focus') || 'Focus'}</h3>
                 <div className="alloflow-student-tools-grid">
-                  <button
+                  <button type="button"
                     data-student-tool="true"
                     onClick={handleToggleReadingRuler}
                     className={`alloflow-student-tool transition-colors shadow-sm motion-reduce:transition-none ${readingRuler ? 'bg-indigo-100 text-indigo-700 ring-2 ring-indigo-500' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
@@ -1131,7 +1131,7 @@ function FabStack(props) {
                       <p id="student-tools-magnifier-keys" className="mt-1 text-[11px] text-slate-600">{magnifierKeysHint}</p>
                     </div>
                   )}
-                  <button
+                  <button type="button"
                     data-student-tool="true"
                     onClick={handleSetShowStudyTimerModalToTrue}
                     className={`alloflow-student-tool transition-colors shadow-sm motion-reduce:transition-none ${isStudyTimerRunning ? 'bg-green-100 text-green-800 ring-2 ring-green-500' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
@@ -1143,7 +1143,7 @@ function FabStack(props) {
                     <span className="alloflow-student-tool-icon" aria-hidden="true"><Clock size={18} /></span>
                     <span className="min-w-0 text-xs font-bold leading-tight">{t('a11y.task_timer')}</span>
                   </button>
-                  <button
+                  <button type="button"
                     data-student-tool="true"
                     onClick={handleToggleFocusMode}
                     className={`alloflow-student-tool transition-colors shadow-sm motion-reduce:transition-none ${focusMode ? 'bg-indigo-100 text-indigo-700 ring-2 ring-indigo-500' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
@@ -1156,7 +1156,7 @@ function FabStack(props) {
                     <span className="alloflow-student-tool-icon" aria-hidden="true"><Eye size={18} /></span>
                     <span className="min-w-0 text-xs font-bold leading-tight"><span className="block">{t('settings.text.bionic') || 'Bionic Reading Style'}</span><span id="student-tools-bionic-hint" className="mt-1 block text-[11px] font-normal">{t('settings.text.bionic_sub') || 'Bolds the beginning of each word'}</span></span>
                   </button>
-                  <button
+                  <button type="button"
                     data-student-tool="true"
                     onClick={handleToggleVisualSupports}
                     className={`alloflow-student-tool transition-colors shadow-sm motion-reduce:transition-none ${showVisualSupports ? 'bg-purple-100 text-purple-700 ring-2 ring-purple-500' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
@@ -1168,7 +1168,7 @@ function FabStack(props) {
                     <span className="min-w-0 text-xs font-bold leading-tight">{t('fab.visual_supports') || 'Visual Supports'}</span>
                   </button>
                   {activeView === 'simplified' && (
-                    <button
+                    <button type="button"
                       data-student-tool="true"
                       onClick={() => {
                         setIsLineFocusMode(!isLineFocusMode);
@@ -1193,7 +1193,7 @@ function FabStack(props) {
                   <h3 id="alloflow-student-tools-input-heading" className="mb-2 text-[11px] font-black uppercase tracking-[0.16em] text-slate-500">{t('student_tools.input_practice') || 'Input & practice'}</h3>
                   <div className="alloflow-student-tools-grid">
                     {!isTeacherMode && !studentAiFeaturesHidden && studentProjectSettings.allowSocraticTutor && (
-                      <button
+                      <button type="button"
                         data-student-tool="true"
                         onClick={handleToggleShowSocraticChat}
                         className={`alloflow-student-tool transition-colors shadow-sm motion-reduce:transition-none ${showSocraticChat ? 'bg-teal-700 text-white ring-2 ring-teal-400' : 'bg-teal-100 text-teal-800 hover:bg-teal-200'}`}
@@ -1207,7 +1207,7 @@ function FabStack(props) {
                       </button>
                     )}
                     {activeView === 'simplified' && generatedContent && (
-                      <button
+                      <button type="button"
                         data-student-tool="true"
                         onClick={handleSetIsSyntaxGameToTrue}
                         className="alloflow-student-tool border-orange-200 bg-orange-100 text-orange-900 shadow-sm transition-colors hover:bg-orange-200 motion-reduce:transition-none"

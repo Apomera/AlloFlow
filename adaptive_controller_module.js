@@ -26,18 +26,25 @@ if (window.AlloModules && window.AlloModules.AdaptiveControllerModule) { console
 // This runs globally — works in STEAM Lab, SEL Hub, BehaviorLens, and the main app.
 if (!window._alloGamepadGlobal) {
   window._alloGamepadGlobal = true;
-  const _gpad = { prev: {}, axisKeys: {}, deadzone: 0.2, connected: false, scrollAccum: 0,
+  const _gpad = { prev: {}, axisKeys: {}, deadzone: 0.2, connected: false, rafId: 0, scrollAccum: 0,
     cursorMode: false, cursorX: 0, cursorY: 0, cursorSpeed: 8, lastHovered: null };
+  const _gpadReducedMotion = () => {
+    try { return typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; }
+  };
 
   // ── Visible cursor reticle for spatial pointing ──
   const _gpadCur = document.createElement('div');
   _gpadCur.id = 'alloflow-gpad-cursor';
   _gpadCur.setAttribute('aria-hidden', 'true');
-  _gpadCur.style.cssText = 'position:fixed;width:28px;height:28px;border-radius:50%;border:2px solid #6366f1;background:rgba(99,102,241,0.12);pointer-events:none;z-index:99999;display:none;box-shadow:0 0 8px rgba(99,102,241,0.3);transform:translate(-50%,-50%);transition:width 0.1s,height 0.1s';
+  _gpadCur.style.cssText = 'position:fixed;width:28px;height:28px;border-radius:50%;border:2px solid #6366f1;background:rgba(99,102,241,0.12);pointer-events:none;z-index:99999;display:none;box-shadow:0 0 8px rgba(99,102,241,0.3);transform:translate(-50%,-50%);' + (_gpadReducedMotion() ? '' : 'transition:width 0.1s,height 0.1s');
   const _gpadDot = document.createElement('div');
   _gpadDot.style.cssText = 'position:absolute;top:50%;left:50%;width:4px;height:4px;background:#6366f1;border-radius:50%;transform:translate(-50%,-50%)';
   _gpadCur.appendChild(_gpadDot);
-  document.body.appendChild(_gpadCur);
+  const _gpadMountCursor = () => {
+    if (document.body && !_gpadCur.parentNode) document.body.appendChild(_gpadCur);
+  };
+  if (document.body) _gpadMountCursor();
+  else if (document.addEventListener) document.addEventListener('DOMContentLoaded', _gpadMountCursor, { once: true });
 
   function _gpadShowCursor() {
     if (!_gpad.cursorMode) { _gpad.cursorMode = true; _gpad.cursorX = window.innerWidth / 2; _gpad.cursorY = window.innerHeight / 2; _gpadCur.style.display = 'block'; }
@@ -78,8 +85,10 @@ if (!window._alloGamepadGlobal) {
     try {
       const el = document.elementFromPoint(_gpad.cursorX, _gpad.cursorY);
       if (!el) return;
-      _gpadCur.style.width = '20px'; _gpadCur.style.height = '20px';
-      setTimeout(() => { _gpadCur.style.width = '28px'; _gpadCur.style.height = '28px'; }, 120);
+      if (!_gpadReducedMotion()) {
+        _gpadCur.style.width = '20px'; _gpadCur.style.height = '20px';
+        setTimeout(() => { _gpadCur.style.width = '28px'; _gpadCur.style.height = '28px'; }, 120);
+      }
       window._alloHaptic('click');
       const target = el.closest('button,a,[role="button"],input,select,textarea,[tabindex]') || el;
       target.focus(); target.click();
@@ -90,12 +99,77 @@ if (!window._alloGamepadGlobal) {
     } catch(e) {}
   }
 
+  const _gpadHasConnectedPad = () => {
+    try {
+      const gps = navigator.getGamepads ? navigator.getGamepads() : [];
+      for (let i = 0; i < gps.length; i++) {
+        if (gps[i] && gps[i].connected !== false) return true;
+      }
+    } catch (e) {}
+    return false;
+  };
+  const _gpadFocusableElements = () => {
+    try {
+      const stack = Array.isArray(window.__alloFocusTrapStack) ? window.__alloFocusTrapStack : [];
+      let root = null;
+      for (let i = stack.length - 1; i >= 0; i--) {
+        const entry = stack[i];
+        const cand = entry && (entry.container || entry.element || entry);
+        if (cand && cand.isConnected !== false && !cand.closest?.('[hidden], [inert], [aria-hidden="true"]')) {
+          root = cand;
+          break;
+        }
+      }
+      if (!root) {
+        const modals = Array.from(document.querySelectorAll('[aria-modal="true"]')).filter((m) => (
+          m && m.isConnected !== false && !m.closest('[hidden], [inert], [aria-hidden="true"]')
+        ));
+        if (modals.length > 0) root = modals[modals.length - 1];
+      }
+      const queryRoot = root || document;
+      const hasLayout = Boolean(root && typeof root.getClientRects === 'function' && root.getClientRects().length > 0);
+      return Array.from(queryRoot.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]), a[href], summary')).filter((el) => {
+        if (!el || el.disabled) return false;
+        if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+        const closedDetails = el.closest('details:not([open])');
+        if (closedDetails && !(el.tagName === 'SUMMARY' && el.parentElement === closedDetails)) return false;
+        if (typeof window.getComputedStyle === 'function') {
+          const st = window.getComputedStyle(el);
+          if (st && (st.display === 'none' || st.visibility === 'hidden')) return false;
+        }
+        if (hasLayout && typeof el.getClientRects === 'function' && el.getClientRects().length === 0) return false;
+        return true;
+      });
+    } catch (e) {
+      return [];
+    }
+  };
+  const _gpadOpenBot = () => {
+    try {
+      if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true) return;
+      if (typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable('text')) {
+        if (typeof window.__alloAiSetupDoorway === 'function') {
+          const door = window.__alloAiSetupDoorway('text');
+          if (door && typeof door.onDoorway === 'function') door.onDoorway();
+        }
+        return;
+      }
+      window.dispatchEvent(new CustomEvent('alloflow:open-bot'));
+    } catch (e) {}
+  };
 
   window.addEventListener('gamepadconnected', (e) => {
     _gpad.connected = true;
+    _gpadMountCursor();
     console.log('[Gamepad] Connected globally: ' + e.gamepad.id);
+    _gpadStartPoll();
   });
-  window.addEventListener('gamepaddisconnected', () => { _gpad.connected = false; });
+  window.addEventListener('gamepaddisconnected', () => {
+    if (_gpadHasConnectedPad()) return;
+    _gpad.connected = false;
+    _gpad.rafId = 0;
+    _gpadHideCursor();
+  });
 
   const _gpadKey = (code, type) => {
     try {
@@ -134,8 +208,9 @@ if (!window._alloGamepadGlobal) {
   };
 
   const _gpadPoll = () => {
-    requestAnimationFrame(_gpadPoll);
+    _gpad.rafId = 0;
     if (!_gpad.connected) return;
+    _gpad.rafId = requestAnimationFrame(_gpadPoll);
     const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
     let gp = null;
     for (let i = 0; i < gamepads.length; i++) { if (gamepads[i]) { gp = gamepads[i]; break; } }
@@ -205,7 +280,8 @@ if (!window._alloGamepadGlobal) {
             ae.click();
           } else {
             _gpadKey('Space', 'keydown');
-          setTimeout(() => _gpadKey('Space', 'keyup'), 100);
+            setTimeout(() => _gpadKey('Space', 'keyup'), 100);
+          }
         }
       }
       // B/Circle → Escape
@@ -218,7 +294,7 @@ if (!window._alloGamepadGlobal) {
         } else {
           // Tab to next focusable element
           try {
-            const focusables = Array.from(document.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]), a[href]'));
+            const focusables = _gpadFocusableElements();
             const idx = focusables.indexOf(document.activeElement);
             if (idx >= 0 && idx < focusables.length - 1) focusables[idx + 1].focus();
             else if (focusables.length > 0) focusables[0].focus();
@@ -232,7 +308,7 @@ if (!window._alloGamepadGlobal) {
           _gpadKey('KeyM', 'keydown'); setTimeout(() => _gpadKey('KeyM', 'keyup'), 100);
         } else {
           try {
-            const focusables2 = Array.from(document.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]), a[href]'));
+            const focusables2 = _gpadFocusableElements();
             const idx2 = focusables2.indexOf(document.activeElement);
             if (idx2 > 0) focusables2[idx2 - 1].focus();
             else if (focusables2.length > 0) focusables2[focusables2.length - 1].focus();
@@ -245,7 +321,7 @@ if (!window._alloGamepadGlobal) {
       // LB: 3D = cycle tool (Q), UI = open AlloBot chat
       if (_gpadBtnEdge(4, btns[4].pressed)) {
         if (inCanvas) { _gpadKey('KeyQ', 'keydown'); }
-        else { window.dispatchEvent(new CustomEvent('alloflow:open-bot')); }
+        else { _gpadOpenBot(); }
       }
       if (_gpadBtnEdge(5, btns[5].pressed)) _gpadClick(2);                 // RB → right-click
       // LT → Shift (analog threshold)
@@ -266,7 +342,7 @@ if (!window._alloGamepadGlobal) {
       // Start: 3D = fly toggle (F), UI = open AlloBot chat
       if (_gpadBtnEdge(9, btns[9].pressed)) {
         if (inCanvas2) { _gpadKey('KeyF', 'keydown'); }
-        else { window.dispatchEvent(new CustomEvent('alloflow:open-bot')); }
+        else { _gpadOpenBot(); }
       }
     }
     // ── L3 (left stick click, index 10) → Read focused element aloud ──
@@ -312,17 +388,11 @@ if (!window._alloGamepadGlobal) {
         if (micBtn) {
           micBtn.click();
         } else {
-          // Phase 3v.M — gamepad fallback dictation now routes through
+          // Phase 3v.M — gamepad fallback dictation routes through
           // window.AlloFlowVoice.initWebSpeechCapture when available.
-          // The cached global controller (window._gpadSpeechRecog) +
-          // toggle flag (window._gpadSpeechRecogActive) pattern is
-          // preserved so other gamepad event handlers can still inspect
-          // state. The controller's .start()/.stop() methods are
-          // SpeechRecognition-shape compatible for that purpose.
-          //
-          // The transcript is appended to the currently-focused INPUT or
-          // TEXTAREA via the React-friendly value-setter trick so React
-          // controlled inputs receive proper change events.
+          const speechLang = (typeof window.getSpeechLangCode === 'function' && window.getSpeechLangCode())
+            || (document.documentElement && document.documentElement.lang)
+            || 'en-US';
           const handleTranscript = (text) => {
             const target = document.activeElement;
             if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) {
@@ -337,22 +407,24 @@ if (!window._alloGamepadGlobal) {
           if (!window._gpadSpeechRecog) {
             if (window.AlloFlowVoice && typeof window.AlloFlowVoice.initWebSpeechCapture === 'function') {
               const ctrl = window.AlloFlowVoice.initWebSpeechCapture({
-                lang: 'en-US',
+                lang: speechLang,
                 continuous: false,
                 interimResults: false,
                 onTranscript: (text) => handleTranscript(text),
                 onEnd: () => { window._gpadSpeechRecogActive = false; }
               });
-              if (ctrl.supported) {
+              if (ctrl && ctrl.supported) {
                 window._gpadSpeechRecog = ctrl;
               }
             } else {
               const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
               if (SR) {
                 window._gpadSpeechRecog = new SR();
+                window._gpadSpeechRecog.lang = speechLang;
                 window._gpadSpeechRecog.continuous = false;
                 window._gpadSpeechRecog.interimResults = false;
                 window._gpadSpeechRecog.onresult = (e) => handleTranscript(e.results[0][0].transcript);
+                window._gpadSpeechRecog.onend = () => { window._gpadSpeechRecogActive = false; };
               }
             }
           }
@@ -380,12 +452,19 @@ if (!window._alloGamepadGlobal) {
         // UI mode: D-pad Up/Down scroll, Left/Right move focus
         if (_gpadBtnEdge(12, btns[12].pressed)) { try { (document.activeElement?.closest('[style*="overflow"]') || document.scrollingElement).scrollTop -= 80; } catch(e){} }
         if (_gpadBtnEdge(13, btns[13].pressed)) { try { (document.activeElement?.closest('[style*="overflow"]') || document.scrollingElement).scrollTop += 80; } catch(e){} }
-        if (_gpadBtnEdge(14, btns[14].pressed)) { try { const f = Array.from(document.querySelectorAll('button:not([disabled]),input:not([disabled]),select,textarea,[tabindex]:not([tabindex="-1"]),a[href]')); const i = f.indexOf(document.activeElement); if (i > 0) f[i-1].focus(); } catch(e){} }
-        if (_gpadBtnEdge(15, btns[15].pressed)) { try { const f = Array.from(document.querySelectorAll('button:not([disabled]),input:not([disabled]),select,textarea,[tabindex]:not([tabindex="-1"]),a[href]')); const i = f.indexOf(document.activeElement); if (i < f.length-1) f[i+1].focus(); } catch(e){} }
+        if (_gpadBtnEdge(14, btns[14].pressed)) { try { const f = _gpadFocusableElements(); const i = f.indexOf(document.activeElement); if (i > 0) f[i-1].focus(); else if (f.length > 0 && i === -1) f[f.length - 1].focus(); } catch(e){} }
+        if (_gpadBtnEdge(15, btns[15].pressed)) { try { const f = _gpadFocusableElements(); const i = f.indexOf(document.activeElement); if (i >= 0 && i < f.length-1) f[i+1].focus(); else if (f.length > 0 && i === -1) f[0].focus(); } catch(e){} }
       }
     }
   };
-  _gpadPoll();
+  function _gpadStartPoll() {
+    if (!_gpad.rafId && _gpad.connected) {
+      _gpad.rafId = requestAnimationFrame(_gpadPoll);
+    }
+  }
+  if (_gpadHasConnectedPad()) {
+    _gpad.connected = true;
+    _gpadStartPoll();
   }
 }
 

@@ -110,7 +110,7 @@ function replaceResourceImage(resource, slot, result) {
     if (image !== slot.value) ['imageAttribution', 'imageCreditBand', 'whiteboardScene'].forEach(key => delete cleaned[key]);
     if (slot.altField === 'imageAlt') Object.assign(cleaned, { imageAlt: alt, imageAltSource: alt ? 'author' : '', imageAltHash: '', imageDecorative: false });
     if (slot.field === 'imageUrl' && parentPath.includes('panels')) { delete cleaned.frames; delete cleaned.motionSteps; cleaned.failed = false; }
-    if (slot.field === 'visualImage') Object.assign(cleaned, { visualSource: 'uploaded', visualKind: 'image', visualStatus: 'ready', visualAlt: alt, visualAltSource: alt ? 'user' : '', visualNeedsReview: true, visualReview: { status: 'pending' } });
+    if (slot.field === 'visualImage') Object.assign(cleaned, { visualSource: 'uploaded', visualKind: 'image', visualStatus: 'ready', visualAlt: alt, visualAltSource: alt ? 'author' : '', visualNeedsReview: true, visualReview: { status: 'unreviewed' } });
     if (resource.type === 'applied-challenge') Object.assign(cleaned, { source: 'uploaded', reviewed: false });
     if (slot.field === 'portrait') Object.assign(cleaned, { isUserUploaded: true, uploadConsent: true, isGenerating: false });
     next = _riSet(next, parentPath, cleaned);
@@ -193,9 +193,16 @@ function openResourceDrawing({ scene, title, onSave, onCancel, onError, onStatus
 function ResourceImageInput({ label = 'Image', value = '', scene, alt = '', disabled = false, onApply }) {
   const [editor, setEditor] = React.useState(null), [description, setDescription] = React.useState(alt);
   const [message, setMessage] = React.useState(''), [busy, setBusy] = React.useState(false);
-  const alive = React.useRef(true), cancelDrawing = React.useRef(null), trigger = React.useRef(null);
+  const alive = React.useRef(true), cancelDrawing = React.useRef(null), trigger = React.useRef(null), openerRef = React.useRef(null);
   const disabledRef = React.useRef(disabled); disabledRef.current = disabled;
   const descriptionRef = React.useRef(description); descriptionRef.current = description;
+  const restoreOpenerFocus = () => {
+    const candidate = (openerRef.current && openerRef.current.isConnected) ? openerRef.current : trigger.current;
+    openerRef.current = null;
+    if (candidate && typeof document !== 'undefined' && candidate !== document.body && candidate !== document.documentElement && candidate.isConnected && typeof candidate.focus === 'function') {
+      try { candidate.focus(); } catch (_) {}
+    }
+  };
   React.useEffect(() => { setDescription(alt); }, [alt, value]);
   React.useEffect(() => { alive.current = true; return () => { alive.current = false; cancelDrawing.current?.(); }; }, []);
   const finish = async result => {
@@ -203,29 +210,30 @@ function ResourceImageInput({ label = 'Image', value = '', scene, alt = '', disa
     const accepted = await onApply({ ...result, alt: descriptionRef.current });
     if (!alive.current) return accepted !== false;
     if (accepted === false) { setMessage('This image changed. Reopen its controls and try again.'); return false; }
-    setEditor(null); setMessage('Image saved.'); setBusy(false); trigger.current?.focus(); return true;
+    setEditor(null); setMessage('Image saved.'); setBusy(false); restoreOpenerFocus(); return true;
   };
   const button = 'min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-800 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-50';
   return <section className="rounded-xl border border-slate-300 bg-white p-3 text-slate-900" data-resource-image-input>
     <h4 className="mb-2 font-bold">{label}</h4>
     {value && <img src={value} alt={alt || ''} className="mb-3 max-h-40 max-w-full rounded object-contain" />}
     <label className="block text-sm">Image description
-      <textarea value={description} maxLength={1600} disabled={disabled || busy} onChange={event => setDescription(event.target.value)} className="mt-1 block min-h-16 w-full rounded border border-slate-400 p-2" />
+      <textarea value={description} maxLength={1600} disabled={disabled || busy} onChange={event => setDescription(event.target.value)} className="mt-1 block min-h-16 w-full rounded border border-slate-400 p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" />
     </label>
     <div className="my-2 flex flex-wrap gap-2">
       {/* Stays usable while a drawing is pending: Export PNG + upload is the fallback when the Whiteboard cannot link back. */}
-      <ImageAssetPicker label="Upload image" disabled={disabled} onLoaded={result => { cancelDrawing.current?.(); cancelDrawing.current = null; setBusy(false); setEditor(result); setMessage(''); }} onError={error => setMessage(error.message)} />
+      <ImageAssetPicker label="Upload image" disabled={disabled} onLoaded={result => { cancelDrawing.current?.(); cancelDrawing.current = null; if (typeof document !== 'undefined' && document.activeElement && document.activeElement !== document.body && document.activeElement !== document.documentElement) { openerRef.current = document.activeElement; } setBusy(false); setEditor(result); setMessage(''); }} onError={error => setMessage(error.message)} />
       <button ref={trigger} type="button" className={button} disabled={disabled || busy} onClick={() => {
         cancelDrawing.current?.();
+        openerRef.current = trigger.current;
         setBusy(true); setMessage('Draw in the Whiteboard, then choose Use drawing.');
         cancelDrawing.current = openResourceDrawing({ scene, title: label, onSave: finish,
-          onCancel: () => { if (alive.current) { setBusy(false); setMessage('Drawing closed.'); trigger.current?.focus(); } },
+          onCancel: () => { if (alive.current) { setBusy(false); setMessage('Drawing closed.'); restoreOpenerFocus(); } },
           onError: error => { if (alive.current) { setBusy(false); setMessage(error.message); } },
           onStatus: text => { if (alive.current) setMessage(text); } });
       }}>{scene ? 'Edit drawing' : 'Draw with Excalidraw'}</button>
       {value && <button type="button" className={button} disabled={disabled || busy} onClick={() => finish({ dataUrl: value, scene }).catch(error => setMessage(error.message))}>Save description</button>}
     </div>
-    {editor && <ImageAssetEditor sourceDataUrl={editor.dataUrl} onApply={result => finish(result).catch(error => setMessage(error.message))} onCancel={() => { setEditor(null); trigger.current?.focus(); }} />}
+    {editor && <ImageAssetEditor sourceDataUrl={editor.dataUrl} onApply={result => finish(result).catch(error => setMessage(error.message))} onCancel={() => { setEditor(null); restoreOpenerFocus(); }} />}
     <p className="text-sm text-slate-700" role="status">{message}</p>
   </section>;
 }

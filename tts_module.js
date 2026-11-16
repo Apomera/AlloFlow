@@ -740,7 +740,7 @@ const createTTS = deps => {
     if (typeof window === 'undefined' || typeof window.getWordShardAudio !== 'function') return null;
     if (String(targetVoice || '').trim().toLowerCase() !== 'af_heart') return null;
     if (!_isUsEnglishSpeechProfile(profile)) return null;
-    const cleaned = cleanTextForLocalTTS(rawText);
+    const cleaned = cleanTextForLocalTTS(rawText).replace(/[\u2018\u2019\u02BC]/g, "'");
     if (!cleaned || /\s/.test(cleaned)) return null;
     const token = cleaned.replace(/^[^A-Za-z0-9]+|[^A-Za-z0-9]+$/g, '');
     if (!token || !/^[A-Za-z][A-Za-z'-]*$/.test(token)) return null;
@@ -763,6 +763,13 @@ const createTTS = deps => {
       if (err && err.name === 'AbortError') throw err;
       return null;
     }
+  };
+  const _isWordShardEligible = (rawText, callOpts) => {
+    if (callOpts && callOpts.word === false) return false;
+    if (callOpts && callOpts.word === true) return true;
+    const trimmed = String(rawText == null ? '' : rawText).trim().replace(/[\u2018\u2019\u02BC]/g, "'");
+    if (!trimmed || /\s/.test(trimmed) || /[.!?:;]$/.test(trimmed)) return false;
+    return /^[A-Za-z][A-Za-z'-]{0,39}$/.test(trimmed);
   };
   // ── Spoken math pre-pass (2026-07-05) ──
   // Substitute delimited math ($x^2$, $$..$$, \(..\), \[..\]) with a spoken
@@ -1032,7 +1039,7 @@ const createTTS = deps => {
   // model is loaded or saved on this device (waking a saved model is not a
   // download). Other languages use Piper only when that language's model is
   // already loaded. Anything else returns null: the device voice reads.
-  const _studentOnDeviceVoice = async (fn, text, voiceName, speed, languageValue, signal, streaming, word) => {
+  const _studentOnDeviceVoice = async (fn, text, voiceName, speed, languageValue, signal, streaming, word, allowWordShard = word) => {
     const voice = String(voiceName || '').trim();
     const provider = String((getAiUserConfig() || {}).ttsProvider || 'auto');
     if (!voice || voice.toLowerCase() === 'browser' || provider === 'off' || provider === 'browser') return null;
@@ -1056,7 +1063,7 @@ const createTTS = deps => {
       const localText = cleanTextForLocalTTS(text);
       if (!localText.trim()) return null;
       if (lang === 'en') {
-        if (word === true && (speed == null || Number(speed) === 1) && (!KOKORO_VOICE_PREFIX.test(voice) || voice.toLowerCase() === 'af_heart')) {
+        if ((word === true || allowWordShard === true) && (speed == null || Number(speed) === 1) && (!KOKORO_VOICE_PREFIX.test(voice) || voice.toLowerCase() === 'af_heart')) {
           const shardUrl = await _tryWordShardAudio(localText, profile, 'af_heart', signal);
           if (shardUrl) {
             note('student-on-device-word-shard');
@@ -1110,7 +1117,7 @@ const createTTS = deps => {
     if (_studentCloudTtsOff()) {
       const studentOpts = maxRetriesOrOpts && typeof maxRetriesOrOpts === 'object' ? maxRetriesOrOpts : {};
       const studentVoice = _resolveRequestedVoice(voiceName);
-      const onDeviceUrl = await _studentOnDeviceVoice('calltts', text, studentVoice, speed, languageArg || studentOpts.language, studentOpts.signal || null, false, studentOpts.word === true);
+      const onDeviceUrl = await _studentOnDeviceVoice('calltts', text, studentVoice, speed, languageArg || studentOpts.language, studentOpts.signal || null, false, studentOpts.word === true, _isWordShardEligible(text, studentOpts));
       return onDeviceUrl || _studentDeviceVoiceRoute('calltts', studentVoice, text);
     }
     const _geminiModel = GEMINI_MODELS?.tts;
@@ -1236,7 +1243,7 @@ const createTTS = deps => {
         return null;
       }
       try {
-        if (_callOpts.word === true && (speed == null || Number(speed) === 1) && !_forceRefresh) {
+        if (_isWordShardEligible(text, _callOpts) && (speed == null || Number(speed) === 1) && !_forceRefresh) {
           const shardUrl = await _tryWordShardAudio(text, _speechProfile, voiceName, _signal);
           if (shardUrl) {
             _ttsTrace('calltts:word-shard-ok', {
@@ -1502,7 +1509,7 @@ const createTTS = deps => {
           const _kokoroLockedOut = _isKokoroVoice && _kokoroLock && _kokoroLock.engine === 'fallback';
           if (_kokoroLockedOut) _ttsTrace('calltts:kokoro-locked', null);
           const _canvasKokoroVoice = _kokoroVoicePrefix.test(String(voiceName || '')) ? voiceName : 'af_heart';
-          if (!_kokoroLockedOut && _callOpts.word === true && (speed == null || Number(speed) === 1) && !_forceRefresh) {
+          if (!_kokoroLockedOut && _isWordShardEligible(localTtsText, _callOpts) && (speed == null || Number(speed) === 1) && !_forceRefresh) {
             const _canvasShardUrl = await _tryWordShardAudio(localTtsText, _speechProfile, _canvasKokoroVoice, _signal);
             if (_canvasShardUrl) {
               _ttsTrace('calltts:word-shard-ok', {
@@ -1692,7 +1699,7 @@ const createTTS = deps => {
     var _kokoroPreferred = typeof voiceName === 'string' && KOKORO_VOICE_PREFIX.test(voiceName);
     var _localTtsChosen = (_provTtsEarly === 'local' || _provTtsEarly === 'auto' && _provIsLocalAI) && typeof voiceName === 'string' && voiceName !== 'browser';
     var _kokoroKeyless = !_isCanvasEnv && !_cloudKeyUsable() && !_providerHandlesTts && typeof voiceName === 'string' && voiceName !== 'browser';
-    if ((_kokoroPreferred || _localTtsChosen || _kokoroKeyless) && _isEnglish && !(_kokoroLock && _kokoroLock.engine === 'fallback') && _callOpts.word === true && (speed == null || Number(speed) === 1) && !_forceRefresh) {
+    if ((_kokoroPreferred || _localTtsChosen || _kokoroKeyless) && _isEnglish && !(_kokoroLock && _kokoroLock.engine === 'fallback') && _isWordShardEligible(text, _callOpts) && (speed == null || Number(speed) === 1) && !_forceRefresh) {
       const _targetKokoroVoice = _kokoroPreferred ? voiceName : 'af_heart';
       const _shardUrl = await _tryWordShardAudio(text, _speechProfile, _targetKokoroVoice, _signal);
       if (_shardUrl) {
@@ -1855,10 +1862,16 @@ const createTTS = deps => {
     }
     const localAfterGemini = async () => {
       if (_isEnglish) {
+        const localVoice = KOKORO_VOICE_PREFIX.test(voiceName) ? voiceName : 'af_heart';
+        if (_isWordShardEligible(text, _callOpts) && (speed == null || Number(speed) === 1) && !_forceRefresh) {
+          const shardUrl = await _tryWordShardAudio(cleanTextForLocalTTS(text), _speechProfile, localVoice, _signal);
+          if (shardUrl) return _emitResolvedProfile(shardUrl, _resolutionProfile('local', 'kokoro-word-shard', null, 'af_heart', 1, {
+            fallbackFrom: 'gemini'
+          }));
+        }
         try {
           if (!window._kokoroTTS?.ready) await ensureKokoroTts(undefined, _signal);
           if (window._kokoroTTS?.ready) {
-            const localVoice = KOKORO_VOICE_PREFIX.test(voiceName) ? voiceName : 'af_heart';
             const url = await window._kokoroTTS.speak(cleanTextForLocalTTS(text), localVoice, speed, _kokoroWordOpts({
               signal: _signal,
               force: _forceRefresh

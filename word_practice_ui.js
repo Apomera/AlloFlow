@@ -46,6 +46,24 @@
 .awp-stage .awp-choices button,.awp-card-preview .awp-preview-choice{background:var(--awp-card-background,#fff);color:var(--awp-card-heading,#14213d)}
 .awp [data-awp-reading-theme=dark] :focus-visible,.awp [data-awp-reading-theme=highContrast] :focus-visible{outline-color:var(--awp-card-accent)}
 .awp [data-awp-bionic=true]:is(.awp-word,.awp-preview-word):has(b[data-awp-bionic]){font-weight:400}.awp b[data-awp-bionic]{font-weight:800}
+.awp-inline{background:transparent}.awp-inline-dialog{width:100%;max-height:none;box-shadow:none;border:1px solid #bdc8da}
+.awp-picture-manager{min-width:0;margin:.25rem 0 0;padding:.75rem;border:1px solid #bdc8da;border-radius:9px;background:#fff}
+.awp-picture-manager>summary{min-height:44px;cursor:pointer;font-weight:650;display:flex;align-items:center}
+.awp-picture-toolbar{display:flex;flex-wrap:wrap;gap:.5rem;margin:.5rem 0}
+.awp-picture-list{display:grid;gap:.5rem;max-height:18rem;overflow:auto;overscroll-behavior:contain;margin-top:.5rem}
+.awp-picture-row{display:grid;grid-template-columns:56px minmax(0,1fr);gap:.625rem;align-items:start;padding:.5rem;border:1px solid #d5deeb;border-radius:8px;background:#f8fafc}
+.awp-picture-thumb{width:56px;height:56px;object-fit:contain;border:1px solid #cbd5e1;border-radius:6px;background:#fff}
+.awp-picture-empty{width:56px;height:56px;display:flex;align-items:center;justify-content:center;border:1px dashed #94a3b8;border-radius:6px;font-size:.75rem;color:#45536a;text-align:center;background:#fff;padding:.125rem}
+.awp-picture-meta{min-width:0;display:grid;gap:.375rem}
+.awp-picture-word-row{display:flex;flex-wrap:wrap;align-items:center;gap:.375rem;justify-content:space-between}
+.awp-picture-word{font-weight:700;overflow-wrap:anywhere}
+.awp-picture-actions{display:flex;flex-wrap:wrap;gap:.375rem}
+.awp .awp-picture-actions button,.awp .awp-picture-toolbar button{min-height:40px;padding:.3125rem .625rem;font-size:.875rem}
+.awp-picture-alt{font-size:.875rem}
+.awp-symbol-picker{display:grid;gap:.5rem;margin-top:.5rem;padding:.625rem;border:1px solid #cbd5e1;border-radius:8px;background:#fff}
+.awp-symbol-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(5.5rem,1fr));gap:.375rem;max-height:11rem;overflow:auto}
+.awp .awp-symbol-grid button{min-height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.2rem;padding:.35rem;font-size:.75rem}
+.awp-symbol-grid img{width:28px;height:28px;object-fit:contain}
 @media(prefers-reduced-motion:reduce){.awp *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}`;
 
   // This factory is embedded verbatim in the offline file; keep it dependency-free.
@@ -972,17 +990,142 @@ PLAYER_STRINGS.push(['word_practice.annotations_not_saved', 'This card could not
 PLAYER_STRINGS.push(['word_practice.meaning_first_prompt', 'Which word matches this meaning?']);
 PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to reveal, tap again for the next card, or swipe to move.']);
   [['appearance', 'Card appearance'], ['card_font', 'Card font'], ['font_default', 'Default font'], ['card_text_size', 'Card text size'], ['card_style', 'Card style'], ['style_paper', 'Plain'], ['style_cream', 'Warm'], ['style_mist', 'Blue tint'], ['card_preview', 'Card preview']].forEach(([key, fallback]) => PLAYER_STRINGS.push(['word_practice.' + key, fallback]));
+  function sanitizeSvgMarkup(raw) {
+    const text = String(raw || '').trim();
+    if (!/<svg[\s>]/i.test(text) || text.length > 600000) return '';
+    if (/<\s*(script|foreignobject|iframe|object|embed)\b|\bon[a-z]+\s*=|javascript:|(?:src|href|xlink:href)\s*=\s*["']\s*https?:/i.test(text)) return '';
+    return text;
+  }
+  function parseSvgDimensions(svgText) {
+    const open = (svgText.match(/<svg\b[^>]*>/i) || [''])[0];
+    const vb = /\bviewBox\s*=\s*["']\s*[-0-9.]+\s+[-0-9.]+\s+([0-9.]+)\s+([0-9.]+)/i.exec(open);
+    const wMatch = /\bwidth\s*=\s*["']\s*([0-9.]+)/i.exec(open);
+    const hMatch = /\bheight\s*=\s*["']\s*([0-9.]+)/i.exec(open);
+    const w = Number(wMatch ? wMatch[1] : vb ? vb[1] : 256) || 256;
+    const h = Number(hMatch ? hMatch[1] : vb ? vb[2] : 256) || 256;
+    return { w: Math.max(1, Math.min(2048, w)), h: Math.max(1, Math.min(2048, h)) };
+  }
+  function minimalPngDataUrl(width, height) {
+    const w = Math.max(1, Math.min(256, Math.round(width || 64))), h = Math.max(1, Math.min(256, Math.round(height || 64)));
+    const rowLen = 1 + w * 4, raw = new Uint8Array(rowLen * h);
+    for (let y = 0; y < h; y++) {
+      const off = y * rowLen;
+      raw[off] = 0;
+      for (let x = 0; x < w; x++) { raw[off + 1 + x * 4] = 248; raw[off + 2 + x * 4] = 250; raw[off + 3 + x * 4] = 252; raw[off + 4 + x * 4] = 255; }
+    }
+    let a = 1, b = 0;
+    for (let i = 0; i < raw.length; i++) { a = (a + raw[i]) % 65521; b = (b + a) % 65521; }
+    const adler = ((b << 16) | a) >>> 0;
+    const zblocks = [];
+    for (let offset = 0; offset < raw.length; offset += 65535) {
+      const len = Math.min(65535, raw.length - offset), last = offset + len >= raw.length ? 1 : 0;
+      const head = new Uint8Array(5); head[0] = last; head[1] = len & 255; head[2] = (len >>> 8) & 255;
+      const nlen = (~len) & 65535; head[3] = nlen & 255; head[4] = (nlen >>> 8) & 255;
+      zblocks.push(head, raw.subarray(offset, offset + len));
+    }
+    const zLen = 2 + zblocks.reduce((s, p) => s + p.length, 0) + 4, z = new Uint8Array(zLen);
+    z[0] = 0x78; z[1] = 0x01; let p = 2;
+    zblocks.forEach(part => { z.set(part, p); p += part.length; });
+    z[p] = (adler >>> 24) & 255; z[p + 1] = (adler >>> 16) & 255; z[p + 2] = (adler >>> 8) & 255; z[p + 3] = adler & 255;
+    const crcTable = new Uint32Array(256);
+    for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = (c & 1) ? (0xedb88320 ^ (c >>> 1)) : (c >>> 1); crcTable[n] = c >>> 0; }
+    const chunk = (tag, data) => {
+      const out = new Uint8Array(12 + data.length), view = new DataView(out.buffer);
+      view.setUint32(0, data.length); for (let i = 0; i < 4; i++) out[4 + i] = tag.charCodeAt(i);
+      out.set(data, 8); let crc = 0xffffffff;
+      for (let i = 4; i < 8 + data.length; i++) crc = crcTable[(crc ^ out[i]) & 255] ^ (crc >>> 8);
+      view.setUint32(8 + data.length, (crc ^ 0xffffffff) >>> 0);
+      return out;
+    };
+    const ihdr = new Uint8Array(13), iv = new DataView(ihdr.buffer);
+    iv.setUint32(0, w); iv.setUint32(4, h); ihdr[8] = 8; ihdr[9] = 6;
+    const sig = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 13, 10, 26, 10]);
+    const c1 = chunk('IHDR', ihdr), c2 = chunk('IDAT', z), c3 = chunk('IEND', new Uint8Array(0));
+    const png = new Uint8Array(sig.length + c1.length + c2.length + c3.length);
+    png.set(sig, 0); png.set(c1, sig.length); png.set(c2, sig.length + c1.length); png.set(c3, sig.length + c1.length + c2.length);
+    let bin = ''; for (let i = 0; i < png.length; i += 8192) bin += String.fromCharCode.apply(null, png.subarray(i, i + 8192));
+    return 'data:image/png;base64,' + root.btoa(bin);
+  }
+  async function rasterizeImageToPng(source, doc = root.document, opts = {}) {
+    const core = root.AlloWordPracticeCore, maxDim = Number(opts.maxDim) || 512;
+    let raw = '';
+    if (typeof source === 'string') raw = source.trim();
+    else if (source && typeof source === 'object') {
+      if (Number(source.size) > 10 * 1024 * 1024) throw new Error('Choose an image smaller than 10 MB.');
+      const isSvg = /svg/i.test(String(source.type || '')) || /\.svg$/i.test(String(source.name || ''));
+      if (isSvg) {
+        if (typeof source.text === 'function') raw = await source.text();
+        else raw = await new Promise((resolve, reject) => { const r = new root.FileReader(); r.onload = () => resolve(String(r.result || '')); r.onerror = () => reject(new Error('Unable to read image.')); r.readAsText(source); });
+      } else {
+        if (typeof source.arrayBuffer === 'function') {
+          const bytes = new Uint8Array(await source.arrayBuffer()), mime = String(source.type || 'image/png').toLowerCase().replace(/^image\/jpg$/, 'image/jpeg');
+          let bin = ''; for (let i = 0; i < bytes.length; i += 8192) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 8192));
+          raw = 'data:' + mime + ';base64,' + root.btoa(bin);
+        } else {
+          raw = await new Promise((resolve, reject) => { const r = new root.FileReader(); r.onload = () => resolve(String(r.result || '')); r.onerror = () => reject(new Error('Unable to read image.')); r.readAsDataURL(source); });
+        }
+      }
+    }
+    let svgText = '';
+    if (/^<svg[\s>]/i.test(raw) || /^<\?xml/i.test(raw)) {
+      svgText = sanitizeSvgMarkup(raw);
+      if (!svgText) throw new Error('That SVG file contains unsupported markup.');
+      raw = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgText);
+    } else if (/^data:image\/svg\+xml/i.test(raw)) {
+      const comma = raw.indexOf(',');
+      const payload = comma >= 0 ? raw.slice(comma + 1) : '';
+      const decoded = /;base64/i.test(raw.slice(0, comma)) ? root.atob(payload) : decodeURIComponent(payload);
+      svgText = sanitizeSvgMarkup(decoded);
+      if (!svgText) throw new Error('That SVG image contains unsupported markup.');
+      raw = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgText);
+    }
+    const alreadySafe = core && core.safePicture ? core.safePicture(raw) : '';
+    const isRaster = /^data:image\/(png|jpeg|gif);base64,/i.test(alreadySafe);
+    if (isRaster && alreadySafe.length <= 350000) return alreadySafe;
+    const win = doc && doc.defaultView ? doc.defaultView : root;
+    const canvas = doc && typeof doc.createElement === 'function' ? doc.createElement('canvas') : null;
+    const ctx = canvas && typeof canvas.getContext === 'function' ? (() => { try { return canvas.getContext('2d'); } catch (_) { return null; } })() : null;
+    if (ctx && typeof win.Image === 'function') {
+      try {
+        const rendered = await new Promise((resolve, reject) => {
+          const img = new win.Image();
+          const timer = win.setTimeout(() => reject(new Error('timeout')), 1500);
+          img.onload = () => {
+            win.clearTimeout(timer);
+            const natW = img.naturalWidth || img.width || (svgText ? parseSvgDimensions(svgText).w : 256);
+            const natH = img.naturalHeight || img.height || (svgText ? parseSvgDimensions(svgText).h : 256);
+            const scale = Math.min(1, maxDim / Math.max(natW, natH));
+            canvas.width = Math.max(1, Math.round(natW * scale)); canvas.height = Math.max(1, Math.round(natH * scale));
+            ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            const out = canvas.toDataURL('image/png');
+            resolve(core && core.safePicture ? core.safePicture(out) : out);
+          };
+          img.onerror = () => { win.clearTimeout(timer); reject(new Error('decode')); };
+          img.src = raw;
+        });
+        if (rendered) return rendered;
+      } catch (_) {}
+    }
+    if (alreadySafe) return alreadySafe;
+    if (svgText) {
+      const dims = parseSvgDimensions(svgText);
+      const scale = Math.min(1, 96 / Math.max(dims.w, dims.h));
+      return minimalPngDataUrl(Math.max(16, Math.round(dims.w * scale)), Math.max(16, Math.round(dims.h * scale)));
+    }
+    throw new Error('Choose a valid PNG, JPEG, GIF, WebP, or SVG image.');
+  }
   let active = null, nextDialogId = 0;
   function open(context = {}) {
     if (context.signal && context.signal.aborted) return { close() {} };
-    if (active) active.close();
-    const core = root.AlloWordPracticeCore, doc = root.document, previousFocus = doc.activeElement;
+    const inlineHost = context.container && context.container.nodeType === 1 ? context.container : null;
+    if (!inlineHost && active) active.close();
+    const core = root.AlloWordPracticeCore, doc = root.document, previousFocus = inlineHost ? null : doc.activeElement;
     const fieldPrefix = 'awp-' + (++nextDialogId) + '-'; let nextFieldId = 0;
     let pack = core.normalizeInput(context), player = null, closed = false, busy = false, operation = null;
     // A fresh launch starts from the teacher's last setup on this device. A launch that
     // brings its own options (a saved set, Word Sounds) keeps them.
     const SETUP_KEY = 'alloflow_word_practice_setup';
-    const SETUP_FIELDS = ['mode', 'repetitions', 'autoAdvance', 'intervalSeconds', 'shuffle', 'varyPosition', 'varySize', 'includeAudio', 'includePictures', 'vocabularyFirst', 'cardFont', 'cardTextStyle', 'cardTextScale', 'wordTextScale', 'meaningTextScale', 'translationTextScale', 'cardTheme'];
+    const SETUP_FIELDS = ['mode', 'repetitions', 'autoAdvance', 'intervalSeconds', 'shuffle', 'varyPosition', 'varySize', 'includeAudio', 'includePictures', 'pictureSlides', 'vocabularyFirst', 'cardFont', 'cardTextStyle', 'cardTextScale', 'wordTextScale', 'meaningTextScale', 'translationTextScale', 'cardTheme'];
     if (!context.options) {
       try {
         const saved = JSON.parse(root.localStorage.getItem(SETUP_KEY) || 'null'), chosen = {};
@@ -1035,13 +1178,17 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
       const annotations = {}; Object.entries((root.AlloWordPracticeAnnotationAssets || {}).labels || {}).forEach(([key, fallback]) => { annotations[key] = tx(key, fallback); });
       return { ...labels, __uiLanguage: uiLanguageName, __languages: languages, __annotations: annotations };
     };
-    const overlay = doc.createElement('div'); overlay.className = 'awp awp-overlay';
+    const overlay = doc.createElement('div'); overlay.className = inlineHost ? 'awp awp-inline' : 'awp awp-overlay';
     const style = doc.createElement('style'); style.textContent = CSS + ((root.AlloWordPracticeAnnotationAssets || {}).css || ''); overlay.appendChild(style);
-    const dialog = doc.createElement('section'); dialog.className = 'awp-dialog'; dialog.setAttribute('role', 'dialog'); dialog.setAttribute('aria-modal', 'true'); dialog.setAttribute('aria-label', tx('word_practice.title', 'Present & Export')); overlay.appendChild(dialog);
+    const dialog = doc.createElement('section'); dialog.className = inlineHost ? 'awp-dialog awp-inline-dialog' : 'awp-dialog';
+    if (!inlineHost) { dialog.setAttribute('role', 'dialog'); dialog.setAttribute('aria-modal', 'true'); }
+    dialog.setAttribute('aria-label', tx('word_practice.title', 'Present & Export')); overlay.appendChild(dialog);
     setLanguage(dialog, uiLanguage);
-    const hiddenSiblings = Array.from(doc.body.children).filter(node => node !== overlay && !['SCRIPT', 'STYLE'].includes(node.tagName)).map(node => ({ node, inert: node.inert }));
+    const hiddenSiblings = inlineHost ? [] : Array.from(doc.body.children).filter(node => node !== overlay && !['SCRIPT', 'STYLE'].includes(node.tagName)).map(node => ({ node, inert: node.inert }));
     hiddenSiblings.forEach(({ node }) => { node.inert = true; });
-    const priorOverflow = doc.body.style.overflow; doc.body.style.overflow = 'hidden'; doc.body.appendChild(overlay);
+    const priorOverflow = inlineHost ? '' : doc.body.style.overflow;
+    if (inlineHost) inlineHost.replaceChildren(overlay);
+    else { doc.body.style.overflow = 'hidden'; doc.body.appendChild(overlay); }
     const make = (tag, text, parent, cls) => { const node = doc.createElement(tag); if (text != null) { node.textContent = text; if (dialogTextLanguages.has(text)) setLanguage(node, dialogTextLanguages.get(text)); } if (cls) node.className = cls; (parent || dialog).appendChild(node); return node; };
     const header = make('div', null, dialog, 'awp-head'); make('h1', tx('word_practice.title', 'Present & Export'), header);
     const headerActions = make('div', null, header, 'awp-row');
@@ -1051,7 +1198,7 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
     const closeReading = () => { const lib = root.AlloModules && root.AlloModules.UIFontLibrary; if (lib && typeof lib.closeReadingSettings === 'function' && overlay.querySelector('[data-allo-reading-settings]')) lib.closeReadingSettings(); };
     const readingButton = readingLibrary() ? make('button', 'Aa', headerActions, 'awp-aa') : null;
     if (readingButton) { readingButton.type = 'button'; readingButton.setAttribute('aria-label', tx('reading_settings.title', 'Reading settings')); readingButton.setAttribute('aria-haspopup', 'dialog'); readingButton.onclick = event => openReading(event.currentTarget); }
-    const closeButton = make('button', tx('word_practice.close', 'Close'), headerActions); closeButton.type = 'button'; closeButton.onclick = requestClose;
+    const closeButton = make('button', tx('word_practice.close', 'Close'), headerActions); closeButton.type = 'button'; closeButton.onclick = requestClose; closeButton.hidden = !!inlineHost;
     const setup = make('div', null, dialog), playerHost = make('div', null, dialog); playerHost.hidden = true;
     make('p', tx('word_practice.intro', 'Turn a word list into a short class practice routine. Use prepared audio and activities when they are available.'), setup, 'awp-note');
     const grid = make('div', null, setup, 'awp-grid');
@@ -1067,6 +1214,13 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
     setLanguage(wordsInput, '');
     make('p', tx('word_practice.words_note', 'Up to 200 words or short phrases. Existing meanings, activities and recordings stay with words you keep.'), left, 'awp-note');
     const meaningChoices = make('fieldset', null, left, 'awp-meaning-choices'); meaningChoices.hidden = true;
+    const pictureDetails = make('details', null, left, 'awp-picture-manager');
+    make('summary', tx('word_practice.pictures_manage', 'Card pictures (import or switch)'), pictureDetails);
+    const pictureToolbar = make('div', null, pictureDetails, 'awp-picture-toolbar');
+    const autoFillPicturesBtn = make('button', tx('word_practice.auto_fill_pictures', 'Auto-fill missing pictures'), pictureToolbar); autoFillPicturesBtn.type = 'button'; autoFillPicturesBtn.dataset.awpAutoFillPictures = 'true';
+    const batchImportBtn = make('button', tx('word_practice.import_matching_images', 'Import images…'), pictureToolbar); batchImportBtn.type = 'button';
+    const exportPictureSlidesBtn = make('button', tx('word_practice.download_picture_slides', 'Export individual picture slides (.pptx)'), pictureToolbar); exportPictureSlidesBtn.type = 'button'; exportPictureSlidesBtn.dataset.awpPicturePptx = 'true';
+    const pictureList = make('div', null, pictureDetails, 'awp-picture-list');
     const right = make('div', null, grid, 'awp-fields');
     const activityOptions = make('div', null, right, 'awp-options');
     const mode = field(activityOptions, tx('word_practice.activity', 'Practice activity'), 'select');
@@ -1088,6 +1242,7 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
     const size = checkbox(tx('word_practice.vary_size', 'Vary word size'));
     const includeAudio = checkbox(tx('word_practice.include_audio', 'Include prepared audio'));
     const includePictures = checkbox(tx('word_practice.include_pictures', 'Show pictures on Word Meaning cards'));
+    const pictureSlides = checkbox(tx('word_practice.picture_slides', 'Include individual picture slides in PowerPoint'));
     const useReading = readingButton ? checkbox(tx('reading_settings.use_mine', 'Use my reading settings')) : null;
     if (useReading) {
       const help = make('p', tx('word_practice.use_mine_help', 'The HTML file uses your font, text size and spacing.'), right, 'awp-note');
@@ -1150,7 +1305,9 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
     const cancelButton = make('button', tx('word_practice.cancel_preparation', 'Cancel preparation'), operationPanel); cancelButton.type = 'button'; cancelButton.hidden = true; cancelButton.onclick = cancelOperation;
     const operationProgress = make('progress', null, operationPanel); operationProgress.hidden = true; operationProgress.setAttribute('aria-label', tx('word_practice.preparation_progress', 'Preparation progress'));
     const fileInput = make('input', null, setup); fileInput.type = 'file'; fileInput.accept = '.json,application/json'; fileInput.hidden = true;
-    function options() { return core.normalizeOptions({ mode: mode.value, repetitions: repetitions.value, autoAdvance: pacing.value === 'timed', intervalSeconds: interval.value, shuffle: shuffle.checked, varyPosition: position.checked, varySize: size.checked, includeAudio: includeAudio.checked, includePictures: includePictures.checked, vocabularyFirst: vocabularyFirst.value, ...appearance.read(), translationLanguages: translationSettings.read() }); }
+    const batchImageInput = make('input', null, setup); batchImageInput.type = 'file'; batchImageInput.accept = 'image/png,image/jpeg,image/gif,image/webp,image/svg+xml'; batchImageInput.multiple = true; batchImageInput.hidden = true; batchImageInput.setAttribute('aria-label', tx('word_practice.import_matching_images', 'Import images…'));
+    const rowImageInput = make('input', null, setup); rowImageInput.type = 'file'; rowImageInput.accept = 'image/png,image/jpeg,image/gif,image/webp,image/svg+xml'; rowImageInput.hidden = true; rowImageInput.setAttribute('aria-label', tx('word_practice.import_word_image', 'Import image for word'));
+    function options() { return core.normalizeOptions({ mode: mode.value, repetitions: repetitions.value, autoAdvance: pacing.value === 'timed', intervalSeconds: interval.value, shuffle: shuffle.checked, varyPosition: position.checked, varySize: size.checked, includeAudio: includeAudio.checked, includePictures: includePictures.checked, pictureSlides: pictureSlides.checked, vocabularyFirst: vocabularyFirst.value, ...appearance.read(), translationLanguages: translationSettings.read() }); }
     function updateAppearancePreview(current) {
       if (previewReadingNote) {
         if (useReading.checked) updateLabel(previewReadingNote, tx('word_practice.preview_reading_export_on', 'Reading settings are enabled for downloads.'));
@@ -1287,7 +1444,13 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
       const words = core.parseWords(wordsInput.value, { lineSeparated: true }).map(word => {
         const key = core.key(word), choices = candidates.get(key) || [], index = used.get(key) || 0; used.set(key, index + 1);
         if (choices.length) return index < choices.length ? { ...choices[index], word, ...(annotationStore.has(choices[index].id) ? { annotations: annotationStore.get(choices[index].id) } : {}) } : null;
-        if (!newWords.has(key)) newWords.set(key, { id: newEntryId(), word });
+        if (!newWords.has(key)) {
+          let extra = null;
+          if (typeof context.resolveEntry === 'function') {
+            try { extra = context.resolveEntry(word); } catch (_) { extra = null; }
+          }
+          newWords.set(key, { ...(extra && typeof extra === 'object' ? extra : {}), id: newEntryId(), word });
+        }
         return { ...newWords.get(key), word };
       }).filter(Boolean);
       pack = core.normalizeInput({ title: titleInput.value, language: pack.language, words, reviewItemIds: [...review], options: options(), phonemeBank: inheritedBanks().phonemeBank });
@@ -1420,18 +1583,214 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
     // left out: pictures over the size budget, and links or WebP that slides cannot embed.
     function updatePictureNote(current) {
       const withPictures = current.items.filter(item => item.picture), omitted = current.picturesOmitted || 0;
-      includePictures.closest('label').hidden = !withPictures.length && !omitted;
+      const hasPictures = !!(withPictures.length || omitted);
+      includePictures.closest('label').hidden = !hasPictures;
+      pictureSlides.closest('label').hidden = !hasPictures;
       const notes = [];
       if (includePictures.checked && omitted) notes.push(tx('word_practice.pictures_left_out', 'Pictures left out to keep this set a manageable size: {count}.', { count: omitted }));
       const notInSlides = withPictures.filter(item => !/^data:image\/(png|jpeg|gif);/i.test(item.picture.src)).length;
       if (includePictures.checked && notInSlides) notes.push(tx('word_practice.pictures_not_in_pptx', 'Pictures that are web links or WebP images, which PowerPoint cannot include: {count}. They still show when presenting and in the HTML file.', { count: notInSlides }));
       pictureNote.hidden = !notes.length; updateLabel(pictureNote, notes.join(' '));
     }
+    let activeSymbolRowId = '', symbolSearchQuery = '', symbolTargetId = '', lastPictureKey = '';
+    const getPictureMatcher = () => root.AlloWordPictureMatcher || (root.AlloModules && root.AlloModules.WordPictureMatcher) || null;
+    const hasSymbolSource = () => typeof context.searchSymbols === 'function' || !!(root.AlloModules && root.AlloModules.WordSoundsSymbols) || !!getPictureMatcher();
+    async function findSymbols(query) {
+      if (typeof context.searchSymbols === 'function') return (await context.searchSymbols(query)) || [];
+      const matcher = getPictureMatcher();
+      const bank = root.AlloModules && root.AlloModules.WordSoundsSymbols;
+      if (matcher && typeof matcher.searchSymbols === 'function') {
+        return await matcher.searchSymbols(query, { symbols: bank, allowOnlineGlobalSymbols: !!context.allowOnlineSymbols });
+      }
+      if (!bank || typeof bank.words !== 'function') return [];
+      if (typeof bank.ready === 'function') { try { await bank.ready(); } catch (_) {} }
+      const q = String(query || '').trim().toLowerCase(), hits = [];
+      for (const word of bank.words()) {
+        if (q && !word.toLowerCase().includes(q)) continue;
+        const entry = bank.get(word);
+        if (entry && entry.svg) hits.push({ word, label: entry.label || word, svg: entry.svg, set: entry.set, credit: bank.credits && bank.credits[entry.set] });
+        if (hits.length >= 24) break;
+      }
+      return hits;
+    }
+    function applyWordPicture(entryId, src, alt, attribution) {
+      const safe = core.safePicture(src);
+      if (!safe) throw new Error(tx('word_practice.picture_invalid', 'That image could not be added. Choose a PNG, JPEG, GIF, WebP, or SVG image.'));
+      const updateItem = entry => {
+        if (!entry) return entry;
+        const cleanAlt = core.text(alt || entry.word, 1000);
+        const credit = typeof attribution === 'string' ? core.text(attribution, 400) : attribution && typeof attribution === 'object' ? ['set', 'author', 'license'].map(k => core.text(attribution[k], 160)).filter(Boolean).join(' · ') : '';
+        return { ...entry, image: safe, imageAlt: cleanAlt, imageDecorative: false, imageAltHash: '', imageAttribution: attribution || { set: credit || 'Custom image' }, picture: { src: safe, alt: cleanAlt, decorative: false, credit } };
+      };
+      if (catalogue.has(entryId)) catalogue.set(entryId, updateItem(catalogue.get(entryId)));
+      pack = core.normalizeInput({ ...pack, words: pack.items.map(item => item.id === entryId ? updateItem(item) : item), options: options() });
+      remember(pack); includePictures.checked = true; lastPictureKey = ''; previewContentKey = ''; updateCoverage();
+    }
+    function clearWordPicture(entryId) {
+      const stripItem = entry => entry ? { ...entry, image: '', imageAlt: '', imageDecorative: false, imageAltHash: '', imageAttribution: null, picture: null } : entry;
+      if (catalogue.has(entryId)) catalogue.set(entryId, stripItem(catalogue.get(entryId)));
+      pack = core.normalizeInput({ ...pack, words: pack.items.map(item => item.id === entryId ? stripItem(item) : item), options: options() });
+      remember(pack); lastPictureKey = ''; previewContentKey = ''; updateCoverage();
+    }
+    async function populateSymbolGrid(gridNode, row, query) {
+      gridNode.replaceChildren();
+      const empty = make('p', tx('word_practice.searching_symbols', 'Loading symbols…'), gridNode, 'awp-note');
+      try {
+        const list = await findSymbols(query);
+        gridNode.replaceChildren();
+        if (!list.length) { make('p', tx('word_practice.no_symbols_found', 'No built-in symbols matched that search. Try Import image… to use your own picture.'), gridNode, 'awp-note'); return; }
+        list.slice(0, 24).forEach(sym => {
+          const btn = make('button', null, gridNode); btn.type = 'button';
+          if (sym.src || sym.svg) {
+            const img = make('img', null, btn);
+            img.src = sym.src || ('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(sym.svg));
+            img.alt = '';
+          }
+          make('span', sym.label || sym.word || '', btn);
+          btn.onclick = () => action(async () => {
+            const png = await rasterizeImageToPng(sym.svg || sym.src, doc);
+            const fallbackCredit = sym.set === 'openmoji' ? { set: 'OpenMoji', license: 'CC BY-SA 4.0' } : { set: 'Mulberry Symbols', author: 'Steve Lee', license: 'CC BY-SA 4.0' };
+            applyWordPicture(row.id, png, sym.label || row.word, sym.credit || fallbackCredit);
+            activeSymbolRowId = '';
+            status.textContent = tx('word_practice.picture_updated', 'Picture updated for {word}.', { word: row.word });
+          }, btn);
+        });
+      } catch (err) {
+        gridNode.replaceChildren(); empty.textContent = (err && err.message) || 'Could not load symbols.'; gridNode.appendChild(empty);
+      }
+    }
+    function renderPictureManager(current) {
+      pictureDetails.hidden = !current.items.length;
+      const key = JSON.stringify([activeSymbolRowId, current.items.map(item => [item.id, item.word, item.picture ? [item.picture.src.length, item.picture.alt, item.picture.credit] : null])]);
+      if (key === lastPictureKey) return;
+      lastPictureKey = key;
+      pictureList.replaceChildren();
+      const symbolsAvailable = hasSymbolSource();
+      autoFillPicturesBtn.hidden = !symbolsAvailable;
+      current.items.forEach(item => {
+        const row = make('div', null, pictureList, 'awp-picture-row'); row.dataset.wordId = item.id;
+        if (item.picture) {
+          const thumb = make('img', null, row, 'awp-picture-thumb');
+          thumb.src = item.picture.src; thumb.alt = item.picture.alt || item.word;
+        } else {
+          make('div', tx('word_practice.no_picture', 'None'), row, 'awp-picture-empty');
+        }
+        const meta = make('div', null, row, 'awp-picture-meta');
+        const top = make('div', null, meta, 'awp-picture-word-row');
+        setLanguage(make('span', item.word, top, 'awp-picture-word'), core.fieldLanguage(item, 'term', current.language));
+        if (item.picture && item.picture.credit) make('span', item.picture.credit, top, 'awp-note');
+        const rowBtns = make('div', null, meta, 'awp-picture-actions');
+        const importBtn = make('button', item.picture ? tx('word_practice.replace_image', 'Switch image…') : tx('word_practice.import_image', 'Import image…'), rowBtns); importBtn.type = 'button';
+        importBtn.onclick = () => { if (!busy) { symbolTargetId = item.id; rowImageInput.value = ''; rowImageInput.click(); } };
+        if (symbolsAvailable) {
+          const symBtn = make('button', tx('word_practice.switch_symbol', 'Choose symbol…'), rowBtns); symBtn.type = 'button';
+          symBtn.setAttribute('aria-expanded', String(activeSymbolRowId === item.id));
+          symBtn.onclick = () => { activeSymbolRowId = activeSymbolRowId === item.id ? '' : item.id; symbolSearchQuery = item.word; lastPictureKey = ''; renderPictureManager(pack); };
+        }
+        if (item.picture) {
+          const clearBtn = make('button', tx('word_practice.remove_image', 'Remove'), rowBtns); clearBtn.type = 'button';
+          clearBtn.onclick = () => { clearWordPicture(item.id); status.textContent = tx('word_practice.picture_removed', 'Picture removed from {word}.', { word: item.word }); };
+          const altInput = make('input', null, meta, 'awp-picture-alt'); altInput.type = 'text'; altInput.value = item.picture.alt || '';
+          altInput.placeholder = tx('word_practice.alt_placeholder', 'Describe this picture');
+          altInput.setAttribute('aria-label', tx('word_practice.alt_label', 'Image description for {word}', { word: item.word }));
+          altInput.addEventListener('change', event => {
+            event.stopPropagation();
+            const nextAlt = core.text(altInput.value, 1000) || item.word;
+            applyWordPicture(item.id, item.picture.src, nextAlt, item.imageAttribution || item.picture.credit);
+          });
+        }
+        if (symbolsAvailable && activeSymbolRowId === item.id) {
+          const picker = make('div', null, meta, 'awp-symbol-picker');
+          const searchRow = make('div', null, picker, 'awp-row');
+          const searchInput = make('input', null, searchRow, 'awp-symbol-search'); searchInput.type = 'search';
+          searchInput.value = symbolSearchQuery || item.word;
+          searchInput.setAttribute('aria-label', tx('word_practice.search_symbols', 'Search built-in symbols'));
+          searchInput.placeholder = tx('word_practice.search_symbols_hint', 'Search symbols (e.g. cat, apple, sun)');
+          const symGrid = make('div', null, picker, 'awp-symbol-grid');
+          searchInput.addEventListener('input', () => { symbolSearchQuery = searchInput.value; populateSymbolGrid(symGrid, item, symbolSearchQuery); });
+          const closeSym = make('button', tx('word_practice.close', 'Close'), searchRow); closeSym.type = 'button';
+          closeSym.onclick = () => { activeSymbolRowId = ''; lastPictureKey = ''; renderPictureManager(pack); };
+          populateSymbolGrid(symGrid, item, symbolSearchQuery || item.word);
+        }
+      });
+    }
+    batchImportBtn.onclick = () => { if (!busy) { batchImageInput.value = ''; batchImageInput.click(); } };
+    autoFillPicturesBtn.onclick = () => action(async run => {
+      const current = readPack();
+      const missing = current.items.filter(it => !it.picture && !it.image);
+      if (!missing.length) {
+        status.textContent = tx('word_practice.pictures_already_complete', 'Every word in this set already has a picture.');
+        return;
+      }
+      const matcher = getPictureMatcher();
+      const rawBank = root.AlloModules && root.AlloModules.WordSoundsSymbols;
+      const bank = matcher && typeof matcher.ensureSymbols === 'function'
+        ? await matcher.ensureSymbols({ symbols: rawBank })
+        : rawBank;
+      if (bank && !matcher && typeof bank.ready === 'function') { try { await bank.ready(); } catch (_) {} }
+      let matched = 0;
+      for (const item of missing) {
+        if (!isCurrentOperation(run)) return;
+        let hit = null;
+        if (matcher && typeof matcher.matchWord === 'function') {
+          hit = matcher.matchWord({ word: item.word, lemma: item.lemma, definition: item.definition }, { symbols: bank, preferDiagrams: true });
+        }
+        if (!hit && bank && typeof bank.get === 'function') {
+          const exact = bank.get(String(item.word || '').toLowerCase());
+          if (exact && exact.svg) hit = { word: item.word, svg: exact.svg, label: exact.label || item.word, set: exact.set, alt: exact.label || item.word, credit: bank.credits && bank.credits[exact.set] };
+        }
+        if (!hit && typeof context.searchSymbols === 'function') {
+          const list = await context.searchSymbols(item.word) || [];
+          const cleanWord = String(item.word || '').trim().toLowerCase();
+          hit = list.find(s => s && (s.svg || s.src) && String(s.word || '').trim().toLowerCase() === cleanWord) || list[0] || null;
+        }
+        if (!hit || (!hit.svg && !hit.src)) continue;
+        const png = await rasterizeImageToPng(hit.svg || hit.src, doc);
+        const fallbackCredit = hit.set === 'openmoji' ? { set: 'OpenMoji', license: 'CC BY-SA 4.0' } : { set: 'Mulberry Symbols', author: 'Steve Lee', license: 'CC BY-SA 4.0' };
+        applyWordPicture(item.id, png, hit.alt || hit.label || item.word, hit.credit || fallbackCredit);
+        matched++;
+      }
+      if (matched) {
+        status.textContent = tx('word_practice.pictures_auto_filled', 'Added pictures to {count} word(s).', { count: matched });
+      } else {
+        status.textContent = tx('word_practice.no_symbols_found', 'No built-in symbols matched that search. Try Import image… to use your own picture.');
+      }
+    }, autoFillPicturesBtn);
+    rowImageInput.addEventListener('change', event => {
+      event.stopPropagation();
+      const file = rowImageInput.files && rowImageInput.files[0], targetId = symbolTargetId;
+      if (!file || !targetId) return;
+      action(async () => {
+        const currentItem = pack.items.find(it => it.id === targetId) || catalogue.get(targetId);
+        const png = await rasterizeImageToPng(file, doc);
+        applyWordPicture(targetId, png, (currentItem && currentItem.word) || file.name.replace(/\.[^.]+$/, ''), { set: 'Custom imported image' });
+        status.textContent = tx('word_practice.picture_updated', 'Picture updated for {word}.', { word: currentItem ? currentItem.word : 'word' });
+      }, rowImageInput);
+    });
+    batchImageInput.addEventListener('change', event => {
+      event.stopPropagation();
+      const files = Array.from(batchImageInput.files || []);
+      if (!files.length) return;
+      action(async () => {
+        const current = readPack(); let matched = 0;
+        for (const file of files) {
+          const stem = file.name.replace(/\.[^.]+$/, '').replace(/^[0-9]+[-_\s]+/, '').trim().toLowerCase();
+          const target = current.items.find(it => core.key(it.word) === core.key(stem)) || (current.items.length === 1 && files.length === 1 ? current.items[0] : null);
+          if (!target) continue;
+          const png = await rasterizeImageToPng(file, doc);
+          applyWordPicture(target.id, png, target.word, { set: 'Custom imported image' });
+          matched++;
+        }
+        status.textContent = matched
+          ? tx('word_practice.batch_pictures_imported', 'Added custom pictures to {count} word(s).', { count: matched })
+          : tx('word_practice.batch_pictures_none', 'No filenames matched the words in your list. Name image files after words (for example, cat.png) or use Import image on a word row.');
+      }, batchImportBtn);
+    });
     function updateCoverage() {
       try { const current = readPack(), counts = core.audioCoverage(current), sentences = current.items.filter(item => item.sentenceActivity).length; coverage.textContent = tx('word_practice.coverage', '{count} words · Word audio: {audio}/{total} · Complete sound sequences: {complete}/{total} · Sentence activities: {sentences}', { count: current.items.length, audio: counts.words, total: counts.totalWords, complete: counts.completePhonemeWords, sentences: sentences }); setLanguage(coverage, dialogTextLanguages.get(coverage.textContent));
         const stale = includeAudio.checked ? core.audioIssueCounts(current).staleLanguage : 0; audioWarning.hidden = !stale;
         if (stale) { audioWarning.textContent = tx(stale === 1 ? 'word_practice.audio_language_omitted_one' : 'word_practice.audio_language_omitted', stale === 1 ? '{count} saved recording uses a different language and is not played. Prepare replacement audio in Present & Export.' : '{count} saved recordings use a different language and are not played. Prepare replacement audio in Present & Export.', { count: stale }); setLanguage(audioWarning, dialogTextLanguages.get(audioWarning.textContent)); }
-        updatePictureNote(current); updatePlan(current); renderMeaningChoices(); updateAppearancePreview(current); }
+        updatePictureNote(current); renderPictureManager(current); updatePlan(current); renderMeaningChoices(); updateAppearancePreview(current); }
       catch (error) { coverage.textContent = error.message; setLanguage(coverage, 'English'); planCount.textContent = ''; planNote.hidden = false; updateLabel(planNote, error.message); plan.dataset.needsReview = 'true'; reviewDetails.hidden = true; preview.hidden = true; previewToolbar.hidden = true; previewPicker.hidden = true; }
       interval.disabled = pacing.value !== 'timed';
       interval.parentElement.hidden = pacing.value !== 'timed';
@@ -1441,7 +1800,7 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
     function fill() {
       titleInput.value = pack.title; wordsInput.value = pack.items.map(item => item.word).join('\n');
       const opts = pack.options; mode.value = opts.mode; repetitions.value = opts.repetitions; pacing.value = opts.autoAdvance ? 'timed' : 'manual'; interval.value = opts.intervalSeconds;
-      shuffle.checked = opts.shuffle; position.checked = opts.varyPosition; size.checked = opts.varySize; includeAudio.checked = opts.includeAudio; includePictures.checked = opts.includePictures; vocabularyFirst.value = opts.vocabularyFirst;
+      shuffle.checked = opts.shuffle; position.checked = opts.varyPosition; size.checked = opts.varySize; includeAudio.checked = opts.includeAudio; includePictures.checked = opts.includePictures; pictureSlides.checked = opts.pictureSlides === true; vocabularyFirst.value = opts.vocabularyFirst;
       appearance.setOptions(opts);
       translationSettings.update(pack.items, opts);
       updateCoverage();
@@ -1542,18 +1901,68 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
       download(buildHtml(fileInput, opts, undefined, labels, reader, uiLanguageName), 'text/html;charset=utf-8', '.html');
       status.textContent = tx('word_practice.html_downloaded', 'HTML downloaded. Open the file in a browser to practice offline.') + (fontMissing ? ' ' + tx('word_practice.font_not_embedded', 'Your font could not be added to the file, so it uses the system font.') : '') + audioNote;
     });
-    actionButton(tx('word_practice.download_pptx', 'Download PowerPoint'), async run => {
+    async function exportPptxDeck(run, pictureSlidesOnly = false) {
       const current = ready(), opts = options();
-      const media = root.AlloWordPracticeMedia; if (!media || !media.buildPptx) throw new Error(tx('word_practice.pptx_unavailable', 'The PowerPoint exporter is unavailable. Try reopening Present & Export.'));
+      const media = root.AlloWordPracticeMedia;
+      if (!media || !media.buildPptx) throw new Error(tx('word_practice.pptx_unavailable', 'The PowerPoint exporter is unavailable. Try reopening Present & Export.'));
+      if (typeof context.ensurePptx === 'function') await context.ensurePptx();
+      if (!isCurrentOperation(run)) return;
       status.textContent = tx('word_practice.building_pptx', 'Building PowerPoint…');
-      const pptx = await media.buildPptx(current, opts, core.createSequence(current, opts), { ...context, readerSettings: useReading && useReading.checked && root.__alloReadingSettings ? root.__alloReadingSettings.get() : null, labels: playerLabels(), signal: run.controller.signal, onProgress: progress => reportProgress(run, tx('word_practice.building_pptx_progress', 'Building PowerPoint. Cards: {completed} of {total}.', progress), progress) });
+      const pptxCtx = { ...context, readerSettings: useReading && useReading.checked && root.__alloReadingSettings ? root.__alloReadingSettings.get() : null, labels: playerLabels(), signal: run.controller.signal, onProgress: progress => reportProgress(run, tx('word_practice.building_pptx_progress', 'Building PowerPoint. Cards: {completed} of {total}.', progress), progress) };
+      const pptx = pictureSlidesOnly && typeof media.buildPictureSlidesPptx === 'function'
+        ? await media.buildPictureSlidesPptx(current, opts, pptxCtx)
+        : await media.buildPptx(current, opts, core.createSequence(current, opts), pptxCtx);
       if (!isCurrentOperation(run)) return;
       reportProgress(run, tx('word_practice.finishing_pptx', 'Finishing PowerPoint file…'));
       // Serialize without downloading: late compression results from a cancelled run are discarded.
       const blob = await pptx.write({ outputType: 'blob' });
       if (!isCurrentOperation(run)) return;
-      download(blob, 'application/vnd.openxmlformats-officedocument.presentationml.presentation', '.pptx');
+      download(blob, 'application/vnd.openxmlformats-officedocument.presentationml.presentation', pictureSlidesOnly ? '-picture-slides.pptx' : '.pptx');
       status.textContent = tx('word_practice.pptx_downloaded', 'PowerPoint downloaded.') + (pptx.wordPracticeWarnings && pptx.wordPracticeWarnings.length ? ' ' + pptx.wordPracticeWarnings.join(' ') : '');
+    }
+    actionButton(tx('word_practice.download_pptx', 'Download PowerPoint'), run => exportPptxDeck(run, false));
+    exportPictureSlidesBtn.onclick = () => action(run => exportPptxDeck(run, true), exportPictureSlidesBtn);
+    actionButton(tx('word_practice.download_flashcards', 'Download 2-sided flashcards'), () => {
+      const current = ready(), opts = options(), media = root.AlloWordPracticeMedia;
+      if (!media || typeof media.buildFlashcardsHtml !== 'function') throw new Error(tx('word_practice.flashcards_unavailable', 'Flashcards export is unavailable. Try reopening Present & Export.'));
+      download(media.buildFlashcardsHtml(current, opts), 'text/html;charset=utf-8', '-flashcards.html');
+      status.textContent = tx('word_practice.flashcards_downloaded', '2-sided flashcards downloaded.');
+    });
+    actionButton(tx('word_practice.download_frayer', 'Download Frayer study sheets'), () => {
+      const current = ready(), opts = options(), media = root.AlloWordPracticeMedia;
+      if (!media || typeof media.buildFrayerHtml !== 'function') throw new Error(tx('word_practice.frayer_unavailable', 'Frayer study sheets export is unavailable. Try reopening Present & Export.'));
+      download(media.buildFrayerHtml(current, opts), 'text/html;charset=utf-8', '-frayer.html');
+      status.textContent = tx('word_practice.frayer_downloaded', 'Frayer study sheets downloaded.');
+    });
+    actionButton(tx('word_practice.download_sorting_cards', 'Download cut-out sorting cards'), () => {
+      const current = ready(), opts = options(), media = root.AlloWordPracticeMedia;
+      if (!media || typeof media.buildSortingCardsHtml !== 'function') throw new Error(tx('word_practice.sorting_cards_unavailable', 'Sorting cards export is unavailable. Try reopening Present & Export.'));
+      download(media.buildSortingCardsHtml(current, opts), 'text/html;charset=utf-8', '-sorting-cards.html');
+      status.textContent = tx('word_practice.sorting_cards_downloaded', 'Cut-out sorting cards downloaded.');
+    });
+    actionButton(tx('word_practice.download_worksheet', 'Download cloze and matching worksheet'), () => {
+      const current = ready(), opts = options(), media = root.AlloWordPracticeMedia;
+      if (!media || typeof media.buildWorksheetHtml !== 'function') throw new Error(tx('word_practice.worksheet_unavailable', 'Worksheet export is unavailable. Try reopening Present & Export.'));
+      download(media.buildWorksheetHtml(current, opts), 'text/html;charset=utf-8', '-worksheet.html');
+      status.textContent = tx('word_practice.worksheet_downloaded', 'Cloze and matching worksheet downloaded.');
+    });
+    actionButton(tx('word_practice.download_bingo', 'Download classroom Bingo boards'), () => {
+      const current = ready(), opts = options(), media = root.AlloWordPracticeMedia;
+      if (!media || typeof media.buildBingoHtml !== 'function') throw new Error(tx('word_practice.bingo_unavailable', 'Bingo boards export is unavailable. Try reopening Present & Export.'));
+      download(media.buildBingoHtml(current, opts), 'text/html;charset=utf-8', '-bingo.html');
+      status.textContent = tx('word_practice.bingo_downloaded', 'Classroom Bingo boards downloaded.');
+    });
+    actionButton(tx('word_practice.download_loop_cards', 'Download I Have, Who Has cards'), () => {
+      const current = ready(), opts = options(), media = root.AlloWordPracticeMedia;
+      if (!media || typeof media.buildLoopGameHtml !== 'function') throw new Error(tx('word_practice.loop_cards_unavailable', 'Loop cards export is unavailable. Try reopening Present & Export.'));
+      download(media.buildLoopGameHtml(current, opts), 'text/html;charset=utf-8', '-loop-cards.html');
+      status.textContent = tx('word_practice.loop_cards_downloaded', 'I Have, Who Has loop cards downloaded.');
+    });
+    actionButton(tx('word_practice.download_word_wall', 'Download classroom Word Wall cards'), () => {
+      const current = ready(), opts = options(), media = root.AlloWordPracticeMedia;
+      if (!media || typeof media.buildWordWallHtml !== 'function') throw new Error(tx('word_practice.word_wall_unavailable', 'Word Wall export is unavailable. Try reopening Present & Export.'));
+      download(media.buildWordWallHtml(current, opts), 'text/html;charset=utf-8', '-word-wall.html');
+      status.textContent = tx('word_practice.word_wall_downloaded', 'Classroom Word Wall cards downloaded.');
     });
     const prepareAudioButton = actionButton(tx('word_practice.prepare_audio', 'Prepare audio'), async run => {
       run.keepAudioOnStop = true; updateLabel(cancelButton, tx('word_practice.stop_keep_audio', 'Stop and keep completed audio')); 
@@ -1613,13 +2022,14 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
       preparedAudioRevision = 0; preparedAudioPending = false;
       pack = imported; catalogue.clear(); annotationStore.clear(); glossaryEntryIds.clear(); pack.items.forEach(item => annotationStore.set(item.id, item.annotations || [])); remember(pack); previewId = ''; previewIndex = 0; previewMode = ''; previewRevealed = false; previewPickerKey = ''; fill(); editGuard.saved(); status.textContent = tx('word_practice.set_opened', 'Word set opened.');
     }));
-    setup.addEventListener('change', updateCoverage);
+    setup.addEventListener('change', event => { if (event.target === batchImageInput || event.target === rowImageInput || (event.target && event.target.classList && (event.target.classList.contains('awp-picture-alt') || event.target.classList.contains('awp-symbol-search')))) return; updateCoverage(); });
     // Only a teacher's own change is remembered, not the settings a saved set arrives with.
-    setup.addEventListener('change', event => { if (event.target !== fileInput) rememberSetup(options()); });
+    setup.addEventListener('change', event => { if (event.target !== fileInput && event.target !== batchImageInput && event.target !== rowImageInput) rememberSetup(options()); });
     let coverageTimer = null;
     const scheduleCoverage = () => { root.clearTimeout(coverageTimer); coverageTimer = root.setTimeout(() => { coverageTimer = null; if (!closed && !busy) updateCoverage(); }, 180); };
     wordsInput.addEventListener('input', scheduleCoverage); repetitions.addEventListener('input', scheduleCoverage);
     function trap(event) {
+      if (inlineHost) return;
       if (event.key === 'Escape' && !doc.fullscreenElement) { event.preventDefault(); requestClose(); return; }
       if (event.key !== 'Tab') return;
       const scope = doc.fullscreenElement && doc.fullscreenElement.contains(playerHost) ? doc.fullscreenElement : dialog;
@@ -1632,7 +2042,7 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
     const unwatchPreviewReading = watchCardReading(preview, options, core);
     let closingRequest = null, closeError = null;
     async function requestClose() {
-      if (closed || closingRequest) return;
+      if (closed || closingRequest || inlineHost) return;
       if (operation?.keepAudioOnStop) { cancelOperation(); return; }
       const request = new root.AbortController(); closingRequest = request;
       try {
@@ -1641,22 +2051,43 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
         if (!closed) { closeError = closeError || make('p', '', dialog, 'awp-note'); closeError.setAttribute('role', 'alert'); closeError.textContent = error.message || tx('word_practice.save_failed', 'The word set could not be saved. Your changes are still open.'); }
       } finally { if (closingRequest === request) closingRequest = null; }
     }
-    const warnUnsaved = event => { if (operation?.keepAudioOnStop || editGuard.dirty()) { event.preventDefault(); event.returnValue = ''; } };
+    const warnUnsaved = event => { if (operation?.keepAudioOnStop || (!inlineHost && editGuard.dirty())) { event.preventDefault(); event.returnValue = ''; } };
     root.addEventListener('beforeunload', warnUnsaved);
     function close() {
       if (closed) return; closed = true; closingRequest?.abort(); root.removeEventListener('beforeunload', warnUnsaved); unwatchPreviewReading(); root.clearTimeout(coverageTimer); if (operation) { operation.controller.abort(); operation = null; } if (player) player.destroy(); overlay.removeEventListener('keydown', trap);
       if (context.signal) context.signal.removeEventListener('abort', close);
       closeReading(); overlay.remove();
-      hiddenSiblings.forEach(({ node, inert }) => { if (node.isConnected) node.inert = inert; }); doc.body.style.overflow = priorOverflow;
-      if (previousFocus && previousFocus.isConnected && previousFocus.focus) previousFocus.focus(); if (active === controller) active = null;
+      hiddenSiblings.forEach(({ node, inert }) => { if (node.isConnected) node.inert = inert; });
+      if (!inlineHost) doc.body.style.overflow = priorOverflow;
+      if (previousFocus && previousFocus.isConnected && previousFocus.focus) previousFocus.focus(); if (!inlineHost && active === controller) active = null;
     }
     overlay.addEventListener('keydown', trap); fill();
     editGuard.watchContent(() => JSON.stringify([titleInput.value.trim(), core.parseWords(wordsInput.value, { lineSeparated: true }), preparedAudioRevision]));
-    titleInput.focus();
-    const controller = { close }; active = controller;
+    if (!inlineHost) titleInput.focus();
+    const controller = {
+      close,
+      getPack() { try { return readPack(); } catch (_) { return pack; } },
+      setPack(next = {}) { pack = core.normalizeInput(next); catalogue.clear(); remember(pack); fill(); },
+    };
+    if (!inlineHost) active = controller;
     if (context.signal) context.signal.addEventListener('abort', close, { once: true });
     return controller;
   }
+  function mount(container, context = {}) { return open({ ...context, container }); }
+  const buildFlashcardsHtml = (...args) => root.AlloWordPracticeMedia && typeof root.AlloWordPracticeMedia.buildFlashcardsHtml === 'function'
+    ? root.AlloWordPracticeMedia.buildFlashcardsHtml(...args) : '';
+  const buildFrayerHtml = (...args) => root.AlloWordPracticeMedia && typeof root.AlloWordPracticeMedia.buildFrayerHtml === 'function'
+    ? root.AlloWordPracticeMedia.buildFrayerHtml(...args) : '';
+  const buildSortingCardsHtml = (...args) => root.AlloWordPracticeMedia && typeof root.AlloWordPracticeMedia.buildSortingCardsHtml === 'function'
+    ? root.AlloWordPracticeMedia.buildSortingCardsHtml(...args) : '';
+  const buildWorksheetHtml = (...args) => root.AlloWordPracticeMedia && typeof root.AlloWordPracticeMedia.buildWorksheetHtml === 'function'
+    ? root.AlloWordPracticeMedia.buildWorksheetHtml(...args) : '';
+  const buildBingoHtml = (...args) => root.AlloWordPracticeMedia && typeof root.AlloWordPracticeMedia.buildBingoHtml === 'function'
+    ? root.AlloWordPracticeMedia.buildBingoHtml(...args) : '';
+  const buildLoopGameHtml = (...args) => root.AlloWordPracticeMedia && typeof root.AlloWordPracticeMedia.buildLoopGameHtml === 'function'
+    ? root.AlloWordPracticeMedia.buildLoopGameHtml(...args) : '';
+  const buildWordWallHtml = (...args) => root.AlloWordPracticeMedia && typeof root.AlloWordPracticeMedia.buildWordWallHtml === 'function'
+    ? root.AlloWordPracticeMedia.buildWordWallHtml(...args) : '';
   root.AlloModules = root.AlloModules || {};
-  root.AlloModules.WordPractice = { open, buildHtml };
+  root.AlloModules.WordPractice = { open, mount, buildHtml, buildFlashcardsHtml, buildFrayerHtml, buildSortingCardsHtml, buildWorksheetHtml, buildBingoHtml, buildLoopGameHtml, buildWordWallHtml, rasterizeImage: rasterizeImageToPng };
 })(typeof window !== 'undefined' ? window : globalThis);

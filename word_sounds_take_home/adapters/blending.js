@@ -139,7 +139,7 @@ module.exports = {
     // Opening sequence (word_sounds_module.js:16790-16845): instruction, each
     // sound, "Which word did you hear?", then every choice in turn.
     if (!ctx.isDone()) {
-      run([{ id: item.instruction, gap: 200 }].concat(soundSteps(), optionSteps(200)));
+      run((ctx.skipDirections || !item.instruction ? [] : [{ id: item.instruction, gap: 200 }]).concat(soundSteps(), optionSteps(200)));
     }
     return {
       // The R key: the sounds and the question again.

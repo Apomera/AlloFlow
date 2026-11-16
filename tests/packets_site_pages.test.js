@@ -306,6 +306,8 @@ describe('the pages as files', () => {
       ['Make math fact practice or a math check', [['Math fact practice', 'packets-math-practice.html'], ['A math check', 'packets-check.html']]],
       // 2026-11-12: the vocabulary maker, a third card that makes a file.
       ['Make vocabulary practice', [['Make vocabulary practice', 'packets-vocab.html']]],
+      ['Make Symbol Runner practice', [['Make Symbol Runner practice', 'packets-symbol-runner.html']]],
+      ['Present and export word cards', [['Present and export word cards', 'packets-present-export.html']]],
       ['Add up results', [['Add up results', 'packets-results.html']]],
       ['Check it yourself', [['Check it yourself', '#check']]]]);
     expect([parse('packets-make.html').querySelector('h1').textContent, parse('packets-math-practice.html').querySelector('h1').textContent, parse('packets-check.html').querySelector('h1').textContent])
@@ -315,15 +317,17 @@ describe('the pages as files', () => {
     expect(cards[1].text).toContain('Three ready checks, or your own problems.');
     expect(cards[1].text).toContain('Three steps each. No sound needed.');
     expect(cards[2].text).toContain('Practice, or a short check.');
-    expect(cards[3].text).toContain('not uploaded');
-    expect(cards[3].text).toContain('each student over time');
+    expect(cards[3].text).toContain('Works offline.');
+    expect(cards[4].text).toContain('PowerPoint slides');
+    expect(cards[5].text).toContain('not uploaded');
+    expect(cards[5].text).toContain('each student over time');
     expect(doc.getElementById('check')).toBeTruthy();
     expect(doc.body.textContent).toContain('For practice and for checking progress. Not a standardized test.');
     // Five cards (four before the vocabulary maker, 2026-11-12), each a direct child of the grid. Four are built the same way: a heading that is the card's one link, a line, a foot;
     // packets.css stretches that link over the whole card (.card a::after). The math card names its two makers: a plain heading, then
     // one link for each with its own line, not stretched (.card .card-links). The three that make a file are filled; the two for what
     // comes after are outlined.
-    expect([...doc.querySelectorAll('.cards > *')].map((node) => node.className)).toEqual(['card card-main', 'card card-main card-pair', 'card card-main', 'card card-go', 'card card-go']);
+    expect([...doc.querySelectorAll('.cards > *')].map((node) => node.className)).toEqual(['card card-main', 'card card-main card-pair', 'card card-main', 'card card-main', 'card card-main', 'card card-go', 'card card-go']);
     for (const card of doc.querySelectorAll('.card')) {
       const pair = card.classList.contains('card-pair');
       expect([...card.children].map((node) => node.tagName + (node.className ? '.' + node.className : ''))).toEqual(pair ? ['H2', 'UL.card-links', 'P.card-foot'] : ['H2', 'P', 'P.card-foot']);
@@ -339,10 +343,10 @@ describe('the pages as files', () => {
     expect(css.match(/\.cards \{/g)).toHaveLength(2);
     expect(css).not.toContain('1.15fr');
     const today = Object.fromEntries([...doc.querySelectorAll('#today h3')].map((heading) => [heading.textContent, heading.nextElementSibling.textContent]));
-    expect(today).toEqual({ 'Available today': 'Word Sounds practice, math fact practice, math checks and vocabulary practice, with a results file for each student.', 'Being built': 'More words with recordings. Checks for reading skills.' });
+    expect(today).toEqual({ 'Available today': 'Word Sounds practice, math fact practice, math checks, vocabulary practice, Symbol Runner practice and word card export, with a results file for each student.', 'Being built': 'More words with recordings. Checks for reading skills.' });
     // Every builder is named where the builders are listed, and each one exists.
     const verify = doc.querySelector('.verify').textContent;
-    for (const file of ['word_sounds_packet_builder.js', 'packet_math_practice_builder.js', 'packet_check_builder.js', 'packet_vocab_builder.js', 'word_sounds_take_home_loader.js']) {
+    for (const file of ['word_sounds_packet_builder.js', 'packet_math_practice_builder.js', 'packet_check_builder.js', 'packet_vocab_builder.js', 'packet_symbol_runner_builder.js', 'word_sounds_take_home_loader.js']) {
       expect(verify, file).toContain(file);
       expect(existsSync(file), file).toBe(true);
     }
@@ -809,7 +813,8 @@ describe('the maker, run with the real builder', () => {
     // One box at step 3, and its one line. It is on because a word has a picture.
     const box = page.$('f-pictures');
     // (The other box of step 3, "Give students versions A, B and C in turn", is folded inside "Make one for each student".)
-    expect([...page.$('step-3').querySelectorAll('input[type="checkbox"]')].filter((node) => !node.closest('#batch'))).toEqual([box]);
+    // 2026-11-15: "Say the directions once per activity" (#f-directions-once) sits right beside #f-pictures in step 3.
+    expect([...page.$('step-3').querySelectorAll('input[type="checkbox"]')].filter((node) => !node.closest('#batch'))).toEqual([box, page.$('f-directions-once')]);
     expect(box.closest('label').textContent.trim()).toBe('Include pictures');
     expect(box.getAttribute('aria-describedby')).toBe('pictures-line');
     expect(box.checked && !box.disabled).toBe(true);
@@ -1033,7 +1038,9 @@ describe('the maker, run with the real builder', () => {
     expect(kept).toEqual({ v: 1, activities: ['isolation', 'blending', 'segmentation'], mode: 'pick', sound: 'ch', position: 'any', shape: 'CVC', stage: '', own: '', version: 'C', length: 'regular',
       // 2026-11-13: and which letters Letter Trace traces (capital, then lowercase, by default), and (later that day) how
       // many choices a board shows (Choices: Medium by default; tests/packets_ws_fixes_2026_11_13b.test.js).
-      count: 10, hand: false, chosen: [], choices: 'medium', tracing: 'both' });
+      // 2026-11-15: spoken directions (#f-directions-once) and the resolved word list for Present & Export (#from-word-sounds).
+      count: 10, hand: false, chosen: [], choices: 'medium', tracing: 'both', directionsOnce: false,
+      words: ['him', 'what', 'like', 'got', 'this', 'right', 'his'] });
     expect(page.w.localStorage.length).toBe(1);
     expect(page.d.cookie).toBe('');
     expect(page.$('about-page').open).toBe(false);

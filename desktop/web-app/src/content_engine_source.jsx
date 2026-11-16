@@ -3827,7 +3827,7 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
               const work = (async () => {
                   if (!window.AlloDictionary?.lookupDetailed && !window.AlloDictionary?.lookup && window.__alloLoadPlugin) await window.__alloLoadPlugin('dictionary_loader.js');
                   if (!isCurrent() || dictionaryAttempt !== job || controller?.signal.aborted) return { cancelled: true };
-                  const options = { signal: controller?.signal, bypassMissingCache: retry };
+                  const options = { signal: controller?.signal, bypassMissingCache: retry, autoLoadOfflineBank: true };
                   if (typeof window.AlloDictionary?.lookupDetailed === 'function') return await window.AlloDictionary.lookupDetailed(word, options);
                   if (typeof window.AlloDictionary?.lookup !== 'function') return { entry: null, reason: 'not_available' };
                   const entry = await window.AlloDictionary?.lookup?.(word, options);

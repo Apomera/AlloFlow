@@ -3196,6 +3196,7 @@ var require_tmp_research_hub_entry = __commonJS({
               "aria-pressed": isPaused,
               "aria-label": isPaused ? t("research_hub.voice_note_resume_aria") || "Resume voice note recording" : t("research_hub.voice_note_pause_aria") || "Pause voice note recording",
               style: {
+                minHeight: "44px",
                 padding: "6px 12px",
                 borderRadius: "999px",
                 background: isPaused ? "#047857" : "#fff",
@@ -3214,6 +3215,7 @@ var require_tmp_research_hub_entry = __commonJS({
               onClick: stopRec,
               "aria-label": t("research_hub.voice_note_stop_aria") || "Stop recording",
               style: {
+                minHeight: "44px",
                 padding: "6px 12px",
                 borderRadius: "999px",
                 background: "#1f2937",
@@ -3231,6 +3233,7 @@ var require_tmp_research_hub_entry = __commonJS({
               type: "button",
               onClick: clearRec,
               style: {
+                minHeight: "44px",
                 padding: "6px 12px",
                 borderRadius: "999px",
                 background: "#fff",
@@ -3254,7 +3257,7 @@ var require_tmp_research_hub_entry = __commonJS({
         var cap = props.cap || MAX_AI_CALLS_PER_SESSION;
         if (used === 0) return null;
         var remaining = Math.max(0, cap - used);
-        var color = remaining === 0 ? "#b91c1c" : remaining <= 2 ? "#d97706" : "#475569";
+        var color = remaining === 0 ? "#b91c1c" : remaining <= 2 ? "#b45309" : "#475569";
         return /* @__PURE__ */ React.createElement(
           "span",
           {
@@ -3375,8 +3378,23 @@ var require_tmp_research_hub_entry = __commonJS({
         return async function askResearchCoach(touchpoint, ctx, signal) {
           var traceId = newTraceId();
           var t0 = nowMs();
-          var aiText = ai && typeof ai.generateText === "function" ? ai.generateText.bind(ai) : null;
-          if (!aiText && typeof onCallGemini !== "function") {
+          var _isUsableAiFn = function(kind, fn) {
+            if (typeof fn !== "function") return false;
+            if (typeof window !== "undefined" && typeof window.__alloAiUsable === "function") {
+              try {
+                return !!window.__alloAiUsable(kind, fn);
+              } catch (_) {
+                return false;
+              }
+            }
+            if (fn._alloQrBlocked) return false;
+            if (typeof window !== "undefined" && window.__alloStudentAiDisabled === true) return false;
+            return true;
+          };
+          var rawAiText = ai && typeof ai.generateText === "function" ? ai.generateText.bind(ai) : null;
+          var aiText = _isUsableAiFn("text", rawAiText) ? rawAiText : null;
+          var usableLegacy = !aiText && _isUsableAiFn("text", onCallGemini);
+          if (!aiText && !usableLegacy) {
             return { ok: false, blocked: true, blockedReason: "no_compatible_backend", traceId, latencyMs: 0 };
           }
           if ((journal.aiCallCount || 0) >= MAX_AI_CALLS_PER_SESSION) {
@@ -3647,25 +3665,75 @@ var require_tmp_research_hub_entry = __commonJS({
           var key = table.id === "research-overview" ? "overview" : table.id === "research-claim-summary" ? "claims" : table.id === "research-evidence-summary" ? "evidence" : "provenance";
           return selected[key] !== false;
         });
+        var dialogRef = useRef(null);
         useEffect(function() {
           if (!props.isOpen) return void 0;
+          var root = dialogRef.current;
+          var previous = document.activeElement;
+          var stack = typeof window !== "undefined" ? window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []) : [];
+          var trap = root ? { root } : null;
+          if (trap) stack.push(trap);
+          var getFocusable = function() {
+            if (!root) return [];
+            return Array.from(root.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])')).filter(function(el) {
+              if (el.disabled || el.hidden || el.getAttribute("aria-hidden") === "true" || el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+              var closedDetails = el.closest("details:not([open])");
+              return !closedDetails || el.tagName === "SUMMARY" && el.parentElement === closedDetails;
+            });
+          };
+          if (root) {
+            var focusables = getFocusable();
+            (focusables[0] || root).focus();
+          }
           var onKeyDown = function(event) {
+            if (event.isComposing || event.nativeEvent && event.nativeEvent.isComposing || event.keyCode === 229) return;
+            if (trap && stack.length > 0) {
+              var top = stack[stack.length - 1];
+              if ((top && (top.root || top)) !== root) return;
+            }
             if (event.key === "Escape") {
               event.preventDefault();
               event.stopPropagation();
               if (typeof props.onClose === "function") props.onClose();
+              return;
+            }
+            if (event.key !== "Tab" || !root) return;
+            var items = getFocusable();
+            if (!items.length) {
+              event.preventDefault();
+              root.focus();
+              return;
+            }
+            var first = items[0], last = items[items.length - 1];
+            if (!root.contains(document.activeElement)) {
+              event.preventDefault();
+              (event.shiftKey ? last : first).focus();
+              return;
+            }
+            if (event.shiftKey && document.activeElement === first) {
+              event.preventDefault();
+              last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+              event.preventDefault();
+              first.focus();
             }
           };
           document.addEventListener("keydown", onKeyDown, true);
           return function() {
             document.removeEventListener("keydown", onKeyDown, true);
+            var wasTop = !trap || stack.length > 0 && stack[stack.length - 1] === trap;
+            if (trap) {
+              var idx = stack.lastIndexOf(trap);
+              if (idx >= 0) stack.splice(idx, 1);
+            }
+            if (wasTop && previous && previous.isConnected && typeof previous.focus === "function") previous.focus();
           };
         }, [props.isOpen, props.onClose]);
         if (!props.isOpen) return null;
         var datasetLabels = { overview: "Inquiry overview", claims: "Claim relationships", evidence: "Evidence metadata", provenance: "Provenance health" };
         return /* @__PURE__ */ React.createElement("div", { role: "presentation", onClick: function(event) {
           if (event.target === event.currentTarget && typeof props.onClose === "function") props.onClose();
-        }, style: { position: "fixed", inset: 0, zIndex: 90, background: "rgba(15,23,42,0.68)", display: "flex", alignItems: "center", justifyContent: "center", padding: "16px" } }, /* @__PURE__ */ React.createElement("div", { role: "dialog", "aria-modal": "true", "aria-labelledby": "research-allosheet-title", "aria-describedby": "research-allosheet-description", onClick: function(event) {
+        }, style: { position: "fixed", inset: 0, zIndex: 90, background: "rgba(15,23,42,0.68)", display: "flex", alignItems: "center", justifyContent: "center", padding: "16px" } }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "research-allosheet-title", "aria-describedby": "research-allosheet-description", onClick: function(event) {
           event.stopPropagation();
         }, style: { width: "100%", maxWidth: "680px", maxHeight: "90vh", overflowY: "auto", background: "#fff", borderRadius: "16px", boxShadow: "0 25px 70px rgba(0,0,0,.4)", padding: "20px" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "12px" } }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "research-allosheet-title", style: { margin: 0, fontSize: "18px", color: "#1e1b4b" } }, "Review Research Hub summaries in AlloSheet"), /* @__PURE__ */ React.createElement("p", { id: "research-allosheet-description", style: { margin: "6px 0 0", fontSize: "12px", lineHeight: 1.5, color: "#475569" } }, "Choose a time window and bounded metadata tables. Claim text, evidence text, citations, files, notes, stable IDs, and learner interpretation stay in Research Hub.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: props.onClose, "aria-label": "Close Research Hub AlloSheet review", style: { minWidth: "44px", minHeight: "44px", borderRadius: "8px", border: "1px solid #cbd5e1", background: "#fff", color: "#334155", fontSize: "18px", fontWeight: 800 } }, "\xD7")), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "14px", display: "grid", gap: "12px" } }, /* @__PURE__ */ React.createElement("label", { style: { fontSize: "12px", fontWeight: 800, color: "#334155" } }, "Date window", /* @__PURE__ */ React.createElement("select", { "aria-label": "Research Hub AlloSheet date window", value: props.dateRange, onChange: function(event) {
           props.onChangeDateRange(event.target.value);
@@ -3742,23 +3810,43 @@ var require_tmp_research_hub_entry = __commonJS({
         var closeHandlerRef = useRef(onClose);
         closeHandlerRef.current = onClose;
         useEffect(function() {
-          if (!showResetConfirm) return;
-          var cancel = resetDialogRef.current && resetDialogRef.current.querySelector('[data-safe-default="true"]');
+          if (!showResetConfirm) return void 0;
+          var dialog = resetDialogRef.current;
+          var cancel = dialog && dialog.querySelector('[data-safe-default="true"]');
           if (cancel) cancel.focus();
+          if (!dialog) return void 0;
+          var stack = typeof window !== "undefined" ? window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []) : [];
+          var trap = { root: dialog };
+          stack.push(trap);
+          return function() {
+            var idx = stack.lastIndexOf(trap);
+            if (idx >= 0) stack.splice(idx, 1);
+          };
         }, [showResetConfirm]);
         useEffect(function() {
           if (!isOpen) return void 0;
           var dialog = dialogRef.current;
           if (!dialog) return void 0;
           var previousFocus = document.activeElement;
+          var stack = typeof window !== "undefined" ? window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []) : [];
+          var trap = { root: dialog };
+          stack.push(trap);
           var getFocusable = function() {
-            return Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+            return Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])')).filter(function(el) {
+              if (el.disabled || el.hidden || el.getAttribute("aria-hidden") === "true" || el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+              var closedDetails = el.closest("details:not([open])");
+              return !closedDetails || el.tagName === "SUMMARY" && el.parentElement === closedDetails;
+            });
           };
           (closeButtonRef.current || getFocusable()[0] || dialog).focus();
           var onKeyDown = function(event) {
+            if (event.isComposing || event.nativeEvent && event.nativeEvent.isComposing || event.keyCode === 229) return;
+            var top = stack.length ? stack[stack.length - 1] : null;
+            if (top && (top.root || top) !== dialog) return;
             if (event.key === "Escape") {
               if (typeof closeHandlerRef.current === "function") {
                 event.preventDefault();
+                event.stopPropagation();
                 closeHandlerRef.current();
               }
               return;
@@ -3771,6 +3859,11 @@ var require_tmp_research_hub_entry = __commonJS({
               return;
             }
             var first = focusable[0], last = focusable[focusable.length - 1];
+            if (!dialog.contains(document.activeElement)) {
+              event.preventDefault();
+              (event.shiftKey ? last : first).focus();
+              return;
+            }
             if (event.shiftKey && document.activeElement === first) {
               event.preventDefault();
               last.focus();
@@ -3779,10 +3872,19 @@ var require_tmp_research_hub_entry = __commonJS({
               first.focus();
             }
           };
+          var onDocKeyDown = function(event) {
+            if (dialog.contains(event.target)) return;
+            onKeyDown(event);
+          };
           dialog.addEventListener("keydown", onKeyDown);
+          document.addEventListener("keydown", onDocKeyDown);
           return function() {
             dialog.removeEventListener("keydown", onKeyDown);
-            if (previousFocus && previousFocus.isConnected && typeof previousFocus.focus === "function") previousFocus.focus();
+            document.removeEventListener("keydown", onDocKeyDown);
+            var wasTop = stack.length > 0 && stack[stack.length - 1] === trap;
+            var idx = stack.lastIndexOf(trap);
+            if (idx >= 0) stack.splice(idx, 1);
+            if (wasTop && previousFocus && previousFocus.isConnected && typeof previousFocus.focus === "function") previousFocus.focus();
           };
         }, [isOpen]);
         var _journal = useState(loadJournal);
@@ -4271,7 +4373,7 @@ var require_tmp_research_hub_entry = __commonJS({
             style: {
               position: "fixed",
               inset: 0,
-              zIndex: 60,
+              zIndex: 300,
               background: "rgba(15,23,42,0.55)",
               backdropFilter: "blur(6px)",
               display: "flex",
@@ -4309,7 +4411,7 @@ var require_tmp_research_hub_entry = __commonJS({
             },
             /* @__PURE__ */ React.createElement("div", { style: {
               padding: "16px 22px",
-              background: "linear-gradient(135deg, #4338ca 0%, #7c3aed 100%)",
+              background: "linear-gradient(135deg, #312e81 0%, #5b21b6 100%)",
               color: "#fff",
               display: "flex",
               alignItems: "center",
@@ -4317,9 +4419,9 @@ var require_tmp_research_hub_entry = __commonJS({
               gap: "12px",
               flexWrap: "wrap",
               borderRadius: "20px 20px 0 0"
-            } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "12px" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "28px" } }, "\u{1F50D}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "research-hub-dialog-title", style: { margin: 0, fontSize: "18px", fontWeight: 800 } }, t("research_hub.modal_title") || "Research & Inquiry Hub"), /* @__PURE__ */ React.createElement("p", { id: "research-hub-dialog-description", style: { margin: "2px 0 0", fontSize: "11px", opacity: 0.85 } }, studentCodename ? (t("research_hub.modal_subtitle_with_codename") || "Inquiry Portfolio for ") + studentCodename : t("research_hub.modal_subtitle") || "Investigate, interpret, design, source, and revise in one connected Inquiry Portfolio."))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(CostMeter, { t, used: journal.aiCallCount || 0, cap: MAX_AI_CALLS_PER_SESSION }), /* @__PURE__ */ React.createElement(DevLevelSelector, { t, value: journal.devLevel, onChange: setDevLevel }), isTeacherMode && typeof props.onOpenAlloSheet === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: function() {
+            } }, /* @__PURE__ */ React.createElement("style", null, '.theme-contrast [data-help-key="research_hub"] [role="dialog"], .theme-contrast [data-help-key="research_hub"] [role="note"], .theme-contrast [data-help-key="research_hub"] [data-research-method-pack], .theme-contrast [data-help-key="research_hub"] [data-research-lane-match], .theme-contrast [data-help-key="research_hub"] details { background: #000000 !important; background-image: none !important; color: #ffff00 !important; border-color: #ffff00 !important; } .theme-contrast [data-help-key="research_hub"] [role="dialog"] > div:first-of-type { background: #000000 !important; background-image: none !important; border-bottom: 2px solid #ffff00 !important; } .theme-contrast [data-help-key="research_hub"] :is(span, p, div, h2, h3, strong):not(button):not(button *) { color: #ffff00 !important; } .theme-contrast [data-help-key="research_hub"] button:not(:hover) { background: #000000 !important; background-image: none !important; color: #00ff00 !important; border-color: #00ff00 !important; } .theme-contrast [data-help-key="research_hub"] button:not(:hover) * { color: #00ff00 !important; }'), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "12px" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "28px" } }, "\u{1F50D}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "research-hub-dialog-title", style: { margin: 0, fontSize: "18px", fontWeight: 800 } }, t("research_hub.modal_title") || "Research & Inquiry Hub"), /* @__PURE__ */ React.createElement("p", { id: "research-hub-dialog-description", style: { margin: "2px 0 0", fontSize: "11px", color: "#f1f5f9", opacity: 1 } }, studentCodename ? (t("research_hub.modal_subtitle_with_codename") || "Inquiry Portfolio for ") + studentCodename : t("research_hub.modal_subtitle") || "Investigate, interpret, design, source, and revise in one connected Inquiry Portfolio."))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(CostMeter, { t, used: journal.aiCallCount || 0, cap: MAX_AI_CALLS_PER_SESSION }), /* @__PURE__ */ React.createElement(DevLevelSelector, { t, value: journal.devLevel, onChange: setDevLevel }), isTeacherMode && typeof props.onOpenAlloSheet === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: function() {
               setResearchAlloOpen(true);
-            }, "aria-label": "Review Research Hub summaries in AlloSheet", style: { background: "rgba(255,255,255,0.18)", color: "#fff", border: "1px solid rgba(255,255,255,0.3)", borderRadius: "999px", padding: "6px 12px", cursor: "pointer", fontSize: "11px", fontWeight: 800 } }, "Review in AlloSheet"), educatorView && isTeacherMode && /* @__PURE__ */ React.createElement(
+            }, "aria-label": "Review Research Hub summaries in AlloSheet", style: { minHeight: "44px", background: "rgba(15,23,42,0.5)", color: "#fff", border: "1px solid rgba(255,255,255,0.45)", borderRadius: "999px", padding: "6px 12px", cursor: "pointer", fontSize: "11px", fontWeight: 800 } }, "Review in AlloSheet"), educatorView && isTeacherMode && /* @__PURE__ */ React.createElement(
               "button",
               {
                 type: "button",
@@ -4330,7 +4432,8 @@ var require_tmp_research_hub_entry = __commonJS({
                 "aria-label": t("research_hub.educator_view_toggle_aria") || "Toggle educator view",
                 title: t("research_hub.educator_view_toggle_title") || "Educator view \u2014 read-only inquiry trajectory",
                 style: {
-                  background: educatorViewOn ? "#fbbf24" : "rgba(255,255,255,0.18)",
+                  minHeight: "44px",
+                  background: educatorViewOn ? "#fbbf24" : "rgba(15,23,42,0.5)",
                   color: educatorViewOn ? "#7c2d12" : "#fff",
                   border: "1px solid " + (educatorViewOn ? "#fbbf24" : "rgba(255,255,255,0.3)"),
                   borderRadius: "999px",
@@ -4615,7 +4718,7 @@ var require_tmp_research_hub_entry = __commonJS({
               border: "1px solid #cbd5e1",
               background: "#ffffff",
               boxShadow: "0 4px 14px rgba(15,23,42,0.05)"
-            } }, /* @__PURE__ */ React.createElement("summary", { style: { cursor: "pointer", padding: "12px 14px", listStylePosition: "inside", background: "linear-gradient(90deg,#f8fafc,#eef2ff)" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "16px" } }, "\u{1F392} "), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "12px", fontWeight: 900, color: "#1e293b" } }, t("research_hub.journal_state_summary") || "Inquiry Portfolio"), /* @__PURE__ */ React.createElement("span", { "data-research-save-status": "true", role: "status", "aria-live": "polite", style: { marginLeft: "8px", borderRadius: "999px", padding: "3px 7px", background: saveStatus === "saved" ? "#d1fae5" : saveStatus === "read-only" ? "#fef3c7" : "#dbeafe", color: saveStatus === "saved" ? "#047857" : saveStatus === "read-only" ? "#92400e" : "#1d4ed8", fontSize: "9px", fontWeight: 900 } }, saveStatus === "saved" ? "Saved on this device" : saveStatus === "read-only" ? "Read-only recovery" : saveStatus === "save unavailable" ? "Save unavailable" : "Saving latest changes..."), /* @__PURE__ */ React.createElement("span", { style: { marginLeft: "8px", fontSize: "10px", color: "#64748b" } }, researchProgress + "% inquiry progress")), /* @__PURE__ */ React.createElement("div", { style: { padding: "14px", borderTop: "1px solid #e2e8f0" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: "8px" } }, [
+            } }, /* @__PURE__ */ React.createElement("summary", { style: { cursor: "pointer", padding: "12px 14px", scrollMarginBlock: "96px", listStylePosition: "inside", background: "linear-gradient(90deg,#f8fafc,#eef2ff)" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "16px" } }, "\u{1F392} "), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "12px", fontWeight: 900, color: "#1e293b" } }, t("research_hub.journal_state_summary") || "Inquiry Portfolio"), /* @__PURE__ */ React.createElement("span", { "data-research-save-status": "true", role: "status", "aria-live": "polite", style: { marginLeft: "8px", borderRadius: "999px", padding: "3px 7px", background: saveStatus === "saved" ? "#d1fae5" : saveStatus === "read-only" ? "#fef3c7" : "#dbeafe", color: saveStatus === "saved" ? "#047857" : saveStatus === "read-only" ? "#92400e" : "#1d4ed8", fontSize: "9px", fontWeight: 900 } }, saveStatus === "saved" ? "Saved on this device" : saveStatus === "read-only" ? "Read-only recovery" : saveStatus === "save unavailable" ? "Save unavailable" : "Saving latest changes..."), /* @__PURE__ */ React.createElement("span", { style: { marginLeft: "8px", fontSize: "10px", color: "#64748b" } }, researchProgress + "% inquiry progress")), /* @__PURE__ */ React.createElement("div", { style: { padding: "14px", borderTop: "1px solid #e2e8f0" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: "8px" } }, [
               { icon: "\u{1F4CC}", label: "Evidence", value: (journal.evidenceCards || []).length, detail: "observations and records" },
               { icon: "\u{1F9F0}", label: "Tool artifacts", value: (journal.capturedArtifacts || []).length, detail: "approved provenance captures" },
               { icon: "\u{1F9ED}", label: "Episodes", value: (journal.inquiryEpisodes || []).length, detail: "documented method shifts" },
@@ -4676,13 +4779,18 @@ var require_tmp_research_hub_entry = __commonJS({
                 },
                 onKeyDown: function(event) {
                   event.stopPropagation();
+                  if (event.isComposing || event.nativeEvent && event.nativeEvent.isComposing || event.keyCode === 229) return;
                   if (event.key === "Escape") {
                     event.preventDefault();
                     closeResetDialog();
                     return;
                   }
                   if (event.key !== "Tab") return;
-                  var focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+                  var focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])')).filter(function(el) {
+                    if (el.disabled || el.hidden || el.getAttribute("aria-hidden") === "true" || el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+                    var d = el.closest("details:not([open])");
+                    return !d || el.tagName === "SUMMARY" && el.parentElement === d;
+                  });
                   if (!focusable.length) {
                     event.preventDefault();
                     return;

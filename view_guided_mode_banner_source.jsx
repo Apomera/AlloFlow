@@ -743,7 +743,7 @@ function GuidedModeBanner({
   const [quickGuideBusy, setQuickGuideBusy] = React.useState(false);
   const [pendingClearGuidedData, setPendingClearGuidedData] = React.useState(false);
   const [showErrorDetails, setShowErrorDetails] = React.useState(false);
-  const readAiTextReady = () => { try { const resolve = window.__alloResolveAiCapability; return typeof resolve === 'function' ? !!resolve().text : true; } catch (_) { return true; } };
+  const readAiTextReady = () => { try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return Boolean(window.__alloAiUsable('text')); const resolve = window.__alloResolveAiCapability; return typeof resolve === 'function' ? !!resolve().text : true; } catch (_) { return true; } };
   const [aiTextReady, setAiTextReady] = React.useState(readAiTextReady);
   React.useEffect(() => {
     const refresh = () => setAiTextReady(readAiTextReady());
@@ -938,6 +938,10 @@ function GuidedModeBanner({
   React.useEffect(() => {
     if (showFullLesson && typeof window !== 'undefined' && window.alloAnnounce) window.alloAnnounce(t('guided.full_lesson_title') || 'The full worked lesson', 'polite');
   }, [showFullLesson]);
+  const _alloVisibleFocusables = (container, selector) => {
+    if (!container || typeof container.querySelectorAll !== 'function') return [];
+    return Array.from(container.querySelectorAll(selector)).filter(el => !el.hidden && el.getAttribute('aria-hidden') !== 'true' && !(typeof el.closest === 'function' && el.closest('[inert]')));
+  };
   const _modalRef = React.useRef(null);
   const _modalReturnRef = React.useRef(null);
   // Full-lesson modal a11y: trap focus inside the dialog, close on Escape, restore focus to the opener (dialog pattern).
@@ -945,19 +949,27 @@ function GuidedModeBanner({
     if (!showFullLesson) return;
     _modalReturnRef.current = (typeof document !== 'undefined') ? document.activeElement : null;
     const root = _modalRef.current;
-    try { if (root) { const f = root.querySelector('button, a[href], [tabindex]:not([tabindex="-1"])'); (f || root).focus(); } } catch (_) {}
+    const stack = typeof window !== 'undefined' ? (window.__alloFocusTrapStack = window.__alloFocusTrapStack || []) : [];
+    const trap = { root };
+    stack.push(trap);
+    try { if (root) { const items = _alloVisibleFocusables(root, 'button, a[href], [tabindex]:not([tabindex="-1"])'); (items[0] || root).focus(); } } catch (_) {}
     const onKey = (e) => {
-      if (e.key === 'Escape') { e.stopPropagation(); setShowFullLesson(false); return; }
+      if (e.defaultPrevented || e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229) return;
+      if (stack.length > 0 && stack[stack.length - 1] !== trap) return;
+      if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); setShowFullLesson(false); return; }
       if (e.key === 'Tab' && root) {
-        const items = root.querySelectorAll('button, a[href], [tabindex]:not([tabindex="-1"])');
-        if (!items.length) return;
+        const items = _alloVisibleFocusables(root, 'button, a[href], [tabindex]:not([tabindex="-1"])');
+        if (!items.length) { e.preventDefault(); try { root.focus(); } catch (_) {} return; }
         const first = items[0], last = items[items.length - 1];
-        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); try { last.focus(); } catch (_) {} }
-        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); try { first.focus(); } catch (_) {} }
+        const active = typeof document !== 'undefined' ? document.activeElement : null;
+        if (e.shiftKey && (active === first || active === root || !root.contains(active))) { e.preventDefault(); try { last.focus(); } catch (_) {} }
+        else if (!e.shiftKey && (active === last || active === root || !root.contains(active))) { e.preventDefault(); try { first.focus(); } catch (_) {} }
       }
     };
     document.addEventListener('keydown', onKey, true);
     return () => {
+      const idx = stack.lastIndexOf(trap);
+      if (idx !== -1) stack.splice(idx, 1);
       document.removeEventListener('keydown', onKey, true);
       try { const r = _modalReturnRef.current; if (r && r.focus && document.contains(r)) r.focus(); } catch (_) {}
     };
@@ -965,6 +977,7 @@ function GuidedModeBanner({
   const _aiPlannerDialogRef = React.useRef(null);
   const _plannerConfirmDialogRef = React.useRef(null);
   const _plannerConfirmPrimaryRef = React.useRef(null);
+  const _plannerConfirmReturnRef = React.useRef(null);
   const _aiPlannerReturnRef = React.useRef(null);
   const _plannerDirtyRef = React.useRef(plannerDirty);
   const _plannerConfirmationRef = React.useRef({ load: pendingPlannerLoad, close: pendingPlannerClose, deleteId: pendingDeleteSavedAiPlanId, apply: pendingAiPlanApply });
@@ -984,6 +997,9 @@ function GuidedModeBanner({
     if (!showAiPlanner) return;
     _aiPlannerReturnRef.current = (typeof document !== 'undefined') ? document.activeElement : null;
     const root = _aiPlannerDialogRef.current;
+    const stack = typeof window !== 'undefined' ? (window.__alloFocusTrapStack = window.__alloFocusTrapStack || []) : [];
+    const trap = { root };
+    stack.push(trap);
     // Ref-counted shared body scroll lock — see window.__alloScrollLockState.
     const scrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: '' });
     let scrollLocked = false;
@@ -995,37 +1011,77 @@ function GuidedModeBanner({
       if (root) root.focus();
     } catch (_) {}
     const onKey = (event) => {
-      const confirmation = _plannerConfirmationRef.current;
-      const activeRoot = (confirmation.load || confirmation.close || confirmation.deleteId || confirmation.apply) ? _plannerConfirmDialogRef.current : root;
+      if (event.defaultPrevented || event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229) return;
+      if (stack.length > 0 && stack[stack.length - 1] !== trap) return;
       if (event.key === 'Escape') {
+        event.preventDefault();
         event.stopPropagation();
-        if (confirmation.load) setPendingPlannerLoad(null);
-        else if (confirmation.close) setPendingPlannerClose(false);
-        else if (confirmation.deleteId) setPendingDeleteSavedAiPlanId(null);
-        else if (confirmation.apply) setPendingAiPlanApply(false);
-        else if (_plannerDirtyRef.current) setPendingPlannerClose(true);
+        if (_plannerDirtyRef.current) setPendingPlannerClose(true);
         else { setShowAiPlanner(false); setPendingAiPlanApply(false); }
         return;
       }
-      if (event.key !== 'Tab' || !activeRoot) return;
-      const items = activeRoot.querySelectorAll('button:not([disabled]),input:not([disabled]),textarea:not([disabled]),select:not([disabled]),a[href],[tabindex]:not([tabindex="-1"])');
-      if (!items.length) { event.preventDefault(); activeRoot.focus(); return; }
+      if (event.key !== 'Tab' || !root) return;
+      const items = _alloVisibleFocusables(root, 'button:not([disabled]),input:not([disabled]),textarea:not([disabled]),select:not([disabled]),a[href],[tabindex]:not([tabindex="-1"])');
+      if (!items.length) { event.preventDefault(); root.focus(); return; }
       const first = items[0], last = items[items.length - 1];
-      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
-      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      const active = typeof document !== 'undefined' ? document.activeElement : null;
+      if (event.shiftKey && (active === first || active === root || !root.contains(active))) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && (active === last || active === root || !root.contains(active))) { event.preventDefault(); first.focus(); }
     };
     document.addEventListener('keydown', onKey, true);
     return () => {
+      const idx = stack.lastIndexOf(trap);
+      if (idx !== -1) stack.splice(idx, 1);
       document.removeEventListener('keydown', onKey, true);
       try {
         if (scrollLocked) {
           scrollLock.count = Math.max(0, scrollLock.count - 1);
           if (scrollLock.count === 0) document.body.style.overflow = scrollLock.prev;
         }
-        const opener = _aiPlannerReturnRef.current; if (opener?.focus && document.contains(opener)) opener.focus();
+        const opener = _aiPlannerReturnRef.current; if (opener?.focus && opener.isConnected && document.contains(opener)) opener.focus();
       } catch (_) {}
     };
   }, [showAiPlanner]);
+  React.useEffect(() => {
+    if (!plannerConfirmationOpen) return;
+    _plannerConfirmReturnRef.current = (typeof document !== 'undefined') ? document.activeElement : null;
+    const confirmRoot = _plannerConfirmDialogRef.current;
+    const stack = typeof window !== 'undefined' ? (window.__alloFocusTrapStack = window.__alloFocusTrapStack || []) : [];
+    const trap = { root: confirmRoot };
+    stack.push(trap);
+    const onConfirmKey = (event) => {
+      if (event.defaultPrevented || event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229) return;
+      if (stack.length > 0 && stack[stack.length - 1] !== trap) return;
+      const confirmation = _plannerConfirmationRef.current;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        if (confirmation.load) setPendingPlannerLoad(null);
+        else if (confirmation.close) setPendingPlannerClose(false);
+        else if (confirmation.deleteId) setPendingDeleteSavedAiPlanId(null);
+        else if (confirmation.apply) setPendingAiPlanApply(false);
+        return;
+      }
+      if (event.key !== 'Tab' || !confirmRoot) return;
+      const items = _alloVisibleFocusables(confirmRoot, 'button:not([disabled]),input:not([disabled]),textarea:not([disabled]),select:not([disabled]),a[href],[tabindex]:not([tabindex="-1"])');
+      if (!items.length) { event.preventDefault(); confirmRoot.focus(); return; }
+      const first = items[0], last = items[items.length - 1];
+      const active = typeof document !== 'undefined' ? document.activeElement : null;
+      if (event.shiftKey && (active === first || active === confirmRoot || !confirmRoot.contains(active))) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && (active === last || active === confirmRoot || !confirmRoot.contains(active))) { event.preventDefault(); first.focus(); }
+    };
+    document.addEventListener('keydown', onConfirmKey, true);
+    return () => {
+      const idx = stack.lastIndexOf(trap);
+      if (idx !== -1) stack.splice(idx, 1);
+      document.removeEventListener('keydown', onConfirmKey, true);
+      try {
+        const opener = _plannerConfirmReturnRef.current;
+        const plannerRoot = _aiPlannerDialogRef.current;
+        if (opener?.focus && opener.isConnected && document.contains(opener) && (!plannerRoot || plannerRoot.contains(opener))) opener.focus();
+      } catch (_) {}
+    };
+  }, [plannerConfirmationOpen]);
   React.useEffect(() => {
     if (!plannerConfirmationOpen) return;
     const timer = setTimeout(() => { try { (_plannerConfirmPrimaryRef.current || _plannerConfirmDialogRef.current)?.focus(); } catch (_) {} }, 0);
@@ -1873,7 +1929,7 @@ function GuidedModeBanner({
                 {aiPlannerPlan.fallbackReason && <div role="status" style={{ marginTop: '6px', padding: '7px', borderRadius: '7px', background: 'rgba(120,53,15,.28)', color: '#fde68a', fontSize: '11px' }}>{aiPlannerPlan.fallbackReason}</div>}
                 {Array.isArray(aiPlannerPlan.assumptions) && aiPlannerPlan.assumptions.length > 0 && <details className="allo-guided-collapsible"><summary>{t('guided.ai_plan_assumptions') || 'Review these assumptions'}</summary><ul style={{ margin: 0, padding: '10px 28px 12px', color: '#e0e7ff' }}>{aiPlannerPlan.assumptions.map((item, index) => <li key={index}>{item}</li>)}</ul></details>}
                 {aiPlannerLastChanges.length > 0 && <div role="status" aria-live="polite" aria-labelledby="guided-ai-changes-title" style={{ marginTop: '8px', padding: '9px', borderRadius: '8px', background: 'rgba(6,78,59,.34)', border: '1px solid rgba(110,231,183,.38)' }}><strong id="guided-ai-changes-title" style={{ display: 'block', color: '#a7f3d0', fontSize: '12px' }}>{t('guided.ai_plan_changes_title') || 'What changed'}</strong><span style={{ display: 'block', color: '#d1fae5', fontSize: '10px', marginTop: '2px' }}>{t('guided.ai_plan_changes_hint') || 'Review the latest AI adjustment before using the plan.'}</span><ul style={{ margin: '5px 0 0', paddingLeft: '18px', color: '#e0e7ff', fontSize: '11px', lineHeight: 1.45 }}>{aiPlannerLastChanges.map((change, index) => <li key={index}>{change}</li>)}</ul></div>}
-                <div role="region" aria-labelledby="guided-ai-refine-title" style={{ marginTop: '9px', padding: '8px', borderRadius: '8px', background: 'rgba(99,102,241,.12)', border: '1px solid rgba(165,180,252,.3)' }}><strong id="guided-ai-refine-title" style={{ display: 'block', color: 'white', fontSize: '12px' }}>{t('guided.ai_plan_conversation_title') || 'Refine this plan with a message'}</strong><span style={{ display: 'block', marginTop: '2px', color: '#c7d2fe', fontSize: '10px', lineHeight: 1.4 }}>{t('guided.ai_plan_conversation_hint') || 'Ask for a shorter path, another support, a different assessment, or a new delivery constraint.'}</span>{aiPlannerMessages.length > 0 && <div role="log" aria-live="polite" aria-label={t('guided.ai_plan_conversation_log') || 'Planning conversation'} style={{ display: 'grid', gap: '4px', maxHeight: '120px', overflowY: 'auto', marginTop: '6px' }}>{aiPlannerMessages.map((message, index) => <div key={index} style={{ justifySelf: message.role === 'teacher' ? 'end' : 'start', maxWidth: '92%', padding: '5px 7px', borderRadius: '7px', background: message.role === 'teacher' ? 'rgba(79,70,229,.38)' : 'rgba(16,185,129,.16)', color: '#e0e7ff', fontSize: '10px', lineHeight: 1.35 }}><strong style={{ color: message.role === 'teacher' ? '#c7d2fe' : '#a7f3d0' }}>{message.role === 'teacher' ? (t('guided.ai_plan_you') || 'You') : (t('guided.ai_plan_planner') || 'Planner')}:</strong> {message.text}</div>)}</div>}<label htmlFor="guided-ai-refinement" style={{ display: 'block', color: '#e0e7ff', fontSize: '11px', fontWeight: 800, marginTop: '7px' }}>{t('guided.ai_plan_refinement_label') || 'What should change?'}</label><textarea id="guided-ai-refinement" value={aiPlannerRefinement} maxLength={500} disabled={aiPlannerBusy} onChange={event => { setAiPlannerRefinement(event.target.value); setPlannerDirty(true); setAiPlannerError(''); }} onKeyDown={event => { if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') requestAiPlanRefinement(); }} placeholder={t('guided.ai_plan_refinement_placeholder') || 'Example: Make it 30 minutes, keep vocabulary support, and prioritize printable work.'} style={{ width: '100%', minHeight: '66px', marginTop: '3px', resize: 'vertical', padding: '7px 8px', borderRadius: '7px', border: '1px solid rgba(165,180,252,.4)', background: 'rgba(15,23,42,.7)', color: 'white', fontSize: '11px', lineHeight: 1.4 }} /><div role="group" aria-label={t('guided.ai_plan_quick_refinements') || 'Quick refinements'} style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '5px' }}>{[
+                <div role="region" aria-labelledby="guided-ai-refine-title" style={{ marginTop: '9px', padding: '8px', borderRadius: '8px', background: 'rgba(99,102,241,.12)', border: '1px solid rgba(165,180,252,.3)' }}><strong id="guided-ai-refine-title" style={{ display: 'block', color: 'white', fontSize: '12px' }}>{t('guided.ai_plan_conversation_title') || 'Refine this plan with a message'}</strong><span style={{ display: 'block', marginTop: '2px', color: '#c7d2fe', fontSize: '10px', lineHeight: 1.4 }}>{t('guided.ai_plan_conversation_hint') || 'Ask for a shorter path, another support, a different assessment, or a new delivery constraint.'}</span>{aiPlannerMessages.length > 0 && <div role="log" aria-live="polite" aria-label={t('guided.ai_plan_conversation_log') || 'Planning conversation'} style={{ display: 'grid', gap: '4px', maxHeight: '120px', overflowY: 'auto', marginTop: '6px' }}>{aiPlannerMessages.map((message, index) => <div key={index} style={{ justifySelf: message.role === 'teacher' ? 'end' : 'start', maxWidth: '92%', padding: '5px 7px', borderRadius: '7px', background: message.role === 'teacher' ? 'rgba(79,70,229,.38)' : 'rgba(16,185,129,.16)', color: '#e0e7ff', fontSize: '10px', lineHeight: 1.35 }}><strong style={{ color: message.role === 'teacher' ? '#c7d2fe' : '#a7f3d0' }}>{message.role === 'teacher' ? (t('guided.ai_plan_you') || 'You') : (t('guided.ai_plan_planner') || 'Planner')}:</strong> {message.text}</div>)}</div>}<label htmlFor="guided-ai-refinement" style={{ display: 'block', color: '#e0e7ff', fontSize: '11px', fontWeight: 800, marginTop: '7px' }}>{t('guided.ai_plan_refinement_label') || 'What should change?'}</label><textarea id="guided-ai-refinement" value={aiPlannerRefinement} maxLength={500} disabled={aiPlannerBusy} onChange={event => { setAiPlannerRefinement(event.target.value); setPlannerDirty(true); setAiPlannerError(''); }} onKeyDown={event => { if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229) return; if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') { event.preventDefault(); requestAiPlanRefinement(); } }} placeholder={t('guided.ai_plan_refinement_placeholder') || 'Example: Make it 30 minutes, keep vocabulary support, and prioritize printable work.'} style={{ width: '100%', minHeight: '66px', marginTop: '3px', resize: 'vertical', padding: '7px 8px', borderRadius: '7px', border: '1px solid rgba(165,180,252,.4)', background: 'rgba(15,23,42,.7)', color: 'white', fontSize: '11px', lineHeight: 1.4 }} /><div role="group" aria-label={t('guided.ai_plan_quick_refinements') || 'Quick refinements'} style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '5px' }}>{[
                   t('guided.ai_plan_refine_shorter') || 'Make it shorter',
                   t('guided.ai_plan_refine_vocabulary') || 'Add vocabulary support',
                   t('guided.ai_plan_refine_print') || 'Prioritize printable options',
@@ -2002,7 +2058,7 @@ function GuidedModeBanner({
           {currentPhaseResources.length > 0 && <div style={{ marginTop: '8px', color: '#e0e7ff', fontSize: '11px' }}>{currentPhaseResources.slice(-3).map(resource => resource.title).join(' · ')}</div>}
           <div style={{ display: 'flex', gap: '7px', flexWrap: 'wrap', marginTop: '10px' }}>
             {latestPhaseResourceItem && openGuidedHistoryItem && <button type="button" disabled={guidedBusy} onClick={() => openGuidedHistoryItem(latestPhaseResourceItem)} style={{ flex: 1, minWidth: '145px', borderRadius: '9px', border: '1px solid rgba(165,180,252,.4)', background: 'rgba(255,255,255,.08)', color: '#e0e7ff', fontWeight: 800 }}>{t('guided.phase_checkpoint_review') || 'Review latest resource'}</button>}
-            {typeof callGemini === 'function' && <button type="button" disabled={guidedBusy} data-help-key="guided_ai_plan" onClick={openAiPlanner} style={{ flex: 1, minWidth: '145px', borderRadius: '9px', border: '1px solid rgba(165,180,252,.4)', background: 'rgba(255,255,255,.08)', color: '#e0e7ff', fontWeight: 800 }}>{t('guided.phase_checkpoint_adjust') || 'Adjust remaining path'}</button>}
+            {typeof generateGuidedPlanFromGoal === 'function' && <button type="button" disabled={guidedBusy} data-help-key="guided_ai_plan" onClick={openAiPlanner} style={{ flex: 1, minWidth: '145px', borderRadius: '9px', border: '1px solid rgba(165,180,252,.4)', background: 'rgba(255,255,255,.08)', color: '#e0e7ff', fontWeight: 800 }}>{t('guided.phase_checkpoint_adjust') || 'Adjust remaining path'}</button>}
             <button type="button" disabled={guidedBusy} data-help-key="guided_next_step" onClick={() => handleGuidedSkip(false)} style={{ flex: 1, minWidth: '180px', border: 0, borderRadius: '9px', background: 'linear-gradient(135deg, #10b981, #6366f1)', color: 'white', fontWeight: 900 }}>{(t('guided.phase_checkpoint_continue') || 'Continue to {phase}').replace('{phase}', nextPhaseLabel)}</button>
           </div>
         </section>}
@@ -2074,13 +2130,13 @@ function GuidedModeBanner({
                 <div style={_gdIo}>{t('guided.io_outputs') || 'Outputs'}</div>
                 {(detailEntry.outputs || []).map((x, i) => <div key={'out' + i} style={_gdLi}><span aria-hidden="true" style={{ color: '#34d399' }}>▸</span><span>{x}</span></div>)}
                 {detailEntry.how && <React.Fragment><div style={_gdIo}>{t('guided.io_how') || 'How it works'}</div><p style={{ fontSize: '12px', color: 'rgba(203,213,225,0.92)', lineHeight: '1.6', margin: '0' }}>{detailEntry.how}</p></React.Fragment>}
-                <div style={{ fontSize: '12px', color: 'rgba(148,163,184,0.75)', marginTop: '8px', fontStyle: 'italic' }}>{t('guided.io_verified') || 'Verified against the actual tool behavior in AlloFlow.'}</div>
+                <div style={{ fontSize: '12px', color: '#cbd5e1', marginTop: '8px', fontStyle: 'italic' }}>{t('guided.io_verified') || 'Verified against the actual tool behavior in AlloFlow.'}</div>
               </div>
             )}
             {infoTab === 'example' && (
               <div role="region" id="gd-panel-example" aria-labelledby="gd-detail-example" style={_gdPanel}>
                 <div style={{ fontSize: '12px', fontWeight: 800, color: '#fde68a', marginBottom: '2px' }}>💡 {t('guided.example_heading') || 'Example output'} · {t('guided.example_lesson') || 'Photosynthesis'}</div>
-                <div style={{ fontSize: '12px', color: 'rgba(148,163,184,0.8)', marginBottom: '2px' }}>{t('guided.example_consistent') || 'The same lesson runs through every step.'}</div>
+                <div style={{ fontSize: '12px', color: '#cbd5e1', marginBottom: '2px' }}>{t('guided.example_consistent') || 'The same lesson runs through every step.'}</div>
                 <pre style={_gdPre}>{detailEntry.example}</pre>
                 <button type="button" onClick={() => setShowFullLesson(true)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', width: '100%', marginTop: '8px', padding: '8px 12px', fontSize: '12px', fontWeight: 700, color: '#e0e7ff', background: 'rgba(99,102,241,0.18)', border: '1px solid rgba(129,140,248,0.45)', borderRadius: '10px', cursor: 'pointer' }}>
                   <span aria-hidden="true">📖</span>{t('guided.view_full_lesson') || 'View the full worked lesson'}
@@ -2261,7 +2317,7 @@ function GuidedModeBanner({
                 <h2 id="guided-full-lesson-title" style={{ fontSize: '16px', fontWeight: 800, color: 'white', margin: 0 }}><span aria-hidden="true">📖</span> {t('guided.full_lesson_title') || 'The full worked lesson'}</h2>
                 <div id="guided-full-lesson-description" style={{ fontSize: '12px', color: '#c7d2fe', marginTop: '3px', lineHeight: '1.5' }}>{t('guided.full_lesson_sub') || 'One consistent example — a photosynthesis passage — carried through every Guided step, end to end.'}</div>
               </div>
-              <button type="button" onClick={() => setShowFullLesson(false)} aria-label={t('common.close') || 'Close'} style={{ flexShrink: 0, width: '32px', height: '32px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.18)', background: 'rgba(255,255,255,0.08)', color: 'white', fontSize: '16px', cursor: 'pointer', lineHeight: 1 }}>✕</button>
+              <button type="button" onClick={() => setShowFullLesson(false)} aria-label={t('common.close') || 'Close'} style={{ flexShrink: 0, minWidth: '44px', minHeight: '44px', width: '44px', height: '44px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.18)', background: 'rgba(255,255,255,0.08)', color: 'white', fontSize: '16px', cursor: 'pointer', lineHeight: 1 }}>✕</button>
             </div>
             <div tabIndex={0} role="region" aria-label={t('guided.full_lesson_scroll') || 'Worked lesson steps'} style={{ overflowY: 'auto', padding: '16px 22px' }}>
               {(GUIDED_STEPS || []).map((s, i) => {

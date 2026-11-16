@@ -135,6 +135,12 @@
         }
 
         #filters[hidden], .lesson-card[hidden] { display: none !important; }
+
+        /* Zero-specificity fallback: keeps the primary nav wrapping and its links at least 24px tall if the shared promo stylesheets are not served beside this page. */
+        :where(*, *::before, *::after) { box-sizing: border-box; }
+        :where(html, body) { max-width: 100%; overflow-x: clip; }
+        :where(.nav-links) { display: flex; flex-wrap: wrap; max-width: 100%; gap: 8px 16px; }
+        :where(.nav-links a) { display: inline-flex; align-items: center; min-height: 24px; }
 </style>
 </head>
 
@@ -199,6 +205,7 @@
             <span><strong>Open pack</strong> to preview · <strong>Copy link</strong> to share · <strong>Download JSON</strong> for Gemini Canvas</span>
         </div>
         <p style="font-size:0.9rem;color:#475569;max-width:680px;margin:20px auto 0"><a href="guide/saving-and-storage.html">How to save and load a project</a></p>
+        <p style="font-size:0.9rem;color:#475569;max-width:680px;margin:10px auto 0">Ready-made classroom tools (no account): <a href="packets-present-export.html">Present &amp; export word cards</a> · <a href="packets-symbol-runner.html">Symbol Runner (3D / 2D)</a> · <a href="packets.html">AlloFlow Packets</a></p>
     </header>
 
     <!-- ALLOPACK_DIRECTORY_BEGIN -->

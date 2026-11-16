@@ -4384,7 +4384,7 @@
           '@media(forced-colors:active){.mag-root .mag-range{box-shadow:none}.mag-root .mag-range-input::-webkit-slider-runnable-track{background:Canvas;border-color:CanvasText}.mag-root .mag-range-input::-webkit-slider-thumb{background:Highlight;border-color:Canvas}.mag-root .mag-range-input::-moz-range-track{background:Canvas;border-color:CanvasText}.mag-root .mag-range-input::-moz-range-progress,.mag-root .mag-range-input::-moz-range-thumb{background:Highlight}.mag-root .mag-range-value:before{background:Highlight}}' +
           '.mag-root .mag-pole-key{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 9px;color:' + SOFT + ';font-size:11.5px}' +
           '.mag-root .mag-pole-key span{display:inline-flex;align-items:center;gap:5px}' +
-          '.mag-root .mag-pole-chip{display:inline-grid;place-items:center;width:22px;height:22px;border:2px solid currentColor;border-radius:5px;color:' + TEXT + ';font-style:normal;font-size:11px;font-weight:800}' +
+          '.mag-root .mag-pole-chip{display:inline-grid;place-items:center;width:22px;height:22px;border:2px solid currentColor;border-radius:5px;color:#ffffff;font-style:normal;font-size:11px;font-weight:800}' +
           '.mag-root .mag-scene-text{margin:7px 0 10px;color:' + SOFT + ';font-size:11.5px;line-height:1.45}' +
           '.mag-root .mag-scene-text summary{color:' + TEXT + ';font-weight:700;cursor:pointer;min-height:28px;display:flex;align-items:center}' +
           '.mag-root .mag-scene-frame{position:relative;margin-bottom:7px}' +
@@ -4793,7 +4793,7 @@
           '@media(forced-colors:active){.mag-root .mag-adaptive-shell,.mag-root .mag-shell-panel-frame{box-shadow:none}.mag-root .mag-adaptive-shell:after,.mag-root .mag-shell-journey span{background:CanvasText}}' +
           '@media(pointer:coarse){.mag-root button{min-height:44px}.mag-root summary{min-height:44px}}' +
           // Light theme: dark-tuned accent inks sit on light panels, so use deeper shades.
-          ':is(.theme-default,.theme-light) .mag-root .mag-shell-copy>small{color:var(--mag-shell-ink,#075985)}:is(.theme-default,.theme-light) .mag-root :is(.mag-force-count,.mag-quiz-kicker,.mag-grid-badge,.mag-force-step[data-state="current"] .mag-force-step-index,.mag-earth-shield-step[data-state="current"] .mag-earth-shield-step-index){color:#075985}:is(.theme-default,.theme-light) .mag-root :is(.mag-force-bridge b,.mag-earth-change>b){color:#92400e}:is(.theme-default,.theme-light) .mag-root .mag-domain-step[data-state="current"] .mag-domain-step-index{color:#9f1239}:is(.theme-default,.theme-light) .mag-root .mag-earth-shield-count{color:#065f46}' +
+          ':is(.theme-default,.theme-light) .mag-root .mag-shell-copy>small{color:var(--mag-shell-ink,#075985)}:is(.theme-default,.theme-light) .mag-root :is(.mag-force-count,.mag-quiz-kicker,.mag-grid-badge,.mag-force-step[data-state="current"] .mag-force-step-index,.mag-earth-shield-step[data-state="current"] .mag-earth-shield-step-index){color:#075985}:is(.theme-default,.theme-light) .mag-root :is(.mag-force-bridge b,.mag-earth-change>b){color:#92400e}:is(.theme-default,.theme-light) .mag-root .mag-domain-step[data-state="current"] .mag-domain-step-index{color:#9f1239}:is(.theme-default,.theme-light) .mag-root .mag-earth-shield-count{color:#065f46}:is(.theme-default,.theme-light) .mag-root .mag-quiz-step[data-state="confirmed"]{border-color:#059669;background:#ecfdf5;color:#065f46}:is(.theme-default,.theme-light) .mag-root .mag-quiz-step[data-state="revised"]{border-color:#d97706;background:#fffbeb;color:#92400e}:is(.theme-default,.theme-light) .mag-root .mag-quiz-step[data-state="current"]{border-color:#e11d48;background:#fff1f2;color:#9f1239}:is(.theme-default,.theme-light) .mag-root .mag-quiz-option[data-state="correct"] :is(.mag-quiz-letter,.mag-quiz-option-status){color:#065f46}:is(.theme-default,.theme-light) .mag-root .mag-quiz-option[data-state="revised"] :is(.mag-quiz-letter,.mag-quiz-option-status){color:#92400e}:is(.theme-default,.theme-light) .mag-root .mag-hunt-step[data-status="done"] .mag-hunt-step-index{color:#065f46}:is(.theme-default,.theme-light) .mag-root .mag-hunt-step[data-status="current"] .mag-hunt-step-index{color:#9f1239}:is(.theme-default,.theme-light) .mag-root .mag-earth-shield-step[data-state="done"] .mag-earth-shield-step-index{color:#065f46}' +
           '.theme-dark .mag-root{--allo-stem-text-soft:#cbd5e1}.theme-dark .mag-root .mag-shell-copy>small{color:var(--mag-shell-ink-dark,var(--mag-shell-tone))}' +
           '@media(prefers-reduced-motion:reduce){.mag-root *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}' +
           '@media(forced-colors:active){.mag-root .mag-card,.mag-root .mag-hero{box-shadow:none}.mag-root .mag-swatch,.mag-root .mag-pole-chip{border:1px solid CanvasText}.mag-root button[aria-pressed="true"],.mag-root button[aria-selected="true"]{outline:2px solid SelectedItem;outline-offset:1px}}'
@@ -6040,7 +6040,7 @@
         var aria = 'Hall-probe magnetic field map. Probe at x ' + probe.x.toFixed(0) + ', y ' + probe.y.toFixed(0) + '. Measured field ' + current.measuredMagnitude.toFixed(2) + ' relative field units, components B x ' + current.measuredBx.toFixed(2) + ' and B y ' + current.measuredBy.toFixed(2) + '. ' + samples.length + ' readings recorded.' + (inspected ? ' Recorded marker A is ' + inspected.run + ' reading ' + (inspected.index + 1) + '; marker B is ' + compared.run + ' reading ' + (compared.index + 1) + '. The gold crosshair remains the live probe.' : '');
 
         var tableRows = inspectedRows.length ? inspectedRows : [{ row: current, run: 'Live', index: 0 }];
-        return card('Quantitative Field Mapping Lab', h('div', { id: 'mag-field-workbench', tabIndex: -1, role: 'group', 'aria-label': 'Field measurement workbench', 'data-field-measurement-studio': 'true' },
+        return card('Quantitative Field Mapping Lab', h('div', { id: 'mag-field-workbench', tabIndex: -1, role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_field_measurement_workbench', 'Field measurement workbench'), 'data-field-measurement-studio': 'true' },
           h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } }, 'How quickly does a magnetic field fade? Predict, measure along one path, then compare three possible distance laws. Keep a reference to test what changes when you adjust the magnet.'),
           d.fieldMapReopenedTrial ? h('div', { role: 'status', 'data-field-reopen-notice': 'true', style: { border: '1px solid ' + BORDER, borderRadius: 9, padding: 10, marginBottom: 10, color: TEXT, fontSize: 12, lineHeight: 1.5 } },
             h('b', null, 'Reopened trial ' + Number(d.fieldMapReopenedTrial) + '. '),
@@ -6075,7 +6075,7 @@
             h('span', { style: { color: TEXT } }, '○ current readings · ◇ reference readings · bars show simulated uncertainty'),
             inspected ? h('span', { style: { color: TEXT } }, 'A: inspected reading · B: comparison reading · recorded positions, separate from the live probe') : null,
             h('span', { style: { color: TEXT } }, selectedModel ? 'dashed curve: fitted ' + selectedModel.label + ' candidate' : 'Record a controlled scan to fit a candidate curve')),
-          h('div', { role: 'group', 'aria-label': 'Field graph scale', style: { display: 'flex', flexWrap: 'wrap', gap: 7, margin: '8px 0' } },
+          h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_field_graph_scale', 'Field graph scale'), style: { display: 'flex', flexWrap: 'wrap', gap: 7, margin: '8px 0' } },
             h('button', { type: 'button', 'aria-pressed': !logScale, onClick: function () { upd({ fieldMapGraphScale: 'linear' }); }, style: btn(!logScale) }, 'Linear scale'),
             h('button', { type: 'button', 'aria-pressed': logScale, onClick: function () { upd({ fieldMapGraphScale: 'log' }); }, style: btn(logScale) }, 'Log–log scale')),
           logScale ? h('p', { style: { color: SOFT, fontSize: 12 } }, 'Equal spacing now means equal ratios. A power law becomes a straight line; its slope is the exponent. This changes the axes, not your measurements.') : null,
@@ -6106,7 +6106,7 @@
             h('p', { style: { color: SOFT, fontSize: 12, lineHeight: 1.5, margin: '0 0 8px' } }, analysis.canCompareModels
               ? 'Each candidate gets its own fitted strength. Compare the remaining mismatch in shape; lower error fits these readings better. Select a law to draw its curve.'
               : 'Collect at least three distinct distances along one ray, spanning at least twice the nearest distance. Hold magnet strength and sensor uncertainty fixed.'),
-            h('div', { className: 'mag-sim-grid', role: 'group', 'aria-label': 'Candidate distance laws', style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8 } }, [1, 2, 3].map(function (power) {
+            h('div', { className: 'mag-sim-grid', role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_candidate_distance_laws', 'Candidate distance laws'), style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8 } }, [1, 2, 3].map(function (power) {
               var model = analysis.modelFits.filter(function (item) { return item.power === power; })[0];
               var name = ['Inverse distance', 'Inverse square', 'Inverse cube'][power - 1];
               return h('button', { key: power, type: 'button', disabled: !model, 'aria-pressed': selectedPower === power, onClick: function () { upd({ fieldMapModel: power }); }, style: Object.assign({}, btn(selectedPower === power && !!model), { padding: 10, minWidth: 0, whiteSpace: 'normal', textAlign: 'left' }) },
@@ -8427,7 +8427,7 @@
                 arcs),
               state.passes || mystery.scan ? h('div', { className: 'mag-analyzer-key-wrap' },
                 h('small', null, 'Ion paths · m/|q|'),
-                h('ul', { className: 'mag-analyzer-key', 'aria-label': 'Ion path key' },
+                h('ul', { className: 'mag-analyzer-key', 'aria-label': __alloT('stem.magnetism.a11y_ion_path_key', 'Ion path key') },
                   state.passes ? Object.keys(ANALYZER_SPECIES).filter(function (key) { return d.analyzerShowAll || key === speciesKey; }).map(function (key) {
                     var ion = ANALYZER_SPECIES[key], selected = key === speciesKey;
                     return h('li', { key: key, 'data-analyzer-key': key },
@@ -8518,11 +8518,11 @@
               h('circle', { cx: 32, cy: 110, r: 12.5, fill: INSTRUMENT, stroke: 'rgba(226,232,240,.30)', strokeWidth: 0.8 }),
               h('circle', { cx: 32, cy: 110, r: 9, fill: d.chargeSign > 0 ? '#fb7185' : '#38bdf8', stroke: '#fff', strokeWidth: 1.5 }),
               h('text', { x: 32, y: 114, fill: '#0f172a', fontSize: 12, fontWeight: 900, textAnchor: 'middle' }, d.chargeSign > 0 ? '+' : '−')),
-            h('ul', { className: 'mag-particle-key', 'aria-label': 'Particle diagram key' },
+            h('ul', { className: 'mag-particle-key', 'aria-label': __alloT('stem.magnetism.a11y_particle_diagram_key', 'Particle diagram key') },
               h('li', null, h('span', { className: 'mag-particle-line', 'aria-hidden': 'true' }), 'Particle path'),
               h('li', null, h('span', { 'aria-hidden': 'true', style: { color: '#d97706' } }, '→'), 'Velocity v'),
               h('li', null, h('span', { 'aria-hidden': 'true', style: { color: '#059669' } }, bendsUp ? '↑' : '↓'), 'Initial force F')),
-            h('div', { className: 'mag-particle-readouts', role: 'group', 'aria-label': 'Particle-beam readings' },
+            h('div', { className: 'mag-particle-readouts', role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_particle_beam_readings', 'Particle-beam readings') },
               h('div', null, h('small', null, 'Initial bend'), h('b', { 'data-particle-reading': 'bend' }, bendsUp ? '↑ Upward' : '↓ Downward')),
               h('div', null, h('small', null, 'Radius indicator'), h('b', { 'data-particle-reading': 'radius' }, radiusRel.toFixed(2)), h('span', null, 'v/B · relative')),
               h('div', null, h('small', null, 'Force rule'), h('b', null, 'F ⟂ v'), h('span', null, 'at every point'))),
@@ -9739,12 +9739,12 @@
             }),
             h('p', { className: 'mag-motion-chart-key' }, '○ Selected flux · □ Voltage for the preceding interval. Both charts share the same time axis.'));
         }
-        return card('Timed motion — inspect the whole experiment', h('section', { id: 'mag-induction-motion-workbench', tabIndex: -1, 'data-induction-motion-studio': 'true', 'aria-label': 'Timed induction motion workbench' },
+        return card('Timed motion — inspect the whole experiment', h('section', { id: 'mag-induction-motion-workbench', tabIndex: -1, 'data-induction-motion-studio': 'true', 'aria-label': __alloT('stem.magnetism.a11y_timed_induction_motion_workbench', 'Timed induction motion workbench') },
           h('p', { style: { color: SOFT, fontSize: 13, lineHeight: 1.6, marginTop: 0 } }, 'Choose a path and travel time. The model records uniform motion through the coil, then lets you inspect each interval at your own pace.'),
           h('div', { className: 'mag-motion-layout' },
           h('div', { className: 'mag-motion-controls' },
           h('span', { className: 'mag-section-label' }, '01 · Set up the motion'),
-          h('div', { className: 'mag-motion-presets', role: 'group', 'aria-label': 'Timed motion presets' },
+          h('div', { className: 'mag-motion-presets', role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_timed_motion_presets', 'Timed motion presets') },
             h('button', { type: 'button', onClick: function () { preset(-80, 0); }, style: btn() }, 'Approach coil'),
             h('button', { type: 'button', onClick: function () { preset(0, 80); }, style: btn() }, 'Withdraw from coil'),
             h('button', { type: 'button', onClick: function () { preset(-80, 80); }, style: btn() }, 'Pass through coil'),
@@ -9776,7 +9776,7 @@
               h('b', null, 'Sample ' + (selected + 1) + ': flux ' + sample.flux.toFixed(4) + '; ' + (preceding ? 'signed voltage ' + signed(sample.emf) + ' V.' : 'initial position.')),
               h('div', null, preceding ? 'Interval ' + preceding.time.toFixed(3) + '–' + sample.time.toFixed(3) + ' s; ΔΦ = ' + signed(sample.flux - preceding.flux, 4) + '. ' + inductionLenzState(sample.emf).summary : 'No elapsed interval yet. Select Next motion sample to inspect the first change in flux.')),
             h('details', { style: { border: '1px solid ' + BORDER, borderRadius: 8, padding: 10, marginBottom: 10 } }, h('summary', { style: { cursor: 'pointer', color: TEXT } }, 'Motion data table'),
-              h('div', { tabIndex: 0, role: 'region', 'aria-label': 'Scrollable timed motion data', style: { overflowX: 'auto' } }, h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 12, color: TEXT } },
+              h('div', { tabIndex: 0, role: 'region', 'aria-label': __alloT('stem.magnetism.a11y_scrollable_timed_motion_data', 'Scrollable timed motion data'), style: { overflowX: 'auto' } }, h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 12, color: TEXT } },
                 h('caption', { style: { textAlign: 'left', padding: '10px 0', color: SOFT } }, 'All ' + motion.samples.length + ' samples. Voltage is the preceding interval average; the initial row is a zero placeholder.'),
                 h('thead', null, h('tr', null, ['Sample', 'Time (s)', 'Position', 'Flux', 'Voltage (V)'].map(function (label) { return h('th', { key: label, scope: 'col', style: { padding: 6, textAlign: 'right', borderBottom: '1px solid ' + BORDER } }, label); }))),
                 h('tbody', null, motion.samples.map(function (p, i) { return h('tr', { key: i, 'aria-current': selected === i ? 'true' : undefined }, [i + 1, p.time.toFixed(3), p.x.toFixed(1), p.flux.toFixed(4), i ? signed(p.emf) : 'initial'].map(function (value, col) { return h(col === 0 ? 'th' : 'td', { key: col, scope: col === 0 ? 'row' : undefined, style: { padding: 6, textAlign: 'right', borderBottom: '1px solid ' + BORDER } }, value); })); }))))),
@@ -10194,7 +10194,7 @@
             h('p', { style: { color: SOFT, fontSize: 11.5, margin: '0 0 8px', lineHeight: 1.45 } }, 'Predict: doubling field strength has a larger effect than doubling speed because the braking force follows the low-speed trend F ∝ vB².'),
             h('div', { className: 'mag-eddy-workbench' },
               h('div', { className: 'mag-eddy-scene' }, eddyBrakeBenchSVG(bench, material, d.eddySlit),
-              h('div', { className: 'mag-eddy-comparison', role: 'group', 'aria-label': 'Stopping-distance comparison at the same starting speed' },
+              h('div', { className: 'mag-eddy-comparison', role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_stopping_distance_comparison', 'Stopping-distance comparison at the same starting speed') },
                 h('div', { className: 'mag-eddy-comparison-head' }, h('b', null, 'Stopping-distance comparison'), h('span', null, bench.speed ? 'same speed · shared scale' : 'at rest · no stopping run')),
                 [{ name: 'Current setup', value: bench.stoppingDistance, tone: '#0284c7' }, { name: 'Field off', value: fieldOff.stoppingDistance, tone: SOFT }].map(function (row) {
                   var width = fieldOff.stoppingDistance > 0 ? 100 * row.value / fieldOff.stoppingDistance : 0;
@@ -10961,7 +10961,7 @@
             h('div', { className: 'mag-observe' },
               h('span', { 'aria-hidden': 'true', style: { fontSize: 19 } }, bearing.symbol),
               h('span', { role: 'status' }, h('b', null, 'Read the needle: '), d.learningMode === 'challenge' ? 'Use the needle bearing to choose your own step. No path hint is shown; your connected trail is the evidence.' : 'Its strongest cardinal component points ' + bearing.word + '. The gold-outlined step is the closest D-pad match; your connected trail records the field line you infer.')),
-            h('div', { className: 'mag-walk-pad', role: 'group', 'aria-label': 'Field Walk movement', style: { display: 'grid', gridTemplateColumns: 'repeat(3,44px)', gap: 4, justifyContent: 'center', marginBottom: 8 } },
+            h('div', { className: 'mag-walk-pad', role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_field_walk_movement', 'Field Walk movement'), style: { display: 'grid', gridTemplateColumns: 'repeat(3,44px)', gap: 4, justifyContent: 'center', marginBottom: 8 } },
               h('span', null, ''),
               h('button', { 'aria-label': 'Walk up' + (d.learningMode !== 'challenge' && bearing.dy === -1 ? ', closest to the red needle direction' : ''), onClick: function () { mazeMove(0, -1); }, style: mazePadStyle(0, -1) }, '↑'),
               h('span', null, ''),
@@ -11169,7 +11169,7 @@
               h('div', { className: 'mag-readouts mag-transformer-voltages' },
                 instrumentReadout('Primary input', '120 V', d.xfmrAC ? 'AC · source voltage' : 'DC · source voltage', '#d97706', false, { 'data-transformer-reading': 'primary' }),
                 instrumentReadout('Secondary output', load.vout.toFixed(0) + ' V', d.xfmrAC ? 'AC · follows the turns ratio' : 'No sustained induced voltage', '#0284c7', false, { 'data-transformer-reading': 'secondary' })),
-              h('div', { className: 'mag-transformer-comparison', role: 'group', 'aria-label': 'Primary and secondary voltage on a shared scale' },
+              h('div', { className: 'mag-transformer-comparison', role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_primary_secondary_voltage_scale', 'Primary and secondary voltage on a shared scale') },
                 h('div', { className: 'mag-transformer-bar-label' }, h('span', null, 'Voltage comparison'), h('span', null, 'shared scale')),
                 [{ key: 'primary', label: 'Primary', value: 120 }, { key: 'secondary', label: 'Secondary', value: load.vout }].map(function (reading) {
                   var width = reading.value / Math.max(120, load.vout) * 100;

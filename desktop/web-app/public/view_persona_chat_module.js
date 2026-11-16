@@ -2127,7 +2127,7 @@ function PersonaChatView(props) {
       className: "space-y-1.5"
     }, quests.map((quest, qIdx) => {
       const isLocked = rapport < Number(quest.difficulty || 0);
-      const rawCompleted = t('common.completed');
+      const rawCompleted = t('common.completed') || '';
       const rawLocked = t('common.locked');
       const completedLabel = rawCompleted && rawCompleted !== 'common.completed' ? rawCompleted : 'Completed';
       const lockedLabel = rawLocked && rawLocked !== 'common.locked' ? rawLocked : 'Locked';
@@ -2683,7 +2683,7 @@ function PersonaChatView(props) {
     className: "space-y-2"
   }, personaState.selectedCharacter.quests.map((quest, qIdx) => {
     const isQuestLocked = singleRapport < Number(quest.difficulty || 0);
-    const rawCompleted = t('common.completed');
+    const rawCompleted = t('common.completed') || '';
     const rawLocked = t('common.locked');
     const completedLabel = rawCompleted && rawCompleted !== 'common.completed' ? rawCompleted : 'Completed';
     const lockedLabel = rawLocked && rawLocked !== 'common.locked' ? rawLocked : 'Locked';

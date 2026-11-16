@@ -4730,6 +4730,66 @@
             )
           ),
 
+          d.fromTool === 'particleLab3d' && d._dismissedParticleHandoff !== (d.handoffId || 'particleLab3d') && h('section', {
+            id: 'chem-particle-handoff-banner',
+            role: 'region',
+            'aria-label': __alloT('stem.chembalance.particle_handoff_banner', 'Particle Lab 3D handoff'),
+            className: 'mb-3 rounded-xl border border-cyan-300 bg-cyan-50 p-3 text-slate-900 shadow-sm'
+          },
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+              h('div', { className: 'min-w-0' },
+                h('p', { className: 'text-[10px] font-black uppercase tracking-wide text-cyan-900' }, __alloT('stem.chembalance.imported_from_particle_lab', 'Imported from Particle Lab 3D')),
+                h('p', { className: 'mt-0.5 text-xs font-bold text-slate-900' }, (d.sourceGasFormula || d.sourceGasId || 'N\u2082') + ' \u2022 ' + (Math.round(Number(d.sourceTemperatureK) || 300)) + ' K' + (d.sourceMolarMassGPerMol ? (' \u2022 ' + Number(d.sourceMolarMassGPerMol).toFixed(2) + ' g/mol') : ''))
+              ),
+              h('div', { className: 'flex flex-wrap items-center gap-2' },
+                h('button', {
+                  id: 'chem-open-gas-laws-handoff-btn',
+                  type: 'button',
+                  onClick: function() {
+                    updMulti({
+                      subtool: 'gas_laws',
+                      _everPicked: true,
+                      _activeCategory: (CHEM_SECTION_TO_CATEGORY && CHEM_SECTION_TO_CATEGORY.gas_laws) || d._activeCategory,
+                      _dismissedParticleHandoff: d.handoffId || 'particleLab3d'
+                    });
+                    if (typeof announceToSR === 'function') announceToSR(__alloT('stem.chembalance.sr_opened_gas_laws', 'Opened Chemistry Gas Laws reference.'));
+                  },
+                  className: 'min-h-[40px] rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-black text-white hover:bg-slate-800'
+                }, __alloT('stem.chembalance.open_gas_laws', 'Open Gas Laws')),
+                h('button', {
+                  id: 'chem-return-particlelab-btn',
+                  type: 'button',
+                  onClick: function() {
+                    var targetTemp = Math.max(40, Math.min(900, Math.round(Number(d.sourceTemperatureK) || 300)));
+                    var targetGas = d.sourceGasId || 'N2';
+                    var targetPreset = subtool === 'kinetics' ? 'diffusion' : 'gas';
+                    setLabToolData(function(prev) {
+                      return Object.assign({}, prev, {
+                        particleLab3d: Object.assign({}, (prev && prev.particleLab3d) || {}, {
+                          fromTool: 'chemBalance',
+                          sourceGasId: targetGas,
+                          sourceTemperatureK: targetTemp,
+                          sourcePreset: targetPreset,
+                          handoffId: 'chem-' + Date.now()
+                        })
+                      });
+                    });
+                    if (typeof ctx.setStemLabTab === 'function') ctx.setStemLabTab('explore');
+                    setStemLabTool('particleLab3d');
+                    if (typeof announceToSR === 'function') announceToSR(__alloT('stem.chembalance.sr_opening_particle_lab', 'Opening Particle Lab 3D.'));
+                  },
+                  className: 'min-h-[40px] rounded-lg border border-cyan-300 bg-white px-3 py-1.5 text-xs font-black text-cyan-950 hover:bg-cyan-100'
+                }, __alloT('stem.chembalance.send_to_particle_lab', 'Send to Particle Lab 3D \u2192')),
+                h('button', {
+                  id: 'chem-dismiss-particle-handoff-btn',
+                  type: 'button',
+                  onClick: function() { upd('_dismissedParticleHandoff', d.handoffId || 'particleLab3d'); },
+                  className: 'min-h-[40px] rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 hover:bg-slate-100'
+                }, __alloT('stem.chembalance.dismiss', 'Dismiss'))
+              )
+            )
+          ),
+
           // ── Category-aware Navigation ──
           (function() {
             var activeCategoryId = d._activeCategory || CHEM_SECTION_TO_CATEGORY[subtool] || null;
@@ -8130,6 +8190,31 @@
               onClick: function() { setStemLabTool('titrationLab'); announceToSR(__alloT('stem.chembalance.sr_opening_titration_lab', 'Opening Titration Lab')); },
               className: 'min-h-[40px] transition-colors px-3 py-2 text-xs font-bold text-lime-800 bg-lime-50 border border-lime-800 rounded-full hover:bg-lime-100'
             }, __alloT('stem.chembalance.titration_lab', '\u2697\uFE0F Titration Lab \u2192')),
+
+            (subtool === 'gas_laws' || subtool === 'kinetics' || subtool === 'thermo') && h('button', {
+              id: 'chem-footer-particlelab-btn',
+              type: 'button',
+              onClick: function() {
+                var targetTemp = Math.max(40, Math.min(900, Math.round(Number(d.sourceTemperatureK) || 300)));
+                var targetGas = d.sourceGasId || 'N2';
+                var targetPreset = subtool === 'kinetics' ? 'diffusion' : 'gas';
+                setLabToolData(function(prev) {
+                  return Object.assign({}, prev, {
+                    particleLab3d: Object.assign({}, (prev && prev.particleLab3d) || {}, {
+                      fromTool: 'chemBalance',
+                      sourceGasId: targetGas,
+                      sourceTemperatureK: targetTemp,
+                      sourcePreset: targetPreset,
+                      handoffId: 'chem-' + Date.now()
+                    })
+                  });
+                });
+                if (typeof ctx.setStemLabTab === 'function') ctx.setStemLabTab('explore');
+                setStemLabTool('particleLab3d');
+                if (typeof announceToSR === 'function') announceToSR(__alloT('stem.chembalance.sr_opening_particle_lab', 'Opening Particle Lab 3D.'));
+              },
+              className: 'min-h-[40px] transition-colors px-3 py-2 text-xs font-bold text-cyan-900 bg-cyan-50 border border-cyan-800 rounded-full hover:bg-cyan-100'
+            }, __alloT('stem.chembalance.particle_lab_3d_link', '\u2728 Particle Lab 3D \u2192')),
 
             // Deep-links into the matching molecule section. referenceLibraryOpen
             // must be set too, or the student lands with the tab bar collapsed and

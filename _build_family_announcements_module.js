@@ -17,7 +17,7 @@ const TMP = path.join(ROOT, '_tmp_family_announcements_entry.jsx');
 if (!fs.existsSync(SOURCE)) { console.error('Source not found:', SOURCE); process.exit(1); }
 
 const source = fs.readFileSync(SOURCE, 'utf-8');
-const entry = `/* global React */\n\n${source}\n\nwindow.__familyAnnouncementsExports = { FamilyAnnouncementsPanel, famannPrompt, famannCleanTranslation, famannPacketHtml, famannSingleHtml, famannSection, FAMANN_LANGS, FAMANN_DISCLAIMER_EN };\n`;
+const entry = `/* global React */\n\n${source}\n\nwindow.__familyAnnouncementsExports = { FamilyAnnouncementsPanel, famannPrompt, famannScrubHighRiskTokens, famannCleanTranslation, famannPacketHtml, famannSingleHtml, famannSection, FAMANN_LANGS, FAMANN_DISCLAIMER_EN };\n`;
 fs.writeFileSync(TMP, entry, 'utf-8');
 
 console.log('Compiling family_announcements_source.jsx with esbuild...');
@@ -71,6 +71,7 @@ ${compiled}
     _testing: {
       famannToday: famannToday,
       famannPrompt: famannPrompt,
+      famannScrubHighRiskTokens: famannScrubHighRiskTokens,
       famannCleanTranslation: famannCleanTranslation,
       famannPacketHtml: famannPacketHtml,
       famannSingleHtml: famannSingleHtml,

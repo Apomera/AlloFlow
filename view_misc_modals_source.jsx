@@ -161,8 +161,8 @@ function AllobotCommandRecovery({ recovery, operationId, tx, disabled, styles, o
   if (!recovery || !operationId || recovery.requestId !== operationId) return null;
   const common = { type: 'button', disabled, className: 'px-3 py-2 rounded-lg text-xs font-bold whitespace-normal disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ' + styles.secondaryButton, style: { minHeight: 44, overflowWrap: 'anywhere', outlineOffset: 3 } };
   return <div className="mt-3 flex flex-wrap gap-2" data-testid="command-recovery">
-    {recovery.canRetry === true && <button {...common} onClick={() => onChoose({ action: 'command-retry', requestId: operationId })}>{tx('chat_guide.command_retry', 'Retry this plan')}</button>}
-    {recovery.canCopyDiagnostics === true && <button {...common} onClick={() => onChoose({ action: 'command-diagnostics', requestId: operationId })}>{tx('chat_guide.command_copy_diagnostics', 'Copy diagnostic details')}</button>}
+    {recovery.canRetry === true && <button type="button" {...common} onClick={() => onChoose({ action: 'command-retry', requestId: operationId })}>{tx('chat_guide.command_retry', 'Retry this plan')}</button>}
+    {recovery.canCopyDiagnostics === true && <button type="button" {...common} onClick={() => onChoose({ action: 'command-diagnostics', requestId: operationId })}>{tx('chat_guide.command_copy_diagnostics', 'Copy diagnostic details')}</button>}
   </div>;
 }
 
@@ -621,7 +621,7 @@ function UDLGuideModal(props) {
   }
   return (
         <div ref={guideRef} role="dialog" aria-labelledby="udl-guide-title"
-          style={{ zIndex: showStemLab ? 10490 : undefined, maxWidth: isUDLGuideExpanded ? undefined : 'calc(100vw - 2rem)', bottom: 'calc(1rem + var(--alloflow-host-corner-clear, 0px))' }} className={`allo-docsuite fixed z-[100] rounded-2xl flex flex-col motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-5 duration-300 overflow-hidden transition-all ${isUDLGuideExpanded ? 'inset-4 top-24' : 'top-24 right-4 w-96'} ${isSpotlightMode ? 'opacity-20 hover:opacity-100 pointer-events-none hover:pointer-events-auto' : 'opacity-100'} ${chatStyles.container}`}>
+          style={{ zIndex: showStemLab ? 10490 : undefined, maxWidth: isUDLGuideExpanded ? undefined : 'calc(100vw - 2rem)', bottom: 'calc(1rem + var(--alloflow-host-corner-clear, 0px))' }} className={`allo-docsuite fixed z-[100] rounded-2xl flex flex-col motion-safe:animate-in motion-reduce:animate-none motion-safe:fade-in motion-safe:slide-in-from-right-5 duration-300 overflow-hidden transition-all ${isUDLGuideExpanded ? 'inset-4 top-24' : 'top-24 right-4 w-96'} ${isSpotlightMode ? 'opacity-20 hover:opacity-100 pointer-events-none hover:pointer-events-auto' : 'opacity-100'} ${chatStyles.container}`}>
           <div className={`p-4 flex justify-between items-center shrink-0 ${chatStyles.header}`}>
             {/* A real heading, not a bold div: it names the dialog (4.1.2) and
                 gives screen-reader users a landmark to jump to (2.4.6). */}
@@ -740,7 +740,7 @@ function UDLGuideModal(props) {
                         </div>
                     )}
                 </div>
-                <button
+                <button type="button"
                     aria-label={t('common.minimize')}
                     data-help-key="chat_expand"
                     onClick={handleToggleIsUDLGuideExpanded}
@@ -759,7 +759,7 @@ function UDLGuideModal(props) {
                 >
                     <ChevronDown size={18}/>
                 </button>
-                <button data-help-key="chat_close" onClick={closeGuide} className="inline-flex items-center justify-center min-w-[24px] min-h-[24px] hover:bg-white/20 p-1 rounded" aria-label={t('common.close')}><X size={18}/></button>
+                <button type="button" data-help-key="chat_close" onClick={closeGuide} className="inline-flex items-center justify-center min-w-[24px] min-h-[24px] hover:bg-white/20 p-1 rounded" aria-label={t('common.close')}><X size={18}/></button>
           </div>
         </div>
         {revisionOwnsComposer ? <section className={`rounded-lg border p-2 text-xs ${chatStyles.body}`} data-testid="lesson-revision-context" aria-label={tx('chat_guide.revision_chat_context', 'Proposal follow-up context')}>
@@ -770,7 +770,7 @@ function UDLGuideModal(props) {
             screen-reader user got nothing. The transcript is the log; `polite`
             + `additions` announces only the new turn rather than re-reading the
             whole thread on every render. */}
-        <div role="log" aria-live="polite" aria-relevant="additions" aria-atomic="false"
+        <div role="log" tabIndex={0} aria-live="polite" aria-relevant="additions" aria-atomic="false"
           aria-label={tx('chat_guide.transcript_aria', 'Conversation transcript')}
           className={`flex-1 min-h-0 p-4 overflow-y-auto space-y-4 custom-scrollbar ${chatStyles.body}`} ref={udlScrollRef}>
           {udlMessages.map((msg, idx) => (
@@ -892,7 +892,7 @@ function UDLGuideModal(props) {
               its run record: status badges, audit coverage, rebuild targets.
               Stateless ON PURPOSE: this sits below the component's early
               return, where a hook would be a conditional-hook crash (this
-              file warns about that class twice). Real <button>s, so the rows
+              file warns about that class twice). Real <button type="button">s, so the rows
               are keyboard-operable, not announce-only. */}
           {!activeBlueprint && Array.isArray(archivedPlans) && archivedPlans.length > 0 && (
             <div className="w-full" data-testid="bp-archive-picker">
@@ -1083,7 +1083,7 @@ function UDLGuideModal(props) {
                 <div
                   className="allo-preview-body text-sm"
                   data-testid="bp-preview-body"
-                  dangerouslySetInnerHTML={{ __html: blueprintPreview.html }}
+                  dangerouslySetInnerHTML={{ __html: (typeof window !== 'undefined' && typeof window.sanitizeHtml === 'function') ? window.sanitizeHtml(blueprintPreview.html || '') : String(blueprintPreview.html || '') }}
                 />
               )}
             </div>
@@ -1126,7 +1126,7 @@ function UDLGuideModal(props) {
                       placeholder={isIndependentMode ? t('wizard.independent_learning_goal') : t('wizard.skill_search_placeholder')}
                       className={`flex-grow text-xs rounded p-1.5 focus:ring-1 outline-none ${chatStyles.input}`}
                   />
-                  <button
+                  <button type="button"
                       onClick={handleFindStandards}
                       disabled={isFindingStandards || !aiStandardQuery.trim() || aiOff}
                       className={`p-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm ${chatStyles.button}`}
@@ -1218,7 +1218,7 @@ function UDLGuideModal(props) {
                       <option value="11th Grade">{t('standards.grades.11')}</option>
                       <option value="12th Grade">{t('standards.grades.12')}</option>
                   </select>
-                  <button
+                  <button type="button"
                       aria-label={t('standards.consult_btn_title')}
                       data-help-key="chat_consult_btn" disabled={aiOff}
                       onClick={() => handleSendUDLMessage(t('standards.prompts.identify_key_standards', { framework: udlStandardFramework, grade: udlStandardGrade }))}
@@ -1274,7 +1274,7 @@ function UDLGuideModal(props) {
                 className={`flex-grow text-sm p-2 border rounded-lg focus:ring-2 outline-none ${chatStyles.input}`}
                 data-help-key="chat_input"
              />
-             <button
+             <button type="button"
                  aria-label={isShowMeMode
                      ? tx('chat_guide.send_showme_aria', 'Show me where this is on screen')
                      : tx('chat_guide.send_aria', 'Send message')}
@@ -1758,7 +1758,7 @@ function ModelDiagnosticsSection(props) {
                   <tr key={i} className={entry.divergent ? 'bg-amber-50 border-t border-amber-200' : 'border-t border-slate-200'}>
                     <td className="p-1.5 font-mono text-slate-700">{entry.requested}</td>
                     <td className="p-1.5 font-mono text-slate-700">
-                      {entry.served || <span className="italic text-slate-400">{t('model_diag.unreported') || '(unreported)'}</span>}
+                      {entry.served || <span className="italic text-slate-600">{t('model_diag.unreported') || '(unreported)'}</span>}
                       {entry.divergent && <span className="ml-1 text-amber-700 font-bold" title={t('model_diag.divergent_tooltip') || 'Google routed this request to a different model'}>⇄</span>}
                     </td>
                     <td className="p-1.5 text-right text-slate-700 font-bold">{entry.count}</td>
@@ -2527,7 +2527,7 @@ function AIBackendModalBody(props) {
     <p ref={guidedHeadingRef} tabIndex={-1} role="status" aria-live="polite" className="text-[11px] font-black text-violet-700 uppercase tracking-wider outline-none">{text}</p>
   );
   const guidedBackBtn = (target) => (
-    <button data-help-key="ai_backend_guided_back_btn" onClick={() => { setGuidedReady(false); setGuidedView(target); }} className="text-xs font-bold text-slate-600 hover:text-violet-700 transition-colors">◀ {t('ai_backend.guided_back') || 'Back'}</button>
+    <button type="button" data-help-key="ai_backend_guided_back_btn" onClick={() => { setGuidedReady(false); setGuidedView(target); }} className="text-xs font-bold text-slate-600 hover:text-violet-700 transition-colors">◀ {t('ai_backend.guided_back') || 'Back'}</button>
   );
   const guidedCard = (keyProps, onClick, emoji, title, badge, body, req) => (
     <button {...keyProps} type="button" onClick={onClick}
@@ -2736,9 +2736,9 @@ function AIBackendModalBody(props) {
         <div
           data-ai-backend-modal-overlay="true"
           style={{ zIndex: aiBackendOverlayZ }}
-          className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowAIBackendModal(false)}>
-          <div ref={aiBackendDialogRef} data-help-key="ai_backend_modal_panel" data-student-ai-setup="false" className="bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="ai-backend-title" tabIndex={-1} onKeyDown={handleAIBackendDialogKeyDown} onClick={e => e.stopPropagation()}>
-            <button onClick={() => setShowAIBackendModal(false)} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10" aria-label={t('common.close') || "Close"}><X size={20}/></button>
+          className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-300" onClick={() => setShowAIBackendModal(false)}>
+          <div ref={aiBackendDialogRef} data-help-key="ai_backend_modal_panel" data-student-ai-setup="false" className="bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in motion-reduce:animate-none zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="ai-backend-title" tabIndex={-1} onKeyDown={handleAIBackendDialogKeyDown} onClick={e => e.stopPropagation()}>
+            <button type="button" onClick={() => setShowAIBackendModal(false)} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10" aria-label={t('common.close') || "Close"}><X size={20}/></button>
             <div className="flex items-center gap-2 mb-4 text-violet-900">
                 <div className="bg-violet-100 p-2 rounded-full"><Unplug size={20} className="text-violet-600"/></div>
                 <h3 id="ai-backend-title" className="font-black text-lg">{t('ai_backend.key_lock_locked_title') || 'Saved AI key is locked'}</h3>
@@ -2788,8 +2788,8 @@ function AIBackendModalBody(props) {
              2026-08-17). The launch pad is higher still, so its explicit setting
              doorway must win even if a mounted lab remains behind that surface. */
           style={{ zIndex: aiBackendOverlayZ }}
-          className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowAIBackendModal(false)}>
-          <div ref={aiBackendDialogRef} data-help-key="ai_backend_modal_panel" data-student-ai-setup={isStudentAiSetup ? 'true' : 'false'} className="bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="ai-backend-title" tabIndex={-1} onKeyDown={handleAIBackendDialogKeyDown} onClick={e => e.stopPropagation()}>
+          className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-300" onClick={() => setShowAIBackendModal(false)}>
+          <div ref={aiBackendDialogRef} data-help-key="ai_backend_modal_panel" data-student-ai-setup={isStudentAiSetup ? 'true' : 'false'} className="bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in motion-reduce:animate-none zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="ai-backend-title" tabIndex={-1} onKeyDown={handleAIBackendDialogKeyDown} onClick={e => e.stopPropagation()}>
             {isStudentAiSetup && <style>{`
               [data-student-ai-setup="true"] #ai-backend-engine-strip,
               [data-student-ai-setup="true"] #ai-backend-sdturbo-strip,
@@ -2801,7 +2801,7 @@ function AIBackendModalBody(props) {
                 display: none !important;
               }
             `}</style>}
-            <button onClick={() => setShowAIBackendModal(false)} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10" aria-label={t('common.close') || "Close"}><X size={20}/></button>
+            <button type="button" onClick={() => setShowAIBackendModal(false)} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10" aria-label={t('common.close') || "Close"}><X size={20}/></button>
             <div className="flex items-center gap-2 mb-6 text-violet-900">
                 <div className="bg-violet-100 p-2 rounded-full"><Unplug size={20} className="text-violet-600"/></div>
                 <h3 id="ai-backend-title" className="font-black text-lg">{isStudentAiSetup ? (t('ai_backend.personal_title') || 'Connect Personal AI') : (t('ai_backend.title') || 'AI Backend Settings')}</h3>
@@ -2885,12 +2885,12 @@ function AIBackendModalBody(props) {
                   <div className="rounded-xl border border-green-200 bg-green-50 p-3">
                     <p className="text-xs font-black text-green-900">✅ {(t('ai_backend.guided_ready') || "You're ready — AlloFlow is using") + ' ' + (GUIDED_BACKEND_LABELS[readAIBackendConfig().backend || 'gemini'] || readAIBackendConfig().backend) + '.'}</p>
                     <p className="text-[11px] text-green-800 mt-1">{t('ai_backend.guided_ready_note') || 'Your choice is active now — close this window and start working.'}</p>
-                    <button data-help-key="ai_backend_guided_done_btn" onClick={() => setShowAIBackendModal(false)} className="mt-2 bg-green-700 text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-green-800 transition-all active:scale-95">{t('ai_backend.guided_done') || 'Done'}</button>
+                    <button type="button" data-help-key="ai_backend_guided_done_btn" onClick={() => setShowAIBackendModal(false)} className="mt-2 bg-green-700 text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-green-800 transition-all active:scale-95">{t('ai_backend.guided_done') || 'Done'}</button>
                   </div>
                 )}
                 {guidedTestVisible && (<>
                 <div className="flex gap-2 pt-1">
-                    <button
+                    <button type="button"
                         data-help-key="ai_backend_test_connection_btn"
                         id="ai-backend-test"
                         onClick={async () => {
@@ -2970,7 +2970,7 @@ function AIBackendModalBody(props) {
                     >
                         🔌 Test Connection
                     </button>
-                    {advancedOpen && <button
+                    {advancedOpen && <button type="button"
                         onClick={() => {
                             clearAIBackendConfig();
                             const p = document.getElementById('ai-backend-provider');
@@ -3125,7 +3125,7 @@ function AIBackendModalBody(props) {
                 <div id="ai-backend-device-storage-section" className="border-t border-slate-100 pt-4">
                     <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('canvas_settings.device_storage_label') || 'Device Storage'}</label>
                     <p className="text-[11px] text-slate-600 mb-2">{t('canvas_settings.device_storage_hint') || 'Work and settings are saved on this device only — nothing goes to a server. Review, export, or erase what is stored here.'}</p>
-                    <button
+                    <button type="button"
                         onClick={openDeviceStorageManager}
                         className="bg-white text-violet-700 border-2 border-violet-200 px-4 py-2 rounded-xl font-bold text-sm hover:bg-violet-50 transition-colors active:scale-95"
                     >
@@ -3141,7 +3141,7 @@ function AIBackendModalBody(props) {
                 <div id="ai-backend-diagnostics-section" className="border-t border-slate-100 pt-4">
                     <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('canvas_settings.diagnostics_label') || 'Diagnostics & Logs'}</label>
                     <p className="text-[11px] text-slate-600 mb-2">{t('canvas_settings.diagnostics_hint') || 'View captured errors and the read-aloud (text-to-speech) activity trace — useful when audio stalls without a visible error.'}</p>
-                    <button
+                    <button type="button"
                         onClick={() => {
                             if (typeof window.__alloOpenDiagnosticsLog !== 'function') return;
                             let hasErrors = false;

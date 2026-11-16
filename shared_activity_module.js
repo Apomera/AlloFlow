@@ -384,14 +384,15 @@ function _alloBuildAssignmentCenterCsv(rows) {
   const cell = value => {
     const raw = String(value === undefined || value === null ? '' : value);
     // Force formula-like or leading control-character cells to remain text in spreadsheet apps.
-    const text = /^(?:[\t\r\n ]*[=+\-@]|[\t\r])/.test(raw) ? "'" + raw : raw;
+    const text = /^(?:[\t\r\n ]*[=+\-@|]|[\t\r\n])/.test(raw) ? "'" + raw : raw;
     return /[",\r\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
   };
   const header = ['Title', 'Lifecycle', 'Created', 'Expires', 'Delivery', 'Resources', 'Activity', 'Responses', 'Awaiting review', 'Approved', 'Hidden', 'Revealed', 'Last activity'];
   const body = (Array.isArray(rows) ? rows : []).map(row => {
     const share = row?.share || {};
     const activity = row?.activity || {};
-    const activityType = share.sharedActivity?.type === 'rating' ? 'Rating' : share.sharedActivity ? 'Word Cloud' : 'None';
+    const sharedType = share.sharedActivity?.type;
+    const activityType = sharedType === 'rating' ? 'Rating' : sharedType === 'survey' ? 'Survey' : sharedType === 'question_board' ? 'Driving questions board' : sharedType === 'availability' ? 'Availability poll' : sharedType === 'signup' ? 'Sign-up sheet' : sharedType === 'poll' ? 'Poll' : sharedType === 'discussion' ? 'Discussion' : sharedType === 'exit-ticket' ? 'Exit ticket' : share.sharedActivity ? 'Word Cloud' : 'None';
     const delivery = share.type === 'assignment-pack-hosted' ? 'Class Mailbox' : share.type === 'assignment-pack' ? 'Self-contained' : 'Hosted';
     return [share.title || 'AlloFlow homework', row?.lifecycle || '', share.createdAt || '', share.expiresAt || '', delivery, Math.max(0, Math.floor(Number(share.resourceCount) || 0)), activityType, Math.max(0, Math.floor(Number(activity.participantCount) || 0)), Math.max(0, Math.floor(Number(activity.pending) || 0)), Math.max(0, Math.floor(Number(activity.approved) || 0)), Math.max(0, Math.floor(Number(activity.hidden) || 0)), activity.revealed === true ? 'Yes' : 'No', activity.updatedAt > 0 && activity.updatedAt <= 8640000000000000 ? new Date(activity.updatedAt).toISOString() : ''].map(cell).join(',');
   });

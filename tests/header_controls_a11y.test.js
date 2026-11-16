@@ -28,7 +28,7 @@ describe('header control accessibility', () => {
 
   it('makes the dismissible help tip keyboard operable and motion-safe', () => {
     expect(source).toContain('onClick={dismissHelpOnboarding}');
-    expect(source).toContain("aria-label={t('common.dismiss') || 'Dismiss help tip'}");
+    expect(source).toContain("t('common.dismiss') || 'Dismiss help tip'");
     expect(source).toContain('animate-bounce motion-reduce:animate-none');
     expect(source).not.toMatch(/<div\s+onClick=\{dismissHelpOnboarding\}/);
   });

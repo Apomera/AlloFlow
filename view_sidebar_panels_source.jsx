@@ -681,7 +681,7 @@ function ToolCatalogControls(props) {
           {/* "Every tool is listed below" must never appear while a filter is on. The
               collapsed panel said exactly that, one line above a banner reporting
               8 of 22 shown. Caught in a Chromium render, 2026-08-16. */}
-          <p className="mt-0.5 truncate text-xs leading-relaxed text-slate-600" aria-live="polite">
+          <p className="mt-0.5 text-xs leading-relaxed text-slate-600" aria-live="polite">
             {isExpanded
               ? (translate('sidebar.tool_finder_hint') || 'Narrow the list below by purpose, or search it.')
               : (selectedLabel
@@ -5467,7 +5467,6 @@ function SourceInputShellView(props) {
     useOwnSources, setUseOwnSources, selectedOwnSourceIds, setSelectedOwnSourceIds, documentsOnly, setDocumentsOnly,
     history, handleGenerate, sourceReplacement, setSourceReplacement, sourceRecord, setSourceRecord, openSourceView,
   } = props;
-  const simplifySources = !!guidedMode || !!isParentMode;
   const headerText = (key, fallback) => { try { const value = t(key); return value && value !== key ? value : fallback; } catch (_) { return fallback; } };
   // Once there is text, the ways in are replaced by Change source, which asks
   // first; the new text replaces the old with Undo, and the source in use
@@ -5476,12 +5475,8 @@ function SourceInputShellView(props) {
   const changeOpen = !!(sourceReplacement && sourceReplacement.status === 'change-pending');
   const showWaysIn = sourceStatus === 'empty' || changeOpen;
   const cancelChange = () => { if (changeOpen && typeof setSourceReplacement === 'function') setSourceReplacement(null); };
-  const collapseSources = simplifySources;
-  const MoreSources = collapseSources ? 'details' : React.Fragment;
-  const SourceOptions = collapseSources ? 'div' : React.Fragment;
   const sourceActionGrid = 'allo-source-action-grid';
   const sourcePillClass = 'text-xs flex items-center gap-1 bg-white border border-slate-400 text-slate-700 hover:bg-slate-50 px-3 py-1.5 rounded-full font-medium transition-colors motion-reduce:transition-none shadow-sm disabled:opacity-50 disabled:cursor-not-allowed';
-  const moreSourcesProps = collapseSources ? { className: 'col-span-full min-w-0', 'data-help-key': 'source_more_options' } : {};
   // Reopens saved PDF Accessibility work. Shared by the Open PDF project button and,
   // through window.__alloOpenPdfProjectFile, the Educator tools Document accessibility card.
   const openPdfProjectFile = (file) => {
@@ -5672,9 +5667,6 @@ function SourceInputShellView(props) {
                         {isExtracting ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none"/> : <Upload size={12} />}
                         {isExtracting ? t('input.actions.analyzing_short') : t('common.upload')}
                      </button>
-                     <MoreSources {...moreSourcesProps}>
-                     {collapseSources && <summary className="flex min-h-11 cursor-pointer items-center justify-center gap-1 rounded-lg border border-slate-300 bg-white px-2 text-xs font-medium text-slate-700"><ChevronDown size={12} aria-hidden="true" />{t('input.actions.more_sources') || 'More sources'}</summary>}
-                     <SourceOptions {...(collapseSources ? { className: 'mt-2 ' + sourceActionGrid } : {})}>
                      {/* Opens only PDF Accessibility work; lesson projects open from Class & Materials. */}
                      <label data-source-open-pdf-project="true" className={sourcePillClass + ' cursor-pointer'} title={t('input.open_pdf_project_tooltip') || 'Reopen PDF Accessibility work you saved earlier. Lesson projects open from Class & Materials.'}>
                         <FileDown size={12} /> {t('input.open_pdf_project') || 'Open PDF project'}
@@ -5724,8 +5716,6 @@ function SourceInputShellView(props) {
                         <BookOpen size={12} aria-hidden="true" />
                         {t('input.reading_catalog') || 'Reading catalog'}
                      </button>
-                     </SourceOptions>
-                     </MoreSources>
                      {changeOpen && <button type="button" data-source-change-cancel onClick={cancelChange} className="text-xs flex items-center gap-1 bg-white border border-slate-400 text-slate-700 hover:bg-slate-50 px-3 py-1.5 rounded-full font-medium">{headerText('sidebar.source_change_cancel', 'Keep my source')}</button>}
                      </>}
                  </div>

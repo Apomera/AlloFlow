@@ -1031,6 +1031,143 @@ const alloClearTeacherPrivateLabels = (store, classKey) => {
   delete byClass[classKey];
   return { version: 1, byClass };
 };
+const alloPurgeRemovedStudentLocalStores = (options = {}) => {
+  const storage = options && options.storage ? options.storage : typeof window !== "undefined" ? window.localStorage : null;
+  const cleanCodename = String(options?.codename || "").trim();
+  const cleanLearnerId = String(options?.learnerId || "").trim();
+  const cleanClassId = String(options?.classId || "").trim();
+  const cleanClassName = String(options?.className || "").trim();
+  const targetClassKey = String(options?.privateLabelClassKey || alloTeacherPrivateLabelClassKey({ classId: cleanClassId, className: cleanClassName }) || "").trim();
+  const changedKeys = [];
+  if (!storage || !cleanCodename && !cleanLearnerId) return { changedKeys };
+  const safeParse = (key) => {
+    try {
+      const raw = storage.getItem(key);
+      return raw ? JSON.parse(raw) : null;
+    } catch (_) {
+      return null;
+    }
+  };
+  const safeWrite = (key, value) => {
+    try {
+      storage.setItem(key, JSON.stringify(value));
+      changedKeys.push(key);
+    } catch (_) {
+    }
+  };
+  if (cleanCodename && targetClassKey) {
+    try {
+      const labelStore = alloReadTeacherPrivateLabels(storage);
+      if (labelStore?.byClass?.[targetClassKey] && Object.prototype.hasOwnProperty.call(labelStore.byClass[targetClassKey], cleanCodename)) {
+        if (alloWriteTeacherPrivateLabels(storage, alloDropTeacherPrivateLabel(labelStore, targetClassKey, cleanCodename))) {
+          changedKeys.push(ALLO_TEACHER_PRIVATE_LABELS_KEY);
+        }
+      }
+    } catch (_) {
+    }
+  }
+  const cicoStore = safeParse("allo_cico_cards_v1");
+  if (cicoStore && typeof cicoStore === "object" && cicoStore.classes && typeof cicoStore.classes === "object") {
+    let cicoChanged = false;
+    Object.keys(cicoStore.classes).forEach((cid) => {
+      const students = cicoStore.classes[cid] && typeof cicoStore.classes[cid].students === "object" ? cicoStore.classes[cid].students : null;
+      if (!students) return;
+      if (cleanLearnerId && Object.prototype.hasOwnProperty.call(students, cleanLearnerId)) {
+        delete students[cleanLearnerId];
+        cicoChanged = true;
+      }
+      if (cleanCodename && (!cleanClassId || cid === cleanClassId) && Object.prototype.hasOwnProperty.call(students, cleanCodename)) {
+        delete students[cleanCodename];
+        cicoChanged = true;
+      }
+    });
+    if (cicoChanged) safeWrite("allo_cico_cards_v1", cicoStore);
+  }
+  const recognitionLog = safeParse("allo_school_rewards_recognition_log_v1");
+  if (recognitionLog && typeof recognitionLog === "object" && recognitionLog.sessions && typeof recognitionLog.sessions === "object") {
+    let logChanged = false;
+    const isOurCicoId = (id) => {
+      const text = String(id || "");
+      if (!text.startsWith("daily-goal:")) return false;
+      const parts = text.split(":");
+      const idClass = parts[1] || "";
+      const idLearner = parts[2] || "";
+      return Boolean(cleanLearnerId && idLearner === cleanLearnerId || cleanClassId && idClass === cleanClassId);
+    };
+    const isOtherClassCicoId = (id) => {
+      const text = String(id || "");
+      if (!text.startsWith("daily-goal:")) return false;
+      const parts = text.split(":");
+      const idClass = parts[1] || "";
+      const idLearner = parts[2] || "";
+      if (cleanLearnerId && idLearner === cleanLearnerId) return false;
+      return Boolean(cleanClassId && idClass && idClass !== cleanClassId);
+    };
+    Object.keys(recognitionLog.sessions).forEach((sKey) => {
+      const rows = recognitionLog.sessions[sKey] && typeof recognitionLog.sessions[sKey].rows === "object" ? recognitionLog.sessions[sKey].rows : null;
+      if (!rows) return;
+      Object.keys(rows).forEach((rowName) => {
+        const row = rows[rowName];
+        if (!row || typeof row !== "object") return;
+        const ids = Array.isArray(row.ids) ? row.ids : [];
+        if (cleanLearnerId || cleanClassId) {
+          const matchedAny = ids.some((id) => isOurCicoId(id) && (rowName === cleanCodename || cleanLearnerId && String(id || "").split(":")[2] === cleanLearnerId));
+          if (matchedAny) {
+            const remaining = ids.filter((id) => !(isOurCicoId(id) && (rowName === cleanCodename || cleanLearnerId && String(id || "").split(":")[2] === cleanLearnerId)));
+            if (remaining.length === 0) delete rows[rowName];
+            else row.ids = remaining;
+            logChanged = true;
+            return;
+          }
+        }
+        if (cleanCodename && rowName === cleanCodename) {
+          const allOtherClass = ids.length > 0 && ids.every(isOtherClassCicoId);
+          if (!allOtherClass) {
+            delete rows[rowName];
+            logChanged = true;
+          }
+        }
+      });
+    });
+    if (logChanged) safeWrite("allo_school_rewards_recognition_log_v1", recognitionLog);
+  }
+  const commentsRaw = safeParse("allo_teacher_comments");
+  if (Array.isArray(commentsRaw)) {
+    const filteredComments = commentsRaw.filter((entry) => {
+      const key = Array.isArray(entry) ? entry[0] : "";
+      if (typeof key !== "string") return true;
+      if (cleanCodename && key.startsWith(cleanCodename + ":")) return false;
+      if (cleanLearnerId && key.startsWith(cleanLearnerId + ":")) return false;
+      return true;
+    });
+    if (filteredComments.length !== commentsRaw.length) safeWrite("allo_teacher_comments", filteredComments);
+  }
+  const gradesStore = safeParse("alloflow_offline_grades");
+  if (gradesStore && typeof gradesStore === "object" && !Array.isArray(gradesStore)) {
+    let gradesChanged = false;
+    Object.keys(gradesStore).forEach((gKey) => {
+      const rec = gradesStore[gKey];
+      if (!rec || typeof rec !== "object") return;
+      const recLearnerId = String(rec.identity?.learnerId || "").trim();
+      const recClassId = String(rec.identity?.classId || "").trim();
+      const recClassName = String(rec.className || "").trim();
+      const recNick = String(rec.nickname || "").trim();
+      if (cleanLearnerId && recLearnerId === cleanLearnerId) {
+        delete gradesStore[gKey];
+        gradesChanged = true;
+        return;
+      }
+      if (cleanCodename && recNick === cleanCodename) {
+        if (cleanClassId && recClassId && recClassId !== cleanClassId) return;
+        if (cleanClassName && recClassName && recClassName !== cleanClassName) return;
+        delete gradesStore[gKey];
+        gradesChanged = true;
+      }
+    });
+    if (gradesChanged) safeWrite("alloflow_offline_grades", gradesStore);
+  }
+  return { changedKeys };
+};
 const ALLO_EDUCATOR_ACCESS_PROMPT_DISMISSED_KEY = "alloflow_educator_access_prompt_dismissed_v1";
 const alloIsEducatorAccessCodeConfigured = () => {
   if (typeof window === "undefined") return false;
@@ -1185,8 +1322,9 @@ const buildRosterCodenameWorksheetHtml = (roster, options) => {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'"><title>AlloFlow Codename Roster Worksheet</title><style>@page{size:${pageSize};margin:12mm}body{font-family:Arial,sans-serif;color:#111}h1{font-size:20pt}.line{display:inline-block;width:50mm;border-bottom:1px solid #111}.notice{border:1px solid #555;padding:3mm}table{width:100%;border-collapse:collapse}thead{display:table-header-group}tr{break-inside:avoid}th,td{border:1px solid #222;padding:2.5mm;text-align:left;height:${rowHeight}mm}thead th{background:#eee}</style></head><body><h1>Class roster worksheet</h1><p>Class / period: <span class="line"></span> &nbsp; Date: <span class="line"></span></p><p class="notice"><strong>Privacy note:</strong> ${privacySummary} Write names and locations by hand; handwriting is not saved in AlloFlow. Keep the completed private teacher record secure.</p><table><caption>Codename-to-student reference</caption><thead><tr>${headers}</tr></thead><tbody>${rows}</tbody></table></body></html>`;
 };
 const rosterSessionCsvCell = (value) => {
+  if (typeof value === "number" && Number.isFinite(value)) return String(value);
   const raw = value === null || value === void 0 ? "" : String(value);
-  const text = /^[=+@-]/.test(raw) ? "'" + raw : raw;
+  const text = /^(?:[\t\r\n ]*[=+\-@|]|[\t\r\n])/.test(raw) ? "'" + raw : raw;
   return /[",\r\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
 };
 const buildRosterSessionEvidenceCsv = (session) => {
@@ -2232,6 +2370,13 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   };
   const handleRemoveStudent = (name) => {
     if (!window.confirm(`Delete ${name} from the roster? This removes the codename and its linked preferences, individual progress, participant lists, and seating references. De-identified class activity totals and teacher notes remain. Assessment Center records are kept and can be removed separately in its Records manager.`)) return;
+    alloPurgeRemovedStudentLocalStores({
+      codename: name,
+      learnerId: rosterKey?.learnerIds?.[name] || "",
+      classId: String(rosterKey?.classId || "").trim(),
+      className: String(rosterKey?.className || "").trim(),
+      privateLabelClassKey
+    });
     setRosterKey((prev) => {
       const learnerId = prev.learnerIds?.[name];
       const ns = { ...prev.students };
@@ -6123,6 +6268,10 @@ const LearnerProgressView = React.memo(({
         const html = `<!DOCTYPE html><html lang="${String(document.documentElement.lang || "en").replace(/[^\w-]/g, "")}"${document.documentElement.dir === "rtl" ? ' dir="rtl"' : ""}><head><meta charset="UTF-8"><title>${escapePrintText(t("learner.progress_report"))}</title><style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Inter',-apple-system,sans-serif;color:#1e293b;background:#f8fafc;padding:32px;line-height:1.5}.report{max-width:700px;margin:0 auto;background:white;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,.08);overflow:hidden}.header{padding:28px 32px;background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%);color:white}.header h1{font-size:22px;font-weight:800;margin-bottom:4px}.header p{font-size:13px;opacity:.85}.content{padding:28px 32px}.section-title{font-size:15px;font-weight:800;color:#334155;margin:20px 0 12px;padding-bottom:6px;border-bottom:2px solid #e2e8f0}.badge-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}.badge{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#fef9c3;border:1px solid #fcd34d;border-radius:10px;font-size:12px;font-weight:700;color:#92400e}.footer{padding:16px 32px;background:#f8fafc;border-top:1px solid #e2e8f0;text-align:center;font-size:11px;color:#94a3b8}.print-btn{display:block;margin:16px auto;padding:10px 28px;background:#4f46e5;color:white;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}.print-btn:hover{background:#4338ca}@media print{body{padding:0;background:white}.report{box-shadow:none;border-radius:0}.print-btn{display:none!important}.header{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body><div class="report"><div class="header"><h1>\u{1F31F} ${isParentMode ? "Your Child's" : "My"} Learning Progress Report</h1><p>${isParentMode ? "Family Progress Overview" : "Personal Progress Overview"} &bull; ${date}</p></div><div class="content"><div style="display:flex;align-items:center;gap:16px;padding:16px;background:linear-gradient(135deg,#fef3c7,#fef9c3);border:2px solid #fcd34d;border-radius:12px;margin-bottom:20px"><div style="width:56px;height:56px;background:#eab308;border-radius:50%;display:flex;align-items:center;justify-content:center;border:4px solid #1e1b4b;font-size:24px;font-weight:900;color:#1e1b4b">Lv${escapePrintText(globalLevel)}</div><div><div style="font-size:20px;font-weight:800;color:#1e1b4b">${escapePrintText(globalPoints.toLocaleString())} Total XP</div><div style="font-size:12px;color:#92400e;font-weight:600">Level ${escapePrintText(globalLevel)} Learner &bull; ${Math.round(globalProgress)}% to next level</div></div></div><div class="section-title">\u{1F4CA} Performance Summary</div>${metricBar("Word Sounds Accuracy", stats.wsAccuracy, 100, "%", "\u{1F50A}")}${metricBar("Right First Try", stats.wsFirstTryAccuracy, 100, "%", "\u{1F3AF}")}${metricBar("Quizzes Completed", stats.quizCount, 10, "", "\u{1F4DD}")}${metricBar("Words Practiced", stats.wsTotal, 50, "", "\u{1F524}")}${metricBar("Games Played", stats.gamesPlayed, 10, "", "\u{1F3AE}")}${metricBar("Fluency Tests", stats.fluencyTests, 5, "", "\u23F1\uFE0F")}${metricBar("Total Activities", stats.totalActivities, 20, "", "\u{1F4CA}")}<div class="section-title">\u{1F3AF} Skills Mastered</div><div style="font-size:13px;color:#475569;margin-bottom:8px"><strong>${masteredCount}</strong> phoneme sounds mastered${masteredCount > 0 ? ":" : ""}</div>${masteredCount > 0 ? '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">' + Object.entries(phonemeMastery).filter(([_, v]) => isPhonemeMastered(v)).map(([p]) => '<span style="padding:4px 12px;background:#dcfce7;color:#16a34a;border:1px solid #86efac;border-radius:20px;font-size:12px;font-weight:700">/' + escapePrintText(p) + "/</span>").join("") + "</div>" : '<p style="font-size:13px;color:#94a3b8;font-style:italic">Keep practicing to master sounds!</p>'}<div class="section-title">\u{1F3C5} Achievements Earned</div><div class="badge-row">${globalPoints >= 10 ? '<div class="badge">\u{1F463} First Steps</div>' : ""}${stats.quizCount >= 3 ? '<div class="badge">\u{1F9E0} Quiz Whiz</div>' : ""}${stats.wsTotal >= 20 ? '<div class="badge">\u{1F50D} Word Explorer</div>' : ""}${stats.gamesPlayed >= 5 ? '<div class="badge">\u{1F3C6} Game Champion</div>' : ""}${globalLevel >= 2 ? '<div class="badge">\u2B50 Level Up!</div>' : ""}${globalLevel >= 5 ? '<div class="badge">\u{1F31F} Super Scholar</div>' : ""}${stats.masteredPhonemes.length >= 5 ? '<div class="badge">\u{1F3B5} Sound Master</div>' : ""}${stats.sessionCount >= 3 ? '<div class="badge">\u{1F4C5} Consistent</div>' : ""}</div></div><div class="footer">Generated ${date} &bull; Created with AlloFlow &bull; Learning Progress Report</div></div><button type="button" class="print-btn" onclick="window.print()">\u{1F5A8}\uFE0F Print This Report</button></body></html>`;
         const w = window.open("", "_blank");
         if (w) {
+          try {
+            w.opener = null;
+          } catch (_) {
+          }
           w.document.write(html);
           w.document.close();
         }
@@ -6884,8 +7033,13 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
       "Notebook Feedback Requests",
       ...registryHeaders
     ];
+    const _dashCsvCell = (val) => {
+      let raw = val === null || val === void 0 ? "" : String(val);
+      if (typeof val !== "number" && /^(?:[\t\r\n ]*[=+\-@|]|[\t\r\n])/.test(raw)) raw = "'" + raw;
+      return '"' + raw.replace(/"/g, '""') + '"';
+    };
     const rows = dashboardData.map((student) => {
-      const name = (student.studentNickname || "Anonymous").replace(/"/g, '""');
+      const name = student.studentNickname || "Anonymous";
       const date = new Date(student.timestamp).toLocaleDateString();
       const adventureItem = student.history.slice().reverse().find((item) => item.type === "adventure" && !(item.data && (item.data.kind === "student-story" || item.data.kind === "offline-reflection" || item.data.offlineStory)));
       const adventureLevel = adventureItem && adventureItem.data ? Number(adventureItem.data.snapshot?.level ?? adventureItem.data.level) : NaN;
@@ -6928,10 +7082,10 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
       const anchorCount = hist.filter((h) => h && h.type === "anchor-chart").length;
       const feedbackCount = noteEntries.reduce((sum, e) => sum + (e.data && e.data.feedbackCount || 0), 0);
       const registryCounts = getTeacherMetricRegistry().map((entry) => entry.count(student));
-      return `"${name}","${date}","${level}","${quizAvg}","${xp}","${probeCount}","${avgWcpm}","${surveyCount}","${sessionCount}","${cornellCount}","${labCount}","${readingCount}","${doubleEntryCount}","${guidedCount}","${qAndACount}","${anchorCount}","${feedbackCount}",${registryCounts.map((n) => `"${n}"`).join(",")}`;
+      return [name, date, level, quizAvg, xp, probeCount, avgWcpm, surveyCount, sessionCount, cornellCount, labCount, readingCount, doubleEntryCount, guidedCount, qAndACount, anchorCount, feedbackCount, ...registryCounts].map(_dashCsvCell).join(",");
     });
-    const csvContent = [headers.join(","), ...rows].join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const csvContent = [headers.map(_dashCsvCell).join(","), ...rows].join("\r\n");
+    const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
@@ -6939,6 +7093,12 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    setTimeout(() => {
+      try {
+        URL.revokeObjectURL(url);
+      } catch (_) {
+      }
+    }, 1e3);
   };
   const quizHistory = useMemo(() => selectedStudent?.history?.filter((h) => h.type === "quiz") || [], [selectedStudent?.history]);
   return /* @__PURE__ */ React.createElement(
@@ -7126,7 +7286,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
       {
         className: "prose prose-sm max-w-none text-slate-700 leading-relaxed",
         dangerouslySetInnerHTML: {
-          __html: generateResourceHTML ? generateResourceHTML(item, true, selectedStudent.responses || {}) : "<p>Error: Renderer not available.</p>"
+          __html: generateResourceHTML ? typeof window !== "undefined" && typeof window.sanitizeHtml === "function" ? window.sanitizeHtml(generateResourceHTML(item, true, selectedStudent.responses || {})) : generateResourceHTML(item, true, selectedStudent.responses || {}) : "<p>Error: Renderer not available.</p>"
         }
       }
     )), /* @__PURE__ */ React.createElement(
@@ -7668,7 +7828,7 @@ const alloCicoAddToStoreWorksheet = (classId, learnerId, codename, date, now = D
 };
 const alloCicoCsvCell = (value) => {
   let out = String(value == null ? "" : value);
-  if (/^[=+\-@]/.test(out)) out = "'" + out;
+  if (typeof value !== "number" && /^(?:[\t\r\n ]*[=+\-@|]|[\t\r\n])/.test(out)) out = "'" + out;
   return '"' + out.replace(/"/g, '""') + '"';
 };
 const alloCicoStudentCsv = (codename, student, settings) => {
@@ -7695,7 +7855,8 @@ const alloCicoTriageRows = (cls, codenameByLearner, limit = 10) => {
   return rows.map((r) => r.map(alloCicoCsvCell).join(",")).join("\r\n");
 };
 const alloCicoDownload = (filename, text) => {
-  const url = URL.createObjectURL(new Blob([text], { type: "text/csv;charset=utf-8" }));
+  const payload = typeof text === "string" && text.charCodeAt(0) === 65279 ? text : "\uFEFF" + String(text == null ? "" : text);
+  const url = URL.createObjectURL(new Blob([payload], { type: "text/csv;charset=utf-8" }));
   const link = document.createElement("a");
   link.href = url;
   link.download = filename;
@@ -7820,6 +7981,7 @@ window.AlloModules.TeacherPrivateLabelInternals = {
   setLabel: alloSetTeacherPrivateLabel,
   dropLabel: alloDropTeacherPrivateLabel,
   clearClass: alloClearTeacherPrivateLabels,
+  purgeRemovedStudentLocalStores: alloPurgeRemovedStudentLocalStores,
   handoffType: ALLO_CLASSROOM_HANDOFF_TYPE,
   handoffReply: ALLO_CLASSROOM_HANDOFF_REPLY,
   acceptHandoff: alloAcceptClassroomHandoff,

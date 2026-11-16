@@ -92,10 +92,10 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
 
 exports[`career/nature long-tail render goldens (default state) > renders + pins a digest for lifeSkills 1`] = `
 {
-  "buttons": 90,
+  "buttons": 122,
   "inputs": 2,
-  "lengthBucket": 362,
-  "sha": "3ef4e19d00434ed6",
+  "lengthBucket": 472,
+  "sha": "2784e9a548fc735c",
   "svgs": 0,
 }
 `;

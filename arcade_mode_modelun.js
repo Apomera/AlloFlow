@@ -1201,7 +1201,7 @@
         { id: 'consistency_master', label: 'Hit 90+ on diplomatic consistency', icon: '📐',
           check: function() { return (window.__alloHavenModelUNStats.bestConsistencyScore || 0) >= 90; },
           progress: function() { return (window.__alloHavenModelUNStats.bestConsistencyScore || 0) + '/90'; } },
-        { id: 'backchannel_diplomat', label: 'Pass a private backchannel note', icon: '📬',
+        { id: 'backchannel_diplomat', label: 'Send a diplomatic backchannel note', icon: '📬',
           check: function() { return (window.__alloHavenModelUNStats.backchannelMessagesSent || 0) >= 1; },
           progress: function() { return (window.__alloHavenModelUNStats.backchannelMessagesSent || 0) >= 1 ? 'Done!' : 'Not yet'; } }
       ],
@@ -5728,7 +5728,7 @@
         agenda: agenda, committee: committee, recentSpeeches: orderedSpeeches
       }),
 
-      // Backchannel diplomacy panel — private 1:1 notes during caucus (simulated seats cannot reply)
+      // Backchannel diplomacy panel: committee-session notes during caucus (Chair-moderated; simulated seats cannot reply)
       !munNoAi(ctx) && h(BackchannelPanel, {
         ctx: ctx, modelUn: modelUn, updateMUN: updateMUN,
         isHost: isHost, isSolo: isSolo, sessionState: sessionState
@@ -7031,7 +7031,7 @@
       progress: function() { var n = window.__alloHavenModelUNStats.crisisResponsesGiven || 0; return { done: n >= 1, pct: n >= 1 ? 100 : 0, line: n >= 1 ? 'Earned · ' + n : 'Not yet' }; } },
     { id: 'consistency_master', aiOnly: true, label: 'Consistency Master',    icon: '📐', desc: 'Reach 90+ on the diplomatic-consistency AI judge.',
       progress: function() { var n = window.__alloHavenModelUNStats.bestConsistencyScore || 0; return { done: n >= 90, pct: Math.min(100, (n / 90) * 100), line: n + ' / 90' }; } },
-    { id: 'backchannel_diplomat', label: 'Backchannel Diplomat',  icon: '📬', desc: 'Pass a private 1:1 note during a moderated caucus.',
+    { id: 'backchannel_diplomat', label: 'Backchannel Diplomat',  icon: '📬', desc: 'Send a moderated committee-session diplomatic note during caucus.',
       progress: function() { var n = window.__alloHavenModelUNStats.backchannelMessagesSent || 0; return { done: n >= 1, pct: n >= 1 ? 100 : 0, line: n >= 1 ? 'Earned · ' + n + ' sent' : 'Not yet' }; } }
   ];
 
@@ -7339,10 +7339,10 @@
   }
 
   // ═══════════════════════════════════════════
-  // BackchannelPanel — private 1:1 diplomatic notes between delegations
-  // during the moderated-caucus phase. Real MUN: delegates pass notes in
-  // huddles. Here: stored under modelUn.backchannel keyed by msgId; visible
-  // only to sender, recipient, and host (moderation role).
+  // BackchannelPanel: moderated committee-session diplomatic notes between
+  // delegations during the moderated-caucus phase. Stored on the shared
+  // committee session under modelUn.backchannel keyed by msgId and visible
+  // to the sender, recipient, and Chair (host). Not for personal drafts.
   // Capped at 30 messages per session for doc-size budget.
   // ═══════════════════════════════════════════
   function BackchannelPanel(props) {
@@ -7458,7 +7458,9 @@
               'Backchannel · ' + visibleMsgs.length + ' note' + (visibleMsgs.length !== 1 ? 's' : '') + (unreadCount > 0 ? ' · ' + unreadCount + ' new' : '')
             ),
             h('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 2 } },
-              isHost ? 'Moderator view — you see ALL private notes.' : 'Private 1:1 notes between delegations. Only you, the recipient, and the Chair see each note.'
+              isHost
+                ? 'Moderator view: you see all committee-session backchannel notes.'
+                : 'Committee-session notes: visible to you, the selected delegation, and the Chair (host). Keep personal drafts in device-local Private Notes.'
             )
           ),
           h('button', {
@@ -7486,7 +7488,7 @@
             h('label', {
               htmlFor: 'mun_backchannel_note',
               style: { display: 'block', fontSize: 11, color: '#c4b5fd', fontWeight: 700, marginBottom: 4 }
-            }, 'Private note to the selected delegation'),
+            }, 'Diplomatic note to the selected delegation'),
             h('textarea', {
               id: 'mun_backchannel_note',
               className: 'mun-form-control',
@@ -7547,10 +7549,10 @@
       'You are the delegate from ' + country.name + ' in a Model UN moderated caucus.',
       'Your country\'s baseline stance on "' + agenda.title + '": ' + stance,
       '',
-      'Another delegation (' + (senderCountry ? senderCountry.name : 'a peer') + ') just passed you this PRIVATE backchannel note:',
+      'Another delegation (' + (senderCountry ? senderCountry.name : 'a peer') + ') just sent you this backchannel note:',
       '"' + String(incomingText).slice(0, 400) + '"',
       '',
-      'Reply briefly (20-50 words) with diplomatic but direct private-channel tone. You CAN be more candid than in public — backchannels are where deals happen. Either: agree to negotiate, set a condition, decline politely, or counter-propose.',
+      'Reply briefly (20-50 words) with a direct, Chair-appropriate diplomatic tone for a committee backchannel note. Either: agree to negotiate, set a condition, decline politely, or counter-propose.',
       '',
       'Return JSON only: { "text": "your reply" }'
     ].join('\n');

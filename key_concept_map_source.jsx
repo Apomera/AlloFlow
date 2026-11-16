@@ -14,11 +14,11 @@
 
 const _CONCEPT_ACCENTS = [
     { badge: '#4f46e5', ring: 'rgba(99,102,241,0.28)',  border: '#6366f1' }, // indigo
-    { badge: '#0d9488', ring: 'rgba(20,184,166,0.28)',  border: '#14b8a6' }, // teal
+    { badge: '#0f766e', ring: 'rgba(20,184,166,0.28)',  border: '#14b8a6' }, // teal
     { badge: '#e11d48', ring: 'rgba(244,63,94,0.28)',   border: '#f43f5e' }, // rose
-    { badge: '#d97706', ring: 'rgba(245,158,11,0.28)',  border: '#f59e0b' }, // amber
+    { badge: '#b45309', ring: 'rgba(245,158,11,0.28)',  border: '#f59e0b' }, // amber
     { badge: '#7c3aed', ring: 'rgba(139,92,246,0.28)',  border: '#8b5cf6' }, // violet
-    { badge: '#0284c7', ring: 'rgba(14,165,233,0.28)',  border: '#0ea5e9' }, // sky
+    { badge: '#0369a1', ring: 'rgba(14,165,233,0.28)',  border: '#0ea5e9' }, // sky
 ];
 const _conceptAccentFor = (i) => _CONCEPT_ACCENTS[i % _CONCEPT_ACCENTS.length];
 // Per-instance suffix for SVG gradient/filter ids, so two maps on a page don't share them.
@@ -204,10 +204,19 @@ const KeyConceptMapView = React.memo(({ branches, main, main_en, BranchItem, t }
                 @media (prefers-reduced-motion: reduce) {
                     .alloflow-concept-line-primary, .alloflow-concept-endpoint, .alloflow-concept-bubble {
                         animation: none !important;
+                        transition: none !important;
                     }
                     .alloflow-concept-line-primary { stroke-dasharray: none !important; }
                     .alloflow-concept-endpoint { opacity: 1 !important; }
                 }
+                .reduce-motion .alloflow-concept-line-primary,
+                .reduce-motion .alloflow-concept-endpoint,
+                .reduce-motion .alloflow-concept-bubble {
+                    animation: none !important;
+                    transition: none !important;
+                }
+                .reduce-motion .alloflow-concept-line-primary { stroke-dasharray: none !important; }
+                .reduce-motion .alloflow-concept-endpoint { opacity: 1 !important; }
                 @media print {
                     .alloflow-concept-line-primary, .alloflow-concept-endpoint, .alloflow-concept-bubble {
                         animation: none !important;
@@ -333,10 +342,10 @@ const KeyConceptMapView = React.memo(({ branches, main, main_en, BranchItem, t }
                                 tabIndex={0}
                                 role="group"
                                 aria-label={`${branchWord} ${i + 1}: ${b.title || ''}`}
-                                className="w-full max-w-xs relative rounded-2xl transition-all duration-200 hover:scale-[1.02] focus:outline-none focus:ring-4"
-                                style={{ boxShadow: `0 0 0 0 ${a.ring}`, '--tw-ring-color': a.ring }}
+                                className="w-full max-w-xs relative rounded-2xl transition-all motion-reduce:transition-none duration-200 hover:scale-[1.02] motion-reduce:hover:scale-100 focus-visible:outline-none focus-visible:ring-4"
+                                style={{ boxShadow: `0 0 0 0 ${a.ring}`, '--tw-ring-color': a.border }}
                                 onMouseEnter={(e) => { e.currentTarget.style.boxShadow = `0 0 0 4px ${a.ring}`; }}
-                                onMouseLeave={(e) => { e.currentTarget.style.boxShadow = `0 0 0 0 ${a.ring}`; }}
+                                onMouseLeave={(e) => { if (typeof document !== 'undefined' && document.activeElement && (e.currentTarget === document.activeElement || e.currentTarget.contains(document.activeElement))) return; e.currentTarget.style.boxShadow = `0 0 0 0 ${a.ring}`; }}
                                 onFocus={(e) => { e.currentTarget.style.boxShadow = `0 0 0 4px ${a.ring}`; }}
                                 onBlur={(e) => { e.currentTarget.style.boxShadow = `0 0 0 0 ${a.ring}`; }}
                             >
@@ -363,7 +372,7 @@ const KeyConceptMapView = React.memo(({ branches, main, main_en, BranchItem, t }
                 <div
                     ref={centerRef}
                     aria-hidden="true"
-                    className="alloflow-concept-bubble relative w-52 h-52 rounded-full flex flex-col items-center justify-center text-center border-[6px] border-white transition-transform duration-500 hover:scale-105"
+                    className="alloflow-concept-bubble relative w-52 h-52 rounded-full flex flex-col items-center justify-center text-center border-[6px] border-white transition-transform motion-reduce:transition-none duration-500 hover:scale-105 motion-reduce:hover:scale-100"
                     style={{
                         background: 'radial-gradient(circle at 30% 30%, #818cf8 0%, #6366f1 45%, #4338ca 100%)',
                         boxShadow: '0 0 50px rgba(99,102,241,0.45), 0 10px 30px rgba(67,56,202,0.25), inset 0 -10px 30px rgba(30,27,75,0.25)',
@@ -392,10 +401,10 @@ const KeyConceptMapView = React.memo(({ branches, main, main_en, BranchItem, t }
                                 tabIndex={0}
                                 role="group"
                                 aria-label={`${branchWord} ${idx + 1}: ${b.title || ''}`}
-                                className="w-full max-w-xs relative rounded-2xl transition-all duration-200 hover:scale-[1.02] focus:outline-none focus:ring-4"
-                                style={{ boxShadow: `0 0 0 0 ${a.ring}`, '--tw-ring-color': a.ring }}
+                                className="w-full max-w-xs relative rounded-2xl transition-all motion-reduce:transition-none duration-200 hover:scale-[1.02] motion-reduce:hover:scale-100 focus-visible:outline-none focus-visible:ring-4"
+                                style={{ boxShadow: `0 0 0 0 ${a.ring}`, '--tw-ring-color': a.border }}
                                 onMouseEnter={(e) => { e.currentTarget.style.boxShadow = `0 0 0 4px ${a.ring}`; }}
-                                onMouseLeave={(e) => { e.currentTarget.style.boxShadow = `0 0 0 0 ${a.ring}`; }}
+                                onMouseLeave={(e) => { if (typeof document !== 'undefined' && document.activeElement && (e.currentTarget === document.activeElement || e.currentTarget.contains(document.activeElement))) return; e.currentTarget.style.boxShadow = `0 0 0 0 ${a.ring}`; }}
                                 onFocus={(e) => { e.currentTarget.style.boxShadow = `0 0 0 4px ${a.ring}`; }}
                                 onBlur={(e) => { e.currentTarget.style.boxShadow = `0 0 0 0 ${a.ring}`; }}
                             >

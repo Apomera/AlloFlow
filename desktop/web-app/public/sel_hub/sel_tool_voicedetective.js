@@ -130,8 +130,46 @@ window.SelHub = window.SelHub || {
   // STORAGE_KEY is the legacy localStorage slot. Canvas wipes localStorage
   // between sessions, so we ALSO mirror this state into the hub's
   // window.__alloflowSelToolData slot (via SelToolDataManager) which DOES
-  // ride the project save JSON.
+  // ride the project save JSON. On shared devices, unauthenticated Student Mode
+  // defaults to ephemeral sessionStorage and purges any leftover global
+  // localStorage key; signed-in students isolate state under ::learnerKey.
   var STORAGE_KEY = 'alloSelVoiceDetective';
+  function _vdActiveScope() {
+    try {
+      if (typeof window !== 'undefined' && typeof window.__alloActiveLearnerKey === 'string') {
+        return window.__alloActiveLearnerKey.trim();
+      }
+    } catch (e) {}
+    return '';
+  }
+  function _vdResolveStore() {
+    var scope = _vdActiveScope();
+    var scopedKey = scope ? (STORAGE_KEY + '::' + scope) : STORAGE_KEY;
+    var ephemeralStudent = false;
+    try {
+      ephemeralStudent = (typeof window !== 'undefined' && window.__alloStudentView === true && !scope);
+    } catch (e) {}
+    var store = null;
+    if (ephemeralStudent) {
+      try { if (typeof sessionStorage !== 'undefined' && sessionStorage) store = sessionStorage; } catch (e) { store = null; }
+    } else {
+      try { if (typeof localStorage !== 'undefined' && localStorage) store = localStorage; } catch (e) { store = null; }
+    }
+    try {
+      if (typeof localStorage !== 'undefined' && localStorage) {
+        var legacyRaw = localStorage.getItem(STORAGE_KEY);
+        if (legacyRaw != null) {
+          if (store && (scopedKey !== STORAGE_KEY || ephemeralStudent) && store.getItem(scopedKey) == null) {
+            try { store.setItem(scopedKey, legacyRaw); } catch (e2) {}
+          }
+          if (scope || ephemeralStudent) {
+            try { localStorage.removeItem(STORAGE_KEY); } catch (e3) {}
+          }
+        }
+      }
+    } catch (e) {}
+    return { store: store, key: scopedKey, ephemeral: ephemeralStudent };
+  }
   function loadData() {
     // Prefer the restored window slot (a project was just loaded) over
     // localStorage when both exist.
@@ -141,33 +179,44 @@ window.SelHub = window.SelHub || {
         if (slot && slot._lsValue && typeof slot._lsValue === 'object') return slot._lsValue;
       }
     } catch (e) {}
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e) { return {}; }
+    try {
+      var resolved = _vdResolveStore();
+      var raw = resolved.store ? resolved.store.getItem(resolved.key) : null;
+      return JSON.parse(raw) || {};
+    } catch(e) { return {}; }
   }
   function saveData(data) {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
-    // Mirror into the per-tool window slot so executeSaveFile picks it up.
     try {
+      var resolved = _vdResolveStore();
+      if (resolved.store) resolved.store.setItem(resolved.key, JSON.stringify(data));
+      // Mirror into the per-tool window slot so executeSaveFile picks it up.
       if (window.SelToolDataManager) {
-        window.SelToolDataManager.merge('voicedetective', { _lsKey: STORAGE_KEY, _lsValue: data });
+        window.SelToolDataManager.merge('voicedetective', { _lsKey: resolved.key, _lsValue: data });
       }
-    } catch (e) {}
+    } catch(e) {}
   }
-  // Bind the legacy localStorage key on load so handleLoadProject can mirror
-  // a restored slot back to localStorage (for legacy code paths that read
-  // localStorage directly on mount).
+  // Bind the legacy storage key on load so handleLoadProject can mirror
+  // a restored slot back to storage (for legacy code paths that read storage
+  // directly on mount).
   try {
-    if (window.SelToolDataManager) window.SelToolDataManager.bindLegacyKey('voicedetective', STORAGE_KEY);
+    if (window.SelToolDataManager) {
+      var _vdInit = _vdResolveStore();
+      window.SelToolDataManager.bindLegacyKey('voicedetective', _vdInit.key);
+    }
   } catch (e) {}
 
-  // Listen for a project-load restore: pull the restored value back to
-  // localStorage so the next loadData() call sees fresh content.
+  // Listen for a project-load restore: pull the restored value back to the
+  // active storage target so the next loadData() call sees fresh content.
   try {
     window.addEventListener('alloflow-sel-tooldata-restored', function () {
       try {
         if (!window.SelToolDataManager) return;
         var slot = window.SelToolDataManager.get('voicedetective');
         if (slot && slot._lsValue && typeof slot._lsValue === 'object') {
-          try { localStorage.setItem(STORAGE_KEY, JSON.stringify(slot._lsValue)); } catch (e) {}
+          var resolved = _vdResolveStore();
+          if (resolved.store) {
+            try { resolved.store.setItem(resolved.key, JSON.stringify(slot._lsValue)); } catch (e) {}
+          }
         }
       } catch (e) {}
     });

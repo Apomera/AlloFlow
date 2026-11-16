@@ -65,7 +65,8 @@ function stableSerializeEvidence(value, seen) {
 // Synchronous SHA-256 keeps evidence identity available during React render and
 // matches Web Crypto's SHA-256 output. It is a change detector, not a signature.
 function sha256Hex(value) {
-  var text = unescape(encodeURIComponent(String(value == null ? '' : value)));
+  var safeInput = String(value == null ? '' : value).replace(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g, '\uFFFD');
+  var text = unescape(encodeURIComponent(safeInput));
   var maxWord = Math.pow(2, 32);
   var words = [];
   var asciiBitLength = text.length * 8;
@@ -367,7 +368,7 @@ function findingKey(issue) {
   if (/^(?:manual|axe):/.test(ruleId)) {
     return 'rule:' + ruleId;
   }
-  var text = String((issue && (issue.issue || issue.description || issue.text)) || '').toLowerCase();
+  var text = String((issue && (issue.issue || issue.description || issue.text)) || '').slice(0, 2000).toLowerCase();
   var wcag = String((issue && issue.wcag) || '').toLowerCase().replace(/[^0-9.]/g, '');
   text = text
     .replace(/alternative\s+text/g, 'alt text')

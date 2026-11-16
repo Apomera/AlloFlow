@@ -16,7 +16,7 @@ const digest = (algorithm, bytes, encoding) => createHash(algorithm).update(byte
 for (const file of files) describe(file + ' protected record host integration', () => {
   const source = readFileSync(file, 'utf8').replace(/\r\n/g, '\n');
   function roleHarness(records, studentEntry = false) {
-    const setter = vi.fn(), toast = vi.fn(), win = { AlloModules: { SensitiveWorkspace: records } };
+    const setter = vi.fn(), toast = vi.fn(), win = { AlloModules: { SensitiveWorkspace: records }, addEventListener: vi.fn(), removeEventListener: vi.fn() };
     const deps = { useRef: v => ({ current: v }), useEffect: fn => fn(), useCallback: fn => fn,
       isTeacherMode: true, _isCanvasEnv: true, window: win,
       _alloHasAnyStudentEntry: () => studentEntry,

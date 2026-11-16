@@ -1039,7 +1039,14 @@
         if (!voice) return { available: false, reason: 'The shared voice service is unavailable.' };
         var preference = {};
         var capabilities = {};
-        var bridge = typeof window.callGeminiAudio === 'function' ? window.callGeminiAudio : null;
+        var rawBridge = typeof window.callGeminiAudio === 'function' ? window.callGeminiAudio : null;
+        var bridgeAllowed = !!rawBridge
+          && !rawBridge._alloQrBlocked
+          && (typeof window === 'undefined' || (
+            window.__alloStudentAiDisabled !== true
+            && (typeof window.__alloAiUsable !== 'function' || window.__alloAiUsable('audio', rawBridge))
+          ));
+        var bridge = bridgeAllowed ? rawBridge : null;
         try { preference = voice.loadPreference() || {}; } catch (_) {}
         try { capabilities = voice.getCapabilities() || {}; } catch (_) {}
         if (preference.engine === 'off') {

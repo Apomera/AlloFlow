@@ -92,7 +92,7 @@ function TeacherHistoryTab({
       setQuickName('');
       setQuickOpen(false);
       setQuickMessage({ error: false, text: label('roster.quick_added', 'Group added.') });
-      quickToggleRef.current?.focus();
+      if (quickToggleRef.current?.isConnected) quickToggleRef.current?.focus();
       return;
     }
     const errors = {
@@ -104,21 +104,22 @@ function TeacherHistoryTab({
     setQuickMessage({ error: true, text: errors[result] || errors.unavailable });
   };
   const noop = () => null;
-  const ClipboardList = window.ClipboardList || noop;
-  const Settings = window.Settings || noop;
-  const Layers = window.Layers || noop;
-  const Plus = window.Plus || noop;
+  const icon = (name) => (window.AlloIcons && window.AlloIcons[name]) || window[name] || noop;
+  const ClipboardList = icon('ClipboardList');
+  const Settings = icon('Settings');
+  const Layers = icon('Layers');
+  const Plus = icon('Plus');
 
   return (
     <div id="ui-roster-strip" data-help-key="class_groups_strip" className="bg-white rounded-lg border border-slate-400 overflow-hidden shrink-0">
       <div className="p-3 bg-indigo-50 border-b border-indigo-100 flex justify-between items-center">
         <div className="text-sm font-bold text-indigo-800 flex items-center gap-2">
-          <ClipboardList size={16} /> {t('roster.strip_title') || 'Class Groups'}
+          <ClipboardList size={16} aria-hidden="true" /> {t('roster.strip_title') || 'Class Groups'}
         </div>
         <div className="flex items-center gap-1">
           {/* Bridge moved to a header button (🌐 Bridge) for discoverability — removed here to avoid redundancy. */}
-          <button type="button" onClick={() => setIsRosterKeyOpen(true)} className="min-h-11 min-w-11 p-1.5 rounded-md hover:bg-indigo-100 text-indigo-600" title={t('roster.title') || 'Manage Roster'} aria-label={label('roster.title', 'Manage Roster')} data-help-key="roster_manage_button">
-            <Settings size={14} />
+          <button type="button" onClick={() => setIsRosterKeyOpen(true)} className="min-h-11 min-w-11 p-1.5 rounded-md hover:bg-indigo-100 text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1" title={t('roster.title') || 'Manage Roster'} aria-label={label('roster.title', 'Manage Roster')} data-help-key="roster_manage_button">
+            <Settings size={14} aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -128,50 +129,50 @@ function TeacherHistoryTab({
             <div className="flex flex-wrap gap-1.5 mb-2">
               {Object.entries(rosterKey.groups).map(([gid, g]) => (
                 <button type="button" key={gid} onClick={() => handleApplyRosterGroup(gid)}
-                  className="px-2.5 py-1 rounded-full text-[11px] font-bold transition-all hover:scale-105 border cursor-pointer"
-                  style={{ backgroundColor: (g.color || '#6366f1') + '20', borderColor: (g.color || '#6366f1') + '60', color: (g.color === '#f5f5f5' || !g.color) ? '#334155' : g.color }}
+                  className="min-h-11 inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold transition-all motion-reduce:transition-none hover:scale-105 motion-reduce:hover:scale-100 border cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+                  style={{ backgroundColor: (g.color || '#6366f1') + '20', borderColor: (g.color && g.color !== '#f5f5f5') ? g.color + '80' : '#94a3b8', color: '#1e293b' }}
                   title={`${g.name} · ${g.profile?.gradeLevel || 'No grade'} · ${g.profile?.leveledTextLanguage || 'English'}`}
                 >
-                  <span className="inline-block w-2 h-2 rounded-full mr-1 align-middle" style={{ backgroundColor: g.color || '#6366f1' }} />
+                  <span className="inline-block w-2 h-2 rounded-full mr-1.5 align-middle" aria-hidden="true" style={{ backgroundColor: g.color || '#6366f1' }} />
                   {g.name}
                 </button>
               ))}
             </div>
             <button type="button" onClick={onDifferentiateByGroup}
               disabled={!hasSourceOrAnalysis}
-              className="w-full px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-100 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-40 border border-amber-600"
+              className="min-h-11 w-full px-3 py-1.5 bg-amber-50 text-amber-900 rounded-lg text-xs font-bold hover:bg-amber-100 transition-colors motion-reduce:transition-none flex items-center justify-center gap-1.5 disabled:opacity-50 border border-amber-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700"
             >
-              <Layers size={14} /> {t('roster.batch_generate') || 'Differentiate by Group'}
+              <Layers size={14} aria-hidden="true" /> {t('roster.batch_generate') || 'Differentiate by Group'}
             </button>
           </>
         ) : (
           <p className="text-xs text-slate-600">{label('roster.strip_empty_groups', 'No groups yet.')}</p>
         )}
-        {canQuickAdd && <button ref={quickToggleRef} type="button" onClick={toggleQuickGroup} disabled={quickSaving} aria-expanded={quickOpen} aria-controls="roster-quick-group-form" className="mt-2 inline-flex min-h-11 items-center gap-1.5 rounded-lg px-2 text-xs font-bold text-indigo-700 hover:bg-indigo-50 disabled:opacity-50">
+        {canQuickAdd && <button ref={quickToggleRef} type="button" onClick={toggleQuickGroup} disabled={quickSaving} aria-expanded={quickOpen} aria-controls="roster-quick-group-form" className="mt-2 inline-flex min-h-11 items-center gap-1.5 rounded-lg px-2 text-xs font-bold text-indigo-700 hover:bg-indigo-50 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">
           <Plus size={14} aria-hidden="true" /> {label('roster.quick_add', 'Add group')}
         </button>}
         {quickOpen && canQuickAdd && <form id="roster-quick-group-form" onSubmit={submitQuickGroup} className="mt-2 grid gap-2 border-t border-slate-200 pt-3" aria-busy={quickSaving} aria-label={label('roster.quick_add', 'Add group')}>
           <label className="grid gap-1 text-xs font-semibold text-slate-700">{label('roster.quick_name', 'Group name')}
-            <input ref={quickNameRef} value={quickName} disabled={quickSaving} onChange={event => { setQuickName(event.target.value); setQuickMessage(null); }} maxLength={60} className="min-h-11 min-w-0 rounded-lg border border-slate-400 bg-white px-2 text-sm text-slate-900" />
+            <input ref={quickNameRef} value={quickName} disabled={quickSaving} onChange={event => { setQuickName(event.target.value); setQuickMessage(null); }} maxLength={60} className="min-h-11 min-w-0 rounded-lg border border-slate-400 bg-white px-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" />
           </label>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <label className="grid min-w-0 gap-1 text-xs font-semibold text-slate-700">{label('roster.quick_grade', 'Grade')}
-              <select value={quickGrade} disabled={quickSaving} onChange={event => setQuickGrade(event.target.value)} className="min-h-11 min-w-0 w-full rounded-lg border border-slate-400 bg-white px-2 text-sm text-slate-900">
+              <select value={quickGrade} disabled={quickSaving} onChange={event => setQuickGrade(event.target.value)} className="min-h-11 min-w-0 w-full rounded-lg border border-slate-400 bg-white px-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">
                 {gradeOptions.map(grade => <option key={grade} value={grade}>{gradeLabel(grade)}</option>)}
               </select>
             </label>
             <label className="grid min-w-0 gap-1 text-xs font-semibold text-slate-700">{label('roster.quick_language', 'Language')}
-              <select value={quickLanguage} disabled={quickSaving} onChange={event => setQuickLanguage(event.target.value)} className="min-h-11 min-w-0 w-full rounded-lg border border-slate-400 bg-white px-2 text-sm text-slate-900">
+              <select value={quickLanguage} disabled={quickSaving} onChange={event => setQuickLanguage(event.target.value)} className="min-h-11 min-w-0 w-full rounded-lg border border-slate-400 bg-white px-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">
                 {languageOptions.map(language => <option key={language} value={language}>{language === 'English' ? label('languages.english', 'English') : language}</option>)}
               </select>
             </label>
           </div>
           <div className="flex flex-wrap gap-2">
-            <button type="submit" disabled={quickSaving} className="min-h-11 rounded-lg bg-indigo-700 px-3 text-xs font-bold text-white hover:bg-indigo-800 disabled:opacity-50">{quickSaving ? label('common.saving', 'Saving...') : label('roster.quick_add', 'Add group')}</button>
-            <button type="button" disabled={quickSaving} onClick={() => { setQuickOpen(false); setQuickMessage(null); quickToggleRef.current?.focus(); }} className="min-h-11 rounded-lg border border-slate-400 px-3 text-xs font-bold text-slate-700 disabled:opacity-50">{label('common.cancel', 'Cancel')}</button>
+            <button type="submit" disabled={quickSaving} className="min-h-11 rounded-lg bg-indigo-700 px-3 text-xs font-bold text-white hover:bg-indigo-800 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{quickSaving ? label('common.saving', 'Saving...') : label('roster.quick_add', 'Add group')}</button>
+            <button type="button" disabled={quickSaving} onClick={() => { setQuickOpen(false); setQuickMessage(null); if (quickToggleRef.current?.isConnected) quickToggleRef.current?.focus(); }} className="min-h-11 rounded-lg border border-slate-400 px-3 text-xs font-bold text-slate-700 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{label('common.cancel', 'Cancel')}</button>
           </div>
         </form>}
-        {quickMessage && <p role={quickMessage.error ? 'alert' : 'status'} className={`mt-2 text-xs font-semibold ${quickMessage.error ? 'text-red-700' : 'text-emerald-800'}`}>{quickMessage.text}</p>}
+        {quickMessage && <p role={quickMessage.error ? 'alert' : 'status'} aria-live={quickMessage.error ? 'assertive' : 'polite'} className={`mt-2 text-xs font-semibold ${quickMessage.error ? 'text-red-700' : 'text-emerald-800'}`}>{quickMessage.text}</p>}
       </div>
     </div>
   );

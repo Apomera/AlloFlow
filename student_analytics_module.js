@@ -913,20 +913,25 @@ try {
   }
 
   var studentAnalyticsConfirmSequence = 0;
+  var studentAnalyticsActiveConfirmClose = null;
   function askStudentAnalyticsConfirmation(message, options) {
     return new Promise(function(resolve) {
       if (!document.body) { resolve(false); return; }
+      if (typeof studentAnalyticsActiveConfirmClose === 'function') studentAnalyticsActiveConfirmClose(false);
       options = options || {};
       studentAnalyticsConfirmSequence += 1;
       var idBase = 'student-analytics-confirm-' + studentAnalyticsConfirmSequence;
       var opener = document.activeElement;
-      var blocked = Array.prototype.slice.call(document.body.children).map(function(el) {
+      var blocked = Array.prototype.slice.call(document.body.children).filter(function(el) {
+        return el && el.tagName && !/^(?:script|style|link|template)$/i.test(el.tagName);
+      }).map(function(el) {
         return { el: el, hadInert: el.hasAttribute('inert'), ariaHidden: el.getAttribute('aria-hidden') };
       });
       var overlay = document.createElement('div');
       overlay.setAttribute('role', 'presentation');
       overlay.style.cssText = 'position:fixed;inset:0;z-index:400;background:rgba(15,23,42,.78);display:flex;align-items:center;justify-content:center;padding:20px;';
       var dialog = document.createElement('div');
+      dialog.tabIndex = -1;
       dialog.setAttribute('role', 'alertdialog');
       dialog.setAttribute('aria-modal', 'true');
       dialog.setAttribute('aria-labelledby', idBase + '-title');
@@ -958,6 +963,7 @@ try {
       function finish(accepted) {
         if (settled) return;
         settled = true;
+        if (studentAnalyticsActiveConfirmClose === finish) studentAnalyticsActiveConfirmClose = null;
         document.removeEventListener('keydown', onKeyDown, true);
         try { overlay.remove(); } catch (e) {}
         blocked.forEach(function(entry) {
@@ -967,10 +973,16 @@ try {
         try { if (opener && opener.isConnected && typeof opener.focus === 'function') opener.focus(); } catch (e) {}
         resolve(accepted === true);
       }
+      studentAnalyticsActiveConfirmClose = finish;
       function onKeyDown(event) {
         if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); finish(false); return; }
         if (event.key !== 'Tab') return;
-        if (!dialog.contains(document.activeElement)) { event.preventDefault(); cancel.focus(); return; }
+        if (document.activeElement !== cancel && document.activeElement !== confirm) {
+          event.preventDefault();
+          if (event.shiftKey) confirm.focus();
+          else cancel.focus();
+          return;
+        }
         if (event.shiftKey && document.activeElement === cancel) { event.preventDefault(); confirm.focus(); }
         else if (!event.shiftKey && document.activeElement === confirm) { event.preventDefault(); cancel.focus(); }
       }
@@ -1261,7 +1273,7 @@ try {
   // RFC 4180 quoting; text a spreadsheet would run as a formula stays text.
   function _acCsvCell(value) {
     var text = value == null ? '' : String(value);
-    if (typeof value === 'string' && /^[=+\-@\t\r]/.test(text)) text = "'" + text;
+    if (typeof value === 'string' && (/^\s*[=+\-@|]/.test(text) || /^[\t\r\n]/.test(text))) text = "'" + text;
     return '"' + text.replace(/"/g, '""') + '"';
   }
   function _acDownloadCsv(rows, filename) {
@@ -1334,12 +1346,18 @@ try {
     vocab_picture: ['Word to picture', 'vocabulary'],
     vocab_picture_word: ['Picture to word', 'vocabulary']
   };
+  var _AC_SYMBOL_STRANDS = [
+    ['symbol_naming', 'Symbol naming']
+  ];
+  var _AC_SYMBOL_ACTIVITIES = {
+    symbol_runner: ['Symbol runner', 'symbol_naming']
+  };
   // The groups in the order shown; '' is "Other activities".
-  var _AC_WS_GROUP_KEYS = _AC_WS_STRANDS.concat(_AC_MATH_FACT_STRANDS, _AC_VOCAB_STRANDS).map(function(r) { return r[0]; }).concat(['']);
+  var _AC_WS_GROUP_KEYS = _AC_WS_STRANDS.concat(_AC_MATH_FACT_STRANDS, _AC_VOCAB_STRANDS, _AC_SYMBOL_STRANDS).map(function(r) { return r[0]; }).concat(['']);
   var _AC_WS_SESSION_CAP = 60;
   function _acWsOwn(obj, key) { return !!obj && Object.prototype.hasOwnProperty.call(obj, key); }
   function _acWsStrandOf(id) {
-    return _acWsOwn(_AC_WS_ACTIVITIES, id) ? _AC_WS_ACTIVITIES[id][1] : _acWsOwn(_AC_MATH_FACT_ACTIVITIES, id) ? _AC_MATH_FACT_ACTIVITIES[id][1] : _acWsOwn(_AC_VOCAB_ACTIVITIES, id) ? _AC_VOCAB_ACTIVITIES[id][1] : '';
+    return _acWsOwn(_AC_WS_ACTIVITIES, id) ? _AC_WS_ACTIVITIES[id][1] : _acWsOwn(_AC_MATH_FACT_ACTIVITIES, id) ? _AC_MATH_FACT_ACTIVITIES[id][1] : _acWsOwn(_AC_VOCAB_ACTIVITIES, id) ? _AC_VOCAB_ACTIVITIES[id][1] : _acWsOwn(_AC_SYMBOL_ACTIVITIES, id) ? _AC_SYMBOL_ACTIVITIES[id][1] : '';
   }
   // The player's name for an activity. Pass no t for English (CSV files).
   function _acWsActivityName(t, id) {
@@ -1347,6 +1365,7 @@ try {
     if (id === 'math_ccc') return _acWsText(t, 'class_analytics.th_mf_activity_ccc', 'Cover, copy, compare');
     if (id === 'math_rehearsal') return _acWsText(t, 'class_analytics.th_mf_activity_rehearsal', 'Fact rehearsal');
     if (_acWsOwn(_AC_VOCAB_ACTIVITIES, id)) return _acWsText(t, 'class_analytics.th_vc_activity_' + id.slice(6), _AC_VOCAB_ACTIVITIES[id][0]);
+    if (id === 'symbol_runner') return _acWsText(t, 'class_analytics.th_sr_activity_runner', 'Symbol runner');
     if (!id || id === 'unknown') return _acWsText(t, 'class_analytics.ws_activity_not_recorded', 'Activity not recorded');
     var plain = String(id).replace(/_/g, ' ').trim();
     return plain ? plain.charAt(0).toUpperCase() + plain.slice(1) : '';
@@ -1355,6 +1374,7 @@ try {
     var row = _AC_WS_STRANDS.filter(function(r) { return r[0] === key; })[0];
     if (row) return _acWsText(t, 'word_sounds.strand_' + key, row[1]);
     if (key === 'vocabulary') return _acWsText(t, 'class_analytics.th_vc_group', 'Vocabulary');
+    if (key === 'symbol_naming') return _acWsText(t, 'class_analytics.th_sr_group', 'Symbol naming');
     return key === 'math_facts' ? _acWsText(t, 'class_analytics.th_mf_group', 'Math facts') : _acWsText(t, 'class_analytics.ws_other_activities', 'Other activities');
   }
   function _acWsNum(value) { var n = Number(value); return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0; }
@@ -1873,7 +1893,7 @@ try {
   // The leading apostrophe _acCsvCell puts before = + - @ comes off on read.
   function _acThUnguard(cell) {
     cell = cell == null ? '' : String(cell);
-    return /^'[=+\-@\t\r]/.test(cell) ? cell.slice(1) : cell;
+    return /^'(?:\s*[=+\-@|]|[\t\r\n])/.test(cell) ? cell.slice(1) : cell;
   }
   function _acThYes(value) { return /^(1|true|yes|y)$/i.test(_acThText(value, 8)); }
   // CSV text to rows of cells. Reads the BOM, CRLF or LF, quoted cells with
@@ -2243,7 +2263,8 @@ try {
     // A check is a math result, never a Word Sounds session. A vocabulary check is not a math
     // measure: it is kept with the take-home sessions, under Vocabulary (one try, so first try = right).
     var vocabCheck = raw.mode === 'probe' && raw.items.length > 0 && raw.items.every(function(it) { return _acWsOwn(_AC_VOCAB_ACTIVITIES, it.activity); });
-    if (raw.mode === 'probe' && !vocabCheck) {
+    var symbolCheck = raw.mode === 'probe' && raw.items.length > 0 && raw.items.every(function(it) { return _acWsOwn(_AC_SYMBOL_ACTIVITIES, it.activity); });
+    if (raw.mode === 'probe' && !vocabCheck && !symbolCheck) {
       session.check = _acCkFromRaw(raw, fileName);
       session.title = session.check.title || session.title;
       session.acts = {}; session.wrong = {}; session.firstTryItems = 0; session.firstTryCorrect = 0; session.percent = null;
@@ -4668,7 +4689,7 @@ try {
         '<h2>Interpretation</h2><p style="font-size:12px;color:#334155;background:' + saEscapeReportText(interp.statusColor) + '08;padding:10px 14px;border-radius:8px;border-left:4px solid ' + saEscapeReportText(interp.statusColor) + '">' + saEscapeReportText(interp.interpretation) + '</p>' + recsHtml +
         '<div class="sig-line"><div>Examiner Signature</div><div>Date</div><div>Title</div></div>' +
         '<div class="footer"><p>Generated by AlloFlow Assessment Center \u2022 ' + saEscapeReportText(dateStr) + '</p><p>Descriptive practice results. Reference comparisons require verified compatibility; no intervention tier is assigned. This is a screening tool, not a comprehensive evaluation.</p></div></body></html>';
-      var w = window.open('', '_blank');
+      var w = window.open('', '_blank'); if (w) { try { w.opener = null; } catch (_) {} }
       if (w) { w.document.write(html); w.document.close(); w.print(); }
     };
 
@@ -4767,7 +4788,7 @@ try {
         '<h2>Team Decision</h2><div style="font-size:11px;line-height:2"><label><input type="checkbox" style="margin-right:4px"> Continue current intervention</label><br><label><input type="checkbox" style="margin-right:4px"> Modify intervention</label><br><label><input type="checkbox" style="margin-right:4px"> Move to higher tier</label><br><label><input type="checkbox" style="margin-right:4px"> Refer for comprehensive evaluation</label><br><label><input type="checkbox" style="margin-right:4px"> Other: _______________</label></div>' +
         '<div class="sig-line"><div>Team Members Present</div><div>Date</div></div><div style="border-bottom:1px solid #e2e8f0;min-height:20px;margin-top:4px"></div>' +
         '<div class="footer"><p>AlloFlow Assessment Center &bull; ' + saEscapeReportText(dateStr) + '</p><p>Descriptive practice results. Reference comparisons require verified compatibility; no intervention tier is assigned. Not a comprehensive evaluation.</p></div></body></html>';
-      var w = window.open('', '_blank'); if (w) { w.document.write(html); w.document.close(); w.print(); }
+      var w = window.open('', '_blank'); if (w) { try { w.opener = null; } catch (_) {} } if (w) { w.document.write(html); w.document.close(); w.print(); }
     };
 
     // ── Class Screening Report Generator ──
@@ -4801,7 +4822,7 @@ try {
         (tier3.length>0?'<h2>\uD83D\uDD34 Students for priority review</h2>'+tier3.map(function(s){return'<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:8px 12px;margin:4px 0"><strong style="color:#991b1b">'+saEscapeReportText(s.name)+'</strong><span style="font-size:10px;color:#7f1d1d;margin-left:8px">'+saEscapeReportText(s.tier.reasons.slice(0,2).join('; '))+'</span></div>';}).join(''):'')+
         '<h2>Notes</h2><div style="border:1px solid #e2e8f0;border-radius:8px;min-height:60px;padding:8px"></div>'+
         '<div class="footer"><p>AlloFlow Assessment Center &bull; '+saEscapeReportText(dateStr)+'</p><p>Descriptive practice results. Reference comparisons require verified compatibility; no intervention tier is assigned.</p></div></body></html>';
-      var w=window.open('','_blank'); if(w){w.document.write(html);w.document.close();w.print();}
+      var w=window.open('','_blank'); if (w) { try { w.opener = null; } catch (_) {} } if(w){w.document.write(html);w.document.close();w.print();}
     };
 
     const classifyScreeningRisk = results => {
@@ -5065,11 +5086,12 @@ try {
           errorRate: 0,
           readingLevel: 'unknown'
         }) : { substitutions: 0, omissions: 0, insertions: 0, selfCorrections: 0, errorRate: 0, readingLevel: 'unknown' };
-        const passageTitle = (r.data.sourceText || '').substring(0, 40).replace(/[\n\r,]/g, ' ').trim() || 'Untitled';
-        return [new Date(r.timestamp).toLocaleDateString(), '"' + passageTitle + '"', m.wcpm || 0, m.accuracy || 0, m.totalWords || 0, Math.round(m.durationSeconds || 0), rrm.substitutions || 0, rrm.omissions || 0, rrm.insertions || 0, rrm.selfCorrections || 0, '1:' + (rrm.errorRate || 0), rrm.readingLevel || 'unknown'].join(',');
+        const passageTitle = (r.data.sourceText || '').substring(0, 40).replace(/[\n\r]+/g, ' ').trim() || 'Untitled';
+        const dateStr = r.timestamp ? new Date(r.timestamp).toLocaleDateString() : '';
+        return [dateStr, passageTitle, m.wcpm || 0, m.accuracy || 0, m.totalWords || 0, Math.round(m.durationSeconds || 0), rrm.substitutions || 0, rrm.omissions || 0, rrm.insertions || 0, rrm.selfCorrections || 0, '1:' + (rrm.errorRate || 0), rrm.readingLevel || 'unknown'].map(_acCsvCell).join(',');
       });
-      const csv = [headers.join(','), ...rows].join('\n');
-      const blob = new Blob([csv], {
+      const csv = [headers.map(_acCsvCell).join(','), ...rows].join('\n');
+      const blob = new Blob(['\uFEFF' + csv], {
         type: 'text/csv;charset=utf-8;'
       });
       const link = document.createElement('a');
@@ -5272,6 +5294,13 @@ try {
           stats: s.stats
         };
       });
+      const safeResearchCsvCell = typeof _acCsvCell === 'function'
+        ? _acCsvCell
+        : (v => {
+            const s = v == null ? '' : String(v);
+            const g = typeof v === 'string' && (/^\s*[=+\-@|]/.test(s) || /^[\t\r\n]/.test(s)) ? "'" + s : s;
+            return '"' + g.replace(/"/g, '""') + '"';
+          });
       const headers = ['Student', 'Snapshots', 'Probes', 'Latest_WS_Accuracy', 'Latest_Quiz_Avg', 'Latest_Fluency_WCPM', 'Growth_WS_Accuracy', 'Growth_Quiz', 'Growth_Fluency', 'Strength', 'Weakness', 'Correlation_r', 'Correlation_Strength', 'Correlation_N', 'Intervention_Count', 'Avg_Frequency_PerWeek', 'Avg_Minutes', 'Total_Activities', 'Games_Played', 'Adventure_XP', 'Probe_1_Activity', 'Probe_1_Accuracy', 'Probe_1_ItemsPerMin', 'Probe_1_Date', 'Probe_2_Activity', 'Probe_2_Accuracy', 'Probe_2_ItemsPerMin', 'Probe_2_Date', 'Probe_3_Activity', 'Probe_3_Accuracy', 'Probe_3_ItemsPerMin', 'Probe_3_Date', 'External_CBM_Source', 'External_CBM_Score', 'External_CBM_Date'];
       const rows = students.map(s => {
         const ins = s.insights;
@@ -5279,15 +5308,16 @@ try {
         const p1 = s.probes[0] || {},
           p2 = s.probes[1] || {},
           p3 = s.probes[2] || {};
-        return [s.name, ins.snapshots || 0, ins.probes || 0, ins.profile?.phonologicalAwareness ?? '', ins.profile?.comprehension || 0, ins.profile?.fluency || 0, ins.growth?.wsAccuracy ?? '', ins.growth?.quizAvg || 0, ins.growth?.fluencyWCPM || 0, ins.strength || '', ins.weakness || '', ins.correlations?.practiceToQuiz?.r ?? '', ins.correlations?.practiceToQuiz?.strength || '', ins.correlations?.practiceToQuiz?.n || '', ins.dosage?.totalInterventions || 0, ins.dosage?.avgFrequency || 0, ins.dosage?.avgMinutes || 0, s.stats?.totalActivities || 0, s.stats?.gamesPlayed || 0, s.stats?.adventureXP || 0, p1.activity || '', p1.accuracy || '', p1.itemsPerMin || '', p1.date || '', p2.activity || '', p2.accuracy || '', p2.itemsPerMin || '', p2.date || '', p3.activity || '', p3.accuracy || '', p3.itemsPerMin || '', p3.date || '', ext.source || '', ext.score || '', ext.date || ''].map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',');
+        return [s.name, ins.snapshots || 0, ins.probes || 0, ins.profile?.phonologicalAwareness ?? '', ins.profile?.comprehension || 0, ins.profile?.fluency || 0, ins.growth?.wsAccuracy ?? '', ins.growth?.quizAvg || 0, ins.growth?.fluencyWCPM || 0, ins.strength || '', ins.weakness || '', ins.correlations?.practiceToQuiz?.r ?? '', ins.correlations?.practiceToQuiz?.strength || '', ins.correlations?.practiceToQuiz?.n || '', ins.dosage?.totalInterventions || 0, ins.dosage?.avgFrequency || 0, ins.dosage?.avgMinutes || 0, s.stats?.totalActivities || 0, s.stats?.gamesPlayed || 0, s.stats?.adventureXP || 0, p1.activity || '', p1.accuracy || '', p1.itemsPerMin || '', p1.date || '', p2.activity || '', p2.accuracy || '', p2.itemsPerMin || '', p2.date || '', p3.activity || '', p3.accuracy || '', p3.itemsPerMin || '', p3.date || '', ext.source || '', ext.score || '', ext.date || ''].map(safeResearchCsvCell).join(',');
       });
-      const csv = [headers.join(','), ...rows].join('\n');
-      const blob = new Blob([csv], {
-        type: 'text/csv'
+      const csv = [headers.map(safeResearchCsvCell).join(','), ...rows].join('\n');
+      const blob = new Blob(['\uFEFF' + csv], {
+        type: 'text/csv;charset=utf-8'
       });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = 'AlloFlow_Research_Export_CONFIDENTIAL_' + _acLocalDate(new Date()) + '.csv';
+      const stamp = typeof _acLocalDate === 'function' ? _acLocalDate(new Date()) : new Date().toISOString().slice(0, 10);
+      link.download = 'AlloFlow_Research_Export_CONFIDENTIAL_' + stamp + '.csv';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -5306,14 +5336,14 @@ try {
         return [
           s.date || d.toISOString(),
           weekday,
-          '"' + String(s.student || '').replace(/"/g, '""') + '"',
-          '"' + String(s.activity || '').replace(/"/g, '""') + '"',
-          s.duration || '',
-          '"' + String(s.researchStudy || '').replace(/"/g, '""') + '"'
-        ].join(',');
+          s.student || '',
+          s.activity || '',
+          s.duration ?? '',
+          s.researchStudy || ''
+        ].map(_acCsvCell).join(',');
       });
-      var csv = [headers.join(',')].concat(rows).join('\n');
-      var blob = new Blob([csv], { type: 'text/csv' });
+      var csv = [headers.map(_acCsvCell).join(',')].concat(rows).join('\n');
+      var blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
       var link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
       link.download = 'AlloFlow_Session_Log_' + _acLocalDate(new Date()) + '.csv';
@@ -5346,16 +5376,16 @@ try {
         var base = [
           r.timestamp || '',
           r.type || '',
-          '"' + String(r.respondent || '').replace(/"/g, '""') + '"',
+          r.respondent || '',
           r.timepoint || 'unspecified',
-          '"' + String(r.studyName || '').replace(/"/g, '""') + '"',
-          '"' + String(consentProvenance).replace(/"/g, '""') + '"'
+          r.studyName || '',
+          consentProvenance
         ];
-        var answers = qids.map(function(q) { return r[q] !== undefined ? r[q] : ''; });
-        return base.concat(answers).join(',');
+        var answers = qids.map(function(q) { return r[q] !== undefined && r[q] !== null ? r[q] : ''; });
+        return base.concat(answers).map(_acCsvCell).join(',');
       });
-      var csv = [headers.join(',')].concat(rows).join('\n');
-      var blob = new Blob([csv], { type: 'text/csv' });
+      var csv = [headers.map(_acCsvCell).join(',')].concat(rows).join('\n');
+      var blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
       var link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
       link.download = 'AlloFlow_Survey_Responses_' + _acLocalDate(new Date()) + '.csv';
@@ -7000,10 +7030,10 @@ try {
         className: 'flex-1 text-xs px-3 py-1.5 bg-white rounded-lg border border-slate-400 hover:bg-emerald-50 hover:border-emerald-600 font-medium text-slate-600 transition-colors',
         onClick: () => {
           const headers = ['Date', 'Weekday', 'Student', 'Activity', 'Duration_Min', 'Study'];
-          const rows = fidelityLog.map(e => [e.date, e.weekday, e.student, e.activity, e.duration, e.researchStudy].map(v => '"' + String(v).replace(/"/g, '""') + '"').join(','));
-          const csv = [headers.join(','), ...rows].join('\n');
-          const blob = new Blob([csv], {
-            type: 'text/csv'
+          const rows = fidelityLog.map(e => [e.date ?? '', e.weekday ?? '', e.student ?? '', e.activity ?? '', e.duration ?? '', e.researchStudy ?? ''].map(_acCsvCell).join(','));
+          const csv = [headers.map(_acCsvCell).join(','), ...rows].join('\n');
+          const blob = new Blob(['\uFEFF' + csv], {
+            type: 'text/csv;charset=utf-8'
           });
           const link = document.createElement('a');
           link.href = URL.createObjectURL(blob);
@@ -7026,12 +7056,12 @@ try {
           const headers = ['Key', 'Type', 'Respondent', 'Timestamp', 'Q1', 'Q2', 'Q3', 'Q4', 'Q5'];
           const rows = allResponses.map(r => {
             const questions = SURVEY_QUESTIONS[r.type] || [];
-            const scores = questions.map(q => r[q.id] || '');
-            return [r.key, r.type, r.respondent, r.timestamp, ...scores].map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',');
+            const scores = questions.map(q => r[q.id] ?? '');
+            return [r.key ?? '', r.type ?? '', r.respondent ?? '', r.timestamp ?? '', ...scores].map(_acCsvCell).join(',');
           });
-          const csv = [headers.join(','), ...rows].join('\n');
-          const blob = new Blob([csv], {
-            type: 'text/csv'
+          const csv = [headers.map(_acCsvCell).join(','), ...rows].join('\n');
+          const blob = new Blob(['\uFEFF' + csv], {
+            type: 'text/csv;charset=utf-8'
           });
           const link = document.createElement('a');
           link.href = URL.createObjectURL(blob);
@@ -7794,7 +7824,7 @@ try {
     <button class="print-btn" onclick="window.print()">🖨️ Print This Report</button>
 </body>
 </html>`;
-      const reportWindow = window.open('', '_blank');
+      const reportWindow = window.open('', '_blank'); if (reportWindow) { try { reportWindow.opener = null; } catch (_) {} }
       if (reportWindow) {
         reportWindow.document.write(html);
         reportWindow.document.close();
@@ -7905,10 +7935,10 @@ try {
     };
     const handleExportCSV = () => {
       if (importedStudents.length === 0) return;
-      const headers = [t('class_analytics.student_name'), t('class_analytics.quiz_avg'), t('class_analytics.adventure_xp'), t('class_analytics.escape_completion'), t('class_analytics.fluency_wcpm'), t('class_analytics.interview_xp'), 'Word Sounds %', 'Games Played', 'Socratic Msgs', 'Label Challenge %', 'SEL Tools', 'SEL Reflections', t('class_analytics.safety_flags'), t('class_analytics.total_activities'), t('class_analytics.last_session')].join(',');
-      const rows = importedStudents.map(student => [`"${student.name}"`, student.stats.quizAvg, student.stats.adventureXP, `${student.stats.escapeCompletion}%`, student.stats.fluencyWCPM, student.stats.interviewXP, Number.isFinite(student.stats.wsAccuracy) ? `${student.stats.wsAccuracy}%` : 'N/A', student.stats.gamesPlayed || 0, student.stats.socraticMessageCount || 0, student.stats.labelChallengeAvg ? `${student.stats.labelChallengeAvg}%` : 'N/A', student.stats.selToolsUsed || 0, student.stats.selReflectionCount || 0, student.safetyFlags.length, student.stats.totalActivities, new Date(student.lastSession).toLocaleDateString()].join(','));
+      const headers = [t('class_analytics.student_name'), t('class_analytics.quiz_avg'), t('class_analytics.adventure_xp'), t('class_analytics.escape_completion'), t('class_analytics.fluency_wcpm'), t('class_analytics.interview_xp'), 'Word Sounds %', 'Games Played', 'Socratic Msgs', 'Label Challenge %', 'SEL Tools', 'SEL Reflections', t('class_analytics.safety_flags'), t('class_analytics.total_activities'), t('class_analytics.last_session')].map(_acCsvCell).join(',');
+      const rows = importedStudents.map(student => [student.name ?? '', student.stats.quizAvg, student.stats.adventureXP, `${student.stats.escapeCompletion}%`, student.stats.fluencyWCPM, student.stats.interviewXP, Number.isFinite(student.stats.wsAccuracy) ? `${student.stats.wsAccuracy}%` : 'N/A', student.stats.gamesPlayed || 0, student.stats.socraticMessageCount || 0, student.stats.labelChallengeAvg ? `${student.stats.labelChallengeAvg}%` : 'N/A', student.stats.selToolsUsed || 0, student.stats.selReflectionCount || 0, student.safetyFlags.length, student.stats.totalActivities, student.lastSession ? new Date(student.lastSession).toLocaleDateString() : ''].map(_acCsvCell).join(','));
       const csv = [headers, ...rows].join('\n');
-      const blob = new Blob([csv], {
+      const blob = new Blob(['\uFEFF' + csv], {
         type: 'text/csv;charset=utf-8;'
       });
       const url = URL.createObjectURL(blob);
@@ -8824,7 +8854,7 @@ try {
       },
       className: `flex items-center gap-2 px-4 py-2.5 text-sm font-bold border-b-2 transition-all ${effectiveTab === tab.id ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-700 hover:bg-slate-100'}`
     }, /*#__PURE__*/React.createElement("span", null, tab.label), /*#__PURE__*/React.createElement("span", {
-      className: `text-[11px] font-normal ${effectiveTab === tab.id ? 'text-indigo-400' : 'text-slate-600'}`
+      className: `text-[11px] font-normal ${effectiveTab === tab.id ? 'text-indigo-700' : 'text-slate-600'}`
     }, tab.desc)))), /*#__PURE__*/React.createElement("div", {
       className: "flex-1 overflow-y-auto p-4",
       style: {

@@ -1697,7 +1697,8 @@ function LiveLessonRunPanel(props) {
         : (t('live_lesson.open_teacher') || 'Open on teacher screen');
 
   const buttonBase = {
-    minHeight: 38,
+    minHeight: 44,
+    minWidth: 44,
     borderRadius: 8,
     border: '1px solid #cbd5e1',
     background: 'white',
@@ -1752,7 +1753,8 @@ function LiveLessonRunPanel(props) {
             }}
             style={{
               marginLeft: 'auto',
-              minHeight: 32,
+              minHeight: 44,
+              minWidth: 44,
               border: '1px solid #818cf8',
               borderRadius: 7,
               background: companionActive ? '#4338ca' : '#eef2ff',
@@ -1827,7 +1829,7 @@ function LiveLessonRunPanel(props) {
                 style={{
                   display: 'block',
                   width: '100%',
-                  minHeight: 36,
+                  minHeight: 44,
                   marginTop: 3,
                   border: '1px solid #a5b4fc',
                   borderRadius: 7,
@@ -1869,7 +1871,7 @@ function LiveLessonRunPanel(props) {
         >
           <summary
             aria-label={`Run readiness: ${liveRunReadiness.label}. ${liveRunReadiness.stepCount} steps and ${liveRunReadiness.preparedCount} prepared interactions.`}
-            style={{ color: liveRunReadinessTone.text, cursor: 'pointer', fontSize: '0.68rem', fontWeight: 900 }}
+            style={{ minHeight: 44, display: 'flex', alignItems: 'center', color: liveRunReadinessTone.text, cursor: 'pointer', fontSize: '0.68rem', fontWeight: 900 }}
           >
             Run readiness: {liveRunReadiness.label}
             {' - '}{liveRunReadiness.stepCount} step{liveRunReadiness.stepCount === 1 ? '' : 's'}
@@ -1916,7 +1918,7 @@ function LiveLessonRunPanel(props) {
                         type="button"
                         onClick={() => selectAt(issue.stepIndex)}
                         aria-label={'Review ' + issue.label}
-                        style={{ border: 0, background: 'transparent', color: 'inherit', padding: 0, textDecoration: 'underline', fontFamily: 'inherit', fontSize: 'inherit', fontWeight: 700, cursor: 'pointer' }}
+                        style={{ minHeight: 44, minWidth: 44, display: 'inline-flex', alignItems: 'center', border: 0, background: 'transparent', color: 'inherit', padding: '0.2rem 0.35rem', textDecoration: 'underline', fontFamily: 'inherit', fontSize: 'inherit', fontWeight: 700, cursor: 'pointer' }}
                       >
                         {issue.label}
                       </button>
@@ -2006,7 +2008,7 @@ function LiveLessonRunPanel(props) {
             </button>
           )}
 
-          <p style={{ margin: '0.45rem 0 0', color: '#6366f1', fontSize: '0.59rem', lineHeight: 1.35 }}>
+          <p style={{ margin: '0.45rem 0 0', color: '#4338ca', fontSize: '0.59rem', lineHeight: 1.35 }}>
             {t('live_lesson.activity_pulse_privacy') || 'Status and counts only; student responses remain in the activity owner.'}
           </p>
         </div>
@@ -2041,7 +2043,7 @@ function LiveLessonRunPanel(props) {
                   aria-pressed={selected}
                   onClick={() => toggleCompanionStatusCohort(cohort)}
                   style={{
-                    minHeight: 42,
+                    minHeight: 44,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
@@ -2146,7 +2148,7 @@ function LiveLessonRunPanel(props) {
                       ? current.filter(uid => !queueUids.includes(uid))
                       : Array.from(new Set(current.concat(queueUids))).slice(0, companionActive ? 25 : 12));
                   }}
-                  style={{ border: 'none', background: 'transparent', color: '#92400e', padding: 2, fontSize: '0.6rem', fontWeight: 900, cursor: 'pointer' }}
+                  style={{ minHeight: 44, minWidth: 44, border: 'none', background: 'transparent', color: '#92400e', padding: '0.25rem 0.5rem', fontSize: '0.6rem', fontWeight: 900, cursor: 'pointer' }}
                 >
                   {attentionQueue.every(item => validAttentionSelectedUids.includes(item.uid))
                     ? (t('common.clear') || 'Clear')
@@ -2182,7 +2184,7 @@ function LiveLessonRunPanel(props) {
                   data-live-attention-cohorts="teacher-memory-only"
                   style={{ marginTop: 5, padding: '0.32rem 0.38rem', border: '1px solid #fcd34d', borderRadius: 7, background: '#fefce8' }}
                 >
-                  <summary style={{ minHeight: 36, display: 'flex', alignItems: 'center', color: '#854d0e', cursor: 'pointer', fontSize: '0.62rem', fontWeight: 900 }}>
+                  <summary style={{ minHeight: 44, display: 'flex', alignItems: 'center', color: '#854d0e', cursor: 'pointer', fontSize: '0.62rem', fontWeight: 900 }}>
                     {t('live_lesson.group_patterns') || 'Group patterns'} ({attentionCohorts.length})
                   </summary>
                   <p style={{ margin: '0 0 0.35rem', color: '#854d0e', fontSize: '0.57rem', lineHeight: 1.35 }}>
@@ -2259,7 +2261,7 @@ function LiveLessonRunPanel(props) {
                         checked={selected}
                         onChange={() => toggleAttentionSelection(item.uid)}
                         aria-label={'Select ' + name + (attentionResourceTitle ? ' for ' + attentionResourceTitle : ' for a resource send')}
-                        style={{ width: 18, height: 18 }}
+                        style={{ width: 22, height: 22, minWidth: 24, minHeight: 24, margin: 10 }}
                       />
                       <div style={{ minWidth: 0 }}>
                         <div style={{ fontWeight: 900, color: '#0f172a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -2289,7 +2291,7 @@ function LiveLessonRunPanel(props) {
                           disabled={attentionSending || attentionReleasing || !!attentionSendingUid}
                           onClick={() => sendAttentionStudent(item.uid)}
                           aria-label={'Send ' + (attentionResourceTitle || (t('live_lesson.selected_step') || 'selected step')) + ' to ' + name}
-                          style={{ minHeight: 36, border: '1px solid #f59e0b', borderRadius: 6, background: '#fff7ed', color: '#92400e', padding: '0.2rem 0.35rem', fontFamily: 'inherit', fontSize: '0.58rem', fontWeight: 900, cursor: attentionSending || attentionReleasing || attentionSendingUid ? 'not-allowed' : 'pointer', opacity: attentionSending || attentionReleasing || attentionSendingUid ? 0.65 : 1 }}
+                          style={{ minHeight: 44, minWidth: 44, border: '1px solid #f59e0b', borderRadius: 6, background: '#fff7ed', color: '#92400e', padding: '0.2rem 0.35rem', fontFamily: 'inherit', fontSize: '0.58rem', fontWeight: 900, cursor: attentionSending || attentionReleasing || attentionSendingUid ? 'not-allowed' : 'pointer', opacity: attentionSending || attentionReleasing || attentionSendingUid ? 0.65 : 1 }}
                         >
                           {sendingThisStudent
                             ? (t('common.sending') || 'Sending...')
@@ -2309,8 +2311,8 @@ function LiveLessonRunPanel(props) {
                   ...(focusItem && validSelectedUids.length > 0 && !attentionSending && !attentionReleasing && !attentionSendingUid ? buttonBase : disabledButton),
                   width: '100%',
                   marginTop: 6,
-                  borderColor: '#d97706',
-                  background: focusItem && validSelectedUids.length > 0 && !attentionSending && !attentionReleasing && !attentionSendingUid ? '#d97706' : '#f8fafc',
+                  borderColor: '#b45309',
+                  background: focusItem && validSelectedUids.length > 0 && !attentionSending && !attentionReleasing && !attentionSendingUid ? '#b45309' : '#f8fafc',
                   color: focusItem && validSelectedUids.length > 0 && !attentionSending && !attentionReleasing && !attentionSendingUid ? 'white' : '#94a3b8',
                 }}
               >
@@ -2339,7 +2341,7 @@ function LiveLessonRunPanel(props) {
                 disabled={attentionReleasing || attentionSending || !!attentionSendingUid}
                 onClick={releaseAcknowledgedResources}
                 aria-label={'Release ' + acknowledgedResourceOverrideUids.length + ' opened individual support override' + (acknowledgedResourceOverrideUids.length === 1 ? '' : 's')}
-                style={{ ...buttonBase, width: '100%', minHeight: 34, marginTop: 4, borderColor: '#78716c', color: '#44403c', opacity: attentionReleasing || attentionSending || attentionSendingUid ? 0.65 : 1 }}
+                style={{ ...buttonBase, width: '100%', minHeight: 44, marginTop: 4, borderColor: '#78716c', color: '#44403c', opacity: attentionReleasing || attentionSending || attentionSendingUid ? 0.65 : 1 }}
               >
                 {attentionReleasing
                   ? (t('common.releasing') || 'Releasing...')
@@ -2364,7 +2366,7 @@ function LiveLessonRunPanel(props) {
           aria-label={t('live_lesson.class_debrief') || 'Class debrief'}
           style={{ marginTop: 7, padding: '0.5rem', border: '1px solid #a5b4fc', borderRadius: 9, background: '#f5f3ff' }}
         >
-          <summary style={{ minHeight: 36, display: 'flex', alignItems: 'center', color: '#4338ca', cursor: 'pointer', fontSize: '0.7rem', fontWeight: 900 }}>
+          <summary style={{ minHeight: 44, display: 'flex', alignItems: 'center', color: '#4338ca', cursor: 'pointer', fontSize: '0.7rem', fontWeight: 900 }}>
             {t('live_lesson.class_debrief') || 'Class debrief'} ({classDebrief.length})
           </summary>
           <p style={{ margin: '0 0 0.4rem', color: '#5b21b6', fontSize: '0.58rem', lineHeight: 1.35 }}>
@@ -2392,7 +2394,7 @@ function LiveLessonRunPanel(props) {
                   {(canSend || (finding.canOpenActivity && typeof onOpenActivity === 'function')) && (
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 5 }}>
                       {finding.canOpenActivity && typeof onOpenActivity === 'function' && (
-                        <button type="button" onClick={() => onOpenActivity(activityItem)} aria-label={'Open ' + liveActivityKindLabel(finding.activityKind) + ' review from class debrief'} style={{ ...buttonBase, minHeight: 34, borderColor: tone.border, color: tone.text, fontSize: '0.57rem' }}>
+                        <button type="button" onClick={() => onOpenActivity(activityItem)} aria-label={'Open ' + liveActivityKindLabel(finding.activityKind) + ' review from class debrief'} style={{ ...buttonBase, minHeight: 44, minWidth: 44, borderColor: tone.border, color: tone.text, fontSize: '0.57rem' }}>
                           {t('live_lesson.open_review') || 'Open review'}
                         </button>
                       )}
@@ -2402,7 +2404,7 @@ function LiveLessonRunPanel(props) {
                           disabled={!!debriefSendingId}
                           onClick={() => sendDebriefFinding(finding)}
                           aria-label={'Send ' + attentionResourceTitle + ' to ' + currentTargetCount + ' debrief student' + (currentTargetCount === 1 ? '' : 's')}
-                          style={{ ...buttonBase, minHeight: 34, borderColor: tone.border, background: 'white', color: tone.text, fontSize: '0.57rem', opacity: debriefSendingId ? 0.65 : 1 }}
+                          style={{ ...buttonBase, minHeight: 44, minWidth: 44, borderColor: tone.border, background: 'white', color: tone.text, fontSize: '0.57rem', opacity: debriefSendingId ? 0.65 : 1 }}
                         >
                           {debriefSendingId === finding.id ? (t('common.sending') || 'Sending...') : (t('live_lesson.send_follow_up') || 'Send selected follow-up') + ' (' + currentTargetCount + ')'}
                         </button>
@@ -2425,7 +2427,7 @@ function LiveLessonRunPanel(props) {
           aria-label={t('live_lesson.activity_timeline') || 'Activity timeline'}
           style={{ marginTop: 7, padding: '0.45rem 0.5rem', border: '1px solid #cbd5e1', borderRadius: 9, background: '#f8fafc' }}
         >
-          <summary style={{ color: '#334155', cursor: 'pointer', fontSize: '0.68rem', fontWeight: 900 }}>
+          <summary style={{ minHeight: 44, display: 'flex', alignItems: 'center', color: '#334155', cursor: 'pointer', fontSize: '0.68rem', fontWeight: 900 }}>
             {t('live_lesson.recent_activity') || 'Recent activity'} ({activityTimeline.length})
           </summary>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 5 }}>
@@ -2438,7 +2440,7 @@ function LiveLessonRunPanel(props) {
                   <span style={{ minWidth: 0, flex: 1, color: '#0f172a', fontWeight: 800, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {liveActivityKindLabel(item.kind)}
                   </span>
-                  <span style={{ color: '#64748b', whiteSpace: 'nowrap' }}>
+                  <span style={{ color: '#475569', whiteSpace: 'nowrap' }}>
                     {item.counts.submitted}/{item.counts.invited}{item.counts.votesCast > 0 ? ` / ${item.counts.votesCast} ${t('live_lesson.votes') || 'votes'}` : ''}{duration ? ` · ${duration}` : ''}
                   </span>
                   <span style={{ color: '#475569', fontWeight: 800, whiteSpace: 'nowrap' }}>
@@ -2451,7 +2453,7 @@ function LiveLessonRunPanel(props) {
                       type="button"
                       onClick={() => onOpenActivity(item)}
                       aria-label={`Open ${liveActivityKindLabel(item.kind)} dashboard`}
-                      style={{ border: '1px solid #94a3b8', borderRadius: 5, background: '#f8fafc', color: '#334155', padding: '0.12rem 0.3rem', fontSize: '0.56rem', fontWeight: 900, cursor: 'pointer' }}
+                      style={{ minHeight: 44, minWidth: 44, border: '1px solid #94a3b8', borderRadius: 5, background: '#f8fafc', color: '#334155', padding: '0.25rem 0.5rem', fontSize: '0.56rem', fontWeight: 900, cursor: 'pointer' }}
                     >
                       {t('common.open') || 'Open'}
                     </button>
@@ -2470,6 +2472,7 @@ function LiveLessonRunPanel(props) {
       ) : (
         <>
           <div
+            role="status"
             aria-live="polite"
             style={{
               display: 'flex',
@@ -2501,7 +2504,7 @@ function LiveLessonRunPanel(props) {
               >
                 {getTitle(focusItem)}
               </div>
-              <div style={{ color: '#64748b', fontSize: '0.62rem' }}>
+              <div style={{ color: '#475569', fontSize: '0.62rem' }}>
                 {focusIsCurrent
                   ? `${t('live_lesson.current_step') || 'Current step'} ${currentIndex + 1}`
                   : `${t('live_lesson.selected_step') || 'Selected step'} ${focusIndex + 1}`}
@@ -2555,7 +2558,7 @@ function LiveLessonRunPanel(props) {
                 type="button"
                 onClick={() => selectAt(nextIndex)}
                 aria-label={(t('live_lesson.review_next_step') || 'Review next step') + ': ' + nextItemTitle}
-                style={{ ...buttonBase, minHeight: 32, padding: '0.25rem 0.42rem', borderColor: '#7dd3fc', color: '#075985', fontSize: '0.59rem' }}
+                style={{ ...buttonBase, minHeight: 44, minWidth: 44, padding: '0.25rem 0.42rem', borderColor: '#7dd3fc', color: '#075985', fontSize: '0.59rem' }}
               >
                 {t('common.review') || 'Review'}
               </button>
@@ -2573,7 +2576,7 @@ function LiveLessonRunPanel(props) {
               background: '#f5f3ff',
             }}
           >
-            <summary style={{ color: '#5b21b6', cursor: 'pointer', fontSize: '0.68rem', fontWeight: 900 }}>
+            <summary style={{ minHeight: 44, display: 'flex', alignItems: 'center', color: '#5b21b6', cursor: 'pointer', fontSize: '0.68rem', fontWeight: 900 }}>
               {t('live_lesson.presenter_cues') || 'Private presenter cues'}
               {hasPresenterCue ? ' · ' + (t('common.ready') || 'ready') : ''}
             </summary>
@@ -2621,10 +2624,12 @@ function LiveLessonRunPanel(props) {
                 disabled={!hasPresenterCue || typeof onChangePresenterCue !== 'function'}
                 onClick={clearPresenterCue}
                 style={{
+                  minHeight: 44,
+                  minWidth: 44,
                   border: 'none',
                   background: 'transparent',
-                  color: hasPresenterCue ? '#6d28d9' : '#a78bfa',
-                  padding: 2,
+                  color: hasPresenterCue ? '#6d28d9' : '#64748b',
+                  padding: '0.25rem 0.5rem',
                   fontSize: '0.58rem',
                   fontWeight: 900,
                   cursor: hasPresenterCue ? 'pointer' : 'not-allowed',
@@ -2645,7 +2650,7 @@ function LiveLessonRunPanel(props) {
               background: '#ecfeff',
             }}
           >
-            <summary style={{ color: '#155e75', cursor: 'pointer', fontSize: '0.68rem', fontWeight: 900 }}>
+            <summary style={{ minHeight: 44, display: 'flex', alignItems: 'center', color: '#155e75', cursor: 'pointer', fontSize: '0.68rem', fontWeight: 900 }}>
               {t('live_lesson.prepared_checkpoint') || 'Prepared checkpoint'}
               {preparedCheckpointLaunchBlocked
                 ? ' - ' + (t('common.needs_attention') || 'needs attention')
@@ -2664,7 +2669,7 @@ function LiveLessonRunPanel(props) {
                   updatePreparedCheckpoint(kind ? { kind } : { kind: '', prompt: '', criteria: '' });
                 }}
                 aria-label={(t('live_lesson.checkpoint_type') || 'Checkpoint type') + ' for ' + getTitle(focusItem)}
-                style={{ display: 'block', width: '100%', minHeight: 36, marginTop: 2, border: '1px solid #67e8f9', borderRadius: 6, background: 'white', color: '#0f172a', padding: '0.3rem', fontFamily: 'inherit', fontSize: '0.64rem' }}
+                style={{ display: 'block', width: '100%', minHeight: 44, marginTop: 2, border: '1px solid #67e8f9', borderRadius: 6, background: 'white', color: '#0f172a', padding: '0.3rem', fontFamily: 'inherit', fontSize: '0.64rem' }}
               >
                 <option value="">{t('live_lesson.no_checkpoint') || 'No checkpoint'}</option>
                 <option value="quick_check">{t('live_dock.quick_check') || 'Quick check'}</option>
@@ -2737,7 +2742,7 @@ function LiveLessonRunPanel(props) {
                     type="button"
                     onClick={clearPreparedCheckpoint}
                     disabled={typeof onChangePresenterCue !== 'function'}
-                    style={{ border: 'none', background: 'transparent', color: '#0e7490', padding: 2, fontSize: '0.58rem', fontWeight: 900, cursor: 'pointer' }}
+                    style={{ minHeight: 44, minWidth: 44, border: 'none', background: 'transparent', color: '#0e7490', padding: '0.25rem 0.5rem', fontSize: '0.58rem', fontWeight: 900, cursor: 'pointer' }}
                   >
                     {t('live_lesson.remove_checkpoint') || 'Remove'}
                   </button>
@@ -2750,7 +2755,7 @@ function LiveLessonRunPanel(props) {
                       type="button"
                       onClick={launchPreparedCheckpoint}
                       disabled={preparedCheckpointLaunchBlocked || typeof onLaunchPreparedInteraction !== 'function'}
-                      style={{ ...(preparedCheckpointLaunchBlocked ? disabledButton : buttonBase), minHeight: 32, borderColor: preparedCheckpointLaunchBlocked ? '#cbd5e1' : '#0891b2', background: preparedCheckpointLaunchBlocked ? '#f8fafc' : '#0891b2', color: preparedCheckpointLaunchBlocked ? '#64748b' : 'white', padding: '0.28rem 0.5rem', fontSize: '0.62rem' }}
+                      style={{ ...(preparedCheckpointLaunchBlocked ? disabledButton : buttonBase), minHeight: 44, borderColor: preparedCheckpointLaunchBlocked ? '#cbd5e1' : '#0e7490', background: preparedCheckpointLaunchBlocked ? '#f8fafc' : '#0e7490', color: preparedCheckpointLaunchBlocked ? '#64748b' : 'white', padding: '0.28rem 0.5rem', fontSize: '0.62rem' }}
                     >
                       {preparedCheckpointLaunchBlocked
                         ? (t('live_lesson.choose_quiz_resource') || 'Choose a quiz resource to launch')
@@ -2801,7 +2806,7 @@ function LiveLessonRunPanel(props) {
               style={{
                 minWidth: 0,
                 width: '100%',
-                minHeight: 36,
+                minHeight: 44,
                 border: '1px solid #bfdbfe',
                 borderRadius: 7,
                 background: 'white',
@@ -2838,7 +2843,7 @@ function LiveLessonRunPanel(props) {
                 aria-label={t('live_lesson.audience_aria') || 'Choose who receives the selected lesson step'}
                 style={{
                   width: '100%',
-                  minHeight: 38,
+                  minHeight: 44,
                   marginTop: 3,
                   border: '1px solid #93c5fd',
                   borderRadius: 7,

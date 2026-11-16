@@ -2536,11 +2536,10 @@ window.StemLab = window.StemLab || {
       var FUNC_DARK = { '#4338ca': '#a5b4fc', '#047857': '#6ee7b7', '#b45309': '#fcd34d', '#be185d': '#f9a8d4', '#0369a1': '#7dd3fc', '#7c3aed': '#c4b5fd', '#6366f1': '#a5b4fc', '#10b981': '#6ee7b7', '#f59e0b': '#fcd34d', '#ec4899': '#f9a8d4', '#0ea5e9': '#7dd3fc', '#a855f7': '#c4b5fd' };
       var funcInk = function (col) { var k = String(col || '').toLowerCase(); return (isDark || isContrast) ? (FUNC_DARK[k] || '#e2e8f0') : (col || '#4338ca'); };
 
-      // Safe-ish expression compiler: strip everything but digits, decimals, operators,
-      // parens, x, and ^. Replace ^ with **. Wrap in Function('x', 'return ' + ...).
-      // Returns null on parse error or non-finite y(0).
-      // Compiled curves are cached by expression: every render used to rebuild each
-      // one with new Function (twice, for the plot and the describe panel).
+      // Safe expression compiler: strip everything but digits, decimals, operators,
+      // parens, x, and ^, then parse with a deterministic recursive-descent math parser
+      // (no Function/eval). Returns null on parse error or non-finite y(0)/y(1).
+      // Compiled curves are cached by expression so render + describe share one build.
       var compileFunc = function (expr) {
         var cache = window._coordGridFnCache || (window._coordGridFnCache = { keys: [], map: {} });
         var k = String(expr || '');
@@ -2553,10 +2552,7 @@ window.StemLab = window.StemLab || {
       var compileFuncRaw = function(expr) {
         var raw = (expr || '').replace(/[^0-9.+\-*\/()xX^ ]/g, '').replace(/X/g, 'x').replace(/\*\*/g, '^');
         if (!raw) return null;
-        // Unary signs: JS rejects -x**2 (SyntaxError, so "-x^2" could not be graphed)
-        // and reads --x / ++x as decrement / increment. A unary minus becomes (-1)*,
-        // which gives -x^2 = -(x^2); a unary plus is dropped. Right after ^ the sign
-        // stays, because 2**-x is valid.
+        // Unary signs: -x^2 = -(x^2), --x = x; right after ^ the sign stays so 2^-x works.
         var safe = '', prevSig = '';
         for (var ui = 0; ui < raw.length; ui++) {
           var uc = raw[ui];
@@ -2564,17 +2560,124 @@ window.StemLab = window.StemLab || {
           if (unary) { if (uc === '-') safe += '(-1)*'; } else safe += uc;
           if (uc !== ' ') prevSig = uc;
         }
-        safe = safe.replace(/\^/g, '**');
-        // Implicit multiplication: students type "2x+1" (the exact syntax the
-        // error toast suggests), but `return 2x+1` is a JS SyntaxError — so
-        // every suggested format failed with the warning that suggested it.
-        // Insert the * a math reader assumes: 2x, 0.5x, )x, 2(, )(, x2, x(.
-        // The lookaheads exclude '*' so the ** from ^ is left alone.
+        // Implicit multiplication: 2x, 0.5x, )x, 2(, )(, x2, x(.
         safe = safe
           .replace(/(\d|\))(?=\s*[x(])/g, '$1*')
           .replace(/x(?=\s*[0-9(])/g, 'x*');
+        var tokens = [], ti = 0, nlen = safe.length;
+        while (ti < nlen) {
+          var ch = safe[ti];
+          if (ch === ' ') { ti++; continue; }
+          if ('+-*/^()x'.indexOf(ch) !== -1) { tokens.push({ t: ch }); ti++; continue; }
+          if ((ch >= '0' && ch <= '9') || ch === '.') {
+            var nStart = ti, dots = 0, digits = 0;
+            while (ti < nlen) {
+              var nc = safe[ti];
+              if (nc >= '0' && nc <= '9') { digits++; ti++; }
+              else if (nc === '.') { dots++; if (dots > 1) return null; ti++; }
+              else break;
+            }
+            if (digits === 0) return null;
+            var numVal = Number(safe.slice(nStart, ti));
+            if (!Number.isFinite(numVal)) return null;
+            tokens.push({ t: 'num', v: numVal });
+            continue;
+          }
+          return null;
+        }
+        if (!tokens.length) return null;
+        var pos = 0, MAX_DEPTH = 64;
+        var peek = function() { return pos < tokens.length ? tokens[pos] : null; };
+        var parseExpr, parseTerm, parseUnary, parsePow, parsePowOperand, parsePrimary;
+        parsePrimary = function(depth) {
+          if (depth > MAX_DEPTH) return null;
+          var tok = peek();
+          if (!tok) return null;
+          if (tok.t === 'num') { pos++; var c = tok.v; return function() { return c; }; }
+          if (tok.t === 'x') { pos++; return function(x) { return x; }; }
+          if (tok.t === '(') {
+            pos++;
+            var inner = parseExpr(depth + 1);
+            if (!inner) return null;
+            var closeTok = peek();
+            if (!closeTok || closeTok.t !== ')') return null;
+            pos++;
+            return inner;
+          }
+          return null;
+        };
+        parsePowOperand = function(depth) {
+          if (depth > MAX_DEPTH) return null;
+          var tok = peek();
+          if (tok && tok.t === '-') {
+            pos++;
+            var neg = parsePowOperand(depth + 1);
+            return neg ? function(x) { return -neg(x); } : null;
+          }
+          if (tok && tok.t === '+') {
+            pos++;
+            return parsePowOperand(depth + 1);
+          }
+          return parsePow(depth + 1);
+        };
+        parsePow = function(depth) {
+          if (depth > MAX_DEPTH) return null;
+          var base = parsePrimary(depth + 1);
+          if (!base) return null;
+          var tok = peek();
+          if (tok && tok.t === '^') {
+            pos++;
+            var exp = parsePowOperand(depth + 1);
+            if (!exp) return null;
+            return function(x) { return Math.pow(base(x), exp(x)); };
+          }
+          return base;
+        };
+        parseUnary = function(depth) {
+          if (depth > MAX_DEPTH) return null;
+          var tok = peek();
+          if (tok && tok.t === '-') {
+            pos++;
+            var neg = parseUnary(depth + 1);
+            return neg ? function(x) { return -neg(x); } : null;
+          }
+          if (tok && tok.t === '+') {
+            pos++;
+            return parseUnary(depth + 1);
+          }
+          return parsePow(depth + 1);
+        };
+        parseTerm = function(depth) {
+          if (depth > MAX_DEPTH) return null;
+          var left = parseUnary(depth + 1);
+          if (!left) return null;
+          while (peek() && (peek().t === '*' || peek().t === '/')) {
+            var op = tokens[pos++].t;
+            var right = parseUnary(depth + 1);
+            if (!right) return null;
+            left = (function(l, r, isMul) {
+              return function(x) { return isMul ? l(x) * r(x) : l(x) / r(x); };
+            })(left, right, op === '*');
+          }
+          return left;
+        };
+        parseExpr = function(depth) {
+          if (depth > MAX_DEPTH) return null;
+          var left = parseTerm(depth + 1);
+          if (!left) return null;
+          while (peek() && (peek().t === '+' || peek().t === '-')) {
+            var op = tokens[pos++].t;
+            var right = parseTerm(depth + 1);
+            if (!right) return null;
+            left = (function(l, r, isAdd) {
+              return function(x) { return isAdd ? l(x) + r(x) : l(x) - r(x); };
+            })(left, right, op === '+');
+          }
+          return left;
+        };
         try {
-          var fn = new Function('x', 'return ' + safe);
+          var fn = parseExpr(0);
+          if (!fn || pos !== tokens.length) return null;
           var probe = fn(0);
           if (typeof probe !== 'number' || isNaN(probe)) {
             var probe2 = fn(1);

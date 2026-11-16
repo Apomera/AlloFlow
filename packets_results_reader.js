@@ -89,8 +89,13 @@
     vocab_picture_word: ['Picture to word', 'vocabulary'],
   };
   var VOCAB_MEASURES = { vocab_items: 'Vocabulary check' };
+  var SYMBOL_MEASURES = { symbol_naming: 'Symbol naming check' };
+  var SYMBOL_STRANDS = [['symbol_naming', 'Symbol naming']];
+  var SYMBOL_ACTIVITIES = {
+    symbol_runner: ['Symbol runner', 'symbol_naming'],
+  };
   // Every group a practice result is counted in, in the order they are shown.
-  var GROUPS = STRANDS.concat(MATH_STRANDS, VOCAB_STRANDS, [OTHER_STRAND]);
+  var GROUPS = STRANDS.concat(MATH_STRANDS, VOCAB_STRANDS, SYMBOL_STRANDS, [OTHER_STRAND]);
   // The check measures and their units, named as the check files name them (packet_check_builder.js
   // MEASURES, and check_unit_* in the take-home loader). The test compares these too.
   var MEASURES = { quantity_discrimination: 'Quantity Discrimination', missing_number: 'Missing Number', math_dcpm: 'Math Fluency' };
@@ -280,11 +285,12 @@
     if (title) return title;
     if (own(MATH_ACTIVITIES, id)) return MATH_ACTIVITIES[id][0];
     if (own(VOCAB_ACTIVITIES, id)) return VOCAB_ACTIVITIES[id][0];
+    if (own(SYMBOL_ACTIVITIES, id)) return SYMBOL_ACTIVITIES[id][0];
     if (!id || id === 'unknown') return 'Activity not recorded';
     var plain = String(id).replace(/_/g, ' ').trim();
     return plain.charAt(0).toUpperCase() + plain.slice(1);
   }
-  function strandOf(id) { return own(ACTIVITIES, id) ? ACTIVITIES[id][1] : own(MATH_ACTIVITIES, id) ? MATH_ACTIVITIES[id][1] : own(VOCAB_ACTIVITIES, id) ? VOCAB_ACTIVITIES[id][1] : OTHER_STRAND[0]; }
+  function strandOf(id) { return own(ACTIVITIES, id) ? ACTIVITIES[id][1] : own(MATH_ACTIVITIES, id) ? MATH_ACTIVITIES[id][1] : own(VOCAB_ACTIVITIES, id) ? VOCAB_ACTIVITIES[id][1] : own(SYMBOL_ACTIVITIES, id) ? SYMBOL_ACTIVITIES[id][1] : OTHER_STRAND[0]; }
   // A file that folds a few new facts in among known ones (math_rehearsal; any file whose item ids end
   // in -new or -known) is counted again for the new ones: most of its items are known facts, so the
   // overall first-try count says little about how the new ones are going.
@@ -580,7 +586,7 @@
     var activity = firstScored ? firstScored.activity : '';
     // With no score line the measure is read from the activity; a score cannot be.
     s.measure = !probe ? 'practice' : (st && st.measure) || (activity === 'math_computation' ? 'math_dcpm' : activity) || 'check';
-    s.measureName = !probe ? 'Practice' : own(MEASURES, s.measure) ? MEASURES[s.measure] : own(VOCAB_MEASURES, s.measure) ? VOCAB_MEASURES[s.measure] : (firstScored && firstScored.activityTitle) || activityName(s.measure, '');
+    s.measureName = !probe ? 'Practice' : own(MEASURES, s.measure) ? MEASURES[s.measure] : own(VOCAB_MEASURES, s.measure) ? VOCAB_MEASURES[s.measure] : own(SYMBOL_MEASURES, s.measure) ? SYMBOL_MEASURES[s.measure] : (firstScored && firstScored.activityTitle) || activityName(s.measure, '');
     s.unit = st ? st.unit : probe && own(MEASURE_UNITS, s.measure) ? MEASURE_UNITS[s.measure] : '';
     s.unitName = !probe ? FIRST_TRY_UNIT : own(UNITS, s.unit) ? UNITS[s.unit] : s.unit.replace(/_/g, ' ');
     // Notes, as short codes. The page says each one in plain words.
@@ -966,6 +972,7 @@
     STRANDS: STRANDS.map(function (row) { return row.slice(); }), OTHER_STRAND: OTHER_STRAND.slice(), ACTIVITIES: ACTIVITIES, MEASURES: MEASURES, UNITS: UNITS,
     MATH_STRANDS: MATH_STRANDS.map(function (row) { return row.slice(); }), MATH_ACTIVITIES: MATH_ACTIVITIES,
     VOCAB_STRANDS: VOCAB_STRANDS.map(function (row) { return row.slice(); }), VOCAB_ACTIVITIES: VOCAB_ACTIVITIES, VOCAB_MEASURES: VOCAB_MEASURES,
+    SYMBOL_STRANDS: SYMBOL_STRANDS.map(function (row) { return row.slice(); }), SYMBOL_ACTIVITIES: SYMBOL_ACTIVITIES, SYMBOL_MEASURES: SYMBOL_MEASURES,
     MEASURE_UNITS: MEASURE_UNITS, REASONS: REASONS,
     read: read, refuse: refuse, parseCsv: parseCsv, readCsv: readCsv, readJson: readJson, finish: finish, fnv1a: fnv1a, sha256: sha256, stamp: stamp, sheetStamp: sheetStamp, csvCell: csvCell,
     labelKey: labelKey, looksAlike: looksAlike, pairKey: pairKey, middle: middle, addUp: addUp, learnerSeries: learnerSeries, wrongAnswers: wrongAnswers,

@@ -19,12 +19,27 @@ function useCoachDialogFocus(isOpen, dialogRef, onClose, initialFocusRef, fallba
     var dialog = dialogRef.current;
     if (!dialog) return void 0;
     var previousFocus = document.activeElement;
+    var trap = { root: dialog };
+    var stack = typeof window !== "undefined" ? window.__alloFocusTrapStack = window.__alloFocusTrapStack || [] : [];
+    stack.push(trap);
+    var isVisibleFocusable = function(el) {
+      if (!el || el.disabled || el.hidden || el.getAttribute("aria-hidden") === "true") return false;
+      if (typeof el.closest === "function") {
+        if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+        var closedDetails = el.closest("details:not([open])");
+        if (closedDetails && !(el.tagName === "SUMMARY" && el.parentElement === closedDetails)) return false;
+      }
+      return true;
+    };
     var getFocusable = function() {
-      return Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+      return Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])')).filter(isVisibleFocusable);
     };
     var initial = initialFocusRef && initialFocusRef.current;
     (initial || getFocusable()[0] || dialog).focus();
     var onKeyDown = function(event) {
+      if (event.nativeEvent && event.nativeEvent.isComposing || event.isComposing || event.keyCode === 229) return;
+      var topTrap = stack[stack.length - 1];
+      if (topTrap && (topTrap.root || topTrap) !== dialog) return;
       if (event.key === "Escape") {
         event.preventDefault();
         closeRef.current();
@@ -50,8 +65,12 @@ function useCoachDialogFocus(isOpen, dialogRef, onClose, initialFocusRef, fallba
     dialog.addEventListener("keydown", onKeyDown);
     return function() {
       dialog.removeEventListener("keydown", onKeyDown);
-      var target = previousFocus && document.contains(previousFocus) ? previousFocus : fallbackReturnRef && fallbackReturnRef.current;
-      if (target && typeof target.focus === "function") target.focus();
+      var idx = stack.lastIndexOf(trap);
+      var wasTop = stack.length > 0 && idx === stack.length - 1;
+      if (idx !== -1) stack.splice(idx, 1);
+      if (!wasTop) return;
+      var target = previousFocus && previousFocus !== document.body && previousFocus !== document.documentElement && document.contains(previousFocus) ? previousFocus : fallbackReturnRef && fallbackReturnRef.current;
+      if (target && typeof target.focus === "function" && (typeof target.isConnected !== "boolean" || target.isConnected)) target.focus();
     };
   }, [isOpen, dialogRef, initialFocusRef, fallbackReturnRef]);
 }
@@ -499,7 +518,8 @@ function OnboardingCoach(props) {
         bottom: props.embedded ? void 0 : "24px",
         right: props.embedded ? void 0 : "24px",
         zIndex: 9e3,
-        padding: "12px 20px",
+        minHeight: "44px",
+        padding: "10px 20px",
         borderRadius: "999px",
         background: "linear-gradient(135deg, #7c3aed 0%, #4338ca 100%)",
         color: "#fff",
@@ -511,7 +531,7 @@ function OnboardingCoach(props) {
         display: "flex",
         alignItems: "center",
         gap: "8px",
-        transition: "transform 0.15s, box-shadow 0.15s"
+        transition: typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "none" : "transform 0.15s, box-shadow 0.15s"
       },
       onMouseDown: function(e) {
         e.currentTarget.style.transform = "scale(0.97)";
@@ -591,6 +611,8 @@ function OnboardingCoach(props) {
             border: "1px solid rgba(255,255,255,0.3)",
             borderRadius: "8px",
             padding: "6px 12px",
+            minWidth: "44px",
+            minHeight: "44px",
             cursor: "pointer",
             fontSize: "14px",
             fontWeight: 700
@@ -620,7 +642,7 @@ function OnboardingCoach(props) {
           color: "#1e293b",
           display: "block",
           cursor: "pointer"
-        } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F50A} "), t("onboarding.tts_toggle_label") || "Read help aloud"), /* @__PURE__ */ React.createElement("p", { style: { margin: "2px 0 0", fontSize: "11px", color: "#64748b", lineHeight: 1.4 } }, globalMuted ? t("onboarding.tts_unavailable_globally_muted") || "Sound is muted globally. Un-mute in the main toolbar to hear AlloBot." : t("onboarding.tts_toggle_sublabel") || "Off by default. If you use a screen reader, leave this off \u2014 your reader already reads this panel.")),
+        } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F50A} "), t("onboarding.tts_toggle_label") || "Read help aloud"), /* @__PURE__ */ React.createElement("p", { style: { margin: "2px 0 0", fontSize: "11px", color: "#475569", lineHeight: 1.4 } }, globalMuted ? t("onboarding.tts_unavailable_globally_muted") || "Sound is muted globally. Un-mute in the main toolbar to hear AlloBot." : t("onboarding.tts_toggle_sublabel") || "Off by default. If you use a screen reader, leave this off \u2014 your reader already reads this panel.")),
         /* @__PURE__ */ React.createElement(
           "button",
           {
@@ -632,15 +654,15 @@ function OnboardingCoach(props) {
             onClick: toggleTTS,
             style: {
               flexShrink: 0,
-              width: "48px",
-              height: "26px",
-              borderRadius: "999px",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              minWidth: "48px",
+              minHeight: "44px",
               border: "none",
+              background: "transparent",
               cursor: "pointer",
-              padding: 0,
-              background: ttsEnabled ? "#22c55e" : "#cbd5e1",
-              position: "relative",
-              transition: "background 0.15s"
+              padding: "9px 0"
             }
           },
           /* @__PURE__ */ React.createElement(
@@ -648,17 +670,31 @@ function OnboardingCoach(props) {
             {
               "aria-hidden": "true",
               style: {
-                position: "absolute",
-                top: "3px",
-                left: ttsEnabled ? "25px" : "3px",
-                width: "20px",
-                height: "20px",
-                borderRadius: "50%",
-                background: "#fff",
-                transition: "left 0.15s",
-                boxShadow: "0 1px 3px rgba(0,0,0,0.25)"
+                display: "block",
+                position: "relative",
+                width: "48px",
+                height: "26px",
+                borderRadius: "999px",
+                background: ttsEnabled ? "#15803d" : "#64748b",
+                transition: typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "none" : "background 0.15s"
               }
-            }
+            },
+            /* @__PURE__ */ React.createElement(
+              "span",
+              {
+                style: {
+                  position: "absolute",
+                  top: "3px",
+                  left: ttsEnabled ? "25px" : "3px",
+                  width: "20px",
+                  height: "20px",
+                  borderRadius: "50%",
+                  background: "#fff",
+                  transition: typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "none" : "left 0.15s",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.25)"
+                }
+              }
+            )
           )
         )
       ), modes.map(function(m) {
@@ -710,6 +746,7 @@ function OnboardingCoach(props) {
             type: "button",
             onClick: openTour,
             style: {
+              minHeight: "44px",
               padding: "10px 18px",
               borderRadius: "999px",
               background: "#b45309",
@@ -748,6 +785,7 @@ function OnboardingCoach(props) {
             "aria-controls": "onboarding-coach-qa-body",
             style: {
               width: "100%",
+              minHeight: "44px",
               padding: "12px 14px",
               textAlign: "left",
               border: "none",
@@ -765,10 +803,10 @@ function OnboardingCoach(props) {
             color: "#7c3aed",
             fontWeight: 700,
             transform: chatExpanded ? "rotate(180deg)" : "rotate(0)",
-            transition: "transform 0.15s"
+            transition: typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "none" : "transform 0.15s"
           } }, "\u25BE")
         ),
-        chatExpanded && /* @__PURE__ */ React.createElement("div", { id: "onboarding-coach-qa-body", style: { padding: "0 14px 14px" } }, !coachAvailable && /* @__PURE__ */ React.createElement("div", { style: {
+        chatExpanded && /* @__PURE__ */ React.createElement("div", { id: "onboarding-coach-qa-body", style: { padding: "0 14px 14px" } }, !coachAvailable && (typeof window !== "undefined" && typeof window.AlloAiSetupNotice === "function" ? React.createElement("div", { style: { marginBottom: "10px" } }, React.createElement(window.AlloAiSetupNotice, { t, kind: "text" })) : /* @__PURE__ */ React.createElement("div", { style: {
           marginBottom: "10px",
           padding: "10px 12px",
           borderRadius: "10px",
@@ -777,7 +815,7 @@ function OnboardingCoach(props) {
           fontSize: "11px",
           color: "#9a3412",
           lineHeight: 1.5
-        } }, /* @__PURE__ */ React.createElement("strong", null, t("onboarding.coach_no_backend_title") || "AlloBot Coach needs Google Gemini."), /* @__PURE__ */ React.createElement("br", null), t("onboarding.coach_no_backend_body") || "Switch your AI backend to Google Gemini in Settings, or use the static help cards above."), coachAvailable && conversation.length > 0 && /* @__PURE__ */ React.createElement(
+        } }, /* @__PURE__ */ React.createElement("strong", null, t("onboarding.coach_no_backend_title") || "AlloBot Coach needs Google Gemini."), /* @__PURE__ */ React.createElement("br", null), t("onboarding.coach_no_backend_body") || "Switch your AI backend to Google Gemini in Settings, or use the static help cards above.")), coachAvailable && conversation.length > 0 && /* @__PURE__ */ React.createElement(
           "div",
           {
             role: "log",
@@ -843,7 +881,8 @@ function OnboardingCoach(props) {
               onClick: handleCancel,
               style: {
                 marginTop: "6px",
-                padding: "4px 10px",
+                padding: "8px 14px",
+                minHeight: "44px",
                 borderRadius: "999px",
                 background: "#fff",
                 border: "1px solid #d4d4d8",
@@ -887,7 +926,8 @@ function OnboardingCoach(props) {
             },
             style: {
               marginTop: "6px",
-              padding: "4px 10px",
+              padding: "8px 14px",
+              minHeight: "44px",
               borderRadius: "999px",
               background: "#fff",
               border: "1px solid #fca5a5",
@@ -962,7 +1002,7 @@ function OnboardingCoach(props) {
               setInputText(e.target.value);
             },
             onKeyDown: function(e) {
-              if (e.key === "Enter" && !e.shiftKey) {
+              if (e.key === "Enter" && !e.shiftKey && !(e.nativeEvent && e.nativeEvent.isComposing) && e.keyCode !== 229) {
                 e.preventDefault();
                 handleSendClick();
               }
@@ -977,11 +1017,11 @@ function OnboardingCoach(props) {
               boxSizing: "border-box",
               padding: "8px 10px",
               borderRadius: "10px",
-              border: "1px solid " + (inputText.length > 480 ? "#f59e0b" : "#cbd5e1"),
+              border: "1px solid " + (inputText.length > 480 ? "#b45309" : "#cbd5e1"),
               fontSize: "13px",
               fontFamily: "inherit",
               resize: "vertical",
-              minHeight: "40px",
+              minHeight: "44px",
               maxHeight: "120px",
               background: inFlight ? "#f8fafc" : "#fff",
               color: "#0f172a"
@@ -992,9 +1032,9 @@ function OnboardingCoach(props) {
           display: "flex",
           justifyContent: "space-between",
           fontSize: "10px",
-          color: "#94a3b8"
+          color: "#64748b"
         } }, /* @__PURE__ */ React.createElement("span", null, usage.remaining <= 5 ? usage.remaining === 0 ? t("onboarding.coach_limit_reached") || "You've used today's coach quota. Reload to reset." : usage.remaining + " " + (t("onboarding.coach_questions_remaining") || "questions left this session") : ""), /* @__PURE__ */ React.createElement("span", { style: {
-          color: inputText.length > 480 ? "#d97706" : "#94a3b8"
+          color: inputText.length > 480 ? "#b45309" : "#64748b"
         } }, inputText.length, "/500"))), /* @__PURE__ */ React.createElement(
           "button",
           {
@@ -1004,8 +1044,10 @@ function OnboardingCoach(props) {
             "aria-label": t("onboarding.coach_send") || "Send question to AlloBot",
             style: {
               padding: "10px 16px",
+              minHeight: "44px",
+              minWidth: "44px",
               borderRadius: "999px",
-              background: canSend ? "#7c3aed" : "#cbd5e1",
+              background: canSend ? "#7c3aed" : "#64748b",
               color: "#fff",
               border: "none",
               fontWeight: 800,
@@ -1027,10 +1069,10 @@ function OnboardingCoach(props) {
               background: "transparent",
               border: "none",
               padding: "2px 0",
-              minHeight: "24px",
+              minHeight: "44px",
               display: "inline-flex",
               alignItems: "center",
-              color: "#94a3b8",
+              color: "#64748b",
               fontSize: "11px",
               cursor: "pointer",
               textDecoration: "underline"
@@ -1041,7 +1083,7 @@ function OnboardingCoach(props) {
       ), /* @__PURE__ */ React.createElement("p", { style: {
         margin: "10px 0 0",
         fontSize: "10px",
-        color: "#94a3b8",
+        color: "#64748b",
         textAlign: "center",
         fontStyle: "italic"
       } }, t("onboarding.panel_footer") || "You can change this any time from Start & setup at the top of the page."))
@@ -1090,6 +1132,7 @@ function OnboardingCoach(props) {
           onClick: handleConsentDecline,
           style: {
             padding: "10px 16px",
+            minHeight: "44px",
             borderRadius: "999px",
             background: "#f1f5f9",
             color: "#475569",
@@ -1107,6 +1150,7 @@ function OnboardingCoach(props) {
           onClick: handleConsentAccept,
           style: {
             padding: "10px 18px",
+            minHeight: "44px",
             borderRadius: "999px",
             background: "#7c3aed",
             color: "#fff",

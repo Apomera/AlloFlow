@@ -105,6 +105,8 @@ function VideoRefPlayerOverlay({ item, onClose, addToast, t }) {
   const urlsRef = React.useRef([]);
   const rootRef = React.useRef(null);
   const videoRef = React.useRef(null);
+  const onCloseRef = React.useRef(onClose);
+  onCloseRef.current = onClose;
 
   const revokeObjectUrls = (urls) => {
     (Array.isArray(urls) ? urls : []).forEach(url => {
@@ -119,12 +121,121 @@ function VideoRefPlayerOverlay({ item, onClose, addToast, t }) {
   };
 
   React.useEffect(() => {
-    try { if (rootRef.current) rootRef.current.focus(); } catch (_) {}
-    const onKey = (event) => { if (event.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', onKey);
+    const dialog = rootRef.current;
+    if (!dialog || typeof document === 'undefined') return undefined;
+    const previousFocus = document.activeElement;
+    const trap = { root: dialog };
+    const trapStack = typeof window !== 'undefined' ? (window.__alloFocusTrapStack = window.__alloFocusTrapStack || []) : null;
+    if (trapStack) trapStack.push(trap);
+    const isolated = [];
+    const seenSiblings = new Set();
+    let cursor = dialog;
+    while (cursor && cursor.parentElement) {
+      const parent = cursor.parentElement;
+      Array.from(parent.children).forEach((sibling) => {
+        if (!sibling || sibling === cursor || seenSiblings.has(sibling) || !sibling.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName)) return;
+        seenSiblings.add(sibling);
+        isolated.push({
+          sibling,
+          hadInert: sibling.hasAttribute('inert'),
+          prevInert: sibling.inert,
+          ariaHidden: sibling.getAttribute('aria-hidden'),
+        });
+        try { sibling.inert = true; } catch (_) {}
+        try { sibling.setAttribute('inert', ''); } catch (_) {}
+        try { sibling.setAttribute('aria-hidden', 'true'); } catch (_) {}
+      });
+      if (parent === document.body) break;
+      cursor = parent;
+    }
+    const body = document.body;
+    const scrollLock = typeof window !== 'undefined' ? (window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: '' })) : null;
+    let scrollLocked = false;
+    try {
+      if (body && scrollLock) {
+        scrollLocked = true;
+        if (++scrollLock.count === 1) { scrollLock.prev = body.style.overflow; body.style.overflow = 'hidden'; }
+      }
+    } catch (_) {}
+    const getFocusable = () => Array.from(dialog.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])'))
+      .filter((el) => {
+        if (!el || el.hidden || el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+        let ancestor = el.parentElement;
+        while (ancestor && ancestor !== dialog) {
+          if (ancestor.matches && ancestor.matches('details:not([open])')) {
+            const directSummary = ancestor.querySelector(':scope > summary');
+            if (el !== directSummary) return false;
+          }
+          ancestor = ancestor.parentElement;
+        }
+        try {
+          const st = typeof window !== 'undefined' && window.getComputedStyle ? window.getComputedStyle(el) : null;
+          if (st && (st.display === 'none' || st.visibility === 'hidden')) return false;
+        } catch (_) {}
+        return true;
+      });
+    try { (getFocusable()[0] || dialog).focus(); } catch (_) {}
+    const onKey = (event) => {
+      if (!dialog.isConnected || event.defaultPrevented) return;
+      const topTrap = trapStack && trapStack[trapStack.length - 1];
+      if (topTrap && topTrap !== trap && !(topTrap.root && typeof topTrap.root.contains === 'function' && topTrap.root.contains(dialog))) return;
+      if (event.key === 'Escape') {
+        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+        event.preventDefault();
+        event.stopPropagation();
+        if (typeof onCloseRef.current === 'function') onCloseRef.current();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const focusable = getFocusable();
+      if (!focusable.length) {
+        event.preventDefault();
+        try { dialog.focus(); } catch (_) {}
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const active = document.activeElement;
+      if (!dialog.contains(active) || active === dialog) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus();
+      } else if (event.shiftKey && active === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', onKey);
     return () => {
-      window.removeEventListener('keydown', onKey);
+      document.removeEventListener('keydown', onKey);
+      try {
+        if (scrollLocked && body && scrollLock) {
+          scrollLock.count = Math.max(0, scrollLock.count - 1);
+          if (scrollLock.count === 0) body.style.overflow = scrollLock.prev;
+        }
+      } catch (_) {}
+      isolated.forEach(({ sibling, hadInert, prevInert, ariaHidden }) => {
+        if (!sibling || !sibling.isConnected) return;
+        if (!hadInert) {
+          try { sibling.inert = false; } catch (_) {}
+          try { sibling.removeAttribute('inert'); } catch (_) {}
+        } else {
+          try { sibling.inert = Boolean(prevInert); } catch (_) {}
+        }
+        if (ariaHidden == null) { try { sibling.removeAttribute('aria-hidden'); } catch (_) {} }
+        else { try { sibling.setAttribute('aria-hidden', ariaHidden); } catch (_) {} }
+      });
+      const wasTopTrap = !trapStack || trapStack[trapStack.length - 1] === trap;
+      if (trapStack) {
+        const idx = trapStack.lastIndexOf(trap);
+        if (idx >= 0) trapStack.splice(idx, 1);
+      }
       revokeObjectUrls(urlsRef.current.splice(0));
+      if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus !== document.documentElement && previousFocus.isConnected && typeof previousFocus.focus === 'function') {
+        try { previousFocus.focus(); } catch (_) {}
+      }
     };
   }, []);
 
@@ -315,10 +426,10 @@ function VideoRefPlayerOverlay({ item, onClose, addToast, t }) {
             <MonitorPlay size={20} className="text-violet-700 shrink-0" />
             <h2 className="font-bold text-slate-800 text-base truncate">{String(ref.title || item.title || 'Teacher video')}</h2>
           </div>
-          <button type="button" onClick={onClose} data-alloflow-close-on-escape="true" className="text-slate-600 hover:text-slate-700 text-2xl leading-none px-2 py-1" aria-label={t('video_ref.close') || 'Close video card'}>×</button>
+          <button type="button" onClick={onClose} data-alloflow-close-on-escape="true" className="min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-700 text-2xl leading-none px-2 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" aria-label={t('video_ref.close') || 'Close video card'}>×</button>
         </div>
         <div className="p-5 overflow-y-auto flex-1">
-          <p className="text-xs text-slate-500 mb-3">
+          <p className="text-xs text-slate-600 mb-3">
             {durationLabel}{ref.sizeBytes ? ` · ${(ref.sizeBytes / 1048576).toFixed(1)} MB` : ''}{badges ? ` · ${badges}` : ''}{ref.fileName ? ` · ${ref.fileName}` : ''}
           </p>
           {videoUrl ? (
@@ -354,7 +465,7 @@ function VideoRefPlayerOverlay({ item, onClose, addToast, t }) {
                         <button
                           type='button'
                           onClick={() => seekToDescription(entry)}
-                          className='w-full rounded-lg px-3 py-2 text-left text-sm text-slate-800 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600'
+                          className='min-h-11 w-full rounded-lg px-3 py-2 text-left text-sm text-slate-800 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600'
                         >
                           <time className='font-mono font-semibold text-violet-800' dateTime={'PT' + entry.start + 'S'}>
                             {videoRefFormatClock(entry.start, false)}–{videoRefFormatClock(entry.end, false)}
@@ -373,12 +484,12 @@ function VideoRefPlayerOverlay({ item, onClose, addToast, t }) {
             ref.thumb && <img src={ref.thumb} alt={t('video_ref.thumb_alt') || 'Video thumbnail'} className="w-full max-h-64 object-contain rounded-xl bg-slate-900 mb-3" />
           )}
           {hostedUrl && (
-            <a href={hostedUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-violet-700 text-white text-sm font-semibold hover:bg-violet-600 mb-3">
+            <a href={hostedUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 min-h-11 px-4 py-2 rounded-lg bg-violet-700 text-white text-sm font-semibold hover:bg-violet-600 mb-3">
               ▶ {t('video_ref.watch_hosted') || 'Watch hosted video'} <ExternalLink size={14} />
             </a>
           )}
           <div
-            className="border-2 border-dashed border-slate-300 rounded-xl p-4 text-center text-sm text-slate-500"
+            className="border-2 border-dashed border-slate-300 rounded-xl p-4 text-center text-sm text-slate-600"
             onDragOver={(event) => event.preventDefault()}
             onDrop={(event) => {
               event.preventDefault();
@@ -388,7 +499,7 @@ function VideoRefPlayerOverlay({ item, onClose, addToast, t }) {
             <p className="mb-2">{busy
               ? (t('video_ref.attach_busy') || 'Opening the file…')
               : (t('video_ref.attach_hint') || 'Have the downloaded file? Drop the .webm/.mp4 or .allopack here to play it on this device — nothing is uploaded.')}</p>
-            <label className="inline-block px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-50 cursor-pointer">
+            <label className="inline-flex items-center min-h-11 px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-50 cursor-pointer">
               {t('video_ref.attach_btn') || 'Choose file…'}
               <input type="file" accept="video/*,.webm,.mp4,.mov,.m4v,.mkv,.allopack" hidden onChange={(event) => {
                 handleFile(event.target.files && event.target.files[0]);

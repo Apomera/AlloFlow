@@ -1094,7 +1094,7 @@ const _alloUseMailboxImageDelivery = ({ resource, enabled, sessionKey, assignmen
     return { ...(state.key === key ? state : { key, status: enabled && (manifest.sources.length || manifest.omitted) ? 'loading' : 'idle', ready: 0, total: manifest.sources.length + manifest.omitted, omitted: manifest.omitted }), revision: manifest.revision };
 };
 
-const LiveAacBoardDialog = ({ payload, onDismiss, onSpeak }) => {
+const LiveAacBoardDialog = ({ payload, onDismiss, onSpeak, t }) => {
   const portable = payload && payload.package;
   const pages = portable && Array.isArray(portable.pages) ? portable.pages : [];
   const [pageIndex, setPageIndex] = useState(0);
@@ -1103,6 +1103,18 @@ const LiveAacBoardDialog = ({ payload, onDismiss, onSpeak }) => {
   const [scanIndex, setScanIndex] = useState(0);
   const dialogRef = useRef(null);
   const openerRef = useRef(null);
+  const onDismissRef = useRef(onDismiss);
+  onDismissRef.current = onDismiss;
+  const langCtx = typeof React.useContext === 'function' && window.AlloLanguageContext ? React.useContext(window.AlloLanguageContext) : null;
+  const tFn = typeof t === 'function' ? t : (langCtx && typeof langCtx.t === 'function' ? langCtx.t : null);
+  const tr = (k, fb) => {
+    try {
+      const v = tFn ? tFn(k, fb) : null;
+      return v && v !== k ? v : fb;
+    } catch (_) {
+      return fb;
+    }
+  };
   const safePageIndex = Math.max(0, Math.min(pageIndex, Math.max(0, pages.length - 1)));
   const page = pages[safePageIndex] || { title: 'AAC Board', cols: 4, cells: [] };
   const cells = Array.isArray(page.cells) ? page.cells : [];
@@ -1158,20 +1170,41 @@ const LiveAacBoardDialog = ({ payload, onDismiss, onSpeak }) => {
     setScanIndex(0);
   }, [safePageIndex]);
   useEffect(() => {
+    const dialog = dialogRef.current;
+    const stack = typeof window !== 'undefined'
+      ? (window.__alloFocusTrapStack = window.__alloFocusTrapStack || [])
+      : null;
+    const trap = { root: dialog };
+    if (stack) stack.push(trap);
+    const isTopTrap = () => {
+      if (!stack || !stack.length) return true;
+      const top = stack[stack.length - 1];
+      return top === trap || Boolean(top && top.root && dialog && dialog.contains(top.root) && top.root === dialog);
+    };
+    const isEditableTarget = (target) => {
+      if (!target || !target.tagName) return false;
+      const tag = String(target.tagName).toUpperCase();
+      return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || Boolean(target.isContentEditable);
+    };
     const handleKey = (event) => {
+      if (event.defaultPrevented || event.isComposing || event.keyCode === 229 || !isTopTrap()) return;
+      const currentDialog = dialogRef.current;
       if (event.key === 'Tab') {
-        const focusable = dialogRef.current ? Array.from(dialogRef.current.querySelectorAll('button:not([disabled]), [href]')) : [];
+        const focusable = currentDialog
+          ? Array.from(currentDialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'))
+              .filter((el) => !el.disabled && !el.hidden && !el.closest('[inert]') && el.getAttribute('aria-hidden') !== 'true')
+          : [];
         if (!focusable.length) {
           event.preventDefault();
-          try { dialogRef.current && dialogRef.current.focus(); } catch (_) {}
+          try { currentDialog && currentDialog.focus(); } catch (_) {}
           return;
         }
         const first = focusable[0];
         const last = focusable[focusable.length - 1];
-        if (event.shiftKey && (document.activeElement === first || !dialogRef.current.contains(document.activeElement))) {
+        if (event.shiftKey && (document.activeElement === first || document.activeElement === currentDialog || !currentDialog.contains(document.activeElement))) {
           event.preventDefault();
           last.focus();
-        } else if (!event.shiftKey && document.activeElement === last) {
+        } else if (!event.shiftKey && (document.activeElement === last || !currentDialog.contains(document.activeElement))) {
           event.preventDefault();
           first.focus();
         }
@@ -1179,9 +1212,11 @@ const LiveAacBoardDialog = ({ payload, onDismiss, onSpeak }) => {
       }
       if (event.key === 'Escape') {
         event.preventDefault();
-        onDismiss();
+        event.stopPropagation();
+        if (typeof onDismissRef.current === 'function') onDismissRef.current();
         return;
       }
+      if (isEditableTarget(event.target)) return;
       if (event.key === 'Backspace') {
         event.preventDefault();
         setSentence((previous) => previous.slice(0, -1));
@@ -1211,15 +1246,21 @@ const LiveAacBoardDialog = ({ payload, onDismiss, onSpeak }) => {
       }
     };
     document.addEventListener('keydown', handleKey);
-    return () => document.removeEventListener('keydown', handleKey);
-  }, [activateCell, interactiveCells, scanIndex, scanning, pages.length, onDismiss]);
+    return () => {
+      document.removeEventListener('keydown', handleKey);
+      if (stack) {
+        const idx = stack.lastIndexOf(trap);
+        if (idx >= 0) stack.splice(idx, 1);
+      }
+    };
+  }, [activateCell, interactiveCells, scanIndex, scanning, pages.length]);
   const sentenceText = sentence.join(' ');
   const cellColors = { noun: '#fef9c3', verb: '#dcfce7', adjective: '#dbeafe', other: '#f3f4f6' };
   return (
     <div
       role='dialog'
       aria-modal='true'
-      aria-label='AAC Board from Teacher'
+      aria-label={tr('live_aac.board_from_teacher', 'AAC Board from Teacher')}
       lang={locale}
       dir={direction}
       ref={dialogRef}
@@ -1233,24 +1274,24 @@ const LiveAacBoardDialog = ({ payload, onDismiss, onSpeak }) => {
             <h2 style={{ margin: 0, color: '#3730a3', fontSize: 20 }}>{portable && portable.board ? portable.board.title : 'AAC Board'}</h2>
             <div style={{ color: '#64748b', fontSize: 12 }}>Shared by Teacher</div>
           </div>
-          <button type='button' onClick={onDismiss} aria-label='Close AAC Board' style={{ border: 0, borderRadius: 10, width: 36, height: 36, cursor: 'pointer', fontSize: 18 }}>x</button>
+          <button type='button' onClick={onDismiss} aria-label={tr('live_aac.close_board', 'Close AAC Board')} style={{ border: 0, borderRadius: 10, minWidth: 44, minHeight: 44, width: 44, height: 44, cursor: 'pointer', fontSize: 18 }}>x</button>
         </div>
         <div style={{ padding: '14px 18px' }}>
           {pages.length > 1 && (
-            <div role="group" aria-label='AAC Board pages' style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 12 }}>
-              <button type='button' onClick={() => setPageIndex((current) => Math.max(0, current - 1))} disabled={safePageIndex === 0}>Previous page</button>
+            <div role="group" aria-label={tr('live_aac.board_pages', 'AAC Board pages')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 12 }}>
+              <button type='button' onClick={() => setPageIndex((current) => Math.max(0, current - 1))} disabled={safePageIndex === 0} style={{ minHeight: 44, minWidth: 44, padding: '8px 12px' }}>Previous page</button>
               <strong>{page.title} ({safePageIndex + 1} of {pages.length})</strong>
-              <button type='button' onClick={() => setPageIndex((current) => Math.min(pages.length - 1, current + 1))} disabled={safePageIndex === pages.length - 1}>Next page</button>
+              <button type='button' onClick={() => setPageIndex((current) => Math.min(pages.length - 1, current + 1))} disabled={safePageIndex === pages.length - 1} style={{ minHeight: 44, minWidth: 44, padding: '8px 12px' }}>Next page</button>
             </div>
           )}
           <div role='status' aria-live='polite' aria-label='Sentence strip' style={{ minHeight: 48, border: '2px solid #c7d2fe', borderRadius: 12, padding: 10, marginBottom: 10, background: '#eef2ff', fontWeight: 700 }}>
             {sentenceText || 'Select symbols to build a sentence.'}
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 14 }}>
-            <button type='button' onClick={() => speak(sentenceText)} disabled={!sentenceText} aria-keyshortcuts='Enter'>Speak sentence</button>
-            <button type='button' onClick={() => setSentence((previous) => previous.slice(0, -1))} disabled={!sentence.length} aria-keyshortcuts='Backspace'>Undo</button>
-            <button type='button' onClick={() => setSentence([])} disabled={!sentence.length}>Clear</button>
-            <button type='button' aria-pressed={scanning} onClick={() => setScanning((current) => !current)}>{scanning ? 'Stop scanning' : 'Start scanning'}</button>
+            <button type='button' onClick={() => speak(sentenceText)} disabled={!sentenceText} aria-keyshortcuts='Enter' style={{ minHeight: 44, minWidth: 44, padding: '8px 12px' }}>Speak sentence</button>
+            <button type='button' onClick={() => setSentence((previous) => previous.slice(0, -1))} disabled={!sentence.length} aria-keyshortcuts='Backspace' style={{ minHeight: 44, minWidth: 44, padding: '8px 12px' }}>Undo</button>
+            <button type='button' onClick={() => setSentence([])} disabled={!sentence.length} style={{ minHeight: 44, minWidth: 44, padding: '8px 12px' }}>Clear</button>
+            <button type='button' aria-pressed={scanning} onClick={() => setScanning((current) => !current)} style={{ minHeight: 44, minWidth: 44, padding: '8px 12px' }}>{scanning ? 'Stop scanning' : 'Start scanning'}</button>
           </div>
           <div role='grid' aria-label={page.title || 'AAC Board symbols'} style={{ display: 'grid', gridTemplateColumns: 'repeat(' + Math.max(1, Math.min(12, page.cols || 4)) + ', minmax(76px,1fr))', gap: 9 }}>
             {cells.map((cell, index) => {

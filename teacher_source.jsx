@@ -925,6 +925,141 @@ const alloClearTeacherPrivateLabels = (store, classKey) => {
   delete byClass[classKey];
   return { version: 1, byClass };
 };
+const alloPurgeRemovedStudentLocalStores = (options = {}) => {
+  const storage = options && options.storage ? options.storage : (typeof window !== 'undefined' ? window.localStorage : null);
+  const cleanCodename = String(options?.codename || '').trim();
+  const cleanLearnerId = String(options?.learnerId || '').trim();
+  const cleanClassId = String(options?.classId || '').trim();
+  const cleanClassName = String(options?.className || '').trim();
+  const targetClassKey = String(options?.privateLabelClassKey || alloTeacherPrivateLabelClassKey({ classId: cleanClassId, className: cleanClassName }) || '').trim();
+  const changedKeys = [];
+  if (!storage || (!cleanCodename && !cleanLearnerId)) return { changedKeys };
+  const safeParse = (key) => {
+    try {
+      const raw = storage.getItem(key);
+      return raw ? JSON.parse(raw) : null;
+    } catch (_) {
+      return null;
+    }
+  };
+  const safeWrite = (key, value) => {
+    try {
+      storage.setItem(key, JSON.stringify(value));
+      changedKeys.push(key);
+    } catch (_) {}
+  };
+  if (cleanCodename && targetClassKey) {
+    try {
+      const labelStore = alloReadTeacherPrivateLabels(storage);
+      if (labelStore?.byClass?.[targetClassKey] && Object.prototype.hasOwnProperty.call(labelStore.byClass[targetClassKey], cleanCodename)) {
+        if (alloWriteTeacherPrivateLabels(storage, alloDropTeacherPrivateLabel(labelStore, targetClassKey, cleanCodename))) {
+          changedKeys.push(ALLO_TEACHER_PRIVATE_LABELS_KEY);
+        }
+      }
+    } catch (_) {}
+  }
+  const cicoStore = safeParse('allo_cico_cards_v1');
+  if (cicoStore && typeof cicoStore === 'object' && cicoStore.classes && typeof cicoStore.classes === 'object') {
+    let cicoChanged = false;
+    Object.keys(cicoStore.classes).forEach((cid) => {
+      const students = cicoStore.classes[cid] && typeof cicoStore.classes[cid].students === 'object' ? cicoStore.classes[cid].students : null;
+      if (!students) return;
+      if (cleanLearnerId && Object.prototype.hasOwnProperty.call(students, cleanLearnerId)) {
+        delete students[cleanLearnerId];
+        cicoChanged = true;
+      }
+      if (cleanCodename && (!cleanClassId || cid === cleanClassId) && Object.prototype.hasOwnProperty.call(students, cleanCodename)) {
+        delete students[cleanCodename];
+        cicoChanged = true;
+      }
+    });
+    if (cicoChanged) safeWrite('allo_cico_cards_v1', cicoStore);
+  }
+  const recognitionLog = safeParse('allo_school_rewards_recognition_log_v1');
+  if (recognitionLog && typeof recognitionLog === 'object' && recognitionLog.sessions && typeof recognitionLog.sessions === 'object') {
+    let logChanged = false;
+    const isOurCicoId = (id) => {
+      const text = String(id || '');
+      if (!text.startsWith('daily-goal:')) return false;
+      const parts = text.split(':');
+      const idClass = parts[1] || '';
+      const idLearner = parts[2] || '';
+      return Boolean((cleanLearnerId && idLearner === cleanLearnerId) || (cleanClassId && idClass === cleanClassId));
+    };
+    const isOtherClassCicoId = (id) => {
+      const text = String(id || '');
+      if (!text.startsWith('daily-goal:')) return false;
+      const parts = text.split(':');
+      const idClass = parts[1] || '';
+      const idLearner = parts[2] || '';
+      if (cleanLearnerId && idLearner === cleanLearnerId) return false;
+      return Boolean(cleanClassId && idClass && idClass !== cleanClassId);
+    };
+    Object.keys(recognitionLog.sessions).forEach((sKey) => {
+      const rows = recognitionLog.sessions[sKey] && typeof recognitionLog.sessions[sKey].rows === 'object' ? recognitionLog.sessions[sKey].rows : null;
+      if (!rows) return;
+      Object.keys(rows).forEach((rowName) => {
+        const row = rows[rowName];
+        if (!row || typeof row !== 'object') return;
+        const ids = Array.isArray(row.ids) ? row.ids : [];
+        if (cleanLearnerId || cleanClassId) {
+          const matchedAny = ids.some((id) => isOurCicoId(id) && (rowName === cleanCodename || (cleanLearnerId && String(id || '').split(':')[2] === cleanLearnerId)));
+          if (matchedAny) {
+            const remaining = ids.filter((id) => !(isOurCicoId(id) && (rowName === cleanCodename || (cleanLearnerId && String(id || '').split(':')[2] === cleanLearnerId))));
+            if (remaining.length === 0) delete rows[rowName];
+            else row.ids = remaining;
+            logChanged = true;
+            return;
+          }
+        }
+        if (cleanCodename && rowName === cleanCodename) {
+          const allOtherClass = ids.length > 0 && ids.every(isOtherClassCicoId);
+          if (!allOtherClass) {
+            delete rows[rowName];
+            logChanged = true;
+          }
+        }
+      });
+    });
+    if (logChanged) safeWrite('allo_school_rewards_recognition_log_v1', recognitionLog);
+  }
+  const commentsRaw = safeParse('allo_teacher_comments');
+  if (Array.isArray(commentsRaw)) {
+    const filteredComments = commentsRaw.filter((entry) => {
+      const key = Array.isArray(entry) ? entry[0] : '';
+      if (typeof key !== 'string') return true;
+      if (cleanCodename && key.startsWith(cleanCodename + ':')) return false;
+      if (cleanLearnerId && key.startsWith(cleanLearnerId + ':')) return false;
+      return true;
+    });
+    if (filteredComments.length !== commentsRaw.length) safeWrite('allo_teacher_comments', filteredComments);
+  }
+  const gradesStore = safeParse('alloflow_offline_grades');
+  if (gradesStore && typeof gradesStore === 'object' && !Array.isArray(gradesStore)) {
+    let gradesChanged = false;
+    Object.keys(gradesStore).forEach((gKey) => {
+      const rec = gradesStore[gKey];
+      if (!rec || typeof rec !== 'object') return;
+      const recLearnerId = String(rec.identity?.learnerId || '').trim();
+      const recClassId = String(rec.identity?.classId || '').trim();
+      const recClassName = String(rec.className || '').trim();
+      const recNick = String(rec.nickname || '').trim();
+      if (cleanLearnerId && recLearnerId === cleanLearnerId) {
+        delete gradesStore[gKey];
+        gradesChanged = true;
+        return;
+      }
+      if (cleanCodename && recNick === cleanCodename) {
+        if (cleanClassId && recClassId && recClassId !== cleanClassId) return;
+        if (cleanClassName && recClassName && recClassName !== cleanClassName) return;
+        delete gradesStore[gKey];
+        gradesChanged = true;
+      }
+    });
+    if (gradesChanged) safeWrite('alloflow_offline_grades', gradesStore);
+  }
+  return { changedKeys };
+};
 const ALLO_EDUCATOR_ACCESS_PROMPT_DISMISSED_KEY = 'alloflow_educator_access_prompt_dismissed_v1';
 const alloIsEducatorAccessCodeConfigured = () => {
   if (typeof window === 'undefined') return false;
@@ -1080,8 +1215,9 @@ const buildRosterCodenameWorksheetHtml = (roster, options) => {
 };
 
 const rosterSessionCsvCell = (value) => {
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value);
   const raw = value === null || value === undefined ? '' : String(value);
-  const text = /^[=+@-]/.test(raw) ? "'" + raw : raw;
+  const text = /^(?:[\t\r\n ]*[=+\-@|]|[\t\r\n])/.test(raw) ? "'" + raw : raw;
   return /[",\r\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
 };
 
@@ -2045,6 +2181,13 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   };
   const handleRemoveStudent = (name) => {
     if (!window.confirm(`Delete ${name} from the roster? This removes the codename and its linked preferences, individual progress, participant lists, and seating references. De-identified class activity totals and teacher notes remain. Assessment Center records are kept and can be removed separately in its Records manager.`)) return;
+    alloPurgeRemovedStudentLocalStores({
+      codename: name,
+      learnerId: rosterKey?.learnerIds?.[name] || '',
+      classId: String(rosterKey?.classId || '').trim(),
+      className: String(rosterKey?.className || '').trim(),
+      privateLabelClassKey,
+    });
     setRosterKey(prev => {
       const learnerId = prev.learnerIds?.[name];
       const ns = { ...prev.students }; delete ns[name];
@@ -7600,7 +7743,7 @@ const LearnerProgressView = React.memo(({
                           `<button type="button" class="print-btn" onclick="window.print()">🖨️ Print This Report</button>` +
                           `</body></html>`;
                         const w = window.open('', '_blank');
-                        if (w) { w.document.write(html); w.document.close(); }
+                        if (w) { try { w.opener = null; } catch (_) {} w.document.write(html); w.document.close(); }
                     }}
                     className="px-5 py-2.5 bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all motion-reduce:transition-none hover:scale-[1.02] flex items-center gap-2 text-sm"
                     data-help-key="learner_progress_print_report_btn"
@@ -8343,8 +8486,13 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
         t('dashboard.csv.header_quiz_avg'),
         t('dashboard.csv.header_total_xp')
     , 'Probes', 'Avg WCPM', 'Surveys', 'Sessions', 'Cornell Notes', 'Lab Reports', 'Reading Responses', 'Double-Entry Journals', 'Guided Notes', 'Q&A Study Notes', 'Anchor Charts', 'Notebook Feedback Requests', ...registryHeaders];
+    const _dashCsvCell = (val) => {
+        let raw = val === null || val === undefined ? '' : String(val);
+        if (typeof val !== 'number' && /^(?:[\t\r\n ]*[=+\-@|]|[\t\r\n])/.test(raw)) raw = "'" + raw;
+        return '"' + raw.replace(/"/g, '""') + '"';
+    };
     const rows = dashboardData.map(student => {
-        const name = (student.studentNickname || "Anonymous").replace(/"/g, '""');
+        const name = student.studentNickname || "Anonymous";
         const date = new Date(student.timestamp).toLocaleDateString();
         const adventureItem = student.history.slice().reverse().find(item => item.type === 'adventure' && !(item.data && (item.data.kind === 'student-story' || item.data.kind === 'offline-reflection' || item.data.offlineStory)));
         const adventureLevel = adventureItem && adventureItem.data ? Number(adventureItem.data.snapshot?.level ?? adventureItem.data.level) : NaN;
@@ -8390,10 +8538,10 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
         // Registry-driven per-tool counts (extends with each new registry entry,
         // including externally-registered tools)
         const registryCounts = getTeacherMetricRegistry().map(entry => entry.count(student));
-        return `"${name}","${date}","${level}","${quizAvg}","${xp}","${probeCount}","${avgWcpm}","${surveyCount}","${sessionCount}","${cornellCount}","${labCount}","${readingCount}","${doubleEntryCount}","${guidedCount}","${qAndACount}","${anchorCount}","${feedbackCount}",${registryCounts.map(n => `"${n}"`).join(',')}`;
+        return [name, date, level, quizAvg, xp, probeCount, avgWcpm, surveyCount, sessionCount, cornellCount, labCount, readingCount, doubleEntryCount, guidedCount, qAndACount, anchorCount, feedbackCount, ...registryCounts].map(_dashCsvCell).join(',');
     });
-    const csvContent = [headers.join(","), ...rows].join("\n");
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const csvContent = [headers.map(_dashCsvCell).join(","), ...rows].join("\r\n");
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
@@ -8401,6 +8549,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
   };
   const quizHistory = useMemo(() => selectedStudent?.history?.filter(h => h.type === 'quiz') || [], [selectedStudent?.history]);
   return (
@@ -8728,10 +8877,12 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                     className="prose prose-sm max-w-none text-slate-700 leading-relaxed"
                                     dangerouslySetInnerHTML={{
                                         __html: generateResourceHTML
-                                            ? generateResourceHTML(item, true, selectedStudent.responses || {})
-                                    : '<p>Error: Renderer not available.</p>',
-                            }}
-                        />
+                                            ? ((typeof window !== 'undefined' && typeof window.sanitizeHtml === 'function')
+                                                ? window.sanitizeHtml(generateResourceHTML(item, true, selectedStudent.responses || {}))
+                                                : generateResourceHTML(item, true, selectedStudent.responses || {}))
+                                            : '<p>Error: Renderer not available.</p>',
+                                    }}
+                                />
                     </div>
                     <TeacherCommentThread
                         studentId={selectedStudent.id}
@@ -9389,7 +9540,7 @@ const alloCicoAddToStoreWorksheet = (classId, learnerId, codename, date, now = D
   try { localStorage.setItem(ALLO_CICO_RECOGNITION_LOG_KEY, JSON.stringify(log)); } catch (_) { return 'failed'; }
   return 'added';
 };
-const alloCicoCsvCell = (value) => { let out = String(value == null ? '' : value); if (/^[=+\-@]/.test(out)) out = "'" + out; return '"' + out.replace(/"/g, '""') + '"'; };
+const alloCicoCsvCell = (value) => { let out = String(value == null ? '' : value); if (typeof value !== 'number' && /^(?:[\t\r\n ]*[=+\-@|]|[\t\r\n])/.test(out)) out = "'" + out; return '"' + out.replace(/"/g, '""') + '"'; };
 const alloCicoStudentCsv = (codename, student, settings) => {
   const head = ['Date', 'Check-in', 'Check-out'];
   settings.periods.forEach(p => settings.expectations.forEach(e => head.push(p + ' - ' + e)));
@@ -9412,7 +9563,8 @@ const alloCicoTriageRows = (cls, codenameByLearner, limit = 10) => {
   return rows.map(r => r.map(alloCicoCsvCell).join(',')).join('\r\n');
 };
 const alloCicoDownload = (filename, text) => {
-  const url = URL.createObjectURL(new Blob([text], { type: 'text/csv;charset=utf-8' }));
+  const payload = typeof text === 'string' && text.charCodeAt(0) === 0xFEFF ? text : '\uFEFF' + String(text == null ? '' : text);
+  const url = URL.createObjectURL(new Blob([payload], { type: 'text/csv;charset=utf-8' }));
   const link = document.createElement('a');
   link.href = url; link.download = filename;
   document.body.appendChild(link); link.click(); link.remove();
@@ -9567,6 +9719,7 @@ window.AlloModules.TeacherPrivateLabelInternals = {
   classKey: alloTeacherPrivateLabelClassKey, normalizeLabel: alloNormalizeTeacherPrivateLabel,
   read: alloReadTeacherPrivateLabels, write: alloWriteTeacherPrivateLabels,
   setLabel: alloSetTeacherPrivateLabel, dropLabel: alloDropTeacherPrivateLabel, clearClass: alloClearTeacherPrivateLabels,
+  purgeRemovedStudentLocalStores: alloPurgeRemovedStudentLocalStores,
   handoffType: ALLO_CLASSROOM_HANDOFF_TYPE, handoffReply: ALLO_CLASSROOM_HANDOFF_REPLY, acceptHandoff: alloAcceptClassroomHandoff,
   helloType: ALLO_CLASSROOM_HELLO_TYPE, contextType: ALLO_CLASSROOM_CONTEXT_TYPE,
   protocolVersion: ALLO_CLASSROOM_PROTOCOL_VERSION, protocolMismatch: ALLO_CLASSROOM_PROTOCOL_MISMATCH, reservedCodenames: alloClassroomReservedCodenames,

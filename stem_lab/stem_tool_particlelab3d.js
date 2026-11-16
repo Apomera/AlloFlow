@@ -430,7 +430,3693 @@
     { id: 'same', idea: 'Pressure and temperature are two names for the same thing.', protocol: 'avogadro', watch: 'Temperature and Pressure in Live measurements while particles are pumped in', shows: 'Temperature tracks the average kinetic energy per particle; pressure tracks how hard and how often particles hit the walls. Pumping in particles raises the pressure while the temperature holds, so the two are different quantities.' }
   ];
 
-  window.__alloParticleLabPure = { commonIdeas: COMMON_IDEAS, seeded: seeded, makeParticles: makeParticles, advanceParticles: advanceParticles, particleJourney: particleJourney, meanFreePathEstimate: meanFreePathEstimate, freeFlightDistribution: freeFlightDistribution, ensembleFreeFlightStats: ensembleFreeFlightStats, systemMoments: systemMoments, heightDistribution: heightDistribution, diffusionMetrics: diffusionMetrics, compareTracerTrials: compareTracerTrials, compareTrials: compareTrials, speedDistribution: speedDistribution, speciesKinetics: speciesKinetics, metrics: metrics, seriesTrend: seriesTrend, isCoalescence: isCoalescence, clusterMetrics: clusterMetrics, binomialWilsonInterval: binomialWilsonInterval, membraneSelectivityMetrics: membraneSelectivityMetrics, fickFluxEstimate: fickFluxEstimate, diffusionExponent: diffusionExponent, speedHeat: speedHeat, makePumpedParticles: makePumpedParticles, energyDistribution: energyDistribution, maxwellBoltzmannBins: maxwellBoltzmannBins, histogramDistance: histogramDistance, thermostatScale: thermostatScale, holdPressureStep: holdPressureStep, gasLawRatio: gasLawRatio, gasLawAgreement: gasLawAgreement };
+  function maxwellSpeeds(temperature, mass) {
+    var t = Math.max(1, Number(temperature) || 1);
+    var m = clamp(Number(mass) || 1, 0.5, 3);
+    var a = t / (120 * m);
+    return {
+      temperature: t,
+      mass: m,
+      vMp: Math.sqrt(2 * a),
+      vMean: Math.sqrt(8 * a / Math.PI),
+      vRms: Math.sqrt(3 * a),
+      meanKineticEnergy: t / 80
+    };
+  }
+
+  function vanDerWaalsMetrics(pressure, boxSize, count, temperature, particleDiameter, attraction) {
+    var edge = clamp(Number(boxSize) || 11, 7, 18);
+    var volume = Math.pow(edge, 3);
+    var n = Math.max(1, Number(count) || 1);
+    var t = Math.max(1, Number(temperature) || 1);
+    var d = clamp(Number(particleDiameter) || 0.58, 0.36, 0.9);
+    var attr = clamp(Number(attraction) || 0, 0, 1.5);
+    var idealPressure = n * t / (12 * volume);
+    var bPerParticle = (2 / 3) * Math.PI * Math.pow(d, 3);
+    var packingFraction = clamp((n * (Math.PI / 6) * Math.pow(d, 3)) / volume, 0, 0.99);
+    var effectiveVolume = Math.max(volume * 0.25, volume - n * bPerParticle * 0.5);
+    var aParam = attr * 42;
+    var vdwPressure = Math.max(0.02, (n * t / (12 * effectiveVolume)) - aParam * Math.pow(n / volume, 2));
+    var liveP = Number(pressure) > 0 ? Number(pressure) : vdwPressure;
+    var z = (12 * liveP * volume) / (n * t);
+    var zAnalytical = (12 * vdwPressure * volume) / (n * t);
+    var regime = z > 1.08 ? 'repulsive' : (z < 0.92 ? 'attractive' : 'ideal');
+    var label = regime === 'repulsive' ? 'Excluded-volume dominant (Z > 1)' : (regime === 'attractive' ? 'Attraction-dominant (Z < 1)' : 'Near-ideal gas (Z ≈ 1)');
+    var note = regime === 'repulsive'
+      ? 'Finite collision diameter shrinks the free volume between walls, boosting impact frequency above the ideal-gas expectation.'
+      : (regime === 'attractive'
+        ? 'Cohesive attraction pulls wall-bound particles inward, lowering wall impulse below the ideal-gas prediction.'
+        : 'Dilute density and weak attraction keep PV/(NT) close to the ideal-gas constant.');
+    return {
+      idealPressure: idealPressure,
+      vdwPressure: vdwPressure,
+      bPerParticle: bPerParticle,
+      packingFraction: packingFraction,
+      effectiveVolume: effectiveVolume,
+      aParam: aParam,
+      z: z,
+      zAnalytical: zAnalytical,
+      usingAnalytical: !(Number(pressure) > 0),
+      regime: regime,
+      label: label,
+      note: note
+    };
+  }
+
+  function grahamLawMetrics(speciesMotion, diffusionInfo, massRatioB) {
+    var massB = clamp(Number(massRatioB) || 1, 0.5, 3);
+    var theoryRatio = Math.sqrt(massB);
+    var meanA = Number(speciesMotion && speciesMotion.a && speciesMotion.a.mean) || 0;
+    var meanB = Number(speciesMotion && speciesMotion.b && speciesMotion.b.mean) || 0;
+    var observedSpeedRatio = meanA > 0.001 && meanB > 0.001 ? meanA / meanB : null;
+    var dA = Number(diffusionInfo && diffusionInfo.coefficientA) || 0;
+    var dB = Number(diffusionInfo && diffusionInfo.coefficientB) || 0;
+    var observedDiffusionRatio = dA > 0.001 && dB > 0.001 ? Math.sqrt(dA / dB) : null;
+    var speedError = observedSpeedRatio != null ? Math.abs(observedSpeedRatio - theoryRatio) / Math.max(0.001, theoryRatio) : null;
+    var label = observedSpeedRatio == null
+      ? 'Sampling species A/B speeds'
+      : (speedError <= 0.12 ? 'Matches Graham\'s Law (vA/vB ≈ √(mB/mA))' : (speedError <= 0.25 ? 'Approaching Graham\'s Law' : 'Thermalizing toward equal kinetic energy'));
+    return {
+      massRatioB: massB,
+      theoryRatio: theoryRatio,
+      observedSpeedRatio: observedSpeedRatio,
+      observedDiffusionRatio: observedDiffusionRatio,
+      speedError: speedError,
+      label: label
+    };
+  }
+
+  function linearRegression(points) {
+    var clean = (points || []).filter(function (pt) { return pt && Number.isFinite(Number(pt.x)) && Number.isFinite(Number(pt.y)); })
+      .map(function (pt) { return { x: Number(pt.x), y: Number(pt.y) }; });
+    if (clean.length < 2) {
+      return { valid: false, n: clean.length, slope: 0, intercept: 0, r2: 0, rmse: 0, slopeStdErr: 0, maxAbsResidual: 0, xMin: clean.length ? clean[0].x : 0, xMax: clean.length ? clean[0].x + 1 : 1, yMin: clean.length ? clean[0].y : 0, yMax: clean.length ? clean[0].y + 1 : 1 };
+    }
+    var n = clean.length, sumX = 0, sumY = 0, xMin = clean[0].x, xMax = clean[0].x, yMin = clean[0].y, yMax = clean[0].y;
+    clean.forEach(function (pt) {
+      sumX += pt.x; sumY += pt.y;
+      if (pt.x < xMin) xMin = pt.x;
+      if (pt.x > xMax) xMax = pt.x;
+      if (pt.y < yMin) yMin = pt.y;
+      if (pt.y > yMax) yMax = pt.y;
+    });
+    var meanX = sumX / n, meanY = sumY / n, sxx = 0, sxy = 0, syy = 0;
+    clean.forEach(function (pt) {
+      var dx = pt.x - meanX, dy = pt.y - meanY;
+      sxx += dx * dx; sxy += dx * dy; syy += dy * dy;
+    });
+    if (sxx <= 1e-12) {
+      return { valid: false, n: n, slope: 0, intercept: meanY, r2: 0, rmse: 0, slopeStdErr: 0, maxAbsResidual: 0, xMin: xMin, xMax: xMax, yMin: yMin, yMax: yMax };
+    }
+    var slope = sxy / sxx;
+    var intercept = meanY - slope * meanX;
+    var ssRes = 0;
+    var maxAbsResidual = 0;
+    clean.forEach(function (pt) {
+      var residual = pt.y - (slope * pt.x + intercept);
+      var absRes = Math.abs(residual);
+      if (absRes > maxAbsResidual) maxAbsResidual = absRes;
+      ssRes += residual * residual;
+    });
+    var r2 = syy <= 1e-12 ? 1 : clamp(1 - ssRes / syy, 0, 1);
+    var rmse = Math.sqrt(ssRes / n);
+    var slopeStdErr = n > 2 ? Math.sqrt(Math.max(0, (ssRes / (n - 2)) / sxx)) : 0;
+    return { valid: true, n: n, slope: slope, intercept: intercept, r2: r2, rmse: rmse, slopeStdErr: slopeStdErr, maxAbsResidual: maxAbsResidual, xMin: xMin, xMax: xMax, yMin: yMin, yMax: yMax };
+  }
+
+  var PARTICLE_SWEEP_AXES = ['boylePV', 'gayLussacPT', 'charlesVT', 'avogadroPN', 'mfpDensity', 'grahamMass'];
+
+  function getParticleAxisSpec(axisId) {
+    var specs = {
+      boylePV: {
+        id: 'boylePV',
+        label: 'Boyle\'s Law: P vs 1000/V',
+        title: 'Boyle\'s Law (Isothermal P vs 1000/V)',
+        xLabel: 'Inverse Volume 1000/V (1/u^3)',
+        yLabel: 'Pressure P (model units)',
+        xShort: '1000/V',
+        yShort: 'P',
+        relationNote: 'Linear P vs 1/V confirms Boyle\'s Law at constant T and N.',
+        mapRow: function (row, idx) {
+          var v = Math.max(1, Number(row.volume) || Math.pow(Number(row.boxSize) || 11, 3));
+          return { label: '#' + (row.n || (idx + 1)) + ' (V=' + Math.round(v) + ')', x: Math.round((1000 / v) * 1000) / 1000, value: Math.round((Number(row.pressure) || 0) * 1000) / 1000 };
+        }
+      },
+      gayLussacPT: {
+        id: 'gayLussacPT',
+        label: 'Gay-Lussac\'s Law: P vs T',
+        title: 'Gay-Lussac\'s Law (Isochoric P vs T)',
+        xLabel: 'Temperature T (K)',
+        yLabel: 'Pressure P (model units)',
+        xShort: 'T (K)',
+        yShort: 'P',
+        relationNote: 'Proportional P vs T shows wall-impact impulse scaling with thermal energy.',
+        mapRow: function (row, idx) {
+          var t = Number(row.temperature) || 0;
+          return { label: '#' + (row.n || (idx + 1)) + ' (T=' + Math.round(t) + 'K)', x: Math.round(t * 10) / 10, value: Math.round((Number(row.pressure) || 0) * 1000) / 1000 };
+        }
+      },
+      charlesVT: {
+        id: 'charlesVT',
+        label: 'Charles\'s Law: V vs T',
+        title: 'Charles\'s Law (Isobaric V vs T)',
+        xLabel: 'Temperature T (K)',
+        yLabel: 'Chamber Volume V (u^3)',
+        xShort: 'T (K)',
+        yShort: 'V (u^3)',
+        relationNote: 'Isobaric heating expands volume V linearly with absolute temperature T.',
+        mapRow: function (row, idx) {
+          var t = Number(row.temperature) || 0;
+          var v = Math.max(1, Number(row.volume) || Math.pow(Number(row.boxSize) || 11, 3));
+          return { label: '#' + (row.n || (idx + 1)) + ' (T=' + Math.round(t) + 'K)', x: Math.round(t * 10) / 10, value: Math.round(v * 10) / 10 };
+        }
+      },
+      avogadroPN: {
+        id: 'avogadroPN',
+        label: 'Avogadro\'s Law: P vs N',
+        title: 'Avogadro\'s Law (P vs Particle Count N)',
+        xLabel: 'Particle Count N',
+        yLabel: 'Pressure P (model units)',
+        xShort: 'N',
+        yShort: 'P',
+        relationNote: 'Adding particles linearly increases wall collision frequency at fixed T and V.',
+        mapRow: function (row, idx) {
+          var nVal = Number(row.count) || 0;
+          return { label: '#' + (row.n || (idx + 1)) + ' (N=' + nVal + ')', x: nVal, value: Math.round((Number(row.pressure) || 0) * 1000) / 1000 };
+        }
+      },
+      mfpDensity: {
+        id: 'mfpDensity',
+        label: 'Mean Free Path: λ vs 100/(N−1)',
+        title: 'Mean Free Path Scaling (λ vs 100/(N−1))',
+        xLabel: 'Inverse Collision Count 100/(N−1)',
+        yLabel: 'Mean Free Path λ (u)',
+        xShort: '100/(N-1)',
+        yShort: 'λ (u)',
+        relationNote: 'Hard-sphere λ = V / (√2 (N−1) π d²) grows linearly with inverse target density.',
+        mapRow: function (row, idx) {
+          var nVal = Math.max(2, Number(row.count) || 64);
+          var invN = 100 / (nVal - 1);
+          return { label: '#' + (row.n || (idx + 1)) + ' (N=' + nVal + ')', x: Math.round(invN * 1000) / 1000, value: Math.round((Number(row.meanFreePath) || 0) * 1000) / 1000 };
+        }
+      },
+      grahamMass: {
+        id: 'grahamMass',
+        label: 'Graham\'s Law: v_rms,B vs 1/√m_B',
+        title: 'Graham\'s Law (v_rms,B vs 1/√m_B)',
+        xLabel: 'Inverse Root Mass 1/√m_B',
+        yLabel: 'RMS Speed v_rms,B (u/s)',
+        xShort: '1/√m_B',
+        yShort: 'v_rms,B',
+        relationNote: 'At equal kinetic temperature, thermal speed scales linearly with 1/√m.',
+        mapRow: function (row, idx) {
+          var invRoot = Number(row.invSqrtMassB) || (1 / Math.sqrt(Math.max(0.5, Number(row.massRatioB) || 1)));
+          return { label: '#' + (row.n || (idx + 1)) + ' (mB=' + Number(row.massRatioB || 1).toFixed(2) + 'x)', x: Math.round(invRoot * 1000) / 1000, value: Math.round((Number(row.vRmsB) || 0) * 1000) / 1000 };
+        }
+      }
+    };
+    return specs[axisId] || specs.boylePV;
+  }
+
+  function makeExperimentRow(fields) {
+    var edge = clamp(Number(fields.boxSize) || 11, 5, 24);
+    var vol = fields.volume != null ? Math.max(1, Number(fields.volume) || Math.pow(edge, 3)) : Math.pow(edge, 3);
+    var t = Math.max(1, Number(fields.temperature) || 300);
+    var nVal = clamp(Math.round(Number(fields.count) || 64), 8, 160);
+    var dVal = clamp(Number(fields.particleDiameter) || 0.58, 0.36, 0.9);
+    var attrVal = clamp(Number(fields.attraction) || 0, 0, 1.5);
+    var massB = clamp(Number(fields.massRatioB) || 1, 0.5, 3);
+    var mfpVal = fields.meanFreePath != null ? Number(fields.meanFreePath) : meanFreePathEstimate(nVal, edge, dVal);
+    var vdw = vanDerWaalsMetrics(fields.pressure, edge, nVal, t, dVal, attrVal);
+    var pVal = Number(fields.pressure) > 0 ? Number(fields.pressure) : vdw.vdwPressure;
+    return {
+      id: fields.id || (Date.now() + '-' + Math.round(Math.random() * 100000)),
+      n: Number(fields.n) || 1,
+      source: fields.source === 'sweep' ? 'sweep' : (fields.source === 'import' ? 'import' : 'live'),
+      preset: String(fields.preset || 'gas'),
+      temperature: Math.round(t * 10) / 10,
+      pressure: Math.round(pVal * 1000) / 1000,
+      count: nVal,
+      boxSize: Math.round(edge * 100) / 100,
+      volume: Math.round(vol * 10) / 10,
+      invVolume1000: Math.round((1000 / vol) * 1000) / 1000,
+      particleDiameter: Math.round(dVal * 100) / 100,
+      attraction: Math.round(attrVal * 100) / 100,
+      massRatioB: Math.round(massB * 100) / 100,
+      invSqrtMassB: Math.round(((fields.invSqrtMassB != null && Number(fields.invSqrtMassB) > 0) ? Number(fields.invSqrtMassB) : (1 / Math.sqrt(massB))) * 1000) / 1000,
+      vRmsA: Math.round(maxwellSpeeds(t, 1).vRms * 1000) / 1000,
+      vRmsB: Math.round(((fields.vRmsB != null && Number(fields.vRmsB) > 0) ? Number(fields.vRmsB) : maxwellSpeeds(t, massB).vRms) * 1000) / 1000,
+      meanFreePath: Math.round(mfpVal * 1000) / 1000,
+      compressibilityZ: Math.round(vdw.z * 1000) / 1000,
+      note: String(fields.note || '')
+    };
+  }
+
+  function buildParticleSweepRows(state, axisId, startN) {
+    var base = state || {};
+    var preset = String(base.preset || 'gas');
+    var baseTemp = clamp(Number(base.temperature) || 300, 40, 900);
+    var baseCount = clamp(Math.round(Number(base.count) || 64), 24, 120);
+    var baseBox = clamp(Number(base.boxSize) || 11, 7, 18);
+    var baseDiam = clamp(Number(base.particleDiameter) || 0.58, 0.36, 0.9);
+    var baseAttr = clamp(Number(base.attraction) || 0, 0, 1.5);
+    var baseMassB = clamp(Number(base.massRatioB) || 1, 0.5, 3);
+    var firstN = Math.max(1, Number(startN) || 1);
+    var grid = [];
+    if (axisId === 'gayLussacPT') {
+      [120, 260, 420, 600, 780].forEach(function (t) {
+        var vdw = vanDerWaalsMetrics(0, baseBox, baseCount, t, baseDiam, baseAttr);
+        grid.push({ temperature: t, pressure: vdw.vdwPressure, boxSize: baseBox, count: baseCount, note: 'Sweep: Gay-Lussac T=' + t + ' K' });
+      });
+    } else if (axisId === 'charlesVT') {
+      var pRef = Math.max(0.2, Number(base.pressure) > 0 ? Number(base.pressure) : vanDerWaalsMetrics(0, baseBox, baseCount, baseTemp, baseDiam, baseAttr).vdwPressure);
+      [140, 260, 400, 560, 720].forEach(function (t) {
+        var targetVol = clamp((baseCount * t) / (12 * pRef), 125, 13824);
+        var targetEdge = Math.cbrt(targetVol);
+        grid.push({ temperature: t, pressure: pRef, boxSize: targetEdge, volume: targetVol, count: baseCount, note: 'Sweep: Charles isobaric T=' + t + ' K' });
+      });
+    } else if (axisId === 'avogadroPN') {
+      [24, 48, 72, 96, 120].forEach(function (nVal) {
+        var vdw = vanDerWaalsMetrics(0, baseBox, nVal, baseTemp, baseDiam, baseAttr);
+        grid.push({ temperature: baseTemp, pressure: vdw.vdwPressure, boxSize: baseBox, count: nVal, note: 'Sweep: Avogadro N=' + nVal });
+      });
+    } else if (axisId === 'mfpDensity') {
+      [28, 44, 64, 90, 120].forEach(function (nVal) {
+        var vdw = vanDerWaalsMetrics(0, baseBox, nVal, baseTemp, baseDiam, baseAttr);
+        grid.push({ temperature: baseTemp, pressure: vdw.vdwPressure, boxSize: baseBox, count: nVal, note: 'Sweep: MFP density N=' + nVal });
+      });
+    } else if (axisId === 'grahamMass') {
+      [0.5, 1.0, 1.5, 2.2, 3.0].forEach(function (mB) {
+        var vdw = vanDerWaalsMetrics(0, baseBox, baseCount, baseTemp, baseDiam, baseAttr);
+        grid.push({ temperature: baseTemp, pressure: vdw.vdwPressure, boxSize: baseBox, count: baseCount, massRatioB: mB, note: 'Sweep: Graham mB=' + mB + 'x' });
+      });
+    } else {
+      [16, 13.5, 11.5, 9.5, 8].forEach(function (edge) {
+        var vdw = vanDerWaalsMetrics(0, edge, baseCount, baseTemp, baseDiam, baseAttr);
+        grid.push({ temperature: baseTemp, pressure: vdw.vdwPressure, boxSize: edge, count: baseCount, note: 'Sweep: Boyle L=' + edge + ' u' });
+      });
+    }
+    return grid.map(function (pt, idx) {
+      return makeExperimentRow(Object.assign({
+        id: 'sweep-' + axisId + '-' + (firstN + idx) + '-' + Date.now(),
+        n: firstN + idx,
+        source: 'sweep',
+        preset: preset,
+        particleDiameter: baseDiam,
+        attraction: baseAttr,
+        massRatioB: baseMassB
+      }, pt));
+    });
+  }
+
+  function restoreExperimentLog(raw) {
+    if (!Array.isArray(raw)) return [];
+    return raw.slice(-25).filter(function (row) { return row && typeof row === 'object'; }).map(function (row, idx) {
+      return makeExperimentRow(Object.assign({}, row, { n: idx + 1 }));
+    });
+  }
+
+  function restoreSavedSnapshots(raw) {
+    if (!Array.isArray(raw)) return [];
+    var allowedPresets = ['solid', 'liquid', 'gas', 'diffusion', 'osmosis'];
+    return raw.slice(-4).filter(function (snap) { return snap && typeof snap === 'object'; }).map(function (snap, idx) {
+      var presetVal = allowedPresets.indexOf(snap.preset) >= 0 ? snap.preset : 'gas';
+      var edge = clamp(Number(snap.boxSize) || 11, 7, 18);
+      var nVal = clamp(Math.round(Number(snap.count) || 64), 8, 160);
+      var tVal = clamp(Number(snap.temperature) || 300, 1, 2000);
+      var tSet = clamp(Number(snap.temperatureSetpoint) || tVal, 40, 900);
+      var dVal = clamp(Number(snap.particleDiameter) || 0.58, 0.36, 0.9);
+      var attrVal = clamp(Number(snap.attraction) || 0, 0, 1.5);
+      var gravVal = clamp(Number(snap.gravity) || 0, 0, 2);
+      var massB = clamp(Number(snap.massRatioB) || 1, 0.5, 3);
+      var pVal = Math.max(0, Number(snap.pressure) || 0);
+      var vdw = vanDerWaalsMetrics(pVal, edge, nVal, tVal, dVal, attrVal);
+      return {
+        id: String(snap.id || ('snap-' + (idx + 1))),
+        name: String(snap.name || ('Snap ' + (idx + 1))).slice(0, 48),
+        preset: presetVal,
+        temperature: Math.round(tVal),
+        temperatureSetpoint: Math.round(tSet),
+        pressure: Math.round((pVal > 0 ? pVal : vdw.vdwPressure) * 100) / 100,
+        count: nVal,
+        boxSize: Math.round(edge * 10) / 10,
+        volume: Math.round(Math.pow(edge, 3)),
+        particleDiameter: Math.round(dVal * 100) / 100,
+        attraction: Math.round(attrVal * 100) / 100,
+        gravity: Math.round(gravVal * 10) / 10,
+        massRatioB: Math.round(massB * 100) / 100,
+        meanFreePath: Math.round((Number(snap.meanFreePath) || meanFreePathEstimate(nVal, edge, dVal)) * 10) / 10,
+        compressibilityZ: Math.round((Number(snap.compressibilityZ) || vdw.z) * 100) / 100,
+        vRms: Math.round((Number(snap.vRms) || maxwellSpeeds(tVal, 1).vRms) * 100) / 100
+      };
+    });
+  }
+
+  function compareSnapshots(first, second) {
+    if (!first || !second) return null;
+    var changed = [];
+    if ((first.temperatureSetpoint || first.temperature) !== (second.temperatureSetpoint || second.temperature)) changed.push('temperature');
+    if (first.count !== second.count) changed.push('particle count');
+    if (Math.abs((first.boxSize || 11) - (second.boxSize || 11)) > 0.05) changed.push('volume');
+    if (Math.abs((first.particleDiameter || 0.58) - (second.particleDiameter || 0.58)) > 0.01) changed.push('diameter');
+    if (Math.abs((first.attraction || 0) - (second.attraction || 0)) > 0.01) changed.push('attraction');
+    if (Math.abs((first.gravity || 0) - (second.gravity || 0)) > 0.05) changed.push('gravity');
+    if (Math.abs((first.massRatioB || 1) - (second.massRatioB || 1)) > 0.05) changed.push('mass B');
+    if ((first.preset || 'gas') !== (second.preset || 'gas')) changed.push('preset');
+    return {
+      changed: changed,
+      fair: changed.length === 1,
+      temperatureDelta: (Number(second.temperature) || 0) - (Number(first.temperature) || 0),
+      pressureDelta: (Number(second.pressure) || 0) - (Number(first.pressure) || 0),
+      countDelta: (Number(second.count) || 0) - (Number(first.count) || 0),
+      volumeDelta: (Number(second.volume) || 0) - (Number(first.volume) || 0),
+      mfpDelta: (Number(second.meanFreePath) || 0) - (Number(first.meanFreePath) || 0),
+      zDelta: (Number(second.compressibilityZ) || 1) - (Number(first.compressibilityZ) || 1),
+      vRmsDelta: (Number(second.vRms) || 0) - (Number(first.vRms) || 0)
+    };
+  }
+
+  var GAS_IDENTITIES = [
+    { id: 'He', name: 'Helium (He)', formula: 'He', molarMass: 4.0026, dof: 3, gamma: 5 / 3, kineticDiameterPm: 260, vdwA: 0.0346, vdwB: 0.0238, modelDiameter: 0.38, modelAttraction: 0.02, family: 'Monatomic noble' },
+    { id: 'CH4', name: 'Methane (CH\u2084)', formula: 'CH\u2084', molarMass: 16.043, dof: 6, gamma: 4 / 3, kineticDiameterPm: 380, vdwA: 2.283, vdwB: 0.0428, modelDiameter: 0.57, modelAttraction: 0.26, family: 'Polyatomic' },
+    { id: 'Ne', name: 'Neon (Ne)', formula: 'Ne', molarMass: 20.180, dof: 3, gamma: 5 / 3, kineticDiameterPm: 275, vdwA: 0.2135, vdwB: 0.0171, modelDiameter: 0.41, modelAttraction: 0.05, family: 'Monatomic noble' },
+    { id: 'N2', name: 'Nitrogen (N\u2082)', formula: 'N\u2082', molarMass: 28.014, dof: 5, gamma: 1.4, kineticDiameterPm: 364, vdwA: 1.370, vdwB: 0.0387, modelDiameter: 0.56, modelAttraction: 0.15, family: 'Diatomic' },
+    { id: 'O2', name: 'Oxygen (O\u2082)', formula: 'O\u2082', molarMass: 31.998, dof: 5, gamma: 1.4, kineticDiameterPm: 346, vdwA: 1.382, vdwB: 0.0319, modelDiameter: 0.54, modelAttraction: 0.16, family: 'Diatomic' },
+    { id: 'Ar', name: 'Argon (Ar)', formula: 'Ar', molarMass: 39.948, dof: 3, gamma: 5 / 3, kineticDiameterPm: 340, vdwA: 1.355, vdwB: 0.0320, modelDiameter: 0.53, modelAttraction: 0.16, family: 'Monatomic noble' },
+    { id: 'CO2', name: 'Carbon Dioxide (CO\u2082)', formula: 'CO\u2082', molarMass: 44.010, dof: 5, gamma: 1.4, kineticDiameterPm: 330, vdwA: 3.640, vdwB: 0.0427, modelDiameter: 0.62, modelAttraction: 0.42, family: 'Linear triatomic' },
+    { id: 'Xe', name: 'Xenon (Xe)', formula: 'Xe', molarMass: 131.29, dof: 3, gamma: 5 / 3, kineticDiameterPm: 396, vdwA: 4.250, vdwB: 0.0511, modelDiameter: 0.68, modelAttraction: 0.48, family: 'Heavy noble' }
+  ];
+  var GAS_IDENTITY_IDS = GAS_IDENTITIES.map(function (g) { return g.id; });
+
+  function getGasIdentity(gasId) {
+    for (var i = 0; i < GAS_IDENTITIES.length; i += 1) {
+      if (GAS_IDENTITIES[i].id === gasId) return GAS_IDENTITIES[i];
+    }
+    return GAS_IDENTITIES[3];
+  }
+
+  function gasSpeciesMetrics(gasAId, gasBId, temperatureK) {
+    var R_SI = 8.314462618;
+    var t = Math.max(1, Number(temperatureK) || 300);
+    var gasA = getGasIdentity(gasAId || 'N2');
+    var gasB = getGasIdentity(gasBId || 'CO2');
+    function computeOne(spec) {
+      var mKg = Math.max(0.0005, Number(spec.molarMass) / 1000);
+      return {
+        vMpSi: Math.sqrt((2 * R_SI * t) / mKg),
+        vMeanSi: Math.sqrt((8 * R_SI * t) / (Math.PI * mKg)),
+        vRmsSi: Math.sqrt((3 * R_SI * t) / mKg),
+        soundSpeedSi: Math.sqrt((spec.gamma * R_SI * t) / mKg),
+        molarTransKeKj: (1.5 * R_SI * t) / 1000,
+        molarInternalEnergyKj: (0.5 * spec.dof * R_SI * t) / 1000,
+        cvMolar: 0.5 * spec.dof * R_SI,
+        cpMolar: (0.5 * spec.dof + 1) * R_SI
+      };
+    }
+    var rawMassRatioB = gasB.molarMass / gasA.molarMass;
+    var chamberMassRatioB = Math.round(clamp(rawMassRatioB, 0.5, 3) * 100) / 100;
+    return {
+      gasA: gasA,
+      gasB: gasB,
+      temperatureK: t,
+      a: computeOne(gasA),
+      b: computeOne(gasB),
+      rawMassRatioB: rawMassRatioB,
+      chamberMassRatioB: chamberMassRatioB,
+      massRatioClamped: rawMassRatioB > 3.001 || rawMassRatioB < 0.499,
+      siGrahamRatio: Math.sqrt(rawMassRatioB)
+    };
+  }
+
+  function thermodynamicProcessMetrics(state1, state2) {
+    if (!state1 || !state2) return null;
+    var t1 = Math.max(1, Number(state1.temperature) || 300);
+    var t2 = Math.max(1, Number(state2.temperature) || 300);
+    var n1 = clamp(Math.round(Number(state1.count) || 64), 1, 500);
+    var n2 = clamp(Math.round(Number(state2.count) || 64), 1, 500);
+    var edge1 = clamp(Number(state1.boxSize) || Math.cbrt(Math.max(1, Number(state1.volume) || 1331)), 4, 30);
+    var edge2 = clamp(Number(state2.boxSize) || Math.cbrt(Math.max(1, Number(state2.volume) || 1331)), 4, 30);
+    var v1 = Number(state1.volume) > 0 ? Number(state1.volume) : Math.pow(edge1, 3);
+    var v2 = Number(state2.volume) > 0 ? Number(state2.volume) : Math.pow(edge2, 3);
+    var p1Raw = Number(state1.pressure) > 0 ? Number(state1.pressure) : vanDerWaalsMetrics(0, edge1, n1, t1, state1.particleDiameter || 0.58, state1.attraction || 0).vdwPressure;
+    var p2Raw = Number(state2.pressure) > 0 ? Number(state2.pressure) : vanDerWaalsMetrics(0, edge2, n2, t2, state2.particleDiameter || 0.58, state2.attraction || 0).vdwPressure;
+    var p1 = Math.max(0.01, p1Raw);
+    var p2 = Math.max(0.01, p2Raw);
+    var u1 = (n1 * t1) / 80;
+    var u2 = (n2 * t2) / 80;
+    var deltaU = u2 - u1;
+    var relDV = Math.abs(v2 - v1) / Math.max(1, v1);
+    var relDT = Math.abs(t2 - t1) / Math.max(1, t1);
+    var relDP = Math.abs(p2 - p1) / Math.max(0.01, (p1 + p2) / 2);
+    var polytropicN = Infinity;
+    var workByGas = 0;
+    if (relDV >= 0.008) {
+      polytropicN = -Math.log(p2 / p1) / Math.log(v2 / v1);
+      if (Math.abs(polytropicN - 1) < 0.02) {
+        workByGas = ((p1 * v1 + p2 * v2) / 20) * Math.log(v2 / v1);
+      } else {
+        workByGas = (p2 * v2 - p1 * v1) / (10 * (1 - polytropicN));
+      }
+    }
+    var heatQ = deltaU + workByGas;
+    var entropyPerNk = n1 === n2 ? (1.5 * Math.log(t2 / t1) + Math.log(v2 / v1)) : 0;
+    var openSystem = n1 !== n2;
+    var processType = 'polytropic';
+    var label = 'Polytropic path (n = ' + (Number.isFinite(polytropicN) ? polytropicN.toFixed(2) : '\u221E') + ')';
+    if (openSystem) {
+      processType = 'open_system';
+      label = 'Open system (\u0394N \u2260 0)';
+    } else if (relDV < 0.012 && relDT < 0.012 && relDP < 0.02) {
+      processType = 'equilibrium';
+      label = 'Equilibrium state (\u0394V \u2248 0, \u0394T \u2248 0)';
+    } else if (relDV < 0.012) {
+      processType = 'isochoric';
+      label = 'Isochoric (constant V, W = 0)';
+    } else if (relDP < 0.045) {
+      processType = 'isobaric';
+      label = 'Isobaric (constant P)';
+    } else if (relDT < 0.035) {
+      processType = 'isothermal';
+      label = 'Isothermal (constant T, \u0394U \u2248 0)';
+    } else if (Number.isFinite(polytropicN) && Math.abs(polytropicN - (5 / 3)) <= 0.16) {
+      processType = 'adiabatic';
+      label = 'Adiabatic (Q \u2248 0, work changes T)';
+    }
+    var workDirection = workByGas > 0.05 ? 'expansion' : (workByGas < -0.05 ? 'compression' : 'zero');
+    var heatDirection = heatQ > 0.05 ? 'absorbed' : (heatQ < -0.05 ? 'released' : 'adiabatic');
+    return {
+      processType: processType,
+      label: label,
+      openSystem: openSystem,
+      t1: t1,
+      t2: t2,
+      p1: p1,
+      p2: p2,
+      v1: v1,
+      v2: v2,
+      n1: n1,
+      n2: n2,
+      u1: u1,
+      u2: u2,
+      deltaU: deltaU,
+      workByGas: workByGas,
+      heatQ: heatQ,
+      entropyPerNk: entropyPerNk,
+      polytropicN: polytropicN,
+      workDirection: workDirection,
+      heatDirection: heatDirection
+    };
+  }
+
+  var PARTICLE_CHALLENGES = [
+    {
+      id: 'boyle_squeeze',
+      title: 'Boyle Compression (P \u2265 3.2 u)',
+      law: 'Boyle\'s Law',
+      goal: 'In the gas preset at 280\u2013340 K with low attraction (\u2264 0.20), shrink the container until pressure reaches at least 3.2 u.',
+      stage: { preset: 'gas', temperature: 300, count: 72, boxSize: 13, particleDiameter: 0.56, attraction: 0.05, massRatioB: 1 }
+    },
+    {
+      id: 'subideal_condense',
+      title: 'Cohesive Real Gas (Z < 0.85)',
+      law: 'Van der Waals',
+      goal: 'Cool a dense gas and strengthen attraction so intermolecular cohesion drops compressibility factor Z below 0.85.',
+      stage: { preset: 'gas', temperature: 260, count: 92, boxSize: 9.5, particleDiameter: 0.42, attraction: 0.45, massRatioB: 1 }
+    },
+    {
+      id: 'rarefied_mfp',
+      title: 'High-Vacuum Free Path (\u03BB \u2265 12 u)',
+      law: 'Collision Cross Section',
+      goal: 'Widen the container, reduce particle count, or shrink collision diameter so theoretical mean free path \u03BB reaches at least 12.0 u.',
+      stage: { preset: 'gas', temperature: 300, count: 100, boxSize: 10, particleDiameter: 0.62, attraction: 0, massRatioB: 1 }
+    },
+    {
+      id: 'graham_effusion',
+      title: 'Graham Speed Separation (\u2265 1.50x)',
+      law: 'Graham\'s Law',
+      goal: 'In Diffusion or Osmosis, make Species B heavier so theoretical Graham speed ratio \u221A(mB/mA) reaches at least 1.50x.',
+      stage: { preset: 'diffusion', temperature: 300, count: 80, boxSize: 11, particleDiameter: 0.54, attraction: 0.05, massRatioB: 1.2 }
+    },
+    {
+      id: 'linear_law_fit',
+      title: 'High-Precision Fit (R\u00B2 \u2265 0.98)',
+      law: 'Linear Regression',
+      goal: 'Log or sweep at least 4 experiment states whose active gas-law linear regression reaches R\u00B2 \u2265 0.98.',
+      stage: { preset: 'gas', temperature: 300, count: 64, boxSize: 12, particleDiameter: 0.52, attraction: 0, massRatioB: 1 }
+    }
+  ];
+
+  function restoreCompletedChallenges(raw) {
+    var out = {};
+    if (!raw || typeof raw !== 'object') return out;
+    PARTICLE_CHALLENGES.forEach(function (ch) {
+      if (raw[ch.id]) out[ch.id] = true;
+    });
+    return out;
+  }
+
+  function evaluateParticleChallenge(challengeId, state) {
+    var s = state || {};
+    var t = Number(s.temperature) || 300;
+    var attr = Number(s.attraction) || 0;
+    var p = Number(s.vdwPressure) || 0;
+    var zVal = Number(s.z) || 1;
+    var mfp = Number(s.meanFreePath) || 0;
+    var gRatio = Math.sqrt(clamp(Number(s.massRatioB) || 1, 0.5, 3));
+    var r2 = Number(s.regressionR2) || 0;
+    var logCount = Number(s.logCount) || 0;
+    if (challengeId === 'subideal_condense') {
+      return {
+        id: challengeId,
+        passed: zVal < 0.85,
+        currentLabel: 'Z = ' + zVal.toFixed(2),
+        targetLabel: 'Z < 0.85',
+        progress: clamp((1 - zVal) / 0.15, 0, 1)
+      };
+    }
+    if (challengeId === 'rarefied_mfp') {
+      return {
+        id: challengeId,
+        passed: mfp >= 12,
+        currentLabel: '\u03BB = ' + mfp.toFixed(1) + ' u',
+        targetLabel: '\u03BB \u2265 12.0 u',
+        progress: clamp(mfp / 12, 0, 1)
+      };
+    }
+    if (challengeId === 'graham_effusion') {
+      var isMix = s.preset === 'diffusion' || s.preset === 'osmosis';
+      return {
+        id: challengeId,
+        passed: isMix && gRatio >= 1.5,
+        currentLabel: (isMix ? 'Ratio ' + gRatio.toFixed(2) + 'x' : 'Need Diffusion/Osmosis'),
+        targetLabel: '\u221A(mB/mA) \u2265 1.50x',
+        progress: isMix ? clamp((gRatio - 1) / 0.5, 0, 1) : 0
+      };
+    }
+    if (challengeId === 'linear_law_fit') {
+      return {
+        id: challengeId,
+        passed: logCount >= 4 && r2 >= 0.98,
+        currentLabel: logCount + ' pts \u2022 R\u00B2=' + r2.toFixed(3),
+        targetLabel: '4+ pts, R\u00B2 \u2265 0.98',
+        progress: clamp((Math.min(4, logCount) / 4) * 0.5 + clamp(r2 / 0.98, 0, 1) * 0.5, 0, 1)
+      };
+    }
+    var okBoyle = s.preset === 'gas' && t >= 280 && t <= 340 && attr <= 0.2 && p >= 3.2;
+    return {
+      id: 'boyle_squeeze',
+      passed: okBoyle,
+      currentLabel: 'P = ' + p.toFixed(1) + ' u (' + Math.round(t) + ' K)',
+      targetLabel: 'gas, 280\u2013340K, P \u2265 3.2 u',
+      progress: s.preset === 'gas' && attr <= 0.2 ? clamp(p / 3.2, 0, 1) : 0
+    };
+  }
+
+  var TRANSPORT_PRESSURE_ATM_OPTIONS = [0.001, 0.01, 0.1, 1, 10];
+
+  function transportCoefficientsMetrics(params) {
+    var p = params || {};
+    var t = Math.max(1, Number(p.temperature) || 300);
+    var n = clamp(Math.round(Number(p.count) || 64), 1, 500);
+    var edge = clamp(Number(p.boxSize) || 11, 4, 30);
+    var diam = clamp(Number(p.particleDiameter) || 0.58, 0.2, 1.5);
+    var mass = clamp(Number(p.massRatio) || 1, 0.5, 3);
+    var mfpU = meanFreePathEstimate(n, edge, diam);
+    var knudsen = mfpU / edge;
+    var regime = 'free_molecular';
+    var regimeLabel = 'Free-Molecular (Ballistic)';
+    if (knudsen < 0.01) {
+      regime = 'continuum';
+      regimeLabel = 'Continuum (Navier\u2013Stokes)';
+    } else if (knudsen < 0.1) {
+      regime = 'slip';
+      regimeLabel = 'Slip Flow';
+    } else if (knudsen < 10) {
+      regime = 'transitional';
+      regimeLabel = 'Transitional (Knudsen)';
+    }
+    var vMeanU = maxwellSpeeds(t, mass).vMean;
+    var collisionFreq = vMeanU / Math.max(1e-6, mfpU);
+    var wallCollisionFreq = vMeanU / edge;
+    var selfDiffusionU = (1 / 3) * vMeanU * mfpU;
+    // Maxwell's 1860 theorem: bulk dilute viscosity depends on temperature and diameter, NOT density n/V.
+    var viscosityBulkModel = (5 / (16 * diam * diam)) * Math.sqrt((mass * (t / 120)) / Math.PI);
+    var viscosityEffModel = viscosityBulkModel / (1 + 2 * knudsen);
+    var thermalCondBulkModel = (15 / 4) * (1 / (120 * mass)) * viscosityBulkModel;
+    var thermalCondEffModel = thermalCondBulkModel / (1 + 2 * knudsen);
+
+    var gas = getGasIdentity(p.gasId || 'N2');
+    var pAtm = Math.max(1e-5, Number(p.pressureAtm) || 1);
+    var kBSi = 1.380649e-23;
+    var nASi = 6.02214076e23;
+    var rSi = 8.314462618;
+    var pPa = pAtm * 101325;
+    var sigmaM = (gas.kineticDiameterPm || 364) * 1e-12;
+    var molarMassKg = gas.molarMass / 1000;
+    var moleculeMassKg = molarMassKg / nASi;
+    var numberDensityM3 = pPa / (kBSi * t);
+    var siMfpM = 1 / (Math.sqrt(2) * Math.PI * sigmaM * sigmaM * numberDensityM3);
+    var siMfpNm = siMfpM * 1e9;
+    var vMeanSi = Math.sqrt((8 * rSi * t) / (Math.PI * molarMassKg));
+    var siDiffusionCm2S = (1 / 3) * vMeanSi * siMfpM * 1e4;
+    var siViscosityPaS = (5 / (16 * sigmaM * sigmaM)) * Math.sqrt((moleculeMassKg * kBSi * t) / Math.PI);
+    var siViscosityMicroPaS = siViscosityPaS * 1e6;
+    var cvSpec = (0.5 * gas.dof * rSi) / molarMassKg;
+    var siThermalCondMwMK = siViscosityPaS * (cvSpec + 2.25 * (rSi / molarMassKg)) * 1000;
+
+    return {
+      temperature: t,
+      count: n,
+      boxSize: edge,
+      particleDiameter: diam,
+      massRatio: mass,
+      gas: gas,
+      pressureAtm: pAtm,
+      mfpU: mfpU,
+      knudsen: knudsen,
+      regime: regime,
+      regimeLabel: regimeLabel,
+      vMeanU: vMeanU,
+      collisionFreq: collisionFreq,
+      wallCollisionFreq: wallCollisionFreq,
+      selfDiffusionU: selfDiffusionU,
+      viscosityBulkModel: viscosityBulkModel,
+      viscosityEffModel: viscosityEffModel,
+      thermalCondBulkModel: thermalCondBulkModel,
+      thermalCondEffModel: thermalCondEffModel,
+      siMfpNm: siMfpNm,
+      vMeanSi: vMeanSi,
+      siDiffusionCm2S: siDiffusionCm2S,
+      siViscosityMicroPaS: siViscosityMicroPaS,
+      siThermalCondMwMK: siThermalCondMwMK
+    };
+  }
+
+  var CYCLE_TYPES = ['carnot', 'otto', 'brayton', 'stirling'];
+
+  function thermodynamicCycleMetrics(params) {
+    var p = params || {};
+    var type = CYCLE_TYPES.indexOf(p.cycleType) >= 0 ? p.cycleType : 'carnot';
+    var gas = getGasIdentity(p.gasId || 'N2');
+    var dof = gas.dof;
+    var gamma = gas.gamma;
+    var kB = 1 / 120;
+    var cv = 0.5 * dof * kB;
+    var cp = (0.5 * dof + 1) * kB;
+    var n = clamp(Math.round(Number(p.count) || 72), 1, 500);
+    var edgeMax = clamp(Number(p.baseEdge) || 15, 8, 20);
+    var vMax = Math.pow(edgeMax, 3);
+    var rV = clamp(Number(p.compressionRatio) || 3, 1.5, 6);
+    var tC = clamp(Number(p.tCold) || 200, 60, 450);
+    var tHInput = clamp(Number(p.tHot) || 640, 140, 900);
+
+    function makeCorner(idx, v, temp) {
+      var pMech = (n * kB * temp) / Math.max(1e-6, v);
+      var pGauge = 10 * pMech;
+      return {
+        index: idx,
+        v: v,
+        t: temp,
+        pMech: pMech,
+        pGauge: pGauge,
+        chamberEdge: clamp(Math.round(Math.cbrt(v)), 7, 18),
+        chamberTemp: clamp(Math.round(temp), 40, 900)
+      };
+    }
+
+    var corners = [];
+    var legs = [];
+    var tPeak = Math.max(tC + 60, tHInput);
+    var title = 'Carnot Cycle';
+    var t2, t4, v2, v3, v4, vMin;
+
+    if (type === 'otto') {
+      title = 'Otto Spark-Ignition Cycle';
+      t2 = tC * Math.pow(rV, gamma - 1);
+      tPeak = Math.max(tHInput, t2 + 60);
+      t4 = tPeak * Math.pow(rV, 1 - gamma);
+      vMin = vMax / rV;
+      corners = [
+        makeCorner(1, vMax, tC),
+        makeCorner(2, vMin, t2),
+        makeCorner(3, vMin, tPeak),
+        makeCorner(4, vMax, t4)
+      ];
+      legs = [
+        { from: 1, to: 2, kind: 'adiabatic', label: '1\u21922 Adiabatic compression', deltaU: n * cv * (t2 - tC), work: -n * cv * (t2 - tC), heat: 0 },
+        { from: 2, to: 3, kind: 'isochoric', label: '2\u21923 Isochoric ignition', deltaU: n * cv * (tPeak - t2), work: 0, heat: n * cv * (tPeak - t2) },
+        { from: 3, to: 4, kind: 'adiabatic', label: '3\u21924 Adiabatic power stroke', deltaU: n * cv * (t4 - tPeak), work: -n * cv * (t4 - tPeak), heat: 0 },
+        { from: 4, to: 1, kind: 'isochoric', label: '4\u21921 Isochoric exhaust', deltaU: n * cv * (tC - t4), work: 0, heat: n * cv * (tC - t4) }
+      ];
+    } else if (type === 'brayton') {
+      title = 'Brayton Turbine Cycle';
+      t2 = tC * Math.pow(rV, gamma - 1);
+      tPeak = Math.max(tHInput, t2 + 60);
+      t4 = tPeak * Math.pow(rV, 1 - gamma);
+      v2 = vMax / rV;
+      v3 = v2 * (tPeak / t2);
+      v4 = v3 * rV;
+      corners = [
+        makeCorner(1, vMax, tC),
+        makeCorner(2, v2, t2),
+        makeCorner(3, v3, tPeak),
+        makeCorner(4, v4, t4)
+      ];
+      legs = [
+        { from: 1, to: 2, kind: 'adiabatic', label: '1\u21922 Adiabatic compression', deltaU: n * cv * (t2 - tC), work: -n * cv * (t2 - tC), heat: 0 },
+        { from: 2, to: 3, kind: 'isobaric', label: '2\u21923 Isobaric combustion', deltaU: n * cv * (tPeak - t2), work: n * kB * (tPeak - t2), heat: n * cp * (tPeak - t2) },
+        { from: 3, to: 4, kind: 'adiabatic', label: '3\u21924 Adiabatic expansion', deltaU: n * cv * (t4 - tPeak), work: -n * cv * (t4 - tPeak), heat: 0 },
+        { from: 4, to: 1, kind: 'isobaric', label: '4\u21921 Isobaric cooling', deltaU: n * cv * (tC - t4), work: n * kB * (tC - t4), heat: n * cp * (tC - t4) }
+      ];
+    } else if (type === 'stirling') {
+      title = 'Stirling Regenerative Cycle';
+      vMin = vMax / rV;
+      var lnRvS = Math.log(rV);
+      var qRegen = n * cv * (tPeak - tC);
+      corners = [
+        makeCorner(1, vMax, tC),
+        makeCorner(2, vMin, tC),
+        makeCorner(3, vMin, tPeak),
+        makeCorner(4, vMax, tPeak)
+      ];
+      legs = [
+        { from: 1, to: 2, kind: 'isothermal', label: '1\u21922 Isothermal compression', deltaU: 0, work: -n * kB * tC * lnRvS, heat: -n * kB * tC * lnRvS },
+        { from: 2, to: 3, kind: 'isochoric', label: '2\u21923 Isochoric regeneration', deltaU: qRegen, work: 0, heat: qRegen },
+        { from: 3, to: 4, kind: 'isothermal', label: '3\u21924 Isothermal expansion', deltaU: 0, work: n * kB * tPeak * lnRvS, heat: n * kB * tPeak * lnRvS },
+        { from: 4, to: 1, kind: 'isochoric', label: '4\u21921 Isochoric exhaust', deltaU: -qRegen, work: 0, heat: -qRegen }
+      ];
+    } else {
+      title = 'Carnot Cycle';
+      var ratioPow = Math.pow(tC / tPeak, dof / 2);
+      var v2c = vMax / rV;
+      var v3c = v2c * ratioPow;
+      var v4c = vMax * ratioPow;
+      var lnRvC = Math.log(rV);
+      var dUC = n * cv * (tPeak - tC);
+      corners = [
+        makeCorner(1, vMax, tC),
+        makeCorner(2, v2c, tC),
+        makeCorner(3, v3c, tPeak),
+        makeCorner(4, v4c, tPeak)
+      ];
+      legs = [
+        { from: 1, to: 2, kind: 'isothermal', label: '1\u21922 Isothermal compression', deltaU: 0, work: -n * kB * tC * lnRvC, heat: -n * kB * tC * lnRvC },
+        { from: 2, to: 3, kind: 'adiabatic', label: '2\u21923 Adiabatic compression', deltaU: dUC, work: -dUC, heat: 0 },
+        { from: 3, to: 4, kind: 'isothermal', label: '3\u21924 Isothermal expansion', deltaU: 0, work: n * kB * tPeak * lnRvC, heat: n * kB * tPeak * lnRvC },
+        { from: 4, to: 1, kind: 'adiabatic', label: '4\u21921 Adiabatic expansion', deltaU: -dUC, work: dUC, heat: 0 }
+      ];
+    }
+
+    var cycleDeltaU = 0;
+    var netWork = 0;
+    var totalHeatPos = 0;
+    var totalHeatNegAbs = 0;
+    for (var li = 0; li < legs.length; li += 1) {
+      cycleDeltaU += legs[li].deltaU;
+      netWork += legs[li].work;
+      if (legs[li].heat > 0) totalHeatPos += legs[li].heat;
+      else if (legs[li].heat < 0) totalHeatNegAbs += Math.abs(legs[li].heat);
+    }
+
+    var qIn = type === 'stirling' ? legs[2].heat : totalHeatPos;
+    var qOutAbs = type === 'stirling' ? Math.abs(legs[0].heat) : totalHeatNegAbs;
+    var thermalEfficiency = netWork / Math.max(1e-9, qIn);
+    var unregeneratedEfficiency = type === 'stirling' ? netWork / Math.max(1e-9, legs[2].heat + legs[1].heat) : thermalEfficiency;
+    var carnotEfficiency = 1 - tC / tPeak;
+    var secondLawRatio = clamp(thermalEfficiency / Math.max(1e-9, carnotEfficiency), 0, 1);
+
+    return {
+      cycleType: type,
+      title: title,
+      gas: gas,
+      gamma: gamma,
+      compressionRatio: rV,
+      tMin: tC,
+      tPeak: tPeak,
+      corners: corners,
+      legs: legs,
+      cycleDeltaU: cycleDeltaU,
+      netWork: netWork,
+      qIn: qIn,
+      qOutAbs: qOutAbs,
+      thermalEfficiency: thermalEfficiency,
+      unregeneratedEfficiency: unregeneratedEfficiency,
+      carnotEfficiency: carnotEfficiency,
+      secondLawRatio: secondLawRatio,
+      copCoolingCarnot: tC / Math.max(1, tPeak - tC),
+      copHeatingCarnot: tPeak / Math.max(1, tPeak - tC)
+    };
+  }
+
+  var PLANETARY_BODIES = [
+    { id: 'Earth', name: 'Earth', gravityMs2: 9.81, escapeKmS: 11.19, surfaceTempK: 288, chamberGravity: 0.65, note: 'Retains N\u2082/O\u2082/CO\u2082; hot upper exosphere leaks He' },
+    { id: 'Mars', name: 'Mars', gravityMs2: 3.72, escapeKmS: 5.03, surfaceTempK: 210, chamberGravity: 0.25, note: 'Thin CO\u2082 envelope; lighter volatiles escape faster' },
+    { id: 'Titan', name: 'Titan (Saturn moon)', gravityMs2: 1.35, escapeKmS: 2.64, surfaceTempK: 94, chamberGravity: 0.12, note: 'Deep-freeze 94 K retains dense N\u2082 and CH\u2084 despite low g' },
+    { id: 'Venus', name: 'Venus', gravityMs2: 8.87, escapeKmS: 10.36, surfaceTempK: 737, chamberGravity: 0.58, note: '737 K greenhouse stretches CO\u2082 scale height upward' },
+    { id: 'Moon', name: 'Moon (Luna)', gravityMs2: 1.62, escapeKmS: 2.38, surfaceTempK: 250, chamberGravity: 0.11, note: 'Low escape speed strips light and medium gases rapidly' },
+    { id: 'Jupiter', name: 'Jupiter (1 bar)', gravityMs2: 24.79, escapeKmS: 59.5, surfaceTempK: 165, chamberGravity: 1.65, note: 'Massive gravity traps primordial He and H\u2082' }
+  ];
+  var PLANETARY_BODY_IDS = PLANETARY_BODIES.map(function (b) { return b.id; });
+
+  function getPlanetaryBody(planetId) {
+    for (var i = 0; i < PLANETARY_BODIES.length; i += 1) {
+      if (PLANETARY_BODIES[i].id === planetId) return PLANETARY_BODIES[i];
+    }
+    return PLANETARY_BODIES[0];
+  }
+
+  function barometricAtmosphereMetrics(params) {
+    var p = params || {};
+    var planet = getPlanetaryBody(p.planetId || 'Earth');
+    var gas = getGasIdentity(p.gasId || 'N2');
+    var tempMode = p.tempMode === 'chamber' ? 'chamber' : 'planet';
+    var evalTempK = tempMode === 'chamber' ? Math.max(1, Number(p.chamberTempK) || 300) : planet.surfaceTempK;
+    var rSi = 8.314462618;
+    var mKg = gas.molarMass / 1000;
+    var scaleHeightKm = (rSi * evalTempK) / (mKg * planet.gravityMs2 * 1000);
+    var vRmsKmS = Math.sqrt((3 * rSi * evalTempK) / mKg) / 1000;
+    var vMpKmS = Math.sqrt((2 * rSi * evalTempK) / mKg) / 1000;
+    var escapeRatio = planet.escapeKmS / Math.max(1e-6, vRmsKmS);
+    var jeansLambda = Math.pow(planet.escapeKmS / Math.max(1e-6, vMpKmS), 2);
+    var retention = 'rapid_loss';
+    var retentionLabel = 'Rapid Escape';
+    if (escapeRatio >= 6) {
+      retention = 'geological';
+      retentionLabel = 'Retained (Gyr Scale)';
+    } else if (escapeRatio >= 4) {
+      retention = 'slow_leak';
+      retentionLabel = 'Slow Jeans Escape';
+    }
+
+    var tCh = Math.max(1, Number(p.chamberTempK) || 300);
+    var gCh = clamp(Number(p.chamberGravity) || 0, 0, 2);
+    var edgeCh = clamp(Number(p.chamberBoxSize) || 11, 4, 30);
+    var mCh = clamp(Number(p.chamberMassRatio) || 1, 0.5, 3);
+    var chamberScaleHeightU = gCh <= 0.001 ? Infinity : (tCh / (288 * mCh * gCh));
+    var chamberTopOverBottom = gCh <= 0.001 ? 1 : Math.exp(-edgeCh / chamberScaleHeightU);
+    var chamberBottomTopQuarterRatio = gCh <= 0.001 ? 1 : Math.min(99.9, Math.exp((0.75 * edgeCh) / chamberScaleHeightU));
+
+    return {
+      planet: planet,
+      gas: gas,
+      tempMode: tempMode,
+      evalTempK: evalTempK,
+      scaleHeightKm: scaleHeightKm,
+      vRmsKmS: vRmsKmS,
+      vMpKmS: vMpKmS,
+      escapeRatio: escapeRatio,
+      jeansLambda: jeansLambda,
+      retention: retention,
+      retentionLabel: retentionLabel,
+      chamberScaleHeightU: chamberScaleHeightU,
+      chamberTopOverBottom: chamberTopOverBottom,
+      chamberBottomTopQuarterRatio: chamberBottomTopQuarterRatio
+    };
+  }
+
+  function erfcApprox(x) {
+    var z = Math.abs(Number(x) || 0);
+    var t = 1 / (1 + 0.3275911 * z);
+    var poly = (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t;
+    var ans = poly * Math.exp(-z * z);
+    return Number(x) < 0 ? 2 - ans : ans;
+  }
+
+  var STATMECH_THRESHOLD_RATIOS = [1.5, 2.5, 4, 6];
+
+  function statisticalMechanicsMetrics(params) {
+    var p = params || {};
+    var t = Math.max(1, Number(p.temperature) || 300);
+    var n = clamp(Math.round(Number(p.count) || 64), 1, 500);
+    var edge = clamp(Number(p.boxSize) || 11, 4, 30);
+    var gas = getGasIdentity(p.gasId || 'N2');
+    var pAtm = Math.max(1e-5, Number(p.pressureAtm) || 1);
+    var uCut = clamp(Number(p.thresholdRatio) || 2.5, 0.2, 15);
+    var hPlanck = 6.62607015e-34;
+    var kBSi = 1.380649e-23;
+    var nASi = 6.02214076e23;
+    var rSi = 8.314462618;
+    var molarMassKg = gas.molarMass / 1000;
+    var moleculeMassKg = molarMassKg / nASi;
+    var pPa = pAtm * 101325;
+    var thermalLambdaM = hPlanck / Math.sqrt(2 * Math.PI * moleculeMassKg * kBSi * t);
+    var thermalLambdaPm = thermalLambdaM * 1e12;
+    var numberDensityM3 = pPa / (kBSi * t);
+    var meanSpacingM = Math.pow(1 / numberDensityM3, 1 / 3);
+    var meanSpacingPm = meanSpacingM * 1e12;
+    var spacingToLambdaRatio = meanSpacingPm / Math.max(1e-6, thermalLambdaPm);
+    var degeneracyParam = numberDensityM3 * Math.pow(thermalLambdaM, 3);
+    var regime = 'classical';
+    var regimeLabel = 'Classical Boltzmann';
+    if (degeneracyParam >= 0.05) {
+      regime = 'quantum_degenerate';
+      regimeLabel = 'Quantum Degenerate';
+    } else if (degeneracyParam >= 1e-4) {
+      regime = 'near_quantum';
+      regimeLabel = 'Near-Quantum Edge';
+    }
+    var sackurArg = Math.max(1e-9, (kBSi * t) / (pPa * Math.pow(thermalLambdaM, 3)));
+    var sTransMolarJMK = rSi * (Math.log(sackurArg) + 2.5);
+    var lnOmegaRatio = n * (3 * Math.log(edge / 11) + 1.5 * Math.log(t / 300));
+    var tailFraction = clamp((2 / Math.sqrt(Math.PI)) * Math.sqrt(uCut) * Math.exp(-uCut) + erfcApprox(Math.sqrt(uCut)), 0, 1);
+    var expectedTailParticles = n * tailFraction;
+
+    return {
+      temperature: t,
+      count: n,
+      boxSize: edge,
+      gas: gas,
+      pressureAtm: pAtm,
+      thresholdRatio: uCut,
+      thermalLambdaPm: thermalLambdaPm,
+      meanSpacingPm: meanSpacingPm,
+      spacingToLambdaRatio: spacingToLambdaRatio,
+      degeneracyParam: degeneracyParam,
+      regime: regime,
+      regimeLabel: regimeLabel,
+      sTransMolarJMK: sTransMolarJMK,
+      lnOmegaRatio: lnOmegaRatio,
+      tailFraction: tailFraction,
+      expectedTailParticles: expectedTailParticles
+    };
+  }
+
+  var ARRHENIUS_EA_OPTIONS = [10, 25, 45, 75];
+  var STERIC_FACTOR_OPTIONS = [0.05, 0.25, 0.5, 1];
+
+  function collisionKineticsMetrics(params) {
+    var p = params || {};
+    var t = Math.max(1, Number(p.temperature) || 300);
+    var n = clamp(Math.round(Number(p.count) || 64), 1, 500);
+    var edge = clamp(Number(p.boxSize) || 11, 4, 30);
+    var diam = clamp(Number(p.particleDiameter) || 0.58, 0.2, 1.5);
+    var gasA = getGasIdentity(p.gasAId || 'N2');
+    var gasB = getGasIdentity(p.gasBId || 'CO2');
+    var eaKj = clamp(Number(p.activationEnergyKjMol) || 45, 1, 250);
+    var steric = clamp(Number(p.stericFactor) || 0.5, 0.01, 1);
+    var rSi = 8.314462618;
+    var nASi = 6.02214076e23;
+    var eaJ = eaKj * 1000;
+    var muKgMol = ((gasA.molarMass * gasB.molarMass) / (gasA.molarMass + gasB.molarMass)) / 1000;
+    var sigmaAbM = 0.5 * ((gasA.kineticDiameterPm || 364) + (gasB.kineticDiameterPm || 330)) * 1e-12;
+    var crossSectionM2 = Math.PI * sigmaAbM * sigmaAbM;
+
+    function rateConstAt(tempK) {
+      var vRelK = Math.sqrt((8 * rSi * tempK) / (Math.PI * muKgMol));
+      return 1000 * nASi * steric * crossSectionM2 * vRelK * Math.exp(-eaJ / (rSi * tempK));
+    }
+
+    var vRelSi = Math.sqrt((8 * rSi * t) / (Math.PI * muKgMol));
+    var boltzmannFactor = Math.exp(-eaJ / (rSi * t));
+    var reactiveFraction = steric * boltzmannFactor;
+    var rateConstantLMolS = rateConstAt(t);
+    var rateConstantPlus10 = rateConstAt(t + 10);
+    var q10Ratio = rateConstantPlus10 / Math.max(1e-30, rateConstantLMolS);
+    var freqBoost10K = Math.sqrt((t + 10) / t);
+    var expBoost10K = Math.exp(eaJ / (rSi * t) - eaJ / (rSi * (t + 10)));
+    var curveTemps = [200, 300, 450, 650, 900];
+    var curvePoints = curveTemps.map(function (tk) {
+      return {
+        tempK: tk,
+        invT1000: 1000 / tk,
+        rateLMolS: rateConstAt(tk),
+        lnK: Math.log(Math.max(1e-30, rateConstAt(tk)))
+      };
+    });
+
+    return {
+      temperature: t,
+      count: n,
+      boxSize: edge,
+      particleDiameter: diam,
+      gasA: gasA,
+      gasB: gasB,
+      activationEnergyKjMol: eaKj,
+      stericFactor: steric,
+      reducedMolarMassG: muKgMol * 1000,
+      crossSectionM2: crossSectionM2,
+      vRelSi: vRelSi,
+      boltzmannFactor: boltzmannFactor,
+      reactiveFraction: reactiveFraction,
+      rateConstantLMolS: rateConstantLMolS,
+      q10Ratio: q10Ratio,
+      freqBoost10K: freqBoost10K,
+      expBoost10K: expBoost10K,
+      livePoint: {
+        tempK: t,
+        invT1000: 1000 / t,
+        rateLMolS: rateConstantLMolS,
+        lnK: Math.log(Math.max(1e-30, rateConstantLMolS))
+      },
+      curvePoints: curvePoints
+    };
+  }
+
+  var ACOUSTIC_FREQUENCIES_HZ = [220, 440, 1000, 4000];
+  var ACOUSTIC_FLOW_SPEEDS_MS = [120, 340, 700];
+
+  function gasAcousticsMetrics(params) {
+    var p = params || {};
+    var gas = getGasIdentity(p.gasId || 'N2');
+    var t = Math.max(1, Number(p.temperature) || 300);
+    var pAtm = Math.max(1e-5, Number(p.pressureAtm) || 1);
+    var freqHz = clamp(Number(p.frequencyHz) || 440, 20, 20000);
+    var flowMs = clamp(Number(p.flowSpeedMs) || 340, 1, 5000);
+    var cavityM = clamp(Number(p.cavityLengthM) || 0.25, 0.05, 5);
+    var rSi = 8.314462618;
+    var mKg = gas.molarMass / 1000;
+    var pPa = pAtm * 101325;
+    var soundSpeedAdiabaticMs = Math.sqrt((gas.gamma * rSi * t) / mKg);
+    var soundSpeedNewtonMs = Math.sqrt((rSi * t) / mKg);
+    var laplaceCorrectionFactor = Math.sqrt(gas.gamma);
+    var n2RefSoundMs = Math.sqrt((1.4 * rSi * 300) / 0.028014);
+    var pitchShiftVsN2 = soundSpeedAdiabaticMs / n2RefSoundMs;
+    var densityKgM3 = (pPa * mKg) / (rSi * t);
+    var acousticImpedanceRayl = densityKgM3 * soundSpeedAdiabaticMs;
+    var wavelengthM = soundSpeedAdiabaticMs / freqHz;
+    var cavityFundamentalHz = soundSpeedAdiabaticMs / (2 * cavityM);
+    var machNumber = flowMs / Math.max(1e-6, soundSpeedAdiabaticMs);
+    var machRegime = 'hypersonic';
+    var machLabel = 'Hypersonic';
+    if (machNumber < 0.8) {
+      machRegime = 'subsonic';
+      machLabel = 'Subsonic';
+    } else if (machNumber < 1.2) {
+      machRegime = 'transonic';
+      machLabel = 'Transonic';
+    } else if (machNumber < 5) {
+      machRegime = 'supersonic';
+      machLabel = 'Supersonic';
+    }
+
+    return {
+      gas: gas,
+      temperature: t,
+      pressureAtm: pAtm,
+      frequencyHz: freqHz,
+      flowSpeedMs: flowMs,
+      cavityLengthM: cavityM,
+      soundSpeedAdiabaticMs: soundSpeedAdiabaticMs,
+      soundSpeedNewtonMs: soundSpeedNewtonMs,
+      laplaceCorrectionFactor: laplaceCorrectionFactor,
+      n2RefSoundMs: n2RefSoundMs,
+      pitchShiftVsN2: pitchShiftVsN2,
+      densityKgM3: densityKgM3,
+      acousticImpedanceRayl: acousticImpedanceRayl,
+      wavelengthM: wavelengthM,
+      cavityFundamentalHz: cavityFundamentalHz,
+      machNumber: machNumber,
+      machRegime: machRegime,
+      machLabel: machLabel
+    };
+  }
+
+  var SPECTRAL_WAVELENGTHS_NM = [121.6, 589, 656.3, 4260];
+
+  function dopplerBroadeningMetrics(params) {
+    var p = params || {};
+    var gas = getGasIdentity(p.gasId || 'N2');
+    var t = Math.max(1, Number(p.temperature) || 300);
+    var pAtm = Math.max(1e-5, Number(p.pressureAtm) || 1);
+    var wavelengthNm = clamp(Number(p.wavelengthNm) || 589, 50, 20000);
+    var cSi = 299792458;
+    var kBSi = 1.380649e-23;
+    var rSi = 8.314462618;
+    var molarMassKg = gas.molarMass / 1000;
+    var sigmaVxMs = Math.sqrt((rSi * t) / molarMassKg);
+    var nu0Hz = cSi / (wavelengthNm * 1e-9);
+    var fracDopplerFwhm = (2 * Math.sqrt(2 * Math.LN2) * sigmaVxMs) / cSi;
+    var dopplerFwhmPm = wavelengthNm * 1000 * fracDopplerFwhm;
+    var dopplerFwhmGhz = (nu0Hz * fracDopplerFwhm) / 1e9;
+    var widthRatioVs300K = Math.sqrt(t / 300);
+    var sigmaCollM2 = Math.PI * Math.pow((gas.kineticDiameterPm || 364) * 1e-12, 2);
+    var numberDensityM3 = (pAtm * 101325) / (kBSi * t);
+    var vRelMeanMs = Math.sqrt((16 * rSi * t) / (Math.PI * molarMassKg));
+    var collisionRateS = numberDensityM3 * sigmaCollM2 * vRelMeanMs;
+    var collisionalFwhmGhz = (collisionRateS / Math.PI) / 1e9;
+    var voigtFwhmGhz = 0.5346 * collisionalFwhmGhz + Math.sqrt(0.2166 * collisionalFwhmGhz * collisionalFwhmGhz + dopplerFwhmGhz * dopplerFwhmGhz);
+    var broadeningRatio = collisionalFwhmGhz / Math.max(1e-9, dopplerFwhmGhz);
+    var regime = 'pressure_lorentzian';
+    var regimeLabel = 'Pressure Broadened';
+    if (broadeningRatio < 0.25) {
+      regime = 'doppler_gaussian';
+      regimeLabel = 'Doppler Gaussian';
+    } else if (broadeningRatio <= 2) {
+      regime = 'voigt_mixed';
+      regimeLabel = 'Voigt Mixed';
+    }
+    var resolvingPower = nu0Hz / Math.max(1, voigtFwhmGhz * 1e9);
+
+    return {
+      gas: gas,
+      temperature: t,
+      pressureAtm: pAtm,
+      wavelengthNm: wavelengthNm,
+      nu0Hz: nu0Hz,
+      sigmaVxMs: sigmaVxMs,
+      fracDopplerFwhm: fracDopplerFwhm,
+      dopplerFwhmPm: dopplerFwhmPm,
+      dopplerFwhmGhz: dopplerFwhmGhz,
+      widthRatioVs300K: widthRatioVs300K,
+      collisionRateS: collisionRateS,
+      collisionalFwhmGhz: collisionalFwhmGhz,
+      voigtFwhmGhz: voigtFwhmGhz,
+      broadeningRatio: broadeningRatio,
+      regime: regime,
+      regimeLabel: regimeLabel,
+      resolvingPower: resolvingPower
+    };
+  }
+
+  var JT_PRESSURE_DROPS_ATM = [5, 20, 50, 100];
+
+  function jouleThomsonPhaseMetrics(params) {
+    var p = params || {};
+    var gas = getGasIdentity(p.gasId || 'N2');
+    var t = Math.max(1, Number(p.temperature) || 300);
+    var pAtm = Math.max(1e-5, Number(p.pressureAtm) || 1);
+    var pressureDropAtm = clamp(Number(p.pressureDropAtm) || 20, 0.5, 500);
+    var rSi = 8.314462618;
+    var aSi = gas.vdwA * 0.1;
+    var bSi = gas.vdwB * 1e-3;
+    var cpMolar = (0.5 * gas.dof + 1) * rSi;
+    var tCriticalK = (8 * aSi) / (27 * rSi * bSi);
+    var pCriticalAtm = (aSi / (27 * bSi * bSi)) / 101325;
+    var vCriticalCm3Mol = 3 * gas.vdwB * 1000;
+    var tBoyleK = aSi / (rSi * bSi);
+    var tInversionK = (2 * aSi) / (rSi * bSi);
+    var reducedT = t / Math.max(1e-6, tCriticalK);
+    var reducedP = pAtm / Math.max(1e-6, pCriticalAtm);
+    var virialB2Cm3Mol = (bSi - aSi / (rSi * t)) * 1e6;
+
+    function muJtAt(tempK) {
+      return ((1 / cpMolar) * ((2 * aSi) / (rSi * tempK) - bSi)) * 101325;
+    }
+
+    var muJtKAtm = muJtAt(t);
+    var deltaTThrottleK = -muJtKAtm * pressureDropAtm;
+    var phaseRegime = 'jt_heating';
+    var phaseLabel = 'JT Heating (T > T_inv)';
+    if (t >= tCriticalK && pAtm >= pCriticalAtm) {
+      phaseRegime = 'supercritical';
+      phaseLabel = 'Supercritical Fluid';
+    } else if (t < tCriticalK) {
+      phaseRegime = 'subcritical';
+      phaseLabel = 'Subcritical Condensable';
+    } else if (muJtKAtm > 0.002) {
+      phaseRegime = 'jt_cooling';
+      phaseLabel = 'JT Cooling (T < T_inv)';
+    }
+
+    var curvePoints = [50, 120, 220, 350, 520, 700, 900].map(function (tk) {
+      return { tempK: tk, muJtKAtm: muJtAt(tk) };
+    });
+
+    return {
+      gas: gas,
+      temperature: t,
+      pressureAtm: pAtm,
+      pressureDropAtm: pressureDropAtm,
+      tCriticalK: tCriticalK,
+      pCriticalAtm: pCriticalAtm,
+      vCriticalCm3Mol: vCriticalCm3Mol,
+      tBoyleK: tBoyleK,
+      tInversionK: tInversionK,
+      reducedT: reducedT,
+      reducedP: reducedP,
+      virialB2Cm3Mol: virialB2Cm3Mol,
+      muJtKAtm: muJtKAtm,
+      deltaTThrottleK: deltaTThrottleK,
+      phaseRegime: phaseRegime,
+      phaseLabel: phaseLabel,
+      curvePoints: curvePoints
+    };
+  }
+
+  var ORIFICE_DIAMETERS_MM = [0.2, 0.5, 1, 2.5];
+
+  function effusionVacuumMetrics(params) {
+    var p = params || {};
+    var gasA = getGasIdentity(p.gasAId || 'N2');
+    var gasB = getGasIdentity(p.gasBId || 'CO2');
+    var t = Math.max(1, Number(p.temperature) || 300);
+    var pAtm = Math.max(1e-5, Number(p.pressureAtm) || 1);
+    var boxSize = clamp(Number(p.boxSize) || 11, 4, 30);
+    var orificeDiameterMm = clamp(Number(p.orificeDiameterMm) || 0.5, 0.05, 20);
+    var g0 = 9.80665;
+    var kBSi = 1.380649e-23;
+    var nASi = 6.02214076e23;
+    var rSi = 8.314462618;
+    var chamberVolumeL = Math.pow(boxSize / 11, 3);
+    var orificeDiameterM = orificeDiameterMm * 1e-3;
+    var orificeAreaM2 = Math.PI * Math.pow(0.5 * orificeDiameterM, 2);
+    var pPa = pAtm * 101325;
+    var numberDensityM3 = pPa / (kBSi * t);
+    var sigmaAM = (gasA.kineticDiameterPm || 364) * 1e-12;
+    var mfpAM = 1 / (Math.sqrt(2) * Math.PI * sigmaAM * sigmaAM * numberDensityM3);
+    var orificeKnudsen = mfpAM / orificeDiameterM;
+    var flowRegime = 'choked_jet';
+    var flowLabel = 'Choked Continuum Jet';
+    if (orificeKnudsen >= 1) {
+      flowRegime = 'molecular_effusion';
+      flowLabel = 'Molecular Effusion';
+    } else if (orificeKnudsen >= 0.05) {
+      flowRegime = 'transitional_effusion';
+      flowLabel = 'Transitional Effusion';
+    }
+    var mAKg = gasA.molarMass / 1000;
+    var mBKg = gasB.molarMass / 1000;
+    var vMeanASi = Math.sqrt((8 * rSi * t) / (Math.PI * mAKg));
+    var vMeanBSi = Math.sqrt((8 * rSi * t) / (Math.PI * mBKg));
+    var jHertzKnudsenA = 0.25 * numberDensityM3 * vMeanASi;
+    var effusionRateMolS = (jHertzKnudsenA * orificeAreaM2) / nASi;
+    var conductanceALs = 0.25 * vMeanASi * orificeAreaM2 * 1000;
+    var conductanceBLs = 0.25 * vMeanBSi * orificeAreaM2 * 1000;
+    var pumpDownTauAS = chamberVolumeL / Math.max(1e-9, conductanceALs);
+    var pumpDownTauBS = chamberVolumeL / Math.max(1e-9, conductanceBLs);
+    var separationFactorAB = Math.sqrt(gasB.molarMass / gasA.molarMass);
+    var wMol = orificeKnudsen / (1 + orificeKnudsen);
+    var vExMol = 0.25 * Math.PI * vMeanASi;
+    var vExIsen = Math.sqrt(((2 * gasA.gamma) / Math.max(0.05, gasA.gamma - 1)) * ((rSi * t) / mAKg));
+    var exhaustVelocityMs = wMol * vExMol + (1 - wMol) * vExIsen;
+    var specificImpulseS = exhaustVelocityMs / g0;
+    var mDotMol = effusionRateMolS * mAKg;
+    var chokeTerm = Math.pow(2 / (gasA.gamma + 1), (gasA.gamma + 1) / Math.max(0.05, gasA.gamma - 1));
+    var mDotIsen = pPa * orificeAreaM2 * Math.sqrt(((gasA.gamma * mAKg) / (rSi * t)) * chokeTerm);
+    var massFlowKgS = wMol * mDotMol + (1 - wMol) * mDotIsen;
+    var thrustMn = massFlowKgS * exhaustVelocityMs * 1000;
+
+    return {
+      gasA: gasA,
+      gasB: gasB,
+      temperature: t,
+      pressureAtm: pAtm,
+      boxSize: boxSize,
+      orificeDiameterMm: orificeDiameterMm,
+      chamberVolumeL: chamberVolumeL,
+      orificeAreaM2: orificeAreaM2,
+      mfpAM: mfpAM,
+      orificeKnudsen: orificeKnudsen,
+      flowRegime: flowRegime,
+      flowLabel: flowLabel,
+      jHertzKnudsenA: jHertzKnudsenA,
+      effusionRateMolS: effusionRateMolS,
+      conductanceALs: conductanceALs,
+      conductanceBLs: conductanceBLs,
+      pumpDownTauAS: pumpDownTauAS,
+      pumpDownTauBS: pumpDownTauBS,
+      separationFactorAB: separationFactorAB,
+      exhaustVelocityMs: exhaustVelocityMs,
+      specificImpulseS: specificImpulseS,
+      massFlowKgS: massFlowKgS,
+      thrustMn: thrustMn
+    };
+  }
+
+  var BROWNIAN_BEAD_RADII_NM = [50, 250, 500, 1000];
+  var BROWNIAN_MEDIA = ['water', 'cytosol', 'chamber_gas'];
+
+  function brownianMotionMetrics(params) {
+    var p = params || {};
+    var t = Math.max(1, Number(p.temperature) || 300);
+    var beadRadiusNm = clamp(Number(p.beadRadiusNm) || 250, 5, 10000);
+    var medium = BROWNIAN_MEDIA.indexOf(p.medium) >= 0 ? p.medium : 'water';
+    var gas = getGasIdentity(p.gasId || 'N2');
+    var pAtm = Math.max(1e-5, Number(p.pressureAtm) || 1);
+    var kBSi = 1.380649e-23;
+    var nASi = 6.02214076e23;
+    var rSi = 8.314462618;
+    var g0 = 9.80665;
+    var beadDensityKgM3 = 1050;
+    var rM = beadRadiusNm * 1e-9;
+    var viscosityPaS = 0.00089 * (300 / t);
+    var particleKnudsen = 0;
+    var slipFactorCc = 1;
+    var fluidDensityKgM3 = 997;
+    var mediumLabel = 'Liquid Water';
+
+    if (medium === 'chamber_gas') {
+      var sigmaM = (gas.kineticDiameterPm || 364) * 1e-12;
+      var molarMassKg = gas.molarMass / 1000;
+      var moleculeMassKg = molarMassKg / nASi;
+      var pPa = pAtm * 101325;
+      var numberDensityM3 = pPa / (kBSi * t);
+      var mfpM = 1 / (Math.sqrt(2) * Math.PI * sigmaM * sigmaM * numberDensityM3);
+      viscosityPaS = (5 / (16 * sigmaM * sigmaM)) * Math.sqrt((moleculeMassKg * kBSi * t) / Math.PI);
+      particleKnudsen = mfpM / rM;
+      slipFactorCc = 1 + particleKnudsen * (1.257 + 0.4 * Math.exp(-1.1 / Math.max(1e-6, particleKnudsen)));
+      fluidDensityKgM3 = (pPa * molarMassKg) / (rSi * t);
+      mediumLabel = gas.formula + ' Aerosol';
+    } else if (medium === 'cytosol') {
+      viscosityPaS = 0.0035 * (300 / t);
+      fluidDensityKgM3 = 1020;
+      mediumLabel = 'Cell Cytosol';
+    }
+
+    var dragGammaNsM = (6 * Math.PI * viscosityPaS * rM) / slipFactorCc;
+    var diffusivityM2S = (kBSi * t) / Math.max(1e-30, dragGammaNsM);
+    var diffusivityUm2S = diffusivityM2S * 1e12;
+    var rmsDisplacement1sUm = Math.sqrt(6 * diffusivityUm2S);
+    var cellCrossing10UmS = 100 / Math.max(1e-9, 6 * diffusivityUm2S);
+    var beadVolumeM3 = (4 / 3) * Math.PI * Math.pow(rM, 3);
+    var beadMassKg = beadDensityKgM3 * beadVolumeM3;
+    var relaxationTauNs = (beadMassKg / Math.max(1e-30, dragGammaNsM)) * 1e9;
+    var thermalSpeedMmS = Math.sqrt((3 * kBSi * t) / beadMassKg) * 1000;
+    var buoyantMassKg = Math.max(1e-30, Math.abs(beadDensityKgM3 - fluidDensityKgM3) * beadVolumeM3);
+    var perrinScaleHeightUm = ((kBSi * t) / (buoyantMassKg * g0)) * 1e6;
+
+    return {
+      temperature: t,
+      beadRadiusNm: beadRadiusNm,
+      medium: medium,
+      mediumLabel: mediumLabel,
+      gas: gas,
+      pressureAtm: pAtm,
+      viscosityPaS: viscosityPaS,
+      particleKnudsen: particleKnudsen,
+      slipFactorCc: slipFactorCc,
+      dragGammaNsM: dragGammaNsM,
+      diffusivityM2S: diffusivityM2S,
+      diffusivityUm2S: diffusivityUm2S,
+      rmsDisplacement1sUm: rmsDisplacement1sUm,
+      cellCrossing10UmS: cellCrossing10UmS,
+      relaxationTauNs: relaxationTauNs,
+      thermalSpeedMmS: thermalSpeedMmS,
+      perrinScaleHeightUm: perrinScaleHeightUm
+    };
+  }
+
+  var OSMOTIC_SOLUTE_MOLARITIES = [0.05, 0.15, 0.5, 1.2];
+  var OSMOTIC_VAN_T_HOFF_FACTORS = [1, 2, 3];
+
+  function osmoticBiophysicsMetrics(params) {
+    var p = params || {};
+    var t = Math.max(1, Number(p.temperature) || 300);
+    var molarityM = clamp(Number(p.molarityM) || 0.15, 0.001, 5);
+    var vanTHoffI = clamp(Math.round(Number(p.vanTHoffI) || 2), 1, 5);
+    var reflectionSigma = p.reflectionSigma == null ? 0.95 : clamp(Number(p.reflectionSigma), 0, 1);
+    var rSi = 8.314462618;
+    var rhoWater = 1000;
+    var g0 = 9.80665;
+    var osmolarityMOsm = vanTHoffI * molarityM * 1000;
+    var effectiveOsmolarityMOsm = reflectionSigma * osmolarityMOsm;
+    var idealOsmoticPa = vanTHoffI * molarityM * 1000 * rSi * t;
+    var idealOsmoticAtm = idealOsmoticPa / 101325;
+    var effectiveOsmoticPa = reflectionSigma * idealOsmoticPa;
+    var effectiveOsmoticAtm = effectiveOsmoticPa / 101325;
+    var waterColumnHeightM = effectiveOsmoticPa / (rhoWater * g0);
+    var roMinEnergyKwhM3 = idealOsmoticPa / 3.6e6;
+    var tonicity = 'hypertonic';
+    var tonicityLabel = 'Hypertonic (Shrinks)';
+    if (effectiveOsmolarityMOsm < 240) {
+      tonicity = 'hypotonic';
+      tonicityLabel = 'Hypotonic (Swells)';
+    } else if (effectiveOsmolarityMOsm <= 340) {
+      tonicity = 'isotonic';
+      tonicityLabel = 'Isotonic Balance';
+    }
+    var curvePoints = [0.05, 0.15, 0.35, 0.65, 1.0, 1.4].map(function (cM) {
+      var pId = (vanTHoffI * cM * 1000 * rSi * t) / 101325;
+      return { molarityM: cM, idealAtm: pId, effectiveAtm: reflectionSigma * pId };
+    });
+
+    return {
+      temperature: t,
+      molarityM: molarityM,
+      vanTHoffI: vanTHoffI,
+      reflectionSigma: reflectionSigma,
+      osmolarityMOsm: osmolarityMOsm,
+      effectiveOsmolarityMOsm: effectiveOsmolarityMOsm,
+      idealOsmoticPa: idealOsmoticPa,
+      idealOsmoticAtm: idealOsmoticAtm,
+      effectiveOsmoticPa: effectiveOsmoticPa,
+      effectiveOsmoticAtm: effectiveOsmoticAtm,
+      waterColumnHeightM: waterColumnHeightM,
+      roMinEnergyKwhM3: roMinEnergyKwhM3,
+      tonicity: tonicity,
+      tonicityLabel: tonicityLabel,
+      curvePoints: curvePoints
+    };
+  }
+
+  var ELECTRODE_GAPS_CM = [0.2, 1, 5, 10];
+  var DISCHARGE_VOLTAGES_V = [250, 1000, 5000, 35000];
+  var PASCHEN_GAS_SPECS = {
+    He: { ionEv: 24.59, aTorrCm: 2.8, bVoltTorrCm: 77 },
+    CH4: { ionEv: 12.61, aTorrCm: 14.0, bVoltTorrCm: 300 },
+    Ne: { ionEv: 21.56, aTorrCm: 4.4, bVoltTorrCm: 110 },
+    N2: { ionEv: 15.58, aTorrCm: 11.8, bVoltTorrCm: 325 },
+    O2: { ionEv: 12.07, aTorrCm: 6.5, bVoltTorrCm: 215 },
+    Ar: { ionEv: 15.76, aTorrCm: 11.5, bVoltTorrCm: 176 },
+    CO2: { ionEv: 13.78, aTorrCm: 20.0, bVoltTorrCm: 466 },
+    Xe: { ionEv: 12.13, aTorrCm: 24.0, bVoltTorrCm: 330 }
+  };
+
+  function paschenPlasmaMetrics(params) {
+    var p = params || {};
+    var gas = getGasIdentity(p.gasId || 'N2');
+    var spec = PASCHEN_GAS_SPECS[gas.id] || PASCHEN_GAS_SPECS.N2;
+    var t = Math.max(1, Number(p.temperature) || 300);
+    var pAtm = Math.max(1e-5, Number(p.pressureAtm) || 1);
+    var gapCm = clamp(Number(p.electrodeGapCm) || 1, 0.05, 100);
+    var appliedVoltageV = clamp(Number(p.appliedVoltageV) || 1000, 10, 100000);
+    var gammaSe = 0.02;
+    var lnSeTerm = Math.log(1 + 1 / gammaSe);
+    var kBSi = 1.380649e-23;
+    var eps0 = 8.8541878128e-12;
+    var eCharge = 1.602176634e-19;
+    var mElectron = 9.1093837e-31;
+    var pdMinTorrCm = (Math.E * lnSeTerm) / spec.aTorrCm;
+    var vMinV = (Math.E * spec.bVoltTorrCm * lnSeTerm) / spec.aTorrCm;
+
+    function vbAtPd(pd) {
+      if (pd * spec.aTorrCm <= 1.08 * lnSeTerm) return null;
+      return (spec.bVoltTorrCm * pd) / (Math.log(spec.aTorrCm * pd) - Math.log(lnSeTerm));
+    }
+
+    var pEffTorr = pAtm * 760 * (300 / t);
+    var pdEffTorrCm = pEffTorr * gapCm;
+    var vbRaw = vbAtPd(pdEffTorrCm);
+    var vacuumQuenched = vbRaw === null;
+    var breakdownVoltageV = vacuumQuenched ? 99999 : clamp(vbRaw, vMinV, 99999);
+    var ignited = !vacuumQuenched && appliedVoltageV >= breakdownVoltageV;
+    var numberDensityM3 = (pAtm * 101325) / (kBSi * t);
+    var eFieldVm = appliedVoltageV / (gapCm * 0.01);
+    var reducedFieldTd = (eFieldVm / Math.max(1e10, numberDensityM3)) * 1e21;
+    var electronDensityM3 = clamp(numberDensityM3 * (ignited ? 1e-6 : 1e-11), 1e12, 1e20);
+    var tElectronK = 2.0 * 11604.5;
+    var debyeLengthUm = Math.sqrt((eps0 * kBSi * tElectronK) / (electronDensityM3 * eCharge * eCharge)) * 1e6;
+    var plasmaFreqGhz = (Math.sqrt((electronDensityM3 * eCharge * eCharge) / (eps0 * mElectron)) / (2 * Math.PI)) / 1e9;
+    var regime = 'dielectric_gas';
+    var regimeLabel = 'Neutral Dielectric';
+    if (vacuumQuenched) {
+      regime = 'vacuum_standoff';
+      regimeLabel = 'Vacuum Standoff';
+    } else if (ignited) {
+      regime = 'glow_plasma';
+      regimeLabel = 'Plasma Ignited';
+    }
+
+    var pdStart = 1.18 * (lnSeTerm / spec.aTorrCm);
+    var pdEnd = 1000;
+    var curvePoints = [];
+    for (var pi = 0; pi < 18; pi += 1) {
+      var frac = pi / 17;
+      var pdPt = pdStart * Math.pow(pdEnd / pdStart, frac);
+      var vbPt = vbAtPd(pdPt);
+      if (vbPt != null) curvePoints.push({ pdTorrCm: pdPt, breakdownV: vbPt });
+    }
+
+    return {
+      gas: gas,
+      ionEv: spec.ionEv,
+      temperature: t,
+      pressureAtm: pAtm,
+      electrodeGapCm: gapCm,
+      appliedVoltageV: appliedVoltageV,
+      pdMinTorrCm: pdMinTorrCm,
+      vMinV: vMinV,
+      pdEffTorrCm: pdEffTorrCm,
+      vacuumQuenched: vacuumQuenched,
+      breakdownVoltageV: breakdownVoltageV,
+      ignited: ignited,
+      reducedFieldTd: reducedFieldTd,
+      electronDensityM3: electronDensityM3,
+      debyeLengthUm: debyeLengthUm,
+      plasmaFreqGhz: plasmaFreqGhz,
+      regime: regime,
+      regimeLabel: regimeLabel,
+      curvePoints: curvePoints
+    };
+  }
+
+  var SOLID_CRYSTAL_SPECS = {
+    Ar_solid: { id: 'Ar_solid', label: 'Solid Argon (Ar)', formula: 'Ar(s)', debyeTempK: 92, meltingTempK: 83.8, nearestNeighborPm: 376 },
+    Cu: { id: 'Cu', label: 'Copper (Cu)', formula: 'Cu(s)', debyeTempK: 343, meltingTempK: 1357.8, nearestNeighborPm: 256 },
+    Si: { id: 'Si', label: 'Silicon (Si)', formula: 'Si(s)', debyeTempK: 645, meltingTempK: 1687, nearestNeighborPm: 235 },
+    Diamond: { id: 'Diamond', label: 'Diamond (C)', formula: 'C(dia)', debyeTempK: 2230, meltingTempK: 3800, nearestNeighborPm: 154 }
+  };
+  var SOLID_CRYSTAL_IDS = ['Ar_solid', 'Cu', 'Si', 'Diamond'];
+
+  function debyeCvFraction(temperatureK, debyeTempK) {
+    var t = Math.max(1, Number(temperatureK) || 300);
+    var td = Math.max(1, Number(debyeTempK) || 343);
+    var u = td / t;
+    if (u < 0.02) return clamp(1 - (u * u) / 20, 0, 1);
+    if (u > 30) return clamp((12 * Math.pow(Math.PI, 4) / 5) / Math.pow(u, 3), 0, 1);
+    var steps = 32;
+    var h = u / steps;
+    var sum = 0;
+    for (var i = 0; i < steps; i += 1) {
+      var x = (i + 0.5) * h;
+      var ex = Math.exp(x);
+      var denom = ex - 1;
+      if (denom > 1e-12) {
+        sum += (Math.pow(x, 4) * ex) / (denom * denom);
+      }
+    }
+    return clamp((3 / Math.pow(u, 3)) * sum * h, 0, 1);
+  }
+
+  function latticeSolidMetrics(params) {
+    var p = params || {};
+    var crystalId = SOLID_CRYSTAL_IDS.indexOf(p.crystalId) >= 0 ? p.crystalId : 'Cu';
+    var spec = SOLID_CRYSTAL_SPECS[crystalId];
+    var t = Math.max(1, Number(p.temperature) || 300);
+    var R_SI = 8.314462618;
+    var dulongPetitJMK = 3 * R_SI;
+    var cvFraction = debyeCvFraction(t, spec.debyeTempK);
+    var cvMolarJMK = dulongPetitJMK * cvFraction;
+    var lindemannRatio = 0.12 * Math.sqrt(t / spec.meltingTempK);
+    var rmsDisplacementPm = lindemannRatio * spec.nearestNeighborPm;
+    var melted = t >= spec.meltingTempK;
+    var regime = 'harmonic_solid';
+    var regimeLabel = 'Classical Harmonic Solid';
+    if (melted) {
+      regime = 'molten_fluid';
+      regimeLabel = 'Above T_m (Melted)';
+    } else if (lindemannRatio >= 0.095) {
+      regime = 'anharmonic_pre_melt';
+      regimeLabel = 'Pre-Melting Anharmonic';
+    } else if (cvFraction < 0.5) {
+      regime = 'quantum_frozen';
+      regimeLabel = 'Quantum Phonon Freeze-Out';
+    }
+    var curvePoints = [];
+    for (var i = 0; i < 25; i += 1) {
+      var tGrid = 20 + (i / 24) * 1180;
+      var fracGrid = debyeCvFraction(tGrid, spec.debyeTempK);
+      curvePoints.push({
+        temperatureK: tGrid,
+        cvFraction: fracGrid,
+        cvMolarJMK: dulongPetitJMK * fracGrid
+      });
+    }
+    return {
+      crystal: spec,
+      crystalId: spec.id,
+      temperature: t,
+      debyeTempK: spec.debyeTempK,
+      meltingTempK: spec.meltingTempK,
+      dulongPetitJMK: dulongPetitJMK,
+      cvFraction: cvFraction,
+      cvMolarJMK: cvMolarJMK,
+      lindemannRatio: lindemannRatio,
+      rmsDisplacementPm: rmsDisplacementPm,
+      melted: melted,
+      regime: regime,
+      regimeLabel: regimeLabel,
+      curvePoints: curvePoints
+    };
+  }
+
+  var VOLATILE_LIQUID_SPECS = {
+    water: { id: 'water', label: 'Water (H\u2082O)', formula: 'H\u2082O', enthalpyVapKjMol: 40.65, normalBoilK: 373.15, criticalTempK: 647.1, criticalPressureAtm: 217.7 },
+    ethanol: { id: 'ethanol', label: 'Ethanol (C\u2082H\u2085OH)', formula: 'C\u2082H\u2085OH', enthalpyVapKjMol: 38.56, normalBoilK: 351.44, criticalTempK: 513.9, criticalPressureAtm: 60.6 },
+    methane: { id: 'methane', label: 'Liquid Methane (CH\u2084)', formula: 'CH\u2084', enthalpyVapKjMol: 8.17, normalBoilK: 111.65, criticalTempK: 190.6, criticalPressureAtm: 45.4 },
+    nitrogen: { id: 'nitrogen', label: 'Liquid Nitrogen (N\u2082)', formula: 'N\u2082', enthalpyVapKjMol: 5.57, normalBoilK: 77.36, criticalTempK: 126.2, criticalPressureAtm: 33.5 }
+  };
+  var VOLATILE_LIQUID_IDS = ['water', 'ethanol', 'methane', 'nitrogen'];
+  var RELATIVE_HUMIDITY_OPTIONS = [25, 50, 75, 100];
+
+  function vaporPhaseEquilibriumMetrics(params) {
+    var p = params || {};
+    var liquidId = VOLATILE_LIQUID_IDS.indexOf(p.liquidId) >= 0 ? p.liquidId : 'water';
+    var spec = VOLATILE_LIQUID_SPECS[liquidId];
+    var t = Math.max(20, Number(p.temperature) || 300);
+    var pAmb = clamp(Number(p.pressureAtm) || 1, 0.001, 50);
+    var rhPct = clamp(Number(p.relativeHumidityPct) || 50, 5, 100);
+    var R_SI = 8.314462618;
+    var dhJ = spec.enthalpyVapKjMol * 1000;
+    var supercritical = t >= spec.criticalTempK;
+
+    function satAtmAt(tempK) {
+      if (tempK >= spec.criticalTempK) return spec.criticalPressureAtm;
+      var arg = clamp(-(dhJ / R_SI) * (1 / Math.max(20, tempK) - 1 / spec.normalBoilK), -60, 20);
+      return Math.min(spec.criticalPressureAtm, Math.exp(arg));
+    }
+
+    var pSatAtm = satAtmAt(t);
+    var pSatKpa = pSatAtm * 101.325;
+    var invTBoil = (1 / spec.normalBoilK) - (R_SI * Math.log(pAmb)) / dhJ;
+    var boilingPointK = invTBoil <= (1 / spec.criticalTempK)
+      ? spec.criticalTempK
+      : clamp(1 / invTBoil, 20, spec.criticalTempK);
+    var rhFrac = rhPct / 100;
+    var partialVaporAtm = rhFrac * pSatAtm;
+    var tEff = Math.min(t, spec.criticalTempK);
+    var invTDew = (1 / tEff) - (R_SI * Math.log(rhFrac)) / dhJ;
+    var dewPointK = clamp(1 / invTDew, 15, tEff);
+
+    var regime = 'subcooled_liquid';
+    var regimeLabel = 'Subcooled Liquid + Vapor';
+    if (supercritical) {
+      regime = 'supercritical_fluid';
+      regimeLabel = 'Supercritical Fluid';
+    } else if (Math.abs(t - boilingPointK) <= 3) {
+      regime = 'boiling_coexistence';
+      regimeLabel = 'Boiling Point Coexistence';
+    } else if (pSatAtm > pAmb) {
+      regime = 'superheated_vapor';
+      regimeLabel = 'Superheated Vapor (P_sat > P)';
+    }
+
+    var tMin = Math.max(25, spec.normalBoilK * 0.65);
+    var tMax = Math.min(spec.criticalTempK, spec.normalBoilK * 1.25);
+    var curvePoints = [];
+    for (var i = 0; i < 25; i += 1) {
+      var tempGrid = tMin + (i / 24) * (tMax - tMin);
+      curvePoints.push({
+        temperatureK: tempGrid,
+        pSatAtm: satAtmAt(tempGrid)
+      });
+    }
+
+    return {
+      liquid: spec,
+      liquidId: spec.id,
+      temperature: t,
+      ambientPressureAtm: pAmb,
+      relativeHumidityPct: rhPct,
+      pSatAtm: pSatAtm,
+      pSatKpa: pSatKpa,
+      partialVaporAtm: partialVaporAtm,
+      boilingPointK: boilingPointK,
+      dewPointK: dewPointK,
+      supercritical: supercritical,
+      regime: regime,
+      regimeLabel: regimeLabel,
+      curvePoints: curvePoints
+    };
+  }
+
+  var CO2_MIXING_PPM_OPTIONS = [280, 425, 560, 840];
+  var IR_VIBRATIONAL_SPECS = {
+    He: { atomCount: 1, totalModes: 0, irActiveModes: 0, irActive: false, charVibTempK: 0, primaryBandUm: 0, bandLabel: 'None (monatomic)', sigmaIrM2: 0, gwp100: 0 },
+    Ne: { atomCount: 1, totalModes: 0, irActiveModes: 0, irActive: false, charVibTempK: 0, primaryBandUm: 0, bandLabel: 'None (monatomic)', sigmaIrM2: 0, gwp100: 0 },
+    Ar: { atomCount: 1, totalModes: 0, irActiveModes: 0, irActive: false, charVibTempK: 0, primaryBandUm: 0, bandLabel: 'None (monatomic)', sigmaIrM2: 0, gwp100: 0 },
+    Xe: { atomCount: 1, totalModes: 0, irActiveModes: 0, irActive: false, charVibTempK: 0, primaryBandUm: 0, bandLabel: 'None (monatomic)', sigmaIrM2: 0, gwp100: 0 },
+    N2: { atomCount: 2, totalModes: 1, irActiveModes: 0, irActive: false, charVibTempK: 3374, primaryBandUm: 4.29, bandLabel: 'Symmetric stretch (\u0394\u03BC = 0)', sigmaIrM2: 0, gwp100: 0 },
+    O2: { atomCount: 2, totalModes: 1, irActiveModes: 0, irActive: false, charVibTempK: 2256, primaryBandUm: 6.43, bandLabel: 'Symmetric stretch (\u0394\u03BC = 0)', sigmaIrM2: 0, gwp100: 0 },
+    CO2: { atomCount: 3, totalModes: 4, irActiveModes: 3, irActive: true, charVibTempK: 960, primaryBandUm: 15.0, bandLabel: '15 \u00B5m bend + 4.3 \u00B5m stretch (\u0394\u03BC \u2260 0)', sigmaIrM2: 1.2e-24, gwp100: 1 },
+    CH4: { atomCount: 5, totalModes: 9, irActiveModes: 6, irActive: true, charVibTempK: 1879, primaryBandUm: 7.66, bandLabel: '7.7 \u00B5m & 3.3 \u00B5m modes (\u0394\u03BC \u2260 0)', sigmaIrM2: 1.8e-24, gwp100: 28 }
+  };
+
+  function vibrationalGreenhouseMetrics(params) {
+    var p = params || {};
+    var gas = getGasIdentity(p.gasId || 'N2');
+    var spec = IR_VIBRATIONAL_SPECS[gas.id] || IR_VIBRATIONAL_SPECS.N2;
+    var t = Math.max(1, Number(p.temperature) || 300);
+    var pAtm = clamp(Number(p.pressureAtm) || 1, 0.001, 50);
+    var co2Ppm = clamp(Number(p.co2Ppm) || 425, 180, 2000);
+    var kBSi = 1.380649e-23;
+
+    var excitedVibFraction = 0;
+    var vibHeatCapacityR = 0;
+    if (spec.charVibTempK > 0) {
+      var x = clamp(spec.charVibTempK / t, 0.01, 100);
+      var ex = Math.exp(x);
+      var denom = ex - 1;
+      excitedVibFraction = Math.exp(-x);
+      vibHeatCapacityR = denom > 1e-12 ? (x * x * ex) / (denom * denom) : 1;
+    }
+
+    var nDensityM3 = (pAtm * 101325) / (kBSi * t);
+    var tyndallOpticalDepth = spec.irActive ? nDensityM3 * spec.sigmaIrM2 * 0.08 : 0;
+    var tyndallAbsorbancePct = spec.irActive ? (1 - Math.exp(-Math.min(50, tyndallOpticalDepth))) * 100 : 0;
+    var forcingWm2 = 5.35 * Math.log(co2Ppm / 280);
+    var ecsPerWm2 = 3.0 / (5.35 * Math.log(2));
+    var eqWarmingK = forcingWm2 * ecsPerWm2;
+
+    var regime = 'ir_transparent';
+    var regimeLabel = 'IR-Transparent (\u0394\u03BC = 0)';
+    if (spec.irActive && gas.id === 'CH4') {
+      regime = 'potent_greenhouse';
+      regimeLabel = 'Potent IR Absorber (CH\u2084)';
+    } else if (spec.irActive) {
+      regime = 'greenhouse_absorber';
+      regimeLabel = 'IR-Active Greenhouse Gas';
+    }
+
+    var curvePoints = [];
+    for (var i = 0; i < 25; i += 1) {
+      var ppm = 280 + (i / 24) * 620;
+      var f = 5.35 * Math.log(ppm / 280);
+      curvePoints.push({
+        co2Ppm: ppm,
+        forcingWm2: f,
+        eqWarmingK: f * ecsPerWm2
+      });
+    }
+
+    return {
+      gas: gas,
+      spec: spec,
+      temperature: t,
+      pressureAtm: pAtm,
+      co2Ppm: co2Ppm,
+      irActive: spec.irActive,
+      totalModes: spec.totalModes,
+      irActiveModes: spec.irActiveModes,
+      charVibTempK: spec.charVibTempK,
+      primaryBandUm: spec.primaryBandUm,
+      bandLabel: spec.bandLabel,
+      gwp100: spec.gwp100,
+      excitedVibFraction: excitedVibFraction,
+      vibHeatCapacityR: vibHeatCapacityR,
+      tyndallOpticalDepth: tyndallOpticalDepth,
+      tyndallAbsorbancePct: tyndallAbsorbancePct,
+      forcingWm2: forcingWm2,
+      eqWarmingK: eqWarmingK,
+      regime: regime,
+      regimeLabel: regimeLabel,
+      curvePoints: curvePoints
+    };
+  }
+
+  var SHOCK_MACH_OPTIONS = [0.8, 1.5, 3, 5, 10];
+
+  function rankineHugoniotShockMetrics(params) {
+    var p = params || {};
+    var gas = getGasIdentity(p.gasId || 'N2');
+    var t1 = Math.max(1, Number(p.temperature) || 300);
+    var p1Atm = clamp(Number(p.pressureAtm) || 1, 1e-5, 100);
+    var mach1 = clamp(Number(p.machNumber) || 3, 0.1, 25);
+    var R_SI = 8.314462618;
+    var kBSi = 1.380649e-23;
+    var gamma = gas.gamma;
+    var mKg = Math.max(0.0005, gas.molarMass / 1000);
+    var upstreamSoundMs = Math.sqrt((gamma * R_SI * t1) / mKg);
+    var flowSpeedMs = mach1 * upstreamSoundMs;
+    var stagnationTempK = t1 * (1 + 0.5 * (gamma - 1) * mach1 * mach1);
+    var maxDensityRatio = (gamma + 1) / (gamma - 1);
+    var dM = gas.kineticDiameterPm * 1e-12;
+    var mfpUm = (kBSi * t1) / (Math.SQRT2 * Math.PI * dM * dM * (p1Atm * 101325)) * 1e6;
+
+    var shockFormed = mach1 > 1.0001;
+    var pressureRatio = 1;
+    var densityRatio = 1;
+    var temperatureRatio = 1;
+    var downstreamMach = mach1;
+    var t2K = t1;
+    var p2Atm = p1Atm;
+    var pitotTotalAtm = p1Atm * Math.pow(1 + 0.5 * (gamma - 1) * mach1 * mach1, gamma / (gamma - 1));
+    var entropyJumpR = 0;
+    var shockThicknessUm = 0;
+
+    if (shockFormed) {
+      pressureRatio = 1 + ((2 * gamma) / (gamma + 1)) * (mach1 * mach1 - 1);
+      densityRatio = ((gamma + 1) * mach1 * mach1) / ((gamma - 1) * mach1 * mach1 + 2);
+      temperatureRatio = pressureRatio / densityRatio;
+      downstreamMach = Math.sqrt((1 + 0.5 * (gamma - 1) * mach1 * mach1) / (gamma * mach1 * mach1 - 0.5 * (gamma - 1)));
+      t2K = t1 * temperatureRatio;
+      p2Atm = p1Atm * pressureRatio;
+      var pitotTerm1 = Math.pow(((gamma + 1) * mach1 * mach1) / 2, gamma / (gamma - 1));
+      var pitotTerm2 = Math.pow((gamma + 1) / (2 * gamma * mach1 * mach1 - (gamma - 1)), 1 / (gamma - 1));
+      pitotTotalAtm = p1Atm * pitotTerm1 * pitotTerm2;
+      entropyJumpR = Math.max(0, (1 / (gamma - 1)) * Math.log(pressureRatio * Math.pow(1 / densityRatio, gamma)));
+      shockThicknessUm = mfpUm * clamp(2 + 1.8 / Math.max(0.2, mach1 - 1), 2, 11);
+    }
+
+    var regime = 'supersonic_normal_shock';
+    var regimeLabel = 'Supersonic Normal Shock';
+    if (!shockFormed) {
+      regime = 'subsonic_isentropic';
+      regimeLabel = 'Subsonic (No Shock)';
+    } else if (mach1 >= 5) {
+      regime = 'hypersonic_bow_shock';
+      regimeLabel = 'Hypersonic Shock (M \u2265 5)';
+    }
+
+    var curvePoints = [];
+    for (var i = 0; i < 25; i += 1) {
+      var mGrid = 1 + (i / 24) * 9;
+      curvePoints.push({
+        mach: mGrid,
+        densityRatio: ((gamma + 1) * mGrid * mGrid) / ((gamma - 1) * mGrid * mGrid + 2),
+        pressureRatio: 1 + ((2 * gamma) / (gamma + 1)) * (mGrid * mGrid - 1)
+      });
+    }
+
+    return {
+      gas: gas,
+      gamma: gamma,
+      temperature: t1,
+      pressureAtm: p1Atm,
+      machNumber: mach1,
+      upstreamSoundMs: upstreamSoundMs,
+      flowSpeedMs: flowSpeedMs,
+      shockFormed: shockFormed,
+      pressureRatio: pressureRatio,
+      densityRatio: densityRatio,
+      maxDensityRatio: maxDensityRatio,
+      temperatureRatio: temperatureRatio,
+      downstreamMach: downstreamMach,
+      t2K: t2K,
+      p2Atm: p2Atm,
+      stagnationTempK: stagnationTempK,
+      pitotTotalAtm: pitotTotalAtm,
+      entropyJumpR: entropyJumpR,
+      mfpUm: mfpUm,
+      shockThicknessUm: shockThicknessUm,
+      regime: regime,
+      regimeLabel: regimeLabel,
+      curvePoints: curvePoints
+    };
+  }
+
+  var FUSION_FUEL_SPECS = {
+    DT: { id: 'DT', label: 'D\u2013T (Deuterium-Tritium)', formula: 'D+T', z1: 1, z2: 1, reducedMassU: 1.2072, qValueMeV: 17.59, coulombBarrierKeV: 400 },
+    DD: { id: 'DD', label: 'D\u2013D (Deuterium-Deuterium)', formula: 'D+D', z1: 1, z2: 1, reducedMassU: 1.0070, qValueMeV: 3.65, coulombBarrierKeV: 400 },
+    DHe3: { id: 'DHe3', label: 'D\u2013\u00B3He (Aneutronic)', formula: 'D+\u00B3He', z1: 1, z2: 2, reducedMassU: 1.2070, qValueMeV: 18.35, coulombBarrierKeV: 800 },
+    pB11: { id: 'pB11', label: 'p\u2013\u00B9\u00B9B (Proton-Boron)', formula: 'p+\u00B9\u00B9B', z1: 1, z2: 5, reducedMassU: 0.9228, qValueMeV: 8.68, coulombBarrierKeV: 2100 }
+  };
+  var FUSION_FUEL_IDS = ['DT', 'DD', 'DHe3', 'pB11'];
+  var GAMOW_TEMP_KEV_OPTIONS = [0.1, 1.3, 15, 100];
+
+  function gamowNuclearKineticsMetrics(params) {
+    var p = params || {};
+    var fuelId = FUSION_FUEL_IDS.indexOf(p.fuelId) >= 0 ? p.fuelId : 'DT';
+    var spec = FUSION_FUEL_SPECS[fuelId];
+    var plasmaTempKeV = clamp(Number(p.plasmaTempKeV) || 15, 0.01, 500);
+    var alphaFs = 1 / 137.035999;
+    var uKeV = 931494.1;
+    var zProd = spec.z1 * spec.z2;
+    var gamowEnergyKeV = 2 * (spec.reducedMassU * uKeV) * Math.pow(Math.PI * alphaFs * zProd, 2);
+    var gamowPeakKeV = Math.pow((gamowEnergyKeV * plasmaTempKeV * plasmaTempKeV) / 4, 1 / 3);
+    var gamowWidthKeV = (4 / Math.sqrt(3)) * Math.sqrt(gamowPeakKeV * plasmaTempKeV);
+    var tauGamow = (3 * gamowPeakKeV) / plasmaTempKeV;
+    var peakTunnelProb = Math.exp(-Math.min(700, Math.sqrt(gamowEnergyKeV / Math.max(1e-6, gamowPeakKeV))));
+    var peakToBarrierRatio = gamowPeakKeV / spec.coulombBarrierKeV;
+    var plasmaTempMK = plasmaTempKeV * 11.6045;
+    var uf6Alpha = Math.sqrt(352.041 / 349.034);
+    var uf6SymmetricStages = Math.ceil((2 * Math.log((0.045 / 0.955) / (0.0072 / 0.9928))) / Math.log(uf6Alpha));
+
+    var regime = 'coulomb_blocked';
+    var regimeLabel = 'Coulomb Barrier Blocked';
+    if (tauGamow <= 12) {
+      regime = 'thermonuclear_burn';
+      regimeLabel = 'Thermonuclear Burn Window';
+    } else if (tauGamow <= 28) {
+      regime = 'quantum_tunneling';
+      regimeLabel = 'Quantum Tunneling Active';
+    }
+
+    var curvePoints = [];
+    for (var i = 0; i < 25; i += 1) {
+      var eGrid = (0.15 + (i / 24) * 2.45) * gamowPeakKeV;
+      var mbNorm = clamp(Math.exp(-(eGrid - 0.15 * gamowPeakKeV) / plasmaTempKeV), 0, 1);
+      var gamowPeakNorm = clamp(Math.exp(-eGrid / plasmaTempKeV - Math.sqrt(gamowEnergyKeV / Math.max(1e-6, eGrid)) + tauGamow), 0, 1);
+      curvePoints.push({
+        energyKeV: eGrid,
+        mbNorm: mbNorm,
+        gamowPeakNorm: gamowPeakNorm
+      });
+    }
+
+    return {
+      fuel: spec,
+      fuelId: spec.id,
+      plasmaTempKeV: plasmaTempKeV,
+      plasmaTempMK: plasmaTempMK,
+      gamowEnergyKeV: gamowEnergyKeV,
+      gamowPeakKeV: gamowPeakKeV,
+      gamowWidthKeV: gamowWidthKeV,
+      tauGamow: tauGamow,
+      peakTunnelProb: peakTunnelProb,
+      peakToBarrierRatio: peakToBarrierRatio,
+      uf6Alpha: uf6Alpha,
+      uf6SymmetricStages: uf6SymmetricStages,
+      regime: regime,
+      regimeLabel: regimeLabel,
+      curvePoints: curvePoints
+    };
+  }
+
+  var NOISE_RESISTANCE_OHM_OPTIONS = [50, 1000, 100000, 10000000];
+  var NOISE_BANDWIDTH_HZ_OPTIONS = [1000, 20000, 1000000, 100000000];
+
+  function thermalNoiseDrudeMetrics(params) {
+    var p = params || {};
+    var t = Math.max(1, Number(p.temperature) || 300);
+    var rOhm = clamp(Number(p.resistanceOhm) || 1000, 1, 1e9);
+    var bwHz = clamp(Number(p.bandwidthHz) || 20000, 1, 1e11);
+    var eFieldVm = clamp(Number(p.appliedFieldVm) || 100, 0.01, 1e6);
+    var kBSi = 1.380649e-23;
+    var eCharge = 1.602176634e-19;
+    var mElectron = 9.1093837e-31;
+    var nCuM3 = 8.47e28;
+
+    var noisePowerW = kBSi * t * bwHz;
+    var noisePowerDbm = 10 * Math.log10(Math.max(1e-30, noisePowerW) / 0.001);
+    var vRmsV = Math.sqrt(4 * kBSi * t * rOhm * bwHz);
+    var vRmsUv = vRmsV * 1e6;
+    var iRmsNa = Math.sqrt((4 * kBSi * t * bwHz) / rOhm) * 1e9;
+
+    var rhoCuOhmM = 1.68e-8 * (t / 300);
+    var tauDrudeFs = (mElectron / (nCuM3 * eCharge * eCharge * rhoCuOhmM)) * 1e15;
+    var mobilityM2Vs = (eCharge * (tauDrudeFs * 1e-15)) / mElectron;
+    var driftSpeedMs = mobilityM2Vs * eFieldVm;
+    var driftSpeedMmS = driftSpeedMs * 1000;
+    var thermalElectronSpeedMs = Math.sqrt((3 * kBSi * t) / mElectron);
+    var thermalToDriftRatio = thermalElectronSpeedMs / Math.max(1e-9, driftSpeedMs);
+
+    var regime = 'room_thermal_floor';
+    var regimeLabel = 'Standard k_B T Floor';
+    if (t <= 80) {
+      regime = 'cryogenic_low_noise';
+      regimeLabel = 'Cryogenic Low-Noise';
+    } else if (vRmsUv >= 50) {
+      regime = 'high_thermal_hiss';
+      regimeLabel = 'High Johnson Floor';
+    }
+
+    var curvePoints = [];
+    for (var i = 0; i < 25; i += 1) {
+      var tGrid = 20 + (i / 24) * 1180;
+      curvePoints.push({
+        temperatureK: tGrid,
+        vRmsUv: Math.sqrt(4 * kBSi * tGrid * rOhm * bwHz) * 1e6
+      });
+    }
+
+    return {
+      temperature: t,
+      resistanceOhm: rOhm,
+      bandwidthHz: bwHz,
+      noisePowerW: noisePowerW,
+      noisePowerDbm: noisePowerDbm,
+      vRmsV: vRmsV,
+      vRmsUv: vRmsUv,
+      iRmsNa: iRmsNa,
+      rhoCuOhmM: rhoCuOhmM,
+      tauDrudeFs: tauDrudeFs,
+      driftSpeedMmS: driftSpeedMmS,
+      thermalElectronSpeedMs: thermalElectronSpeedMs,
+      thermalToDriftRatio: thermalToDriftRatio,
+      regime: regime,
+      regimeLabel: regimeLabel,
+      curvePoints: curvePoints
+    };
+  }
+
+  var WORKBENCH_DOMAINS = [
+    { id: 'all', label: 'All Modules (30)' },
+    { id: 'pinned', label: 'Pinned Deck' },
+    { id: 'gas_thermo', label: 'Gas Laws & Cycles (9)' },
+    { id: 'stat_spectra', label: 'Stat-Mech, Spectra & Bio (9)' },
+    { id: 'matter_frontier', label: 'Matter, Climate & Frontiers (9)' },
+    { id: 'earth_ocean_phys', label: 'Earth, Ocean & Physiology (3)' }
+  ];
+  var WORKBENCH_DOMAIN_IDS = ['all', 'pinned', 'gas_thermo', 'stat_spectra', 'matter_frontier', 'earth_ocean_phys'];
+
+  var BRIDGE_CATEGORIES = [
+    { id: 'all', label: 'All Bridges (22)' },
+    { id: 'physics_space', label: 'Physics & Space (9)' },
+    { id: 'chem_tech', label: 'Chem, Tech & Data (6)' },
+    { id: 'earth_bio', label: 'Earth, Ocean & Bio (7)' }
+  ];
+  var BRIDGE_CATEGORY_IDS = ['all', 'physics_space', 'chem_tech', 'earth_bio'];
+
+  var WORKBENCH_MODULE_DIRECTORY = [
+    { id: 'vdw_state', cardId: 'particle-vdw-state-card', domain: 'gas_thermo', title: 'Van der Waals Real-Gas State', keywords: 'compressibility z excluded volume attraction maxwell boltzmann speed rms' },
+    { id: 'parametric_sweep', cardId: 'particle-parametric-sweep-card', domain: 'gas_thermo', title: 'Parametric Sweep & Linear Fit', keywords: 'boyle charles gay lussac avogadro graham regression r2 csv data studio scatter' },
+    { id: 'snapshot_tray', cardId: 'particle-snapshot-tray-card', domain: 'gas_thermo', title: 'Chamber Snapshot A/B Tray', keywords: 'pin compare delta state save restore' },
+    { id: 'real_gas_species', cardId: 'particle-real-gas-card', domain: 'gas_thermo', title: 'Real-Gas Species & SI Scale', keywords: 'he ne ar n2 o2 co2 h2o ch4 sf6 molar mass degrees freedom gamma' },
+    { id: 'first_law_pv', cardId: 'particle-thermo-card', domain: 'gas_thermo', title: 'First-Law & P\u2013V Work Diagram', keywords: 'internal energy heat work isothermal adiabatic isochoric isobaric entropy' },
+    { id: 'kmt_challenges', cardId: 'particle-challenges-card', domain: 'gas_thermo', title: 'Quantitative KMT Challenges', keywords: 'missions mastery boyle graham knudsen supercritical' },
+    { id: 'kinetic_transport', cardId: 'particle-transport-card', domain: 'gas_thermo', title: 'Kinetic Transport & Knudsen Regime', keywords: 'viscosity thermal conductivity self diffusion mean free path continuum transitional' },
+    { id: 'heat_engine_cycle', cardId: 'particle-cycle-card', domain: 'gas_thermo', title: 'Closed Heat-Engine Cycle Lab', keywords: 'carnot otto brayton stirling efficiency compression ratio pv loop' },
+    { id: 'planetary_atmosphere', cardId: 'particle-atmosphere-card', domain: 'gas_thermo', title: 'Planetary Scale Height & Escape', keywords: 'barometric jeans parameter earth mars venus titan jupiter moon gravity' },
+    { id: 'stat_mech_entropy', cardId: 'particle-statmech-card', domain: 'stat_spectra', title: 'Statistical Mechanics & Entropy', keywords: 'sackur tetrode de broglie thermal wavelength tail fraction quantum' },
+    { id: 'arrhenius_kinetics', cardId: 'particle-arrhenius-card', domain: 'stat_spectra', title: 'Arrhenius Collision Kinetics', keywords: 'activation energy steric factor rate constant collision frequency reaction' },
+    { id: 'gas_acoustics', cardId: 'particle-acoustics-card', domain: 'stat_spectra', title: 'Gas Acoustics & Mach Resonance', keywords: 'speed of sound impedance standing wave frequency subsonic supersonic' },
+    { id: 'doppler_spectroscopy', cardId: 'particle-doppler-card', domain: 'stat_spectra', title: 'Thermal Doppler Spectroscopy', keywords: 'spectral line broadening fwhm gaussian wavelength sodium h alpha' },
+    { id: 'joule_thomson', cardId: 'particle-joule-thomson-card', domain: 'stat_spectra', title: 'Joule-Thomson & Liquefaction', keywords: 'throttling inversion temperature cooling warming cryogenics linde' },
+    { id: 'vacuum_effusion', cardId: 'particle-effusion-card', domain: 'stat_spectra', title: 'Vacuum Effusion & Micro-Thruster', keywords: 'knudsen orifice specific impulse isp cold gas spacecraft thrust' },
+    { id: 'brownian_perrin', cardId: 'particle-brownian-card', domain: 'stat_spectra', title: 'Brownian Motion & Perrin Walk', keywords: 'stokes einstein msd colloid bead viscosity water air glycerol' },
+    { id: 'vant_hoff_osmosis', cardId: 'particle-osmosis-biophysics-card', domain: 'stat_spectra', title: 'Van \u2019t Hoff Osmosis & Tonicity', keywords: 'osmotic pressure molarity isotonic hypotonic hypertonic cell membrane' },
+    { id: 'paschen_plasma', cardId: 'particle-plasma-card', domain: 'stat_spectra', title: 'Paschen Breakdown & Glow Plasma', keywords: 'townsend discharge voltage debye ionization neon argon nitrogen' },
+    { id: 'debye_lindemann', cardId: 'particle-lattice-solid-card', domain: 'matter_frontier', title: 'Debye Heat Capacity & Lindemann Limit', keywords: 'dulong petit phonon crystal lattice melting diamond copper aluminum lead' },
+    { id: 'clausius_clapeyron', cardId: 'particle-vapor-equilibrium-card', domain: 'matter_frontier', title: 'Clausius\u2013Clapeyron Vapor & Dew Point', keywords: 'antoine saturation boiling humidity condensation cloud ethanol nitrogen' },
+    { id: 'tyndall_greenhouse', cardId: 'particle-greenhouse-ir-card', domain: 'matter_frontier', title: 'Tyndall IR Modes & Greenhouse Forcing', keywords: 'vibrational dipole radiative forcing co2 ch4 h2o climate warming' },
+    { id: 'rankine_hugoniot', cardId: 'particle-shock-aero-card', domain: 'matter_frontier', title: 'Rankine\u2013Hugoniot Shock & Stagnation', keywords: 'normal shock mach hypersonic reentry compression aerospace' },
+    { id: 'gamow_nuclear', cardId: 'particle-nuclear-gamow-card', domain: 'matter_frontier', title: 'Gamow Fusion Peak & UF\u2086 Cascade', keywords: 'quantum tunneling coulomb barrier dt dd he3 isotope separation centrifuge' },
+    { id: 'johnson_nyquist', cardId: 'particle-thermal-noise-card', domain: 'matter_frontier', title: 'Johnson\u2013Nyquist Noise & Drude Drift', keywords: 'resistor voltage thermal agitation electron fermi circuit' },
+    { id: 'interstellar_jeans', cardId: 'particle-astro-jeans-card', domain: 'matter_frontier', title: 'Interstellar Jeans Cloud Collapse', keywords: 'protostar bok globule h ii nebula saha ionization astrophysics' },
+    { id: 'wells_riley_aerosol', cardId: 'particle-aerosol-epi-card', domain: 'matter_frontier', title: 'Wells\u2013Riley Plumes & Stokes Settling', keywords: 'airborne droplet ventilation ach cunningham slip infection epidemic' },
+    { id: 'langmuir_betz', cardId: 'particle-energy-sorbent-card', domain: 'matter_frontier', title: 'Langmuir Storage & Betz Wind Flux', keywords: 'adsorption isotherm hydrogen mof palladium wind turbine power density' },
+    { id: 'henrys_ocean', cardId: 'particle-henrys-ocean-card', domain: 'earth_ocean_phys', title: 'Henry\u2019s Law & Ocean Gas Solubility', keywords: 'dissolved oxygen salinity setschenow scuba decompression coral reef' },
+    { id: 'alveolar_hill_bohr', cardId: 'particle-alveolar-physiology-card', domain: 'earth_ocean_phys', title: 'Alveolar Gas & Hill\u2013Bohr O\u2082 Curve', keywords: 'respiratory hemoglobin saturation p50 hypoxia altitude ph krogh anatomy' },
+    { id: 'magma_volatiles', cardId: 'particle-magma-volatiles-card', domain: 'earth_ocean_phys', title: 'Magmatic Volatiles & Fragmentation', keywords: 'volcano basalt andesite rhyolite vesicularity viscosity eruption tectonics' }
+  ];
+
+  function filterWorkbenchModules(query, domain) {
+    var dom = domain && WORKBENCH_DOMAIN_IDS.indexOf(domain) >= 0 ? domain : 'all';
+    var q = typeof query === 'string' ? query.trim().toLowerCase() : '';
+    var tokens = q ? q.split(/\s+/).filter(Boolean) : [];
+    return WORKBENCH_MODULE_DIRECTORY.filter(function (mod) {
+      if (dom !== 'all' && dom !== 'pinned' && mod.domain !== dom) return false;
+      if (!tokens.length) return true;
+      var haystack = (mod.title + ' ' + mod.keywords + ' ' + mod.domain).toLowerCase();
+      return tokens.every(function (tok) { return haystack.indexOf(tok) >= 0; });
+    });
+  }
+
+  var MAX_PINNED_WORKBENCH_MODULES = 8;
+
+  var WORKBENCH_BUNDLES = [
+    { id: 'core_gas_laws', label: 'Intro Gas Laws & Sweeps', moduleIds: ['vdw_state', 'parametric_sweep', 'snapshot_tray', 'kmt_challenges'] },
+    { id: 'atmos_climate', label: 'Atmospheres, Weather & Climate', moduleIds: ['planetary_atmosphere', 'clausius_clapeyron', 'tyndall_greenhouse', 'henrys_ocean'] },
+    { id: 'human_bio_health', label: 'Physiology, Cells & Bioaerosols', moduleIds: ['brownian_perrin', 'vant_hoff_osmosis', 'wells_riley_aerosol', 'alveolar_hill_bohr'] },
+    { id: 'aero_space_plasma', label: 'Aerospace, Thrusters & Plasma', moduleIds: ['heat_engine_cycle', 'vacuum_effusion', 'paschen_plasma', 'rankine_hugoniot'] }
+  ];
+
+  function restorePinnedWorkbenchIds(raw) {
+    if (!Array.isArray(raw)) return [];
+    var validMap = {};
+    WORKBENCH_MODULE_DIRECTORY.forEach(function (m) { validMap[m.id] = true; });
+    var seen = {};
+    var out = [];
+    for (var i = 0; i < raw.length; i += 1) {
+      var id = typeof raw[i] === 'string' ? raw[i].trim() : '';
+      if (id && validMap[id] && !seen[id]) {
+        seen[id] = true;
+        out.push(id);
+        if (out.length >= MAX_PINNED_WORKBENCH_MODULES) break;
+      }
+    }
+    return out;
+  }
+
+  var APPLIED_WORKBENCH_MISSIONS = [
+    {
+      id: 'titan_cryo_retention',
+      title: 'Cryogenic Moon Retention (v_esc/v_rms \u2265 6x)',
+      law: 'Barometric Escape & Jeans Parameter',
+      moduleId: 'planetary_atmosphere',
+      cardId: 'particle-atmosphere-card',
+      goal: 'On a low-gravity world (g \u2264 4.0 m/s\u00B2), select a cold body or heavier gas so escape ratio v_esc / v_rms reaches at least 6.0x.',
+      stage: { preset: 'gas', temperature: 300, gasSpeciesA: 'He', planetId: 'Mars', planetTempMode: 'planet' }
+    },
+    {
+      id: 'joule_thomson_cryo',
+      title: 'Cryogenic Throttle Cooling (\u0394T_JT \u2264 -8.0 K)',
+      law: 'Joule\u2013Thomson Inversion',
+      moduleId: 'joule_thomson',
+      cardId: 'particle-joule-thomson-card',
+      goal: 'Operate below inversion temperature T_inv and expand across \u0394P so throttling produces cooling \u0394T_JT \u2264 -8.0 K.',
+      stage: { preset: 'gas', temperature: 300, gasSpeciesA: 'He', jtPressureDropAtm: 20 }
+    },
+    {
+      id: 'clean_air_ventilation',
+      title: 'Safe Indoor Airspace (Risk < 2.0%)',
+      law: 'Wells\u2013Riley & Stokes\u2013Cunningham',
+      moduleId: 'wells_riley_aerosol',
+      cardId: 'particle-aerosol-epi-card',
+      goal: 'For fine respirable aerosols (d \u2264 2.5 \u00B5m), raise room ventilation ACH until 1-hour Wells\u2013Riley infection risk drops below 2.0%.',
+      stage: { preset: 'gas', temperature: 295, aerosolDropletUm: 2.5, ventilationAch: 0.5 }
+    },
+    {
+      id: 'bohr_tissue_unloading',
+      title: 'Bohr Tissue O\u2082 Unloading (pH 7.2, SaO\u2082 \u2265 85%)',
+      law: 'Alveolar Gas & Hill\u2013Bohr Shift',
+      moduleId: 'alveolar_hill_bohr',
+      cardId: 'particle-alveolar-physiology-card',
+      goal: 'Simulate exercising acidotic blood (pH \u2264 7.25) to aid tissue O\u2082 unloading while keeping elevation low enough for arterial SaO\u2082 \u2265 85.0%.',
+      stage: { preset: 'gas', temperature: 310, gasSpeciesA: 'O2', alveolarAltitudeM: 5300, bloodPh: 7.4 }
+    },
+    {
+      id: 'plinian_magma_threshold',
+      title: 'Plinian Fragmentation (\u2265 75% Vesicularity)',
+      law: 'Magmatic Solubility & Viscosity',
+      moduleId: 'magma_volatiles',
+      cardId: 'particle-magma-volatiles-card',
+      goal: 'Decompress a high-viscosity silicate melt (log10 \u03B7 \u2265 5.0 Pa\u00B7s) to shallow conduit depth until gas vesicularity reaches \u2265 75% explosive fragmentation.',
+      stage: { preset: 'liquid', temperature: 360, magmaMeltId: 'basalt', magmaDepthKm: 8 }
+    }
+  ];
+
+  function restoreCompletedMissions(raw) {
+    var out = {};
+    if (!raw || typeof raw !== 'object') return out;
+    APPLIED_WORKBENCH_MISSIONS.forEach(function (ms) {
+      if (raw[ms.id]) out[ms.id] = true;
+    });
+    return out;
+  }
+
+  function evaluateAppliedMission(missionId, state) {
+    var s = state || {};
+    var gPlanet = Number(s.planetGravityMs2);
+    if (!isFinite(gPlanet)) gPlanet = 9.81;
+    var escRatio = Number(s.escapeRatio) || 0;
+    var dtJt = Number(s.deltaTThrottleK);
+    if (!isFinite(dtJt)) dtJt = 0;
+    var dropUm = Number(s.dropletDiameterUm);
+    if (!isFinite(dropUm)) dropUm = 2.5;
+    var riskPct = Number(s.wellsRileyRiskPct);
+    if (!isFinite(riskPct)) riskPct = 100;
+    var bPh = Number(s.bloodPh);
+    if (!isFinite(bPh)) bPh = 7.4;
+    var sao2 = Number(s.arterialSaO2Pct);
+    if (!isFinite(sao2)) sao2 = 0;
+    var gasPct = Number(s.magmaGasVolPct) || 0;
+    var logEta = Number(s.magmaLog10Viscosity) || 0;
+    var frag = !!s.magmaFragmenting;
+
+    if (missionId === 'joule_thomson_cryo') {
+      return {
+        id: missionId,
+        passed: dtJt <= -8.0,
+        currentLabel: '\u0394T = ' + (dtJt >= 0 ? '+' : '') + dtJt.toFixed(1) + ' K',
+        targetLabel: '\u0394T_JT \u2264 -8.0 K',
+        progress: dtJt < 0 ? clamp(Math.abs(dtJt) / 8.0, 0, 1) : 0
+      };
+    }
+    if (missionId === 'clean_air_ventilation') {
+      return {
+        id: missionId,
+        passed: dropUm <= 2.5 && riskPct < 2.0,
+        currentLabel: 'd=' + dropUm.toFixed(1) + '\u00B5m \u2022 ' + riskPct.toFixed(2) + '%',
+        targetLabel: 'd \u2264 2.5 \u00B5m, Risk < 2.0%',
+        progress: dropUm <= 2.5 ? clamp(2.0 / Math.max(0.5, riskPct), 0, 1) : 0
+      };
+    }
+    if (missionId === 'bohr_tissue_unloading') {
+      return {
+        id: missionId,
+        passed: bPh <= 7.25 && sao2 >= 85.0,
+        currentLabel: 'pH ' + bPh.toFixed(2) + ' \u2022 ' + sao2.toFixed(1) + '%',
+        targetLabel: 'pH \u2264 7.25, SaO\u2082 \u2265 85%',
+        progress: clamp((bPh <= 7.25 ? 0.5 : 0) + clamp(sao2 / 85, 0, 1) * 0.5, 0, 1)
+      };
+    }
+    if (missionId === 'plinian_magma_threshold') {
+      return {
+        id: missionId,
+        passed: frag && gasPct >= 75 && logEta >= 5.0,
+        currentLabel: gasPct.toFixed(0) + '% gas \u2022 log \u03B7 ' + logEta.toFixed(1),
+        targetLabel: '\u2265 75% gas, log \u03B7 \u2265 5.0',
+        progress: clamp((gasPct / 75) * 0.65 + clamp(logEta / 5.0, 0, 1) * 0.35, 0, 1)
+      };
+    }
+    var okTitan = gPlanet <= 4.0 && escRatio >= 6.0;
+    return {
+      id: 'titan_cryo_retention',
+      passed: okTitan,
+      currentLabel: 'g=' + gPlanet.toFixed(2) + ' \u2022 ' + escRatio.toFixed(1) + 'x',
+      targetLabel: 'g \u2264 4.0, v_esc/v_rms \u2265 6.0x',
+      progress: gPlanet <= 4.0 ? clamp(escRatio / 6.0, 0, 1) : 0
+    };
+  }
+
+  function buildDomainEvidenceSnippet(domainId, m) {
+    var d = m || {};
+    if (domainId === 'earth_ocean_phys') {
+      return "Earth & Physiology evidence: Henry's Law [" + (d.henryGasFormula || 'N\u2082') + '] = ' + Number(d.dissolvedMgL || 0).toFixed(1) + ' mg/L (air-eq DO ' + Number(d.airDoMgL || 0).toFixed(1) + ' mg/L); Alveolar P_AO\u2082=' + Number(d.alveolarPo2MmHg || 0).toFixed(0) + ' mmHg, SaO\u2082=' + Number(d.arterialSaO2Pct || 0).toFixed(1) + '% (P_50=' + Number(d.p50MmHg || 0).toFixed(1) + ' mmHg); Magma vesicularity ' + Number(d.magmaGasVolPct || 0).toFixed(0) + '% at log10(\u03B7)=' + Number(d.magmaLog10Viscosity || 0).toFixed(1) + ' (' + (d.magmaRegimeLabel || '') + ').';
+    }
+    if (domainId === 'matter_frontier') {
+      return 'Matter & Frontiers evidence: Lattice ' + (d.crystalFormula || 'Cu') + ' C_V=' + Number(d.cvMolarJMK || 0).toFixed(1) + ' J/mol\u00B7K; Greenhouse CO\u2082=' + Number(d.co2Ppm || 425) + ' ppm (\u0394F=' + Number(d.forcingWm2 || 0).toFixed(2) + ' W/m\u00B2); Shock M=' + Number(d.machNumber || 1).toFixed(1) + ' gives P2/P1=' + Number(d.shockPressureRatio || 1).toFixed(2) + 'x; Aerosol d=' + Number(d.dropletDiameterUm || 2.5) + '\u00B5m risk ' + Number(d.wellsRileyRiskPct || 0).toFixed(1) + '%.';
+    }
+    if (domainId === 'stat_spectra') {
+      return 'Stat-Mech & Spectra evidence: S_tr=' + Number(d.sTransMolarJMK || 0).toFixed(1) + ' J/mol\u00B7K (\u039B_dB=' + Number(d.thermalLambdaPm || 0).toFixed(1) + ' pm); Doppler FWHM=' + Number(d.dopplerFwhmPm || 0).toFixed(2) + ' pm; JT \u0394T=' + Number(d.deltaTThrottleK || 0).toFixed(1) + ' K; Osmotic \u03A0_eff=' + Number(d.effectiveOsmoticAtm || 0).toFixed(2) + ' atm (' + (d.tonicityLabel || '') + '); Paschen V_B=' + Math.round(Number(d.breakdownVoltageV || 0)) + ' V.';
+    }
+    return 'Gas & Thermo evidence: Z=' + Number(d.z || 1).toFixed(2) + ', P_vdW=' + Number(d.vdwPressure || 0).toFixed(1) + ' u, Kn=' + Number(d.knudsen || 0).toFixed(2) + ' (' + (d.transportRegimeLabel || '') + '); ' + (d.cycleTitle || 'Cycle') + ' \u03B7=' + Number(d.thermalEfficiencyPct || 0).toFixed(1) + '%; ' + (d.planetName || 'Earth') + ' H=' + Number(d.scaleHeightKm || 0).toFixed(1) + ' km (escape ' + Number(d.escapeRatio || 0).toFixed(1) + 'x).';
+  }
+
+  var PARTICLE_GLOSSARY_TERMS = [
+    { id: 'compressibility_z', symbol: 'Z', term: 'Compressibility Factor', formula: 'Z = P V / (N k_B T)', plainEnglish: 'Measures how a real gas deviates from ideal behavior: Z = 1 is ideal, Z < 1 means attraction pulls pressure down, and Z > 1 means particle volume crowds the box.', moduleId: 'vdw_state', cardId: 'particle-vdw-state-card' },
+    { id: 'mean_free_path', symbol: '\u03BB', term: 'Mean Free Path', formula: '\u03BB = V / (\u221A2 \u03C0 d\u00B2 N)', plainEnglish: 'The average straight-line distance a particle travels between two particle-particle collisions.', moduleId: 'kinetic_transport', cardId: 'particle-transport-card' },
+    { id: 'knudsen_number', symbol: 'Kn', term: 'Knudsen Number', formula: 'Kn = \u03BB / L', plainEnglish: 'Ratio of mean free path to container width: small Kn flows like a continuous fluid, while large Kn means particles bounce wall-to-wall.', moduleId: 'kinetic_transport', cardId: 'particle-transport-card' },
+    { id: 'maxwell_boltzmann', symbol: 'v_rms', term: 'Maxwell\u2013Boltzmann Speeds', formula: 'v_mp < v_mean < v_rms \u221D \u221A(T/m)', plainEnglish: 'Particles at one temperature form a bell-like speed curve with peak speed v_mp, average speed v_mean, and energy speed v_rms.', moduleId: 'vdw_state', cardId: 'particle-vdw-state-card' },
+    { id: 'equipartition_ke', symbol: '<KE>', term: 'Equipartition of Energy', formula: '<KE_tr> = (3/2) k_B T', plainEnglish: 'At thermal equilibrium, light and heavy species share the same average kinetic energy, so heavier particles move more slowly.', moduleId: 'real_gas_species', cardId: 'particle-real-gas-card' },
+    { id: 'first_law_thermo', symbol: '\u0394U', term: 'First Law of Thermodynamics', formula: '\u0394U = Q \u2212 W_by', plainEnglish: 'Internal thermal energy changes when heat Q enters the gas or when moving container walls do compression/expansion work W.', moduleId: 'first_law_pv', cardId: 'particle-thermo-card' },
+    { id: 'joule_thomson', symbol: '\u03BC_JT', term: 'Joule\u2013Thomson Coefficient', formula: '\u0394T_JT = \u2212\u03BC_JT \u0394P', plainEnglish: 'Expanding a real gas through a valve cools it below its inversion temperature because molecules lose kinetic energy pulling apart.', moduleId: 'joule_thomson', cardId: 'particle-joule-thomson-card' },
+    { id: 'osmotic_vanthoff', symbol: '\u03A0_eff', term: 'Van \u2019t Hoff Osmotic Pressure', formula: '\u03A0_eff = \u03C3 i M R T', plainEnglish: 'Extra pressure required to stop net solvent flow across a selective membrane toward trapped solute particles.', moduleId: 'vant_hoff_osmosis', cardId: 'particle-osmosis-biophysics-card' },
+    { id: 'alveolar_hill_bohr', symbol: 'P_50', term: 'Hill\u2013Bohr Oxygen Affinity', formula: 'S_O2 = P^n / (P_50^n + P^n)', plainEnglish: 'Partial pressure of O\u2082 where hemoglobin is 50% saturated; lower blood pH raises P_50 to unload oxygen in active tissue.', moduleId: 'alveolar_hill_bohr', cardId: 'particle-alveolar-physiology-card' },
+    { id: 'jeans_barometric', symbol: 'H, M_J', term: 'Scale Height & Jeans Mass', formula: 'H = R T / (M g)', plainEnglish: 'Balance between thermal motion puffing gas outward and gravity pulling it inward in planetary atmospheres and star-forming clouds.', moduleId: 'planetary_atmosphere', cardId: 'particle-atmosphere-card' }
+  ];
+
+  function filterGlossaryTerms(query) {
+    var q = typeof query === 'string' ? query.trim().toLowerCase() : '';
+    if (!q) return PARTICLE_GLOSSARY_TERMS.slice();
+    var tokens = q.split(/\s+/).filter(Boolean);
+    return PARTICLE_GLOSSARY_TERMS.filter(function (item) {
+      var hay = (item.symbol + ' ' + item.term + ' ' + item.formula + ' ' + item.plainEnglish).toLowerCase();
+      return tokens.every(function (tok) { return hay.indexOf(tok) >= 0; });
+    });
+  }
+
+  var NOTEBOOK_SENTENCE_STARTERS = {
+    prediction: [
+      { id: 'pred_if', label: '+ If / Then hypothesis', text: 'If I change [variable] while keeping [controls] constant, I predict [measurement] will ___ because particles will ___.' },
+      { id: 'pred_compare', label: '+ Particle mechanism', text: 'At the particle level, changing ___ will make collisions ___ frequent/energetic, causing ___.' }
+    ],
+    observation: [
+      { id: 'obs_delta', label: '+ Trial comparison', text: 'When ___ changed while ___ stayed constant, measured ___ shifted from ___ to ___.' },
+      { id: 'obs_motion', label: '+ Motion + gauge cue', text: 'Visually, particles ___, and the chamber readout / fit showed ___.' }
+    ],
+    conclusion: [
+      { id: 'cer_claim', label: '+ Claim frame', text: 'Claim: My prediction was [supported / not supported] because ___.' },
+      { id: 'cer_reason', label: '+ Particle reasoning', text: 'Reasoning: Because particle speed and collision momentum scale with ___, the observed change in ___ follows kinetic molecular theory.' }
+    ]
+  };
+
+  function applyNotebookStarter(existingText, starterText, maxLen) {
+    var limit = Math.max(100, Number(maxLen) || 800);
+    var existing = String(existingText || '').trim();
+    var starter = String(starterText || '').trim();
+    if (!starter) return existing.slice(0, limit);
+    if (existing.indexOf(starter) >= 0) return existing.slice(0, limit);
+    return (existing ? existing + '\n' + starter : starter).slice(0, limit);
+  }
+
+  function evaluateNotebookReadiness(state) {
+    var s = state || {};
+    var pred = String(s.prediction || '').trim();
+    var obs = String(s.observation || '').trim();
+    var conc = String(s.conclusion || '').trim();
+    var hasData = (Number(s.trialCount) || 0) >= 1 || (Number(s.logCount) || 0) >= 2 || (Number(s.snapshotCount) || 0) >= 2;
+    var checks = [
+      { id: 'hypothesis', label: 'Hypothesis', done: pred.length >= 15 },
+      { id: 'data', label: 'Data Collected', done: hasData },
+      { id: 'numbers', label: 'Cited Numbers', done: /\d/.test(obs) },
+      { id: 'claim', label: 'Stated Claim', done: conc.length >= 20 },
+      { id: 'mechanism', label: 'Particle Mechanism', done: /collision|speed|momentum|kinetic|spacing|force|attract|energy|free path|mix|cross|pressure|volume|temperature/i.test(conc) }
+    ];
+    var completedCount = checks.filter(function (c) { return c.done; }).length;
+    return { checks: checks, completedCount: completedCount, totalCount: checks.length, readyForReport: completedCount >= 4 };
+  }
+
+  var PARTICLE_CONCEPT_QUIZ = [
+    {
+      id: 'q_equipartition',
+      title: 'Thermal Equipartition & Speed',
+      prompt: 'At 300 K, Helium (4 g/mol) and CO\u2082 (44 g/mol) share a chamber at thermal equilibrium. Which statement is accurate?',
+      options: [
+        'Both gases have equal average kinetic energy, and Helium moves ~3.3x faster on average.',
+        'CO\u2082 molecules carry ~11x more average kinetic energy because they are heavier.',
+        'Both gases have the exact same RMS speed because their temperatures match.',
+        'Helium has higher average kinetic energy because lighter particles collide more often.'
+      ],
+      correctIndex: 0,
+      explanation: 'Equipartition sets <KE_tr> = (3/2)k_B T independent of mass, so v_rms = \u221A(3RT/M) makes lighter Helium ~3.3x faster.',
+      hint: 'Compare Species A and B kinetic energy vs. speed curves: temperature tracks average kinetic energy, while speed scales as 1/\u221Am.',
+      moduleId: 'real_gas_species',
+      cardId: 'particle-real-gas-card',
+      moduleTitle: 'Real-Gas Species & SI Scale'
+    },
+    {
+      id: 'q_boyle_mechanism',
+      title: 'Isothermal Boyle Compression',
+      prompt: 'When a gas is compressed to half its volume at constant temperature (heat bath ON), why does wall pressure double?',
+      options: [
+        'Individual gas particles swell to twice their diameter when squeezed.',
+        'Particles keep the same average speed, but half the volume doubles wall-impact frequency per unit area.',
+        'Constant temperature makes every particle move twice as fast after compression.',
+        'Gravity pulls particles harder in a smaller container.'
+      ],
+      correctIndex: 1,
+      explanation: 'With T fixed by the heat bath, speed distribution stays constant; halving V halves wall-to-wall travel distance and doubles impact density.',
+      hint: 'Check particle speed vs. wall hits per second during an isothermal squeeze.',
+      moduleId: 'parametric_sweep',
+      cardId: 'particle-parametric-sweep-card',
+      moduleTitle: 'Parametric Sweep & Linear Fit'
+    },
+    {
+      id: 'q_real_gas_z',
+      title: 'Van der Waals Compressibility (Z < 1)',
+      prompt: 'A dense gas with strong cohesive attraction displays compressibility factor Z = PV/(Nk_B T) = 0.78. What causes Z < 1?',
+      options: [
+        'Hard-sphere excluded volume crowds the container and boosts wall collisions.',
+        'Intermolecular attraction pulls wall-bound particles inward, softening wall impacts below ideal pressure.',
+        'Particles stopped moving when attraction turned on.',
+        'The chamber volume expanded spontaneously.'
+      ],
+      correctIndex: 1,
+      explanation: 'Attractive forces reduce momentum transfer at the walls (the \u2212a(N/V)\u00B2 term), lowering P below ideal N k_B T / V so Z < 1.',
+      hint: 'Inspect the Z = 1 ideal line vs. attractive (Z < 1) and repulsive excluded-volume (Z > 1) regimes.',
+      moduleId: 'vdw_state',
+      cardId: 'particle-vdw-state-card',
+      moduleTitle: 'Van der Waals & Compressibility'
+    },
+    {
+      id: 'q_mean_free_path',
+      title: 'Collision Cross-Section & Mean Free Path',
+      prompt: 'If you double particle collision diameter d while holding count N and chamber volume V constant, how does theoretical mean free path \u03BB change?',
+      options: [
+        'It doubles because larger particles push neighbors away.',
+        'It stays unchanged because temperature and volume are fixed.',
+        'It decreases to one-half (1/2) of its original length.',
+        'It decreases to one-quarter (1/4) because collision cross-section scales as \u03C0d\u00B2.'
+      ],
+      correctIndex: 3,
+      explanation: 'Because \u03BB = V / (\u221A2 \u03C0 d\u00B2 (N\u22121)), doubling diameter d quadruples target area \u03C0d\u00B2 and cuts \u03BB to 1/4.',
+      hint: 'Look at the exponent on diameter d in the denominator of \u03BB = V / (\u221A2 \u03C0 d\u00B2 N).',
+      moduleId: 'kinetic_transport',
+      cardId: 'particle-transport-card',
+      moduleTitle: 'Kinetic Transport & Knudsen Regime'
+    },
+    {
+      id: 'q_adiabatic_work',
+      title: 'First Law Adiabatic Compression',
+      prompt: 'You rapidly shrink the container while the heat bath is OFF (Q = 0). Why does measured gas temperature rise?',
+      options: [
+        'Inward-moving walls add speed to rebounding particles, doing positive boundary work on the gas (\u0394U > 0).',
+        'Heat leaks in through the insulated walls whenever volume shrinks.',
+        'Smaller volume increases particle mass.',
+        'Temperature and pressure are two names for the exact same quantity.'
+      ],
+      correctIndex: 0,
+      explanation: 'By the First Law (\u0394U = Q \u2212 W_by), compressing with Q = 0 means W_by < 0, so wall work increases particle kinetic energy and T.',
+      hint: 'Consider what happens to a ball\u2019s speed when it bounces off a paddle moving toward it.',
+      moduleId: 'first_law_pv',
+      cardId: 'particle-thermo-card',
+      moduleTitle: 'First-Law P-V Process Analyzer'
+    },
+    {
+      id: 'q_bohr_altitude',
+      title: 'Bohr pH Shift & Tissue O\u2082 Unloading',
+      prompt: 'In exercising muscle, CO\u2082 and lactic acid lower blood pH from 7.40 to 7.20. How does this shift P\u2085\u2080 and oxygen transport?',
+      options: [
+        'P\u2085\u2080 decreases (left shift), locking O\u2082 tightly onto hemoglobin in muscle.',
+        'P\u2085\u2080 increases (right shift), lowering O\u2082 affinity so hemoglobin unloads more O\u2082 to active cells.',
+        'Blood pH only changes N\u2082 solubility and has no effect on hemoglobin.',
+        'Alveolar barometric pressure doubles during acidosis.'
+      ],
+      correctIndex: 1,
+      explanation: 'Acidosis stabilizes deoxyhemoglobin (the Bohr effect), raising P\u2085\u2080 and right-shifting the Hill curve to enhance tissue O\u2082 release.',
+      hint: 'Test Blood pH 7.20 vs 7.40 on the Hill\u2013Bohr curve and watch P\u2085\u2080.',
+      moduleId: 'alveolar_hill_bohr',
+      cardId: 'particle-alveolar-physiology-card',
+      moduleTitle: 'Alveolar Gas Exchange & Hill-Bohr O\u2082'
+    }
+  ];
+
+  function restoreQuizAnswers(raw) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
+    var clean = {};
+    PARTICLE_CONCEPT_QUIZ.forEach(function (q) {
+      if (raw[q.id] == null || raw[q.id] === '') return;
+      var choice = Number(raw[q.id]);
+      if (Number.isInteger(choice) && choice >= 0 && choice < q.options.length) {
+        clean[q.id] = choice;
+      }
+    });
+    return clean;
+  }
+
+  function evaluateConceptQuiz(answersMap) {
+    var clean = restoreQuizAnswers(answersMap);
+    var answeredCount = 0;
+    var correctCount = 0;
+    var items = PARTICLE_CONCEPT_QUIZ.map(function (q) {
+      var hasAnswer = Object.prototype.hasOwnProperty.call(clean, q.id);
+      var selectedIndex = hasAnswer ? clean[q.id] : null;
+      var isCorrect = hasAnswer && selectedIndex === q.correctIndex;
+      if (hasAnswer) answeredCount += 1;
+      if (isCorrect) correctCount += 1;
+      return {
+        id: q.id,
+        answered: hasAnswer,
+        selectedIndex: selectedIndex,
+        correctIndex: q.correctIndex,
+        correct: isCorrect
+      };
+    });
+    return {
+      answeredCount: answeredCount,
+      correctCount: correctCount,
+      totalCount: PARTICLE_CONCEPT_QUIZ.length,
+      scorePct: Math.round((correctCount / PARTICLE_CONCEPT_QUIZ.length) * 100),
+      mastered: correctCount >= 4,
+      items: items
+    };
+  }
+
+  function evaluateSweepTheoryAndControl(rows, axisId, reg, fallbackState) {
+    var list = Array.isArray(rows) ? rows.filter(function (r) { return r && typeof r === 'object'; }) : [];
+    var fb = fallbackState || {};
+    var axis = PARTICLE_SWEEP_AXES.indexOf(axisId) >= 0 ? axisId : 'boylePV';
+    var refTemp = list.length ? list.reduce(function (s, r) { return s + (Number(r.temperature) || 300); }, 0) / list.length : clamp(Number(fb.temperature) || 300, 1, 2000);
+    var refCount = list.length ? list.reduce(function (s, r) { return s + (Number(r.count) || 64); }, 0) / list.length : clamp(Number(fb.count) || 64, 8, 160);
+    var refVol = list.length ? list.reduce(function (s, r) {
+      return s + (Number(r.volume) || Math.pow(Number(r.boxSize) || 11, 3));
+    }, 0) / list.length : Math.pow(clamp(Number(fb.boxSize) || 11, 5, 24), 3);
+    var refPressure = list.length ? list.reduce(function (s, r) { return s + Math.max(0.05, Number(r.pressure) || 1); }, 0) / list.length : Math.max(0.05, Number(fb.pressure) || 1);
+    var refDiam = list.length ? list.reduce(function (s, r) { return s + clamp(Number(r.particleDiameter) || 0.58, 0.36, 0.9); }, 0) / list.length : clamp(Number(fb.particleDiameter) || 0.58, 0.36, 0.9);
+    var meanAttr = list.length ? list.reduce(function (s, r) { return s + (Number(r.attraction) || 0); }, 0) / list.length : clamp(Number(fb.attraction) || 0, 0, 1.5);
+    var meanPacking = list.length ? list.reduce(function (s, r) {
+      var rv = Math.max(1, Number(r.volume) || Math.pow(Number(r.boxSize) || 11, 3));
+      var rd = clamp(Number(r.particleDiameter) || 0.58, 0.36, 0.9);
+      var rn = Math.max(1, Number(r.count) || 64);
+      return s + (rn * (Math.PI / 6) * Math.pow(rd, 3)) / rv;
+    }, 0) / list.length : (refCount * (Math.PI / 6) * Math.pow(refDiam, 3)) / Math.max(1, refVol);
+
+    var theoreticalSlope = 0;
+    var formulaLabel = 'NT / 12000';
+    if (axis === 'gayLussacPT') {
+      theoreticalSlope = refCount / (12 * Math.max(1, refVol));
+      formulaLabel = 'N / (12V)';
+    } else if (axis === 'charlesVT') {
+      theoreticalSlope = refCount / (12 * Math.max(0.05, refPressure));
+      formulaLabel = 'N / (12P)';
+    } else if (axis === 'avogadroPN') {
+      theoreticalSlope = refTemp / (12 * Math.max(1, refVol));
+      formulaLabel = 'T / (12V)';
+    } else if (axis === 'mfpDensity') {
+      theoreticalSlope = refVol / (100 * Math.SQRT2 * Math.PI * refDiam * refDiam);
+      formulaLabel = 'V / (100\u221A2\u03C0d\u00B2)';
+    } else if (axis === 'grahamMass') {
+      theoreticalSlope = Math.sqrt(Math.max(1, refTemp) / 40);
+      formulaLabel = '\u221A(T / 40)';
+    } else {
+      theoreticalSlope = (refCount * refTemp) / 12000;
+      formulaLabel = 'NT / 12000';
+    }
+
+    var confoundedControls = [];
+    if (list.length >= 2) {
+      var minMax = function (fn) {
+        var lo = Infinity, hi = -Infinity;
+        list.forEach(function (r) {
+          var v = fn(r);
+          if (v < lo) lo = v;
+          if (v > hi) hi = v;
+        });
+        return { min: lo, max: hi, span: hi - lo };
+      };
+      var tRange = minMax(function (r) { return Number(r.temperature) || 0; });
+      var nRange = minMax(function (r) { return Number(r.count) || 0; });
+      var vRange = minMax(function (r) { return Number(r.volume) || Math.pow(Number(r.boxSize) || 11, 3); });
+      var pRange = minMax(function (r) { return Number(r.pressure) || 0; });
+      var dRange = minMax(function (r) { return Number(r.particleDiameter) || 0.58; });
+      var aRange = minMax(function (r) { return Number(r.attraction) || 0; });
+      var vRel = vRange.span / Math.max(1, vRange.min);
+      var pRel = pRange.span / Math.max(0.1, pRange.min);
+
+      if (axis === 'boylePV') {
+        if (tRange.span > 5) confoundedControls.push('temperature');
+        if (nRange.span >= 1) confoundedControls.push('count');
+        if (aRange.span > 0.05) confoundedControls.push('attraction');
+      } else if (axis === 'gayLussacPT') {
+        if (vRel > 0.03) confoundedControls.push('volume');
+        if (nRange.span >= 1) confoundedControls.push('count');
+        if (aRange.span > 0.05) confoundedControls.push('attraction');
+      } else if (axis === 'charlesVT') {
+        if (pRel > 0.12) confoundedControls.push('pressure');
+        if (nRange.span >= 1) confoundedControls.push('count');
+      } else if (axis === 'avogadroPN') {
+        if (tRange.span > 5) confoundedControls.push('temperature');
+        if (vRel > 0.03) confoundedControls.push('volume');
+        if (aRange.span > 0.05) confoundedControls.push('attraction');
+      } else if (axis === 'mfpDensity') {
+        if (vRel > 0.03) confoundedControls.push('volume');
+        if (dRange.span > 0.02) confoundedControls.push('diameter');
+      } else if (axis === 'grahamMass') {
+        if (tRange.span > 5) confoundedControls.push('temperature');
+      }
+    }
+
+    var fair = list.length < 2 ? true : confoundedControls.length === 0;
+    var hasValidFit = !!(reg && reg.valid);
+    var slopeRelError = hasValidFit && Math.abs(theoreticalSlope) > 1e-9
+      ? Math.abs(Number(reg.slope) - theoreticalSlope) / Math.abs(theoreticalSlope)
+      : 0;
+    var slopeErrorPct = Math.round(slopeRelError * 1000) / 10;
+
+    var regime = 'awaiting_fit';
+    var statusLabel = 'Log 2+ varied points to benchmark slope against KMT theory.';
+    if (!fair) {
+      regime = 'confounded';
+      statusLabel = 'Multiple variables changed (' + confoundedControls.join(', ') + ') \u2014 hold controls fixed for a clean KMT slope.';
+    } else if (hasValidFit) {
+      if (slopeRelError <= 0.10) {
+        regime = 'ideal_match';
+        statusLabel = 'Matches ideal-gas KMT slope within ' + slopeErrorPct.toFixed(1) + '%.';
+      } else if (meanAttr > 0.05 || meanPacking > 0.025) {
+        regime = 'real_gas_shift';
+        statusLabel = 'Real-gas attraction/excluded volume shifts slope ' + slopeErrorPct.toFixed(1) + '% from ideal KMT.';
+      } else {
+        regime = 'sampling_spread';
+        statusLabel = 'Measured chamber scatter shifts slope ' + slopeErrorPct.toFixed(1) + '% from ideal KMT.';
+      }
+    }
+
+    return {
+      axisId: axis,
+      pointCount: list.length,
+      theoreticalSlope: theoreticalSlope,
+      formulaLabel: formulaLabel,
+      fair: fair,
+      confoundedControls: confoundedControls,
+      hasValidFit: hasValidFit,
+      slopeRelError: slopeRelError,
+      slopeErrorPct: slopeErrorPct,
+      regime: regime,
+      statusLabel: statusLabel
+    };
+  }
+
+  function buildSocraticDiagnosticCoach(state) {
+    var s = state || {};
+    var pred = String(s.prediction || '').trim();
+    var obs = String(s.observation || '').trim();
+    var conc = String(s.conclusion || '').trim();
+    var confounded = Array.isArray(s.confoundedVars) ? s.confoundedVars.filter(Boolean) : [];
+    var hasData = (Number(s.trialCount) || 0) >= 1 || (Number(s.logCount) || 0) >= 2 || (Number(s.snapshotCount) || 0) >= 2;
+    if (!pred && s.ideaText) {
+      return 'You are testing the idea: ' + s.ideaText + ' Write what ' + (s.ideaWatch || 'your target measurement') + ' should do if that idea is right, and what it should do if the idea is wrong.';
+    }
+    if (!pred) {
+      return 'Start by making a prediction that names the variable you will change. What do you expect that variable to do to particle motion?';
+    }
+    if (!hasData) {
+      return 'Your prediction is ready, but you need measurement evidence. Which two conditions could you record while changing only one variable?';
+    }
+    if (confounded.length > 0) {
+      return 'Your data changed multiple variables (' + confounded.join(', ') + ') at once, which confounds causality. Which control will you lock constant in your next run so only one variable drives the change?';
+    }
+    if (!obs) {
+      return 'Look at both the visible motion and the measurements. What changed between your runs, and what stayed controlled?';
+    }
+    if (!/\d/.test(obs)) {
+      return 'Your observation describes the trend, but lacks quantitative measurements. Which exact chamber or fit numbers (' + (s.gasFormula || 'gas') + (s.fitSummary ? ', ' + s.fitSummary : '') + ') quantify what changed?';
+    }
+    if (conc.length < 20) {
+      return 'Build your conclusion from evidence: was your prediction supported, and which specific measurement supports that claim?';
+    }
+    if (!/collision|speed|velocity|momentum|kinetic|spacing|particle|molecule|force|attract|energy|free path|diffus|mix|effus|bounce|impact/i.test(conc)) {
+      return 'You cited evidence for your claim, but what microscopic particle behavior (such as collision frequency, average speed, spacing, or momentum transfer) explains why that trend occurred?';
+    }
+    return 'You have a complete CER investigation (' + (s.gasFormula || 'gas') + ', Z=' + Number(s.zValue || 1).toFixed(2) + (s.fitSummary ? ', ' + s.fitSummary : '') + '). Which piece of quantitative evidence most strongly supports your claim, and what confounding factor did your controls rule out?';
+  }
+
+  function restoreSessionTrials(raw) {
+    if (!Array.isArray(raw)) return [];
+    return raw.slice(-2).filter(function (tr) { return tr && typeof tr === 'object'; }).map(function (tr, idx) {
+      var tempMeas = Number(tr.temperature);
+      var tempSet = Number(tr.temperatureSetpoint);
+      var pres = Number(tr.pressure);
+      var cnt = Number(tr.count);
+      var box = Number(tr.boxSize);
+      return Object.assign({}, tr, {
+        id: tr.id || (Date.now() + idx),
+        preset: ['solid', 'liquid', 'gas', 'diffusion', 'osmosis'].indexOf(tr.preset) >= 0 ? tr.preset : 'gas',
+        temperature: isFinite(tempMeas) ? clamp(tempMeas, 1, 2000) : 300,
+        temperatureSetpoint: isFinite(tempSet) ? clamp(tempSet, 40, 900) : 300,
+        pressure: isFinite(pres) ? Math.max(0, Math.round(pres * 100) / 100) : 0,
+        count: isFinite(cnt) ? clamp(Math.round(cnt), 24, 120) : 64,
+        boxSize: isFinite(box) ? clamp(box, 7, 18) : 11,
+        attraction: isFinite(Number(tr.attraction)) ? clamp(Number(tr.attraction), 0, 1.5) : 0,
+        gravity: isFinite(Number(tr.gravity)) ? clamp(Number(tr.gravity), 0, 2) : 0,
+        membrane: !!tr.membrane,
+        permeability: isFinite(Number(tr.permeability)) ? clamp(Number(tr.permeability), 0, 1) : 0.45,
+        membraneSelectivity: ['both', 'a', 'b'].indexOf(tr.membraneSelectivity) >= 0 ? tr.membraneSelectivity : 'both',
+        massRatioB: isFinite(Number(tr.massRatioB)) ? clamp(Number(tr.massRatioB), 0.5, 3) : 1,
+        particleDiameter: isFinite(Number(tr.particleDiameter)) ? clamp(Number(tr.particleDiameter), 0.36, 0.9) : 0.58
+      });
+    });
+  }
+
+  function getChallengeMissionHint(track, itemId, state) {
+    var s = state || {};
+    var isApplied = track === 'applied';
+    if (isApplied) {
+      if (itemId === 'joule_thomson_cryo') {
+        return {
+          id: itemId,
+          track: 'applied',
+          tier1: 'Gases cool upon throttling (\u0394T_JT < 0) only below their inversion temperature T_inv \u2248 2a/(Rb); Helium warms at 300 K.',
+          tier2: 'Switch Species A to a higher-attraction gas like CO\u2082 or CH\u2084 and select a larger \u0394P (50\u2013100 atm) below T_inv.'
+        };
+      }
+      if (itemId === 'clean_air_ventilation') {
+        return {
+          id: itemId,
+          track: 'applied',
+          tier1: 'Fine 2.5 \u00B5m aerosols stay suspended for hours, so diluting airborne quanta requires high outdoor air-change rates (ACH).',
+          tier2: 'Keep droplet diameter d \u2264 2.5 \u00B5m and raise Ventilation Rate to 6 or 12 ACH in Bioaerosol Settling & Wells\u2013Riley.'
+        };
+      }
+      if (itemId === 'bohr_tissue_unloading') {
+        return {
+          id: itemId,
+          track: 'applied',
+          tier1: 'Acidic blood (pH 7.20) right-shifts P\u2085\u2080 to unload O\u2082 in active muscle, while extreme altitude drops alveolar P_AO\u2082.',
+          tier2: 'In Alveolar Gas Exchange, set Blood pH to 7.20 (Acidosis) and set Altitude to 0 m or 2400 m so arterial SaO\u2082 \u2265 85%.'
+        };
+      }
+      if (itemId === 'plinian_magma_threshold') {
+        return {
+          id: itemId,
+          track: 'applied',
+          tier1: 'Explosive Plinian fragmentation requires both high silicate viscosity (log10 \u03B7 \u2265 5) and shallow decompression (\u2265 75% vesicularity).',
+          tier2: 'In Magmatic Volatiles, switch melt composition from Basalt to Dacite or Rhyolite and decompress Conduit Depth z to 0.2\u20131 km.'
+        };
+      }
+      return {
+        id: 'titan_cryo_retention',
+        track: 'applied',
+        tier1: 'Escape ratio v_esc / v_rms increases on cold worlds (low T) and for heavier gas molecules (higher molar mass M).',
+        tier2: 'In Planetary Barometric Atmosphere, choose a cold low-gravity body like Titan (g = 1.35 m/s\u00B2) or switch Species A from Helium to N\u2082/CO\u2082.'
+      };
+    }
+
+    if (itemId === 'subideal_condense') {
+      return {
+        id: itemId,
+        track: 'core',
+        tier1: 'Compressibility Z = PV/(Nk_B T) drops below 1 when cohesive attraction (\u2212a(N/V)\u00B2) pulls wall impacts down more than excluded volume.',
+        tier2: 'Lower temperature toward 120\u2013220 K and strengthen Attraction above 0.60 in a compact box until Z < 0.85.'
+      };
+    }
+    if (itemId === 'rarefied_mfp') {
+      return {
+        id: itemId,
+        track: 'core',
+        tier1: 'Mean free path \u03BB = V / (\u221A2 \u03C0 d\u00B2 (N\u22121)) rises with larger volume V and smaller collision target area N\u00B7d\u00B2.',
+        tier2: 'Expand chamber edge to 16\u201318 u, reduce particle count N, and shrink Collision diameter d toward 0.36 until \u03BB \u2265 12.0 u.'
+      };
+    }
+    if (itemId === 'graham_effusion') {
+      return {
+        id: itemId,
+        track: 'core',
+        tier1: 'At one temperature both species share average KE, so lighter Species A outruns heavier Species B by Graham\u2019s ratio \u221A(m_B / m_A).',
+        tier2: (s.preset !== 'diffusion' && s.preset !== 'osmosis')
+          ? 'Switch the chamber preset to Diffusion or Osmosis first, then raise Species B mass ratio to \u2265 2.25x.'
+          : 'Increase Species B mass ratio slider to 2.25x or higher so \u221A(m_B / m_A) \u2265 1.50x.'
+      };
+    }
+    if (itemId === 'linear_law_fit') {
+      return {
+        id: itemId,
+        track: 'core',
+        tier1: 'Strong R\u00B2 linearity needs 4+ points spanning the sweep axis while keeping all non-axis variables controlled.',
+        tier2: 'Run ⚡ 5-pt Sweep (or log 4+ settled chamber points changing only the selected axis variable) to reach R\u00B2 \u2265 0.98.'
+      };
+    }
+    var boyleCue = 'Shrink container edge smaller in Gas preset until gauge/vdW pressure reaches \u2265 3.2 u.';
+    if (s.preset !== 'gas') boyleCue = 'Switch chamber preset to Gas first so particles freely compress.';
+    else if ((Number(s.temperature) || 300) < 280 || (Number(s.temperature) || 300) > 340) boyleCue = 'Adjust Temperature slider into the 280\u2013340 K control band.';
+    else if ((Number(s.attraction) || 0) > 0.2) boyleCue = 'Lower Attraction slider to \u2264 0.20 so cohesive pull does not soften wall pressure.';
+    return {
+      id: 'boyle_squeeze',
+      track: 'core',
+      tier1: 'Boyle\u2019s Law (P \u221D 1/V at fixed T) means smaller volume forces more frequent particle impacts against smaller wall area.',
+      tier2: boyleCue
+    };
+  }
+
+  function analyzeSweepResiduals(rows, axisId, reg) {
+    var list = Array.isArray(rows) ? rows : [];
+    var spec = getParticleAxisSpec(axisId);
+    var pts = [];
+    list.forEach(function (row, idx) {
+      if (!row || typeof row !== 'object') return;
+      var m = spec.mapRow(row, idx);
+      if (Number.isFinite(m.x) && Number.isFinite(m.value)) {
+        pts.push({ id: row.id, n: row.n || (idx + 1), x: m.x, y: m.value });
+      }
+    });
+    if (!reg || !reg.valid || pts.length < 4 || !(Number(reg.rmse) > 1e-6)) {
+      return {
+        hasOutlier: false,
+        outlierRowId: null,
+        outlierN: null,
+        outlierResidual: 0,
+        outlierZ: 0,
+        refitR2: reg && reg.valid ? reg.r2 : 0,
+        points: pts
+      };
+    }
+    var worstIdx = -1;
+    var maxAbs = -1;
+    var worstResidual = 0;
+    pts.forEach(function (pt, idx) {
+      var res = pt.y - (reg.slope * pt.x + reg.intercept);
+      var absRes = Math.abs(res);
+      if (absRes > maxAbs) {
+        maxAbs = absRes;
+        worstIdx = idx;
+        worstResidual = res;
+      }
+    });
+    var zScore = maxAbs / reg.rmse;
+    var ySpan = Math.max(1e-6, (Number(reg.yMax) || 0) - (Number(reg.yMin) || 0));
+    var remaining = pts.filter(function (_, idx) { return idx !== worstIdx; });
+    var refit = linearRegression(remaining);
+    var r2Gain = refit.valid ? (refit.r2 - reg.r2) : 0;
+    var flagged = worstIdx >= 0 && zScore >= 1.55 && maxAbs > 0.04 * ySpan && refit.valid && r2Gain >= 0.03;
+    return {
+      hasOutlier: flagged,
+      outlierRowId: flagged ? pts[worstIdx].id : null,
+      outlierN: flagged ? pts[worstIdx].n : null,
+      outlierResidual: flagged ? worstResidual : 0,
+      outlierZ: flagged ? zScore : 0,
+      refitR2: refit.valid ? refit.r2 : reg.r2,
+      points: pts
+    };
+  }
+
+  var CALC_MOLES_OPTIONS = [0.1, 0.5, 1, 2, 5, 10];
+  var CALC_VOLUME_L_OPTIONS = [0.25, 0.5, 1, 2, 5, 22.4, 50];
+  var CALC_TEMP_K_OPTIONS = [100, 200, 273.15, 298.15, 373.15, 500, 800];
+
+  function solveRealAndIdealGasState(params) {
+    var p = params || {};
+    var gas = getGasIdentity(p.gasId || 'N2');
+    var moles = clamp(Number(p.moles) || 1, 0.01, 1000);
+    var volumeL = clamp(Number(p.volumeL) || 22.4, 0.05, 10000);
+    var temperatureK = clamp(Number(p.temperatureK) || 298.15, 20, 5000);
+    var R_ATM = 0.082057366;
+    var pIdealAtm = (moles * R_ATM * temperatureK) / volumeL;
+    var pIdealKpa = pIdealAtm * 101.325;
+    var aAtm = gas.vdwA / 1.01325;
+    var bL = gas.vdwB;
+    var nbL = moles * bL;
+    var crowded = volumeL <= nbL * 1.15;
+    var freeVolL = Math.max(volumeL * 0.08, volumeL - nbL);
+    var repulsiveAtm = (moles * R_ATM * temperatureK) / freeVolL;
+    var attractiveDropAtm = aAtm * Math.pow(moles / volumeL, 2);
+    var pVdwAtm = Math.max(0, repulsiveAtm - attractiveDropAtm);
+    var pVdwKpa = pVdwAtm * 101.325;
+    var compressibilityZ = (pVdwAtm * volumeL) / Math.max(1e-9, moles * R_ATM * temperatureK);
+    var percentDeviation = ((pVdwAtm - pIdealAtm) / Math.max(1e-9, pIdealAtm)) * 100;
+    var massGrams = moles * gas.molarMass;
+    var densityGPerL = massGrams / volumeL;
+    var regime = compressibilityZ > 1.05 ? 'repulsive' : (compressibilityZ < 0.95 ? 'attractive' : 'ideal');
+    var regimeLabel = regime === 'repulsive'
+      ? 'Excluded-volume dominant (Z > 1)'
+      : (regime === 'attractive' ? 'Attraction-dominant (Z < 1)' : 'Near-ideal SI gas (Z \u2248 1)');
+    return {
+      gas: gas,
+      moles: moles,
+      volumeL: volumeL,
+      temperatureK: temperatureK,
+      pIdealAtm: pIdealAtm,
+      pIdealKpa: pIdealKpa,
+      pVdwAtm: pVdwAtm,
+      pVdwKpa: pVdwKpa,
+      compressibilityZ: compressibilityZ,
+      percentDeviation: percentDeviation,
+      massGrams: massGrams,
+      densityGPerL: densityGPerL,
+      crowded: crowded,
+      regime: regime,
+      regimeLabel: regimeLabel
+    };
+  }
+
+  function evaluateInvestigationMastery(state) {
+    var s = state || {};
+    var dimensions = [
+      { id: 'fair_design', sepCode: 'SEP 1/3', label: 'Fair Experimental Controls', met: !!s.hasFairData },
+      { id: 'quant_analysis', sepCode: 'SEP 4', label: 'Quantitative Fit & Data', met: !!(Number(s.logCount) >= 3 && s.regressionValid && Number(s.regressionR2) >= 0.9) },
+      { id: 'computational_models', sepCode: 'SEP 2/5', label: 'Model Challenges & Missions', met: ((Number(s.completedChallengeCount) || 0) + (Number(s.completedMissionCount) || 0)) >= 1 },
+      { id: 'cer_explanation', sepCode: 'SEP 6', label: 'CER Scientific Argument', met: (Number(s.cerCompletedCount) || 0) >= 4 },
+      { id: 'conceptual_dci', sepCode: 'PS1.A/PS3.A', label: 'Microscopic KMT Concept Mastery', met: (Number(s.quizCorrectCount) || 0) >= 4 || !!s.testedIdeaWithEvidence }
+    ];
+    var earnedPoints = dimensions.filter(function (d) { return d.met; }).length;
+    var maxPoints = dimensions.length;
+    var levelLabel = earnedPoints === maxPoints
+      ? 'Exemplary (' + earnedPoints + '/5)'
+      : (earnedPoints >= 3
+        ? 'Proficient (' + earnedPoints + '/5)'
+        : (earnedPoints >= 1 ? 'Developing (' + earnedPoints + '/5)' : 'Beginning (0/5)'));
+    return {
+      dimensions: dimensions,
+      earnedPoints: earnedPoints,
+      maxPoints: maxPoints,
+      levelLabel: levelLabel
+    };
+  }
+
+  var MIX_MOLES_OPTIONS = [0.1, 0.25, 0.5, 1, 2, 5];
+
+  function waterSaturationVaporAtm(temperatureK) {
+    var rawT = Number(temperatureK);
+    if (!isFinite(rawT) || rawT < 250) return 0;
+    if (rawT < 273.15) {
+      return clamp(0.00603 * Math.exp((51000 / 8.31446) * (1 / 273.15 - 1 / rawT)), 0, 1);
+    }
+    var tC = clamp(rawT - 273.15, 0, 200);
+    var logMmHg = tC <= 100
+      ? (8.07131 - 1730.63 / (233.426 + tC))
+      : (8.14019 - 1810.94 / (244.485 + tC));
+    return clamp(Math.pow(10, logMmHg) / 760, 0, 20);
+  }
+
+  function solveDaltonGasMixture(params) {
+    var p = params || {};
+    var gasA = getGasIdentity(p.gasIdA || 'N2');
+    var gasB = getGasIdentity(p.gasIdB || 'O2');
+    var molesA = clamp(Number(p.molesA) || 0.8, 0.01, 500);
+    var molesB = clamp(Number(p.molesB) || 0.2, 0.01, 500);
+    var volumeL = clamp(Number(p.volumeL) || 22.4, 0.05, 10000);
+    var temperatureK = clamp(Number(p.temperatureK) || 298.15, 20, 5000);
+    var overWater = !!p.overWater;
+    var R_ATM = 0.082057366;
+    var totalMoles = molesA + molesB;
+    var xA = molesA / totalMoles;
+    var xB = molesB / totalMoles;
+    var pAAtm = (molesA * R_ATM * temperatureK) / volumeL;
+    var pBAtm = (molesB * R_ATM * temperatureK) / volumeL;
+    var pDryAtm = pAAtm + pBAtm;
+    var pWaterAtm = overWater ? waterSaturationVaporAtm(temperatureK) : 0;
+    var pWaterMmHg = pWaterAtm * 760;
+    var pTotalAtm = pDryAtm + pWaterAtm;
+    var pTotalKpa = pTotalAtm * 101.325;
+    var meanMolarMass = xA * gasA.molarMass + xB * gasB.molarMass;
+    var totalMassGrams = molesA * gasA.molarMass + molesB * gasB.molarMass;
+    var densityGPerL = totalMassGrams / volumeL;
+    var vRmsRatioAB = Math.sqrt(gasB.molarMass / Math.max(1e-6, gasA.molarMass));
+    var chamberMassRatioB = Math.round(clamp(gasB.molarMass / Math.max(1e-6, gasA.molarMass), 0.5, 3) * 100) / 100;
+    return {
+      gasA: gasA,
+      gasB: gasB,
+      molesA: molesA,
+      molesB: molesB,
+      totalMoles: totalMoles,
+      xA: xA,
+      xB: xB,
+      volumeL: volumeL,
+      temperatureK: temperatureK,
+      overWater: overWater,
+      pAAtm: pAAtm,
+      pAKpa: pAAtm * 101.325,
+      pBAtm: pBAtm,
+      pBKpa: pBAtm * 101.325,
+      pDryAtm: pDryAtm,
+      pWaterAtm: pWaterAtm,
+      pWaterMmHg: pWaterMmHg,
+      pTotalAtm: pTotalAtm,
+      pTotalKpa: pTotalKpa,
+      meanMolarMass: meanMolarMass,
+      totalMassGrams: totalMassGrams,
+      densityGPerL: densityGPerL,
+      vRmsRatioAB: vRmsRatioAB,
+      chamberMassRatioB: chamberMassRatioB
+    };
+  }
+
+  var SAMPLE_BENCH_SWEEP_DATASETS = {
+    boylePV: '1000/V (1/u3), Pressure (u)\n0.450, 0.81\n0.625, 1.13\n0.800, 1.44\n1.000, 1.80\n1.250, 2.25',
+    gayLussacPT: 'Temperature (K), Pressure (u)\n160, 0.72\n240, 1.08\n320, 1.44\n400, 1.81\n480, 2.16',
+    charlesVT: 'Temperature (K), Volume (u3)\n180, 810\n240, 1080\n300, 1350\n360, 1620\n420, 1890',
+    avogadroPN: 'Particle Count N, Pressure (u)\n32, 0.60\n48, 0.90\n64, 1.20\n80, 1.51\n96, 1.80',
+    mfpDensity: '100/(N-1), Mean Free Path (u)\n1.053, 4.10\n1.587, 6.18\n2.128, 8.28\n3.226, 12.55',
+    grahamMass: '1/sqrt(m_B), v_rms_B (u/s)\n0.577, 1.58\n0.707, 1.94\n0.816, 2.24\n1.000, 2.74\n1.291, 3.54'
+  };
+
+  function parseTabularSweepInput(rawText, axisId, startN, baseState) {
+    var axis = PARTICLE_SWEEP_AXES.indexOf(axisId) >= 0 ? axisId : 'boylePV';
+    var base = baseState || {};
+    var lines = String(rawText == null ? '' : rawText).split(/\r?\n/).map(function (ln) { return ln.trim(); }).filter(function (ln) { return ln && ln.charAt(0) !== '#'; });
+    var pairs = [];
+    var skippedCount = 0;
+    for (var i = 0; i < lines.length; i += 1) {
+      var line = lines[i];
+      var cols = /[,;\t]/.test(line)
+        ? line.split(/[,;\t]+/).map(function (c) { return c.trim(); }).filter(Boolean)
+        : line.split(/\s+/).filter(Boolean);
+      if (cols.length < 2) {
+        if (i === 0 && /[a-zA-Z]/.test(line)) continue;
+        skippedCount += 1;
+        continue;
+      }
+      var xNum = Number(cols[0]);
+      var yNum = Number(cols[1]);
+      if (!isFinite(xNum) || !isFinite(yNum) || xNum <= 0 || yNum <= 0) {
+        if (i === 0 && /[a-zA-Z]/.test(cols[0] + ' ' + cols[1])) continue;
+        skippedCount += 1;
+        continue;
+      }
+      pairs.push({ x: xNum, y: yNum });
+      if (pairs.length >= 25) break;
+    }
+    if (pairs.length < 2) {
+      return {
+        ok: false,
+        axisId: axis,
+        error: 'Enter at least 2 positive numeric (x, y) rows separated by commas or tabs.',
+        rows: [],
+        skippedCount: skippedCount
+      };
+    }
+    var baseTs = Date.now();
+    var firstN = Math.max(1, Math.round(Number(startN) || 1));
+    var defaultPreset = String(base.preset || 'gas');
+    var defaultTemp = clamp(Number(base.temperature) || 300, 40, 900);
+    var defaultCount = clamp(Math.round(Number(base.count) || 72), 24, 120);
+    var defaultBox = clamp(Number(base.boxSize) || 11, 7, 18);
+    var defaultDiam = clamp(Number(base.particleDiameter) || 0.58, 0.36, 0.9);
+    var defaultAttr = clamp(Number(base.attraction) || 0, 0, 1.5);
+    var defaultMassB = clamp(Number(base.massRatioB) || 1, 0.5, 3);
+    var defaultPress = Number(base.pressure) > 0 ? Number(base.pressure) : 1.5;
+    var rows = pairs.map(function (pair, idx) {
+      var fields = {
+        id: 'imp-' + baseTs + '-' + idx,
+        n: firstN + idx,
+        source: 'import',
+        preset: defaultPreset,
+        temperature: defaultTemp,
+        pressure: defaultPress,
+        count: defaultCount,
+        boxSize: defaultBox,
+        particleDiameter: defaultDiam,
+        attraction: defaultAttr,
+        massRatioB: defaultMassB,
+        note: 'Bench import #' + (idx + 1)
+      };
+      if (axis === 'boylePV') {
+        var vol = clamp(1000 / pair.x, 20, 12000);
+        fields.volume = vol;
+        fields.boxSize = clamp(Math.pow(vol, 1 / 3), 5, 24);
+        fields.pressure = pair.y;
+      } else if (axis === 'gayLussacPT') {
+        fields.temperature = clamp(pair.x, 10, 2000);
+        fields.pressure = pair.y;
+      } else if (axis === 'charlesVT') {
+        var vClamped = clamp(pair.y, 20, 12000);
+        fields.temperature = clamp(pair.x, 10, 2000);
+        fields.volume = vClamped;
+        fields.boxSize = clamp(Math.pow(vClamped, 1 / 3), 5, 24);
+      } else if (axis === 'avogadroPN') {
+        fields.count = clamp(Math.round(pair.x), 8, 160);
+        fields.pressure = pair.y;
+      } else if (axis === 'mfpDensity') {
+        fields.count = clamp(Math.round((100 / pair.x) + 1), 8, 160);
+        fields.meanFreePath = pair.y;
+      } else if (axis === 'grahamMass') {
+        fields.preset = 'diffusion';
+        fields.massRatioB = clamp(1 / (pair.x * pair.x), 0.5, 3);
+        fields.invSqrtMassB = pair.x;
+        fields.vRmsB = pair.y;
+      }
+      return makeExperimentRow(fields);
+    });
+    return {
+      ok: true,
+      axisId: axis,
+      rows: rows,
+      count: rows.length,
+      skippedCount: skippedCount
+    };
+  }
+
+  var PARTICLE_LESSON_GUIDES = [
+    {
+      id: 'ms_ps1_4_states',
+      code: 'NGSS MS-PS1-4',
+      title: 'Thermal Energy, Particle Motion & Phase Change',
+      durationMin: 45,
+      gradeBand: 'Grades 6\u20138',
+      protocolId: 'condense',
+      bundleId: 'core_gas_laws',
+      sweepAxis: 'gayLussacPT',
+      drivingQuestion: 'How do thermal kinetic energy and intermolecular attraction compete when a vapor condenses into droplets?',
+      starterPrediction: 'If we cool particles while increasing attraction, I predict cluster size and wall impact rate will...',
+      exitTicket: 'Cite both temperature and largest cluster size to explain why cooling triggers condensation without changing particle size.',
+      teacherSteps: [
+        '1. Phenomenon (8 min): Launch Condensation protocol and ask students whether cold particles shrink or slow down.',
+        '2. Guided Inquiry (18 min): Compare Gas vs. Liquid presets and log two snapshots at low vs. high attraction.',
+        '3. Data & Synthesis (12 min): Plot P vs. T on the sweep card and complete CER scaffolds in the notebook.',
+        '4. Exit Check (7 min): Verify misconception "Cold particles stop moving" with live chamber evidence.'
+      ]
+    },
+    {
+      id: 'hs_ps1_3_imf_vdw',
+      code: 'NGSS HS-PS1-3',
+      title: 'Intermolecular Forces & Real-Gas Deviations (Z \u2260 1)',
+      durationMin: 45,
+      gradeBand: 'Grades 9\u201312',
+      protocolId: 'boyle',
+      bundleId: 'core_gas_laws',
+      sweepAxis: 'boylePV',
+      drivingQuestion: 'When and why do real gases deviate from PV = nRT under high compression or strong attraction?',
+      starterPrediction: 'If intermolecular attraction increases during compression, I predict compressibility Z and wall pressure will...',
+      exitTicket: 'Contrast CO\u2082 (Z < 1) against He (Z > 1) using NIST Van der Waals constants a and b from the SI Gas Solver.',
+      teacherSteps: [
+        '1. Warm-Up (8 min): Run ideal Compression (attraction = 0) and generate a 5-pt Boyle sweep (R\u00B2 \u2248 1).',
+        '2. Real-Gas Stress Test (17 min): Increase attraction or collision diameter and observe the KMT slope audit banner.',
+        '3. SI Bridge (12 min): Open SI Gas Solver to compare N\u2082, He, and CO\u2082 at 1.0 L and cite into Observations.',
+        '4. Debrief (8 min): Complete 2 Concept Check items on real-gas compressibility Z.'
+      ]
+    },
+    {
+      id: 'ap_chem_gas_mixtures',
+      code: 'AP Chem 3.4\u20133.6',
+      title: 'Dalton Partial Pressures, Wet Gas & Graham Effusion',
+      durationMin: 50,
+      gradeBand: 'AP / Intro College',
+      protocolId: 'mixing',
+      bundleId: 'core_gas_laws',
+      sweepAxis: 'grahamMass',
+      drivingQuestion: 'Why do lighter and heavier gases exert independent partial pressures yet diffuse at rates proportional to 1/\u221AM?',
+      starterPrediction: 'At equal temperature, if Species B is 2.25x heavier than Species A, I predict their kinetic energies and RMS speeds will...',
+      exitTicket: 'Calculate dry gas pressure collected over water at 298 K and connect equipartition to Graham\u2019s 1/\u221AM speed ratio.',
+      teacherSteps: [
+        '1. Equipartition Hook (10 min): Launch Diffusion Race, test misconception "heavier particles carry more energy", and inspect paired KE histograms.',
+        '2. Graham Scaling (15 min): Run Graham v_rms,B vs 1/\u221Am_B sweep and verify slope against KMT theory.',
+        '3. Wet-Gas Stoichiometry (15 min): Open SI Gas Solver \u2192 Dalton Mixture, toggle "Collected over H\u2082O", and stage into chamber.',
+        '4. Mastery Check (10 min): Complete the Graham Effusion Race challenge and export Markdown lab report.'
+      ]
+    },
+    {
+      id: 'ap_phys2_thermo_cycles',
+      code: 'AP Phys 2 Unit 9',
+      title: 'First-Law P\u2013V Work, Adiabatic Compression & Heat Engines',
+      durationMin: 50,
+      gradeBand: 'AP / Intro College',
+      protocolId: 'adiabatic',
+      bundleId: 'aero_space_plasma',
+      sweepAxis: 'charlesVT',
+      drivingQuestion: 'Why does rapid compression without a heat bath raise gas temperature, and what sets Carnot efficiency?',
+      starterPrediction: 'When the chamber walls compress the gas with the heat bath off, I predict measured temperature and internal energy \u0394U will...',
+      exitTicket: 'Compare isothermal vs. adiabatic compression work on P\u2013V snapshots and explain why \u03B7_Otto < \u03B7_Carnot.',
+      teacherSteps: [
+        '1. Piston Work Demo (10 min): Run Squeeze Without a Bath and track measured T rising above setpoint.',
+        '2. Canonical P\u2013V Comparison (15 min): Stage Isothermal vs. Adiabatic pairs on First-Law card and compare \u0394U, Q, and W.',
+        '3. Heat-Engine Loop (15 min): Inspect Closed Heat-Engine Cycle Lab (Carnot vs. Otto) and stage Corner snapshots.',
+        '4. Synthesis (10 min): Cite active workbench evidence into Conclusion and check NGSS Investigation Portfolio.'
+      ]
+    }
+  ];
+
+  function buildLessonFacilitationGuide(lessonId) {
+    var lesson = PARTICLE_LESSON_GUIDES.filter(function (item) { return item.id === lessonId; })[0] || PARTICLE_LESSON_GUIDES[0];
+    return [
+      '# ' + lesson.code + ': ' + lesson.title,
+      'Grade Band: ' + lesson.gradeBand + ' | Duration: ' + lesson.durationMin + ' min',
+      'Chamber Protocol: ' + lesson.protocolId + ' | Sweep Axis: ' + lesson.sweepAxis,
+      '',
+      '## Driving Question',
+      lesson.drivingQuestion,
+      '',
+      '## Pacing & Teacher Facilitation Steps',
+      lesson.teacherSteps.join('\n'),
+      '',
+      '## Starter Prediction Prompt',
+      lesson.starterPrediction,
+      '',
+      '## Exit Ticket',
+      lesson.exitTicket
+    ].join('\n');
+  }
+
+  function restoreIdeasResolved(raw) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
+    var valid = {};
+    COMMON_IDEAS.forEach(function (item) { valid[item.id] = true; });
+    var out = {};
+    Object.keys(raw).forEach(function (k) {
+      if (valid[k] && raw[k] === true) out[k] = true;
+    });
+    return out;
+  }
+
+  var PARTICLE_SESSION_SCHEMA = 'alloflow.particleLab3d.v1';
+
+  function serializeParticleSession(stateObj) {
+    var s = stateObj || {};
+    return JSON.stringify({
+      schema: PARTICLE_SESSION_SCHEMA,
+      activeProtocol: typeof s.activeProtocol === 'string' && s.activeProtocol ? s.activeProtocol : 'free',
+      preset: ['solid', 'liquid', 'gas', 'diffusion', 'osmosis'].indexOf(s.preset) >= 0 ? s.preset : 'gas',
+      temperature: Math.round(clamp(Number(s.temperature) || 300, 40, 900)),
+      count: clamp(Math.round(Number(s.count) || 64), 24, 120),
+      boxSize: clamp(Number(s.boxSize) || 11, 7, 18),
+      particleDiameter: Math.round(clamp(Number(s.particleDiameter) || 0.58, 0.36, 0.9) * 100) / 100,
+      attraction: Math.round(clamp(s.attraction == null ? 0.15 : Number(s.attraction), 0, 1.5) * 100) / 100,
+      gravity: Math.round(clamp(Number(s.gravity) || 0, 0, 2) * 10) / 10,
+      massRatioB: Math.round(clamp(Number(s.massRatioB) || 1, 0.5, 3) * 100) / 100,
+      thermostat: !!s.thermostat,
+      holdPressure: !!s.holdPressure,
+      gasSpeciesA: GAS_IDENTITY_IDS.indexOf(s.gasSpeciesA) >= 0 ? s.gasSpeciesA : 'N2',
+      gasSpeciesB: GAS_IDENTITY_IDS.indexOf(s.gasSpeciesB) >= 0 ? s.gasSpeciesB : 'CO2',
+      dataStudioAxis: PARTICLE_SWEEP_AXES.indexOf(s.dataStudioAxis) >= 0 ? s.dataStudioAxis : 'boylePV',
+      workbenchDomain: WORKBENCH_DOMAIN_IDS.indexOf(s.workbenchDomain) >= 0 ? s.workbenchDomain : 'all',
+      pinnedWorkbenchIds: restorePinnedWorkbenchIds(s.pinnedWorkbenchIds),
+      trials: restoreSessionTrials(s.trials),
+      experimentLog: restoreExperimentLog(s.experimentLog),
+      savedSnapshots: restoreSavedSnapshots(s.savedSnapshots),
+      completedChallenges: restoreCompletedChallenges(s.completedChallenges),
+      completedMissions: restoreCompletedMissions(s.completedMissions),
+      quizAnswers: restoreQuizAnswers(s.quizAnswers),
+      ideasResolved: restoreIdeasResolved(s.ideasResolved),
+      calcMode: s.calcMode === 'mixture' ? 'mixture' : 'single',
+      calcMoles: clamp(Number(s.calcMoles) || 1, 0.01, 1000),
+      mixMolesA: clamp(Number(s.mixMolesA) || 0.8, 0.01, 500),
+      mixMolesB: clamp(Number(s.mixMolesB) || 0.2, 0.01, 500),
+      mixOverWater: !!s.mixOverWater,
+      calcVolumeL: clamp(Number(s.calcVolumeL) || 22.4, 0.05, 10000),
+      calcTempK: clamp(Number(s.calcTempK) || 298.15, 20, 5000),
+      prediction: String(s.prediction || '').slice(0, 800),
+      observation: String(s.observation || '').slice(0, 800),
+      conclusion: String(s.conclusion || '').slice(0, 1000)
+    }, null, 2);
+  }
+
+  function parseParticleSessionJson(rawText) {
+    var txt = String(rawText == null ? '' : rawText).trim();
+    if (!txt) return { ok: false, error: 'Paste a session JSON snapshot first.' };
+    var parsed;
+    try {
+      parsed = JSON.parse(txt);
+    } catch (e) {
+      return { ok: false, error: 'Invalid JSON syntax.' };
+    }
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      return { ok: false, error: 'Session JSON must be an object.' };
+    }
+    if (parsed.schema != null && parsed.schema !== PARTICLE_SESSION_SCHEMA) {
+      return { ok: false, error: 'Unsupported session schema.' };
+    }
+    var rawTemp = Number(parsed.temperature);
+    var rawCount = Number(parsed.count);
+    var rawBox = Number(parsed.boxSize);
+    var rawDiam = Number(parsed.particleDiameter);
+    var rawAttr = Number(parsed.attraction);
+    var rawGrav = Number(parsed.gravity);
+    var rawMass = Number(parsed.massRatioB);
+    var rawCalcMoles = Number(parsed.calcMoles);
+    var rawMixMolesA = Number(parsed.mixMolesA);
+    var rawMixMolesB = Number(parsed.mixMolesB);
+    var rawCalcVol = Number(parsed.calcVolumeL);
+    var rawCalcT = Number(parsed.calcTempK);
+    return {
+      ok: true,
+      data: {
+        activeProtocol: typeof parsed.activeProtocol === 'string' && parsed.activeProtocol ? parsed.activeProtocol.slice(0, 40) : 'free',
+        preset: ['solid', 'liquid', 'gas', 'diffusion', 'osmosis'].indexOf(parsed.preset) >= 0 ? parsed.preset : 'gas',
+        temperature: isFinite(rawTemp) ? Math.round(clamp(rawTemp, 40, 900)) : 300,
+        count: isFinite(rawCount) ? clamp(Math.round(rawCount), 24, 120) : 64,
+        boxSize: isFinite(rawBox) ? clamp(rawBox, 7, 18) : 11,
+        particleDiameter: isFinite(rawDiam) ? Math.round(clamp(rawDiam, 0.36, 0.9) * 100) / 100 : 0.58,
+        attraction: isFinite(rawAttr) ? Math.round(clamp(rawAttr, 0, 1.5) * 100) / 100 : 0.15,
+        gravity: isFinite(rawGrav) ? Math.round(clamp(rawGrav, 0, 2) * 10) / 10 : 0,
+        massRatioB: isFinite(rawMass) ? Math.round(clamp(rawMass, 0.5, 3) * 100) / 100 : 1,
+        thermostat: !!parsed.thermostat,
+        holdPressure: !!parsed.holdPressure,
+        gasSpeciesA: GAS_IDENTITY_IDS.indexOf(parsed.gasSpeciesA) >= 0 ? parsed.gasSpeciesA : 'N2',
+        gasSpeciesB: GAS_IDENTITY_IDS.indexOf(parsed.gasSpeciesB) >= 0 ? parsed.gasSpeciesB : 'CO2',
+        dataStudioAxis: PARTICLE_SWEEP_AXES.indexOf(parsed.dataStudioAxis) >= 0 ? parsed.dataStudioAxis : 'boylePV',
+        workbenchDomain: WORKBENCH_DOMAIN_IDS.indexOf(parsed.workbenchDomain) >= 0 ? parsed.workbenchDomain : 'all',
+        pinnedWorkbenchIds: restorePinnedWorkbenchIds(parsed.pinnedWorkbenchIds),
+        trials: restoreSessionTrials(parsed.trials),
+        experimentLog: restoreExperimentLog(parsed.experimentLog),
+        savedSnapshots: restoreSavedSnapshots(parsed.savedSnapshots),
+        completedChallenges: restoreCompletedChallenges(parsed.completedChallenges),
+        completedMissions: restoreCompletedMissions(parsed.completedMissions),
+        quizAnswers: restoreQuizAnswers(parsed.quizAnswers),
+        ideasResolved: restoreIdeasResolved(parsed.ideasResolved),
+        calcMode: parsed.calcMode === 'mixture' ? 'mixture' : 'single',
+        calcMoles: isFinite(rawCalcMoles) && rawCalcMoles > 0 ? clamp(rawCalcMoles, 0.01, 1000) : 1,
+        mixMolesA: isFinite(rawMixMolesA) && rawMixMolesA > 0 ? clamp(rawMixMolesA, 0.01, 500) : 0.8,
+        mixMolesB: isFinite(rawMixMolesB) && rawMixMolesB > 0 ? clamp(rawMixMolesB, 0.01, 500) : 0.2,
+        mixOverWater: !!parsed.mixOverWater,
+        calcVolumeL: isFinite(rawCalcVol) && rawCalcVol > 0 ? clamp(rawCalcVol, 0.05, 10000) : 22.4,
+        calcTempK: isFinite(rawCalcT) && rawCalcT > 0 ? clamp(rawCalcT, 20, 5000) : 298.15,
+        prediction: typeof parsed.prediction === 'string' ? parsed.prediction.slice(0, 800) : '',
+        observation: typeof parsed.observation === 'string' ? parsed.observation.slice(0, 800) : '',
+        conclusion: typeof parsed.conclusion === 'string' ? parsed.conclusion.slice(0, 1000) : ''
+      }
+    };
+  }
+
+  function resolveIncomingHandoff(bucketObj) {
+    if (!bucketObj || typeof bucketObj.fromTool !== 'string') return null;
+    var rawFrom = bucketObj.fromTool.trim();
+    if (!rawFrom || rawFrom === 'particleLab3d') return null;
+    var labelMap = {
+      molecule: 'Molecule Lab',
+      chemBalance: 'Chemistry Lab',
+      heatLab: 'Heat & Thermodynamics Lab',
+      weatherSystems: 'Weather Systems Lab',
+      wave: 'Wave Lab',
+      dataStudio: 'Data Studio'
+    };
+    var gasId = GAS_IDENTITY_IDS.indexOf(bucketObj.sourceGasId) >= 0 ? bucketObj.sourceGasId : 'N2';
+    var gasSpec = getGasIdentity(gasId);
+    var rawTemp = bucketObj.sourceTemperatureK;
+    var tempNum = rawTemp != null && isFinite(Number(rawTemp)) ? Math.round(clamp(Number(rawTemp), 40, 900)) : 300;
+    var targetPreset = ['solid', 'liquid', 'gas', 'diffusion', 'osmosis'].indexOf(bucketObj.sourcePreset) >= 0 ? bucketObj.sourcePreset : 'gas';
+    var axisId = PARTICLE_SWEEP_AXES.indexOf(bucketObj.sourceAxisId) >= 0 ? bucketObj.sourceAxisId : null;
+    var handoffKey = String(bucketObj.handoffId || (rawFrom + ':' + gasId + ':' + tempNum + ':' + targetPreset + (axisId ? ':' + axisId : '')));
+    return {
+      fromTool: rawFrom,
+      fromLabel: labelMap[rawFrom] || rawFrom,
+      handoffKey: handoffKey,
+      gasId: gasId,
+      gasFormula: gasSpec.formula,
+      gasName: gasSpec.name,
+      temperatureK: tempNum,
+      preset: targetPreset,
+      axisId: axisId,
+      modelDiameter: gasSpec.modelDiameter,
+      modelAttraction: gasSpec.modelAttraction
+    };
+  }
+
+  var ASTRO_CLOUD_SPECS = {
+    bok_globule: { id: 'bok_globule', label: 'Bok Globule Core (10\u2075 cm\u207B\u00B3, 5 M\u2609)', densityCm3: 1e5, cloudMassSolar: 5 },
+    protostellar_clump: { id: 'protostellar_clump', label: 'Dense Clump (10\u2077 cm\u207B\u00B3, 2 M\u2609)', densityCm3: 1e7, cloudMassSolar: 2 },
+    giant_molecular: { id: 'giant_molecular', label: 'Giant Molecular Cloud (10\u00B3 cm\u207B\u00B3, 50 M\u2609)', densityCm3: 1e3, cloudMassSolar: 50 },
+    diffuse_hi: { id: 'diffuse_hi', label: 'Diffuse H I Cloud (50 cm\u207B\u00B3, 20 M\u2609)', densityCm3: 50, cloudMassSolar: 20 }
+  };
+  var ASTRO_CLOUD_IDS = ['bok_globule', 'protostellar_clump', 'giant_molecular', 'diffuse_hi'];
+
+  function astroJeansSahaMetrics(params) {
+    var p = params || {};
+    var gas = getGasIdentity(p.gasId || 'N2');
+    var t = Math.max(1, Number(p.temperature) || 300);
+    var cloudId = ASTRO_CLOUD_IDS.indexOf(p.cloudId) >= 0 ? p.cloudId : 'bok_globule';
+    var spec = ASTRO_CLOUD_SPECS[cloudId];
+    var kBSi = 1.380649e-23;
+    var G_SI = 6.67430e-11;
+    var AMU_KG = 1.6605390666e-27;
+    var PC_M = 3.085677581e16;
+    var AU_M = 1.495978707e11;
+    var M_SUN_KG = 1.98847e30;
+    var SEC_PER_MYR = 3.15576e13;
+    var mKg = Math.max(1, gas.molarMass) * AMU_KG;
+    var nM3 = spec.densityCm3 * 1e6;
+    var rhoKgM3 = nM3 * mKg;
+    var isothermalSoundMs = Math.sqrt((kBSi * t) / mKg);
+
+    function jeansMassAtTemp(tempK) {
+      var lenM = Math.sqrt((15 * kBSi * tempK) / (4 * Math.PI * G_SI * mKg * rhoKgM3));
+      var massKg = (Math.PI / 6) * rhoKgM3 * Math.pow(lenM, 3);
+      return { lenM: lenM, massSolar: massKg / M_SUN_KG };
+    }
+
+    var liveJ = jeansMassAtTemp(t);
+    var jeansLengthPc = liveJ.lenM / PC_M;
+    var jeansLengthAu = liveJ.lenM / AU_M;
+    var jeansMassSolar = liveJ.massSolar;
+    var freeFallMyr = Math.sqrt((3 * Math.PI) / (32 * G_SI * rhoKgM3)) / SEC_PER_MYR;
+    var collapseRatio = spec.cloudMassSolar / Math.max(1e-12, jeansMassSolar);
+    var collapsing = collapseRatio >= 1;
+    var regime = 'pressure_supported';
+    var regimeLabel = 'Thermal Pressure Stable';
+    if (collapseRatio >= 2) {
+      regime = 'fragmenting_collapse';
+      regimeLabel = 'Protostellar Fragmentation';
+    } else if (collapseRatio >= 1) {
+      regime = 'jeans_collapse';
+      regimeLabel = 'Gravitational Collapse';
+    }
+
+    var curvePoints = [];
+    for (var i = 0; i < 25; i += 1) {
+      var tGrid = 10 + (i / 24) * 890;
+      curvePoints.push({
+        temperatureK: tGrid,
+        jeansMassSolar: jeansMassAtTemp(tGrid).massSolar
+      });
+    }
+
+    return {
+      gas: gas,
+      cloud: spec,
+      cloudId: spec.id,
+      temperature: t,
+      isothermalSoundMs: isothermalSoundMs,
+      jeansLengthPc: jeansLengthPc,
+      jeansLengthAu: jeansLengthAu,
+      jeansMassSolar: jeansMassSolar,
+      cloudMassSolar: spec.cloudMassSolar,
+      freeFallMyr: freeFallMyr,
+      collapseRatio: collapseRatio,
+      collapsing: collapsing,
+      regime: regime,
+      regimeLabel: regimeLabel,
+      curvePoints: curvePoints
+    };
+  }
+
+  var AEROSOL_DROPLET_UM_OPTIONS = [0.5, 2.5, 10, 80];
+  var VENTILATION_ACH_OPTIONS = [0.5, 2, 6, 12];
+
+  function aerosolWellsRileyMetrics(params) {
+    var p = params || {};
+    var gas = getGasIdentity(p.gasId || 'N2');
+    var t = Math.max(50, Number(p.temperature) || 295);
+    var pAtm = clamp(Number(p.pressureAtm) || 1, 0.01, 20);
+    var dropletUm = clamp(Number(p.dropletDiameterUm) || 2.5, 0.05, 500);
+    var ach = clamp(Number(p.ventilationAch) || 2, 0.05, 50);
+    var kBSi = 1.380649e-23;
+    var R_SI = 8.314462618;
+    var gSi = 9.80665;
+    var rhoWater = 1000;
+    var dGasM = gas.kineticDiameterPm * 1e-12;
+    var mMolKg = gas.molarMass / 1000;
+    var mMoleculeKg = mMolKg / 6.02214076e23;
+    var etaGasPaS = (5 / (16 * dGasM * dGasM)) * Math.sqrt((mMoleculeKg * kBSi * t) / Math.PI);
+    var mfpM = (kBSi * t) / (Math.SQRT2 * Math.PI * dGasM * dGasM * (pAtm * 101325));
+    var rhoGasKgM3 = (pAtm * 101325 * mMolKg) / (R_SI * t);
+    var radiusM = (dropletUm * 1e-6) / 2;
+    var knParticle = mfpM / Math.max(1e-9, radiusM);
+    var slipCc = 1 + knParticle * (1.257 + 0.4 * Math.exp(-1.1 / Math.max(1e-6, knParticle)));
+    var deltaRho = Math.max(1, rhoWater - rhoGasKgM3);
+    var settlingSpeedMs = (2 * deltaRho * gSi * radiusM * radiusM * slipCc) / (9 * etaGasPaS);
+    var settlingSpeedMmS = settlingSpeedMs * 1000;
+    var fallTime1p5mSec = 1.5 / Math.max(1e-9, settlingSpeedMs);
+    var gravDepositionPerHr = (settlingSpeedMs / 3.0) * 3600;
+
+    function riskAtAch(achVal) {
+      var totHr = achVal + gravDepositionPerHr + 0.3;
+      var qEff = 150 * totHr;
+      return (1 - Math.exp(-(60 * 0.48) / qEff)) * 100;
+    }
+
+    var totalRemovalPerHr = ach + gravDepositionPerHr + 0.3;
+    var effectiveCleanAirM3Hr = 150 * totalRemovalPerHr;
+    var wellsRileyRiskPct = riskAtAch(ach);
+    var regime = 'well_ventilated';
+    var regimeLabel = 'Well-Cleared Airspace';
+    if (dropletUm >= 50) {
+      regime = 'ballistic_droplet';
+      regimeLabel = 'Ballistic Droplet (Falls)';
+    } else if (wellsRileyRiskPct >= 10) {
+      regime = 'high_airborne_risk';
+      regimeLabel = 'High Airborne Risk';
+    } else if (wellsRileyRiskPct >= 3) {
+      regime = 'moderate_airborne';
+      regimeLabel = 'Moderate Plume Risk';
+    }
+
+    var curvePoints = [];
+    for (var i = 0; i < 25; i += 1) {
+      var achGrid = 0.5 + (i / 24) * 14.5;
+      curvePoints.push({
+        ach: achGrid,
+        riskPct: riskAtAch(achGrid)
+      });
+    }
+
+    return {
+      gas: gas,
+      temperature: t,
+      pressureAtm: pAtm,
+      dropletDiameterUm: dropletUm,
+      ventilationAch: ach,
+      slipCc: slipCc,
+      settlingSpeedMs: settlingSpeedMs,
+      settlingSpeedMmS: settlingSpeedMmS,
+      fallTime1p5mSec: fallTime1p5mSec,
+      gravDepositionPerHr: gravDepositionPerHr,
+      totalRemovalPerHr: totalRemovalPerHr,
+      effectiveCleanAirM3Hr: effectiveCleanAirM3Hr,
+      wellsRileyRiskPct: wellsRileyRiskPct,
+      regime: regime,
+      regimeLabel: regimeLabel,
+      curvePoints: curvePoints
+    };
+  }
+
+  var SORBENT_SURFACE_SPECS = {
+    mof5: { id: 'mof5', label: 'MOF-5 Nanopores (H\u2082/CH\u2084)', adsEnthalpyKjMol: 15.5, k0InvAtm: 0.0018 },
+    activated_carbon: { id: 'activated_carbon', label: 'Activated Carbon Bed', adsEnthalpyKjMol: 22.0, k0InvAtm: 0.0006 },
+    zeolite_13x: { id: 'zeolite_13x', label: 'Zeolite 13X (CO\u2082 Capture)', adsEnthalpyKjMol: 36.0, k0InvAtm: 0.000015 },
+    palladium: { id: 'palladium', label: 'Palladium Hydride Lattice', adsEnthalpyKjMol: 42.0, k0InvAtm: 0.000008 }
+  };
+  var SORBENT_SURFACE_IDS = ['mof5', 'activated_carbon', 'zeolite_13x', 'palladium'];
+  var WIND_SPEED_MS_OPTIONS = [4, 8, 12, 16];
+
+  function langmuirBetzEnergyMetrics(params) {
+    var p = params || {};
+    var gas = getGasIdentity(p.gasId || 'N2');
+    var t = Math.max(20, Number(p.temperature) || 300);
+    var pAtm = clamp(Number(p.pressureAtm) || 1, 1e-4, 100);
+    var sorbentId = SORBENT_SURFACE_IDS.indexOf(p.sorbentId) >= 0 ? p.sorbentId : 'activated_carbon';
+    var spec = SORBENT_SURFACE_SPECS[sorbentId];
+    var windMs = clamp(Number(p.windSpeedMs) || 12, 0.5, 60);
+    var R_SI = 8.314462618;
+    var expArg = clamp((spec.adsEnthalpyKjMol * 1000) / (R_SI * t), 0, 60);
+    var langmuirKAtmInv = spec.k0InvAtm * Math.exp(expArg);
+    var coverageTheta = (langmuirKAtmInv * pAtm) / (1 + langmuirKAtmInv * pAtm);
+    var halfCoverageAtm = 1 / Math.max(1e-12, langmuirKAtmInv);
+    var gasDensityKgM3 = (pAtm * 101325 * (gas.molarMass / 1000)) / (R_SI * t);
+    var rawWindFluxWm2 = 0.5 * gasDensityKgM3 * Math.pow(windMs, 3);
+    var betzMaxWm2 = (16 / 27) * rawWindFluxWm2;
+
+    var regime = 'thermally_desorbed';
+    var regimeLabel = 'Thermally Desorbed';
+    if (coverageTheta >= 0.75) {
+      regime = 'monolayer_saturated';
+      regimeLabel = 'High Surface Coverage';
+    } else if (coverageTheta >= 0.25) {
+      regime = 'reversible_swing';
+      regimeLabel = 'Pressure/Temp Swing Window';
+    }
+
+    var curvePoints = [];
+    for (var i = 0; i < 25; i += 1) {
+      var pGrid = 0.05 + (i / 24) * 9.95;
+      curvePoints.push({
+        pressureAtm: pGrid,
+        coverageTheta: (langmuirKAtmInv * pGrid) / (1 + langmuirKAtmInv * pGrid)
+      });
+    }
+
+    return {
+      gas: gas,
+      sorbent: spec,
+      sorbentId: spec.id,
+      temperature: t,
+      pressureAtm: pAtm,
+      windSpeedMs: windMs,
+      langmuirKAtmInv: langmuirKAtmInv,
+      coverageTheta: coverageTheta,
+      halfCoverageAtm: halfCoverageAtm,
+      gasDensityKgM3: gasDensityKgM3,
+      rawWindFluxWm2: rawWindFluxWm2,
+      betzMaxWm2: betzMaxWm2,
+      regime: regime,
+      regimeLabel: regimeLabel,
+      curvePoints: curvePoints
+    };
+  }
+
+  var HENRYS_GAS_SPECS = {
+    He: { kH0MolLAtm: 0.00038, vdhTempK: 230, kSechenov: 0.10 },
+    Ne: { kH0MolLAtm: 0.00045, vdhTempK: 490, kSechenov: 0.11 },
+    N2: { kH0MolLAtm: 0.00065, vdhTempK: 1300, kSechenov: 0.14 },
+    O2: { kH0MolLAtm: 0.00130, vdhTempK: 1700, kSechenov: 0.13 },
+    Ar: { kH0MolLAtm: 0.00140, vdhTempK: 1500, kSechenov: 0.13 },
+    CH4: { kH0MolLAtm: 0.00140, vdhTempK: 1600, kSechenov: 0.14 },
+    CO2: { kH0MolLAtm: 0.03400, vdhTempK: 2400, kSechenov: 0.11 }
+  };
+  var OCEAN_DEPTH_M_OPTIONS = [0, 10, 30, 60];
+  var OCEAN_SALINITY_PSU_OPTIONS = [0, 18, 35];
+
+  function henrysOceanSolubilityMetrics(params) {
+    var p = params || {};
+    var gas = getGasIdentity(p.gasId || 'O2');
+    var hSpec = HENRYS_GAS_SPECS[gas.id] || HENRYS_GAS_SPECS.N2;
+    var waterTempK = clamp(Number(p.temperature) || 293.15, 273.15, 373.15);
+    var waterTempC = waterTempK - 273.15;
+    var surfacePAtm = clamp(Number(p.pressureAtm) || 1, 0.05, 20);
+    var depthM = clamp(p.depthM != null && !isNaN(Number(p.depthM)) ? Number(p.depthM) : 0, 0, 200);
+    var salinityPsu = clamp(p.salinityPsu != null && !isNaN(Number(p.salinityPsu)) ? Number(p.salinityPsu) : 35, 0, 50);
+    var ionicM = (salinityPsu / 35) * 0.6;
+    var saltingFactor = Math.pow(10, -hSpec.kSechenov * ionicM);
+    var hydrostaticAtm = surfacePAtm + depthM / 10.06;
+
+    function solMgLAtTempK(tK) {
+      return hSpec.kH0MolLAtm * Math.exp(hSpec.vdhTempK * (1 / tK - 1 / 298.15)) * saltingFactor * hydrostaticAtm * 1000 * gas.molarMass;
+    }
+
+    var kHMolLAtm = hSpec.kH0MolLAtm * Math.exp(hSpec.vdhTempK * (1 / waterTempK - 1 / 298.15)) * saltingFactor;
+    var dissolvedMmolL = kHMolLAtm * hydrostaticAtm * 1000;
+    var dissolvedMgL = dissolvedMmolL * gas.molarMass;
+    var o2Spec = HENRYS_GAS_SPECS.O2;
+    var o2Salt = Math.pow(10, -o2Spec.kSechenov * ionicM);
+    var airDoMgL = o2Spec.kH0MolLAtm * Math.exp(o2Spec.vdhTempK * (1 / waterTempK - 1 / 298.15)) * o2Salt * (0.2095 * surfacePAtm) * 32000;
+    var surfacingSupersatRatio = hydrostaticAtm / Math.max(0.05, surfacePAtm);
+    var regime = 'oxygenated_equilibrium';
+    var regimeLabel = 'Well-Oxygenated Equilibrium';
+    if (surfacingSupersatRatio >= 2.5) {
+      regime = 'bends_supersaturated';
+      regimeLabel = 'Decompression Bubble Risk';
+    } else if (airDoMgL < 6.5) {
+      regime = 'thermal_outgassing';
+      regimeLabel = 'Warm Outgassing / Low DO';
+    }
+
+    var curvePoints = [];
+    for (var i = 0; i < 25; i += 1) {
+      var tempC = (i / 24) * 40;
+      curvePoints.push({
+        tempC: tempC,
+        dissolvedMgL: solMgLAtTempK(273.15 + tempC)
+      });
+    }
+
+    return {
+      gas: gas,
+      waterTempK: waterTempK,
+      waterTempC: waterTempC,
+      surfacePAtm: surfacePAtm,
+      depthM: depthM,
+      salinityPsu: salinityPsu,
+      saltingFactor: saltingFactor,
+      hydrostaticAtm: hydrostaticAtm,
+      kHMolLAtm: kHMolLAtm,
+      dissolvedMmolL: dissolvedMmolL,
+      dissolvedMgL: dissolvedMgL,
+      airDoMgL: airDoMgL,
+      surfacingSupersatRatio: surfacingSupersatRatio,
+      regime: regime,
+      regimeLabel: regimeLabel,
+      curvePoints: curvePoints
+    };
+  }
+
+  var ALVEOLAR_ALTITUDE_M_OPTIONS = [0, 2400, 5300, 8848];
+  var BLOOD_PH_OPTIONS = [7.2, 7.4, 7.6];
+
+  function alveolarHillPhysiologyMetrics(params) {
+    var p = params || {};
+    var gas = getGasIdentity(p.gasId || 'O2');
+    var bodyTempC = clamp((Number(p.temperature) || 310.15) - 273.15, 33, 42);
+    var altM = clamp(p.altitudeM != null && !isNaN(Number(p.altitudeM)) ? Number(p.altitudeM) : 0, 0, 10000);
+    var bloodPh = clamp(Number(p.bloodPh) || 7.4, 6.8, 7.8);
+    var baroMmHg = 760 * Math.pow(1 - 2.25577e-5 * altM, 5.25588);
+    var pH2OMmHg = 47.0 * Math.exp(0.058 * (bodyTempC - 37.0));
+    var paCo2MmHg = clamp(40 - altM * 0.0032, 12, 40);
+    var alveolarPo2MmHg = Math.max(15, 0.2095 * (baroMmHg - pH2OMmHg) - paCo2MmHg / 0.8);
+    var p50MmHg = 26.8 * Math.pow(10, -0.48 * (bloodPh - 7.4) + 0.024 * (bodyTempC - 37.0));
+
+    function hillSatPct(po2) {
+      var pN = Math.pow(Math.max(0, po2), 2.7);
+      var p50N = Math.pow(p50MmHg, 2.7);
+      return (pN / (p50N + pN)) * 100;
+    }
+
+    var arterialSaO2Pct = hillSatPct(alveolarPo2MmHg);
+    var hSpec = HENRYS_GAS_SPECS[gas.id] || HENRYS_GAS_SPECS.N2;
+    var kroghRelToO2 = (hSpec.kH0MolLAtm / HENRYS_GAS_SPECS.O2.kH0MolLAtm) * Math.sqrt(32.0 / gas.molarMass);
+    var regime = 'normoxic_plateau';
+    var regimeLabel = 'Normoxic Plateau';
+    if (arterialSaO2Pct < 75) {
+      regime = 'severe_hypoxia';
+      regimeLabel = 'Severe Hypoxic Zone';
+    } else if (arterialSaO2Pct < 90) {
+      regime = 'altitude_desaturation';
+      regimeLabel = 'Hypoxic Shoulder';
+    }
+
+    var curvePoints = [];
+    for (var i = 0; i < 25; i += 1) {
+      var po2MmHg = (i / 24) * 120;
+      curvePoints.push({
+        po2MmHg: po2MmHg,
+        satPct: hillSatPct(po2MmHg)
+      });
+    }
+
+    return {
+      gas: gas,
+      bodyTempC: bodyTempC,
+      altitudeM: altM,
+      bloodPh: bloodPh,
+      baroMmHg: baroMmHg,
+      pH2OMmHg: pH2OMmHg,
+      paCo2MmHg: paCo2MmHg,
+      alveolarPo2MmHg: alveolarPo2MmHg,
+      p50MmHg: p50MmHg,
+      arterialSaO2Pct: arterialSaO2Pct,
+      kroghRelToO2: kroghRelToO2,
+      regime: regime,
+      regimeLabel: regimeLabel,
+      curvePoints: curvePoints
+    };
+  }
+
+  var MAGMA_MELT_SPECS = {
+    basalt: { id: 'basalt', label: 'Basalt (50% SiO\u2082, Effusive)', logEta0: -4.2, eaKjMol: 165, baseTempK: 1470, densityKgM3: 2700, dissolvedH2OWtPct: 1.2 },
+    andesite: { id: 'andesite', label: 'Andesite (60% SiO\u2082, Arc)', logEta0: -4.5, eaKjMol: 235, baseTempK: 1270, densityKgM3: 2500, dissolvedH2OWtPct: 3.5 },
+    rhyolite: { id: 'rhyolite', label: 'Rhyolite (73% SiO\u2082, Plinian)', logEta0: -4.8, eaKjMol: 280, baseTempK: 1120, densityKgM3: 2350, dissolvedH2OWtPct: 5.5 }
+  };
+  var MAGMA_MELT_IDS = ['basalt', 'andesite', 'rhyolite'];
+  var MAGMA_DEPTH_KM_OPTIONS = [0.2, 1, 3, 8];
+
+  function magmaVolatileExsolutionMetrics(params) {
+    var p = params || {};
+    var meltId = MAGMA_MELT_IDS.indexOf(p.meltId) >= 0 ? p.meltId : 'basalt';
+    var spec = MAGMA_MELT_SPECS[meltId];
+    var depthKm = clamp(Number(p.depthKm) || 1, 0.05, 15);
+    var tChamber = clamp(Number(p.temperature) || 300, 20, 1200);
+    var magmaTempK = clamp(spec.baseTempK + (tChamber - 300) * 0.45, 950, 1650);
+    var R_SI = 8.314462618;
+    var log10ViscosityPaS = spec.logEta0 + (spec.eaKjMol * 1000) / (2.302585 * R_SI * magmaTempK);
+    var viscosityPaS = Math.pow(10, clamp(log10ViscosityPaS, 0.5, 12));
+
+    function vesicularityAtDepth(zKm) {
+      var pPa = Math.max(1e5, spec.densityKgM3 * 9.80665 * (zKm * 1000));
+      var pMpa = pPa / 1e6;
+      var satWtPct = 0.13 * Math.sqrt(pMpa);
+      var exsolvedWt = Math.max(0, spec.dissolvedH2OWtPct - satWtPct) / 100;
+      if (exsolvedWt <= 0) {
+        return { pMpa: pMpa, satWtPct: satWtPct, exsolvedWtPct: 0, gasVolFrac: 0 };
+      }
+      var rhoGas = (pPa * 0.018015) / (R_SI * magmaTempK);
+      var vGas = exsolvedWt / Math.max(0.05, rhoGas);
+      var vMelt = (1 - exsolvedWt) / spec.densityKgM3;
+      return {
+        pMpa: pMpa,
+        satWtPct: satWtPct,
+        exsolvedWtPct: exsolvedWt * 100,
+        gasVolFrac: clamp(vGas / (vGas + vMelt), 0, 0.99)
+      };
+    }
+
+    var liveV = vesicularityAtDepth(depthKm);
+    var fragmenting = liveV.gasVolFrac >= 0.75 && viscosityPaS >= 1e5;
+    var regime = 'deep_undersaturated';
+    var regimeLabel = 'Compressed Melt';
+    if (fragmenting) {
+      regime = 'explosive_fragmentation';
+      regimeLabel = 'Explosive Plinian Burst';
+    } else if (liveV.gasVolFrac >= 0.30) {
+      regime = 'effusive_fountain';
+      regimeLabel = viscosityPaS < 1e4 ? 'Effusive Lava Degassing' : 'Vesiculating Conduit';
+    }
+
+    var curvePoints = [];
+    for (var i = 0; i < 25; i += 1) {
+      var zGrid = 0.2 + (i / 24) * 9.8;
+      curvePoints.push({
+        depthKm: zGrid,
+        gasVolPct: vesicularityAtDepth(zGrid).gasVolFrac * 100
+      });
+    }
+
+    return {
+      melt: spec,
+      meltId: spec.id,
+      depthKm: depthKm,
+      magmaTempK: magmaTempK,
+      log10ViscosityPaS: log10ViscosityPaS,
+      viscosityPaS: viscosityPaS,
+      lithostaticMpa: liveV.pMpa,
+      satH2OWtPct: liveV.satWtPct,
+      exsolvedWtPct: liveV.exsolvedWtPct,
+      gasVolFrac: liveV.gasVolFrac,
+      gasVolPct: liveV.gasVolFrac * 100,
+      fragmenting: fragmenting,
+      regime: regime,
+      regimeLabel: regimeLabel,
+      curvePoints: curvePoints
+    };
+  }
+
+  window.__alloParticleLabPure = { commonIdeas: COMMON_IDEAS, seeded: seeded, makeParticles: makeParticles, advanceParticles: advanceParticles, particleJourney: particleJourney, meanFreePathEstimate: meanFreePathEstimate, freeFlightDistribution: freeFlightDistribution, ensembleFreeFlightStats: ensembleFreeFlightStats, systemMoments: systemMoments, heightDistribution: heightDistribution, diffusionMetrics: diffusionMetrics, compareTracerTrials: compareTracerTrials, compareTrials: compareTrials, speedDistribution: speedDistribution, speciesKinetics: speciesKinetics, metrics: metrics, seriesTrend: seriesTrend, isCoalescence: isCoalescence, clusterMetrics: clusterMetrics, binomialWilsonInterval: binomialWilsonInterval, membraneSelectivityMetrics: membraneSelectivityMetrics, fickFluxEstimate: fickFluxEstimate, diffusionExponent: diffusionExponent, speedHeat: speedHeat, makePumpedParticles: makePumpedParticles, energyDistribution: energyDistribution, maxwellBoltzmannBins: maxwellBoltzmannBins, histogramDistance: histogramDistance, thermostatScale: thermostatScale, holdPressureStep: holdPressureStep, gasLawRatio: gasLawRatio, gasLawAgreement: gasLawAgreement, maxwellSpeeds: maxwellSpeeds, vanDerWaalsMetrics: vanDerWaalsMetrics, grahamLawMetrics: grahamLawMetrics, linearRegression: linearRegression, PARTICLE_SWEEP_AXES: PARTICLE_SWEEP_AXES, getParticleAxisSpec: getParticleAxisSpec, buildParticleSweepRows: buildParticleSweepRows, restoreExperimentLog: restoreExperimentLog, restoreSavedSnapshots: restoreSavedSnapshots, compareSnapshots: compareSnapshots, GAS_IDENTITIES: GAS_IDENTITIES, GAS_IDENTITY_IDS: GAS_IDENTITY_IDS, getGasIdentity: getGasIdentity, gasSpeciesMetrics: gasSpeciesMetrics, thermodynamicProcessMetrics: thermodynamicProcessMetrics, PARTICLE_CHALLENGES: PARTICLE_CHALLENGES, restoreCompletedChallenges: restoreCompletedChallenges, evaluateParticleChallenge: evaluateParticleChallenge, TRANSPORT_PRESSURE_ATM_OPTIONS: TRANSPORT_PRESSURE_ATM_OPTIONS, transportCoefficientsMetrics: transportCoefficientsMetrics, CYCLE_TYPES: CYCLE_TYPES, thermodynamicCycleMetrics: thermodynamicCycleMetrics, PLANETARY_BODIES: PLANETARY_BODIES, PLANETARY_BODY_IDS: PLANETARY_BODY_IDS, getPlanetaryBody: getPlanetaryBody, barometricAtmosphereMetrics: barometricAtmosphereMetrics, erfcApprox: erfcApprox, STATMECH_THRESHOLD_RATIOS: STATMECH_THRESHOLD_RATIOS, statisticalMechanicsMetrics: statisticalMechanicsMetrics, ARRHENIUS_EA_OPTIONS: ARRHENIUS_EA_OPTIONS, STERIC_FACTOR_OPTIONS: STERIC_FACTOR_OPTIONS, collisionKineticsMetrics: collisionKineticsMetrics, ACOUSTIC_FREQUENCIES_HZ: ACOUSTIC_FREQUENCIES_HZ, ACOUSTIC_FLOW_SPEEDS_MS: ACOUSTIC_FLOW_SPEEDS_MS, gasAcousticsMetrics: gasAcousticsMetrics, SPECTRAL_WAVELENGTHS_NM: SPECTRAL_WAVELENGTHS_NM, dopplerBroadeningMetrics: dopplerBroadeningMetrics, JT_PRESSURE_DROPS_ATM: JT_PRESSURE_DROPS_ATM, jouleThomsonPhaseMetrics: jouleThomsonPhaseMetrics, ORIFICE_DIAMETERS_MM: ORIFICE_DIAMETERS_MM, effusionVacuumMetrics: effusionVacuumMetrics, BROWNIAN_BEAD_RADII_NM: BROWNIAN_BEAD_RADII_NM, BROWNIAN_MEDIA: BROWNIAN_MEDIA, brownianMotionMetrics: brownianMotionMetrics, OSMOTIC_SOLUTE_MOLARITIES: OSMOTIC_SOLUTE_MOLARITIES, OSMOTIC_VAN_T_HOFF_FACTORS: OSMOTIC_VAN_T_HOFF_FACTORS, osmoticBiophysicsMetrics: osmoticBiophysicsMetrics, ELECTRODE_GAPS_CM: ELECTRODE_GAPS_CM, DISCHARGE_VOLTAGES_V: DISCHARGE_VOLTAGES_V, PASCHEN_GAS_SPECS: PASCHEN_GAS_SPECS, paschenPlasmaMetrics: paschenPlasmaMetrics, SOLID_CRYSTAL_SPECS: SOLID_CRYSTAL_SPECS, SOLID_CRYSTAL_IDS: SOLID_CRYSTAL_IDS, debyeCvFraction: debyeCvFraction, latticeSolidMetrics: latticeSolidMetrics, VOLATILE_LIQUID_SPECS: VOLATILE_LIQUID_SPECS, VOLATILE_LIQUID_IDS: VOLATILE_LIQUID_IDS, RELATIVE_HUMIDITY_OPTIONS: RELATIVE_HUMIDITY_OPTIONS, vaporPhaseEquilibriumMetrics: vaporPhaseEquilibriumMetrics, CO2_MIXING_PPM_OPTIONS: CO2_MIXING_PPM_OPTIONS, IR_VIBRATIONAL_SPECS: IR_VIBRATIONAL_SPECS, vibrationalGreenhouseMetrics: vibrationalGreenhouseMetrics, SHOCK_MACH_OPTIONS: SHOCK_MACH_OPTIONS, rankineHugoniotShockMetrics: rankineHugoniotShockMetrics, FUSION_FUEL_SPECS: FUSION_FUEL_SPECS, FUSION_FUEL_IDS: FUSION_FUEL_IDS, GAMOW_TEMP_KEV_OPTIONS: GAMOW_TEMP_KEV_OPTIONS, gamowNuclearKineticsMetrics: gamowNuclearKineticsMetrics, NOISE_RESISTANCE_OHM_OPTIONS: NOISE_RESISTANCE_OHM_OPTIONS, NOISE_BANDWIDTH_HZ_OPTIONS: NOISE_BANDWIDTH_HZ_OPTIONS, thermalNoiseDrudeMetrics: thermalNoiseDrudeMetrics, WORKBENCH_DOMAINS: WORKBENCH_DOMAINS, WORKBENCH_DOMAIN_IDS: WORKBENCH_DOMAIN_IDS, BRIDGE_CATEGORIES: BRIDGE_CATEGORIES, BRIDGE_CATEGORY_IDS: BRIDGE_CATEGORY_IDS, WORKBENCH_MODULE_DIRECTORY: WORKBENCH_MODULE_DIRECTORY, filterWorkbenchModules: filterWorkbenchModules, MAX_PINNED_WORKBENCH_MODULES: MAX_PINNED_WORKBENCH_MODULES, WORKBENCH_BUNDLES: WORKBENCH_BUNDLES, restorePinnedWorkbenchIds: restorePinnedWorkbenchIds, APPLIED_WORKBENCH_MISSIONS: APPLIED_WORKBENCH_MISSIONS, restoreCompletedMissions: restoreCompletedMissions, evaluateAppliedMission: evaluateAppliedMission, buildDomainEvidenceSnippet: buildDomainEvidenceSnippet, PARTICLE_GLOSSARY_TERMS: PARTICLE_GLOSSARY_TERMS, filterGlossaryTerms: filterGlossaryTerms, NOTEBOOK_SENTENCE_STARTERS: NOTEBOOK_SENTENCE_STARTERS, applyNotebookStarter: applyNotebookStarter, evaluateNotebookReadiness: evaluateNotebookReadiness, PARTICLE_CONCEPT_QUIZ: PARTICLE_CONCEPT_QUIZ, restoreQuizAnswers: restoreQuizAnswers, evaluateConceptQuiz: evaluateConceptQuiz, evaluateSweepTheoryAndControl: evaluateSweepTheoryAndControl, buildSocraticDiagnosticCoach: buildSocraticDiagnosticCoach, restoreSessionTrials: restoreSessionTrials, getChallengeMissionHint: getChallengeMissionHint, analyzeSweepResiduals: analyzeSweepResiduals, CALC_MOLES_OPTIONS: CALC_MOLES_OPTIONS, CALC_VOLUME_L_OPTIONS: CALC_VOLUME_L_OPTIONS, CALC_TEMP_K_OPTIONS: CALC_TEMP_K_OPTIONS, solveRealAndIdealGasState: solveRealAndIdealGasState, evaluateInvestigationMastery: evaluateInvestigationMastery, MIX_MOLES_OPTIONS: MIX_MOLES_OPTIONS, waterSaturationVaporAtm: waterSaturationVaporAtm, solveDaltonGasMixture: solveDaltonGasMixture, SAMPLE_BENCH_SWEEP_DATASETS: SAMPLE_BENCH_SWEEP_DATASETS, parseTabularSweepInput: parseTabularSweepInput, PARTICLE_LESSON_GUIDES: PARTICLE_LESSON_GUIDES, buildLessonFacilitationGuide: buildLessonFacilitationGuide, restoreIdeasResolved: restoreIdeasResolved, PARTICLE_SESSION_SCHEMA: PARTICLE_SESSION_SCHEMA, serializeParticleSession: serializeParticleSession, parseParticleSessionJson: parseParticleSessionJson, resolveIncomingHandoff: resolveIncomingHandoff, ASTRO_CLOUD_SPECS: ASTRO_CLOUD_SPECS, ASTRO_CLOUD_IDS: ASTRO_CLOUD_IDS, astroJeansSahaMetrics: astroJeansSahaMetrics, AEROSOL_DROPLET_UM_OPTIONS: AEROSOL_DROPLET_UM_OPTIONS, VENTILATION_ACH_OPTIONS: VENTILATION_ACH_OPTIONS, aerosolWellsRileyMetrics: aerosolWellsRileyMetrics, SORBENT_SURFACE_SPECS: SORBENT_SURFACE_SPECS, SORBENT_SURFACE_IDS: SORBENT_SURFACE_IDS, WIND_SPEED_MS_OPTIONS: WIND_SPEED_MS_OPTIONS, langmuirBetzEnergyMetrics: langmuirBetzEnergyMetrics, HENRYS_GAS_SPECS: HENRYS_GAS_SPECS, OCEAN_DEPTH_M_OPTIONS: OCEAN_DEPTH_M_OPTIONS, OCEAN_SALINITY_PSU_OPTIONS: OCEAN_SALINITY_PSU_OPTIONS, henrysOceanSolubilityMetrics: henrysOceanSolubilityMetrics, ALVEOLAR_ALTITUDE_M_OPTIONS: ALVEOLAR_ALTITUDE_M_OPTIONS, BLOOD_PH_OPTIONS: BLOOD_PH_OPTIONS, alveolarHillPhysiologyMetrics: alveolarHillPhysiologyMetrics, MAGMA_MELT_SPECS: MAGMA_MELT_SPECS, MAGMA_MELT_IDS: MAGMA_MELT_IDS, MAGMA_DEPTH_KM_OPTIONS: MAGMA_DEPTH_KM_OPTIONS, magmaVolatileExsolutionMetrics: magmaVolatileExsolutionMetrics };
 
   window.StemLab.registerTool('particleLab3d', {
     icon: '\u2728',
@@ -442,7 +4128,11 @@
       { id: 'particle_run', label: 'Run a particle experiment', icon: '\u25B6\uFE0F', check: function (d) { return (d.runs || 0) >= 1; }, progress: function (d) { return (d.runs || 0) + '/1'; } },
       { id: 'particle_presets', label: 'Explore all five particle presets', icon: '\uD83E\uDDEA', check: function (d) { return Object.keys(d.presetsSeen || {}).length >= 5; }, progress: function (d) { return Object.keys(d.presetsSeen || {}).length + '/5'; } },
       { id: 'particle_trace', label: 'Trace one particle', icon: '\uD83D\uDCCD', check: function (d) { return !!d.traced; }, progress: function (d) { return d.traced ? 'Done!' : 'Not yet'; } },
-      { id: 'particle_explain', label: 'Write an evidence-based conclusion', icon: '\uD83D\uDCDD', check: function (d) { return String(d.conclusion || '').trim().length >= 20; }, progress: function (d) { return String(d.conclusion || '').trim().length >= 20 ? 'Done!' : 'Write a conclusion'; } }
+      { id: 'particle_explain', label: 'Write an evidence-based conclusion', icon: '\uD83D\uDCDD', check: function (d) { return String(d.conclusion || '').trim().length >= 20; }, progress: function (d) { return String(d.conclusion || '').trim().length >= 20 ? 'Done!' : 'Write a conclusion'; } },
+      { id: 'particle_kmt_challenge', label: 'Master 2 quantitative KMT challenges', icon: '\uD83C\uDFC6', check: function (d) { var c = d && typeof d.completedChallenges === 'object' && d.completedChallenges ? Object.keys(d.completedChallenges).filter(function (k) { return !!d.completedChallenges[k]; }).length : 0; return c >= 2; }, progress: function (d) { var c = d && typeof d.completedChallenges === 'object' && d.completedChallenges ? Object.keys(d.completedChallenges).filter(function (k) { return !!d.completedChallenges[k]; }).length : 0; return Math.min(2, c) + '/2'; } },
+      { id: 'particle_applied_missions', label: 'Master 2 applied frontier missions', icon: '\uD83D\uDE80', check: function (d) { var c = d && typeof d.completedMissions === 'object' && d.completedMissions ? Object.keys(d.completedMissions).filter(function (k) { return !!d.completedMissions[k]; }).length : 0; return c >= 2; }, progress: function (d) { var c = d && typeof d.completedMissions === 'object' && d.completedMissions ? Object.keys(d.completedMissions).filter(function (k) { return !!d.completedMissions[k]; }).length : 0; return Math.min(2, c) + '/2'; } },
+      { id: 'particle_concept_quiz', label: 'Score 4/6 on the KMT Concept Check', icon: '\uD83E\uDDE0', check: function (d) { return evaluateConceptQuiz(d && typeof d === 'object' ? d.quizAnswers : null).mastered; }, progress: function (d) { var ev = evaluateConceptQuiz(d && typeof d === 'object' ? d.quizAnswers : null); return Math.min(4, ev.correctCount) + '/4'; } },
+      { id: 'particle_ideas_tested', label: 'Verify 2 common particle ideas with evidence', icon: '\uD83D\uDD2C', check: function (d) { var r = restoreIdeasResolved(d && typeof d === 'object' ? d.ideasResolved : null); return Object.keys(r).length >= 2; }, progress: function (d) { var r = restoreIdeasResolved(d && typeof d === 'object' ? d.ideasResolved : null); return Math.min(2, Object.keys(r).length) + '/2'; } }
     ],
     render: function (ctx) {
       // This tool had no translator: every string it speaks was a bare literal
@@ -584,6 +4274,85 @@
       var [fps, setFps] = useState(0);
       var [trials, setTrials] = useState(Array.isArray(bucket.trials) ? bucket.trials.slice(-2) : []);
       var [tracerTrials, setTracerTrials] = useState(Array.isArray(bucket.tracerTrials) ? bucket.tracerTrials.slice(-2) : []);
+      var [experimentLog, setExperimentLog] = useState(function () { return restoreExperimentLog(bucket.experimentLog); });
+      var [dataStudioAxis, setDataStudioAxis] = useState(restoreOneOf(bucket.dataStudioAxis, PARTICLE_SWEEP_AXES, 'boylePV'));
+      var [savedSnapshots, setSavedSnapshots] = useState(function () { return restoreSavedSnapshots(bucket.savedSnapshots); });
+      var [compareIds, setCompareIds] = useState(function () { return Array.isArray(bucket.compareIds) ? bucket.compareIds.slice(0, 2).map(String) : []; });
+      var [gasSpeciesA, setGasSpeciesA] = useState(restoreOneOf(bucket.gasSpeciesA, GAS_IDENTITY_IDS, 'N2'));
+      var [gasSpeciesB, setGasSpeciesB] = useState(restoreOneOf(bucket.gasSpeciesB, GAS_IDENTITY_IDS, 'CO2'));
+      var [thermoSource, setThermoSource] = useState(restoreOneOf(bucket.thermoSource, ['auto', 'snapshots', 'trials', 'log'], 'auto'));
+      var [activeChallengeId, setActiveChallengeId] = useState(restoreOneOf(bucket.activeChallengeId, PARTICLE_CHALLENGES.map(function (c) { return c.id; }), 'boyle_squeeze'));
+      var [completedChallenges, setCompletedChallenges] = useState(function () { return restoreCompletedChallenges(bucket.completedChallenges); });
+      var [transportPressureAtm, setTransportPressureAtm] = useState(restoreOneOf(Number(bucket.transportPressureAtm), TRANSPORT_PRESSURE_ATM_OPTIONS, 1));
+      var [cycleType, setCycleType] = useState(restoreOneOf(bucket.cycleType, CYCLE_TYPES, 'carnot'));
+      var [cycleCompressionRatio, setCycleCompressionRatio] = useState(restoreOneOf(Number(bucket.cycleCompressionRatio), [2, 3, 4, 6], 3));
+      var [cycleHotTemp, setCycleHotTemp] = useState(restoreOneOf(Number(bucket.cycleHotTemp), [480, 640, 840], 640));
+      var [planetId, setPlanetId] = useState(restoreOneOf(bucket.planetId, PLANETARY_BODY_IDS, 'Earth'));
+      var [planetTempMode, setPlanetTempMode] = useState(restoreOneOf(bucket.planetTempMode, ['planet', 'chamber'], 'planet'));
+      var [statMechThreshold, setStatMechThreshold] = useState(restoreOneOf(Number(bucket.statMechThreshold), STATMECH_THRESHOLD_RATIOS, 2.5));
+      var [arrheniusEaKj, setArrheniusEaKj] = useState(restoreOneOf(Number(bucket.arrheniusEaKj), ARRHENIUS_EA_OPTIONS, 45));
+      var [stericFactor, setStericFactor] = useState(restoreOneOf(Number(bucket.stericFactor), STERIC_FACTOR_OPTIONS, 0.5));
+      var [acousticFreqHz, setAcousticFreqHz] = useState(restoreOneOf(Number(bucket.acousticFreqHz), ACOUSTIC_FREQUENCIES_HZ, 440));
+      var [acousticFlowMs, setAcousticFlowMs] = useState(restoreOneOf(Number(bucket.acousticFlowMs), ACOUSTIC_FLOW_SPEEDS_MS, 340));
+      var [spectralWavelengthNm, setSpectralWavelengthNm] = useState(restoreOneOf(Number(bucket.spectralWavelengthNm), SPECTRAL_WAVELENGTHS_NM, 589));
+      var [jtPressureDropAtm, setJtPressureDropAtm] = useState(restoreOneOf(Number(bucket.jtPressureDropAtm), JT_PRESSURE_DROPS_ATM, 20));
+      var [orificeDiameterMm, setOrificeDiameterMm] = useState(restoreOneOf(Number(bucket.orificeDiameterMm), ORIFICE_DIAMETERS_MM, 0.5));
+      var [brownianBeadNm, setBrownianBeadNm] = useState(restoreOneOf(Number(bucket.brownianBeadNm), BROWNIAN_BEAD_RADII_NM, 250));
+      var [brownianMedium, setBrownianMedium] = useState(restoreOneOf(bucket.brownianMedium, BROWNIAN_MEDIA, 'water'));
+      var [osmoticMolarityM, setOsmoticMolarityM] = useState(restoreOneOf(Number(bucket.osmoticMolarityM), OSMOTIC_SOLUTE_MOLARITIES, 0.15));
+      var [osmoticVanTHoffI, setOsmoticVanTHoffI] = useState(restoreOneOf(Number(bucket.osmoticVanTHoffI), OSMOTIC_VAN_T_HOFF_FACTORS, 2));
+      var [electrodeGapCm, setElectrodeGapCm] = useState(restoreOneOf(Number(bucket.electrodeGapCm), ELECTRODE_GAPS_CM, 1));
+      var [appliedVoltageV, setAppliedVoltageV] = useState(restoreOneOf(Number(bucket.appliedVoltageV), DISCHARGE_VOLTAGES_V, 1000));
+      var [solidCrystalId, setSolidCrystalId] = useState(restoreOneOf(bucket.solidCrystalId, SOLID_CRYSTAL_IDS, 'Cu'));
+      var [volatileLiquidId, setVolatileLiquidId] = useState(restoreOneOf(bucket.volatileLiquidId, VOLATILE_LIQUID_IDS, 'water'));
+      var [relativeHumidityPct, setRelativeHumidityPct] = useState(restoreOneOf(Number(bucket.relativeHumidityPct), RELATIVE_HUMIDITY_OPTIONS, 50));
+      var [co2MixingPpm, setCo2MixingPpm] = useState(restoreOneOf(Number(bucket.co2MixingPpm), CO2_MIXING_PPM_OPTIONS, 425));
+      var [shockMachNumber, setShockMachNumber] = useState(restoreOneOf(Number(bucket.shockMachNumber), SHOCK_MACH_OPTIONS, 3));
+      var [fusionFuelId, setFusionFuelId] = useState(restoreOneOf(bucket.fusionFuelId, FUSION_FUEL_IDS, 'DT'));
+      var [gamowTempKeV, setGamowTempKeV] = useState(restoreOneOf(Number(bucket.gamowTempKeV), GAMOW_TEMP_KEV_OPTIONS, 15));
+      var [noiseResistanceOhm, setNoiseResistanceOhm] = useState(restoreOneOf(Number(bucket.noiseResistanceOhm), NOISE_RESISTANCE_OHM_OPTIONS, 1000));
+      var [noiseBandwidthHz, setNoiseBandwidthHz] = useState(restoreOneOf(Number(bucket.noiseBandwidthHz), NOISE_BANDWIDTH_HZ_OPTIONS, 20000));
+      var [astroCloudId, setAstroCloudId] = useState(restoreOneOf(bucket.astroCloudId, ASTRO_CLOUD_IDS, 'bok_globule'));
+      var [aerosolDropletUm, setAerosolDropletUm] = useState(restoreOneOf(Number(bucket.aerosolDropletUm), AEROSOL_DROPLET_UM_OPTIONS, 2.5));
+      var [ventilationAch, setVentilationAch] = useState(restoreOneOf(Number(bucket.ventilationAch), VENTILATION_ACH_OPTIONS, 2));
+      var [sorbentSurfaceId, setSorbentSurfaceId] = useState(restoreOneOf(bucket.sorbentSurfaceId, SORBENT_SURFACE_IDS, 'activated_carbon'));
+      var [windSpeedMs, setWindSpeedMs] = useState(restoreOneOf(Number(bucket.windSpeedMs), WIND_SPEED_MS_OPTIONS, 12));
+      var [workbenchDomain, setWorkbenchDomain] = useState(restoreOneOf(bucket.workbenchDomain, WORKBENCH_DOMAIN_IDS, 'all'));
+      var [workbenchCollapsed, setWorkbenchCollapsed] = useState(bucket.workbenchCollapsed === true);
+      var [workbenchSearch, setWorkbenchSearch] = useState('');
+      var [pinnedWorkbenchIds, setPinnedWorkbenchIds] = useState(function () { return restorePinnedWorkbenchIds(bucket.pinnedWorkbenchIds); });
+      var [pinDrawerOpen, setPinDrawerOpen] = useState(false);
+      var [challengeTrack, setChallengeTrack] = useState(restoreOneOf(bucket.challengeTrack, ['core', 'applied'], 'core'));
+      var [activeMissionId, setActiveMissionId] = useState(restoreOneOf(bucket.activeMissionId, APPLIED_WORKBENCH_MISSIONS.map(function (m) { return m.id; }), 'titan_cryo_retention'));
+      var [completedMissions, setCompletedMissions] = useState(function () { return restoreCompletedMissions(bucket.completedMissions); });
+      var [glossaryOpen, setGlossaryOpen] = useState(false);
+      var [glossarySearch, setGlossarySearch] = useState('');
+      var [notebookScaffoldsOpen, setNotebookScaffoldsOpen] = useState(bucket.notebookScaffoldsOpen === true);
+      var [sessionJsonOpen, setSessionJsonOpen] = useState(false);
+      var [sessionJsonDraft, setSessionJsonDraft] = useState('');
+      var [quizOpen, setQuizOpen] = useState(false);
+      var [quizAnswers, setQuizAnswers] = useState(function () { return restoreQuizAnswers(bucket.quizAnswers); });
+      var [challengeHintTier, setChallengeHintTier] = useState(0);
+      useEffect(function () { setChallengeHintTier(0); }, [challengeTrack, activeChallengeId, activeMissionId]);
+      var [calcOpen, setCalcOpen] = useState(false);
+      var [calcMode, setCalcMode] = useState(bucket.calcMode === 'mixture' ? 'mixture' : 'single');
+      var [calcMoles, setCalcMoles] = useState(bucket.calcMoles == null ? 1 : restoreNumber(bucket.calcMoles, 0.01, 1000, 1));
+      var [mixMolesA, setMixMolesA] = useState(bucket.mixMolesA == null ? 0.8 : restoreNumber(bucket.mixMolesA, 0.01, 500, 0.8));
+      var [mixMolesB, setMixMolesB] = useState(bucket.mixMolesB == null ? 0.2 : restoreNumber(bucket.mixMolesB, 0.01, 500, 0.2));
+      var [mixOverWater, setMixOverWater] = useState(bucket.mixOverWater === true);
+      var [calcVolumeL, setCalcVolumeL] = useState(bucket.calcVolumeL == null ? 22.4 : restoreNumber(bucket.calcVolumeL, 0.05, 10000, 22.4));
+      var [calcTempK, setCalcTempK] = useState(bucket.calcTempK == null ? 298.15 : restoreNumber(bucket.calcTempK, 20, 5000, 298.15));
+      var [csvImportDraft, setCsvImportDraft] = useState('');
+      var [lessonsOpen, setLessonsOpen] = useState(false);
+      var [ideasResolved, setIdeasResolved] = useState(function () { return restoreIdeasResolved(bucket.ideasResolved); });
+      var [dismissedHandoffKey, setDismissedHandoffKey] = useState(restoreText(bucket.dismissedHandoffKey));
+      var [oceanDepthM, setOceanDepthM] = useState(restoreOneOf(bucket.oceanDepthM == null ? NaN : Number(bucket.oceanDepthM), OCEAN_DEPTH_M_OPTIONS, 0));
+      var [oceanSalinityPsu, setOceanSalinityPsu] = useState(restoreOneOf(bucket.oceanSalinityPsu == null ? NaN : Number(bucket.oceanSalinityPsu), OCEAN_SALINITY_PSU_OPTIONS, 35));
+      var [alveolarAltitudeM, setAlveolarAltitudeM] = useState(restoreOneOf(bucket.alveolarAltitudeM == null ? NaN : Number(bucket.alveolarAltitudeM), ALVEOLAR_ALTITUDE_M_OPTIONS, 0));
+      var [bloodPh, setBloodPh] = useState(restoreOneOf(bucket.bloodPh == null ? NaN : Number(bucket.bloodPh), BLOOD_PH_OPTIONS, 7.4));
+      var [magmaMeltId, setMagmaMeltId] = useState(restoreOneOf(bucket.magmaMeltId, MAGMA_MELT_IDS, 'basalt'));
+      var [magmaDepthKm, setMagmaDepthKm] = useState(restoreOneOf(bucket.magmaDepthKm == null ? NaN : Number(bucket.magmaDepthKm), MAGMA_DEPTH_KM_OPTIONS, 1));
+      var [bridgeCategory, setBridgeCategory] = useState(restoreOneOf(bucket.bridgeCategory, BRIDGE_CATEGORY_IDS, 'all'));
       var [ready, setReady] = useState(!!(window.THREE && window.THREE.OrbitControls));
       var [loadError, setLoadError] = useState('');
       var [contextLost, setContextLost] = useState(false);
@@ -1204,22 +4973,79 @@
       function buildLabReport() {
         var title = currentProtocol ? currentProtocol.title : 'Free Laboratory Investigation';
         var trialLines = trials.length ? trials.map(function (trial, i) { return 'Trial ' + (i + 1) + ': ' + trial.temperature + ' K, pressure ' + trial.pressure + ', N=' + trial.count + ', volume=' + Math.round(trial.boxSize * trial.boxSize * trial.boxSize) + ' u\u00B3, gravity=' + Number(trial.gravity || 0).toFixed(1) + ' g*, permeability=' + Number(trial.permeability == null ? 1 : trial.permeability).toFixed(2) + ', preference=' + (trial.membraneSelectivity || 'both') + ', mass B=' + Number(trial.massRatioB || 1).toFixed(1) + 'x, osmotic shift=' + Math.round(Number(trial.osmoticShift || 0) * 100) + '%, solute leak=' + Math.round(Number(trial.soluteLeak || 0) * 100) + '%, mixing=' + Math.round(Number(trial.mixing || 0) * 100) + '%, entropy=' + Math.round(Number(trial.entropy || 0) * 100) + '%, D*A=' + Number(trial.coefficientA || 0).toFixed(2) + ', D*B=' + Number(trial.coefficientB || 0).toFixed(2) + ', A transmission=' + Math.round(Number(trial.transmissionA || 0) * 100) + '%, B transmission=' + Math.round(Number(trial.transmissionB || 0) * 100) + '%, separation=' + Number(trial.separation || 0).toFixed(2) + 'x, milestone=' + (trial.milestoneTime == null ? 'not reached' : Number(trial.milestoneTime).toFixed(1) + ' s'); }).join('\n') : 'No trials recorded yet.';
-        return 'Particle Lab 3D \u2014 ' + title + (currentIdea ? '\n\nIdea under test: ' + currentIdea.idea : '') + '\n\nPrediction:\n' + (prediction || '(not entered)') + '\n\nMeasurements:\n' + trialLines + '\n\nObservation:\n' + (observation || '(not entered)') + '\n\nConclusion:\n' + (conclusion || '(not entered)') + '\n\nModel note: simplified mass-adjustable particles in a deterministic educational simulation.';
+        var kmtSummary = '\n\nQuantitative KMT & Real-Gas Analysis:\nCompressibility Z = ' + liveVdw.z.toFixed(2) + ' (' + liveVdw.label + '), P_ideal=' + liveVdw.idealPressure.toFixed(1) + ', P_vdW=' + liveVdw.vdwPressure.toFixed(1) + ', v_mp=' + liveMaxwellA.vMp.toFixed(2) + ', v_mean=' + liveMaxwellA.vMean.toFixed(2) + ', v_rms=' + liveMaxwellA.vRms.toFixed(2) + ', mean free path=' + currentMeanFreePathTheory.toFixed(1) + ' u';
+        kmtSummary += '\nReal-Gas Reference (' + liveGasMetrics.gasA.formula + ' / ' + liveGasMetrics.gasB.formula + ' @ ' + Math.round(liveGasMetrics.temperatureK) + ' K): v_rms=' + liveGasMetrics.a.vRmsSi.toFixed(1) + ' m/s, c_s=' + liveGasMetrics.a.soundSpeedSi.toFixed(1) + ' m/s, U_m=' + liveGasMetrics.a.molarInternalEnergyKj.toFixed(2) + ' kJ/mol, Graham ratio=' + liveGasMetrics.siGrahamRatio.toFixed(2) + 'x';
+        if (liveThermo) {
+          kmtSummary += '\nFirst-Law Process (' + liveThermo.label + '): \u0394U=' + liveThermo.deltaU.toFixed(1) + ' u, W_by=' + liveThermo.workByGas.toFixed(1) + ' u, Q=' + liveThermo.heatQ.toFixed(1) + ' u, \u0394S/(N*kB)=' + liveThermo.entropyPerNk.toFixed(2);
+        }
+        kmtSummary += '\nKinetic Transport (' + liveTransport.regimeLabel + '): Kn=' + liveTransport.knudsen.toFixed(3) + ', D_model=' + liveTransport.selfDiffusionU.toFixed(2) + ' u\u00B2/s, SI \u03B7=' + liveTransport.siViscosityMicroPaS.toFixed(1) + ' \u00B5Pa\u00B7s, \u03BA=' + liveTransport.siThermalCondMwMK.toFixed(1) + ' mW/(m\u00B7K)';
+        kmtSummary += '\nHeat-Engine Cycle (' + liveCycle.title + ', rV=' + liveCycle.compressionRatio + 'x): \u03B7_th=' + (liveCycle.thermalEfficiency * 100).toFixed(1) + '% vs \u03B7_Carnot=' + (liveCycle.carnotEfficiency * 100).toFixed(1) + '%, W_net=' + liveCycle.netWork.toFixed(1) + ' u';
+        kmtSummary += '\nPlanetary Atmosphere (' + liveAtmosphere.planet.name + ' / ' + liveAtmosphere.gas.formula + '): H=' + liveAtmosphere.scaleHeightKm.toFixed(1) + ' km, v_esc/v_rms=' + liveAtmosphere.escapeRatio.toFixed(1) + 'x (' + liveAtmosphere.retentionLabel + ')';
+        kmtSummary += '\nStatistical Mechanics (' + liveStatMech.gas.formula + '): S_tr,m=' + liveStatMech.sTransMolarJMK.toFixed(1) + ' J/(mol\u00B7K), \u039B_dB=' + liveStatMech.thermalLambdaPm.toFixed(1) + ' pm, tail(\u2265' + liveStatMech.thresholdRatio + 'kT)=' + (liveStatMech.tailFraction * 100).toFixed(1) + '%';
+        kmtSummary += '\nArrhenius Kinetics (Ea=' + liveArrhenius.activationEnergyKjMol + ' kJ/mol, p=' + liveArrhenius.stericFactor + '): Q10=' + liveArrhenius.q10Ratio.toFixed(2) + 'x, v_rel=' + liveArrhenius.vRelSi.toFixed(1) + ' m/s';
+        kmtSummary += '\nGas Acoustics (' + liveAcoustics.gas.formula + '): c_s=' + liveAcoustics.soundSpeedAdiabaticMs.toFixed(1) + ' m/s, Z_ac=' + liveAcoustics.acousticImpedanceRayl.toFixed(0) + ' Rayl, Ma=' + liveAcoustics.machNumber.toFixed(2) + ' (' + liveAcoustics.machLabel + ')';
+        kmtSummary += '\nDoppler Spectroscopy (' + liveDoppler.gas.formula + ' @ ' + liveDoppler.wavelengthNm + ' nm): FWHM=' + liveDoppler.dopplerFwhmPm.toFixed(2) + ' pm, Voigt=' + liveDoppler.voigtFwhmGhz.toFixed(2) + ' GHz (' + liveDoppler.regimeLabel + ')';
+        kmtSummary += '\nJoule-Thomson & Critical Point (' + liveJouleThomson.gas.formula + '): Tc=' + liveJouleThomson.tCriticalK.toFixed(1) + ' K, T_inv=' + Math.round(liveJouleThomson.tInversionK) + ' K, \u03BC_JT=' + liveJouleThomson.muJtKAtm.toFixed(3) + ' K/atm (' + liveJouleThomson.phaseLabel + ')';
+        kmtSummary += '\nVacuum Effusion & Thruster (' + liveEffusion.gasA.formula + '/' + liveEffusion.gasB.formula + ', d=' + liveEffusion.orificeDiameterMm + ' mm): Kn_o=' + liveEffusion.orificeKnudsen.toExponential(2) + ', \u03B1_AB=' + liveEffusion.separationFactorAB.toFixed(2) + 'x, Isp=' + liveEffusion.specificImpulseS.toFixed(1) + ' s';
+        kmtSummary += '\nStokes-Einstein Brownian (' + liveBrownian.mediumLabel + ', r=' + liveBrownian.beadRadiusNm + ' nm): D=' + liveBrownian.diffusivityUm2S.toFixed(2) + ' \u00B5m\u00B2/s, 1s RMS=' + liveBrownian.rmsDisplacement1sUm.toFixed(2) + ' \u00B5m, z0=' + liveBrownian.perrinScaleHeightUm.toFixed(1) + ' \u00B5m';
+        kmtSummary += '\nOsmotic Biophysics (' + liveOsmosisBio.molarityM + 'M, i=' + liveOsmosisBio.vanTHoffI + ', \u03C3=' + liveOsmosisBio.reflectionSigma.toFixed(2) + '): \u03A0_eff=' + liveOsmosisBio.effectiveOsmoticAtm.toFixed(2) + ' atm (' + liveOsmosisBio.tonicityLabel + ')';
+        kmtSummary += '\nPaschen Plasma Breakdown (' + livePlasma.gas.formula + ', d=' + livePlasma.electrodeGapCm + ' cm): V_B=' + Math.round(livePlasma.breakdownVoltageV) + ' V vs V=' + livePlasma.appliedVoltageV + ' V (' + livePlasma.regimeLabel + ', \u03BB_D=' + livePlasma.debyeLengthUm.toFixed(1) + ' \u00B5m)';
+        kmtSummary += '\nDebye Lattice & Lindemann (' + liveLattice.crystal.formula + ', \u0398_D=' + liveLattice.debyeTempK + ' K): C_V,m=' + liveLattice.cvMolarJMK.toFixed(1) + ' J/(mol\u00B7K) (' + (liveLattice.cvFraction * 100).toFixed(0) + '% of 3R), \u03B4_L=' + (liveLattice.lindemannRatio * 100).toFixed(1) + '% (' + liveLattice.regimeLabel + ')';
+        kmtSummary += '\nClausius-Clapeyron Vapor (' + liveVapor.liquid.formula + ', RH=' + liveVapor.relativeHumidityPct + '%): P_sat=' + liveVapor.pSatKpa.toFixed(2) + ' kPa, T_boil=' + liveVapor.boilingPointK.toFixed(1) + ' K, T_dew=' + liveVapor.dewPointK.toFixed(1) + ' K (' + liveVapor.regimeLabel + ')';
+        kmtSummary += '\nIR Modes & Greenhouse (' + liveGreenhouse.gas.formula + ', CO2=' + liveGreenhouse.co2Ppm + ' ppm): ' + liveGreenhouse.irActiveModes + '/' + liveGreenhouse.totalModes + ' IR modes (' + liveGreenhouse.regimeLabel + '), \u0394F=' + liveGreenhouse.forcingWm2.toFixed(2) + ' W/m\u00B2, \u0394T_eq=+' + liveGreenhouse.eqWarmingK.toFixed(2) + ' K';
+        kmtSummary += '\nRankine-Hugoniot Shock (' + liveShockAero.gas.formula + ', M1=' + liveShockAero.machNumber + '): P2/P1=' + liveShockAero.pressureRatio.toFixed(2) + 'x, \u03C12/\u03C11=' + liveShockAero.densityRatio.toFixed(2) + 'x, T0=' + Math.round(liveShockAero.stagnationTempK) + ' K (' + liveShockAero.regimeLabel + ')';
+        kmtSummary += '\nGamow Nuclear Tunneling (' + liveNuclearGamow.fuel.formula + ' @ ' + liveNuclearGamow.plasmaTempKeV + ' keV): E0=' + liveNuclearGamow.gamowPeakKeV.toFixed(1) + ' keV, \u03C4_G=' + liveNuclearGamow.tauGamow.toFixed(1) + ', UF6 \u03B1=' + liveNuclearGamow.uf6Alpha.toFixed(5) + ' (' + liveNuclearGamow.regimeLabel + ')';
+        kmtSummary += '\nJohnson-Nyquist & Drude (R=' + liveThermalNoise.resistanceOhm + ' \u03A9, BW=' + liveThermalNoise.bandwidthHz + ' Hz): V_rms=' + liveThermalNoise.vRmsUv.toFixed(2) + ' \u00B5V, P_N=' + liveThermalNoise.noisePowerDbm.toFixed(1) + ' dBm, v_th/v_d=' + Math.round(liveThermalNoise.thermalToDriftRatio) + 'x';
+        kmtSummary += '\nInterstellar Jeans Collapse (' + liveAstroJeans.cloud.id + ', ' + liveAstroJeans.gas.formula + '): M_J=' + liveAstroJeans.jeansMassSolar.toFixed(2) + ' M_sun vs M_cloud=' + liveAstroJeans.cloudMassSolar + ' M_sun (' + liveAstroJeans.regimeLabel + ')';
+        kmtSummary += '\nWells-Riley Bioaerosol (d=' + liveAerosolEpi.dropletDiameterUm + ' \u00B5m, ' + liveAerosolEpi.ventilationAch + ' ACH): v_s=' + liveAerosolEpi.settlingSpeedMmS.toFixed(2) + ' mm/s, 1h risk=' + liveAerosolEpi.wellsRileyRiskPct.toFixed(1) + '% (' + liveAerosolEpi.regimeLabel + ')';
+        kmtSummary += '\nLangmuir & Betz Energy (' + liveEnergySorbent.sorbent.id + ', v=' + liveEnergySorbent.windSpeedMs + ' m/s): \u03B8=' + (liveEnergySorbent.coverageTheta * 100).toFixed(1) + '%, P_Betz=' + liveEnergySorbent.betzMaxWm2.toFixed(1) + ' W/m\u00B2';
+        kmtSummary += "\nHenry's Law Ocean (" + liveHenrysOcean.gas.formula + ', d=' + liveHenrysOcean.depthM + ' m, S=' + liveHenrysOcean.salinityPsu + ' PSU): C=' + liveHenrysOcean.dissolvedMgL.toFixed(1) + ' mg/L, DO=' + liveHenrysOcean.airDoMgL.toFixed(1) + ' mg/L (' + liveHenrysOcean.regimeLabel + ')';
+        kmtSummary += '\nAlveolar Hill-Bohr (alt=' + liveAlveolarPhys.altitudeM + ' m, pH=' + liveAlveolarPhys.bloodPh.toFixed(2) + '): PAO2=' + liveAlveolarPhys.alveolarPo2MmHg.toFixed(1) + ' mmHg, SaO2=' + liveAlveolarPhys.arterialSaO2Pct.toFixed(1) + '% (' + liveAlveolarPhys.regimeLabel + ')';
+        kmtSummary += '\nMagmatic Volatiles (' + liveMagmaVolatiles.melt.id + ', z=' + liveMagmaVolatiles.depthKm + ' km): gas=' + liveMagmaVolatiles.gasVolPct.toFixed(0) + '%, log10(\u03B7)=' + liveMagmaVolatiles.log10ViscosityPaS.toFixed(1) + ' (' + liveMagmaVolatiles.regimeLabel + ')';
+        kmtSummary += '\nKMT Mastery Challenges completed: ' + completedChallengeCount + '/' + PARTICLE_CHALLENGES.length;
+        kmtSummary += '\nApplied Frontier Missions completed: ' + completedMissionCount + '/' + APPLIED_WORKBENCH_MISSIONS.length;
+        if (experimentLog.length > 0) {
+          kmtSummary += '\nExperiment log (' + experimentLog.length + ' pts, axis ' + activeAxisSpec.title + '): ' + (regression.valid ? ('slope=' + regression.slope.toFixed(4) + ', R^2=' + regression.r2.toFixed(4)) : 'need 2+ varied points for linear fit');
+        }
+        if (savedSnapshots.length > 0) {
+          kmtSummary += '\nSnapshots (' + savedSnapshots.length + '): ' + savedSnapshots.map(function (s) { return s.name + ' [T=' + s.temperature + 'K, P=' + s.pressure + ', V=' + s.volume + ', Z=' + s.compressibilityZ.toFixed(2) + ']'; }).join('; ');
+        }
+        return 'Particle Lab 3D \u2014 ' + title + (currentIdea ? '\n\nIdea under test: ' + currentIdea.idea : '') + '\n\nPrediction:\n' + (prediction || '(not entered)') + '\n\nMeasurements:\n' + trialLines + kmtSummary + '\n\nObservation:\n' + (observation || '(not entered)') + '\n\nConclusion:\n' + (conclusion || '(not entered)') + '\n\nModel note: simplified mass-adjustable particles in a deterministic educational simulation.';
       }
       function localCoachFeedback() {
-        if (!prediction.trim() && currentIdea) return 'You are testing the idea: ' + currentIdea.idea + ' Write what ' + currentIdea.watch + ' should do if that idea is right, and what it should do if the idea is wrong.';
-        if (!prediction.trim()) return 'Start by making a prediction that names the variable you will change. What do you expect that variable to do to particle motion?';
-        if (!trials.length) return 'Your prediction is ready, but you need measurement evidence. Which two conditions could you record while changing only one variable?';
-        if (!observation.trim()) return 'Look at both the visible motion and the measurements. What changed between your trials, and what stayed controlled?';
-        if (conclusion.trim().length < 20) return 'Build your conclusion from evidence: was your prediction supported, and which specific measurement supports that claim?';
-        return 'You have a complete investigation. Which piece of evidence most strongly supports your conclusion, and what alternative explanation can you rule out?';
+        var confoundedVars = [];
+        if (trialComparison && !trialComparison.fair) {
+          confoundedVars = trialComparison.changed;
+        } else if (experimentLog.length >= 2 && !sweepTheoryAudit.fair) {
+          confoundedVars = sweepTheoryAudit.confoundedControls;
+        } else if (snapshotDelta && !snapshotDelta.fair && trials.length === 0 && experimentLog.length < 2) {
+          confoundedVars = snapshotDelta.changed;
+        }
+        return buildSocraticDiagnosticCoach({
+          prediction: prediction,
+          observation: observation,
+          conclusion: conclusion,
+          ideaText: currentIdea ? currentIdea.idea : '',
+          ideaWatch: currentIdea ? currentIdea.watch : '',
+          protocolTitle: currentProtocol ? currentProtocol.title : '',
+          trialCount: trials.length,
+          logCount: experimentLog.length,
+          snapshotCount: savedSnapshots.length,
+          confoundedVars: confoundedVars,
+          fitSummary: regression.valid ? (activeAxisSpec.title + ' R\u00B2=' + regression.r2.toFixed(3)) : '',
+          gasFormula: liveGasMetrics.gasA.formula,
+          zValue: liveVdw.z
+        });
       }
       async function requestLabCoach() {
         if (isCoaching) return; setIsCoaching(true);
         try {
           var feedback = '';
           if (ctx.aiHintsEnabled && typeof ctx.callGemini === 'function') {
-            var prompt = ['You are a warm Socratic K-12 particle-physics lab coach.', 'Respond in at most 4 sentences and end with exactly one question.', 'Do not give the scientific conclusion. Point the student back to their own measurements and controlled variables.', 'Protocol: ' + (currentProtocol ? currentProtocol.title : 'Free laboratory'), 'Prediction: ' + String(prediction || '(none)').slice(0, 800), 'Trials: ' + JSON.stringify(trials.slice(-2)), 'Observation: ' + String(observation || '(none)').slice(0, 800), 'Conclusion draft: ' + String(conclusion || '(none)').slice(0, 1000)].join('\n');
+            var coachGasSpec = getGasIdentity(gasSpeciesA);
+            var coachDomainSpec = WORKBENCH_DOMAINS.filter(function (d) { return d.id === workbenchDomain; })[0] || WORKBENCH_DOMAINS[0];
+            var coachContextLine = 'Chamber gas: ' + coachGasSpec.formula + ' (' + coachGasSpec.name + '), T=' + Math.round(displayTemperature || temperature) + ' K, Z=' + (liveVdw ? liveVdw.z.toFixed(2) : '1.00') + ', workbench focus: ' + coachDomainSpec.label + (experimentLog.length >= 2 && regression && regression.valid ? (', linear fit R^2=' + regression.r2.toFixed(3)) : '');
+            var prompt = ['You are a warm Socratic K-12 particle-physics lab coach.', 'Respond in at most 4 sentences and end with exactly one question.', 'Do not give the scientific conclusion. Point the student back to their own measurements and controlled variables.', 'Protocol: ' + (currentProtocol ? currentProtocol.title : 'Free laboratory'), coachContextLine, 'Prediction: ' + String(prediction || '(none)').slice(0, 800), 'Trials: ' + JSON.stringify(trials.slice(-2)), 'Observation: ' + String(observation || '(none)').slice(0, 800), 'Conclusion draft: ' + String(conclusion || '(none)').slice(0, 1000)].join('\n');
             // The coach button is disabled while this runs, so a request that never settles would strand the
             // student with no way to retry. Losing the race resolves empty, which the next line already treats
             // as "no AI answer" and replaces with the built-in coach.
@@ -1227,8 +5053,8 @@
           }
           if (!feedback.trim()) feedback = localCoachFeedback();
           feedback = feedback.trim().slice(0, 1200); setCoachFeedback(feedback); persist({ coachFeedback: feedback, coachRequests: (bucket.coachRequests || 0) + 1 });
-          if (ctx.announceToSR) ctx.announceToSR('Lab coach feedback is ready.');
-        } catch (error) { var fallback = localCoachFeedback(); setCoachFeedback(fallback); persist({ coachFeedback: fallback }); if (ctx.addToast) ctx.addToast('Using the built-in lab coach.', 'info'); }
+          if (ctx.announceToSR) ctx.announceToSR(__alloT('stem.particlelab3d.sr_coach_ready', 'Lab coach feedback is ready.'));
+        } catch (error) { var fallback = localCoachFeedback(); setCoachFeedback(fallback); persist({ coachFeedback: fallback }); if (ctx.addToast) ctx.addToast(__alloT('stem.particlelab3d.toast_builtin_coach', 'Using the built-in lab coach.'), 'info'); }
         finally { setIsCoaching(false); }
       }
       function copyLabReport() {
@@ -1236,10 +5062,144 @@
         // click there while passing every test on a normal origin. The shell publishes window.alloCopyText
         // (clipboard, then execCommand) for exactly this reason; the inline fallback covers standalone pages.
         var report = buildLabReport();
-        function done(ok) { if (ctx.addToast) ctx.addToast(ok ? 'Lab report copied.' : 'Could not copy the lab report. Select the text and press Control C.', ok ? 'success' : 'info'); }
+        function done(ok) { if (ctx.addToast) ctx.addToast(ok ? __alloT('stem.particlelab3d.toast_report_copied', 'Lab report copied.') : __alloT('stem.particlelab3d.toast_report_copy_failed', 'Could not copy the lab report. Select the text and press Control C.'), ok ? 'success' : 'info'); }
         if (typeof window.alloCopyText === 'function') { Promise.resolve(window.alloCopyText(report)).then(function (ok) { done(ok !== false); }).catch(function () { done(false); }); return; }
         if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(report).then(function () { done(true); }).catch(function () { done(legacyCopy(report)); }); return; }
         done(legacyCopy(report));
+      }
+      function buildMarkdownLabReport() {
+        var title = currentProtocol ? currentProtocol.title : 'Free Laboratory Investigation';
+        var lines = ['# Particle Lab 3D \u2014 ' + title];
+        lines.push('**Active Gas:** ' + liveGasMetrics.gasA.name + ' | **Preset:** ' + preset + ' | **T:** ' + Math.round(displayTemperature || temperature) + ' K | **Z:** ' + liveVdw.z.toFixed(2));
+        lines.push('\n## Hypothesis\n' + (prediction.trim() || '_Not entered_'));
+        lines.push('\n## Quantitative Data & Linear Fit');
+        if (trials.length > 0) {
+          lines.push('| Trial | Temp (K) | Pressure (u) | Count N | Volume (u^3) |');
+          lines.push('| --- | --- | --- | --- | --- |');
+          trials.forEach(function (tr, i) {
+            lines.push('| ' + (i + 1) + ' | ' + tr.temperature + ' | ' + tr.pressure + ' | ' + tr.count + ' | ' + Math.round(Math.pow(tr.boxSize, 3)) + ' |');
+          });
+        }
+        if (experimentLog.length > 0) {
+          lines.push('\n**Sweep Axis:** ' + activeAxisSpec.title + ' | **KMT Theory Slope:** ' + sweepTheoryAudit.theoreticalSlope.toFixed(4) + (regression.valid ? (' | **Fit:** R^2=' + regression.r2.toFixed(4) + ', RMSE=' + regression.rmse.toFixed(3)) : ''));
+          lines.push('| # | Source | ' + activeAxisSpec.xShort + ' | ' + activeAxisSpec.yShort + ' | Note |');
+          lines.push('| --- | --- | --- | --- | --- |');
+          experimentLog.forEach(function (row, idx) {
+            var pt = scatterPoints[idx];
+            lines.push('| ' + row.n + ' | ' + row.source + ' | ' + (pt ? pt.x.toFixed(3) : '-') + ' | ' + (pt ? pt.y.toFixed(3) : '-') + ' | ' + String(row.note || '').replace(/\|/g, '/') + ' |');
+          });
+        } else if (!trials.length) {
+          lines.push('_No recorded trials or logged measurements yet._');
+        }
+        lines.push('\n## Observations\n' + (observation.trim() || '_Not entered_'));
+        lines.push('\n## Claim, Evidence & Reasoning\n' + (conclusion.trim() || '_Not entered_'));
+        lines.push('\n## NGSS Investigation Portfolio (' + investigationMastery.levelLabel + ')');
+        investigationMastery.dimensions.forEach(function (dim) {
+          lines.push('- [' + (dim.met ? 'x' : ' ') + '] **' + dim.sepCode + ' (' + dim.label + ')**');
+        });
+        return lines.join('\n');
+      }
+      function copyMarkdownLabReport() {
+        var md = buildMarkdownLabReport();
+        copyTextSafely(
+          md,
+          __alloT('stem.particlelab3d.toast_markdown_copied', 'Copied Markdown lab report.'),
+          __alloT('stem.particlelab3d.toast_markdown_copy_failed', 'Could not copy Markdown lab report.')
+        );
+      }
+      function buildCurrentSessionJson() {
+        return serializeParticleSession({
+          activeProtocol: activeProtocol,
+          preset: preset,
+          temperature: temperature,
+          count: count,
+          boxSize: boxSize,
+          particleDiameter: particleDiameter,
+          attraction: attraction,
+          gravity: gravity,
+          massRatioB: massRatioB,
+          thermostat: thermostat,
+          holdPressure: holdPressure,
+          gasSpeciesA: gasSpeciesA,
+          gasSpeciesB: gasSpeciesB,
+          dataStudioAxis: dataStudioAxis,
+          workbenchDomain: workbenchDomain,
+          pinnedWorkbenchIds: pinnedWorkbenchIds,
+          trials: trials,
+          experimentLog: experimentLog,
+          savedSnapshots: savedSnapshots,
+          completedChallenges: completedChallenges,
+          completedMissions: completedMissions,
+          quizAnswers: quizAnswers,
+          ideasResolved: ideasResolved,
+          calcMode: calcMode,
+          calcMoles: calcMoles,
+          mixMolesA: mixMolesA,
+          mixMolesB: mixMolesB,
+          mixOverWater: mixOverWater,
+          calcVolumeL: calcVolumeL,
+          calcTempK: calcTempK,
+          prediction: prediction,
+          observation: observation,
+          conclusion: conclusion
+        });
+      }
+      function copySessionJson() {
+        var jsonText = buildCurrentSessionJson();
+        setSessionJsonDraft(jsonText);
+        copyTextSafely(
+          jsonText,
+          __alloT('stem.particlelab3d.toast_session_json_copied', 'Copied portable session JSON.'),
+          __alloT('stem.particlelab3d.toast_session_json_failed', 'Could not copy session JSON.')
+        );
+      }
+      function applySessionJsonImport() {
+        var res = parseParticleSessionJson(sessionJsonDraft);
+        if (!res.ok) {
+          if (ctx.addToast) ctx.addToast(__alloT('stem.particlelab3d.toast_session_json_invalid', 'Session JSON could not be imported: ') + res.error, 'info');
+          announce(__alloT('stem.particlelab3d.sr_session_json_invalid', 'Session JSON import failed.'));
+          return;
+        }
+        var dImp = res.data;
+        setActiveProtocol(dImp.activeProtocol || 'free');
+        setPreset(dImp.preset);
+        setTemperature(dImp.temperature);
+        setCount(dImp.count);
+        setBoxSize(dImp.boxSize);
+        setParticleDiameter(dImp.particleDiameter);
+        setAttraction(dImp.attraction);
+        setGravity(dImp.gravity);
+        setMassRatioB(dImp.massRatioB);
+        setThermostat(dImp.thermostat);
+        setHoldPressure(dImp.holdPressure);
+        setGasSpeciesA(dImp.gasSpeciesA);
+        setGasSpeciesB(dImp.gasSpeciesB);
+        setDataStudioAxis(dImp.dataStudioAxis);
+        setWorkbenchDomain(dImp.workbenchDomain);
+        setPinnedWorkbenchIds(dImp.pinnedWorkbenchIds);
+        setTrials(dImp.trials);
+        setExperimentLog(dImp.experimentLog);
+        setSavedSnapshots(dImp.savedSnapshots);
+        setCompletedChallenges(dImp.completedChallenges);
+        setCompletedMissions(dImp.completedMissions);
+        setQuizAnswers(dImp.quizAnswers);
+        setIdeasResolved(dImp.ideasResolved);
+        setCalcMode(dImp.calcMode);
+        setCalcMoles(dImp.calcMoles);
+        setMixMolesA(dImp.mixMolesA);
+        setMixMolesB(dImp.mixMolesB);
+        setMixOverWater(dImp.mixOverWater);
+        setCalcVolumeL(dImp.calcVolumeL);
+        setCalcTempK(dImp.calcTempK);
+        setPrediction(dImp.prediction);
+        setObservation(dImp.observation);
+        setConclusion(dImp.conclusion);
+        setRunning(false);
+        setHistory([]);
+        setResetKey(function (k) { return k + 1; });
+        persist(dImp);
+        if (ctx.addToast) ctx.addToast(__alloT('stem.particlelab3d.toast_session_json_restored', 'Restored particle session from JSON.'), 'success');
+        announce(__alloT('stem.particlelab3d.sr_session_json_restored', 'Restored full particle session from JSON.'));
       }
       function legacyCopy(text) {
         // execCommand needs the click's transient activation, so this runs synchronously inside the handler.
@@ -1259,7 +5219,7 @@
       }
       function closeKeys() {
         setShowKeys(false);
-        if (ctx.announceToSR) ctx.announceToSR('Closed the keyboard shortcuts panel.');
+        if (ctx.announceToSR) ctx.announceToSR(__alloT('stem.particlelab3d.sr_closed_shortcuts', 'Closed the keyboard shortcuts panel.'));
         restoreKeysFocus();
       }
       function openKeys(opener) {
@@ -1583,9 +5543,2379 @@
         return 'Particles are moving and exchanging direction through collisions. Watch how the measurements settle over time.';
       }
       function openMoleculeLab() {
-        if (typeof ctx.setToolData === 'function') ctx.setToolData(function (prev) { return Object.assign({}, prev, { molecule: Object.assign({}, (prev && prev.molecule) || {}, { moleculeMode: 'viewer' }) }); });
+        var gasSpec = getGasIdentity(gasSpeciesA);
+        if (typeof ctx.setToolData === 'function') {
+          ctx.setToolData(function (prev) {
+            return Object.assign({}, prev, {
+              molecule: Object.assign({}, (prev && prev.molecule) || {}, {
+                moleculeMode: 'viewer',
+                fromTool: 'particleLab3d',
+                sourceGasId: gasSpec.id,
+                sourceGasFormula: gasSpec.formula,
+                sourceTemperatureK: Math.round(displayTemperature || temperature),
+                handoffId: 'pl3d-mol-' + Date.now()
+              })
+            });
+          });
+        }
         if (typeof ctx.setStemLabTab === 'function') ctx.setStemLabTab('explore');
-        if (typeof ctx.setStemLabTool === 'function') { ctx.setStemLabTool('molecule'); if (ctx.announceToSR) ctx.announceToSR('Opening Molecule Lab.'); }
+        if (typeof ctx.setStemLabTool === 'function') { ctx.setStemLabTool('molecule'); if (ctx.announceToSR) ctx.announceToSR(__alloT('stem.particlelab3d.sr_opening_molecule_lab', 'Opening Molecule Lab.')); }
+      }
+      function applyIncomingHandoff() {
+        var handoff = resolveIncomingHandoff(bucket);
+        if (!handoff) return;
+        setPreset(handoff.preset);
+        setTemperature(handoff.temperatureK);
+        setGasSpeciesA(handoff.gasId);
+        setParticleDiameter(handoff.modelDiameter);
+        setAttraction(handoff.modelAttraction);
+        if (handoff.axisId) setDataStudioAxis(handoff.axisId);
+        setRunning(false);
+        setHistory([]);
+        setResetKey(function (k) { return k + 1; });
+        setDismissedHandoffKey(handoff.handoffKey);
+        var handoffPatch = {
+          preset: handoff.preset,
+          temperature: handoff.temperatureK,
+          gasSpeciesA: handoff.gasId,
+          particleDiameter: handoff.modelDiameter,
+          attraction: handoff.modelAttraction,
+          dismissedHandoffKey: handoff.handoffKey
+        };
+        if (handoff.axisId) handoffPatch.dataStudioAxis = handoff.axisId;
+        persist(handoffPatch);
+        announce(__alloT('stem.particlelab3d.sr_applied_handoff', 'Applied imported conditions from ') + handoff.fromLabel + '.');
+        if (ctx.addToast) ctx.addToast(__alloT('stem.particlelab3d.toast_applied_handoff', 'Imported chamber conditions applied.'), 'success');
+      }
+      function dismissIncomingHandoff() {
+        var handoff = resolveIncomingHandoff(bucket);
+        if (!handoff) return;
+        setDismissedHandoffKey(handoff.handoffKey);
+        persist({ dismissedHandoffKey: handoff.handoffKey });
+        announce(__alloT('stem.particlelab3d.sr_dismissed_handoff', 'Dismissed imported conditions notice.'));
+      }
+      function togglePinnedModule(modId) {
+        var mod = WORKBENCH_MODULE_DIRECTORY.filter(function (item) { return item.id === modId; })[0];
+        if (!mod) return;
+        var exists = pinnedWorkbenchIds.indexOf(modId) >= 0;
+        if (!exists && pinnedWorkbenchIds.length >= MAX_PINNED_WORKBENCH_MODULES) {
+          if (ctx.addToast) ctx.addToast(__alloT('stem.particlelab3d.toast_pin_limit', 'You can pin up to 8 modules at once.'), 'info');
+          announce(__alloT('stem.particlelab3d.sr_pin_limit', 'Pinned deck limit of eight modules reached.'));
+          return;
+        }
+        var next = exists
+          ? pinnedWorkbenchIds.filter(function (id) { return id !== modId; })
+          : pinnedWorkbenchIds.concat([modId]);
+        setPinnedWorkbenchIds(next);
+        persist({ pinnedWorkbenchIds: next });
+        announce(exists
+          ? (__alloT('stem.particlelab3d.sr_unpinned_module', 'Removed {title} from Pinned Deck.').replace('{title}', mod.title))
+          : (__alloT('stem.particlelab3d.sr_pinned_module', 'Pinned {title} to Pinned Deck.').replace('{title}', mod.title)));
+      }
+      function applyWorkbenchBundle(bundle) {
+        if (!bundle || !Array.isArray(bundle.moduleIds)) return;
+        var next = restorePinnedWorkbenchIds(bundle.moduleIds);
+        setPinnedWorkbenchIds(next);
+        setWorkbenchDomain('pinned');
+        setWorkbenchCollapsed(false);
+        persist({ pinnedWorkbenchIds: next, workbenchDomain: 'pinned', workbenchCollapsed: false });
+        announce(__alloT('stem.particlelab3d.sr_applied_bundle', 'Loaded lesson bundle: ') + bundle.label + '.');
+      }
+      function clearPinnedModules() {
+        setPinnedWorkbenchIds([]);
+        if (workbenchDomain === 'pinned') {
+          setWorkbenchDomain('all');
+          persist({ pinnedWorkbenchIds: [], workbenchDomain: 'all' });
+        } else {
+          persist({ pinnedWorkbenchIds: [] });
+        }
+        announce(__alloT('stem.particlelab3d.sr_cleared_pins', 'Cleared all pinned workbench modules.'));
+      }
+      function jumpToWorkbenchCard(mod) {
+        if (!mod) return;
+        var staysPinned = workbenchDomain === 'pinned' && pinnedWorkbenchIds.indexOf(mod.id) >= 0;
+        var nextDomain = (workbenchDomain === 'all' || workbenchDomain === mod.domain || staysPinned) ? workbenchDomain : mod.domain;
+        if (workbenchCollapsed) setWorkbenchCollapsed(false);
+        if (nextDomain !== workbenchDomain) setWorkbenchDomain(nextDomain);
+        persist({ workbenchCollapsed: false, workbenchDomain: nextDomain });
+        announce(__alloT('stem.particlelab3d.sr_jumped_module', 'Jumping to module: ') + mod.title);
+        var focusCard = function () {
+          var el = typeof document !== 'undefined' ? document.getElementById(mod.cardId) : null;
+          if (el && typeof el.scrollIntoView === 'function') el.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'center' });
+        };
+        if (typeof requestAnimationFrame === 'function') requestAnimationFrame(focusCard);
+        else focusCard();
+      }
+      function jumpToNotebook() {
+        var titleEl = typeof document !== 'undefined' ? document.getElementById('particle-notebook-title') : null;
+        if (titleEl && typeof titleEl.scrollIntoView === 'function') titleEl.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'start' });
+        var predEl = typeof document !== 'undefined' ? document.getElementById('particle-prediction-input') : null;
+        if (predEl && typeof predEl.focus === 'function') predEl.focus();
+        announce(__alloT('stem.particlelab3d.sr_jumped_to_notebook', 'Jumped to Scientific Notebook.'));
+      }
+      function openHeatLab() {
+        if (typeof ctx.setToolData === 'function') {
+          ctx.setToolData(function (prev) {
+            return Object.assign({}, prev, {
+              _heatLab: Object.assign({}, (prev && prev._heatLab) || {}, {
+                fromTool: 'particleLab3d',
+                sourcePreset: preset,
+                sourceTemperatureK: Math.round(displayTemperature || temperature)
+              })
+            });
+          });
+        }
+        if (typeof ctx.setStemLabTab === 'function') ctx.setStemLabTab('explore');
+        if (typeof ctx.setStemLabTool === 'function') {
+          ctx.setStemLabTool('heatLab');
+          announce(__alloT('stem.particlelab3d.sr_opening_heat_lab', 'Opening Heat and Thermodynamics Lab.'));
+        }
+      }
+      function logCurrentChamber() {
+        var nextN = experimentLog.length ? (Number(experimentLog[experimentLog.length - 1].n) || experimentLog.length) + 1 : 1;
+        var row = makeExperimentRow({
+          id: 'live-' + Date.now() + '-' + nextN,
+          n: nextN,
+          source: 'live',
+          preset: preset,
+          temperature: Math.max(1, displayTemperature || temperature),
+          pressure: gaugePressure > 0 ? gaugePressure : liveVdw.vdwPressure,
+          count: liveCount,
+          boxSize: boxSize,
+          particleDiameter: particleDiameter,
+          attraction: attraction,
+          massRatioB: massRatioB,
+          meanFreePath: currentMeanFreePathTheory,
+          note: preset + (thermostat ? ' isothermal' : '') + (holdPressure ? ' isobaric' : '')
+        });
+        var next = experimentLog.concat([row]).slice(-25).map(function (item, idx) { return Object.assign({}, item, { n: idx + 1 }); });
+        setExperimentLog(next);
+        persist({ experimentLog: next });
+        announce(__alloT('stem.particlelab3d.sr_logged_chamber_state', 'Logged chamber state: ') + row.temperature + ' K, pressure ' + row.pressure.toFixed(1) + ', volume ' + Math.round(row.volume) + '.');
+      }
+      function runParametricSweep() {
+        var startN = experimentLog.length + 1;
+        var sweepRows = buildParticleSweepRows({
+          preset: preset,
+          temperature: Math.max(40, displayTemperature || temperature),
+          pressure: gaugePressure > 0 ? gaugePressure : liveVdw.vdwPressure,
+          count: liveCount,
+          boxSize: boxSize,
+          particleDiameter: particleDiameter,
+          attraction: attraction,
+          massRatioB: massRatioB
+        }, dataStudioAxis, startN);
+        var next = experimentLog.concat(sweepRows).slice(-25).map(function (item, idx) { return Object.assign({}, item, { n: idx + 1 }); });
+        setExperimentLog(next);
+        persist({ experimentLog: next, sweepsRun: (bucket.sweepsRun || 0) + 1 });
+        announce(__alloT('stem.particlelab3d.sr_ran_parametric_sweep', 'Generated 5-point sweep for ') + activeAxisSpec.title + '.');
+      }
+      function clearExperimentLog() {
+        setExperimentLog([]);
+        persist({ experimentLog: [] });
+        announce(__alloT('stem.particlelab3d.sr_cleared_experiment_log', 'Cleared experiment log.'));
+      }
+      function deleteExperimentRow(rowId) {
+        var targetId = String(rowId);
+        var next = experimentLog.filter(function (item) { return String(item.id) !== targetId; })
+          .map(function (item, idx) { return Object.assign({}, item, { n: idx + 1 }); });
+        setExperimentLog(next);
+        persist({ experimentLog: next });
+        announce(__alloT('stem.particlelab3d.sr_deleted_log_row', 'Removed experiment data point from fit.'));
+      }
+      function appendSnapshotsToExperimentLog() {
+        if (!savedSnapshots.length) return;
+        var baseTime = Date.now();
+        var mapped = savedSnapshots.map(function (snap, idx) {
+          return makeExperimentRow({
+            id: 'snaplog-' + baseTime + '-' + idx,
+            n: experimentLog.length + idx + 1,
+            source: 'live',
+            preset: snap.preset,
+            temperature: snap.temperature,
+            pressure: snap.pressure,
+            count: snap.count,
+            boxSize: snap.boxSize,
+            particleDiameter: snap.particleDiameter,
+            attraction: snap.attraction,
+            massRatioB: snap.massRatioB,
+            meanFreePath: snap.meanFreePath,
+            note: 'Snapshot: ' + snap.name
+          });
+        });
+        var next = experimentLog.concat(mapped).slice(-25).map(function (item, idx) { return Object.assign({}, item, { n: idx + 1 }); });
+        setExperimentLog(next);
+        persist({ experimentLog: next });
+        if (ctx.addToast) {
+          ctx.addToast(
+            __alloT('stem.particlelab3d.toast_plotted_snapshots', 'Added {count} chamber snapshots to the linear fit table.').replace('{count}', String(mapped.length)),
+            'success'
+          );
+        }
+        announce(__alloT('stem.particlelab3d.sr_plotted_snapshots', 'Added saved snapshots to experiment fit.'));
+      }
+      function appendTrialsToExperimentLog() {
+        if (!trials.length) return;
+        var baseTime = Date.now();
+        var mapped = trials.map(function (tr, idx) {
+          return makeExperimentRow({
+            id: 'triallog-' + baseTime + '-' + idx,
+            n: experimentLog.length + idx + 1,
+            source: 'live',
+            preset: tr.preset,
+            temperature: tr.temperature,
+            pressure: tr.pressure,
+            count: tr.count,
+            boxSize: tr.boxSize,
+            particleDiameter: tr.particleDiameter,
+            attraction: tr.attraction,
+            massRatioB: tr.massRatioB,
+            note: 'Trial ' + (idx + 1)
+          });
+        });
+        var next = experimentLog.concat(mapped).slice(-25).map(function (item, idx) { return Object.assign({}, item, { n: idx + 1 }); });
+        setExperimentLog(next);
+        persist({ experimentLog: next });
+        if (ctx.addToast) {
+          ctx.addToast(
+            __alloT('stem.particlelab3d.toast_plotted_trials', 'Added {count} recorded trials to the linear fit.').replace('{count}', String(mapped.length)),
+            'success'
+          );
+        }
+        announce(__alloT('stem.particlelab3d.sr_plotted_trials', 'Added recorded trials to experiment fit.'));
+      }
+      function insertSentenceStarter(field, starterText) {
+        var limit = field === 'conclusion' ? 1000 : 800;
+        var currentVal = field === 'prediction' ? prediction : (field === 'observation' ? observation : conclusion);
+        var nextVal = applyNotebookStarter(currentVal, starterText, limit);
+        updateNotebook(field, nextVal);
+        var inputId = field === 'prediction' ? 'particle-prediction-input' : (field === 'observation' ? 'particle-observation-input' : 'particle-conclusion-input');
+        if (typeof document !== 'undefined') {
+          var el = document.getElementById(inputId);
+          if (el && typeof el.focus === 'function') el.focus();
+        }
+        announce(__alloT('stem.particlelab3d.sr_inserted_starter', 'Inserted sentence starter into notebook field.'));
+      }
+      function copyTextSafely(text, okMsg, failMsg) {
+        function done(ok) { if (ctx.addToast) ctx.addToast(ok ? okMsg : failMsg, ok ? 'success' : 'info'); }
+        if (typeof window.alloCopyText === 'function') { Promise.resolve(window.alloCopyText(text)).then(function (ok) { done(ok !== false); }).catch(function () { done(false); }); return; }
+        if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(function () { done(true); }).catch(function () { done(legacyCopy(text)); }); return; }
+        done(legacyCopy(text));
+      }
+      function exportExperimentCsv() {
+        if (!experimentLog.length) {
+          if (ctx.addToast) ctx.addToast(__alloT('stem.particlelab3d.toast_log_before_csv', 'Log or sweep at least one point before exporting CSV.'), 'info');
+          return;
+        }
+        var header = 'Point,Source,Preset,Temperature_K,Pressure_u,Count_N,BoxEdge_u,Volume_u3,InvVolume_1000_per_u3,Diameter_u,Attraction,MassRatioB,vRmsA,vRmsB,MeanFreePath_u,Compressibility_Z,Note';
+        var lines = [header].concat(experimentLog.map(function (r) {
+          return [r.n, r.source, r.preset, r.temperature, r.pressure, r.count, r.boxSize, r.volume, r.invVolume1000, r.particleDiameter, r.attraction, r.massRatioB, r.vRmsA, r.vRmsB, r.meanFreePath, r.compressibilityZ, '"' + String(r.note || '').replace(/"/g, '""') + '"'].join(',');
+        }));
+        copyTextSafely(
+          lines.join('\n'),
+          __alloT('stem.particlelab3d.toast_csv_copied', 'Copied experiment log CSV.'),
+          __alloT('stem.particlelab3d.toast_csv_copy_failed', 'Could not copy experiment CSV.')
+        );
+      }
+      function openInDataStudio(mode) {
+        var targetMode = mode === 'regression' ? 'regression' : 'charts';
+        var gasSpec = getGasIdentity(gasSpeciesA);
+        var rowsSource = experimentLog.length > 0 ? experimentLog : buildParticleSweepRows({
+          preset: preset,
+          temperature: Math.max(40, displayTemperature || temperature),
+          pressure: gaugePressure > 0 ? gaugePressure : liveVdw.vdwPressure,
+          count: liveCount,
+          boxSize: boxSize,
+          particleDiameter: particleDiameter,
+          attraction: attraction,
+          massRatioB: massRatioB
+        }, dataStudioAxis, 1);
+        var dsRows = rowsSource.map(activeAxisSpec.mapRow);
+        if (typeof ctx.setToolData === 'function') {
+          ctx.setToolData(function (prev) {
+            return Object.assign({}, prev, {
+              _dataStudio: Object.assign({}, (prev && prev._dataStudio) || {}, {
+                studioMode: targetMode,
+                chartType: 'scatter',
+                dataSource: 'particleLab3d-log',
+                fromTool: 'particleLab3d',
+                sourceGasId: gasSpec.id,
+                sourceGasFormula: gasSpec.formula,
+                sourceTemperatureK: Math.round(displayTemperature || temperature),
+                sourcePreset: preset,
+                sourceAxisId: dataStudioAxis,
+                handoffId: 'pl3d-ds-' + Date.now(),
+                chartTitle: activeAxisSpec.title,
+                xAxisLabel: activeAxisSpec.xLabel,
+                yAxisLabel: activeAxisSpec.yLabel,
+                showStats: true,
+                showTrendline: true,
+                dataRows: dsRows
+              })
+            });
+          });
+        }
+        if (typeof ctx.setStemLabTab === 'function') ctx.setStemLabTab('explore');
+        if (typeof ctx.setStemLabTool === 'function') {
+          ctx.setStemLabTool('dataStudio');
+          announce(targetMode === 'regression'
+            ? __alloT('stem.particlelab3d.sr_opening_data_studio_regression', 'Opening Data Studio Regression mode with particle gas-law dataset.')
+            : __alloT('stem.particlelab3d.sr_opening_data_studio', 'Opening Data Studio with particle gas-law plot.'));
+        }
+      }
+      function saveChamberSnapshot() {
+        var idx = savedSnapshots.length + 1;
+        var snap = {
+          id: 'snap-' + Date.now() + '-' + idx,
+          name: 'Snap ' + idx + ' (' + preset + ' ' + Math.round(displayTemperature || temperature) + ' K)',
+          preset: preset,
+          temperature: Math.round(displayTemperature || temperature),
+          temperatureSetpoint: Math.round(temperature),
+          pressure: Math.round((gaugePressure > 0 ? gaugePressure : liveVdw.vdwPressure) * 100) / 100,
+          count: liveCount,
+          boxSize: Math.round(boxSize * 10) / 10,
+          volume: Math.round(Math.pow(boxSize, 3)),
+          particleDiameter: Math.round(particleDiameter * 100) / 100,
+          attraction: Math.round(attraction * 100) / 100,
+          gravity: Math.round(gravity * 10) / 10,
+          massRatioB: Math.round(massRatioB * 100) / 100,
+          meanFreePath: Math.round(currentMeanFreePathTheory * 10) / 10,
+          compressibilityZ: Math.round(liveVdw.z * 100) / 100,
+          vRms: Math.round(liveMaxwellA.vRms * 100) / 100
+        };
+        var next = savedSnapshots.concat([snap]).slice(-4);
+        var validSet = {};
+        next.forEach(function (item) { validSet[item.id] = true; });
+        var nextCompare = compareIds.filter(function (id) { return validSet[id]; });
+        if (nextCompare.length < 2 && nextCompare.indexOf(snap.id) < 0) nextCompare = nextCompare.concat([snap.id]).slice(-2);
+        setSavedSnapshots(next);
+        setCompareIds(nextCompare);
+        persist({ savedSnapshots: next, compareIds: nextCompare });
+        announce(__alloT('stem.particlelab3d.sr_saved_snapshot', 'Saved chamber snapshot ') + snap.name + '.');
+      }
+      function restoreChamberSnapshot(snap) {
+        if (!snap) return;
+        var nextPreset = restoreOneOf(snap.preset, ['solid', 'liquid', 'gas', 'diffusion', 'osmosis'], 'gas');
+        var nextTemp = restoreNumber(snap.temperatureSetpoint == null ? snap.temperature : snap.temperatureSetpoint, 40, 900, 300);
+        var nextCount = restoreNumber(snap.count, 24, 120, 64);
+        var nextBox = restoreNumber(snap.boxSize, 7, 18, 11);
+        var nextAttr = restoreNumber(snap.attraction, 0, 1.5, 0);
+        var nextGrav = restoreNumber(snap.gravity, 0, 2, 0);
+        var nextMassB = snap.massRatioB == null ? 1 : restoreNumber(snap.massRatioB, 0.5, 3, 1);
+        var nextDiam = snap.particleDiameter == null ? 0.58 : restoreNumber(snap.particleDiameter, 0.36, 0.9, 0.58);
+        setPreset(nextPreset);
+        setTemperature(nextTemp);
+        setCount(nextCount);
+        setBoxSize(nextBox);
+        setAttraction(nextAttr);
+        setGravity(nextGrav);
+        setMassRatioB(nextMassB);
+        setParticleDiameter(nextDiam);
+        setCameraView('hero'); setRunning(false); setHistory([]); setResetKey(function (k) { return k + 1; });
+        var restoredPatch = {
+          preset: nextPreset,
+          temperature: nextTemp,
+          count: nextCount,
+          boxSize: nextBox,
+          attraction: nextAttr,
+          gravity: nextGrav,
+          massRatioB: nextMassB,
+          particleDiameter: nextDiam
+        };
+        persist(restoredPatch);
+        if (ctx.addToast) ctx.addToast(__alloT('stem.particlelab3d.toast_restored_snapshot', 'Restored {name} into chamber.').replace('{name}', snap.name), 'success');
+        announce(__alloT('stem.particlelab3d.sr_restored_snapshot', 'Restored snapshot ') + snap.name + '.');
+      }
+      function togglePinSnapshot(snapId) {
+        var id = String(snapId);
+        var next = compareIds.indexOf(id) >= 0
+          ? compareIds.filter(function (x) { return x !== id; })
+          : compareIds.concat([id]).slice(-2);
+        setCompareIds(next);
+        persist({ compareIds: next });
+        announce(__alloT('stem.particlelab3d.sr_updated_snapshot_pins', 'Updated A/B snapshot comparison selection.'));
+      }
+      function deleteSnapshot(snapId) {
+        var id = String(snapId);
+        var next = savedSnapshots.filter(function (item) { return item.id !== id; });
+        var nextCompare = compareIds.filter(function (x) { return x !== id; });
+        setSavedSnapshots(next);
+        setCompareIds(nextCompare);
+        persist({ savedSnapshots: next, compareIds: nextCompare });
+        announce(__alloT('stem.particlelab3d.sr_deleted_snapshot', 'Removed saved snapshot.'));
+      }
+      function clearSavedSnapshots() {
+        setSavedSnapshots([]);
+        setCompareIds([]);
+        persist({ savedSnapshots: [], compareIds: [] });
+        if (ctx.addToast) ctx.addToast(__alloT('stem.particlelab3d.toast_cleared_snapshots', 'Cleared saved chamber snapshots.'), 'info');
+        announce(__alloT('stem.particlelab3d.sr_cleared_snapshots', 'Cleared saved chamber snapshots.'));
+      }
+      function answerConceptQuiz(qId, optIdx) {
+        var next = Object.assign({}, quizAnswers);
+        next[qId] = Number(optIdx);
+        var clean = restoreQuizAnswers(next);
+        setQuizAnswers(clean);
+        persist({ quizAnswers: clean });
+        announce(__alloT('stem.particlelab3d.sr_answered_quiz', 'Recorded concept check answer.'));
+      }
+      function resetConceptQuiz() {
+        setQuizAnswers({});
+        persist({ quizAnswers: {} });
+        if (ctx.addToast) ctx.addToast(__alloT('stem.particlelab3d.toast_quiz_reset', 'Concept check answers cleared.'), 'info');
+        announce(__alloT('stem.particlelab3d.sr_quiz_reset', 'Reset concept check answers.'));
+      }
+      function cycleChallengeHint() {
+        var nextTier = challengeHintTier === 0 ? 1 : (challengeHintTier === 1 ? 2 : 0);
+        setChallengeHintTier(nextTier);
+        announce(nextTier === 0
+          ? __alloT('stem.particlelab3d.sr_hint_hidden', 'Closed challenge hint.')
+          : __alloT('stem.particlelab3d.sr_hint_revealed', 'Displayed challenge hint level ') + nextTier + '.');
+      }
+      function trimSweepOutlier() {
+        if (!residualAnalysis || !residualAnalysis.hasOutlier || !residualAnalysis.outlierRowId) return;
+        var outNum = residualAnalysis.outlierN;
+        deleteExperimentRow(residualAnalysis.outlierRowId);
+        if (ctx.addToast) {
+          ctx.addToast(
+            __alloT('stem.particlelab3d.toast_trimmed_outlier', 'Removed outlier #{n} from linear fit.').replace('{n}', String(outNum)),
+            'info'
+          );
+        }
+      }
+      function syncCalcTempFromChamber() {
+        var nextT = Math.round(clamp(displayTemperature || temperature, 40, 900));
+        setCalcTempK(nextT);
+        persist({ calcTempK: nextT });
+        if (ctx.addToast) {
+          ctx.addToast(
+            __alloT('stem.particlelab3d.toast_calc_temp_synced', 'Synced SI Gas Solver to chamber T = {temp} K.').replace('{temp}', String(nextT)),
+            'info'
+          );
+        }
+        announce(__alloT('stem.particlelab3d.sr_calc_temp_synced', 'Synced SI Gas Solver temperature to chamber setpoint.'));
+      }
+      function citeSiCalcInNotebook() {
+        var snippet = calcMode === 'mixture'
+          ? ('Dalton Mixture (' + liveDaltonMix.gasA.formula + ' ' + liveDaltonMix.molesA + ' mol + ' + liveDaltonMix.gasB.formula + ' ' + liveDaltonMix.molesB + ' mol, V=' + liveDaltonMix.volumeL + ' L, T=' + liveDaltonMix.temperatureK + ' K' + (liveDaltonMix.overWater ? ', over H\u2082O' : '') + '): P_A=' + liveDaltonMix.pAAtm.toFixed(3) + ' atm, P_B=' + liveDaltonMix.pBAtm.toFixed(3) + ' atm' + (liveDaltonMix.overWater ? ', P_H2O=' + liveDaltonMix.pWaterAtm.toFixed(3) + ' atm' : '') + ', P_total=' + liveDaltonMix.pTotalAtm.toFixed(3) + ' atm (v_A/v_B=' + liveDaltonMix.vRmsRatioAB.toFixed(2) + 'x).')
+          : ('SI Gas Solver (' + liveSiCalc.gas.formula + ', n=' + liveSiCalc.moles + ' mol, V=' + liveSiCalc.volumeL + ' L, T=' + liveSiCalc.temperatureK + ' K): P_ideal=' + liveSiCalc.pIdealAtm.toFixed(3) + ' atm vs P_vdW=' + liveSiCalc.pVdwAtm.toFixed(3) + ' atm (Z=' + liveSiCalc.compressibilityZ.toFixed(3) + ').');
+        var merged = applyNotebookStarter(observation, snippet, 800);
+        updateNotebook('observation', merged);
+        if (ctx.addToast) ctx.addToast(__alloT('stem.particlelab3d.toast_calc_cited', 'Inserted SI gas calculation into Observations.'), 'success');
+        announce(__alloT('stem.particlelab3d.sr_calc_cited', 'Inserted SI gas state calculation into notebook observation.'));
+      }
+      function stageDaltonMixtureInChamber() {
+        var nextTemp = Math.round(clamp(calcTempK, 40, 900));
+        var nextMassB = liveDaltonMix.chamberMassRatioB;
+        var nextDiam = liveDaltonMix.gasA.modelDiameter;
+        setPreset('diffusion');
+        setMembrane(true);
+        setPermeability(0);
+        setMembraneSelectivity('both');
+        setTemperature(nextTemp);
+        setMassRatioB(nextMassB);
+        setParticleDiameter(nextDiam);
+        setRunning(false);
+        setHistory([]);
+        setResetKey(function (k) { return k + 1; });
+        var mixPatch = {
+          preset: 'diffusion',
+          membrane: true,
+          permeability: 0,
+          membraneSelectivity: 'both',
+          temperature: nextTemp,
+          massRatioB: nextMassB,
+          particleDiameter: nextDiam,
+          gasSpeciesA: gasSpeciesA,
+          gasSpeciesB: gasSpeciesB
+        };
+        persist(mixPatch);
+        if (ctx.addToast) {
+          ctx.addToast(
+            __alloT('stem.particlelab3d.toast_mixture_staged', 'Staged {gasA}/{gasB} Diffusion mixture at {temp} K.')
+              .replace('{gasA}', liveDaltonMix.gasA.formula)
+              .replace('{gasB}', liveDaltonMix.gasB.formula)
+              .replace('{temp}', String(nextTemp)),
+            'success'
+          );
+        }
+        announce(__alloT('stem.particlelab3d.sr_mixture_staged', 'Staged binary gas mixture in the Diffusion chamber.'));
+      }
+      function loadSampleCsvForAxis() {
+        var sample = SAMPLE_BENCH_SWEEP_DATASETS[dataStudioAxis] || SAMPLE_BENCH_SWEEP_DATASETS.boylePV;
+        setCsvImportDraft(sample);
+        announce(__alloT('stem.particlelab3d.sr_loaded_sample_csv', 'Loaded sample classroom bench dataset into CSV box.'));
+      }
+      function applyTabularSweepImport() {
+        var parsed = parseTabularSweepInput(csvImportDraft, dataStudioAxis, experimentLog.length + 1, {
+          preset: preset,
+          temperature: Math.max(40, displayTemperature || temperature),
+          pressure: gaugePressure > 0 ? gaugePressure : liveVdw.vdwPressure,
+          count: liveCount,
+          boxSize: boxSize,
+          particleDiameter: particleDiameter,
+          attraction: attraction,
+          massRatioB: massRatioB
+        });
+        if (!parsed.ok) {
+          if (ctx.addToast) ctx.addToast(__alloT('stem.particlelab3d.toast_csv_import_invalid', 'Could not import table: ') + parsed.error, 'info');
+          announce(__alloT('stem.particlelab3d.sr_csv_import_invalid', 'Tabular sweep import failed.'));
+          return;
+        }
+        var next = experimentLog.concat(parsed.rows).slice(-25).map(function (item, idx) { return Object.assign({}, item, { n: idx + 1 }); });
+        setExperimentLog(next);
+        persist({ experimentLog: next });
+        if (ctx.addToast) {
+          ctx.addToast(
+            __alloT('stem.particlelab3d.toast_csv_imported', 'Imported {count} lab data points onto linear fit.').replace('{count}', String(parsed.rows.length)),
+            'success'
+          );
+        }
+        announce(__alloT('stem.particlelab3d.sr_csv_imported', 'Plotted imported bench dataset on the linear regression graph.'));
+      }
+      function insertNotebookEvidence(field) {
+        var limit = field === 'conclusion' ? 1000 : 800;
+        var snippet = '';
+        if (field === 'observation') {
+          snippet = 'Measured T=' + Math.round(displayTemperature || temperature) + ' K, P=' + (gaugePressure > 0 ? gaugePressure.toFixed(1) : liveVdw.vdwPressure.toFixed(1)) + ' u, N=' + liveCount + ', V=' + Math.round(boxSize * boxSize * boxSize) + ' u³, Z=' + liveVdw.z.toFixed(2) + ', v_rms=' + liveMaxwellA.vRms.toFixed(2) + ' u/s, λ_mfp=' + currentMeanFreePathTheory.toFixed(1) + ' u.';
+          if (trialComparison && trials.length === 2) {
+            snippet += ' Trial delta: ΔT=' + trialComparison.temperatureDelta.toFixed(0) + ' K, ΔP=' + trialComparison.pressureDelta.toFixed(1) + ', ΔV=' + trialComparison.volumeDelta + ' u³.';
+          }
+        } else {
+          snippet = 'Evidence: Z=' + liveVdw.z.toFixed(2) + ' (' + liveVdw.label + '); ';
+          if (regression && regression.valid) {
+            snippet += activeAxisSpec.title + ' fit gives y=' + regression.slope.toFixed(3) + 'x' + (regression.intercept >= 0 ? '+' : '') + regression.intercept.toFixed(2) + ' (R²=' + regression.r2.toFixed(3) + ', n=' + regression.n + ').';
+          } else if (trialGasLaw && trialGasLaw.spread != null) {
+            snippet += 'PV/NT spread ' + Math.round(trialGasLaw.spread * 100) + '% (' + trialGasLaw.label + ').';
+          } else {
+            snippet += 'v_rms=' + liveMaxwellA.vRms.toFixed(2) + ' u/s scales with √(T/m) at constant PV/(NT)=' + (liveGasRatio != null ? liveGasRatio.toFixed(1) : '83.3') + '.';
+          }
+        }
+        var currentVal = field === 'observation' ? observation : conclusion;
+        if (field === 'conclusion') {
+          if (liveThermo) {
+            snippet += ' Path ' + liveThermo.label + ': \u0394U=' + liveThermo.deltaU.toFixed(1) + ', W=' + liveThermo.workByGas.toFixed(1) + ', Q=' + liveThermo.heatQ.toFixed(1) + '.';
+          }
+          snippet += ' Kn=' + liveTransport.knudsen.toFixed(2) + ' (' + liveTransport.regimeLabel + '), ' + liveCycle.title + ' \u03B7=' + (liveCycle.thermalEfficiency * 100).toFixed(1) + '%, ' + liveAtmosphere.planet.name + ' H=' + liveAtmosphere.scaleHeightKm.toFixed(1) + ' km.';
+        }
+        var merged = (currentVal.trim() ? currentVal.trim() + '\n' + snippet : snippet).slice(0, limit);
+        updateNotebook(field, merged);
+        announce(__alloT('stem.particlelab3d.sr_inserted_notebook_evidence', 'Inserted measured evidence into the notebook.'));
+      }
+      function openChemistryLab() {
+        if (typeof ctx.setToolData === 'function') {
+          ctx.setToolData(function (prev) {
+            return Object.assign({}, prev, {
+              chemBalance: Object.assign({}, (prev && prev.chemBalance) || {}, {
+                fromTool: 'particleLab3d',
+                sourceGasId: liveGasMetrics.gasA.id,
+                sourceGasFormula: liveGasMetrics.gasA.formula,
+                sourceMolarMassGPerMol: liveGasMetrics.gasA.molarMass,
+                sourceTemperatureK: Math.round(displayTemperature || temperature)
+              })
+            });
+          });
+        }
+        if (typeof ctx.setStemLabTab === 'function') ctx.setStemLabTab('explore');
+        if (typeof ctx.setStemLabTool === 'function') {
+          ctx.setStemLabTool('chemBalance');
+          announce(__alloT('stem.particlelab3d.sr_opening_chemistry_lab', 'Opening Chemistry Lab.'));
+        }
+      }
+      function applyGasProfileToChamber() {
+        var nextDiam = liveGasMetrics.gasA.modelDiameter;
+        var nextAttr = liveGasMetrics.gasA.modelAttraction;
+        var nextMassB = liveGasMetrics.chamberMassRatioB;
+        setParticleDiameter(nextDiam);
+        setAttraction(nextAttr);
+        setMassRatioB(nextMassB);
+        setRunning(false);
+        setHistory([]);
+        setResetKey(function (k) { return k + 1; });
+        persist({
+          gasSpeciesA: gasSpeciesA,
+          gasSpeciesB: gasSpeciesB,
+          particleDiameter: nextDiam,
+          attraction: nextAttr,
+          massRatioB: nextMassB
+        });
+        announce(__alloT('stem.particlelab3d.sr_applied_gas_profile', 'Applied gas species profile to chamber.'));
+      }
+      function stageCanonicalProcess(kind) {
+        var nowTs = Date.now();
+        var pairSpecs = {
+          isothermal: [
+            { label: 'Iso-A (300K V=2744)', temp: 300, box: 14, count: 72, diam: 0.36, attr: 0, press: 0.66 },
+            { label: 'Iso-B (300K V=1000)', temp: 300, box: 10, count: 72, diam: 0.36, attr: 0, press: 1.80 }
+          ],
+          isobaric: [
+            { label: 'Isobar-A (250K P=1.5)', temp: 250, box: 10, count: 72, diam: 0.36, attr: 0, press: 1.50 },
+            { label: 'Isobar-B (500K P=1.5)', temp: 500, box: 12.6, count: 72, diam: 0.36, attr: 0, press: 1.50 }
+          ],
+          adiabatic: [
+            { label: 'Adiab-A (240K V=2744)', temp: 240, box: 14, count: 72, diam: 0.36, attr: 0, press: 0.53 },
+            { label: 'Adiab-B (470K V=1000)', temp: 470, box: 10, count: 72, diam: 0.36, attr: 0, press: 2.82 }
+          ],
+          isochoric: [
+            { label: 'Isoch-A (200K V=1331)', temp: 200, box: 11, count: 72, diam: 0.36, attr: 0, press: 0.90 },
+            { label: 'Isoch-B (450K V=1331)', temp: 450, box: 11, count: 72, diam: 0.36, attr: 0, press: 2.03 }
+          ]
+        };
+        var spec = pairSpecs[kind] || pairSpecs.isothermal;
+        var built = spec.map(function (st, i) {
+          var vdwP = vanDerWaalsMetrics(st.press, st.box, st.count, st.temp, st.diam, st.attr);
+          return {
+            id: 'proc-' + kind + '-' + nowTs + '-' + i,
+            name: st.label,
+            preset: 'gas',
+            temperature: st.temp,
+            temperatureSetpoint: st.temp,
+            pressure: st.press,
+            count: st.count,
+            boxSize: st.box,
+            volume: Math.round(Math.pow(st.box, 3)),
+            particleDiameter: st.diam,
+            attraction: st.attr,
+            gravity: 0,
+            massRatioB: 1,
+            meanFreePath: Math.round(meanFreePathEstimate(st.count, st.box, st.diam) * 10) / 10,
+            compressibilityZ: Math.round(vdwP.z * 100) / 100,
+            vRms: Math.round(maxwellSpeeds(st.temp, 1).vRms * 100) / 100
+          };
+        });
+        var nextSnaps = savedSnapshots.slice(-2).concat(built).slice(-4);
+        var nextPins = [built[0].id, built[1].id];
+        setSavedSnapshots(nextSnaps);
+        setCompareIds(nextPins);
+        setThermoSource('snapshots');
+        persist({ savedSnapshots: nextSnaps, compareIds: nextPins, thermoSource: 'snapshots' });
+        announce(__alloT('stem.particlelab3d.sr_staged_thermo_process', 'Staged canonical thermodynamic process for P-V comparison.'));
+      }
+      function stageChallengeSetup() {
+        var st = (activeChallenge && activeChallenge.stage) || {};
+        var nextPreset = restoreOneOf(st.preset, ['solid', 'liquid', 'gas', 'diffusion', 'osmosis'], 'gas');
+        var nextTemp = restoreNumber(st.temperature, 40, 900, 300);
+        var nextCount = restoreNumber(st.count, 24, 120, 64);
+        var nextBox = restoreNumber(st.boxSize, 7, 18, 11);
+        var nextDiam = restoreNumber(st.particleDiameter, 0.36, 0.9, 0.58);
+        var nextAttr = restoreNumber(st.attraction, 0, 1.5, 0);
+        var nextMassB = restoreNumber(st.massRatioB, 0.5, 3, 1);
+        setPreset(nextPreset);
+        setTemperature(nextTemp);
+        setCount(nextCount);
+        setBoxSize(nextBox);
+        setParticleDiameter(nextDiam);
+        setAttraction(nextAttr);
+        setMassRatioB(nextMassB);
+        setRunning(false);
+        setHistory([]);
+        setResetKey(function (k) { return k + 1; });
+        persist({
+          preset: nextPreset,
+          temperature: nextTemp,
+          count: nextCount,
+          boxSize: nextBox,
+          particleDiameter: nextDiam,
+          attraction: nextAttr,
+          massRatioB: nextMassB,
+          activeChallengeId: activeChallenge.id
+        });
+        announce(__alloT('stem.particlelab3d.sr_staged_challenge_baseline', 'Loaded baseline chamber configuration for ') + activeChallenge.title + '.');
+      }
+      function verifyActiveChallenge() {
+        if (liveChallengeEval.passed) {
+          var nextMap = Object.assign({}, completedChallenges);
+          nextMap[activeChallenge.id] = true;
+          setCompletedChallenges(nextMap);
+          persist({ completedChallenges: nextMap, activeChallengeId: activeChallenge.id });
+          if (ctx.addToast) ctx.addToast(__alloT('stem.particlelab3d.toast_challenge_passed', 'Challenge verified and marked complete!'), 'success');
+          announce(__alloT('stem.particlelab3d.sr_challenge_passed', 'Verified challenge: ') + activeChallenge.title + '.');
+        } else {
+          if (ctx.addToast) {
+            ctx.addToast(
+              __alloT('stem.particlelab3d.toast_challenge_not_yet', 'Not quite there yet ({current} vs {target}). Adjust chamber controls and try again.')
+                .replace('{current}', liveChallengeEval.currentLabel)
+                .replace('{target}', liveChallengeEval.targetLabel),
+              'info'
+            );
+          }
+          announce(__alloT('stem.particlelab3d.sr_challenge_not_yet', 'Challenge criteria not yet met.'));
+        }
+      }
+      function stageAppliedMissionSetup() {
+        var st = (activeMission && activeMission.stage) || {};
+        var patch = { activeMissionId: activeMission.id, challengeTrack: 'applied' };
+        if (st.preset) {
+          var np = restoreOneOf(st.preset, ['solid', 'liquid', 'gas', 'diffusion', 'osmosis'], 'gas');
+          setPreset(np);
+          patch.preset = np;
+        }
+        if (st.temperature != null) {
+          var nt = restoreNumber(st.temperature, 40, 900, 300);
+          setTemperature(nt);
+          patch.temperature = nt;
+        }
+        if (st.gasSpeciesA) {
+          var ng = restoreOneOf(st.gasSpeciesA, GAS_IDENTITY_IDS, 'N2');
+          setGasSpeciesA(ng);
+          patch.gasSpeciesA = ng;
+        }
+        if (st.planetId) {
+          var npl = restoreOneOf(st.planetId, PLANETARY_BODY_IDS, 'Earth');
+          setPlanetId(npl);
+          patch.planetId = npl;
+        }
+        if (st.planetTempMode) {
+          var ntm = restoreOneOf(st.planetTempMode, ['planet', 'chamber'], 'planet');
+          setPlanetTempMode(ntm);
+          patch.planetTempMode = ntm;
+        }
+        if (st.jtPressureDropAtm != null) {
+          var njt = restoreOneOf(Number(st.jtPressureDropAtm), JT_PRESSURE_DROPS_ATM, 20);
+          setJtPressureDropAtm(njt);
+          patch.jtPressureDropAtm = njt;
+        }
+        if (st.aerosolDropletUm != null) {
+          var ndr = restoreOneOf(Number(st.aerosolDropletUm), AEROSOL_DROPLET_UM_OPTIONS, 2.5);
+          setAerosolDropletUm(ndr);
+          patch.aerosolDropletUm = ndr;
+        }
+        if (st.ventilationAch != null) {
+          var nac = restoreOneOf(Number(st.ventilationAch), VENTILATION_ACH_OPTIONS, 2);
+          setVentilationAch(nac);
+          patch.ventilationAch = nac;
+        }
+        if (st.alveolarAltitudeM != null) {
+          var nal = restoreOneOf(Number(st.alveolarAltitudeM), ALVEOLAR_ALTITUDE_M_OPTIONS, 0);
+          setAlveolarAltitudeM(nal);
+          patch.alveolarAltitudeM = nal;
+        }
+        if (st.bloodPh != null) {
+          var nph = restoreOneOf(Number(st.bloodPh), BLOOD_PH_OPTIONS, 7.4);
+          setBloodPh(nph);
+          patch.bloodPh = nph;
+        }
+        if (st.magmaMeltId) {
+          var nmm = restoreOneOf(st.magmaMeltId, MAGMA_MELT_IDS, 'basalt');
+          setMagmaMeltId(nmm);
+          patch.magmaMeltId = nmm;
+        }
+        if (st.magmaDepthKm != null) {
+          var nmd = restoreOneOf(Number(st.magmaDepthKm), MAGMA_DEPTH_KM_OPTIONS, 1);
+          setMagmaDepthKm(nmd);
+          patch.magmaDepthKm = nmd;
+        }
+        setRunning(false);
+        setHistory([]);
+        setResetKey(function (k) { return k + 1; });
+        persist(patch);
+        announce(__alloT('stem.particlelab3d.sr_staged_mission_baseline', 'Staged applied mission problem state: ') + activeMission.title + '.');
+      }
+      function verifyActiveMission() {
+        if (liveMissionEval.passed) {
+          var nextMap = Object.assign({}, completedMissions);
+          nextMap[activeMission.id] = true;
+          setCompletedMissions(nextMap);
+          persist({ completedMissions: nextMap, activeMissionId: activeMission.id, challengeTrack: 'applied' });
+          if (ctx.addToast) ctx.addToast(__alloT('stem.particlelab3d.toast_mission_passed', 'Applied mission verified and marked complete!'), 'success');
+          announce(__alloT('stem.particlelab3d.sr_mission_passed', 'Verified applied mission: ') + activeMission.title + '.');
+        } else {
+          if (ctx.addToast) {
+            ctx.addToast(
+              __alloT('stem.particlelab3d.toast_mission_not_yet', 'Not quite there yet ({current} vs {target}). Adjust the target module controls and try again.')
+                .replace('{current}', liveMissionEval.currentLabel)
+                .replace('{target}', liveMissionEval.targetLabel),
+              'info'
+            );
+          }
+          announce(__alloT('stem.particlelab3d.sr_mission_not_yet', 'Applied mission criteria not yet met.'));
+        }
+      }
+      function jumpToActiveMissionModule() {
+        if (!activeMission) return;
+        var mod = WORKBENCH_MODULE_DIRECTORY.filter(function (m) { return m.id === activeMission.moduleId; })[0];
+        if (mod) jumpToWorkbenchCard(mod);
+      }
+      function insertActiveWorkbenchEvidence() {
+        var snippet = buildDomainEvidenceSnippet(workbenchDomain, {
+          z: liveVdw.z,
+          vdwPressure: gaugePressure > 0 ? gaugePressure : liveVdw.vdwPressure,
+          knudsen: liveTransport.knudsen,
+          transportRegimeLabel: liveTransport.regimeLabel,
+          cycleTitle: liveCycle.title,
+          thermalEfficiencyPct: liveCycle.thermalEfficiency * 100,
+          planetName: liveAtmosphere.planet.name,
+          scaleHeightKm: liveAtmosphere.scaleHeightKm,
+          escapeRatio: liveAtmosphere.escapeRatio,
+          sTransMolarJMK: liveStatMech.sTransMolarJMK,
+          thermalLambdaPm: liveStatMech.thermalLambdaPm,
+          dopplerFwhmPm: liveDoppler.dopplerFwhmPm,
+          deltaTThrottleK: liveJouleThomson.deltaTThrottleK,
+          effectiveOsmoticAtm: liveOsmosisBio.effectiveOsmoticAtm,
+          tonicityLabel: liveOsmosisBio.tonicityLabel,
+          breakdownVoltageV: livePlasma.breakdownVoltageV,
+          crystalFormula: liveLattice.crystal.formula,
+          cvMolarJMK: liveLattice.cvMolarJMK,
+          co2Ppm: liveGreenhouse.co2Ppm,
+          forcingWm2: liveGreenhouse.forcingWm2,
+          machNumber: liveShockAero.machNumber,
+          shockPressureRatio: liveShockAero.pressureRatio,
+          dropletDiameterUm: liveAerosolEpi.dropletDiameterUm,
+          wellsRileyRiskPct: liveAerosolEpi.wellsRileyRiskPct,
+          henryGasFormula: liveHenrysOcean.gas.formula,
+          dissolvedMgL: liveHenrysOcean.dissolvedMgL,
+          airDoMgL: liveHenrysOcean.airDoMgL,
+          alveolarPo2MmHg: liveAlveolarPhys.alveolarPo2MmHg,
+          arterialSaO2Pct: liveAlveolarPhys.arterialSaO2Pct,
+          p50MmHg: liveAlveolarPhys.p50MmHg,
+          magmaGasVolPct: liveMagmaVolatiles.gasVolPct,
+          magmaLog10Viscosity: liveMagmaVolatiles.log10ViscosityPaS,
+          magmaRegimeLabel: liveMagmaVolatiles.regimeLabel
+        });
+        var merged = (conclusion.trim() ? conclusion.trim() + '\n' + snippet : snippet).slice(0, 1000);
+        updateNotebook('conclusion', merged);
+        announce(__alloT('stem.particlelab3d.sr_inserted_domain_evidence', 'Inserted active workbench evidence into explanation.'));
+      }
+      function buildPvChartAriaLabel() {
+        if (!liveThermo) {
+          return __alloT('stem.particlelab3d.pv_aria_empty', 'Pressure-volume work diagram waiting for two chamber snapshots, trials, or logged states.');
+        }
+        return __alloT('stem.particlelab3d.pv_aria_active', 'Pressure-volume diagram showing {label}. Internal energy change {du}, boundary work {w}, heat transfer {q}.')
+          .replace('{label}', liveThermo.label)
+          .replace('{du}', liveThermo.deltaU.toFixed(1))
+          .replace('{w}', liveThermo.workByGas.toFixed(1))
+          .replace('{q}', liveThermo.heatQ.toFixed(1));
+      }
+      function buildScatterChartAriaLabel() {
+        var tpl = regression && regression.valid
+          ? __alloT('stem.particlelab3d.scatter_aria_fit', 'Scatter plot of {title} with {n} points. Linear fit R squared {r2} and slope {slope}.')
+          : __alloT('stem.particlelab3d.scatter_aria_empty', 'Scatter plot area for {title}. Log states or run a parametric sweep to plot points.');
+        return tpl
+          .replace('{title}', activeAxisSpec.title)
+          .replace('{n}', String(scatterPoints.length))
+          .replace('{r2}', regression && regression.valid ? regression.r2.toFixed(3) : '0')
+          .replace('{slope}', regression && regression.valid ? regression.slope.toFixed(3) : '0');
+      }
+      function stageTransportRegime(kind) {
+        var isVac = kind === 'ballistic_vacuum';
+        var nextCount = isVac ? 24 : 120;
+        var nextBox = isVac ? 18 : 7;
+        var nextDiam = isVac ? 0.36 : 0.86;
+        var nextAttr = 0;
+        setPreset('gas');
+        setCount(nextCount);
+        setBoxSize(nextBox);
+        setParticleDiameter(nextDiam);
+        setAttraction(nextAttr);
+        setRunning(false);
+        setHistory([]);
+        setResetKey(function (k) { return k + 1; });
+        persist({
+          preset: 'gas',
+          count: nextCount,
+          boxSize: nextBox,
+          particleDiameter: nextDiam,
+          attraction: nextAttr
+        });
+        if (ctx.addToast) {
+          ctx.addToast(
+            isVac
+              ? __alloT('stem.particlelab3d.toast_staged_ballistic_vacuum', 'Staged rarefied ballistic vacuum chamber (high Knudsen number).')
+              : __alloT('stem.particlelab3d.toast_staged_dense_continuum', 'Staged dense slip/continuum chamber (low Knudsen number).'),
+            'info'
+          );
+        }
+        announce(
+          isVac
+            ? __alloT('stem.particlelab3d.sr_staged_ballistic_vacuum', 'Staged rarefied ballistic vacuum chamber.')
+            : __alloT('stem.particlelab3d.sr_staged_dense_continuum', 'Staged dense continuum chamber.')
+        );
+      }
+      function loadCycleCornerState(cornerIndex) {
+        var cList = (liveCycle && liveCycle.corners) || [];
+        var corner = cList[cornerIndex] || cList[0];
+        if (!corner) return;
+        var nextBox = clamp(Number(corner.chamberEdge) || 11, 7, 18);
+        var nextTemp = clamp(Math.round(Number(corner.chamberTemp) || 300), 40, 900);
+        setPreset('gas');
+        setBoxSize(nextBox);
+        setTemperature(nextTemp);
+        setThermostat(true);
+        setRunning(false);
+        setHistory([]);
+        setResetKey(function (k) { return k + 1; });
+        persist({
+          preset: 'gas',
+          boxSize: nextBox,
+          temperature: nextTemp,
+          thermostat: true
+        });
+        if (ctx.addToast) {
+          ctx.addToast(
+            __alloT('stem.particlelab3d.toast_loaded_cycle_corner', 'Loaded {title} Corner {idx} (T={temp} K, L={edge} u).')
+              .replace('{title}', liveCycle.title)
+              .replace('{idx}', String(corner.index))
+              .replace('{temp}', String(nextTemp))
+              .replace('{edge}', String(nextBox)),
+            'info'
+          );
+        }
+        announce(
+          __alloT('stem.particlelab3d.sr_loaded_cycle_corner', 'Loaded cycle corner {idx} into chamber.')
+            .replace('{idx}', String(corner.index))
+        );
+      }
+      function stagePlanetAtmosphere() {
+        var pBody = liveAtmosphere.planet;
+        var nextGrav = clamp(pBody.chamberGravity, 0, 2);
+        var nextTemp = clamp(Math.round(pBody.surfaceTempK), 40, 900);
+        var nextDiam = liveGasMetrics.gasA.modelDiameter;
+        var nextAttr = 0;
+        var nextBox = 12;
+        setPreset('gas');
+        setGravity(nextGrav);
+        setTemperature(nextTemp);
+        setParticleDiameter(nextDiam);
+        setAttraction(nextAttr);
+        setBoxSize(nextBox);
+        setRunning(false);
+        setHistory([]);
+        setResetKey(function (k) { return k + 1; });
+        persist({
+          preset: 'gas',
+          gravity: nextGrav,
+          temperature: nextTemp,
+          particleDiameter: nextDiam,
+          attraction: nextAttr,
+          boxSize: nextBox,
+          planetId: pBody.id
+        });
+        if (ctx.addToast) {
+          ctx.addToast(
+            __alloT('stem.particlelab3d.toast_staged_planet_gravity', 'Staged {planet} analog (g*={g}, T={temp} K).')
+              .replace('{planet}', pBody.name)
+              .replace('{g}', nextGrav.toFixed(2))
+              .replace('{temp}', String(nextTemp)),
+            'success'
+          );
+        }
+        announce(
+          __alloT('stem.particlelab3d.sr_staged_planet_gravity', 'Staged planetary gravity and temperature analog for {planet}.')
+            .replace('{planet}', pBody.name)
+        );
+      }
+      function openSolarSystemLab() {
+        if (typeof ctx.setToolData === 'function') {
+          ctx.setToolData(function (prev) {
+            return Object.assign({}, prev, {
+              solarSystem: Object.assign({}, (prev && prev.solarSystem) || {}, {
+                fromTool: 'particleLab3d',
+                sourcePlanetId: liveAtmosphere.planet.id,
+                sourceGasFormula: liveAtmosphere.gas.formula,
+                scaleHeightKm: Number(liveAtmosphere.scaleHeightKm.toFixed(2)),
+                escapeRatio: Number(liveAtmosphere.escapeRatio.toFixed(2)),
+                retention: liveAtmosphere.retention
+              })
+            });
+          });
+        }
+        if (typeof ctx.setStemLabTab === 'function') ctx.setStemLabTab('explore');
+        if (typeof ctx.setStemLabTool === 'function') {
+          ctx.setStemLabTool('solarSystem');
+          announce(__alloT('stem.particlelab3d.sr_opening_solar_system', 'Opening Solar System Lab.'));
+        }
+      }
+      function buildKnudsenSvgAriaLabel() {
+        return __alloT('stem.particlelab3d.knudsen_aria', 'Knudsen flow regime gauge at Kn {kn}, showing {regime}. SI viscosity {visc} micropascal seconds.')
+          .replace('{kn}', liveTransport.knudsen.toFixed(2))
+          .replace('{regime}', liveTransport.regimeLabel)
+          .replace('{visc}', liveTransport.siViscosityMicroPaS.toFixed(1));
+      }
+      function buildCycleSvgAriaLabel() {
+        return __alloT('stem.particlelab3d.cycle_aria', 'Closed loop pressure-volume diagram for {title}. Thermal efficiency {eff} percent, Carnot limit {carnot} percent, net work {w}.')
+          .replace('{title}', liveCycle.title)
+          .replace('{eff}', (liveCycle.thermalEfficiency * 100).toFixed(1))
+          .replace('{carnot}', (liveCycle.carnotEfficiency * 100).toFixed(1))
+          .replace('{w}', liveCycle.netWork.toFixed(1));
+      }
+      function buildAtmosphereSvgAriaLabel() {
+        return __alloT('stem.particlelab3d.atmosphere_aria', 'Barometric density decay and Jeans escape chart for {gas} on {planet}. Scale height {h} kilometers, escape ratio {esc} times v_rms, status {status}.')
+          .replace('{gas}', liveAtmosphere.gas.formula)
+          .replace('{planet}', liveAtmosphere.planet.name)
+          .replace('{h}', liveAtmosphere.scaleHeightKm.toFixed(1))
+          .replace('{esc}', liveAtmosphere.escapeRatio.toFixed(1))
+          .replace('{status}', liveAtmosphere.retentionLabel);
+      }
+      function stageStatMechRegime(kind) {
+        var isCold = kind === 'cold_dense';
+        var nextTemp = isCold ? 40 : 750;
+        var nextBox = isCold ? 7 : 12;
+        var nextCount = isCold ? 120 : 80;
+        var nextAttr = 0;
+        setPreset('gas');
+        setTemperature(nextTemp);
+        setBoxSize(nextBox);
+        setCount(nextCount);
+        setAttraction(nextAttr);
+        setRunning(false);
+        setHistory([]);
+        setResetKey(function (k) { return k + 1; });
+        persist({
+          preset: 'gas',
+          temperature: nextTemp,
+          boxSize: nextBox,
+          count: nextCount,
+          attraction: nextAttr
+        });
+        if (ctx.addToast) {
+          ctx.addToast(
+            isCold
+              ? __alloT('stem.particlelab3d.toast_staged_cold_dense', 'Staged cold dense chamber (40 K, L=7 u, N=120).')
+              : __alloT('stem.particlelab3d.toast_staged_hot_tail', 'Staged hot high-tail chamber (750 K, L=12 u, N=80).'),
+            'info'
+          );
+        }
+        announce(
+          isCold
+            ? __alloT('stem.particlelab3d.sr_staged_cold_dense', 'Staged cold dense chamber.')
+            : __alloT('stem.particlelab3d.sr_staged_hot_tail', 'Staged hot high-energy tail chamber.')
+        );
+      }
+      function stageReactiveMixChamber() {
+        var nextMassB = liveGasMetrics.chamberMassRatioB;
+        var nextAttr = 0;
+        setPreset('diffusion');
+        setMembrane(false);
+        setTemperature(600);
+        setCount(88);
+        setBoxSize(11);
+        setMassRatioB(nextMassB);
+        setAttraction(nextAttr);
+        setRunning(false);
+        setHistory([]);
+        setResetKey(function (k) { return k + 1; });
+        persist({
+          preset: 'diffusion',
+          membrane: false,
+          temperature: 600,
+          count: 88,
+          boxSize: 11,
+          massRatioB: nextMassB,
+          attraction: nextAttr
+        });
+        if (ctx.addToast) {
+          ctx.addToast(__alloT('stem.particlelab3d.toast_staged_reactive_mix', 'Staged unblocked 600 K binary diffusion mixture (A + B).'), 'success');
+        }
+        announce(__alloT('stem.particlelab3d.sr_staged_reactive_mix', 'Staged reactive binary mixture at 600 K.'));
+      }
+      function stageAcousticGasPreset(targetGasId) {
+        var nextGas = restoreOneOf(targetGasId, GAS_IDENTITY_IDS, 'He');
+        var spec = getGasIdentity(nextGas);
+        var nextDiam = spec.modelDiameter;
+        var nextAttr = spec.modelAttraction;
+        setGasSpeciesA(nextGas);
+        setPreset('gas');
+        setTemperature(300);
+        setParticleDiameter(nextDiam);
+        setAttraction(nextAttr);
+        setRunning(false);
+        setHistory([]);
+        setResetKey(function (k) { return k + 1; });
+        persist({
+          gasSpeciesA: nextGas,
+          preset: 'gas',
+          temperature: 300,
+          particleDiameter: nextDiam,
+          attraction: nextAttr
+        });
+        if (ctx.addToast) {
+          ctx.addToast(
+            __alloT('stem.particlelab3d.toast_staged_acoustic_gas', 'Selected {name} acoustic medium at 300 K.')
+              .replace('{name}', spec.name),
+            'info'
+          );
+        }
+        announce(
+          __alloT('stem.particlelab3d.sr_staged_acoustic_gas', 'Selected {name} acoustic preset.')
+            .replace('{name}', spec.name)
+        );
+      }
+      function openWaveLab() {
+        if (typeof ctx.setToolData === 'function') {
+          ctx.setToolData(function (prev) {
+            return Object.assign({}, prev, {
+              wave: Object.assign({}, (prev && prev.wave) || {}, {
+                fromTool: 'particleLab3d',
+                sourceGasId: liveAcoustics.gas.id,
+                sourceGasFormula: liveAcoustics.gas.formula,
+                soundSpeedMs: Number(liveAcoustics.soundSpeedAdiabaticMs.toFixed(1)),
+                frequencyHz: liveAcoustics.frequencyHz,
+                wavelengthM: Number(liveAcoustics.wavelengthM.toFixed(3)),
+                acousticImpedanceRayl: Number(liveAcoustics.acousticImpedanceRayl.toFixed(1))
+              })
+            });
+          });
+        }
+        if (typeof ctx.setStemLabTab === 'function') ctx.setStemLabTab('explore');
+        if (typeof ctx.setStemLabTool === 'function') {
+          ctx.setStemLabTool('wave');
+          announce(__alloT('stem.particlelab3d.sr_opening_wave_lab', 'Opening Wave Lab.'));
+        }
+      }
+      function buildStatMechSvgAriaLabel() {
+        return __alloT('stem.particlelab3d.statmech_aria', 'Maxwell-Boltzmann kinetic energy distribution for {gas}. {pct} percent of molecules exceed {u} times kT, Sackur-Tetrode entropy {s} joules per mole kelvin.')
+          .replace('{gas}', liveStatMech.gas.formula)
+          .replace('{pct}', (liveStatMech.tailFraction * 100).toFixed(1))
+          .replace('{u}', String(liveStatMech.thresholdRatio))
+          .replace('{s}', liveStatMech.sTransMolarJMK.toFixed(1));
+      }
+      function buildArrheniusSvgAriaLabel() {
+        return __alloT('stem.particlelab3d.arrhenius_aria', 'Arrhenius ln k versus inverse temperature plot for activation energy {ea} kilojoules per mole. Plus 10 kelvin Q10 factor is {q10}.')
+          .replace('{ea}', String(liveArrhenius.activationEnergyKjMol))
+          .replace('{q10}', liveArrhenius.q10Ratio.toFixed(2));
+      }
+      function buildAcousticsSvgAriaLabel() {
+        return __alloT('stem.particlelab3d.acoustics_aria', 'Sound wave comparison for {gas} at {cs} meters per second, Mach number {ma}, regime {regime}.')
+          .replace('{gas}', liveAcoustics.gas.formula)
+          .replace('{cs}', liveAcoustics.soundSpeedAdiabaticMs.toFixed(1))
+          .replace('{ma}', liveAcoustics.machNumber.toFixed(2))
+          .replace('{regime}', liveAcoustics.machLabel);
+      }
+      function stageDopplerRegime(kind) {
+        var isCold = kind === 'cold_narrow';
+        var nextTemp = isCold ? 50 : 850;
+        var nextBox = 12;
+        var nextCount = 64;
+        var nextAttr = 0;
+        setPreset('gas');
+        setTemperature(nextTemp);
+        setBoxSize(nextBox);
+        setCount(nextCount);
+        setAttraction(nextAttr);
+        setRunning(false);
+        setHistory([]);
+        setResetKey(function (k) { return k + 1; });
+        persist({
+          preset: 'gas',
+          temperature: nextTemp,
+          boxSize: nextBox,
+          count: nextCount,
+          attraction: nextAttr
+        });
+        if (ctx.addToast) {
+          ctx.addToast(
+            isCold
+              ? __alloT('stem.particlelab3d.toast_staged_cold_line', 'Staged cryogenic narrow spectral chamber (50 K).')
+              : __alloT('stem.particlelab3d.toast_staged_hot_line', 'Staged hot Doppler-broadened chamber (850 K).'),
+            'info'
+          );
+        }
+        announce(
+          isCold
+            ? __alloT('stem.particlelab3d.sr_staged_cold_line', 'Staged cryogenic 50 kelvin spectral chamber.')
+            : __alloT('stem.particlelab3d.sr_staged_hot_line', 'Staged 850 kelvin Doppler-broadened chamber.')
+        );
+      }
+      function stageJouleThomsonState(kind) {
+        var isCondense = kind === 'condense';
+        var rawTc = Math.round((isCondense ? 0.85 : 1.35) * liveJouleThomson.tCriticalK);
+        var nextTemp = isCondense ? clamp(rawTc, 40, 260) : clamp(rawTc, 120, 900);
+        var nextBox = isCondense ? 8 : 7;
+        var nextCount = isCondense ? 96 : 112;
+        var nextAttr = isCondense
+          ? clamp(Math.max(0.55, liveJouleThomson.gas.modelAttraction), 0, 1.5)
+          : clamp(liveJouleThomson.gas.modelAttraction, 0, 1.5);
+        setPreset('gas');
+        setTemperature(nextTemp);
+        setBoxSize(nextBox);
+        setCount(nextCount);
+        setAttraction(nextAttr);
+        setRunning(false);
+        setHistory([]);
+        setResetKey(function (k) { return k + 1; });
+        persist({
+          preset: 'gas',
+          temperature: nextTemp,
+          boxSize: nextBox,
+          count: nextCount,
+          attraction: nextAttr
+        });
+        if (ctx.addToast) {
+          ctx.addToast(
+            isCondense
+              ? __alloT('stem.particlelab3d.toast_staged_jt_condense', 'Staged subcritical droplet-forming chamber.')
+              : __alloT('stem.particlelab3d.toast_staged_jt_supercritical', 'Staged dense supercritical fluid chamber.'),
+            'info'
+          );
+        }
+        announce(
+          isCondense
+            ? __alloT('stem.particlelab3d.sr_staged_jt_condense', 'Staged subcritical chamber.')
+            : __alloT('stem.particlelab3d.sr_staged_jt_supercritical', 'Staged supercritical chamber.')
+        );
+      }
+      function stageSelectiveEffusionChamber() {
+        var nextPerm = 0.28;
+        var nextMassB = liveGasMetrics.chamberMassRatioB;
+        var nextAttr = 0;
+        setPreset('diffusion');
+        setMembrane(true);
+        setPermeability(nextPerm);
+        setMembraneSelectivity('both');
+        setTemperature(380);
+        setCount(84);
+        setBoxSize(12);
+        setMassRatioB(nextMassB);
+        setAttraction(nextAttr);
+        setRunning(false);
+        setHistory([]);
+        setResetKey(function (k) { return k + 1; });
+        persist({
+          preset: 'diffusion',
+          membrane: true,
+          permeability: nextPerm,
+          membraneSelectivity: 'both',
+          temperature: 380,
+          count: 84,
+          boxSize: 12,
+          massRatioB: nextMassB,
+          attraction: nextAttr
+        });
+        if (ctx.addToast) {
+          ctx.addToast(__alloT('stem.particlelab3d.toast_staged_selective_effusion', 'Staged pinhole effusion divider at 380 K (permeability 0.28).'), 'success');
+        }
+        announce(__alloT('stem.particlelab3d.sr_staged_selective_effusion', 'Staged pinhole effusion divider at 380 K.'));
+      }
+      function openOpticsLab() {
+        if (typeof ctx.setToolData === 'function') {
+          ctx.setToolData(function (prev) {
+            return Object.assign({}, prev, {
+              opticsLab: Object.assign({}, (prev && prev.opticsLab) || {}, {
+                fromTool: 'particleLab3d',
+                sourceGasId: liveDoppler.gas.id,
+                sourceGasFormula: liveDoppler.gas.formula,
+                wavelengthNm: liveDoppler.wavelengthNm,
+                dopplerFwhmPm: Number(liveDoppler.dopplerFwhmPm.toFixed(3)),
+                voigtFwhmGhz: Number(liveDoppler.voigtFwhmGhz.toFixed(3)),
+                resolvingPower: Math.round(liveDoppler.resolvingPower)
+              })
+            });
+          });
+        }
+        if (typeof ctx.setStemLabTab === 'function') ctx.setStemLabTab('explore');
+        if (typeof ctx.setStemLabTool === 'function') {
+          ctx.setStemLabTool('opticsLab');
+          announce(__alloT('stem.particlelab3d.sr_opening_optics_lab', 'Opening Optics Lab.'));
+        }
+      }
+      function openSpaceStationLab() {
+        if (typeof ctx.setToolData === 'function') {
+          ctx.setToolData(function (prev) {
+            return Object.assign({}, prev, {
+              spaceStation: Object.assign({}, (prev && prev.spaceStation) || {}, {
+                fromTool: 'particleLab3d',
+                sourceGasId: liveEffusion.gasA.id,
+                sourceGasFormula: liveEffusion.gasA.formula,
+                specificImpulseS: Number(liveEffusion.specificImpulseS.toFixed(1)),
+                thrustMn: Number(liveEffusion.thrustMn.toFixed(2)),
+                orificeDiameterMm: liveEffusion.orificeDiameterMm,
+                flowRegime: liveEffusion.flowRegime
+              })
+            });
+          });
+        }
+        if (typeof ctx.setStemLabTab === 'function') ctx.setStemLabTab('explore');
+        if (typeof ctx.setStemLabTool === 'function') {
+          ctx.setStemLabTool('spaceStation');
+          announce(__alloT('stem.particlelab3d.sr_opening_space_station_lab', 'Opening Space Station Lab.'));
+        }
+      }
+      function buildDopplerSvgAriaLabel() {
+        return __alloT('stem.particlelab3d.doppler_aria', 'Spectral line broadening profile for {gas} at {nm} nanometers. Doppler full width half maximum {pm} picometers, Voigt width {ghz} gigahertz, regime {regime}.')
+          .replace('{gas}', liveDoppler.gas.formula)
+          .replace('{nm}', String(liveDoppler.wavelengthNm))
+          .replace('{pm}', liveDoppler.dopplerFwhmPm.toFixed(2))
+          .replace('{ghz}', liveDoppler.voigtFwhmGhz.toFixed(2))
+          .replace('{regime}', liveDoppler.regimeLabel);
+      }
+      function buildJouleThomsonSvgAriaLabel() {
+        return __alloT('stem.particlelab3d.jt_aria', 'Joule-Thomson coefficient versus temperature curve for {gas}. Critical temperature {tc} kelvin, inversion temperature {tinv} kelvin, coefficient {mu} kelvin per atmosphere.')
+          .replace('{gas}', liveJouleThomson.gas.formula)
+          .replace('{tc}', liveJouleThomson.tCriticalK.toFixed(1))
+          .replace('{tinv}', Math.round(liveJouleThomson.tInversionK))
+          .replace('{mu}', liveJouleThomson.muJtKAtm.toFixed(3));
+      }
+      function buildEffusionSvgAriaLabel() {
+        return __alloT('stem.particlelab3d.effusion_aria', 'Vacuum pump-down effusion curves comparing {gasA} and {gasB}. Enrichment factor {alpha}, orifice Knudsen number {kn}, specific impulse {isp} seconds.')
+          .replace('{gasA}', liveEffusion.gasA.formula)
+          .replace('{gasB}', liveEffusion.gasB.formula)
+          .replace('{alpha}', liveEffusion.separationFactorAB.toFixed(2))
+          .replace('{kn}', liveEffusion.orificeKnudsen.toExponential(1))
+          .replace('{isp}', liveEffusion.specificImpulseS.toFixed(1));
+      }
+      function stageBrownianTracerChamber() {
+        var isGasMed = brownianMedium === 'chamber_gas';
+        var nextPreset = isGasMed ? 'gas' : 'liquid';
+        var nextTemp = 300;
+        var nextCount = 96;
+        var nextBox = 10;
+        var nextAttr = isGasMed ? 0.05 : 0.42;
+        setPreset(nextPreset);
+        setTemperature(nextTemp);
+        setCount(nextCount);
+        setBoxSize(nextBox);
+        setAttraction(nextAttr);
+        setTrace(true);
+        setSelectedParticle(0);
+        setRunning(false);
+        setHistory([]);
+        setResetKey(function (k) { return k + 1; });
+        persist({
+          preset: nextPreset,
+          temperature: nextTemp,
+          count: nextCount,
+          boxSize: nextBox,
+          attraction: nextAttr,
+          trace: true,
+          selectedParticle: 0
+        });
+        if (ctx.addToast) {
+          ctx.addToast(
+            __alloT('stem.particlelab3d.toast_staged_brownian_tracer', 'Staged Brownian random-walk tracer in {medium} at 300 K.')
+              .replace('{medium}', liveBrownian.mediumLabel),
+            'info'
+          );
+        }
+        announce(__alloT('stem.particlelab3d.sr_staged_brownian_tracer', 'Staged Brownian random-walk tracer in chamber.'));
+      }
+      function stageOsmoticBiophysicsChamber(kind) {
+        var isIdeal = kind === 'ideal_semi';
+        var nextSelectivity = isIdeal ? 'a' : 'both';
+        var nextPerm = isIdeal ? 0.75 : 0.65;
+        var nextTemp = 310;
+        var nextCount = 88;
+        var nextBox = 11;
+        var nextAttr = 0.15;
+        setPreset('osmosis');
+        setMembrane(true);
+        setMembraneSelectivity(nextSelectivity);
+        setPermeability(nextPerm);
+        setTemperature(nextTemp);
+        setCount(nextCount);
+        setBoxSize(nextBox);
+        setAttraction(nextAttr);
+        setRunning(false);
+        setHistory([]);
+        setResetKey(function (k) { return k + 1; });
+        persist({
+          preset: 'osmosis',
+          membrane: true,
+          membraneSelectivity: nextSelectivity,
+          permeability: nextPerm,
+          temperature: nextTemp,
+          count: nextCount,
+          boxSize: nextBox,
+          attraction: nextAttr
+        });
+        if (ctx.addToast) {
+          ctx.addToast(
+            isIdeal
+              ? __alloT('stem.particlelab3d.toast_staged_ideal_osmosis', 'Staged high-reflection solvent-only membrane at 310 K.')
+              : __alloT('stem.particlelab3d.toast_staged_leaky_osmosis', 'Staged leaky dual-pore membrane at 310 K.'),
+            'success'
+          );
+        }
+        announce(
+          isIdeal
+            ? __alloT('stem.particlelab3d.sr_staged_ideal_osmosis', 'Staged ideal semipermeable osmosis chamber.')
+            : __alloT('stem.particlelab3d.sr_staged_leaky_osmosis', 'Staged leaky membrane osmosis chamber.')
+        );
+      }
+      function stagePlasmaDischargePreset(kind) {
+        var isNeon = kind === 'neon_glow';
+        var nextGas = isNeon ? 'Ne' : 'Ar';
+        var nextPatm = isNeon ? 0.01 : 1;
+        var nextGap = isNeon ? 1 : 0.2;
+        var nextVolt = isNeon ? 1000 : 35000;
+        var nextTemp = isNeon ? 340 : 850;
+        var nextCount = isNeon ? 64 : 96;
+        var nextBox = isNeon ? 13 : 9;
+        var nextAttr = isNeon ? 0.05 : 0.16;
+        setGasSpeciesA(nextGas);
+        setTransportPressureAtm(nextPatm);
+        setElectrodeGapCm(nextGap);
+        setAppliedVoltageV(nextVolt);
+        setPreset('gas');
+        setTemperature(nextTemp);
+        setCount(nextCount);
+        setBoxSize(nextBox);
+        setAttraction(nextAttr);
+        setRunning(false);
+        setHistory([]);
+        setResetKey(function (k) { return k + 1; });
+        persist({
+          gasSpeciesA: nextGas,
+          transportPressureAtm: nextPatm,
+          electrodeGapCm: nextGap,
+          appliedVoltageV: nextVolt,
+          preset: 'gas',
+          temperature: nextTemp,
+          count: nextCount,
+          boxSize: nextBox,
+          attraction: nextAttr
+        });
+        if (ctx.addToast) {
+          ctx.addToast(
+            isNeon
+              ? __alloT('stem.particlelab3d.toast_staged_neon_glow', 'Staged low-pressure neon glow tube (0.01 atm, 1000 V).')
+              : __alloT('stem.particlelab3d.toast_staged_argon_arc', 'Staged high-pressure argon arc chamber (1 atm, 0.2 cm, 35 kV).'),
+            'info'
+          );
+        }
+        announce(
+          isNeon
+            ? __alloT('stem.particlelab3d.sr_staged_neon_glow', 'Staged neon glow discharge chamber.')
+            : __alloT('stem.particlelab3d.sr_staged_argon_arc', 'Staged argon arc discharge chamber.')
+        );
+      }
+      function openCellLab() {
+        if (typeof ctx.setToolData === 'function') {
+          ctx.setToolData(function (prev) {
+            return Object.assign({}, prev, {
+              cell: Object.assign({}, (prev && prev.cell) || {}, {
+                fromTool: 'particleLab3d',
+                molarityM: liveOsmosisBio.molarityM,
+                vanTHoffI: liveOsmosisBio.vanTHoffI,
+                effectiveOsmoticAtm: Number(liveOsmosisBio.effectiveOsmoticAtm.toFixed(3)),
+                tonicity: liveOsmosisBio.tonicity,
+                brownianDiffusivityUm2S: Number(liveBrownian.diffusivityUm2S.toFixed(3))
+              })
+            });
+          });
+        }
+        if (typeof ctx.setStemLabTab === 'function') ctx.setStemLabTab('explore');
+        if (typeof ctx.setStemLabTool === 'function') {
+          ctx.setStemLabTool('cell');
+          announce(__alloT('stem.particlelab3d.sr_opening_cell_lab', 'Opening Cell Biology Lab.'));
+        }
+      }
+      function openMagnetismLab() {
+        if (typeof ctx.setToolData === 'function') {
+          ctx.setToolData(function (prev) {
+            return Object.assign({}, prev, {
+              magnetism: Object.assign({}, (prev && prev.magnetism) || {}, {
+                fromTool: 'particleLab3d',
+                sourceGasId: livePlasma.gas.id,
+                breakdownVoltageV: Math.round(livePlasma.breakdownVoltageV),
+                ignited: livePlasma.ignited,
+                debyeLengthUm: Number(livePlasma.debyeLengthUm.toFixed(2)),
+                plasmaFreqGhz: Number(livePlasma.plasmaFreqGhz.toFixed(3))
+              })
+            });
+          });
+        }
+        if (typeof ctx.setStemLabTab === 'function') ctx.setStemLabTab('explore');
+        if (typeof ctx.setStemLabTool === 'function') {
+          ctx.setStemLabTool('magnetism');
+          announce(__alloT('stem.particlelab3d.sr_opening_magnetism_lab', 'Opening Magnetism Lab.'));
+        }
+      }
+      function stageLatticeSolidPreset(kind) {
+        var isCold = kind === 'quantum_cold';
+        var nextCrystal = isCold ? 'Diamond' : 'Cu';
+        var nextPreset = isCold ? 'solid' : 'liquid';
+        var nextTemp = isCold ? 120 : 880;
+        var nextCount = 96;
+        var nextBox = isCold ? 8.5 : 9.5;
+        var nextAttr = isCold ? 1.25 : 0.85;
+        setSolidCrystalId(nextCrystal);
+        setPreset(nextPreset);
+        setTemperature(nextTemp);
+        setCount(nextCount);
+        setBoxSize(nextBox);
+        setAttraction(nextAttr);
+        setRunning(false);
+        setHistory([]);
+        setResetKey(function (k) { return k + 1; });
+        persist({
+          solidCrystalId: nextCrystal,
+          preset: nextPreset,
+          temperature: nextTemp,
+          count: nextCount,
+          boxSize: nextBox,
+          attraction: nextAttr
+        });
+        if (ctx.addToast) {
+          ctx.addToast(
+            isCold
+              ? __alloT('stem.particlelab3d.toast_staged_cold_diamond', 'Staged cold diamond lattice at 120 K showing Debye quantum phonon freeze-out.')
+              : __alloT('stem.particlelab3d.toast_staged_premelt_copper', 'Staged high-amplitude pre-melting copper lattice at 880 K.'),
+            'info'
+          );
+        }
+        announce(
+          isCold
+            ? __alloT('stem.particlelab3d.sr_staged_cold_diamond', 'Staged cold diamond crystal chamber.')
+            : __alloT('stem.particlelab3d.sr_staged_premelt_copper', 'Staged pre-melting copper crystal chamber.')
+        );
+      }
+      function stageVaporEquilibriumPreset(kind) {
+        var isFlash = kind === 'vacuum_flash_boil';
+        var nextLiquid = 'water';
+        var nextRh = isFlash ? 100 : 75;
+        var nextPatm = isFlash ? 0.1 : 1;
+        var nextPreset = isFlash ? 'gas' : 'liquid';
+        var nextTemp = isFlash ? 330 : 350;
+        var nextCount = isFlash ? 72 : 90;
+        var nextBox = isFlash ? 13 : 9.5;
+        var nextAttr = isFlash ? 0.28 : 0.72;
+        setVolatileLiquidId(nextLiquid);
+        setRelativeHumidityPct(nextRh);
+        setTransportPressureAtm(nextPatm);
+        setPreset(nextPreset);
+        setTemperature(nextTemp);
+        setCount(nextCount);
+        setBoxSize(nextBox);
+        setAttraction(nextAttr);
+        setRunning(false);
+        setHistory([]);
+        setResetKey(function (k) { return k + 1; });
+        persist({
+          volatileLiquidId: nextLiquid,
+          relativeHumidityPct: nextRh,
+          transportPressureAtm: nextPatm,
+          preset: nextPreset,
+          temperature: nextTemp,
+          count: nextCount,
+          boxSize: nextBox,
+          attraction: nextAttr
+        });
+        if (ctx.addToast) {
+          ctx.addToast(
+            isFlash
+              ? __alloT('stem.particlelab3d.toast_staged_vacuum_boil', 'Staged reduced-pressure flash boil at 0.1 atm and 330 K.')
+              : __alloT('stem.particlelab3d.toast_staged_water_simmer', 'Staged simmering water coexistence at 1 atm and 350 K.'),
+            isFlash ? 'info' : 'success'
+          );
+        }
+        announce(
+          isFlash
+            ? __alloT('stem.particlelab3d.sr_staged_vacuum_boil', 'Staged low-pressure flash boiling chamber.')
+            : __alloT('stem.particlelab3d.sr_staged_water_simmer', 'Staged simmering liquid vapor coexistence chamber.')
+        );
+      }
+      function stageGreenhouseIrPreset(kind) {
+        var isAbsorber = kind === 'doubled_co2_absorber';
+        var nextGas = isAbsorber ? 'CO2' : 'N2';
+        var nextPpm = isAbsorber ? 560 : 280;
+        var nextPatm = 1;
+        var nextPreset = 'gas';
+        var nextTemp = isAbsorber ? 305 : 288;
+        var nextCount = isAbsorber ? 80 : 72;
+        var nextBox = 11;
+        var nextAttr = isAbsorber ? 0.42 : 0.15;
+        setGasSpeciesA(nextGas);
+        setCo2MixingPpm(nextPpm);
+        setTransportPressureAtm(nextPatm);
+        setPreset(nextPreset);
+        setTemperature(nextTemp);
+        setCount(nextCount);
+        setBoxSize(nextBox);
+        setAttraction(nextAttr);
+        setRunning(false);
+        setHistory([]);
+        setResetKey(function (k) { return k + 1; });
+        persist({
+          gasSpeciesA: nextGas,
+          co2MixingPpm: nextPpm,
+          transportPressureAtm: nextPatm,
+          preset: nextPreset,
+          temperature: nextTemp,
+          count: nextCount,
+          boxSize: nextBox,
+          attraction: nextAttr
+        });
+        if (ctx.addToast) {
+          ctx.addToast(
+            isAbsorber
+              ? __alloT('stem.particlelab3d.toast_staged_co2_absorber', 'Staged IR-active carbon dioxide at 560 ppm (+3.71 W/m\u00B2 forcing).')
+              : __alloT('stem.particlelab3d.toast_staged_transparent_n2', 'Staged IR-transparent diatomic nitrogen at pre-industrial 280 ppm baseline.'),
+            'info'
+          );
+        }
+        announce(
+          isAbsorber
+            ? __alloT('stem.particlelab3d.sr_staged_co2_absorber', 'Staged IR-active carbon dioxide greenhouse chamber.')
+            : __alloT('stem.particlelab3d.sr_staged_transparent_n2', 'Staged IR-transparent nitrogen reference chamber.')
+        );
+      }
+      function openSemiconductorLab() {
+        if (typeof ctx.setToolData === 'function') {
+          ctx.setToolData(function (prev) {
+            return Object.assign({}, prev, {
+              semiconductor: Object.assign({}, (prev && prev.semiconductor) || {}, {
+                fromTool: 'particleLab3d',
+                crystalId: liveLattice.crystalId,
+                debyeTempK: liveLattice.debyeTempK,
+                cvMolarJMK: Number(liveLattice.cvMolarJMK.toFixed(2)),
+                lindemannRatio: Number(liveLattice.lindemannRatio.toFixed(4)),
+                temperatureK: Math.round(liveLattice.temperature)
+              })
+            });
+          });
+        }
+        if (typeof ctx.setStemLabTab === 'function') ctx.setStemLabTab('explore');
+        if (typeof ctx.setStemLabTool === 'function') {
+          ctx.setStemLabTool('semiconductor');
+          announce(__alloT('stem.particlelab3d.sr_opening_semiconductor_lab', 'Opening Semiconductor Lab.'));
+        }
+      }
+      function openWeatherSystemsLab() {
+        if (typeof ctx.setToolData === 'function') {
+          ctx.setToolData(function (prev) {
+            return Object.assign({}, prev, {
+              weatherSystems: Object.assign({}, (prev && prev.weatherSystems) || {}, {
+                fromTool: 'particleLab3d',
+                liquidId: liveVapor.liquidId,
+                pSatKpa: Number(liveVapor.pSatKpa.toFixed(2)),
+                boilingPointK: Number(liveVapor.boilingPointK.toFixed(2)),
+                dewPointK: Number(liveVapor.dewPointK.toFixed(2)),
+                relativeHumidityPct: liveVapor.relativeHumidityPct
+              })
+            });
+          });
+        }
+        if (typeof ctx.setStemLabTab === 'function') ctx.setStemLabTab('explore');
+        if (typeof ctx.setStemLabTool === 'function') {
+          ctx.setStemLabTool('weatherSystems');
+          announce(__alloT('stem.particlelab3d.sr_opening_weather_systems_lab', 'Opening Weather Systems Lab.'));
+        }
+      }
+      function openClimateExplorer() {
+        if (typeof ctx.setToolData === 'function') {
+          ctx.setToolData(function (prev) {
+            return Object.assign({}, prev, {
+              climateExplorer: Object.assign({}, (prev && prev.climateExplorer) || {}, {
+                fromTool: 'particleLab3d',
+                sourceGasId: liveGreenhouse.gas.id,
+                irActive: liveGreenhouse.irActive,
+                co2Ppm: liveGreenhouse.co2Ppm,
+                forcingWm2: Number(liveGreenhouse.forcingWm2.toFixed(2)),
+                eqWarmingK: Number(liveGreenhouse.eqWarmingK.toFixed(2))
+              })
+            });
+          });
+        }
+        if (typeof ctx.setStemLabTab === 'function') ctx.setStemLabTab('explore');
+        if (typeof ctx.setStemLabTool === 'function') {
+          ctx.setStemLabTool('climateExplorer');
+          announce(__alloT('stem.particlelab3d.sr_opening_climate_explorer', 'Opening Climate Explorer.'));
+        }
+      }
+      function stageShockAeroPreset(kind) {
+        var isHypersonic = kind === 'hypersonic_reentry';
+        var nextGas = 'N2';
+        var nextMach = isHypersonic ? 5 : 0.8;
+        var nextPatm = isHypersonic ? 0.01 : 0.25;
+        var nextTemp = isHypersonic ? 860 : 220;
+        var nextCount = isHypersonic ? 96 : 64;
+        var nextBox = isHypersonic ? 9.5 : 12;
+        var nextAttr = 0.15;
+        setGasSpeciesA(nextGas);
+        setShockMachNumber(nextMach);
+        setTransportPressureAtm(nextPatm);
+        setPreset('gas');
+        setTemperature(nextTemp);
+        setCount(nextCount);
+        setBoxSize(nextBox);
+        setAttraction(nextAttr);
+        setRunning(false);
+        setHistory([]);
+        setResetKey(function (k) { return k + 1; });
+        persist({
+          gasSpeciesA: nextGas,
+          shockMachNumber: nextMach,
+          transportPressureAtm: nextPatm,
+          preset: 'gas',
+          temperature: nextTemp,
+          count: nextCount,
+          boxSize: nextBox,
+          attraction: nextAttr
+        });
+        if (ctx.addToast) {
+          ctx.addToast(
+            isHypersonic
+              ? __alloT('stem.particlelab3d.toast_staged_mach5_shock', 'Staged Mach 5 hypersonic nitrogen reentry shock at 860 K.')
+              : __alloT('stem.particlelab3d.toast_staged_transonic_cruise', 'Staged subsonic Mach 0.8 nitrogen cruise chamber at 220 K.'),
+            'info'
+          );
+        }
+        announce(
+          isHypersonic
+            ? __alloT('stem.particlelab3d.sr_staged_mach5_shock', 'Staged Mach 5 hypersonic shock chamber.')
+            : __alloT('stem.particlelab3d.sr_staged_transonic_cruise', 'Staged subsonic cruise chamber.')
+        );
+      }
+      function stageNuclearGamowPreset(kind) {
+        var isIter = kind === 'iter_dt_burn';
+        var nextFuel = isIter ? 'DT' : 'DD';
+        var nextTempKev = isIter ? 15 : 1.3;
+        var nextGas = 'He';
+        var nextTemp = isIter ? 900 : 720;
+        var nextCount = isIter ? 104 : 88;
+        var nextBox = isIter ? 9 : 10;
+        var nextAttr = 0.02;
+        setFusionFuelId(nextFuel);
+        setGamowTempKeV(nextTempKev);
+        setGasSpeciesA(nextGas);
+        setPreset('gas');
+        setTemperature(nextTemp);
+        setCount(nextCount);
+        setBoxSize(nextBox);
+        setAttraction(nextAttr);
+        setRunning(false);
+        setHistory([]);
+        setResetKey(function (k) { return k + 1; });
+        persist({
+          fusionFuelId: nextFuel,
+          gamowTempKeV: nextTempKev,
+          gasSpeciesA: nextGas,
+          preset: 'gas',
+          temperature: nextTemp,
+          count: nextCount,
+          boxSize: nextBox,
+          attraction: nextAttr
+        });
+        if (ctx.addToast) {
+          ctx.addToast(
+            isIter
+              ? __alloT('stem.particlelab3d.toast_staged_iter_dt', 'Staged ITER D-T fusion burn plasma at 15 keV.')
+              : __alloT('stem.particlelab3d.toast_staged_solar_core_dd', 'Staged 1.3 keV solar-core D-D quantum tunneling plasma.'),
+            isIter ? 'success' : 'info'
+          );
+        }
+        announce(
+          isIter
+            ? __alloT('stem.particlelab3d.sr_staged_iter_dt', 'Staged ITER D-T fusion plasma chamber.')
+            : __alloT('stem.particlelab3d.sr_staged_solar_core_dd', 'Staged solar-core D-D tunneling chamber.')
+        );
+      }
+      function stageThermalNoisePreset(kind) {
+        var isCryo = kind === 'cryo_low_noise';
+        var nextR = isCryo ? 50 : 10000000;
+        var nextBw = isCryo ? 1000 : 1000000;
+        var nextPreset = isCryo ? 'solid' : 'gas';
+        var nextTemp = isCryo ? 45 : 850;
+        var nextCount = isCryo ? 96 : 80;
+        var nextBox = isCryo ? 8.5 : 11;
+        var nextAttr = isCryo ? 1.2 : 0.16;
+        setNoiseResistanceOhm(nextR);
+        setNoiseBandwidthHz(nextBw);
+        setPreset(nextPreset);
+        setTemperature(nextTemp);
+        setCount(nextCount);
+        setBoxSize(nextBox);
+        setAttraction(nextAttr);
+        setRunning(false);
+        setHistory([]);
+        setResetKey(function (k) { return k + 1; });
+        persist({
+          noiseResistanceOhm: nextR,
+          noiseBandwidthHz: nextBw,
+          preset: nextPreset,
+          temperature: nextTemp,
+          count: nextCount,
+          boxSize: nextBox,
+          attraction: nextAttr
+        });
+        if (ctx.addToast) {
+          ctx.addToast(
+            isCryo
+              ? __alloT('stem.particlelab3d.toast_staged_cryo_low_noise', 'Staged cryogenic 45 K low-noise 50-ohm receiver chamber.')
+              : __alloT('stem.particlelab3d.toast_staged_hot_high_z', 'Staged high-temperature 850 K, 10 M-ohm thermal noise chamber.'),
+            'info'
+          );
+        }
+        announce(
+          isCryo
+            ? __alloT('stem.particlelab3d.sr_staged_cryo_low_noise', 'Staged cryogenic low-noise chamber.')
+            : __alloT('stem.particlelab3d.sr_staged_hot_high_z', 'Staged hot high-impedance noise chamber.')
+        );
+      }
+      function openFlightSimLab() {
+        if (typeof ctx.setToolData === 'function') {
+          ctx.setToolData(function (prev) {
+            return Object.assign({}, prev, {
+              flightSim: Object.assign({}, (prev && prev.flightSim) || {}, {
+                fromTool: 'particleLab3d',
+                sourceGasId: liveShockAero.gas.id,
+                machNumber: liveShockAero.machNumber,
+                pressureRatio: Number(liveShockAero.pressureRatio.toFixed(3)),
+                densityRatio: Number(liveShockAero.densityRatio.toFixed(3)),
+                stagnationTempK: Math.round(liveShockAero.stagnationTempK)
+              })
+            });
+          });
+        }
+        if (typeof ctx.setStemLabTab === 'function') ctx.setStemLabTab('explore');
+        if (typeof ctx.setStemLabTool === 'function') {
+          ctx.setStemLabTool('flightSim');
+          announce(__alloT('stem.particlelab3d.sr_opening_flight_sim', 'Opening Flight Simulator.'));
+        }
+      }
+      function openNuclearLab() {
+        if (typeof ctx.setToolData === 'function') {
+          ctx.setToolData(function (prev) {
+            return Object.assign({}, prev, {
+              nuclearLab: Object.assign({}, (prev && prev.nuclearLab) || {}, {
+                fromTool: 'particleLab3d',
+                fuelId: liveNuclearGamow.fuelId,
+                plasmaTempKeV: liveNuclearGamow.plasmaTempKeV,
+                gamowPeakKeV: Number(liveNuclearGamow.gamowPeakKeV.toFixed(2)),
+                tauGamow: Number(liveNuclearGamow.tauGamow.toFixed(2)),
+                uf6SymmetricStages: liveNuclearGamow.uf6SymmetricStages
+              })
+            });
+          });
+        }
+        if (typeof ctx.setStemLabTab === 'function') ctx.setStemLabTab('explore');
+        if (typeof ctx.setStemLabTool === 'function') {
+          ctx.setStemLabTool('nuclearLab');
+          announce(__alloT('stem.particlelab3d.sr_opening_nuclear_lab', 'Opening Nuclear Physics Lab.'));
+        }
+      }
+      function openCircuitLab() {
+        if (typeof ctx.setToolData === 'function') {
+          ctx.setToolData(function (prev) {
+            return Object.assign({}, prev, {
+              circuit: Object.assign({}, (prev && prev.circuit) || {}, {
+                fromTool: 'particleLab3d',
+                temperatureK: Math.round(liveThermalNoise.temperature),
+                resistanceOhm: liveThermalNoise.resistanceOhm,
+                bandwidthHz: liveThermalNoise.bandwidthHz,
+                vRmsUv: Number(liveThermalNoise.vRmsUv.toFixed(3)),
+                noisePowerDbm: Number(liveThermalNoise.noisePowerDbm.toFixed(2))
+              })
+            });
+          });
+        }
+        if (typeof ctx.setStemLabTab === 'function') ctx.setStemLabTab('explore');
+        if (typeof ctx.setStemLabTool === 'function') {
+          ctx.setStemLabTool('circuit');
+          announce(__alloT('stem.particlelab3d.sr_opening_circuit_lab', 'Opening Circuit Simulator.'));
+        }
+      }
+      function stageAstroJeansPreset(kind) {
+        var isCollapse = kind === 'cold_bok_collapse';
+        var nextCloud = isCollapse ? 'bok_globule' : 'diffuse_hi';
+        var nextGas = isCollapse ? 'CO2' : 'He';
+        var nextTemp = isCollapse ? 45 : 520;
+        var nextCount = isCollapse ? 104 : 56;
+        var nextBox = isCollapse ? 9 : 14;
+        var nextAttr = isCollapse ? 0.65 : 0.02;
+        var nextGrav = isCollapse ? 0.5 : 0;
+        setAstroCloudId(nextCloud);
+        setGasSpeciesA(nextGas);
+        setPreset('gas');
+        setTemperature(nextTemp);
+        setCount(nextCount);
+        setBoxSize(nextBox);
+        setAttraction(nextAttr);
+        setGravity(nextGrav);
+        setRunning(false);
+        setHistory([]);
+        setResetKey(function (k) { return k + 1; });
+        persist({
+          astroCloudId: nextCloud,
+          gasSpeciesA: nextGas,
+          preset: 'gas',
+          temperature: nextTemp,
+          count: nextCount,
+          boxSize: nextBox,
+          attraction: nextAttr,
+          gravity: nextGrav
+        });
+        if (ctx.addToast) {
+          ctx.addToast(
+            isCollapse
+              ? __alloT('stem.particlelab3d.toast_staged_cold_bok', 'Staged cold 45 K Bok globule core undergoing Jeans gravitational collapse.')
+              : __alloT('stem.particlelab3d.toast_staged_warm_diffuse', 'Staged warm 520 K diffuse helium nebula supported by thermal pressure.'),
+            'info'
+          );
+        }
+        announce(
+          isCollapse
+            ? __alloT('stem.particlelab3d.sr_staged_cold_bok', 'Staged cold Bok globule collapse chamber.')
+            : __alloT('stem.particlelab3d.sr_staged_warm_diffuse', 'Staged warm diffuse cloud chamber.')
+        );
+      }
+      function stageAerosolEpiPreset(kind) {
+        var isStuffy = kind === 'stuffy_fine_aerosol';
+        var nextDrop = isStuffy ? 0.5 : 2.5;
+        var nextAch = isStuffy ? 0.5 : 12;
+        var nextGas = 'N2';
+        var nextPatm = 1;
+        var nextPreset = isStuffy ? 'diffusion' : 'gas';
+        var nextTemp = isStuffy ? 295 : 293;
+        var nextCount = isStuffy ? 88 : 64;
+        var nextBox = isStuffy ? 11 : 13;
+        var nextAttr = 0.15;
+        setAerosolDropletUm(nextDrop);
+        setVentilationAch(nextAch);
+        setGasSpeciesA(nextGas);
+        setTransportPressureAtm(nextPatm);
+        setPreset(nextPreset);
+        setTemperature(nextTemp);
+        setCount(nextCount);
+        setBoxSize(nextBox);
+        setAttraction(nextAttr);
+        setRunning(false);
+        setHistory([]);
+        setResetKey(function (k) { return k + 1; });
+        persist({
+          aerosolDropletUm: nextDrop,
+          ventilationAch: nextAch,
+          gasSpeciesA: nextGas,
+          transportPressureAtm: nextPatm,
+          preset: nextPreset,
+          temperature: nextTemp,
+          count: nextCount,
+          boxSize: nextBox,
+          attraction: nextAttr
+        });
+        if (ctx.addToast) {
+          ctx.addToast(
+            isStuffy
+              ? __alloT('stem.particlelab3d.toast_staged_stuffy_aerosol', 'Staged persistent 0.5 micrometer aerosol plume in poorly ventilated 0.5 ACH room.')
+              : __alloT('stem.particlelab3d.toast_staged_clean_hospital_air', 'Staged high-exchange 12 ACH hospital-grade clean air room.'),
+            isStuffy ? 'info' : 'success'
+          );
+        }
+        announce(
+          isStuffy
+            ? __alloT('stem.particlelab3d.sr_staged_stuffy_aerosol', 'Staged stagnant fine bioaerosol chamber.')
+            : __alloT('stem.particlelab3d.sr_staged_clean_hospital_air', 'Staged 12 ACH clean air ventilation chamber.')
+        );
+      }
+      function stageEnergySorbentPreset(kind) {
+        var isCryoMof = kind === 'cryo_mof_storage';
+        var nextSorbent = isCryoMof ? 'mof5' : 'zeolite_13x';
+        var nextWind = isCryoMof ? 12 : 16;
+        var nextGas = isCryoMof ? 'CH4' : 'CO2';
+        var nextPatm = isCryoMof ? 10 : 1;
+        var nextPreset = isCryoMof ? 'solid' : 'gas';
+        var nextTemp = isCryoMof ? 90 : 520;
+        var nextCount = isCryoMof ? 104 : 76;
+        var nextBox = isCryoMof ? 8.5 : 12;
+        var nextAttr = isCryoMof ? 0.85 : 0.25;
+        setSorbentSurfaceId(nextSorbent);
+        setWindSpeedMs(nextWind);
+        setGasSpeciesA(nextGas);
+        setTransportPressureAtm(nextPatm);
+        setPreset(nextPreset);
+        setTemperature(nextTemp);
+        setCount(nextCount);
+        setBoxSize(nextBox);
+        setAttraction(nextAttr);
+        setRunning(false);
+        setHistory([]);
+        setResetKey(function (k) { return k + 1; });
+        persist({
+          sorbentSurfaceId: nextSorbent,
+          windSpeedMs: nextWind,
+          gasSpeciesA: nextGas,
+          transportPressureAtm: nextPatm,
+          preset: nextPreset,
+          temperature: nextTemp,
+          count: nextCount,
+          boxSize: nextBox,
+          attraction: nextAttr
+        });
+        if (ctx.addToast) {
+          ctx.addToast(
+            isCryoMof
+              ? __alloT('stem.particlelab3d.toast_staged_mof_storage', 'Staged 90 K high-pressure MOF-5 nanoporous methane adsorption chamber.')
+              : __alloT('stem.particlelab3d.toast_staged_dac_desorb', 'Staged 520 K Zeolite 13X thermal carbon-capture regeneration chamber.'),
+            'info'
+          );
+        }
+        announce(
+          isCryoMof
+            ? __alloT('stem.particlelab3d.sr_staged_mof_storage', 'Staged cryogenic MOF gas storage chamber.')
+            : __alloT('stem.particlelab3d.sr_staged_dac_desorb', 'Staged thermal carbon desorption chamber.')
+        );
+      }
+      function openAstronomyLab() {
+        if (typeof ctx.setToolData === 'function') {
+          ctx.setToolData(function (prev) {
+            return Object.assign({}, prev, {
+              astronomy: Object.assign({}, (prev && prev.astronomy) || {}, {
+                fromTool: 'particleLab3d',
+                cloudId: liveAstroJeans.cloudId,
+                sourceGasId: liveAstroJeans.gas.id,
+                jeansMassSolar: Number(liveAstroJeans.jeansMassSolar.toFixed(3)),
+                collapsing: liveAstroJeans.collapsing,
+                freeFallMyr: Number(liveAstroJeans.freeFallMyr.toFixed(3))
+              })
+            });
+          });
+        }
+        if (typeof ctx.setStemLabTab === 'function') ctx.setStemLabTab('explore');
+        if (typeof ctx.setStemLabTool === 'function') {
+          ctx.setStemLabTool('astronomy');
+          announce(__alloT('stem.particlelab3d.sr_opening_astronomy_lab', 'Opening Astronomy Lab.'));
+        }
+      }
+      function openEpidemicLab() {
+        if (typeof ctx.setToolData === 'function') {
+          ctx.setToolData(function (prev) {
+            return Object.assign({}, prev, {
+              epidemicSim: Object.assign({}, (prev && prev.epidemicSim) || {}, {
+                fromTool: 'particleLab3d',
+                dropletDiameterUm: liveAerosolEpi.dropletDiameterUm,
+                ventilationAch: liveAerosolEpi.ventilationAch,
+                wellsRileyRiskPct: Number(liveAerosolEpi.wellsRileyRiskPct.toFixed(2)),
+                settlingSpeedMmS: Number(liveAerosolEpi.settlingSpeedMmS.toFixed(3))
+              })
+            });
+          });
+        }
+        if (typeof ctx.setStemLabTab === 'function') ctx.setStemLabTab('explore');
+        if (typeof ctx.setStemLabTool === 'function') {
+          ctx.setStemLabTool('epidemicSim');
+          announce(__alloT('stem.particlelab3d.sr_opening_epidemic_lab', 'Opening Epidemic Simulator.'));
+        }
+      }
+      function openRenewablesLab() {
+        if (typeof ctx.setToolData === 'function') {
+          ctx.setToolData(function (prev) {
+            return Object.assign({}, prev, {
+              renewablesLab: Object.assign({}, (prev && prev.renewablesLab) || {}, {
+                fromTool: 'particleLab3d',
+                sorbentId: liveEnergySorbent.sorbentId,
+                coverageTheta: Number(liveEnergySorbent.coverageTheta.toFixed(4)),
+                windSpeedMs: liveEnergySorbent.windSpeedMs,
+                betzMaxWm2: Number(liveEnergySorbent.betzMaxWm2.toFixed(2))
+              })
+            });
+          });
+        }
+        if (typeof ctx.setStemLabTab === 'function') ctx.setStemLabTab('explore');
+        if (typeof ctx.setStemLabTool === 'function') {
+          ctx.setStemLabTool('renewablesLab');
+          announce(__alloT('stem.particlelab3d.sr_opening_renewables_lab', 'Opening Renewables Lab.'));
+        }
+      }
+      function buildAstroJeansSvgAriaLabel() {
+        return __alloT('stem.particlelab3d.astro_jeans_aria', 'Interstellar Jeans collapse mass versus temperature for {gas} in {cloud}. Critical Jeans mass is {mj} solar masses, free-fall time {tff} million years, status {status}.')
+          .replace('{gas}', liveAstroJeans.gas.formula)
+          .replace('{cloud}', liveAstroJeans.cloud.label)
+          .replace('{mj}', liveAstroJeans.jeansMassSolar.toFixed(2))
+          .replace('{tff}', liveAstroJeans.freeFallMyr.toFixed(2))
+          .replace('{status}', liveAstroJeans.regimeLabel);
+      }
+      function buildAerosolEpiSvgAriaLabel() {
+        return __alloT('stem.particlelab3d.aerosol_epi_aria', 'Wells-Riley one-hour infection probability versus air changes per hour for {drop} micrometer droplets. At {ach} air changes per hour, risk is {risk} percent and settling speed is {vs} millimeters per second.')
+          .replace('{drop}', String(liveAerosolEpi.dropletDiameterUm))
+          .replace('{ach}', String(liveAerosolEpi.ventilationAch))
+          .replace('{risk}', liveAerosolEpi.wellsRileyRiskPct.toFixed(1))
+          .replace('{vs}', liveAerosolEpi.settlingSpeedMmS.toFixed(2));
+      }
+      function buildEnergySorbentSvgAriaLabel() {
+        return __alloT('stem.particlelab3d.energy_sorbent_aria', 'Langmuir surface coverage isotherm for {sorbent} with {gas} at {temp} kelvin. Surface loading is {pct} percent and Betz wind flux limit is {betz} watts per square meter.')
+          .replace('{sorbent}', liveEnergySorbent.sorbent.label)
+          .replace('{gas}', liveEnergySorbent.gas.formula)
+          .replace('{temp}', String(Math.round(liveEnergySorbent.temperature)))
+          .replace('{pct}', String(Math.round(liveEnergySorbent.coverageTheta * 100)))
+          .replace('{betz}', liveEnergySorbent.betzMaxWm2.toFixed(1));
+      }
+      function stageHenrysOceanPreset(kind) {
+        var isColdFresh = kind === 'cold_fresh_oxygen';
+        var nextDepth = isColdFresh ? 0 : 30;
+        var nextSal = isColdFresh ? 0 : 35;
+        var nextGas = isColdFresh ? 'O2' : 'N2';
+        var nextPatm = 1;
+        var nextPreset = isColdFresh ? 'liquid' : 'gas';
+        var nextTemp = isColdFresh ? 278 : 291;
+        var nextCount = isColdFresh ? 96 : 104;
+        var nextBox = isColdFresh ? 9.5 : 9;
+        var nextAttr = isColdFresh ? 0.45 : 0.2;
+        setOceanDepthM(nextDepth);
+        setOceanSalinityPsu(nextSal);
+        setGasSpeciesA(nextGas);
+        setTransportPressureAtm(nextPatm);
+        setPreset(nextPreset);
+        setTemperature(nextTemp);
+        setCount(nextCount);
+        setBoxSize(nextBox);
+        setAttraction(nextAttr);
+        setRunning(false);
+        setHistory([]);
+        setResetKey(function (k) { return k + 1; });
+        persist({
+          oceanDepthM: nextDepth,
+          oceanSalinityPsu: nextSal,
+          gasSpeciesA: nextGas,
+          transportPressureAtm: nextPatm,
+          preset: nextPreset,
+          temperature: nextTemp,
+          count: nextCount,
+          boxSize: nextBox,
+          attraction: nextAttr
+        });
+        if (ctx.addToast) {
+          ctx.addToast(
+            isColdFresh
+              ? __alloT('stem.particlelab3d.toast_staged_cold_fresh_ocean', 'Staged cold 278 K freshwater dissolved oxygen chamber at sea level.')
+              : __alloT('stem.particlelab3d.toast_staged_deep_scuba_dive', 'Staged 30 meter seawater scuba dive with compressed nitrogen supersaturation risk.'),
+            'info'
+          );
+        }
+        announce(
+          isColdFresh
+            ? __alloT('stem.particlelab3d.sr_staged_cold_fresh_ocean', 'Staged cold freshwater dissolved oxygen chamber.')
+            : __alloT('stem.particlelab3d.sr_staged_deep_scuba_dive', 'Staged 30 meter scuba dive nitrogen chamber.')
+        );
+      }
+      function stageAlveolarPhysPreset(kind) {
+        var isEverest = kind === 'everest_hypoxia';
+        var nextAlt = isEverest ? 8848 : 0;
+        var nextPh = isEverest ? 7.6 : 7.2;
+        var nextGas = isEverest ? 'O2' : 'CO2';
+        var nextTemp = isEverest ? 310 : 312;
+        var nextCount = isEverest ? 56 : 92;
+        var nextBox = isEverest ? 14 : 10.5;
+        var nextAttr = isEverest ? 0.05 : 0.15;
+        setAlveolarAltitudeM(nextAlt);
+        setBloodPh(nextPh);
+        setGasSpeciesA(nextGas);
+        setPreset('diffusion');
+        setTemperature(nextTemp);
+        setCount(nextCount);
+        setBoxSize(nextBox);
+        setAttraction(nextAttr);
+        setRunning(false);
+        setHistory([]);
+        setResetKey(function (k) { return k + 1; });
+        persist({
+          alveolarAltitudeM: nextAlt,
+          bloodPh: nextPh,
+          gasSpeciesA: nextGas,
+          preset: 'diffusion',
+          temperature: nextTemp,
+          count: nextCount,
+          boxSize: nextBox,
+          attraction: nextAttr
+        });
+        if (ctx.addToast) {
+          ctx.addToast(
+            isEverest
+              ? __alloT('stem.particlelab3d.toast_staged_everest_hypoxia', 'Staged Mount Everest summit hypoxia (8848 m) with hyperventilation alkalosis pH 7.6.')
+              : __alloT('stem.particlelab3d.toast_staged_bohr_exercise', 'Staged active-muscle Bohr unloading shift at sea level (pH 7.2, warm CO2).'),
+            'info'
+          );
+        }
+        announce(
+          isEverest
+            ? __alloT('stem.particlelab3d.sr_staged_everest_hypoxia', 'Staged Everest summit hypoxia chamber.')
+            : __alloT('stem.particlelab3d.sr_staged_bohr_exercise', 'Staged exercise Bohr shift diffusion chamber.')
+        );
+      }
+      function stageMagmaVolatilesPreset(kind) {
+        var isBasalt = kind === 'hawaii_basalt_degas';
+        var nextMelt = isBasalt ? 'basalt' : 'rhyolite';
+        var nextDepthKm = isBasalt ? 1 : 0.2;
+        var nextGas = 'CO2';
+        var nextPreset = isBasalt ? 'liquid' : 'gas';
+        var nextTemp = isBasalt ? 420 : 340;
+        var nextCount = isBasalt ? 88 : 108;
+        var nextBox = isBasalt ? 10.5 : 8.5;
+        var nextAttr = isBasalt ? 0.35 : 0.7;
+        setMagmaMeltId(nextMelt);
+        setMagmaDepthKm(nextDepthKm);
+        setGasSpeciesA(nextGas);
+        setPreset(nextPreset);
+        setTemperature(nextTemp);
+        setCount(nextCount);
+        setBoxSize(nextBox);
+        setAttraction(nextAttr);
+        setRunning(false);
+        setHistory([]);
+        setResetKey(function (k) { return k + 1; });
+        persist({
+          magmaMeltId: nextMelt,
+          magmaDepthKm: nextDepthKm,
+          gasSpeciesA: nextGas,
+          preset: nextPreset,
+          temperature: nextTemp,
+          count: nextCount,
+          boxSize: nextBox,
+          attraction: nextAttr
+        });
+        if (ctx.addToast) {
+          ctx.addToast(
+            isBasalt
+              ? __alloT('stem.particlelab3d.toast_staged_basalt_degas', 'Staged fluid low-viscosity basaltic conduit allowing gentle gas bubble escape.')
+              : __alloT('stem.particlelab3d.toast_staged_plinian_rhyolite', 'Staged shallow 0.2 km sticky rhyolite magma crossing the 75% explosive fragmentation limit.'),
+            'info'
+          );
+        }
+        announce(
+          isBasalt
+            ? __alloT('stem.particlelab3d.sr_staged_basalt_degas', 'Staged basalt magma degassing chamber.')
+            : __alloT('stem.particlelab3d.sr_staged_plinian_rhyolite', 'Staged explosive Plinian rhyolite magma chamber.')
+        );
+      }
+      function openCoralReefLab() {
+        if (typeof ctx.setToolData === 'function') {
+          ctx.setToolData(function (prev) {
+            return Object.assign({}, prev, {
+              coralReef: Object.assign({}, (prev && prev.coralReef) || {}, {
+                fromTool: 'particleLab3d',
+                sourceGasId: liveHenrysOcean.gas.id,
+                depthM: liveHenrysOcean.depthM,
+                salinityPsu: liveHenrysOcean.salinityPsu,
+                dissolvedMgL: Number(liveHenrysOcean.dissolvedMgL.toFixed(2)),
+                airDoMgL: Number(liveHenrysOcean.airDoMgL.toFixed(2))
+              })
+            });
+          });
+        }
+        if (typeof ctx.setStemLabTab === 'function') ctx.setStemLabTab('explore');
+        if (typeof ctx.setStemLabTool === 'function') {
+          ctx.setStemLabTool('coralReef');
+          announce(__alloT('stem.particlelab3d.sr_opening_coral_reef_lab', 'Opening Coral Reef Lab.'));
+        }
+      }
+      function openAnatomyLab() {
+        if (typeof ctx.setToolData === 'function') {
+          ctx.setToolData(function (prev) {
+            return Object.assign({}, prev, {
+              anatomy: Object.assign({}, (prev && prev.anatomy) || {}, {
+                fromTool: 'particleLab3d',
+                altitudeM: liveAlveolarPhys.altitudeM,
+                bloodPh: liveAlveolarPhys.bloodPh,
+                alveolarPo2MmHg: Number(liveAlveolarPhys.alveolarPo2MmHg.toFixed(1)),
+                arterialSaO2Pct: Number(liveAlveolarPhys.arterialSaO2Pct.toFixed(1)),
+                p50MmHg: Number(liveAlveolarPhys.p50MmHg.toFixed(1))
+              })
+            });
+          });
+        }
+        if (typeof ctx.setStemLabTab === 'function') ctx.setStemLabTab('explore');
+        if (typeof ctx.setStemLabTool === 'function') {
+          ctx.setStemLabTool('anatomy');
+          announce(__alloT('stem.particlelab3d.sr_opening_anatomy_lab', 'Opening Human Anatomy Lab.'));
+        }
+      }
+      function openPlateTectonicsLab() {
+        if (typeof ctx.setToolData === 'function') {
+          ctx.setToolData(function (prev) {
+            return Object.assign({}, prev, {
+              plateTectonics: Object.assign({}, (prev && prev.plateTectonics) || {}, {
+                fromTool: 'particleLab3d',
+                meltId: liveMagmaVolatiles.meltId,
+                depthKm: liveMagmaVolatiles.depthKm,
+                log10ViscosityPaS: Number(liveMagmaVolatiles.log10ViscosityPaS.toFixed(2)),
+                gasVolPct: Number(liveMagmaVolatiles.gasVolPct.toFixed(1)),
+                fragmenting: liveMagmaVolatiles.fragmenting
+              })
+            });
+          });
+        }
+        if (typeof ctx.setStemLabTab === 'function') ctx.setStemLabTab('explore');
+        if (typeof ctx.setStemLabTool === 'function') {
+          ctx.setStemLabTool('plateTectonics');
+          announce(__alloT('stem.particlelab3d.sr_opening_plate_tectonics_lab', 'Opening Plate Tectonics Lab.'));
+        }
+      }
+      function buildHenrysOceanSvgAriaLabel() {
+        return __alloT('stem.particlelab3d.henrys_ocean_aria', "Henry's Law dissolved {gas} concentration versus temperature at {depth} meters depth and {sal} PSU salinity. Live concentration is {conc} milligrams per liter, air-equilibrated dissolved oxygen is {doVal} milligrams per liter.")
+          .replace('{gas}', liveHenrysOcean.gas.formula)
+          .replace('{depth}', String(liveHenrysOcean.depthM))
+          .replace('{sal}', String(liveHenrysOcean.salinityPsu))
+          .replace('{conc}', liveHenrysOcean.dissolvedMgL.toFixed(1))
+          .replace('{doVal}', liveHenrysOcean.airDoMgL.toFixed(1));
+      }
+      function buildAlveolarPhysSvgAriaLabel() {
+        return __alloT('stem.particlelab3d.alveolar_phys_aria', 'Hill hemoglobin oxygen dissociation curve at blood pH {ph} and {alt} meters altitude. Alveolar oxygen partial pressure is {po2} millimeters of mercury with {sao2} percent arterial saturation.')
+          .replace('{ph}', liveAlveolarPhys.bloodPh.toFixed(2))
+          .replace('{alt}', String(liveAlveolarPhys.altitudeM))
+          .replace('{po2}', liveAlveolarPhys.alveolarPo2MmHg.toFixed(1))
+          .replace('{sao2}', liveAlveolarPhys.arterialSaO2Pct.toFixed(1));
+      }
+      function buildMagmaVolatilesSvgAriaLabel() {
+        return __alloT('stem.particlelab3d.magma_volatiles_aria', 'Magmatic volatile bubble volume fraction versus conduit depth for {melt}. At {depth} kilometers, vesicularity is {vesic} percent, status {status}.')
+          .replace('{melt}', liveMagmaVolatiles.melt.label)
+          .replace('{depth}', String(liveMagmaVolatiles.depthKm))
+          .replace('{vesic}', liveMagmaVolatiles.gasVolPct.toFixed(0))
+          .replace('{status}', liveMagmaVolatiles.regimeLabel);
+      }
+      function buildShockAeroSvgAriaLabel() {
+        return __alloT('stem.particlelab3d.shock_aero_aria', 'Rankine-Hugoniot density compression curve across Mach 1 to 10 for {gas}. At Mach {mach}, density ratio is {dratio} and pressure jump is {pratio}.')
+          .replace('{gas}', liveShockAero.gas.formula)
+          .replace('{mach}', String(liveShockAero.machNumber))
+          .replace('{dratio}', liveShockAero.densityRatio.toFixed(2))
+          .replace('{pratio}', liveShockAero.pressureRatio.toFixed(2));
+      }
+      function buildNuclearGamowSvgAriaLabel() {
+        return __alloT('stem.particlelab3d.nuclear_gamow_aria', 'Gamow fusion reactivity peak and Maxwell-Boltzmann tail for {fuel} at {temp} kiloelectronvolts. Peak energy {e0} kiloelectronvolts, regime {regime}.')
+          .replace('{fuel}', liveNuclearGamow.fuel.formula)
+          .replace('{temp}', String(liveNuclearGamow.plasmaTempKeV))
+          .replace('{e0}', liveNuclearGamow.gamowPeakKeV.toFixed(1))
+          .replace('{regime}', liveNuclearGamow.regimeLabel);
+      }
+      function buildThermalNoiseSvgAriaLabel() {
+        return __alloT('stem.particlelab3d.thermal_noise_aria', 'Johnson-Nyquist RMS noise voltage versus temperature for {r} ohms across {bw} hertz. Live RMS noise is {vrms} microvolts at {temp} kelvin.')
+          .replace('{r}', String(liveThermalNoise.resistanceOhm))
+          .replace('{bw}', String(liveThermalNoise.bandwidthHz))
+          .replace('{vrms}', liveThermalNoise.vRmsUv.toFixed(2))
+          .replace('{temp}', String(Math.round(liveThermalNoise.temperature)));
+      }
+      function buildLatticeSvgAriaLabel() {
+        return __alloT('stem.particlelab3d.lattice_aria', 'Debye molar heat capacity curve for {crystal}. At {temp} kelvin, C V is {cv} joules per mole kelvin, {pct} percent of the Dulong-Petit limit, status {status}.')
+          .replace('{crystal}', liveLattice.crystal.label)
+          .replace('{temp}', String(Math.round(liveLattice.temperature)))
+          .replace('{cv}', liveLattice.cvMolarJMK.toFixed(1))
+          .replace('{pct}', String(Math.round(liveLattice.cvFraction * 100)))
+          .replace('{status}', liveLattice.regimeLabel);
+      }
+      function buildVaporSvgAriaLabel() {
+        return __alloT('stem.particlelab3d.vapor_aria', 'Clausius-Clapeyron saturation vapor pressure curve for {liquid}. Saturation pressure {psat} kilopascals, boiling point {tboil} kelvin, dew point {tdew} kelvin.')
+          .replace('{liquid}', liveVapor.liquid.label)
+          .replace('{psat}', liveVapor.pSatKpa.toFixed(2))
+          .replace('{tboil}', liveVapor.boilingPointK.toFixed(1))
+          .replace('{tdew}', liveVapor.dewPointK.toFixed(1));
+      }
+      function buildGreenhouseSvgAriaLabel() {
+        return __alloT('stem.particlelab3d.greenhouse_aria', 'IPCC logarithmic CO2 radiative forcing curve for {gas} with {modes} infrared-active modes. At {ppm} parts per million, forcing is {df} watts per square meter and equilibrium warming is {dt} kelvin.')
+          .replace('{gas}', liveGreenhouse.gas.formula)
+          .replace('{modes}', String(liveGreenhouse.irActiveModes))
+          .replace('{ppm}', String(liveGreenhouse.co2Ppm))
+          .replace('{df}', liveGreenhouse.forcingWm2.toFixed(2))
+          .replace('{dt}', liveGreenhouse.eqWarmingK.toFixed(2));
+      }
+      function buildBrownianSvgAriaLabel() {
+        return __alloT('stem.particlelab3d.brownian_aria', 'Stokes-Einstein root mean square random-walk envelope in {medium} for {r} nanometer bead. Diffusivity {d} square micrometers per second, 1 second step {rms} micrometers.')
+          .replace('{medium}', liveBrownian.mediumLabel)
+          .replace('{r}', String(liveBrownian.beadRadiusNm))
+          .replace('{d}', liveBrownian.diffusivityUm2S.toFixed(2))
+          .replace('{rms}', liveBrownian.rmsDisplacement1sUm.toFixed(2));
+      }
+      function buildOsmosisBioSvgAriaLabel() {
+        return __alloT('stem.particlelab3d.osmosis_bio_aria', 'Van t Hoff effective versus ideal osmotic pressure curve at {c} molar, reflection coefficient {sigma}. Effective pressure {pi} atmospheres, tonicity {tonicity}.')
+          .replace('{c}', String(liveOsmosisBio.molarityM))
+          .replace('{sigma}', liveOsmosisBio.reflectionSigma.toFixed(2))
+          .replace('{pi}', liveOsmosisBio.effectiveOsmoticAtm.toFixed(2))
+          .replace('{tonicity}', liveOsmosisBio.tonicityLabel);
+      }
+      function buildPlasmaSvgAriaLabel() {
+        return __alloT('stem.particlelab3d.plasma_aria', 'Paschen gas breakdown voltage curve for {gas} across {gap} centimeters. Breakdown threshold {vb} volts against applied {va} volts, status {status}.')
+          .replace('{gas}', livePlasma.gas.formula)
+          .replace('{gap}', String(livePlasma.electrodeGapCm))
+          .replace('{vb}', String(Math.round(livePlasma.breakdownVoltageV)))
+          .replace('{va}', String(livePlasma.appliedVoltageV))
+          .replace('{status}', livePlasma.regimeLabel);
       }
       function graphPath(values) {
         if (values.length < 2) return '';
@@ -1619,6 +7949,42 @@
       var currentIdea = COMMON_IDEAS.filter(function (idea) { return idea.id === activeIdea; })[0] || null;
       var activeCameraView = followTracer ? 'follow' : (autoCamera ? 'showcase' : cameraView);
       var hasEvidence = history.some(function (sample) { return Number(sample && sample.elapsed || 0) > 0 || Number(sample && sample.collisions || 0) > 0; });
+      useEffect(function () {
+        if (!currentIdea || !hasEvidence || ideasResolved[currentIdea.id]) return;
+        var nextResolved = Object.assign({}, ideasResolved);
+        nextResolved[currentIdea.id] = true;
+        setIdeasResolved(nextResolved);
+        persist({ ideasResolved: nextResolved });
+      }, [currentIdea ? currentIdea.id : '', hasEvidence]);
+      function launchLessonGuide(lesson) {
+        if (!lesson) return;
+        var proto = protocols.filter(function (p) { return p.id === lesson.protocolId; })[0];
+        if (proto) applyProtocol(proto);
+        var bundle = WORKBENCH_BUNDLES.filter(function (b) { return b.id === lesson.bundleId; })[0];
+        if (bundle) applyWorkbenchBundle(bundle);
+        setDataStudioAxis(lesson.sweepAxis);
+        var nextPred = !prediction.trim() ? lesson.starterPrediction : prediction;
+        if (!prediction.trim()) setPrediction(nextPred);
+        var lessonPatch = { dataStudioAxis: lesson.sweepAxis, prediction: nextPred };
+        persist(lessonPatch);
+        if (ctx.addToast) {
+          ctx.addToast(
+            __alloT('stem.particlelab3d.toast_lesson_launched', 'Launched {code}: {title}.')
+              .replace('{code}', lesson.code)
+              .replace('{title}', lesson.title),
+            'success'
+          );
+        }
+        announce(__alloT('stem.particlelab3d.sr_lesson_launched', 'Launched lesson workspace and pinned workbench modules.'));
+      }
+      function copyLessonGuide(lesson) {
+        if (!lesson) return;
+        copyTextSafely(
+          buildLessonFacilitationGuide(lesson.id),
+          __alloT('stem.particlelab3d.toast_lesson_copied', 'Copied teacher facilitation plan.'),
+          __alloT('stem.particlelab3d.toast_lesson_copy_failed', 'Could not copy lesson facilitation plan.')
+        );
+      }
       var experimentStep = !prediction.trim() ? 0 : ((!running && !hasEvidence && !observation.trim()) ? 1 : (!observation.trim() ? 1 : 2));
       var experimentStepLabel = ['Predict', 'Observe', 'Explain'][experimentStep];
       var experimentStepHint = experimentStep === 0
@@ -1744,6 +8110,243 @@
       var mfpProtocolSteps = [{ label: 'Start walk', complete: selectedInfo.journeyTime > 0 || tracerTrials.length > 0 }, { label: 'Collect flights', complete: selectedInfo.freeFlightSamples >= 6 || tracerTrials.length > 0 }, { label: 'Save walk 1', complete: tracerTrials.length >= 1 }, { label: 'Change one variable', complete: tracerTrials.length >= 2 ? !!(tracerComparison && tracerComparison.fair) : !!(liveTracerControl && liveTracerControl.fair) }, { label: 'Compare', complete: !!(tracerComparison && tracerComparison.fair) }], mfpStepsComplete = mfpProtocolSteps.filter(function (step) { return step.complete; }).length;
       var heightProfilePeak = Math.max.apply(Math, heightInfo.bins.concat([heightInfo.uniform, 0.01])), heightUniformX = 42 + heightInfo.uniform / heightProfilePeak * 178;
       var pressureFaceCells = [{ key: 'y+', label: 'Top', cls: 'col-start-2 row-start-1' }, { key: 'x-', label: 'Left', cls: 'col-start-1 row-start-2' }, { key: 'z+', label: 'Front', cls: 'col-start-2 row-start-2' }, { key: 'x+', label: 'Right', cls: 'col-start-3 row-start-2' }, { key: 'z-', label: 'Back', cls: 'col-start-4 row-start-2' }, { key: 'y-', label: 'Bottom', cls: 'col-start-2 row-start-3' }];
+      var liveMaxwellA = maxwellSpeeds(Math.max(1, displayTemperature || temperature), 1);
+      var liveMaxwellB = maxwellSpeeds(Math.max(1, displayTemperature || temperature), massRatioB);
+      var liveVdw = vanDerWaalsMetrics(gaugePressure, boxSize, liveCount, Math.max(1, displayTemperature || temperature), particleDiameter, attraction);
+      var liveGraham = grahamLawMetrics(speciesMotion, diffusionInfo, massRatioB);
+      var activeAxisSpec = getParticleAxisSpec(dataStudioAxis);
+      var scatterPoints = experimentLog.map(function (row, idx) {
+        var mapped = activeAxisSpec.mapRow(row, idx);
+        return { x: mapped.x, y: mapped.value, label: mapped.label, n: row.n || (idx + 1), source: row.source || 'live' };
+      }).filter(function (pt) { return Number.isFinite(pt.x) && Number.isFinite(pt.y); });
+      var regression = linearRegression(scatterPoints);
+      var resolvedPinIds = compareIds.filter(function (id) { return savedSnapshots.some(function (snap) { return snap.id === id; }); });
+      if (resolvedPinIds.length < 2 && savedSnapshots.length >= 2) resolvedPinIds = [savedSnapshots[0].id, savedSnapshots[1].id];
+      var pinnedA = savedSnapshots.filter(function (snap) { return snap.id === resolvedPinIds[0]; })[0] || null;
+      var pinnedB = savedSnapshots.filter(function (snap) { return snap.id === resolvedPinIds[1]; })[0] || null;
+      var snapshotDelta = pinnedA && pinnedB ? compareSnapshots(pinnedA, pinnedB) : null;
+      var liveGasMetrics = gasSpeciesMetrics(gasSpeciesA, gasSpeciesB, Math.max(1, displayTemperature || temperature));
+      var thermoPair = null;
+      if (thermoSource === 'snapshots') {
+        thermoPair = pinnedA && pinnedB ? { a: pinnedA, b: pinnedB, sourceLabel: 'Pinned Snapshots A \u2192 B' } : null;
+      } else if (thermoSource === 'trials') {
+        thermoPair = trials.length >= 2 ? { a: trials[0], b: trials[1], sourceLabel: 'Recorded Trials 1 \u2192 2' } : null;
+      } else if (thermoSource === 'log') {
+        thermoPair = experimentLog.length >= 2 ? { a: experimentLog[0], b: experimentLog[experimentLog.length - 1], sourceLabel: 'Log #1 \u2192 #' + experimentLog.length } : null;
+      } else {
+        if (pinnedA && pinnedB) thermoPair = { a: pinnedA, b: pinnedB, sourceLabel: 'Pinned Snapshots A \u2192 B' };
+        else if (trials.length >= 2) thermoPair = { a: trials[0], b: trials[1], sourceLabel: 'Recorded Trials 1 \u2192 2' };
+        else if (experimentLog.length >= 2) thermoPair = { a: experimentLog[0], b: experimentLog[experimentLog.length - 1], sourceLabel: 'Log #1 \u2192 #' + experimentLog.length };
+      }
+      var liveThermo = thermoPair ? thermodynamicProcessMetrics(thermoPair.a, thermoPair.b) : null;
+      var activeChallenge = PARTICLE_CHALLENGES.filter(function (c) { return c.id === activeChallengeId; })[0] || PARTICLE_CHALLENGES[0];
+      var liveChallengeEval = evaluateParticleChallenge(activeChallenge.id, {
+        preset: preset,
+        temperature: Math.max(1, displayTemperature || temperature),
+        count: liveCount,
+        boxSize: boxSize,
+        particleDiameter: particleDiameter,
+        attraction: attraction,
+        massRatioB: massRatioB,
+        z: liveVdw.z,
+        vdwPressure: gaugePressure > 0 ? gaugePressure : liveVdw.vdwPressure,
+        meanFreePath: currentMeanFreePathTheory,
+        regressionR2: regression.valid ? regression.r2 : 0,
+        logCount: experimentLog.length
+      });
+      var completedChallengeCount = PARTICLE_CHALLENGES.filter(function (c) { return !!completedChallenges[c.id]; }).length;
+      var liveTransport = transportCoefficientsMetrics({
+        temperature: Math.max(1, displayTemperature || temperature),
+        count: liveCount,
+        boxSize: boxSize,
+        particleDiameter: particleDiameter,
+        massRatio: 1,
+        gasId: gasSpeciesA,
+        pressureAtm: transportPressureAtm
+      });
+      var liveCycle = thermodynamicCycleMetrics({
+        cycleType: cycleType,
+        tCold: 200,
+        tHot: cycleHotTemp,
+        compressionRatio: cycleCompressionRatio,
+        count: liveCount,
+        baseEdge: 15,
+        gasId: gasSpeciesA
+      });
+      var liveAtmosphere = barometricAtmosphereMetrics({
+        planetId: planetId,
+        gasId: gasSpeciesA,
+        tempMode: planetTempMode,
+        chamberTempK: Math.max(1, displayTemperature || temperature),
+        chamberGravity: gravity,
+        chamberBoxSize: boxSize,
+        chamberMassRatio: 1
+      });
+      var liveStatMech = statisticalMechanicsMetrics({
+        temperature: Math.max(1, displayTemperature || temperature),
+        count: liveCount,
+        boxSize: boxSize,
+        gasId: gasSpeciesA,
+        pressureAtm: transportPressureAtm,
+        thresholdRatio: statMechThreshold
+      });
+      var liveArrhenius = collisionKineticsMetrics({
+        temperature: Math.max(1, displayTemperature || temperature),
+        count: liveCount,
+        boxSize: boxSize,
+        particleDiameter: particleDiameter,
+        gasAId: gasSpeciesA,
+        gasBId: gasSpeciesB,
+        activationEnergyKjMol: arrheniusEaKj,
+        stericFactor: stericFactor
+      });
+      var liveAcoustics = gasAcousticsMetrics({
+        gasId: gasSpeciesA,
+        temperature: Math.max(1, displayTemperature || temperature),
+        pressureAtm: transportPressureAtm,
+        frequencyHz: acousticFreqHz,
+        flowSpeedMs: acousticFlowMs,
+        cavityLengthM: 0.25
+      });
+      var liveDoppler = dopplerBroadeningMetrics({
+        gasId: gasSpeciesA,
+        temperature: Math.max(1, displayTemperature || temperature),
+        pressureAtm: transportPressureAtm,
+        wavelengthNm: spectralWavelengthNm
+      });
+      var liveJouleThomson = jouleThomsonPhaseMetrics({
+        gasId: gasSpeciesA,
+        temperature: Math.max(1, displayTemperature || temperature),
+        pressureAtm: transportPressureAtm,
+        pressureDropAtm: jtPressureDropAtm
+      });
+      var liveEffusion = effusionVacuumMetrics({
+        gasAId: gasSpeciesA,
+        gasBId: gasSpeciesB,
+        temperature: Math.max(1, displayTemperature || temperature),
+        pressureAtm: transportPressureAtm,
+        boxSize: boxSize,
+        orificeDiameterMm: orificeDiameterMm
+      });
+      var liveBrownian = brownianMotionMetrics({
+        temperature: Math.max(1, displayTemperature || temperature),
+        beadRadiusNm: brownianBeadNm,
+        medium: brownianMedium,
+        gasId: gasSpeciesA,
+        pressureAtm: transportPressureAtm
+      });
+      var liveReflectionSigma = !membrane ? 0 : (membraneSelectivity === 'a' ? clamp(1 - 0.25 * (diffusionInfo.soluteLeak || 0), 0.7, 1) : clamp(1 - permeability, 0.05, 0.95));
+      var liveOsmosisBio = osmoticBiophysicsMetrics({
+        temperature: Math.max(1, displayTemperature || temperature),
+        molarityM: osmoticMolarityM,
+        vanTHoffI: osmoticVanTHoffI,
+        reflectionSigma: liveReflectionSigma
+      });
+      var livePlasma = paschenPlasmaMetrics({
+        gasId: gasSpeciesA,
+        temperature: Math.max(1, displayTemperature || temperature),
+        pressureAtm: transportPressureAtm,
+        electrodeGapCm: electrodeGapCm,
+        appliedVoltageV: appliedVoltageV
+      });
+      var liveLattice = latticeSolidMetrics({
+        crystalId: solidCrystalId,
+        temperature: Math.max(1, displayTemperature || temperature)
+      });
+      var liveVapor = vaporPhaseEquilibriumMetrics({
+        liquidId: volatileLiquidId,
+        temperature: Math.max(1, displayTemperature || temperature),
+        pressureAtm: transportPressureAtm,
+        relativeHumidityPct: relativeHumidityPct
+      });
+      var liveGreenhouse = vibrationalGreenhouseMetrics({
+        gasId: gasSpeciesA,
+        temperature: Math.max(1, displayTemperature || temperature),
+        pressureAtm: transportPressureAtm,
+        co2Ppm: co2MixingPpm
+      });
+      var liveShockAero = rankineHugoniotShockMetrics({
+        gasId: gasSpeciesA,
+        temperature: Math.max(1, displayTemperature || temperature),
+        pressureAtm: transportPressureAtm,
+        machNumber: shockMachNumber
+      });
+      var liveNuclearGamow = gamowNuclearKineticsMetrics({
+        fuelId: fusionFuelId,
+        plasmaTempKeV: gamowTempKeV
+      });
+      var liveThermalNoise = thermalNoiseDrudeMetrics({
+        temperature: Math.max(1, displayTemperature || temperature),
+        resistanceOhm: noiseResistanceOhm,
+        bandwidthHz: noiseBandwidthHz
+      });
+      var liveAstroJeans = astroJeansSahaMetrics({
+        gasId: gasSpeciesA,
+        temperature: Math.max(1, displayTemperature || temperature),
+        cloudId: astroCloudId
+      });
+      var liveAerosolEpi = aerosolWellsRileyMetrics({
+        gasId: gasSpeciesA,
+        temperature: Math.max(50, displayTemperature || temperature),
+        pressureAtm: transportPressureAtm,
+        dropletDiameterUm: aerosolDropletUm,
+        ventilationAch: ventilationAch
+      });
+      var liveEnergySorbent = langmuirBetzEnergyMetrics({
+        gasId: gasSpeciesA,
+        temperature: Math.max(20, displayTemperature || temperature),
+        pressureAtm: transportPressureAtm,
+        sorbentId: sorbentSurfaceId,
+        windSpeedMs: windSpeedMs
+      });
+      var liveHenrysOcean = henrysOceanSolubilityMetrics({
+        gasId: gasSpeciesA,
+        temperature: displayTemperature || temperature,
+        pressureAtm: transportPressureAtm,
+        depthM: oceanDepthM,
+        salinityPsu: oceanSalinityPsu
+      });
+      var liveAlveolarPhys = alveolarHillPhysiologyMetrics({
+        gasId: gasSpeciesA,
+        temperature: displayTemperature || temperature,
+        altitudeM: alveolarAltitudeM,
+        bloodPh: bloodPh
+      });
+      var liveMagmaVolatiles = magmaVolatileExsolutionMetrics({
+        meltId: magmaMeltId,
+        depthKm: magmaDepthKm,
+        temperature: displayTemperature || temperature
+      });
+      var activeMission = APPLIED_WORKBENCH_MISSIONS.filter(function (m) { return m.id === activeMissionId; })[0] || APPLIED_WORKBENCH_MISSIONS[0];
+      var liveMissionEval = evaluateAppliedMission(activeMission.id, {
+        planetGravityMs2: liveAtmosphere.planet.gravityMs2,
+        escapeRatio: liveAtmosphere.escapeRatio,
+        deltaTThrottleK: liveJouleThomson.deltaTThrottleK,
+        dropletDiameterUm: liveAerosolEpi.dropletDiameterUm,
+        wellsRileyRiskPct: liveAerosolEpi.wellsRileyRiskPct,
+        bloodPh: liveAlveolarPhys.bloodPh,
+        arterialSaO2Pct: liveAlveolarPhys.arterialSaO2Pct,
+        magmaGasVolPct: liveMagmaVolatiles.gasVolPct,
+        magmaLog10Viscosity: liveMagmaVolatiles.log10ViscosityPaS,
+        magmaFragmenting: liveMagmaVolatiles.fragmenting
+      });
+      var completedMissionCount = APPLIED_WORKBENCH_MISSIONS.filter(function (m) { return !!completedMissions[m.id]; }).length;
+      function showWbCard(modId, domId) {
+        if (workbenchCollapsed) return false;
+        if (workbenchDomain === 'all' || workbenchDomain === domId) return true;
+        if (workbenchDomain === 'pinned') return pinnedWorkbenchIds.indexOf(modId) >= 0;
+        return false;
+      }
+      function showWbGroup(domId) {
+        if (workbenchCollapsed) return false;
+        if (workbenchDomain === 'all' || workbenchDomain === domId) return true;
+        if (workbenchDomain === 'pinned') {
+          return WORKBENCH_MODULE_DIRECTORY.some(function (m) {
+            return m.domain === domId && pinnedWorkbenchIds.indexOf(m.id) >= 0;
+          });
+        }
+        return false;
+      }
 
       var presets = [        { id: 'solid', icon: '\u2744\uFE0F', label: 'Solid', note: 'Particles vibrate near fixed positions.' },
         { id: 'liquid', icon: '\uD83D\uDCA7', label: 'Liquid', note: 'Particles stay close but flow past one another.' },
@@ -1813,6 +8416,60 @@
               )
                 )
               );
+      var incomingHandoff = resolveIncomingHandoff(bucket);
+      var showIncomingHandoff = !!(incomingHandoff && incomingHandoff.handoffKey !== dismissedHandoffKey);
+      var workbenchMatches = workbenchSearch.trim() ? filterWorkbenchModules(workbenchSearch, 'all') : [];
+      var glossaryMatches = glossaryOpen ? filterGlossaryTerms(glossarySearch) : [];
+      var notebookReadiness = evaluateNotebookReadiness({
+        prediction: prediction,
+        observation: observation,
+        conclusion: conclusion,
+        trialCount: trials.length,
+        logCount: experimentLog.length,
+        snapshotCount: savedSnapshots.length
+      });
+      var sweepTheoryAudit = evaluateSweepTheoryAndControl(experimentLog, dataStudioAxis, regression, {
+        temperature: Math.max(1, displayTemperature || temperature),
+        count: liveCount,
+        boxSize: boxSize,
+        pressure: gaugePressure > 0 ? gaugePressure : liveVdw.vdwPressure,
+        particleDiameter: particleDiameter,
+        attraction: attraction
+      });
+      var quizEval = evaluateConceptQuiz(quizAnswers);
+      var residualAnalysis = analyzeSweepResiduals(experimentLog, dataStudioAxis, regression);
+      var activeHintSpec = getChallengeMissionHint(challengeTrack, challengeTrack === 'applied' ? activeMission.id : activeChallenge.id, {
+        preset: preset,
+        temperature: Math.max(1, displayTemperature || temperature),
+        attraction: attraction
+      });
+      var liveSiCalc = solveRealAndIdealGasState({
+        gasId: gasSpeciesA,
+        moles: calcMoles,
+        volumeL: calcVolumeL,
+        temperatureK: calcTempK
+      });
+      var liveDaltonMix = solveDaltonGasMixture({
+        gasIdA: gasSpeciesA,
+        gasIdB: gasSpeciesB,
+        molesA: mixMolesA,
+        molesB: mixMolesB,
+        volumeL: calcVolumeL,
+        temperatureK: calcTempK,
+        overWater: mixOverWater
+      });
+      var resolvedIdeaCount = Object.keys(ideasResolved).filter(function (k) { return !!ideasResolved[k]; }).length;
+      var investigationMastery = evaluateInvestigationMastery({
+        hasFairData: (trials.length === 2 && !!(trialComparison && trialComparison.fair)) || (experimentLog.length >= 2 && sweepTheoryAudit.fair) || (savedSnapshots.length >= 2 && !!(snapshotDelta && snapshotDelta.fair)),
+        logCount: experimentLog.length,
+        regressionValid: regression.valid,
+        regressionR2: regression.r2,
+        completedChallengeCount: completedChallengeCount,
+        completedMissionCount: completedMissionCount,
+        cerCompletedCount: notebookReadiness.completedCount,
+        quizCorrectCount: quizEval.correctCount,
+        testedIdeaWithEvidence: !!(currentIdea && hasEvidence) || resolvedIdeaCount > 0
+      });
 
       return h('div', { id: 'particle-lab-root', className: 'max-w-7xl mx-auto space-y-4 animate-in fade-in duration-300' },
         // hidden: the root's space-y-4 skips [hidden] siblings, so the style element must not claim the first-child slot (it gave the hero card a stray 1rem top margin).
@@ -1836,6 +8493,11 @@
           /* SC 2.5.8: the whole control is the pointer target for a range input, so give every slider at least 24px. */
           #particle-lab-root input[type="range"] { min-height: 24px; }
           #particle-lab-root .particle-pulse-button { min-height: 24px; }
+          #particle-quantitative-workbench .particle-log-list { max-height: 11.5rem; overflow-y: auto; }
+          #particle-workbench-cards-shell.particle-wb-pinned-grid { display: grid; gap: 1rem; margin-top: 1rem; }
+          @media (min-width: 1024px) { #particle-workbench-cards-shell.particle-wb-pinned-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+          #particle-workbench-cards-shell.particle-wb-pinned-grid .particle-wb-pass { display: contents; }
+          .theme-contrast #particle-quantitative-workbench select, .theme-contrast #particle-quantitative-workbench input[type="search"], .theme-contrast #particle-quantitative-workbench textarea, .theme-contrast #particle-session-json-drawer textarea { background: #000000; color: #ffff00; border-color: #ffff00; }
           /* Tailwind's animate-* utilities ignore prefers-reduced-motion; the scene already honours it, so the chrome must too. */
           @media (prefers-reduced-motion: reduce) { #particle-lab-root .animate-pulse, #particle-lab-root .animate-ping, #particle-lab-root .animate-in { animation: none !important; } }
           .particle-dock-note { font-size: 11px; font-weight: 700; color: #cbd5e1; }
@@ -1924,12 +8586,24 @@
             )
           )
         ),
+        showIncomingHandoff && h('section', { id: 'particle-incoming-handoff-banner', role: 'region', 'aria-label': __alloT('stem.particlelab3d.incoming_handoff_region', 'Imported cross-lab conditions'), className: 'rounded-2xl border border-cyan-300 bg-cyan-50 p-4 text-slate-950 shadow-sm' },
+          h('div', { className: 'flex flex-wrap items-center justify-between gap-3' },
+            h('div', { className: 'min-w-0' },
+              h('p', { className: 'text-[10px] font-black uppercase tracking-[0.18em] text-cyan-900' }, 'Imported from ' + incomingHandoff.fromLabel),
+              h('p', { className: 'mt-0.5 text-sm font-black text-slate-950' }, incomingHandoff.gasFormula + ' (' + incomingHandoff.gasName + ') \u2022 ' + incomingHandoff.temperatureK + ' K \u2022 ' + incomingHandoff.preset + ' chamber')
+            ),
+            h('div', { className: 'flex flex-wrap items-center gap-2' },
+              h('button', { id: 'particle-apply-handoff-btn', type: 'button', onClick: applyIncomingHandoff, className: 'min-h-11 sm:min-h-9 rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-black text-white hover:bg-slate-800' }, 'Apply Imported State'),
+              h('button', { id: 'particle-dismiss-handoff-btn', type: 'button', onClick: dismissIncomingHandoff, className: 'min-h-11 sm:min-h-9 rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-900 hover:bg-slate-100' }, 'Dismiss')
+            )
+          )
+        ),
         h('section', { className: 'rounded-2xl border border-slate-200 bg-white p-4 shadow-sm', 'aria-labelledby': 'particle-protocols-title' },
           h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', null, h('p', { className: 'text-[10px] font-black uppercase tracking-[0.18em] text-cyan-700' }, 'Guided investigations'), h('h3', { id: 'particle-protocols-title', className: 'text-lg font-black text-slate-950' }, 'Choose an experiment protocol')), h('button', { type: 'button', onClick: function () { applyProtocol({ id: 'free' }); }, className: 'rounded-lg border px-3 py-2 text-xs font-black ' + (activeProtocol === 'free' ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-300 text-slate-600 hover:bg-slate-100') }, '\u2699 Free laboratory')),
           h('div', { className: 'mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4' }, protocols.map(function (protocol) { var active = activeProtocol === protocol.id; return h('button', { key: protocol.id, type: 'button', onClick: function () { applyProtocol(protocol); }, 'aria-pressed': active, className: 'group relative overflow-hidden rounded-xl border p-3 text-left transition-all ' + (active ? 'border-cyan-400 bg-slate-950 text-white shadow-lg shadow-cyan-900/20' : 'border-slate-200 bg-slate-50 text-slate-900 hover:-translate-y-0.5 hover:border-cyan-300 hover:shadow-md') }, h('span', { className: 'absolute inset-y-0 left-0 w-1 bg-gradient-to-b ' + protocol.accent }), h('div', { className: 'flex items-start gap-3' }, h('span', { className: 'text-2xl' }, protocol.icon), h('span', null, h('span', { className: 'block text-sm font-black' }, protocol.title), h('span', { className: 'mt-0.5 block text-[10px] font-bold uppercase tracking-wide ' + (active ? 'text-cyan-300' : 'text-slate-500') }, protocol.law))), h('span', { className: 'mt-3 block text-[11px] leading-relaxed ' + (active ? 'text-slate-300' : 'text-slate-600') }, protocol.watch)); }))
 ,
           h('details', { id: 'particle-common-ideas', className: 'mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3', open: !!currentIdea },
-            h('summary', { className: 'min-h-11 cursor-pointer rounded-lg px-2 py-2 text-sm font-black leading-7 text-slate-900 outline-none focus-visible:ring-2 focus-visible:ring-cyan-700' }, 'Put a common idea to the test', h('span', { className: 'ml-2 text-xs font-bold text-slate-600' }, currentIdea ? 'testing one now' : COMMON_IDEAS.length + ' ideas students often bring to this lab')),
+            h('summary', { className: 'min-h-11 cursor-pointer rounded-lg px-2 py-2 text-sm font-black leading-7 text-slate-900 outline-none focus-visible:ring-2 focus-visible:ring-cyan-700' }, 'Put a common idea to the test', h('span', { className: 'ml-2 text-xs font-bold text-slate-600' }, currentIdea ? 'testing one now' : (COMMON_IDEAS.length + ' ideas students often bring to this lab' + (resolvedIdeaCount > 0 ? ' \u2022 ' + resolvedIdeaCount + '/' + COMMON_IDEAS.length + ' verified' : '')))),
             h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-700' }, 'Each idea below is something students often say about particles. Pick one, write what you expect to see, run the experiment, and only then read what the model shows.'),
             h('ul', { className: 'mt-3 grid gap-2 md:grid-cols-2' }, COMMON_IDEAS.map(function (idea) {
               var protocol = protocols.filter(function (p) { return p.id === idea.protocol; })[0], active = currentIdea && currentIdea.id === idea.id;
@@ -1938,7 +8612,11 @@
                 h('p', { className: 'mt-1 text-xs text-slate-700' }, 'Watch ' + idea.watch + '.'),
                 h('div', { className: 'mt-2 flex flex-wrap items-center gap-2' },
                   h('button', { type: 'button', onClick: function () { testIdea(idea); }, 'aria-pressed': !!active, 'aria-label': (active ? 'Testing: ' : 'Test this idea: ') + idea.idea, className: 'min-h-11 rounded-lg px-3 py-2 text-xs font-black text-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 sm:min-h-9 ' + (active ? 'bg-emerald-800 hover:bg-emerald-900' : 'bg-cyan-800 hover:bg-cyan-900') }, active ? '\u2713 Testing now' : 'Test this idea'),
-                  protocol && h('span', { className: 'text-[11px] font-bold text-slate-600' }, protocol.icon + ' ' + protocol.title)
+                  protocol && h('span', { className: 'text-[11px] font-bold text-slate-600' }, protocol.icon + ' ' + protocol.title),
+                  ideasResolved[idea.id] && h('span', {
+                    'data-idea-resolved': idea.id,
+                    className: 'rounded-full border border-emerald-300 bg-emerald-100 px-2 py-0.5 text-[10px] font-black uppercase text-emerald-950'
+                  }, '\u2713 Evidence verified')
                 ),
                 active && (hasEvidence
                   ? h('p', { className: 'mt-2 rounded-md border border-emerald-200 bg-white p-2 text-xs leading-relaxed text-slate-800', role: 'note', id: 'particle-idea-verdict' }, h('strong', null, 'What the model shows: '), idea.shows)
@@ -2252,9 +8930,29 @@
                   h('defs', null, h('linearGradient', { id: 'particleSpeedGradient', x1: '0%', x2: '100%' }, h('stop', { offset: '0%', stopColor: '#22d3ee' }), h('stop', { offset: '55%', stopColor: '#818cf8' }), h('stop', { offset: '100%', stopColor: '#fb7185' }))),
                   transportMode ? speciesMotion.a.bins.map(function (value, i) { var heightA = value / speciesPeak * 50, heightB = speciesMotion.b.bins[i] / speciesPeak * 50; return h('g', { key: i }, h('rect', { x: i * 20 + 3, y: 58 - heightA, width: 6, height: Math.max(1, heightA), rx: 2, fill: '#22d3ee', opacity: 0.9 }), h('rect', { x: i * 20 + 10, y: 58 - heightB, width: 6, height: Math.max(1, heightB), rx: 2, fill: '#f472b6', opacity: 0.86 })); }) : distribution.bins.map(function (value, i) { var height = value / speedPeak * 52; return h('rect', { key: i, x: i * 20 + 3, y: 58 - height, width: 14, height: Math.max(1, height), rx: 3, fill: 'url(#particleSpeedGradient)', opacity: 0.88 }); }),
                   transportMode ? [h('path', { key: 'mbA', d: mbPath(mbBinsA, speciesPeak, 50 / 52), fill: 'none', stroke: '#0e7490', strokeWidth: 1.5, strokeDasharray: '3 2', strokeLinejoin: 'round' }), h('path', { key: 'mbB', d: mbPath(mbBinsB, speciesPeak, 50 / 52), fill: 'none', stroke: '#be185d', strokeWidth: 1.5, strokeDasharray: '3 2', strokeLinejoin: 'round' })] : h('path', { d: mbPath(mbExpectedCounts, speedPeak, 1), fill: 'none', stroke: '#1e293b', strokeWidth: 1.6, strokeDasharray: '4 2', strokeLinejoin: 'round' }),
+                  !transportMode && distribution.max > 0 && [
+                    { key: 'vmp', val: liveMaxwellA.vMp, color: '#0284c7' },
+                    { key: 'vmean', val: liveMaxwellA.vMean, color: '#7c3aed' },
+                    { key: 'vrms', val: liveMaxwellA.vRms, color: '#e11d48' }
+                  ].map(function (tick) {
+                    var tx = clamp(tick.val / distribution.max * 240, 2, 238);
+                    return h('line', { key: tick.key, x1: tx.toFixed(1), y1: 6, x2: tx.toFixed(1), y2: 59, stroke: tick.color, strokeWidth: 1.3, strokeDasharray: '2 2', opacity: 0.9 });
+                  }),
                   h('line', { x1: 0, y1: 59, x2: 240, y2: 59, stroke: '#cbd5e1', strokeWidth: 1 }), h('text', { x: 2, y: 70, fontSize: 8, fill: '#64748b' }, 'slower'), h('text', { x: 215, y: 70, fontSize: 8, fill: '#64748b' }, 'faster')
                 ),
-                h('div', { className: 'mt-1 flex flex-wrap items-center justify-between gap-2 text-[10px]' }, h('span', { className: 'font-black ' + mbAgreement.tone }, mbAgreement.label), h('span', { className: 'text-slate-500' }, 'dashed line: Maxwell-Boltzmann at ' + Math.round(displayTemperature) + ' K')),
+                h('div', { className: 'mt-1 flex flex-wrap items-center justify-between gap-2 text-[10px]' }, h('span', { className: 'font-black ' + mbAgreement.tone }, mbAgreement.label), h('span', { className: 'text-slate-700' }, 'dashed line: Maxwell-Boltzmann at ' + Math.round(displayTemperature) + ' K')),
+                !transportMode && h('div', { className: 'mt-1.5 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 font-mono text-[10px] text-slate-800' },
+                  h('span', null, 'v_mp ' + liveMaxwellA.vMp.toFixed(2)),
+                  h('span', null, 'v_mean ' + liveMaxwellA.vMean.toFixed(2)),
+                  h('span', null, 'v_rms ' + liveMaxwellA.vRms.toFixed(2))
+                ),
+                transportMode && h('div', { className: 'mt-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[10px] text-slate-800' },
+                  h('div', { className: 'flex flex-wrap items-center justify-between gap-2 font-mono font-bold' },
+                    h('span', null, 'Graham \u221A(mB/mA): ' + liveGraham.theoryRatio.toFixed(2) + 'x'),
+                    h('span', null, 'Obs vA/vB: ' + (liveGraham.observedSpeedRatio != null ? liveGraham.observedSpeedRatio.toFixed(2) + 'x' : 'sampling'))
+                  ),
+                  h('div', { className: 'mt-0.5 text-slate-700' }, liveGraham.label)
+                ),
                 h('div', { className: 'mt-2 flex items-center justify-between gap-2' }, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.14em] text-slate-500' }, transportMode ? 'Kinetic energy by species' : 'Kinetic energy distribution'), h('div', { className: 'text-right font-mono text-[10px] text-slate-500' }, transportMode ? h(React.Fragment, null, h('div', { className: 'text-cyan-700' }, 'A mean ' + energyBins.a.mean.toFixed(2)), h('div', { className: 'text-fuchsia-700' }, 'B mean ' + energyBins.b.mean.toFixed(2))) : 'mean ' + energyBins.all.mean.toFixed(2))),
                 h('svg', { viewBox: '0 0 240 60', className: 'mt-1 h-[60px] w-full overflow-visible', role: 'img', 'aria-label': transportMode ? 'Paired histogram of kinetic energy per particle. Species A mean ' + energyBins.a.mean.toFixed(2) + ' and species B mean ' + energyBins.b.mean.toFixed(2) + ' model units. Equal means indicate thermal equilibrium even when the speeds differ.' : 'Histogram of kinetic energy per particle. Mean ' + energyBins.all.mean.toFixed(2) + ' model units.' },
                   transportMode ? energyBins.a.bins.map(function (value, i) { var peak = Math.max.apply(Math, energyBins.a.bins.concat(energyBins.b.bins).concat([0.01])), heightA = value / peak * 40, heightB = energyBins.b.bins[i] / peak * 40; return h('g', { key: i }, h('rect', { x: i * 20 + 3, y: 46 - heightA, width: 6, height: Math.max(1, heightA), rx: 2, fill: '#0891b2', opacity: 0.9 }), h('rect', { x: i * 20 + 10, y: 46 - heightB, width: 6, height: Math.max(1, heightB), rx: 2, fill: '#db2777', opacity: 0.86 })); }) : energyBins.all.bins.map(function (value, i) { var peak = Math.max.apply(Math, energyBins.all.bins.concat([0.01])), height = value / peak * 42; return h('rect', { key: i, x: i * 20 + 3, y: 46 - height, width: 14, height: Math.max(1, height), rx: 3, fill: '#7c3aed', opacity: 0.8 }); }),
@@ -2330,27 +9028,3568 @@
               h('p', { className: 'mt-2 leading-relaxed' }, currentProtocol ? currentProtocol.prompt : (preset === 'diffusion' ? 'Predict: Will raising temperature make the two colors mix faster? What measurement or visual evidence would support your answer?' : (preset === 'osmosis' ? 'Predict: Which direction will solvent A move, and how will membrane permeability affect solute leakage?' : 'Predict: If temperature rises while the box stays the same size, what will happen to wall collisions and pressure? Run two trials and compare.'))),
               currentProtocol && h('div', { className: 'mt-3 rounded-xl border border-white bg-white/80 p-3 text-xs' }, h('strong', { className: 'text-indigo-800' }, 'Evidence target: '), currentProtocol.watch)
             ),
-            h('button', { type: 'button', onClick: openMoleculeLab, className: 'w-full rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-left text-sm font-black text-indigo-900 hover:bg-indigo-100' }, '\u269B\uFE0F Inspect atoms and molecules in Molecule Lab \u2192')
+            h('div', { className: 'space-y-2' },
+              h('div', {
+                id: 'particle-bridge-category-nav',
+                role: 'group',
+                'aria-label': __alloT('stem.particlelab3d.bridge_category_filter', 'Connected STEM lab filter'),
+                className: 'flex flex-wrap gap-1.5 pb-1'
+              }, BRIDGE_CATEGORIES.map(function (cat) {
+                var active = bridgeCategory === cat.id;
+                return h('button', {
+                  key: cat.id,
+                  type: 'button',
+                  onClick: function () { setBridgeCategory(cat.id); persist({ bridgeCategory: cat.id }); },
+                  'aria-pressed': active,
+                  className: 'min-h-11 sm:min-h-9 rounded-full border px-2.5 py-1 text-[11px] font-black transition ' + (active ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-300 bg-slate-50 text-slate-900 hover:bg-slate-100')
+                }, cat.label);
+              })),
+              (bridgeCategory === 'all' || bridgeCategory === 'chem_tech') && h('button', { type: 'button', onClick: openMoleculeLab, className: 'w-full rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-left text-sm font-black text-indigo-900 hover:bg-indigo-100' }, '\u269B\uFE0F Inspect atoms and molecules in Molecule Lab \u2192'),
+              (bridgeCategory === 'all' || bridgeCategory === 'physics_space') && h('button', { type: 'button', onClick: openHeatLab, className: 'min-h-11 sm:min-h-9 w-full rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-left text-xs font-black text-amber-950 hover:bg-amber-100' }, '\uD83D\uDD25 Explore phase changes in Heat & Thermodynamics Lab \u2192'),
+              (bridgeCategory === 'all' || bridgeCategory === 'chem_tech') && h('button', { type: 'button', onClick: openInDataStudio, className: 'min-h-11 sm:min-h-9 w-full rounded-xl border border-cyan-200 bg-cyan-50 px-4 py-2.5 text-left text-xs font-black text-cyan-950 hover:bg-cyan-100' }, '\uD83D\uDCCA Plot gas-law trials in Data Studio \u2192'),
+              (bridgeCategory === 'all' || bridgeCategory === 'chem_tech') && h('button', { type: 'button', onClick: openChemistryLab, className: 'min-h-11 sm:min-h-9 w-full rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-left text-xs font-black text-emerald-950 hover:bg-emerald-100' }, '\uD83E\uDDEA Explore gas stoichiometry in Chemistry Lab \u2192'),
+              (bridgeCategory === 'all' || bridgeCategory === 'physics_space') && h('button', { type: 'button', onClick: openSolarSystemLab, className: 'min-h-11 sm:min-h-9 w-full rounded-xl border border-violet-200 bg-violet-50 px-4 py-2.5 text-left text-xs font-black text-violet-950 hover:bg-indigo-100' }, '\uD83E\uDE90 Compare planetary atmospheres in Solar System Lab \u2192'),
+              (bridgeCategory === 'all' || bridgeCategory === 'physics_space') && h('button', { type: 'button', onClick: openWaveLab, className: 'min-h-11 sm:min-h-9 w-full rounded-xl border border-cyan-200 bg-cyan-50 px-4 py-2.5 text-left text-xs font-black text-cyan-950 hover:bg-cyan-100' }, '\uD83C\uDF0A Explore sound waves & resonance in Wave Lab \u2192'),
+              (bridgeCategory === 'all' || bridgeCategory === 'physics_space') && h('button', { type: 'button', onClick: openOpticsLab, className: 'min-h-11 sm:min-h-9 w-full rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2.5 text-left text-xs font-black text-indigo-950 hover:bg-indigo-100' }, '\uD83D\uDD2C Explore spectral broadening & light in Optics Lab \u2192'),
+              (bridgeCategory === 'all' || bridgeCategory === 'physics_space') && h('button', { type: 'button', onClick: openSpaceStationLab, className: 'min-h-11 sm:min-h-9 w-full rounded-xl border border-slate-300 bg-slate-100 px-4 py-2.5 text-left text-xs font-black text-slate-950 hover:bg-slate-200' }, '\uD83D\uDEF0\uFE0F Explore cold-gas thrusters & air loops in Space Station Lab \u2192'),
+              (bridgeCategory === 'all' || bridgeCategory === 'earth_bio') && h('button', { type: 'button', onClick: openCellLab, className: 'min-h-11 sm:min-h-9 w-full rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-left text-xs font-black text-emerald-950 hover:bg-emerald-100' }, '\uD83E\uDDA0 Explore cellular osmosis & membranes in Cell Biology Lab \u2192'),
+              (bridgeCategory === 'all' || bridgeCategory === 'physics_space') && h('button', { type: 'button', onClick: openMagnetismLab, className: 'min-h-11 sm:min-h-9 w-full rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-left text-xs font-black text-amber-950 hover:bg-amber-100' }, '\u26A1 Explore Lorentz forces & plasmas in Magnetism Lab \u2192'),
+              (bridgeCategory === 'all' || bridgeCategory === 'chem_tech') && h('button', { type: 'button', onClick: openSemiconductorLab, className: 'min-h-11 sm:min-h-9 w-full rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2.5 text-left text-xs font-black text-indigo-950 hover:bg-indigo-100' }, '\uD83D\uDC8E Explore crystal lattices & phonons in Semiconductor Lab \u2192'),
+              (bridgeCategory === 'all' || bridgeCategory === 'earth_bio') && h('button', { type: 'button', onClick: openWeatherSystemsLab, className: 'min-h-11 sm:min-h-9 w-full rounded-xl border border-cyan-200 bg-cyan-50 px-4 py-2.5 text-left text-xs font-black text-cyan-950 hover:bg-cyan-100' }, '\uD83C\uDF26\uFE0F Explore humidity, dew point & clouds in Weather Systems Lab \u2192'),
+              (bridgeCategory === 'all' || bridgeCategory === 'earth_bio') && h('button', { type: 'button', onClick: openClimateExplorer, className: 'min-h-11 sm:min-h-9 w-full rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-left text-xs font-black text-emerald-950 hover:bg-emerald-100' }, '\uD83C\uDF0D Explore greenhouse forcing & CO\u2082 in Climate Explorer \u2192'),
+              (bridgeCategory === 'all' || bridgeCategory === 'physics_space') && h('button', { type: 'button', onClick: openFlightSimLab, className: 'min-h-11 sm:min-h-9 w-full rounded-xl border border-cyan-200 bg-cyan-50 px-4 py-2.5 text-left text-xs font-black text-cyan-950 hover:bg-cyan-100' }, '\u2708\uFE0F Explore Mach shock waves & heating in Flight Simulator \u2192'),
+              (bridgeCategory === 'all' || bridgeCategory === 'physics_space') && h('button', { type: 'button', onClick: openNuclearLab, className: 'min-h-11 sm:min-h-9 w-full rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-left text-xs font-black text-amber-950 hover:bg-amber-100' }, '\u2622\uFE0F Explore Gamow tunneling & fusion in Nuclear Physics Lab \u2192'),
+              (bridgeCategory === 'all' || bridgeCategory === 'chem_tech') && h('button', { type: 'button', onClick: openCircuitLab, className: 'min-h-11 sm:min-h-9 w-full rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2.5 text-left text-xs font-black text-indigo-950 hover:bg-indigo-100' }, '\uD83D\uDD0C Explore Johnson thermal noise & drift in Circuit Simulator \u2192'),
+              (bridgeCategory === 'all' || bridgeCategory === 'physics_space') && h('button', { type: 'button', onClick: openAstronomyLab, className: 'min-h-11 sm:min-h-9 w-full rounded-xl border border-violet-200 bg-violet-50 px-4 py-2.5 text-left text-xs font-black text-violet-950 hover:bg-violet-100' }, '\uD83D\uDD2D Explore Jeans star formation & nebulae in Astronomy Lab \u2192'),
+              (bridgeCategory === 'all' || bridgeCategory === 'earth_bio') && h('button', { type: 'button', onClick: openEpidemicLab, className: 'min-h-11 sm:min-h-9 w-full rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-left text-xs font-black text-rose-900 hover:bg-rose-100' }, '\uD83E\uDDA0 Explore airborne aerosol spread in Epidemic Simulator \u2192'),
+              (bridgeCategory === 'all' || bridgeCategory === 'chem_tech') && h('button', { type: 'button', onClick: openRenewablesLab, className: 'min-h-11 sm:min-h-9 w-full rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-left text-xs font-black text-emerald-950 hover:bg-emerald-100' }, '\uD83C\uDF31 Explore clean fuel storage & Betz wind in Renewables Lab \u2192'),
+              (bridgeCategory === 'all' || bridgeCategory === 'earth_bio') && h('button', { type: 'button', onClick: openCoralReefLab, className: 'min-h-11 sm:min-h-9 w-full rounded-xl border border-cyan-200 bg-cyan-50 px-4 py-2.5 text-left text-xs font-black text-cyan-950 hover:bg-cyan-100' }, '\uD83E\uDEB8 Explore Henry\u2019s Law & ocean gases in Coral Reef Lab \u2192'),
+              (bridgeCategory === 'all' || bridgeCategory === 'earth_bio') && h('button', { type: 'button', onClick: openAnatomyLab, className: 'min-h-11 sm:min-h-9 w-full rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-left text-xs font-black text-rose-900 hover:bg-rose-100' }, '\uD83E\uDEC1 Explore alveolar O\u2082 exchange in Human Anatomy Lab \u2192'),
+              (bridgeCategory === 'all' || bridgeCategory === 'earth_bio') && h('button', { type: 'button', onClick: openPlateTectonicsLab, className: 'min-h-11 sm:min-h-9 w-full rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-left text-xs font-black text-amber-950 hover:bg-amber-100' }, '\uD83C\uDF0B Explore magmatic volatiles in Plate Tectonics Lab \u2192')
+            )
           )
+        ),
+        h('section', { id: 'particle-quantitative-workbench', className: 'rounded-2xl border border-slate-200 bg-white p-4 text-slate-900 shadow-sm sm:p-5', 'aria-labelledby': 'particle-workbench-title' },
+          h('div', { className: 'flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3' },
+            h('div', { className: 'min-w-0' },
+              h('p', { className: 'text-[10px] font-black uppercase tracking-[0.2em] text-cyan-900' }, 'Quantitative Kinetic Theory & Data Studio'),
+              h('h3', { id: 'particle-workbench-title', className: 'text-lg font-black text-slate-950' }, 'Real-Gas Deviations, Parametric Sweeps & Chamber Snapshots')
+            ),
+            h('div', { className: 'flex flex-wrap items-center gap-2 text-[10px] font-black uppercase tracking-wide' },
+              h('span', { className: 'rounded-full border border-slate-300 bg-slate-100 px-2.5 py-1 text-slate-900' }, 'Z = ' + liveVdw.z.toFixed(2)),
+              h('span', { className: 'rounded-full border border-cyan-200 bg-cyan-50 px-2.5 py-1 text-cyan-950' }, experimentLog.length + ' logged'),
+              h('span', { className: 'rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-indigo-900' }, savedSnapshots.length + '/4 snaps'),
+              h('span', { className: 'rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-emerald-950' }, completedChallengeCount + '/' + PARTICLE_CHALLENGES.length + ' challenges'),
+              h('span', { className: 'rounded-full border border-violet-200 bg-violet-50 px-2.5 py-1 text-violet-900' }, completedMissionCount + '/' + APPLIED_WORKBENCH_MISSIONS.length + ' missions'),
+              h('span', { className: 'rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-amber-950' }, 'Kn = ' + (liveTransport.knudsen < 10 ? liveTransport.knudsen.toFixed(2) : liveTransport.knudsen.toFixed(1)))
+            )
+          ),
+          h('div', {
+            id: 'particle-workbench-domain-nav',
+            role: 'group',
+            'aria-label': __alloT('stem.particlelab3d.workbench_domain_filter', 'Quantitative workbench domain filter'),
+            className: 'mt-3 flex flex-wrap gap-2'
+          }, WORKBENCH_DOMAINS.map(function (dom) {
+            var active = workbenchDomain === dom.id;
+            var domLabel = dom.id === 'pinned' ? ('Pinned Deck (' + pinnedWorkbenchIds.length + ')') : dom.label;
+            return h('button', {
+              key: dom.id,
+              type: 'button',
+              onClick: function () {
+                setWorkbenchDomain(dom.id);
+                if (workbenchCollapsed) {
+                  setWorkbenchCollapsed(false);
+                  persist({ workbenchDomain: dom.id, workbenchCollapsed: false });
+                } else {
+                  persist({ workbenchDomain: dom.id });
+                }
+              },
+              'aria-pressed': active,
+              className: 'min-h-11 sm:min-h-9 rounded-full border px-3 py-1.5 text-xs font-black transition ' + (active ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-300 bg-slate-50 text-slate-900 hover:bg-slate-100')
+            }, domLabel);
+          })),
+          h('div', { id: 'particle-workbench-utility-bar', className: 'mt-3 flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3' },
+            h('div', { className: 'flex min-w-0 flex-1 basis-full items-center gap-2 sm:basis-64' },
+              h('label', { htmlFor: 'particle-workbench-search', className: 'shrink-0 text-xs font-black text-slate-800' }, 'Find module'),
+              h('input', {
+                id: 'particle-workbench-search',
+                type: 'search',
+                value: workbenchSearch,
+                onChange: function (e) { setWorkbenchSearch(String(e.target.value || '')); },
+                placeholder: __alloT('stem.particlelab3d.search_workbench_placeholder', 'Search 30 modules (Mach, Bohr, Jeans)...'),
+                className: 'min-h-11 sm:min-h-9 min-w-0 w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-900'
+              }),
+              workbenchSearch.trim() !== '' && h('button', {
+                id: 'particle-workbench-clear-search-btn',
+                type: 'button',
+                onClick: function () { setWorkbenchSearch(''); },
+                className: 'min-h-11 sm:min-h-9 shrink-0 rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-800 hover:bg-slate-100'
+              }, 'Clear')
+            ),
+            h('button', {
+              id: 'particle-workbench-pin-btn',
+              type: 'button',
+              'aria-expanded': pinDrawerOpen,
+              onClick: function () { setPinDrawerOpen(function (v) { return !v; }); },
+              className: 'min-h-11 sm:min-h-9 rounded-lg border border-cyan-300 bg-cyan-50 px-3 py-1.5 text-xs font-black text-cyan-950 hover:bg-cyan-100'
+            }, '\uD83D\uDCCC Customize Deck (' + pinnedWorkbenchIds.length + ')'),
+            h('button', {
+              id: 'particle-workbench-collapse-btn',
+              type: 'button',
+              'aria-expanded': !workbenchCollapsed,
+              onClick: function () {
+                var next = !workbenchCollapsed;
+                setWorkbenchCollapsed(next);
+                persist({ workbenchCollapsed: next });
+                announce(next ? __alloT('stem.particlelab3d.sr_workbench_collapsed', 'Collapsed Quantitative Workbench modules.') : __alloT('stem.particlelab3d.sr_workbench_expanded', 'Expanded Quantitative Workbench modules.'));
+              },
+              className: 'min-h-11 sm:min-h-9 rounded-lg border border-slate-300 bg-slate-50 px-3 py-1.5 text-xs font-black text-slate-900 hover:bg-slate-100'
+            }, workbenchCollapsed ? 'Expand Workbench (30)' : 'Collapse Workbench'),
+            h('button', {
+              id: 'particle-glossary-toggle-btn',
+              type: 'button',
+              'aria-expanded': glossaryOpen,
+              onClick: function () { setGlossaryOpen(function (v) { return !v; }); },
+              className: 'min-h-11 sm:min-h-9 rounded-lg border border-cyan-300 bg-cyan-50 px-3 py-1.5 text-xs font-black text-cyan-950 hover:bg-cyan-100'
+            }, glossaryOpen ? 'Hide Symbol Glossary' : 'Symbol Glossary (' + PARTICLE_GLOSSARY_TERMS.length + ')'),
+            h('button', {
+              id: 'particle-quiz-toggle-btn',
+              type: 'button',
+              'aria-expanded': quizOpen,
+              onClick: function () { setQuizOpen(function (v) { return !v; }); },
+              className: 'min-h-11 sm:min-h-9 rounded-lg border border-violet-300 bg-violet-50 px-3 py-1.5 text-xs font-black text-violet-950 hover:bg-violet-100'
+            }, quizOpen ? 'Hide Concept Check' : 'Concept Check (' + quizEval.correctCount + '/' + quizEval.totalCount + ')'),
+            h('button', {
+              id: 'particle-calc-toggle-btn',
+              type: 'button',
+              'aria-expanded': calcOpen,
+              onClick: function () { setCalcOpen(function (v) { return !v; }); },
+              className: 'min-h-11 sm:min-h-9 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-black text-emerald-950 hover:bg-emerald-100'
+            }, calcOpen ? 'Hide SI Gas Solver' : 'SI Gas Solver'),
+            h('button', {
+              id: 'particle-lessons-toggle-btn',
+              type: 'button',
+              'aria-expanded': lessonsOpen,
+              onClick: function () { setLessonsOpen(function (v) { return !v; }); },
+              className: 'min-h-11 sm:min-h-9 rounded-lg border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-black text-amber-950 hover:bg-amber-100'
+            }, lessonsOpen ? 'Hide Lesson Guides' : ('Lesson Guides (' + PARTICLE_LESSON_GUIDES.length + ')')),
+            h('button', {
+              id: 'particle-jump-notebook-btn',
+              type: 'button',
+              onClick: jumpToNotebook,
+              className: 'min-h-11 sm:min-h-9 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-black text-indigo-900 hover:bg-indigo-100'
+            }, 'Jump to Notebook \u2193')
+          ),
+          glossaryOpen && h('div', {
+            id: 'particle-glossary-drawer',
+            role: 'region',
+            'aria-label': __alloT('stem.particlelab3d.glossary_region', 'Particle physics concept and symbol glossary'),
+            className: 'mt-3 rounded-xl border border-cyan-200 bg-cyan-50/70 p-3.5'
+          },
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+              h('div', null,
+                h('h4', { className: 'text-sm font-black text-slate-950' }, 'Concept & Symbol Glossary'),
+                h('p', { className: 'text-xs text-slate-700' }, 'Plain-language definitions, formulas, and direct jumps to each workbench card.')
+              ),
+              h('div', { className: 'flex flex-wrap items-center gap-2' },
+                h('label', { htmlFor: 'particle-glossary-search', className: 'text-xs font-bold text-slate-800' }, 'Filter glossary'),
+                h('input', {
+                  id: 'particle-glossary-search',
+                  type: 'search',
+                  value: glossarySearch,
+                  onChange: function (e) { setGlossarySearch(e.target.value); },
+                  placeholder: __alloT('stem.particlelab3d.glossary_search_placeholder', 'Search symbol or term (e.g. Kn, Z, H)...'),
+                  className: 'min-h-11 sm:min-h-9 w-full sm:w-64 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-900 placeholder-slate-500'
+                })
+              )
+            ),
+            glossaryMatches.length === 0
+              ? h('p', { className: 'mt-3 text-xs font-semibold text-slate-700' }, 'No glossary terms match \u201C' + glossarySearch + '\u201D.')
+              : h('div', { className: 'mt-3 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3' },
+                  glossaryMatches.map(function (item) {
+                    var targetMod = WORKBENCH_MODULE_DIRECTORY.filter(function (m) { return m.id === item.moduleId; })[0];
+                    return h('article', {
+                      key: item.id,
+                      'data-glossary-id': item.id,
+                      className: 'flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-3 shadow-xs'
+                    },
+                      h('div', null,
+                        h('div', { className: 'flex flex-wrap items-center justify-between gap-1.5' },
+                          h('span', { className: 'rounded bg-slate-900 px-2 py-0.5 font-mono text-xs font-black text-cyan-200' }, item.symbol),
+                          h('span', { className: 'font-mono text-[11px] font-bold text-indigo-800' }, item.formula)
+                        ),
+                        h('h5', { className: 'mt-2 text-xs font-black text-slate-950' }, item.term),
+                        h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-700' }, item.plainEnglish)
+                      ),
+                      h('button', {
+                        type: 'button',
+                        onClick: function () {
+                          jumpToWorkbenchCard({
+                            id: item.moduleId,
+                            cardId: item.cardId,
+                            domain: (targetMod && targetMod.domain) || 'gas_thermo',
+                            title: item.term
+                          });
+                        },
+                        className: 'mt-2.5 inline-flex min-h-11 sm:min-h-9 items-center justify-center rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs font-black text-indigo-900 hover:bg-indigo-100'
+                      }, 'Open ' + item.term + ' card \u2192')
+                    );
+                  })
+                )
+          ),
+          quizOpen && h('div', {
+            id: 'particle-quiz-drawer',
+            role: 'region',
+            'aria-label': __alloT('stem.particlelab3d.quiz_region', 'Kinetic molecular theory concept check quiz'),
+            className: 'mt-3 rounded-xl border border-violet-200 bg-violet-50/70 p-3.5'
+          },
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+              h('div', null,
+                h('div', { className: 'flex flex-wrap items-center gap-2' },
+                  h('h4', { className: 'text-sm font-black text-slate-950' }, 'KMT Concept Self-Check'),
+                  h('span', {
+                    className: 'rounded-full border px-2 py-0.5 text-[10px] font-black uppercase ' + (quizEval.mastered ? 'border-emerald-300 bg-emerald-100 text-emerald-950' : 'border-violet-200 bg-white text-violet-900')
+                  }, quizEval.correctCount + '/' + quizEval.totalCount + ' (' + quizEval.scorePct + '%)' + (quizEval.mastered ? ' \u2022 Mastered \u2713' : ''))
+                ),
+                h('p', { className: 'text-xs text-slate-700' }, 'Check your microscopic particle reasoning with instant explanations, hints, and links to live workbench cards.')
+              ),
+              quizEval.answeredCount > 0 && h('button', {
+                id: 'particle-quiz-reset-btn',
+                type: 'button',
+                onClick: resetConceptQuiz,
+                className: 'min-h-11 sm:min-h-9 rounded-lg border border-rose-300 bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-900 hover:bg-rose-100'
+              }, 'Reset Quiz')
+            ),
+            h('div', { className: 'mt-3 grid gap-3 lg:grid-cols-2' },
+              PARTICLE_CONCEPT_QUIZ.map(function (q, qIdx) {
+                var itemEval = quizEval.items[qIdx];
+                var answered = itemEval && itemEval.answered;
+                var selectedIdx = answered ? itemEval.selectedIndex : -1;
+                var isCorrect = answered && itemEval.correct;
+                var targetMod = WORKBENCH_MODULE_DIRECTORY.filter(function (m) { return m.id === q.moduleId; })[0];
+                return h('fieldset', {
+                  key: q.id,
+                  'data-quiz-id': q.id,
+                  className: 'rounded-xl border border-slate-200 bg-white p-3'
+                },
+                  h('legend', { className: 'px-1 text-xs font-black text-slate-950' }, (qIdx + 1) + '. ' + q.title),
+                  h('div', { className: 'flex h-full flex-col justify-between' },
+                    h('div', null,
+                      h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-800' }, q.prompt),
+                      h('div', { className: 'mt-2 space-y-1.5' },
+                        q.options.map(function (optText, optIdx) {
+                          var isSelected = selectedIdx === optIdx;
+                          var isRightOpt = answered && optIdx === q.correctIndex && isCorrect;
+                          var isWrongSel = answered && isSelected && !isCorrect;
+                          var btnTone = isRightOpt
+                            ? 'border-emerald-500 bg-emerald-50 text-emerald-950'
+                            : (isWrongSel
+                              ? 'border-rose-400 bg-rose-50 text-rose-950'
+                              : (isSelected ? 'border-violet-600 bg-violet-50 text-violet-950' : 'border-slate-300 bg-slate-50 text-slate-900 hover:bg-slate-100'));
+                          return h('button', {
+                            key: q.id + '-opt-' + optIdx,
+                            type: 'button',
+                            'data-quiz-opt': String(optIdx),
+                            'aria-pressed': isSelected,
+                            onClick: function () { answerConceptQuiz(q.id, optIdx); },
+                            className: 'min-h-11 sm:min-h-9 w-full rounded-lg border px-3 py-1.5 text-left text-xs font-semibold transition ' + btnTone
+                          }, optText);
+                        })
+                      ),
+                      answered && h('div', {
+                        role: 'status',
+                        'aria-live': 'polite',
+                        className: 'mt-2 rounded-lg border p-2 text-xs leading-relaxed ' + (isCorrect ? 'border-emerald-200 bg-emerald-50 text-emerald-950' : 'border-amber-200 bg-amber-50 text-amber-950')
+                      }, isCorrect ? ('Correct \u2713 ' + q.explanation) : ('Hint: ' + q.hint))
+                    ),
+                    h('button', {
+                      type: 'button',
+                      onClick: function () {
+                        jumpToWorkbenchCard({
+                          id: q.moduleId,
+                          cardId: q.cardId,
+                          domain: (targetMod && targetMod.domain) || 'gas_thermo',
+                          title: q.moduleTitle
+                        });
+                      },
+                      className: 'mt-2.5 inline-flex min-h-11 sm:min-h-9 items-center justify-center rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs font-black text-indigo-900 hover:bg-indigo-100'
+                    }, 'Inspect ' + q.moduleTitle + ' card \u2192')
+                  )
+                );
+              })
+            )
+          ),
+          calcOpen && h('div', {
+            id: 'particle-calc-drawer',
+            role: 'region',
+            'aria-label': __alloT('stem.particlelab3d.si_calc_region', 'SI Ideal and Van der Waals molar gas state calculator'),
+            className: 'mt-3 rounded-xl border border-emerald-200 bg-emerald-50/70 p-3.5'
+          },
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+              h('div', null,
+                h('h4', { className: 'text-sm font-black text-slate-950' }, calcMode === 'mixture' ? "Dalton's Law Binary Mixture & Wet-Gas Solver" : 'SI Ideal vs. Van der Waals Molar State Solver'),
+                h('p', { className: 'text-xs text-slate-700' }, calcMode === 'mixture'
+                  ? ('Compute partial pressures, mole fractions, Graham speed ratios, and water vapor offset for ' + liveDaltonMix.gasA.formula + ' + ' + liveDaltonMix.gasB.formula + '.')
+                  : ('Solve real SI pressures (atm, kPa) using NIST a/b constants for ' + liveSiCalc.gas.name + ' (M = ' + liveSiCalc.gas.molarMass.toFixed(2) + ' g/mol).'))
+              ),
+              h('div', { className: 'flex flex-wrap items-center gap-1.5' },
+                h('button', {
+                  id: 'particle-calc-mode-single',
+                  type: 'button',
+                  'aria-pressed': calcMode === 'single',
+                  onClick: function () { setCalcMode('single'); persist({ calcMode: 'single' }); },
+                  className: 'min-h-11 sm:min-h-8 rounded-lg border px-2.5 py-1 text-xs font-black ' + (calcMode === 'single' ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-300 bg-white text-slate-900 hover:bg-slate-100')
+                }, 'Single Real Gas'),
+                h('button', {
+                  id: 'particle-calc-mode-mixture',
+                  type: 'button',
+                  'aria-pressed': calcMode === 'mixture',
+                  onClick: function () { setCalcMode('mixture'); persist({ calcMode: 'mixture' }); },
+                  className: 'min-h-11 sm:min-h-8 rounded-lg border px-2.5 py-1 text-xs font-black ' + (calcMode === 'mixture' ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-300 bg-white text-slate-900 hover:bg-slate-100')
+                }, 'Dalton Mixture & Wet Gas'),
+                calcMode === 'single' && h('span', {
+                  className: 'rounded-full border px-2 py-0.5 text-[10px] font-black uppercase ' + (liveSiCalc.regime === 'repulsive' ? 'border-amber-300 bg-amber-100 text-amber-950' : (liveSiCalc.regime === 'attractive' ? 'border-rose-300 bg-rose-100 text-rose-950' : 'border-emerald-300 bg-white text-emerald-900'))
+                }, liveSiCalc.regimeLabel)
+              )
+            ),
+            calcMode === 'mixture'
+              ? h('div', { className: 'mt-3 space-y-3' },
+                  h('div', { className: 'grid gap-2 sm:grid-cols-2 lg:grid-cols-3' },
+                    h('div', { className: 'min-w-0' },
+                      h('label', { htmlFor: 'particle-mix-gas-a-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-800' }, 'Species A'),
+                      h('select', {
+                        id: 'particle-mix-gas-a-select',
+                        value: gasSpeciesA,
+                        onChange: function (e) {
+                          var nextGA = restoreOneOf(e.target.value, GAS_IDENTITY_IDS, 'N2');
+                          setGasSpeciesA(nextGA);
+                          persist({ gasSpeciesA: nextGA });
+                        },
+                        className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                      }, GAS_IDENTITIES.map(function (g) {
+                        return h('option', { key: 'mixA-' + g.id, value: g.id }, g.name + ' (' + g.formula + ')');
+                      }))
+                    ),
+                    h('div', { className: 'min-w-0' },
+                      h('label', { htmlFor: 'particle-mix-moles-a-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-800' }, 'Moles A (n_A)'),
+                      h('select', {
+                        id: 'particle-mix-moles-a-select',
+                        value: String(mixMolesA),
+                        onChange: function (e) {
+                          var nextNA = restoreNumber(e.target.value, 0.01, 500, 0.8);
+                          setMixMolesA(nextNA);
+                          persist({ mixMolesA: nextNA });
+                        },
+                        className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                      }, (MIX_MOLES_OPTIONS.indexOf(mixMolesA) < 0 ? [mixMolesA] : []).concat(MIX_MOLES_OPTIONS).map(function (nOpt, idx) {
+                        return h('option', { key: 'na-' + idx + '-' + nOpt, value: String(nOpt) }, nOpt + ' mol');
+                      }))
+                    ),
+                    h('div', { className: 'min-w-0' },
+                      h('label', { htmlFor: 'particle-mix-gas-b-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-800' }, 'Species B'),
+                      h('select', {
+                        id: 'particle-mix-gas-b-select',
+                        value: gasSpeciesB,
+                        onChange: function (e) {
+                          var nextGB = restoreOneOf(e.target.value, GAS_IDENTITY_IDS, 'O2');
+                          setGasSpeciesB(nextGB);
+                          persist({ gasSpeciesB: nextGB });
+                        },
+                        className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                      }, GAS_IDENTITIES.map(function (g) {
+                        return h('option', { key: 'mixB-' + g.id, value: g.id }, g.name + ' (' + g.formula + ')');
+                      }))
+                    ),
+                    h('div', { className: 'min-w-0' },
+                      h('label', { htmlFor: 'particle-mix-moles-b-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-800' }, 'Moles B (n_B)'),
+                      h('select', {
+                        id: 'particle-mix-moles-b-select',
+                        value: String(mixMolesB),
+                        onChange: function (e) {
+                          var nextNB = restoreNumber(e.target.value, 0.01, 500, 0.2);
+                          setMixMolesB(nextNB);
+                          persist({ mixMolesB: nextNB });
+                        },
+                        className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                      }, (MIX_MOLES_OPTIONS.indexOf(mixMolesB) < 0 ? [mixMolesB] : []).concat(MIX_MOLES_OPTIONS).map(function (nOpt, idx) {
+                        return h('option', { key: 'nb-' + idx + '-' + nOpt, value: String(nOpt) }, nOpt + ' mol');
+                      }))
+                    ),
+                    h('div', { className: 'min-w-0' },
+                      h('label', { htmlFor: 'particle-calc-volume-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-800' }, 'Volume (L)'),
+                      h('select', {
+                        id: 'particle-calc-volume-select',
+                        value: String(calcVolumeL),
+                        onChange: function (e) {
+                          var nextV = restoreNumber(e.target.value, 0.05, 10000, 22.4);
+                          setCalcVolumeL(nextV);
+                          persist({ calcVolumeL: nextV });
+                        },
+                        className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                      }, CALC_VOLUME_L_OPTIONS.map(function (vOpt) {
+                        return h('option', { key: vOpt, value: String(vOpt) }, vOpt + ' L');
+                      }))
+                    ),
+                    h('div', { className: 'min-w-0' },
+                      h('label', { htmlFor: 'particle-calc-temp-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-800' }, 'Temperature (K)'),
+                      h('select', {
+                        id: 'particle-calc-temp-select',
+                        value: String(calcTempK),
+                        onChange: function (e) {
+                          var nextT = restoreNumber(e.target.value, 20, 5000, 298.15);
+                          setCalcTempK(nextT);
+                          persist({ calcTempK: nextT });
+                        },
+                        className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                      },
+                        (CALC_TEMP_K_OPTIONS.indexOf(calcTempK) < 0 ? [calcTempK] : []).concat(CALC_TEMP_K_OPTIONS).map(function (tOpt, idx) {
+                          var isCustom = CALC_TEMP_K_OPTIONS.indexOf(tOpt) < 0;
+                          return h('option', { key: 'tmix-' + idx + '-' + tOpt, value: String(tOpt) }, isCustom ? (tOpt + ' K (Chamber)') : (tOpt + ' K'));
+                        })
+                      )
+                    )
+                  ),
+                  h('div', { className: 'flex flex-wrap items-center gap-2' },
+                    h('button', {
+                      id: 'particle-mix-overwater-btn',
+                      type: 'button',
+                      'aria-pressed': mixOverWater,
+                      onClick: function () {
+                        var nextW = !mixOverWater;
+                        setMixOverWater(nextW);
+                        persist({ mixOverWater: nextW });
+                      },
+                      className: 'min-h-11 sm:min-h-9 rounded-lg border px-3 py-1.5 text-xs font-black ' + (mixOverWater ? 'border-cyan-700 bg-cyan-800 text-white hover:bg-cyan-900' : 'border-slate-300 bg-white text-slate-900 hover:bg-slate-100')
+                    }, mixOverWater ? ('\uD83D\uDCA7 Collected Over H\u2082O: ON (P_H\u2082O = ' + liveDaltonMix.pWaterMmHg.toFixed(1) + ' mmHg)') : '\uD83D\uDCA7 Collected Over H\u2082O: OFF')
+                  ),
+                  h('div', { className: 'grid gap-2 sm:grid-cols-2 lg:grid-cols-4' },
+                    [
+                      ['Partial P_A (x_A)', liveDaltonMix.pAAtm.toFixed(3) + ' atm (x=' + liveDaltonMix.xA.toFixed(2) + ')'],
+                      ['Partial P_B (x_B)', liveDaltonMix.pBAtm.toFixed(3) + ' atm (x=' + liveDaltonMix.xB.toFixed(2) + ')'],
+                      ['Dry vs Total P', liveDaltonMix.pDryAtm.toFixed(3) + ' \u2192 ' + liveDaltonMix.pTotalAtm.toFixed(3) + ' atm (' + liveDaltonMix.pTotalKpa.toFixed(1) + ' kPa)'],
+                      ['Mean M & Graham', liveDaltonMix.meanMolarMass.toFixed(2) + ' g/mol \u2022 v_A/v_B ' + liveDaltonMix.vRmsRatioAB.toFixed(2) + 'x']
+                    ].map(function (item) {
+                      return h('div', { key: item[0], className: 'min-w-0 rounded-lg border border-slate-200 bg-white p-2.5' },
+                        h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-700' }, item[0]),
+                        h('div', { className: 'mt-0.5 font-mono text-xs font-black text-slate-950' }, item[1])
+                      );
+                    })
+                  )
+                )
+              : h('div', null,
+                  h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4' },
+                    h('div', { className: 'min-w-0' },
+                      h('label', { htmlFor: 'particle-calc-gas-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-800' }, 'Gas Species'),
+                      h('select', {
+                        id: 'particle-calc-gas-select',
+                        value: gasSpeciesA,
+                        onChange: function (e) {
+                          var nextG = restoreOneOf(e.target.value, GAS_IDENTITY_IDS, 'N2');
+                          setGasSpeciesA(nextG);
+                          persist({ gasSpeciesA: nextG });
+                        },
+                        className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                      }, GAS_IDENTITIES.map(function (g) {
+                        return h('option', { key: 'calc-' + g.id, value: g.id }, g.name + ' (' + g.formula + ')');
+                      }))
+                    ),
+                    h('div', { className: 'min-w-0' },
+                      h('label', { htmlFor: 'particle-calc-moles-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-800' }, 'Moles (n)'),
+                      h('select', {
+                        id: 'particle-calc-moles-select',
+                        value: String(calcMoles),
+                        onChange: function (e) {
+                          var nextN = restoreNumber(e.target.value, 0.01, 1000, 1);
+                          setCalcMoles(nextN);
+                          persist({ calcMoles: nextN });
+                        },
+                        className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                      }, CALC_MOLES_OPTIONS.map(function (nOpt) {
+                        return h('option', { key: nOpt, value: String(nOpt) }, nOpt + ' mol');
+                      }))
+                    ),
+                    h('div', { className: 'min-w-0' },
+                      h('label', { htmlFor: 'particle-calc-volume-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-800' }, 'Volume (L)'),
+                      h('select', {
+                        id: 'particle-calc-volume-select',
+                        value: String(calcVolumeL),
+                        onChange: function (e) {
+                          var nextV = restoreNumber(e.target.value, 0.05, 10000, 22.4);
+                          setCalcVolumeL(nextV);
+                          persist({ calcVolumeL: nextV });
+                        },
+                        className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                      }, CALC_VOLUME_L_OPTIONS.map(function (vOpt) {
+                        return h('option', { key: vOpt, value: String(vOpt) }, vOpt + ' L');
+                      }))
+                    ),
+                    h('div', { className: 'min-w-0' },
+                      h('label', { htmlFor: 'particle-calc-temp-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-800' }, 'Temperature (K)'),
+                      h('select', {
+                        id: 'particle-calc-temp-select',
+                        value: String(calcTempK),
+                        onChange: function (e) {
+                          var nextT = restoreNumber(e.target.value, 20, 5000, 298.15);
+                          setCalcTempK(nextT);
+                          persist({ calcTempK: nextT });
+                        },
+                        className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                      },
+                        (CALC_TEMP_K_OPTIONS.indexOf(calcTempK) < 0 ? [calcTempK] : []).concat(CALC_TEMP_K_OPTIONS).map(function (tOpt, idx) {
+                          var isCustom = CALC_TEMP_K_OPTIONS.indexOf(tOpt) < 0;
+                          return h('option', { key: 't-' + idx + '-' + tOpt, value: String(tOpt) }, isCustom ? (tOpt + ' K (Chamber)') : (tOpt + ' K'));
+                        })
+                      )
+                    )
+                  ),
+                  h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4' },
+                    [
+                      ['Ideal P (PV = nRT)', liveSiCalc.pIdealAtm.toFixed(3) + ' atm (' + liveSiCalc.pIdealKpa.toFixed(1) + ' kPa)'],
+                      ['Van der Waals P', liveSiCalc.pVdwAtm.toFixed(3) + ' atm (' + liveSiCalc.pVdwKpa.toFixed(1) + ' kPa)'],
+                      ['Compressibility Z', liveSiCalc.compressibilityZ.toFixed(3) + ' (' + (liveSiCalc.percentDeviation >= 0 ? '+' : '') + liveSiCalc.percentDeviation.toFixed(1) + '%)'],
+                      ['Mass & Density', liveSiCalc.massGrams.toFixed(1) + ' g (' + liveSiCalc.densityGPerL.toFixed(2) + ' g/L)']
+                    ].map(function (item) {
+                      return h('div', { key: item[0], className: 'min-w-0 rounded-lg border border-slate-200 bg-white p-2.5' },
+                        h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-700' }, item[0]),
+                        h('div', { className: 'mt-0.5 font-mono text-xs font-black text-slate-950' }, item[1])
+                      );
+                    })
+                  )
+                ),
+            h('div', { className: 'mt-3 flex flex-wrap gap-2' },
+              h('button', {
+                id: 'particle-calc-sync-temp-btn',
+                type: 'button',
+                onClick: syncCalcTempFromChamber,
+                className: 'min-h-11 sm:min-h-9 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-900 hover:bg-slate-100'
+              }, 'Use Chamber T (' + Math.round(displayTemperature || temperature) + ' K)'),
+              calcMode === 'mixture' && h('button', {
+                id: 'particle-calc-stage-mixture-btn',
+                type: 'button',
+                onClick: stageDaltonMixtureInChamber,
+                className: 'min-h-11 sm:min-h-9 rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-1.5 text-xs font-black text-indigo-950 hover:bg-indigo-100'
+              }, 'Stage Mixture in Chamber'),
+              h('button', {
+                id: 'particle-calc-cite-btn',
+                type: 'button',
+                onClick: citeSiCalcInNotebook,
+                className: 'min-h-11 sm:min-h-9 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-black text-white hover:bg-slate-800'
+              }, calcMode === 'mixture' ? '+ Cite Dalton Mixture in Observation' : '+ Cite SI State in Observation')
+            )
+          ),
+          lessonsOpen && h('div', {
+            id: 'particle-lessons-drawer',
+            role: 'region',
+            'aria-label': __alloT('stem.particlelab3d.lessons_region', 'Standards-aligned NGSS and AP lesson launchpads'),
+            className: 'mt-3 rounded-xl border border-amber-200 bg-amber-50/70 p-3.5'
+          },
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+              h('div', null,
+                h('h4', { className: 'text-sm font-black text-slate-950' }, 'Turnkey NGSS & AP Classroom Lesson Launchpads'),
+                h('p', { className: 'text-xs text-slate-700' }, 'One click stages the chamber protocol, curated module deck, sweep axis, and starter prediction prompt.')
+              )
+            ),
+            h('div', { className: 'mt-3 grid gap-3 lg:grid-cols-2' },
+              PARTICLE_LESSON_GUIDES.map(function (lesson) {
+                return h('article', {
+                  key: lesson.id,
+                  'data-lesson-id': lesson.id,
+                  className: 'flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-3.5'
+                },
+                  h('div', null,
+                    h('div', { className: 'flex flex-wrap items-center justify-between gap-1.5' },
+                      h('span', { className: 'rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-[10px] font-black uppercase text-amber-950' }, lesson.code),
+                      h('span', { className: 'font-mono text-[11px] font-bold text-slate-700' }, lesson.gradeBand + ' \u2022 ' + lesson.durationMin + ' min')
+                    ),
+                    h('h5', { className: 'mt-2 text-xs font-black text-slate-950' }, lesson.title),
+                    h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-700' }, lesson.drivingQuestion),
+                    h('ul', { className: 'mt-2 space-y-1 text-[11px] leading-snug text-slate-700' },
+                      lesson.teacherSteps.map(function (stepLine, sIdx) {
+                        return h('li', { key: lesson.id + '-step-' + sIdx }, stepLine);
+                      })
+                    ),
+                    h('p', { className: 'mt-2 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-[11px] text-slate-800' },
+                      h('strong', null, 'Exit check: '), lesson.exitTicket
+                    )
+                  ),
+                  h('div', { className: 'mt-3 flex flex-wrap gap-2' },
+                    h('button', {
+                      id: 'particle-launch-lesson-' + lesson.id,
+                      type: 'button',
+                      onClick: function () { launchLessonGuide(lesson); },
+                      className: 'min-h-11 sm:min-h-9 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-black text-white hover:bg-slate-800'
+                    }, 'Launch Lesson'),
+                    h('button', {
+                      id: 'particle-copy-lesson-' + lesson.id,
+                      type: 'button',
+                      onClick: function () { copyLessonGuide(lesson); },
+                      className: 'min-h-11 sm:min-h-9 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-900 hover:bg-slate-100'
+                    }, 'Copy Teacher Plan')
+                  )
+                );
+              })
+            )
+          ),
+          pinDrawerOpen && h('div', { id: 'particle-workbench-pin-drawer', role: 'region', 'aria-label': __alloT('stem.particlelab3d.pin_drawer_region', 'Curated lesson bundles and pinned modules'), className: 'mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3' },
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+              h('span', { className: 'text-[11px] font-black uppercase tracking-wide text-slate-800' }, 'Lesson Bundles & Pinned Deck (' + pinnedWorkbenchIds.length + '/' + MAX_PINNED_WORKBENCH_MODULES + ')'),
+              pinnedWorkbenchIds.length > 0 && h('button', {
+                id: 'particle-clear-pins-btn',
+                type: 'button',
+                onClick: clearPinnedModules,
+                className: 'min-h-11 sm:min-h-9 rounded-lg border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-bold text-rose-900 hover:bg-rose-100'
+              }, 'Clear Pins')
+            ),
+            h('div', { className: 'mt-2 flex flex-wrap gap-2' }, WORKBENCH_BUNDLES.map(function (b) {
+              return h('button', {
+                key: b.id,
+                id: 'particle-bundle-' + b.id,
+                type: 'button',
+                onClick: function () { applyWorkbenchBundle(b); },
+                className: 'min-h-11 sm:min-h-9 rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs font-black text-indigo-950 hover:bg-indigo-100'
+              }, '\u2728 ' + b.label);
+            })),
+            h('div', { className: 'mt-3 border-t border-slate-200 pt-2.5 flex flex-wrap gap-1.5' }, WORKBENCH_MODULE_DIRECTORY.map(function (mod) {
+              var isPinned = pinnedWorkbenchIds.indexOf(mod.id) >= 0;
+              return h('button', {
+                key: 'pin-' + mod.id,
+                id: 'particle-pin-mod-' + mod.id,
+                type: 'button',
+                'aria-pressed': isPinned,
+                onClick: function () { togglePinnedModule(mod.id); },
+                className: 'min-h-11 sm:min-h-9 rounded-full border px-2.5 py-1 text-xs font-bold transition ' + (isPinned ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-300 bg-white text-slate-900 hover:bg-slate-100')
+              }, (isPinned ? '\uD83D\uDCCC ' : '+ ') + mod.title);
+            }))
+          ),
+          workbenchSearch.trim() !== '' && h('div', { id: 'particle-workbench-search-results', role: 'region', 'aria-label': __alloT('stem.particlelab3d.workbench_search_results', 'Matching workbench modules'), className: 'mt-3 rounded-xl border border-cyan-200 bg-cyan-50/70 p-3' },
+            h('div', { className: 'text-[11px] font-black uppercase tracking-wide text-cyan-950' }, workbenchMatches.length ? (workbenchMatches.length + ' matching module' + (workbenchMatches.length === 1 ? '' : 's')) : 'No matching modules found.'),
+            workbenchMatches.length > 0 && h('div', { className: 'mt-2 flex flex-wrap gap-2' }, workbenchMatches.map(function (mod) {
+              return h('button', {
+                key: mod.id,
+                type: 'button',
+                onClick: function () { jumpToWorkbenchCard(mod); },
+                className: 'min-h-11 sm:min-h-9 rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900 hover:bg-slate-100'
+              }, mod.title);
+            }))
+          ),
+          (!workbenchCollapsed && workbenchDomain === 'pinned' && pinnedWorkbenchIds.length === 0) && h('div', { id: 'particle-workbench-pinned-empty', className: 'mt-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4' },
+            h('p', { className: 'text-sm font-black text-slate-900' }, 'Your Pinned Deck is empty'),
+            h('p', { className: 'mt-1 text-xs text-slate-700' }, 'Pick a curated lesson bundle below or open Customize Deck to pin up to 8 quantitative modules side by side.'),
+            h('div', { className: 'mt-3 flex flex-wrap gap-2' }, WORKBENCH_BUNDLES.map(function (b) {
+              return h('button', {
+                key: 'empty-' + b.id,
+                type: 'button',
+                onClick: function () { applyWorkbenchBundle(b); },
+                className: 'min-h-11 sm:min-h-9 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-black text-indigo-950 hover:bg-indigo-100'
+              }, '\u2728 ' + b.label);
+            }))
+          ),
+          h('div', { id: 'particle-workbench-cards-shell', className: workbenchDomain === 'pinned' ? 'particle-wb-pinned-grid min-w-0' : 'min-w-0' },
+          showWbGroup('gas_thermo') && h('div', { id: 'particle-workbench-group-gas-thermo', className: 'particle-wb-pass min-w-0' },
+          h('div', { className: 'particle-wb-pass mt-4 grid gap-4 lg:grid-cols-3' },
+            showWbCard('vdw_state', 'gas_thermo') && h('div', { id: 'particle-vdw-state-card', className: 'min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                h('h4', { className: 'text-sm font-black text-slate-950' }, 'Van der Waals Real-Gas State'),
+                h('span', { className: 'rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ' + (liveVdw.regime === 'repulsive' ? 'border-amber-200 bg-amber-50 text-amber-950' : (liveVdw.regime === 'attractive' ? 'border-rose-200 bg-rose-50 text-rose-900' : 'border-emerald-200 bg-emerald-50 text-emerald-950')) }, liveVdw.regime)
+              ),
+              h('div', { className: 'mt-3 grid grid-cols-2 gap-2' },
+                [
+                  ['Compressibility Z', liveVdw.z.toFixed(2)],
+                  ['Ideal vs. vdW P', liveVdw.idealPressure.toFixed(1) + ' / ' + liveVdw.vdwPressure.toFixed(1)],
+                  ['Excluded vol. b', liveVdw.bPerParticle.toFixed(2) + ' u\u00B3'],
+                  ['Packing share \u03B7', (liveVdw.packingFraction * 100).toFixed(1) + '%']
+                ].map(function (metric) {
+                  return h('div', { key: metric[0], className: 'min-w-0 rounded-lg border border-slate-200 bg-white p-2.5' },
+                    h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-700' }, metric[0]),
+                    h('div', { className: 'mt-0.5 font-mono text-xs font-black text-slate-950' }, metric[1])
+                  );
+                })
+              ),
+              h('div', { className: 'mt-3 rounded-lg border border-slate-200 bg-white p-2.5 text-[11px] text-slate-800' },
+                h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Maxwell-Boltzmann Speed Triad (m=1)'),
+                h('div', { className: 'mt-1 flex flex-wrap justify-between gap-2 font-mono font-bold text-slate-950' },
+                  h('span', null, 'v_mp ' + liveMaxwellA.vMp.toFixed(2)),
+                  h('span', null, 'v_mean ' + liveMaxwellA.vMean.toFixed(2)),
+                  h('span', null, 'v_rms ' + liveMaxwellA.vRms.toFixed(2))
+                ),
+                h('div', { className: 'mt-1 font-mono text-[10px] text-slate-700' }, 'Equipartition <KE>: ' + liveMaxwellA.meanKineticEnergy.toFixed(2) + ' u' + (massRatioB !== 1 ? ' • B v_rms ' + liveMaxwellB.vRms.toFixed(2) : ''))
+              ),
+              h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-700' }, liveVdw.note)
+            ),
+            showWbCard('parametric_sweep', 'gas_thermo') && h('div', { id: 'particle-parametric-sweep-card', className: 'min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                h('h4', { className: 'text-sm font-black text-slate-950' }, 'Parametric Sweep & Linear Fit'),
+                h('span', { className: 'font-mono text-[11px] font-black text-cyan-950' }, regression.valid ? 'R\u00B2 = ' + regression.r2.toFixed(4) : 'Need 2+ pts')
+              ),
+              h('label', { htmlFor: 'particle-sweep-axis-select', className: 'mt-2 block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Plot & Sweep Law Axis'),
+              h('select', {
+                id: 'particle-sweep-axis-select',
+                value: dataStudioAxis,
+                onChange: function (e) {
+                  var nextAxis = restoreOneOf(e.target.value, PARTICLE_SWEEP_AXES, 'boylePV');
+                  setDataStudioAxis(nextAxis);
+                  persist({ dataStudioAxis: nextAxis });
+                },
+                className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-900'
+              }, PARTICLE_SWEEP_AXES.map(function (axisKey) {
+                var spec = getParticleAxisSpec(axisKey);
+                return h('option', { key: axisKey, value: axisKey }, spec.label);
+              })),
+              h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                h('button', { type: 'button', onClick: logCurrentChamber, className: 'min-h-11 sm:min-h-9 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-black text-white hover:bg-slate-800' }, '+ Log State'),
+                h('button', { type: 'button', onClick: runParametricSweep, className: 'min-h-11 sm:min-h-9 rounded-lg border border-cyan-300 bg-cyan-50 px-3 py-1.5 text-xs font-black text-cyan-950 hover:bg-cyan-100' }, '\u26A1 5-pt Sweep'),
+                h('button', { type: 'button', onClick: exportExperimentCsv, className: 'min-h-11 sm:min-h-9 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 hover:bg-slate-100' }, '\uD83D\uDCCB Copy CSV'),
+                h('button', { type: 'button', onClick: function () { openInDataStudio('charts'); }, className: 'min-h-11 sm:min-h-9 rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-1.5 text-xs font-black text-indigo-900 hover:bg-indigo-100' }, '\uD83D\uDCCA Send to Data Studio'),
+                h('button', { id: 'particle-open-datastudio-regression-btn', type: 'button', onClick: function () { openInDataStudio('regression'); }, className: 'min-h-11 sm:min-h-9 rounded-lg border border-cyan-300 bg-white px-3 py-1.5 text-xs font-black text-cyan-950 hover:bg-cyan-50' }, '\uD83D\uDCC8 Regression Fit'),
+                trials.length > 0 && h('button', { id: 'particle-plot-trials-btn', type: 'button', onClick: appendTrialsToExperimentLog, className: 'min-h-11 sm:min-h-9 rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-1.5 text-xs font-black text-indigo-900 hover:bg-indigo-100' }, '+ Plot Trials (' + trials.length + ')'),
+                experimentLog.length > 0 && h('button', { type: 'button', onClick: clearExperimentLog, className: 'min-h-11 sm:min-h-9 rounded-lg border border-rose-300 bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-900 hover:bg-rose-100' }, 'Clear Log')
+              ),
+              h('div', { className: 'mt-3 rounded-xl border border-slate-800 bg-slate-950 p-3 text-white' },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2 text-[10px] font-black uppercase tracking-wide text-cyan-300' },
+                  h('span', null, activeAxisSpec.title),
+                  h('span', { className: 'font-mono text-emerald-300' }, scatterPoints.length + ' pts')
+                ),
+                (function () {
+                  var xMin = regression.xMin, xMax = regression.xMax, yMin = regression.yMin, yMax = regression.yMax;
+                  var xSpan = Math.max(1e-6, xMax - xMin);
+                  var ySpan = Math.max(1e-6, yMax - yMin);
+                  function mapX(x) { return scatterPoints.length === 1 ? 136 : (28 + ((x - xMin) / xSpan) * 214); }
+                  function mapY(y) { return scatterPoints.length === 1 ? 60 : (104 - ((y - yMin) / ySpan) * 84); }
+                  var fitX1 = xMin, fitX2 = xMax;
+                  var fitY1 = regression.slope * fitX1 + regression.intercept;
+                  var fitY2 = regression.slope * fitX2 + regression.intercept;
+                  var sumPx = 0, sumPy = 0;
+                  scatterPoints.forEach(function (pt) { sumPx += pt.x; sumPy += pt.y; });
+                  var meanPx = scatterPoints.length ? sumPx / scatterPoints.length : 0;
+                  var meanPy = scatterPoints.length ? sumPy / scatterPoints.length : 0;
+                  var theoryY1 = meanPy + sweepTheoryAudit.theoreticalSlope * (fitX1 - meanPx);
+                  var theoryY2 = meanPy + sweepTheoryAudit.theoreticalSlope * (fitX2 - meanPx);
+                  return h('svg', { viewBox: '0 0 260 132', className: 'mt-2 w-full', role: 'img', 'aria-label': buildScatterChartAriaLabel() },
+                    [20, 48, 76, 104].map(function (gy) { return h('line', { key: 'gy' + gy, x1: 28, y1: gy, x2: 244, y2: gy, stroke: 'rgba(148,163,184,0.18)', strokeWidth: 1 }); }),
+                    h('line', { x1: 28, y1: 16, x2: 28, y2: 106, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('line', { x1: 28, y1: 106, x2: 244, y2: 106, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    scatterPoints.length >= 2 && sweepTheoryAudit.theoreticalSlope > 0 && h('line', {
+                      x1: mapX(fitX1).toFixed(1),
+                      y1: clamp(mapY(theoryY1), 12, 110).toFixed(1),
+                      x2: mapX(fitX2).toFixed(1),
+                      y2: clamp(mapY(theoryY2), 12, 110).toFixed(1),
+                      stroke: '#38bdf8',
+                      strokeWidth: 1.4,
+                      strokeDasharray: '2 3'
+                    }),
+                    regression.valid && h('line', {
+                      x1: mapX(fitX1).toFixed(1),
+                      y1: clamp(mapY(fitY1), 12, 110).toFixed(1),
+                      x2: mapX(fitX2).toFixed(1),
+                      y2: clamp(mapY(fitY2), 12, 110).toFixed(1),
+                      stroke: '#34d399',
+                      strokeWidth: 2,
+                      strokeDasharray: '4 3'
+                    }),
+                    scatterPoints.length > 0
+                      ? scatterPoints.map(function (pt, idx) {
+                          var isOutlier = residualAnalysis.hasOutlier && pt.n === residualAnalysis.outlierN;
+                          return h('g', { key: idx },
+                            isOutlier && h('circle', { cx: mapX(pt.x).toFixed(1), cy: mapY(pt.y).toFixed(1), r: 6.2, fill: 'none', stroke: '#fb7185', strokeWidth: 1.8 }),
+                            h('circle', { cx: mapX(pt.x).toFixed(1), cy: mapY(pt.y).toFixed(1), r: 3.6, fill: isOutlier ? '#fb7185' : (pt.source === 'sweep' ? '#fbbf24' : (pt.source === 'import' ? '#c084fc' : '#22d3ee')), stroke: '#020617', strokeWidth: 1 })
+                          );
+                        })
+                      : h('text', { x: 136, y: 64, textAnchor: 'middle', fontSize: 9, fill: '#bae6fd' }, 'Log states or run 5-pt Sweep to plot'),
+                    h('text', { x: 28, y: 122, fontSize: 8, fill: '#cbd5e1' }, activeAxisSpec.xShort),
+                    h('text', { x: 242, y: 122, textAnchor: 'end', fontSize: 8, fill: '#cbd5e1' }, scatterPoints.length ? (xMin.toFixed(1) + ' .. ' + xMax.toFixed(1)) : ''),
+                    h('text', { x: 4, y: 20, fontSize: 8, fill: '#cbd5e1' }, activeAxisSpec.yShort)
+                  );
+                })(),
+                h('div', { className: 'mt-1.5 font-mono text-[11px] text-cyan-200' }, regression.valid ? ('y = ' + regression.slope.toFixed(4) + 'x ' + (regression.intercept >= 0 ? '+ ' : '- ') + Math.abs(regression.intercept).toFixed(2) + ' • R\u00B2=' + regression.r2.toFixed(4) + ' • RMSE=' + regression.rmse.toFixed(3)) : activeAxisSpec.relationNote)
+              ),
+              h('div', {
+                id: 'particle-sweep-theory-banner',
+                className: 'mt-2.5 rounded-lg border px-3 py-2 text-xs ' + (
+                  !sweepTheoryAudit.fair
+                    ? 'border-rose-300 bg-rose-50 text-rose-950'
+                    : (sweepTheoryAudit.regime === 'ideal_match'
+                      ? 'border-emerald-200 bg-emerald-50 text-emerald-950'
+                      : (sweepTheoryAudit.regime === 'real_gas_shift' ? 'border-amber-200 bg-amber-50 text-amber-950' : 'border-slate-200 bg-white text-slate-800'))
+                )
+              },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                  h('span', { className: 'font-mono text-[11px] font-black' },
+                    'KMT Slope (' + sweepTheoryAudit.formulaLabel + '): ' + sweepTheoryAudit.theoreticalSlope.toFixed(4) + ' \u2022 Obs: ' + (regression.valid ? (regression.slope.toFixed(4) + ' (' + sweepTheoryAudit.slopeErrorPct.toFixed(1) + '% diff)') : 'Need 2+ pts')
+                  ),
+                  h('div', { className: 'flex flex-wrap items-center gap-1.5' },
+                    residualAnalysis.hasOutlier && h('button', {
+                      id: 'particle-trim-outlier-btn',
+                      type: 'button',
+                      onClick: trimSweepOutlier,
+                      className: 'min-h-11 sm:min-h-8 rounded-full border border-rose-300 bg-white px-2.5 py-0.5 text-[11px] font-black text-rose-900 hover:bg-rose-100'
+                    }, 'Trim Outlier #' + residualAnalysis.outlierN + ' (R\u00B2 \u2192 ' + residualAnalysis.refitR2.toFixed(3) + ')'),
+                    h('span', {
+                      className: 'rounded-full border px-2 py-0.5 text-[10px] font-black uppercase ' + (sweepTheoryAudit.fair ? 'border-emerald-300 bg-white text-emerald-900' : 'border-rose-300 bg-white text-rose-900')
+                    }, sweepTheoryAudit.fair ? 'Fair Controls \u2713' : ('Confounded: ' + sweepTheoryAudit.confoundedControls.join(', ')))
+                  )
+                ),
+                h('p', { className: 'mt-1 text-[11px] leading-snug' }, sweepTheoryAudit.statusLabel)
+              ),
+              h('details', { id: 'particle-import-csv-details', className: 'mt-2.5 rounded-xl border border-slate-200 bg-white p-2.5' },
+                h('summary', { className: 'min-h-11 sm:min-h-8 cursor-pointer select-none py-1.5 leading-5 text-xs font-black text-slate-900' }, 'Import Classroom / Syringe CSV Data'),
+                h('label', { htmlFor: 'particle-import-csv-input', className: 'mt-2 block text-[11px] font-bold text-slate-800' }, 'Paste comma- or tab-separated (' + activeAxisSpec.xShort + ', ' + activeAxisSpec.yShort + ') pairs'),
+                h('textarea', {
+                  id: 'particle-import-csv-input',
+                  rows: 4,
+                  value: csvImportDraft,
+                  onChange: function (e) { setCsvImportDraft(e.target.value); },
+                  placeholder: __alloT('stem.particlelab3d.csv_import_placeholder', 'x, y (one pair per line, optional header)...'),
+                  className: 'mt-1 w-full resize-y rounded-lg border border-slate-300 bg-slate-50 p-2 font-mono text-xs text-slate-900 placeholder-slate-500'
+                }),
+                h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                  h('button', {
+                    id: 'particle-load-sample-csv-btn',
+                    type: 'button',
+                    onClick: loadSampleCsvForAxis,
+                    className: 'min-h-11 sm:min-h-8 rounded-lg border border-slate-300 bg-white px-3 py-1 text-xs font-bold text-slate-900 hover:bg-slate-100'
+                  }, 'Load Sample Dataset'),
+                  h('button', {
+                    id: 'particle-apply-csv-import-btn',
+                    type: 'button',
+                    onClick: applyTabularSweepImport,
+                    className: 'min-h-11 sm:min-h-8 rounded-lg bg-slate-900 px-3 py-1 text-xs font-black text-white hover:bg-slate-800'
+                  }, 'Plot Imported Points')
+                )
+              ),
+              experimentLog.length > 0 && h('div', { className: 'particle-log-list mt-3 space-y-1.5' },
+                experimentLog.slice(-6).reverse().map(function (row) {
+                  return h('div', { key: row.id, className: 'flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 font-mono text-[11px] text-slate-800' },
+                    h('span', { className: 'font-bold text-slate-950' }, '#' + row.n + ' (' + row.source + ')'),
+                    h('div', { className: 'flex flex-wrap items-center gap-2' },
+                      h('span', null, 'T=' + row.temperature + 'K • P=' + Number(row.pressure).toFixed(1) + ' • V=' + Math.round(row.volume) + ' • N=' + row.count),
+                      h('button', {
+                        type: 'button',
+                        onClick: function () { deleteExperimentRow(row.id); },
+                        className: 'min-h-11 sm:min-h-8 rounded border border-rose-300 bg-rose-50 px-2 py-0.5 text-[11px] font-black text-rose-900 hover:bg-rose-100'
+                      }, 'Remove #' + row.n)
+                    )
+                  );
+                })
+              ),
+              experimentLog.length > 0 && h('details', { id: 'particle-sweep-table-details', className: 'mt-3 rounded-xl border border-slate-200 bg-white p-2.5' },
+                h('summary', { className: 'min-h-11 sm:min-h-8 cursor-pointer select-none py-1.5 leading-5 text-xs font-black text-slate-900' }, 'Accessible Fit & Residuals Table (' + experimentLog.length + ' points)'),
+                h('div', { className: 'mt-2 overflow-x-auto' },
+                  h('table', { id: 'particle-sweep-data-table', className: 'w-full border-collapse text-left font-mono text-xs text-slate-800' },
+                    h('caption', { className: 'sr-only' }, __alloT('stem.particlelab3d.sweep_table_caption', 'Experiment sweep points, linear fit predictions, and residuals')),
+                    h('thead', null,
+                      h('tr', { className: 'border-b border-slate-300 bg-slate-100 text-slate-950' },
+                        h('th', { scope: 'col', className: 'px-2 py-1.5 font-black' }, '#'),
+                        h('th', { scope: 'col', className: 'px-2 py-1.5 font-black' }, 'Source'),
+                        h('th', { scope: 'col', className: 'px-2 py-1.5 font-black' }, activeAxisSpec.xShort),
+                        h('th', { scope: 'col', className: 'px-2 py-1.5 font-black' }, activeAxisSpec.yShort),
+                        h('th', { scope: 'col', className: 'px-2 py-1.5 font-black' }, 'Predicted'),
+                        h('th', { scope: 'col', className: 'px-2 py-1.5 font-black' }, 'Residual')
+                      )
+                    ),
+                    h('tbody', null,
+                      experimentLog.map(function (row, idx) {
+                        var mapped = activeAxisSpec.mapRow(row, idx);
+                        var xVal = mapped.x;
+                        var yVal = mapped.value;
+                        var canPredict = regression.valid && Number.isFinite(xVal) && Number.isFinite(yVal);
+                        var yHat = canPredict ? (regression.slope * xVal + regression.intercept) : null;
+                        var resid = canPredict ? (yVal - yHat) : null;
+                        return h('tr', { key: row.id, className: 'border-b border-slate-200 last:border-b-0' },
+                          h('td', { className: 'px-2 py-1 font-bold text-slate-950' }, '#' + row.n),
+                          h('td', { className: 'px-2 py-1' }, row.source),
+                          h('td', { className: 'px-2 py-1' }, Number.isFinite(xVal) ? xVal.toFixed(3) : '-'),
+                          h('td', { className: 'px-2 py-1' }, Number.isFinite(yVal) ? yVal.toFixed(3) : '-'),
+                          h('td', { className: 'px-2 py-1' }, yHat != null ? yHat.toFixed(3) : '-'),
+                          h('td', { className: 'px-2 py-1 ' + (resid != null ? (Math.abs(resid) > (regression.rmse || 0) * 1.5 ? 'font-bold text-amber-900' : 'text-emerald-900') : '') }, resid != null ? ((resid >= 0 ? '+' : '') + resid.toFixed(3)) : '-')
+                        );
+                      })
+                    )
+                  )
+                )
+              )
+            ),
+            showWbCard('snapshot_tray', 'gas_thermo') && h('div', { id: 'particle-snapshot-tray-card', className: 'min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                h('h4', { className: 'text-sm font-black text-slate-950' }, 'Chamber Snapshot A/B Tray'),
+                h('div', { className: 'flex flex-wrap items-center gap-2' },
+                  savedSnapshots.length > 0 && h('button', {
+                    id: 'particle-plot-snapshots-btn',
+                    type: 'button',
+                    onClick: appendSnapshotsToExperimentLog,
+                    className: 'min-h-11 sm:min-h-9 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-black text-indigo-900 hover:bg-indigo-100'
+                  }, 'Plot Snapshots on Fit (' + savedSnapshots.length + ')'),
+                  savedSnapshots.length > 0 && h('button', {
+                    id: 'particle-clear-snapshots-btn',
+                    type: 'button',
+                    onClick: clearSavedSnapshots,
+                    className: 'min-h-11 sm:min-h-9 rounded-lg border border-rose-300 bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-900 hover:bg-rose-100'
+                  }, 'Clear Snapshots'),
+                  h('button', { type: 'button', onClick: saveChamberSnapshot, className: 'min-h-11 sm:min-h-9 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-black text-white hover:bg-slate-800' }, '\uD83D\uDCF8 Save Snapshot')
+                )
+              ),
+              savedSnapshots.length === 0
+                ? h('p', { className: 'mt-3 rounded-lg border border-slate-200 bg-white p-3 text-xs leading-relaxed text-slate-700' }, 'Save up to 4 chamber states under different presets, volumes, or attraction strengths, then pin two to compare exact deltas side by side.')
+                : h('div', { className: 'mt-3 space-y-2' }, savedSnapshots.map(function (snap) {
+                    var pinIdx = resolvedPinIds.indexOf(snap.id);
+                    var pinLabel = pinIdx === 0 ? 'Pinned A' : (pinIdx === 1 ? 'Pinned B' : 'Unpinned');
+                    return h('div', { key: snap.id, className: 'rounded-lg border bg-white p-2.5 ' + (pinIdx >= 0 ? 'border-cyan-300' : 'border-slate-200') },
+                      h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                        h('strong', { className: 'text-xs text-slate-950' }, snap.name),
+                        h('span', { className: 'rounded-full border px-2 py-0.5 text-[10px] font-black uppercase ' + (pinIdx >= 0 ? 'border-cyan-200 bg-cyan-50 text-cyan-950' : 'border-slate-200 bg-slate-100 text-slate-700') }, pinLabel)
+                      ),
+                      h('div', { className: 'mt-1 font-mono text-[11px] text-slate-700' }, 'T=' + snap.temperature + 'K • P=' + snap.pressure + ' • N=' + snap.count + ' • V=' + snap.volume + ' • Z=' + snap.compressibilityZ.toFixed(2)),
+                      h('div', { className: 'mt-2 flex flex-wrap gap-1.5' },
+                        h('button', { type: 'button', onClick: function () { togglePinSnapshot(snap.id); }, 'aria-label': __alloT('stem.particlelab3d.pin_snapshot_btn', '{action} {name} for comparison').replace('{action}', pinIdx >= 0 ? 'Unpin' : 'Pin').replace('{name}', snap.name), className: 'min-h-11 sm:min-h-9 rounded-lg border border-cyan-300 bg-cyan-50 px-2.5 py-1 text-xs font-bold text-cyan-950 hover:bg-cyan-100' }, pinIdx >= 0 ? 'Unpin' : 'Pin'),
+                        h('button', { type: 'button', onClick: function () { restoreChamberSnapshot(snap); }, 'aria-label': __alloT('stem.particlelab3d.restore_snapshot_btn', 'Restore {name} into chamber').replace('{name}', snap.name), className: 'min-h-11 sm:min-h-9 rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-800 hover:bg-slate-100' }, 'Restore'),
+                        h('button', { type: 'button', onClick: function () { deleteSnapshot(snap.id); }, 'aria-label': __alloT('stem.particlelab3d.remove_snapshot_btn', 'Remove {name} snapshot').replace('{name}', snap.name), className: 'min-h-11 sm:min-h-9 rounded-lg border border-rose-300 bg-rose-50 px-2.5 py-1 text-xs font-bold text-rose-900 hover:bg-rose-100' }, 'Remove')
+                      )
+                    );
+                  })),
+              snapshotDelta && h('div', { className: 'mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3', role: 'region', 'aria-label': __alloT('stem.particlelab3d.snapshot_ab_delta_region', 'Snapshot B minus Snapshot A comparison summary') },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                  h('span', { className: 'text-xs font-black text-emerald-950' }, 'Snapshot B minus A'),
+                  h('span', { className: 'rounded-full border border-emerald-300 bg-white px-2 py-0.5 text-[10px] font-black uppercase text-emerald-900' }, snapshotDelta.fair ? 'Fair 1-var test' : snapshotDelta.changed.length + ' vars changed')
+                ),
+                h('div', { className: 'mt-2 grid grid-cols-2 gap-1.5 font-mono text-[11px] text-emerald-950' },
+                  h('span', null, '\u0394T: ' + (snapshotDelta.temperatureDelta >= 0 ? '+' : '') + snapshotDelta.temperatureDelta.toFixed(0) + ' K'),
+                  h('span', null, '\u0394P: ' + (snapshotDelta.pressureDelta >= 0 ? '+' : '') + snapshotDelta.pressureDelta.toFixed(1)),
+                  h('span', null, '\u0394V: ' + (snapshotDelta.volumeDelta >= 0 ? '+' : '') + snapshotDelta.volumeDelta + ' u\u00B3'),
+                  h('span', null, '\u0394N: ' + (snapshotDelta.countDelta >= 0 ? '+' : '') + snapshotDelta.countDelta),
+                  h('span', null, '\u0394Z: ' + (snapshotDelta.zDelta >= 0 ? '+' : '') + snapshotDelta.zDelta.toFixed(2)),
+                  h('span', null, '\u0394\u03BB: ' + (snapshotDelta.mfpDelta >= 0 ? '+' : '') + snapshotDelta.mfpDelta.toFixed(1) + ' u')
+                )
+              )
+            )
+          ),
+          h('div', { className: 'particle-wb-pass mt-4 grid gap-4 lg:grid-cols-3' },
+            showWbCard('real_gas_species', 'gas_thermo') && h('div', { id: 'particle-real-gas-card', className: 'min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                h('h4', { className: 'text-sm font-black text-slate-950' }, 'Real-Gas Species & SI Scale'),
+                h('span', { className: 'rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-indigo-900' }, liveGasMetrics.gasA.family)
+              ),
+              h('div', { className: 'mt-2 grid grid-cols-2 gap-2' },
+                h('div', { className: 'min-w-0' },
+                  h('label', { htmlFor: 'particle-gas-a-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Species A'),
+                  h('select', {
+                    id: 'particle-gas-a-select',
+                    value: gasSpeciesA,
+                    onChange: function (e) {
+                      var nextG = restoreOneOf(e.target.value, GAS_IDENTITY_IDS, 'N2');
+                      setGasSpeciesA(nextG);
+                      persist({ gasSpeciesA: nextG });
+                    },
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                  }, GAS_IDENTITIES.map(function (g) {
+                    return h('option', { key: g.id, value: g.id }, g.name + ' • ' + g.molarMass.toFixed(1));
+                  }))
+                ),
+                h('div', { className: 'min-w-0' },
+                  h('label', { htmlFor: 'particle-gas-b-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Species B (Pair)'),
+                  h('select', {
+                    id: 'particle-gas-b-select',
+                    value: gasSpeciesB,
+                    onChange: function (e) {
+                      var nextG = restoreOneOf(e.target.value, GAS_IDENTITY_IDS, 'CO2');
+                      setGasSpeciesB(nextG);
+                      persist({ gasSpeciesB: nextG });
+                    },
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                  }, GAS_IDENTITIES.map(function (g) {
+                    return h('option', { key: g.id, value: g.id }, g.name + ' • ' + g.molarMass.toFixed(1));
+                  }))
+                )
+              ),
+              h('div', { className: 'mt-3 grid grid-cols-2 gap-2' },
+                [
+                  ['SI v_rms (' + liveGasMetrics.gasA.formula + ')', liveGasMetrics.a.vRmsSi.toFixed(1) + ' m/s'],
+                  ['Sound speed c_s', liveGasMetrics.a.soundSpeedSi.toFixed(1) + ' m/s'],
+                  ['Molar U_m (f=' + liveGasMetrics.gasA.dof + ')', liveGasMetrics.a.molarInternalEnergyKj.toFixed(2) + ' kJ/mol'],
+                  ['Graham \u221A(M_B/M_A)', liveGasMetrics.siGrahamRatio.toFixed(2) + 'x (B ' + liveGasMetrics.b.vRmsSi.toFixed(0) + ')']
+                ].map(function (item) {
+                  return h('div', { key: item[0], className: 'min-w-0 rounded-lg border border-slate-200 bg-white p-2.5' },
+                    h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-700' }, item[0]),
+                    h('div', { className: 'mt-0.5 font-mono text-xs font-black text-slate-950' }, item[1])
+                  );
+                })
+              ),
+              h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-700' },
+                'vdW: a=' + liveGasMetrics.gasA.vdwA.toFixed(2) + ' bar\u00B7L\u00B2/mol\u00B2, b=' + liveGasMetrics.gasA.vdwB.toFixed(3) + ' L/mol, \u03B3=' + liveGasMetrics.gasA.gamma.toFixed(2) + '.' + (liveGasMetrics.massRatioClamped ? ' Chamber B mass ratio caps at ' + liveGasMetrics.chamberMassRatioB.toFixed(2) + 'x.' : 'Chamber ratio mB/mA = ' + liveGasMetrics.chamberMassRatioB.toFixed(2) + 'x.')
+              ),
+              h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                h('button', { type: 'button', onClick: applyGasProfileToChamber, className: 'min-h-11 sm:min-h-9 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-black text-white hover:bg-slate-800' }, 'Apply Gas Profile')
+              )
+            ),
+            showWbCard('first_law_pv', 'gas_thermo') && h('div', { id: 'particle-thermo-card', className: 'min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                h('h4', { className: 'text-sm font-black text-slate-950' }, 'First-Law & P\u2013V Work Diagram'),
+                h('span', { className: 'rounded-full border border-cyan-200 bg-cyan-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-cyan-950' }, liveThermo ? liveThermo.processType : 'idle')
+              ),
+              h('label', { htmlFor: 'particle-thermo-source-select', className: 'mt-2 block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Compare State Pair'),
+              h('select', {
+                id: 'particle-thermo-source-select',
+                value: thermoSource,
+                onChange: function (e) {
+                  var nextSrc = restoreOneOf(e.target.value, ['auto', 'snapshots', 'trials', 'log'], 'auto');
+                  setThermoSource(nextSrc);
+                  persist({ thermoSource: nextSrc });
+                },
+                className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+              }, [
+                ['auto', 'Auto (Snapshots \u2192 Trials \u2192 Log)'],
+                ['snapshots', 'Pinned Snapshots A \u2192 B'],
+                ['trials', 'Recorded Trials 1 \u2192 2'],
+                ['log', 'Log First \u2192 Last']
+              ].map(function (opt) { return h('option', { key: opt[0], value: opt[0] }, opt[1]); })),
+              h('div', { className: 'mt-2 flex flex-wrap gap-1.5' },
+                [
+                  ['isothermal', 'Isothermal'],
+                  ['isobaric', 'Isobaric'],
+                  ['adiabatic', 'Adiabatic'],
+                  ['isochoric', 'Isochoric']
+                ].map(function (proc) {
+                  return h('button', { key: proc[0], type: 'button', onClick: function () { stageCanonicalProcess(proc[0]); }, className: 'min-h-11 sm:min-h-9 rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900 hover:bg-slate-100' }, proc[1]);
+                })
+              ),
+              h('div', { className: 'mt-3 rounded-xl border border-slate-800 bg-slate-950 p-3 text-white' },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2 text-[10px] font-black uppercase tracking-wide text-cyan-300' },
+                  h('span', null, thermoPair ? thermoPair.sourceLabel : 'P\u2013V State Path'),
+                  h('span', { className: 'font-mono text-emerald-300' }, liveThermo ? liveThermo.workDirection : 'awaiting pair')
+                ),
+                (function () {
+                  if (!liveThermo) {
+                    return h('svg', { id: 'particle-pv-diagram', viewBox: '0 0 260 132', className: 'mt-2 w-full', role: 'img', 'aria-label': buildPvChartAriaLabel() },
+                      h('line', { x1: 28, y1: 16, x2: 28, y2: 106, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                      h('line', { x1: 28, y1: 106, x2: 244, y2: 106, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                      h('text', { x: 136, y: 62, textAnchor: 'middle', fontSize: 9, fill: '#bae6fd' }, 'Pick a path above or save 2 states'),
+                      h('text', { x: 28, y: 122, fontSize: 8, fill: '#cbd5e1' }, 'V (u\u00B3)'),
+                      h('text', { x: 4, y: 20, fontSize: 8, fill: '#cbd5e1' }, 'P (u)')
+                    );
+                  }
+                  var vLow = Math.min(liveThermo.v1, liveThermo.v2), vHigh = Math.max(liveThermo.v1, liveThermo.v2), vSpanRaw = vHigh - vLow;
+                  var vMin = vSpanRaw < 40 ? Math.max(40, vLow * 0.7) : Math.max(40, vLow - vSpanRaw * 0.22);
+                  var vMax = vSpanRaw < 40 ? vHigh * 1.3 : (vHigh + vSpanRaw * 0.22);
+                  var pvConst = liveThermo.p1 * liveThermo.v1;
+                  var pPeak = Math.max(liveThermo.p1, liveThermo.p2, 0.2) * 1.18;
+                  function mapPvX(v) { return clamp(28 + ((v - vMin) / Math.max(1e-6, vMax - vMin)) * 214, 28, 242); }
+                  function mapPvY(p) { return clamp(106 - (p / Math.max(1e-6, pPeak)) * 88, 16, 106); }
+                  var isoPts = [];
+                  for (var gi = 0; gi <= 12; gi += 1) {
+                    var gv = vMin + ((vMax - vMin) * gi) / 12;
+                    isoPts.push(mapPvX(gv).toFixed(1) + ',' + mapPvY(pvConst / gv).toFixed(1));
+                  }
+                  var curvePts = [];
+                  var hasVolSpan = Math.abs(liveThermo.v2 - liveThermo.v1) / Math.max(1, liveThermo.v1) >= 0.008;
+                  if (hasVolSpan && Number.isFinite(liveThermo.polytropicN)) {
+                    for (var ci = 0; ci <= 10; ci += 1) {
+                      var cv = liveThermo.v1 + ((liveThermo.v2 - liveThermo.v1) * ci) / 10;
+                      var cp = liveThermo.p1 * Math.pow(liveThermo.v1 / cv, liveThermo.polytropicN);
+                      curvePts.push({ x: mapPvX(cv), y: mapPvY(cp) });
+                    }
+                  } else {
+                    curvePts.push({ x: mapPvX(liveThermo.v1), y: mapPvY(liveThermo.p1) });
+                    curvePts.push({ x: mapPvX(liveThermo.v2), y: mapPvY(liveThermo.p2) });
+                  }
+                  var pathD = curvePts.map(function (pt, idx) { return (idx ? 'L' : 'M') + pt.x.toFixed(1) + ',' + pt.y.toFixed(1); }).join(' ');
+                  var areaPts = hasVolSpan ? curvePts.map(function (pt) { return pt.x.toFixed(1) + ',' + pt.y.toFixed(1); }).concat([curvePts[curvePts.length - 1].x.toFixed(1) + ',106', curvePts[0].x.toFixed(1) + ',106']).join(' ') : '';
+                  var pAx = mapPvX(liveThermo.v1), pAy = mapPvY(liveThermo.p1), pBx = mapPvX(liveThermo.v2), pBy = mapPvY(liveThermo.p2);
+                  return h('svg', { id: 'particle-pv-diagram', viewBox: '0 0 260 132', className: 'mt-2 w-full', role: 'img', 'aria-label': buildPvChartAriaLabel() },
+                    [20, 48, 76, 104].map(function (gy) { return h('line', { key: 'pvgy' + gy, x1: 28, y1: gy, x2: 244, y2: gy, stroke: 'rgba(148,163,184,0.18)', strokeWidth: 1 }); }),
+                    h('line', { x1: 28, y1: 16, x2: 28, y2: 106, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('line', { x1: 28, y1: 106, x2: 244, y2: 106, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    areaPts && h('polygon', { points: areaPts, fill: liveThermo.workByGas >= 0 ? 'rgba(52,211,153,0.22)' : 'rgba(251,191,36,0.22)' }),
+                    h('polyline', { points: isoPts.join(' '), fill: 'none', stroke: '#38bdf8', strokeWidth: 1.2, strokeDasharray: '3 3', opacity: 0.7 }),
+                    h('path', { d: pathD, fill: 'none', stroke: '#f8fafc', strokeWidth: 2.2 }),
+                    h('circle', { cx: pAx.toFixed(1), cy: pAy.toFixed(1), r: 4, fill: '#fbbf24', stroke: '#020617', strokeWidth: 1 }),
+                    h('text', { x: clamp(pAx - 6, 30, 236).toFixed(1), y: clamp(pAy - 7, 14, 98).toFixed(1), fontSize: 9, fill: '#fde68a' }, 'A'),
+                    h('circle', { cx: pBx.toFixed(1), cy: pBy.toFixed(1), r: 4, fill: '#34d399', stroke: '#020617', strokeWidth: 1 }),
+                    h('text', { x: clamp(pBx + 5, 30, 236).toFixed(1), y: clamp(pBy - 7, 14, 98).toFixed(1), fontSize: 9, fill: '#6ee7b7' }, 'B'),
+                    h('text', { x: 28, y: 122, fontSize: 8, fill: '#cbd5e1' }, 'V: ' + Math.round(vMin) + '..' + Math.round(vMax)),
+                    h('text', { x: 242, y: 122, textAnchor: 'end', fontSize: 8, fill: '#7dd3fc' }, 'dashed: A isotherm'),
+                    h('text', { x: 4, y: 20, fontSize: 8, fill: '#cbd5e1' }, 'P')
+                  );
+                })(),
+                liveThermo && h('div', { className: 'mt-1.5 font-mono text-[11px] text-cyan-200' }, liveThermo.label)
+              ),
+              liveThermo && h('div', { className: 'mt-3 grid grid-cols-2 gap-2' },
+                [
+                  ['\u0394U (Internal)', (liveThermo.deltaU >= 0 ? '+' : '') + liveThermo.deltaU.toFixed(1) + ' u'],
+                  ['W_by (Boundary)', (liveThermo.workByGas >= 0 ? '+' : '') + liveThermo.workByGas.toFixed(1) + ' u'],
+                  ['Q (Net Heat)', (liveThermo.heatQ >= 0 ? '+' : '') + liveThermo.heatQ.toFixed(1) + ' u'],
+                  ['\u0394S / (N\u00B7k_B)', (liveThermo.entropyPerNk >= 0 ? '+' : '') + liveThermo.entropyPerNk.toFixed(2)]
+                ].map(function (item) {
+                  return h('div', { key: item[0], className: 'min-w-0 rounded-lg border border-slate-200 bg-white p-2' },
+                    h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-700' }, item[0]),
+                    h('div', { className: 'mt-0.5 font-mono text-xs font-black text-slate-950' }, item[1])
+                  );
+                })
+              )
+            ),
+            showWbCard('kmt_challenges', 'gas_thermo') && h('div', { id: 'particle-challenges-card', className: 'min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                h('h4', { className: 'text-sm font-black text-slate-950' }, challengeTrack === 'applied' ? 'Applied Frontier Missions' : 'Quantitative KMT Challenges'),
+                h('span', {
+                  className: 'rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ' + (
+                    challengeTrack === 'applied'
+                      ? (completedMissions[activeMission.id] ? 'border-emerald-200 bg-emerald-50 text-emerald-950' : (liveMissionEval.passed ? 'border-cyan-200 bg-cyan-50 text-cyan-950' : 'border-slate-300 bg-white text-slate-800'))
+                      : (completedChallenges[activeChallenge.id] ? 'border-emerald-200 bg-emerald-50 text-emerald-950' : (liveChallengeEval.passed ? 'border-cyan-200 bg-cyan-50 text-cyan-950' : 'border-slate-300 bg-white text-slate-800'))
+                  )
+                }, challengeTrack === 'applied'
+                  ? (completedMissions[activeMission.id] ? 'Mastered \u2713' : (liveMissionEval.passed ? 'Ready to verify' : 'In progress'))
+                  : (completedChallenges[activeChallenge.id] ? 'Mastered \u2713' : (liveChallengeEval.passed ? 'Ready to verify' : 'In progress')))
+              ),
+              h('div', { role: 'group', 'aria-label': __alloT('stem.particlelab3d.challenge_track_group', 'Challenge track'), className: 'mt-2 grid grid-cols-2 gap-1.5' },
+                h('button', {
+                  id: 'particle-challenge-track-core',
+                  type: 'button',
+                  'aria-pressed': challengeTrack === 'core',
+                  onClick: function () { setChallengeTrack('core'); persist({ challengeTrack: 'core' }); },
+                  className: 'min-h-11 sm:min-h-9 rounded-lg border px-2 py-1 text-xs font-black ' + (challengeTrack === 'core' ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-300 bg-white text-slate-900 hover:bg-slate-100')
+                }, 'Core Chamber (5)'),
+                h('button', {
+                  id: 'particle-challenge-track-applied',
+                  type: 'button',
+                  'aria-pressed': challengeTrack === 'applied',
+                  onClick: function () { setChallengeTrack('applied'); persist({ challengeTrack: 'applied' }); },
+                  className: 'min-h-11 sm:min-h-9 rounded-lg border px-2 py-1 text-xs font-black ' + (challengeTrack === 'applied' ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-300 bg-white text-slate-900 hover:bg-slate-100')
+                }, 'Applied Frontier (5)')
+              ),
+              challengeTrack === 'core' ? h(React.Fragment, null,
+                h('label', { htmlFor: 'particle-challenge-select', className: 'mt-2 block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Select Investigation Challenge'),
+                h('select', {
+                  id: 'particle-challenge-select',
+                  value: activeChallenge.id,
+                  onChange: function (e) {
+                    var nextId = restoreOneOf(e.target.value, PARTICLE_CHALLENGES.map(function (c) { return c.id; }), 'boyle_squeeze');
+                    setActiveChallengeId(nextId);
+                    persist({ activeChallengeId: nextId });
+                  },
+                  className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                }, PARTICLE_CHALLENGES.map(function (ch) {
+                  return h('option', { key: ch.id, value: ch.id }, (completedChallenges[ch.id] ? '\u2713 ' : '') + ch.title);
+                })),
+                h('div', { className: 'mt-3 rounded-lg border border-slate-200 bg-white p-3' },
+                  h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-indigo-900' }, activeChallenge.law),
+                  h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-800' }, activeChallenge.goal),
+                  h('div', { className: 'mt-2 flex flex-wrap justify-between gap-2 font-mono text-[11px] font-bold text-slate-950' },
+                    h('span', null, 'Now: ' + liveChallengeEval.currentLabel),
+                    h('span', null, 'Goal: ' + liveChallengeEval.targetLabel)
+                  ),
+                  h('div', { className: 'mt-2 h-2 overflow-hidden rounded-full bg-slate-200' },
+                    h('div', { className: 'h-full rounded-full ' + (liveChallengeEval.passed ? 'bg-emerald-500' : 'bg-cyan-700'), style: { width: Math.round(liveChallengeEval.progress * 100) + '%' } })
+                  )
+                ),
+                h('div', { className: 'mt-3 flex flex-wrap gap-2' },
+                  h('button', { type: 'button', onClick: stageChallengeSetup, className: 'min-h-11 sm:min-h-9 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-900 hover:bg-slate-100' }, 'Stage Baseline'),
+                  h('button', {
+                    id: 'particle-challenge-hint-btn',
+                    type: 'button',
+                    'aria-expanded': challengeHintTier > 0,
+                    onClick: cycleChallengeHint,
+                    className: 'min-h-11 sm:min-h-9 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-black text-indigo-900 hover:bg-indigo-100'
+                  }, challengeHintTier === 0 ? 'Hint (1/2)' : (challengeHintTier === 1 ? 'Deeper Hint (2/2)' : 'Hide Hint')),
+                  h('button', { type: 'button', onClick: verifyActiveChallenge, className: 'min-h-11 sm:min-h-9 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-black text-white hover:bg-slate-800' }, 'Verify Challenge')
+                )
+              ) : h(React.Fragment, null,
+                h('label', { htmlFor: 'particle-applied-mission-select', className: 'mt-2 block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Select Frontier Mission'),
+                h('select', {
+                  id: 'particle-applied-mission-select',
+                  value: activeMission.id,
+                  onChange: function (e) {
+                    var nextId = restoreOneOf(e.target.value, APPLIED_WORKBENCH_MISSIONS.map(function (m) { return m.id; }), 'titan_cryo_retention');
+                    setActiveMissionId(nextId);
+                    persist({ activeMissionId: nextId });
+                  },
+                  className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                }, APPLIED_WORKBENCH_MISSIONS.map(function (ms) {
+                  return h('option', { key: ms.id, value: ms.id }, (completedMissions[ms.id] ? '\u2713 ' : '') + ms.title);
+                })),
+                h('div', { className: 'mt-3 rounded-lg border border-slate-200 bg-white p-3' },
+                  h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-indigo-900' }, activeMission.law),
+                  h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-800' }, activeMission.goal),
+                  h('div', { className: 'mt-2 flex flex-wrap justify-between gap-2 font-mono text-[11px] font-bold text-slate-950' },
+                    h('span', null, 'Now: ' + liveMissionEval.currentLabel),
+                    h('span', null, 'Goal: ' + liveMissionEval.targetLabel)
+                  ),
+                  h('div', { className: 'mt-2 h-2 overflow-hidden rounded-full bg-slate-200' },
+                    h('div', { className: 'h-full rounded-full ' + (liveMissionEval.passed ? 'bg-emerald-500' : 'bg-indigo-700'), style: { width: Math.round(liveMissionEval.progress * 100) + '%' } })
+                  )
+                ),
+                h('div', { className: 'mt-3 flex flex-wrap gap-2' },
+                  h('button', { id: 'particle-stage-mission-btn', type: 'button', onClick: stageAppliedMissionSetup, className: 'min-h-11 sm:min-h-9 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-bold text-slate-900 hover:bg-slate-100' }, 'Stage Problem'),
+                  h('button', { id: 'particle-jump-mission-module-btn', type: 'button', onClick: jumpToActiveMissionModule, className: 'min-h-11 sm:min-h-9 rounded-lg border border-cyan-300 bg-cyan-50 px-2.5 py-1.5 text-xs font-black text-cyan-950 hover:bg-cyan-100' }, 'Jump to Module'),
+                  h('button', {
+                    id: 'particle-challenge-hint-btn',
+                    type: 'button',
+                    'aria-expanded': challengeHintTier > 0,
+                    onClick: cycleChallengeHint,
+                    className: 'min-h-11 sm:min-h-9 rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-1.5 text-xs font-black text-indigo-900 hover:bg-indigo-100'
+                  }, challengeHintTier === 0 ? 'Hint (1/2)' : (challengeHintTier === 1 ? 'Deeper Hint (2/2)' : 'Hide Hint')),
+                  h('button', { id: 'particle-verify-mission-btn', type: 'button', onClick: verifyActiveMission, className: 'min-h-11 sm:min-h-9 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-black text-white hover:bg-slate-800' }, 'Verify Mission')
+                )
+              ),
+              challengeHintTier > 0 && h('div', {
+                id: 'particle-challenge-hint-box',
+                role: 'status',
+                'aria-live': 'polite',
+                className: 'mt-3 rounded-lg border border-indigo-200 bg-indigo-50 p-2.5 text-xs leading-relaxed text-indigo-950'
+              },
+                h('div', null, h('strong', null, 'Concept Hint (1/2): '), activeHintSpec.tier1),
+                challengeHintTier >= 2 && h('div', { className: 'mt-1.5 border-t border-indigo-200 pt-1.5' }, h('strong', null, 'Action Cue (2/2): '), activeHintSpec.tier2)
+              )
+            )
+          ),
+          h('div', { className: 'particle-wb-pass mt-4 grid gap-4 lg:grid-cols-3' },
+            showWbCard('kinetic_transport', 'gas_thermo') && h('div', { id: 'particle-transport-card', className: 'min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                h('h4', { className: 'text-sm font-black text-slate-950' }, 'Kinetic Transport & Knudsen Regime'),
+                h('span', { className: 'rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ' + (liveTransport.regime === 'continuum' ? 'border-emerald-200 bg-emerald-50 text-emerald-950' : (liveTransport.regime === 'slip' ? 'border-cyan-200 bg-cyan-50 text-cyan-950' : (liveTransport.regime === 'transitional' ? 'border-amber-200 bg-amber-50 text-amber-950' : 'border-indigo-200 bg-indigo-50 text-indigo-900'))) }, liveTransport.regimeLabel)
+              ),
+              h('label', { htmlFor: 'particle-transport-pressure-select', className: 'mt-2 block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'SI Pressure Reference (' + liveGasMetrics.gasA.formula + ')'),
+              h('select', {
+                id: 'particle-transport-pressure-select',
+                value: String(transportPressureAtm),
+                onChange: function (e) {
+                  var nextP = restoreOneOf(Number(e.target.value), TRANSPORT_PRESSURE_ATM_OPTIONS, 1);
+                  setTransportPressureAtm(nextP);
+                  persist({ transportPressureAtm: nextP });
+                },
+                className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+              }, [
+                ['0.001', '0.001 atm (Rough Vacuum)'],
+                ['0.01', '0.01 atm (Mesosphere)'],
+                ['0.1', '0.1 atm (Stratosphere)'],
+                ['1', '1 atm (Sea Level)'],
+                ['10', '10 atm (Compressed)']
+              ].map(function (opt) { return h('option', { key: opt[0], value: opt[0] }, opt[1]); })),
+              h('div', { className: 'mt-3 rounded-xl border border-slate-800 bg-slate-950 p-3 text-white' },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2 text-[10px] font-black uppercase tracking-wide text-cyan-300' },
+                  h('span', null, 'Knudsen Gauge (\u03BB / L)'),
+                  h('span', { className: 'font-mono text-emerald-300' }, 'Kn = ' + (liveTransport.knudsen < 10 ? liveTransport.knudsen.toFixed(3) : liveTransport.knudsen.toFixed(1)))
+                ),
+                (function () {
+                  var logKn = clamp(Math.log10(Math.max(0.001, liveTransport.knudsen)), -3, 2);
+                  var markerX = 18 + ((logKn + 3) / 5) * 224;
+                  var zones = [
+                    { x: 18, w: 44.8, fill: 'rgba(52,211,153,0.25)', stroke: '#34d399', label: 'Cont.', lx: 40.4 },
+                    { x: 62.8, w: 44.8, fill: 'rgba(56,189,248,0.25)', stroke: '#38bdf8', label: 'Slip', lx: 85.2 },
+                    { x: 107.6, w: 89.6, fill: 'rgba(251,191,36,0.25)', stroke: '#fbbf24', label: 'Transitional', lx: 152.4 },
+                    { x: 197.2, w: 44.8, fill: 'rgba(129,140,248,0.28)', stroke: '#818cf8', label: 'Free', lx: 219.6 }
+                  ];
+                  var effPct = Math.round((liveTransport.viscosityEffModel / Math.max(1e-9, liveTransport.viscosityBulkModel)) * 100);
+                  return h('svg', { id: 'particle-knudsen-svg', viewBox: '0 0 260 104', className: 'mt-2 w-full', role: 'img', 'aria-label': buildKnudsenSvgAriaLabel() },
+                    zones.map(function (z) {
+                      return h('rect', { key: z.label, x: z.x.toFixed(1), y: 20, width: z.w.toFixed(1), height: 28, fill: z.fill, stroke: z.stroke, strokeWidth: 0.8 });
+                    }),
+                    zones.map(function (z) {
+                      return h('text', { key: 't-' + z.label, x: z.lx.toFixed(1), y: 37, textAnchor: 'middle', fontSize: 8, fill: '#f8fafc' }, z.label);
+                    }),
+                    [
+                      ['0.001', 18],
+                      ['0.01', 62.8],
+                      ['0.1', 107.6],
+                      ['1', 152.4],
+                      ['10', 197.2],
+                      ['100', 242]
+                    ].map(function (tk) {
+                      return h('g', { key: tk[0] },
+                        h('line', { x1: tk[1], y1: 48, x2: tk[1], y2: 54, stroke: '#94a3b8', strokeWidth: 1 }),
+                        h('text', { x: tk[1], y: 65, textAnchor: tk[1] <= 20 ? 'start' : (tk[1] >= 240 ? 'end' : 'middle'), fontSize: 8, fill: '#cbd5e1' }, tk[0])
+                      );
+                    }),
+                    h('line', { x1: markerX.toFixed(1), y1: 12, x2: markerX.toFixed(1), y2: 52, stroke: '#fbbf24', strokeWidth: 2 }),
+                    h('circle', { cx: markerX.toFixed(1), cy: 34, r: 5, fill: '#fbbf24', stroke: '#020617', strokeWidth: 1.4 }),
+                    h('text', { x: 18, y: 86, fontSize: 8, fill: '#7dd3fc' }, 'D_model=' + liveTransport.selfDiffusionU.toFixed(1) + ' u\u00B2/s'),
+                    h('text', { x: 242, y: 86, textAnchor: 'end', fontSize: 8, fill: '#fde68a' }, '\u03B7_eff=' + effPct + '% bulk')
+                  );
+                })(),
+                h('div', { className: 'mt-1.5 font-mono text-[11px] text-cyan-200' }, 'Wall vs gas hits/s: ' + liveTransport.wallCollisionFreq.toFixed(2) + ' / ' + liveTransport.collisionFreq.toFixed(2))
+              ),
+              h('div', { className: 'mt-3 grid grid-cols-2 gap-2' },
+                [
+                  ['SI Mean Free Path', liveTransport.siMfpNm >= 1000 ? (liveTransport.siMfpNm / 1000).toFixed(2) + ' \u00B5m' : liveTransport.siMfpNm.toFixed(1) + ' nm'],
+                  ['SI Diffusivity D', (liveTransport.siDiffusionCm2S >= 100 ? liveTransport.siDiffusionCm2S.toFixed(0) : liveTransport.siDiffusionCm2S.toFixed(2)) + ' cm\u00B2/s'],
+                  ['SI Viscosity \u03B7', liveTransport.siViscosityMicroPaS.toFixed(1) + ' \u00B5Pa\u00B7s'],
+                  ['Thermal Cond. \u03BA', liveTransport.siThermalCondMwMK.toFixed(1) + ' mW/(m\u00B7K)']
+                ].map(function (item) {
+                  return h('div', { key: item[0], className: 'min-w-0 rounded-lg border border-slate-200 bg-white p-2.5' },
+                    h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-700' }, item[0]),
+                    h('div', { className: 'mt-0.5 font-mono text-xs font-black text-slate-950' }, item[1])
+                  );
+                })
+              ),
+              h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-700' },
+                'Maxwell law: bulk \u03B7_model = ' + liveTransport.viscosityBulkModel.toFixed(2) + ' scales with \u221AT/d\u00B2 (independent of N/V) until rarefaction drops \u03B7_eff.'
+              ),
+              h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                h('button', { type: 'button', onClick: function () { stageTransportRegime('continuum_dense'); }, className: 'min-h-11 sm:min-h-9 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-900 hover:bg-slate-100' }, 'Stage Dense Continuum'),
+                h('button', { type: 'button', onClick: function () { stageTransportRegime('ballistic_vacuum'); }, className: 'min-h-11 sm:min-h-9 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-black text-white hover:bg-slate-800' }, 'Stage Ballistic Vacuum')
+              )
+            ),
+            showWbCard('heat_engine_cycle', 'gas_thermo') && h('div', { id: 'particle-cycle-card', className: 'min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                h('h4', { className: 'text-sm font-black text-slate-950' }, 'Closed Heat-Engine Cycle Lab'),
+                h('span', { className: 'rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-emerald-950' }, '\u03B7 = ' + (liveCycle.thermalEfficiency * 100).toFixed(1) + '%')
+              ),
+              h('label', { htmlFor: 'particle-cycle-type-select', className: 'mt-2 block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Thermodynamic Engine Cycle'),
+              h('select', {
+                id: 'particle-cycle-type-select',
+                value: cycleType,
+                onChange: function (e) {
+                  var nextC = restoreOneOf(e.target.value, CYCLE_TYPES, 'carnot');
+                  setCycleType(nextC);
+                  persist({ cycleType: nextC });
+                },
+                className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+              }, [
+                ['carnot', 'Carnot Cycle (Ideal Limit)'],
+                ['otto', 'Otto Spark-Ignition'],
+                ['brayton', 'Brayton Gas Turbine'],
+                ['stirling', 'Stirling Regenerative']
+              ].map(function (opt) { return h('option', { key: opt[0], value: opt[0] }, opt[1]); })),
+              h('div', { className: 'mt-2 grid grid-cols-2 gap-2' },
+                h('div', { className: 'min-w-0' },
+                  h('label', { htmlFor: 'particle-cycle-ratio-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Compression r_V'),
+                  h('select', {
+                    id: 'particle-cycle-ratio-select',
+                    value: String(cycleCompressionRatio),
+                    onChange: function (e) {
+                      var nextR = restoreOneOf(Number(e.target.value), [2, 3, 4, 6], 3);
+                      setCycleCompressionRatio(nextR);
+                      persist({ cycleCompressionRatio: nextR });
+                    },
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                  }, [2, 3, 4, 6].map(function (rv) { return h('option', { key: rv, value: String(rv) }, 'r_V = ' + rv + 'x'); }))
+                ),
+                h('div', { className: 'min-w-0' },
+                  h('label', { htmlFor: 'particle-cycle-thot-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Peak T_H (T_C=200K)'),
+                  h('select', {
+                    id: 'particle-cycle-thot-select',
+                    value: String(cycleHotTemp),
+                    onChange: function (e) {
+                      var nextH = restoreOneOf(Number(e.target.value), [480, 640, 840], 640);
+                      setCycleHotTemp(nextH);
+                      persist({ cycleHotTemp: nextH });
+                    },
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                  }, [480, 640, 840].map(function (th) { return h('option', { key: th, value: String(th) }, th + ' K'); }))
+                )
+              ),
+              h('div', { className: 'mt-3 rounded-xl border border-slate-800 bg-slate-950 p-3 text-white' },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2 text-[10px] font-black uppercase tracking-wide text-cyan-300' },
+                  h('span', null, liveCycle.title),
+                  h('span', { className: 'font-mono text-emerald-300' }, liveCycle.gas.formula + ' (\u03B3=' + liveCycle.gamma.toFixed(2) + ')')
+                ),
+                (function () {
+                  var rawPts = [];
+                  var corners = liveCycle.corners;
+                  var legs = liveCycle.legs;
+                  for (var li = 0; li < corners.length; li += 1) {
+                    var c1 = corners[li];
+                    var c2 = corners[(li + 1) % corners.length];
+                    var leg = legs[li];
+                    for (var si = 0; si < 8; si += 1) {
+                      var frac = si / 8;
+                      var sv = c1.v + (c2.v - c1.v) * frac;
+                      var sp;
+                      if (leg.kind === 'isothermal') sp = c1.pMech * (c1.v / Math.max(1e-6, sv));
+                      else if (leg.kind === 'adiabatic') sp = c1.pMech * Math.pow(c1.v / Math.max(1e-6, sv), liveCycle.gamma);
+                      else sp = c1.pMech + (c2.pMech - c1.pMech) * frac;
+                      rawPts.push({ v: sv, p: sp });
+                    }
+                  }
+                  var allV = rawPts.map(function (pt) { return pt.v; });
+                  var allP = rawPts.map(function (pt) { return pt.p; });
+                  var vMinC = Math.min.apply(Math, allV) * 0.85;
+                  var vMaxC = Math.max.apply(Math, allV) * 1.08;
+                  var pMaxC = Math.max.apply(Math, allP) * 1.15;
+                  function mapCX(v) { return clamp(28 + ((v - vMinC) / Math.max(1e-6, vMaxC - vMinC)) * 212, 28, 240); }
+                  function mapCY(p) { return clamp(102 - (p / Math.max(1e-6, pMaxC)) * 86, 14, 102); }
+                  var polyPts = rawPts.map(function (pt) { return mapCX(pt.v).toFixed(1) + ',' + mapCY(pt.p).toFixed(1); }).join(' ');
+                  return h('svg', { id: 'particle-cycle-svg', viewBox: '0 0 260 128', className: 'mt-2 w-full', role: 'img', 'aria-label': buildCycleSvgAriaLabel() },
+                    [20, 48, 76, 102].map(function (gy) { return h('line', { key: 'cygy' + gy, x1: 28, y1: gy, x2: 244, y2: gy, stroke: 'rgba(148,163,184,0.18)', strokeWidth: 1 }); }),
+                    h('line', { x1: 28, y1: 14, x2: 28, y2: 102, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('line', { x1: 28, y1: 102, x2: 244, y2: 102, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('polygon', { points: polyPts, fill: 'rgba(52,211,153,0.22)', stroke: '#38bdf8', strokeWidth: 2 }),
+                    corners.map(function (c) {
+                      var cx = mapCX(c.v);
+                      var cy = mapCY(c.pMech);
+                      return h('g', { key: 'corner-' + c.index },
+                        h('circle', { cx: cx.toFixed(1), cy: cy.toFixed(1), r: 3.8, fill: '#fbbf24', stroke: '#020617', strokeWidth: 1 }),
+                        h('text', { x: clamp(cx + (c.index === 1 || c.index === 4 ? 5 : -8), 32, 236).toFixed(1), y: clamp(cy + (c.index === 1 || c.index === 2 ? 10 : -5), 14, 100).toFixed(1), fontSize: 9, fill: '#fde68a' }, String(c.index))
+                      );
+                    }),
+                    h('text', { x: 28, y: 118, fontSize: 8, fill: '#cbd5e1' }, 'V (u\u00B3)'),
+                    h('text', { x: 242, y: 118, textAnchor: 'end', fontSize: 8, fill: '#6ee7b7' }, 'COP_R=' + liveCycle.copCoolingCarnot.toFixed(2)),
+                    h('text', { x: 4, y: 18, fontSize: 8, fill: '#cbd5e1' }, 'P')
+                  );
+                })(),
+                h('div', { className: 'mt-1.5 font-mono text-[11px] text-cyan-200' }, 'W_net=' + liveCycle.netWork.toFixed(1) + ' u \u2022 \u222EdU=' + liveCycle.cycleDeltaU.toFixed(2) + ' u')
+              ),
+              h('div', { className: 'mt-3 grid grid-cols-2 gap-2' },
+                [
+                  ['Net Work \u222EPdV', liveCycle.netWork.toFixed(1) + ' u'],
+                  ['Heat Input Q_in', liveCycle.qIn.toFixed(1) + ' u'],
+                  ['Carnot Limit \u03B7_C', (liveCycle.carnotEfficiency * 100).toFixed(1) + '%'],
+                  ['2nd-Law \u03B7/\u03B7_C', (liveCycle.secondLawRatio * 100).toFixed(0) + '%']
+                ].map(function (item) {
+                  return h('div', { key: item[0], className: 'min-w-0 rounded-lg border border-slate-200 bg-white p-2.5' },
+                    h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-700' }, item[0]),
+                    h('div', { className: 'mt-0.5 font-mono text-xs font-black text-slate-950' }, item[1])
+                  );
+                })
+              ),
+              h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-700' },
+                liveCycle.cycleType === 'stirling'
+                  ? 'With ideal regeneration Q_23 = Q_41 recycles internally (\u03B7=' + (liveCycle.thermalEfficiency * 100).toFixed(1) + '% vs ' + (liveCycle.unregeneratedEfficiency * 100).toFixed(1) + '% unregenerated).'
+                  : 'Load any cycle corner (T, L) directly into the 3D particle chamber with thermostat lock.'
+              ),
+              h('div', { className: 'mt-2 flex flex-wrap gap-1.5' },
+                liveCycle.corners.map(function (c, idx) {
+                  return h('button', {
+                    key: c.index,
+                    type: 'button',
+                    onClick: function () { loadCycleCornerState(idx); },
+                    className: 'min-h-11 sm:min-h-9 rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900 hover:bg-slate-100'
+                  }, 'Corner ' + c.index);
+                })
+              )
+            ),
+            showWbCard('planetary_atmosphere', 'gas_thermo') && h('div', { id: 'particle-atmosphere-card', className: 'min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                h('h4', { className: 'text-sm font-black text-slate-950' }, 'Planetary Scale Height & Escape'),
+                h('span', { className: 'rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ' + (liveAtmosphere.retention === 'geological' ? 'border-emerald-200 bg-emerald-50 text-emerald-950' : (liveAtmosphere.retention === 'slow_leak' ? 'border-amber-200 bg-amber-50 text-amber-950' : 'border-rose-200 bg-rose-50 text-rose-900')) }, liveAtmosphere.retentionLabel)
+              ),
+              h('div', { className: 'mt-2 grid grid-cols-2 gap-2' },
+                h('div', { className: 'min-w-0' },
+                  h('label', { htmlFor: 'particle-planet-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'World'),
+                  h('select', {
+                    id: 'particle-planet-select',
+                    value: planetId,
+                    onChange: function (e) {
+                      var nextP = restoreOneOf(e.target.value, PLANETARY_BODY_IDS, 'Earth');
+                      setPlanetId(nextP);
+                      persist({ planetId: nextP });
+                    },
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                  }, PLANETARY_BODIES.map(function (b) {
+                    return h('option', { key: b.id, value: b.id }, b.name + ' (' + b.gravityMs2.toFixed(1) + ' m/s\u00B2)');
+                  }))
+                ),
+                h('div', { className: 'min-w-0' },
+                  h('label', { htmlFor: 'particle-planet-temp-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Temperature'),
+                  h('select', {
+                    id: 'particle-planet-temp-select',
+                    value: planetTempMode,
+                    onChange: function (e) {
+                      var nextM = restoreOneOf(e.target.value, ['planet', 'chamber'], 'planet');
+                      setPlanetTempMode(nextM);
+                      persist({ planetTempMode: nextM });
+                    },
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                  }, [
+                    ['planet', 'Planet (' + liveAtmosphere.planet.surfaceTempK + ' K)'],
+                    ['chamber', 'Chamber (' + Math.round(displayTemperature || temperature) + ' K)']
+                  ].map(function (opt) { return h('option', { key: opt[0], value: opt[0] }, opt[1]); }))
+                )
+              ),
+              h('div', { className: 'mt-3 rounded-xl border border-slate-800 bg-slate-950 p-3 text-white' },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2 text-[10px] font-black uppercase tracking-wide text-cyan-300' },
+                  h('span', null, liveAtmosphere.planet.name + ' \u2022 ' + liveAtmosphere.gas.formula),
+                  h('span', { className: 'font-mono text-emerald-300' }, Math.round(liveAtmosphere.evalTempK) + ' K')
+                ),
+                (function () {
+                  var curvePts = [];
+                  for (var ai = 0; ai <= 16; ai += 1) {
+                    var zRatio = (ai / 16) * 4;
+                    var ax = 28 + (zRatio / 4) * 212;
+                    var ay = 74 - Math.exp(-zRatio) * 56;
+                    curvePts.push({ x: ax, y: ay });
+                  }
+                  var baroD = curvePts.map(function (pt, idx) { return (idx ? 'L' : 'M') + pt.x.toFixed(1) + ',' + pt.y.toFixed(1); }).join(' ');
+                  var areaPts = curvePts.map(function (pt) { return pt.x.toFixed(1) + ',' + pt.y.toFixed(1); }).concat(['240.0,74', '28.0,74']).join(' ');
+                  var x1H = 28 + (1 / 4) * 212;
+                  var y1H = 74 - Math.exp(-1) * 56;
+                  var escFillW = clamp((liveAtmosphere.escapeRatio / 12) * 212, 4, 212);
+                  var escThreshX = 28 + (6 / 12) * 212;
+                  var escColor = liveAtmosphere.retention === 'geological' ? '#34d399' : (liveAtmosphere.retention === 'slow_leak' ? '#fbbf24' : '#fb7185');
+                  return h('svg', { id: 'particle-atmosphere-svg', viewBox: '0 0 260 120', className: 'mt-2 w-full', role: 'img', 'aria-label': buildAtmosphereSvgAriaLabel() },
+                    h('line', { x1: 28, y1: 14, x2: 28, y2: 74, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('line', { x1: 28, y1: 74, x2: 242, y2: 74, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('polygon', { points: areaPts, fill: 'rgba(56,189,248,0.22)' }),
+                    h('path', { d: baroD, fill: 'none', stroke: '#38bdf8', strokeWidth: 2 }),
+                    h('line', { x1: x1H.toFixed(1), y1: 18, x2: x1H.toFixed(1), y2: 74, stroke: '#fde68a', strokeWidth: 1, strokeDasharray: '3 3' }),
+                    h('circle', { cx: x1H.toFixed(1), cy: y1H.toFixed(1), r: 3.4, fill: '#fbbf24', stroke: '#020617', strokeWidth: 1 }),
+                    h('text', { x: (x1H + 5).toFixed(1), y: 26, fontSize: 8, fill: '#fde68a' }, '1H = ' + Math.round(liveAtmosphere.scaleHeightKm) + ' km (1/e)'),
+                    h('text', { x: 240, y: 84, textAnchor: 'end', fontSize: 8, fill: '#cbd5e1' }, 'Altitude z = 0 .. 4H'),
+                    h('rect', { x: 28, y: 92, width: 212, height: 8, rx: 4, fill: '#1e293b' }),
+                    h('rect', { x: 28, y: 92, width: escFillW.toFixed(1), height: 8, rx: 4, fill: escColor }),
+                    h('line', { x1: escThreshX.toFixed(1), y1: 88, x2: escThreshX.toFixed(1), y2: 103, stroke: '#f8fafc', strokeWidth: 1.2 }),
+                    h('text', { x: 28, y: 114, fontSize: 8, fill: '#bae6fd' }, 'v_esc/v_rms = ' + liveAtmosphere.escapeRatio.toFixed(1) + 'x (6x threshold)')
+                  );
+                })(),
+                h('div', { className: 'mt-1.5 text-[11px] leading-relaxed text-cyan-200' }, liveAtmosphere.planet.note)
+              ),
+              h('div', { className: 'mt-3 grid grid-cols-2 gap-2' },
+                [
+                  ['Scale Height H', (liveAtmosphere.scaleHeightKm >= 1000 ? Math.round(liveAtmosphere.scaleHeightKm) : liveAtmosphere.scaleHeightKm.toFixed(1)) + ' km'],
+                  ['Escape v_esc/v_rms', liveAtmosphere.escapeRatio.toFixed(1) + 'x'],
+                  ['Jeans \u03BB_esc', liveAtmosphere.jeansLambda >= 100 ? String(Math.round(liveAtmosphere.jeansLambda)) : liveAtmosphere.jeansLambda.toFixed(1)],
+                  ['Chamber H_model', Number.isFinite(liveAtmosphere.chamberScaleHeightU) ? liveAtmosphere.chamberScaleHeightU.toFixed(1) + ' u' : '\u221E (g*=0)']
+                ].map(function (item) {
+                  return h('div', { key: item[0], className: 'min-w-0 rounded-lg border border-slate-200 bg-white p-2.5' },
+                    h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-700' }, item[0]),
+                    h('div', { className: 'mt-0.5 font-mono text-xs font-black text-slate-950' }, item[1])
+                  );
+                })
+              ),
+              h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-700' },
+                gravity > 0.01
+                  ? 'Chamber bottom/top ratio: theory ' + liveAtmosphere.chamberBottomTopQuarterRatio.toFixed(2) + 'x vs live ' + heightInfo.bottomTopRatio.toFixed(2) + 'x.'
+                  : 'Chamber gravity is off. Stage planet gravity below to observe barometric density settling in 3D.'
+              ),
+              h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                h('button', { type: 'button', onClick: stagePlanetAtmosphere, className: 'min-h-11 sm:min-h-9 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-black text-white hover:bg-slate-800' }, 'Stage Planet Gravity')
+              )
+            )
+          )
+        ),
+        showWbGroup('stat_spectra') && h('div', { id: 'particle-workbench-group-stat-spectra', className: 'particle-wb-pass min-w-0' },
+          h('div', { className: 'particle-wb-pass mt-4 grid gap-4 lg:grid-cols-3' },
+            showWbCard('stat_mech_entropy', 'stat_spectra') && h('div', { id: 'particle-statmech-card', className: 'min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                h('h4', { className: 'text-sm font-black text-slate-950' }, 'Statistical Mechanics & Entropy'),
+                h('span', { className: 'rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ' + (liveStatMech.regime === 'classical' ? 'border-emerald-200 bg-emerald-50 text-emerald-950' : (liveStatMech.regime === 'near_quantum' ? 'border-amber-200 bg-amber-50 text-amber-950' : 'border-rose-200 bg-rose-50 text-rose-900')) }, liveStatMech.regimeLabel)
+              ),
+              h('label', { htmlFor: 'particle-statmech-threshold-select', className: 'mt-2 block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Activation Tail Threshold u = E / k_B T'),
+              h('select', {
+                id: 'particle-statmech-threshold-select',
+                value: String(statMechThreshold),
+                onChange: function (e) {
+                  var nextU = restoreOneOf(Number(e.target.value), STATMECH_THRESHOLD_RATIOS, 2.5);
+                  setStatMechThreshold(nextU);
+                  persist({ statMechThreshold: nextU });
+                },
+                className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+              }, [
+                ['1.5', '1.5 k_B T (Above Mean)'],
+                ['2.5', '2.5 k_B T (Moderate Barrier)'],
+                ['4', '4.0 k_B T (High-Energy Tail)'],
+                ['6', '6.0 k_B T (Rare Thermal Spike)']
+              ].map(function (opt) { return h('option', { key: opt[0], value: opt[0] }, opt[1]); })),
+              h('div', { className: 'mt-3 rounded-xl border border-slate-800 bg-slate-950 p-3 text-white' },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2 text-[10px] font-black uppercase tracking-wide text-cyan-300' },
+                  h('span', null, '3D Maxwell-Boltzmann Energy PDF'),
+                  h('span', { className: 'font-mono text-emerald-300' }, (liveStatMech.tailFraction * 100).toFixed(1) + '% tail')
+                ),
+                (function () {
+                  var allPts = [];
+                  var tailPts = [];
+                  var uCut = clamp(liveStatMech.thresholdRatio, 0.2, 8);
+                  function pdf3d(eps) { return (2 / Math.sqrt(Math.PI)) * Math.sqrt(eps) * Math.exp(-eps); }
+                  function mapSX(eps) { return 24 + (eps / 8) * 218; }
+                  function mapSY(val) { return 84 - clamp(val / 0.50, 0, 1) * 66; }
+                  for (var si = 0; si <= 32; si += 1) {
+                    var eps = (si / 32) * 8;
+                    allPts.push({ x: mapSX(eps), y: mapSY(pdf3d(eps)) });
+                  }
+                  for (var ti = 0; ti <= 16; ti += 1) {
+                    var tEps = uCut + ((8 - uCut) * ti) / 16;
+                    tailPts.push({ x: mapSX(tEps), y: mapSY(pdf3d(tEps)) });
+                  }
+                  var curveD = allPts.map(function (pt, idx) { return (idx ? 'L' : 'M') + pt.x.toFixed(1) + ',' + pt.y.toFixed(1); }).join(' ');
+                  var cutX = mapSX(uCut);
+                  var tailPoly = tailPts.map(function (pt) { return pt.x.toFixed(1) + ',' + pt.y.toFixed(1); }).concat(['242.0,84.0', cutX.toFixed(1) + ',84.0']).join(' ');
+                  return h('svg', { id: 'particle-boltzmann-tail-svg', viewBox: '0 0 260 116', className: 'mt-2 w-full', role: 'img', 'aria-label': buildStatMechSvgAriaLabel() },
+                    h('line', { x1: 24, y1: 14, x2: 24, y2: 84, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('line', { x1: 24, y1: 84, x2: 242, y2: 84, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('polygon', { points: tailPoly, fill: 'rgba(251,191,36,0.34)' }),
+                    h('path', { d: curveD, fill: 'none', stroke: '#38bdf8', strokeWidth: 2 }),
+                    h('line', { x1: cutX.toFixed(1), y1: 16, x2: cutX.toFixed(1), y2: 84, stroke: '#fde68a', strokeWidth: 1.4, strokeDasharray: '3 3' }),
+                    h('text', { x: clamp(cutX + 4, 28, 175).toFixed(1), y: 26, fontSize: 8, fill: '#fde68a' }, 'E \u2265 ' + liveStatMech.thresholdRatio + ' kT (' + (liveStatMech.tailFraction * 100).toFixed(1) + '%)'),
+                    h('text', { x: 24, y: 102, fontSize: 8, fill: '#cbd5e1' }, 'Dimensionless E/(k_B T): 0 .. 8'),
+                    h('text', { x: 242, y: 102, textAnchor: 'end', fontSize: 8, fill: '#bae6fd' }, '~' + liveStatMech.expectedTailParticles.toFixed(1) + ' / ' + liveStatMech.count + ' particles')
+                  );
+                })(),
+                h('div', { className: 'mt-1.5 font-mono text-[11px] text-cyan-200' }, '\u0394 ln(\u03A9 vs ref): ' + (liveStatMech.lnOmegaRatio >= 0 ? '+' : '') + liveStatMech.lnOmegaRatio.toFixed(1))
+              ),
+              h('div', { className: 'mt-3 grid grid-cols-2 gap-2' },
+                [
+                  ['Sackur-Tetrode S_tr', liveStatMech.sTransMolarJMK.toFixed(1) + ' J/mol\u00B7K'],
+                  ['Thermal \u039B_dB', liveStatMech.thermalLambdaPm >= 100 ? Math.round(liveStatMech.thermalLambdaPm) + ' pm' : liveStatMech.thermalLambdaPm.toFixed(1) + ' pm'],
+                  ['Spacing d / \u039B_dB', (liveStatMech.spacingToLambdaRatio >= 100 ? Math.round(liveStatMech.spacingToLambdaRatio) : liveStatMech.spacingToLambdaRatio.toFixed(1)) + 'x'],
+                  ['Tail E \u2265 u\u00B7k_BT', (liveStatMech.tailFraction * 100).toFixed(2) + '%']
+                ].map(function (item) {
+                  return h('div', { key: item[0], className: 'min-w-0 rounded-lg border border-slate-200 bg-white p-2.5' },
+                    h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-700' }, item[0]),
+                    h('div', { className: 'mt-0.5 font-mono text-xs font-black text-slate-950' }, item[1])
+                  );
+                })
+              ),
+              h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-700' },
+                'Sackur-Tetrode links volume, mass, and Planck constant h; Boltzmann statistics hold accurately when mean spacing d \u226B \u039B_dB.'
+              ),
+              h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                h('button', { type: 'button', onClick: function () { stageStatMechRegime('cold_dense'); }, className: 'min-h-11 sm:min-h-9 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-900 hover:bg-slate-100' }, 'Stage Cold Dense (40 K)'),
+                h('button', { type: 'button', onClick: function () { stageStatMechRegime('hot_tail'); }, className: 'min-h-11 sm:min-h-9 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-black text-white hover:bg-slate-800' }, 'Stage Hot Tail (750 K)')
+              )
+            ),
+            showWbCard('arrhenius_kinetics', 'stat_spectra') && h('div', { id: 'particle-arrhenius-card', className: 'min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                h('h4', { className: 'text-sm font-black text-slate-950' }, 'Arrhenius Collision Kinetics'),
+                h('span', { className: 'rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-amber-950' }, 'Q\u2081\u2080 = ' + liveArrhenius.q10Ratio.toFixed(2) + 'x')
+              ),
+              h('div', { className: 'mt-2 grid grid-cols-2 gap-2' },
+                h('div', { className: 'min-w-0' },
+                  h('label', { htmlFor: 'particle-ea-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Activation E_a'),
+                  h('select', {
+                    id: 'particle-ea-select',
+                    value: String(arrheniusEaKj),
+                    onChange: function (e) {
+                      var nextEa = restoreOneOf(Number(e.target.value), ARRHENIUS_EA_OPTIONS, 45);
+                      setArrheniusEaKj(nextEa);
+                      persist({ arrheniusEaKj: nextEa });
+                    },
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                  }, ARRHENIUS_EA_OPTIONS.map(function (ea) { return h('option', { key: ea, value: String(ea) }, ea + ' kJ/mol'); }))
+                ),
+                h('div', { className: 'min-w-0' },
+                  h('label', { htmlFor: 'particle-steric-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Steric Factor p'),
+                  h('select', {
+                    id: 'particle-steric-select',
+                    value: String(stericFactor),
+                    onChange: function (e) {
+                      var nextSt = restoreOneOf(Number(e.target.value), STERIC_FACTOR_OPTIONS, 0.5);
+                      setStericFactor(nextSt);
+                      persist({ stericFactor: nextSt });
+                    },
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                  }, [
+                    ['0.05', 'p = 0.05 (Bulky)'],
+                    ['0.25', 'p = 0.25 (Oriented)'],
+                    ['0.5', 'p = 0.50 (Moderate)'],
+                    ['1', 'p = 1.00 (Isotropic)']
+                  ].map(function (opt) { return h('option', { key: opt[0], value: opt[0] }, opt[1]); }))
+                )
+              ),
+              h('div', { className: 'mt-3 rounded-xl border border-slate-800 bg-slate-950 p-3 text-white' },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2 text-[10px] font-black uppercase tracking-wide text-cyan-300' },
+                  h('span', null, 'Arrhenius Plot (ln k vs 1000/T)'),
+                  h('span', { className: 'font-mono text-emerald-300' }, liveArrhenius.gasA.formula + ' + ' + liveArrhenius.gasB.formula)
+                ),
+                (function () {
+                  var pts = liveArrhenius.curvePoints;
+                  var lnVals = pts.map(function (pt) { return pt.lnK; });
+                  var minX = pts[pts.length - 1].invT1000;
+                  var maxX = pts[0].invT1000;
+                  var minY = Math.min.apply(Math, lnVals) - 1;
+                  var maxY = Math.max.apply(Math, lnVals) + 1;
+                  function mapAX(invT) { return clamp(28 + ((invT - minX) / Math.max(1e-6, maxX - minX)) * 212, 28, 240); }
+                  function mapAY(lnK) { return clamp(84 - ((lnK - minY) / Math.max(1e-6, maxY - minY)) * 68, 16, 84); }
+                  var arrhD = pts.map(function (pt, idx) { return (idx ? 'L' : 'M') + mapAX(pt.invT1000).toFixed(1) + ',' + mapAY(pt.lnK).toFixed(1); }).join(' ');
+                  var lx = mapAX(liveArrhenius.livePoint.invT1000);
+                  var ly = mapAY(liveArrhenius.livePoint.lnK);
+                  var expGainPct = ((liveArrhenius.expBoost10K - 1) * 100).toFixed(1);
+                  var freqGainPct = ((liveArrhenius.freqBoost10K - 1) * 100).toFixed(1);
+                  return h('svg', { id: 'particle-arrhenius-svg', viewBox: '0 0 260 116', className: 'mt-2 w-full', role: 'img', 'aria-label': buildArrheniusSvgAriaLabel() },
+                    h('line', { x1: 28, y1: 14, x2: 28, y2: 84, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('line', { x1: 28, y1: 84, x2: 242, y2: 84, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('path', { d: arrhD, fill: 'none', stroke: '#38bdf8', strokeWidth: 2 }),
+                    h('circle', { cx: lx.toFixed(1), cy: ly.toFixed(1), r: 4.5, fill: '#fbbf24', stroke: '#020617', strokeWidth: 1.2 }),
+                    h('text', { x: 34, y: 26, fontSize: 8, fill: '#fde68a' }, 'Live ' + Math.round(liveArrhenius.temperature) + 'K: Exp +' + expGainPct + '% vs \u221AT +' + freqGainPct + '%'),
+                    h('text', { x: 28, y: 102, fontSize: 8, fill: '#cbd5e1' }, 'Hot 900 K (1000/T=1.1)'),
+                    h('text', { x: 242, y: 102, textAnchor: 'end', fontSize: 8, fill: '#cbd5e1' }, '200 K (5.0)')
+                  );
+                })(),
+                h('div', { className: 'mt-1.5 font-mono text-[11px] text-cyan-200' }, 'Cross-section \u03C3_AB: ' + (liveArrhenius.crossSectionM2 * 1e18).toFixed(2) + ' \u00C5\u00B2 (\u03BC=' + liveArrhenius.reducedMolarMassG.toFixed(1) + ' g/mol)')
+              ),
+              h('div', { className: 'mt-3 grid grid-cols-2 gap-2' },
+                [
+                  ['Boltzmann e^(-Ea/RT)', liveArrhenius.boltzmannFactor >= 0.01 ? liveArrhenius.boltzmannFactor.toFixed(3) : liveArrhenius.boltzmannFactor.toExponential(2)],
+                  ['Rate k(T) (L/mol\u00B7s)', liveArrhenius.rateConstantLMolS >= 1000 ? liveArrhenius.rateConstantLMolS.toExponential(2) : liveArrhenius.rateConstantLMolS.toFixed(2)],
+                  ['+10 K Exp vs \u221AT', ((liveArrhenius.expBoost10K - 1) * 100).toFixed(0) + '% vs ' + ((liveArrhenius.freqBoost10K - 1) * 100).toFixed(1) + '%'],
+                  ['Mean v_rel (A\u2013B)', Math.round(liveArrhenius.vRelSi) + ' m/s']
+                ].map(function (item) {
+                  return h('div', { key: item[0], className: 'min-w-0 rounded-lg border border-slate-200 bg-white p-2.5' },
+                    h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-700' }, item[0]),
+                    h('div', { className: 'mt-0.5 font-mono text-xs font-black text-slate-950' }, item[1])
+                  );
+                })
+              ),
+              h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-700' },
+                'Raising T by 10 K barely changes collision frequency (+\u221AT), while the Boltzmann high-energy tail surges exponentially.'
+              ),
+              h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                h('button', { type: 'button', onClick: stageReactiveMixChamber, className: 'min-h-11 sm:min-h-9 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-black text-white hover:bg-slate-800' }, 'Stage Reactive Mix (600 K)')
+              )
+            ),
+            showWbCard('gas_acoustics', 'stat_spectra') && h('div', { id: 'particle-acoustics-card', className: 'min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                h('h4', { className: 'text-sm font-black text-slate-950' }, 'Gas Acoustics & Mach Resonance'),
+                h('span', { className: 'rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ' + (liveAcoustics.machRegime === 'subsonic' ? 'border-emerald-200 bg-emerald-50 text-emerald-950' : (liveAcoustics.machRegime === 'transonic' ? 'border-amber-200 bg-amber-50 text-amber-950' : 'border-rose-200 bg-rose-50 text-rose-900')) }, liveAcoustics.machLabel + ' (Ma ' + liveAcoustics.machNumber.toFixed(2) + ')')
+              ),
+              h('div', { className: 'mt-2 grid grid-cols-2 gap-2' },
+                h('div', { className: 'min-w-0' },
+                  h('label', { htmlFor: 'particle-acoustic-freq-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Drive Frequency'),
+                  h('select', {
+                    id: 'particle-acoustic-freq-select',
+                    value: String(acousticFreqHz),
+                    onChange: function (e) {
+                      var nextF = restoreOneOf(Number(e.target.value), ACOUSTIC_FREQUENCIES_HZ, 440);
+                      setAcousticFreqHz(nextF);
+                      persist({ acousticFreqHz: nextF });
+                    },
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                  }, ACOUSTIC_FREQUENCIES_HZ.map(function (hz) { return h('option', { key: hz, value: String(hz) }, hz + ' Hz'); }))
+                ),
+                h('div', { className: 'min-w-0' },
+                  h('label', { htmlFor: 'particle-flow-speed-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Flow Speed u'),
+                  h('select', {
+                    id: 'particle-flow-speed-select',
+                    value: String(acousticFlowMs),
+                    onChange: function (e) {
+                      var nextU = restoreOneOf(Number(e.target.value), ACOUSTIC_FLOW_SPEEDS_MS, 340);
+                      setAcousticFlowMs(nextU);
+                      persist({ acousticFlowMs: nextU });
+                    },
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                  }, ACOUSTIC_FLOW_SPEEDS_MS.map(function (ms) { return h('option', { key: ms, value: String(ms) }, ms + ' m/s'); }))
+                )
+              ),
+              h('div', { className: 'mt-3 rounded-xl border border-slate-800 bg-slate-950 p-3 text-white' },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2 text-[10px] font-black uppercase tracking-wide text-cyan-300' },
+                  h('span', null, 'Sound Wave (' + liveAcoustics.gas.formula + ' vs N\u2082)'),
+                  h('span', { className: 'font-mono text-emerald-300' }, 'Pitch ' + liveAcoustics.pitchShiftVsN2.toFixed(2) + 'x N\u2082')
+                ),
+                (function () {
+                  var waveGasPts = [];
+                  var waveRefPts = [];
+                  var kRatio = 1 / Math.max(0.25, liveAcoustics.pitchShiftVsN2);
+                  for (var wi = 0; wi <= 40; wi += 1) {
+                    var frac = wi / 40;
+                    var wx = 20 + frac * 220;
+                    var wyRef = 44 - Math.sin(frac * Math.PI * 4) * 20;
+                    var wyGas = 44 - Math.sin(frac * Math.PI * 4 * kRatio) * 20;
+                    waveRefPts.push((wi ? 'L' : 'M') + wx.toFixed(1) + ',' + wyRef.toFixed(1));
+                    waveGasPts.push((wi ? 'L' : 'M') + wx.toFixed(1) + ',' + wyGas.toFixed(1));
+                  }
+                  var maFillW = clamp((liveAcoustics.machNumber / 3) * 212, 4, 212);
+                  var maSonicX = 24 + (1 / 3) * 212;
+                  var maColor = liveAcoustics.machRegime === 'subsonic' ? '#34d399' : (liveAcoustics.machRegime === 'transonic' ? '#fbbf24' : '#fb7185');
+                  return h('svg', { id: 'particle-acoustics-svg', viewBox: '0 0 260 116', className: 'mt-2 w-full', role: 'img', 'aria-label': buildAcousticsSvgAriaLabel() },
+                    h('line', { x1: 20, y1: 44, x2: 240, y2: 44, stroke: 'rgba(148,163,184,0.35)', strokeWidth: 1 }),
+                    h('path', { d: waveRefPts.join(' '), fill: 'none', stroke: '#94a3b8', strokeWidth: 1.2, strokeDasharray: '3 3' }),
+                    h('path', { d: waveGasPts.join(' '), fill: 'none', stroke: '#38bdf8', strokeWidth: 2 }),
+                    h('text', { x: 20, y: 16, fontSize: 8, fill: '#bae6fd' }, 'Solid: ' + liveAcoustics.gas.formula + ' (\u03BB ' + (liveAcoustics.wavelengthM * 100).toFixed(0) + ' cm)'),
+                    h('text', { x: 240, y: 16, textAnchor: 'end', fontSize: 8, fill: '#cbd5e1' }, 'Dashed: N\u2082 300K'),
+                    h('rect', { x: 24, y: 84, width: 212, height: 8, rx: 4, fill: '#1e293b' }),
+                    h('rect', { x: 24, y: 84, width: maFillW.toFixed(1), height: 8, rx: 4, fill: maColor }),
+                    h('line', { x1: maSonicX.toFixed(1), y1: 80, x2: maSonicX.toFixed(1), y2: 96, stroke: '#f8fafc', strokeWidth: 1.2 }),
+                    h('text', { x: 24, y: 108, fontSize: 8, fill: '#fde68a' }, 'Mach ' + liveAcoustics.machNumber.toFixed(2) + ' (Sonic Ma=1 line)')
+                  );
+                })(),
+                h('div', { className: 'mt-1.5 font-mono text-[11px] text-cyan-200' }, 'Laplace \u221A\u03B3 = ' + liveAcoustics.laplaceCorrectionFactor.toFixed(2) + 'x vs isothermal Newton')
+              ),
+              h('div', { className: 'mt-3 grid grid-cols-2 gap-2' },
+                [
+                  ['Laplace / Newton c', liveAcoustics.soundSpeedAdiabaticMs.toFixed(0) + ' / ' + liveAcoustics.soundSpeedNewtonMs.toFixed(0) + ' m/s'],
+                  ['Impedance Z = \u03C1c', (liveAcoustics.acousticImpedanceRayl >= 1000 ? liveAcoustics.acousticImpedanceRayl.toFixed(0) : liveAcoustics.acousticImpedanceRayl.toFixed(1)) + ' Rayl'],
+                  ['Wavelength \u03BB', liveAcoustics.wavelengthM >= 1 ? liveAcoustics.wavelengthM.toFixed(2) + ' m' : (liveAcoustics.wavelengthM * 100).toFixed(1) + ' cm'],
+                  ['0.25m Pipe f\u2081', Math.round(liveAcoustics.cavityFundamentalHz) + ' Hz']
+                ].map(function (item) {
+                  return h('div', { key: item[0], className: 'min-w-0 rounded-lg border border-slate-200 bg-white p-2.5' },
+                    h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-700' }, item[0]),
+                    h('div', { className: 'mt-0.5 font-mono text-xs font-black text-slate-950' }, item[1])
+                  );
+                })
+              ),
+              h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-700' },
+                'Rapid compressions follow adiabatic c = \u221A(\u03B3RT/M); helium lowers density \u03C1 and boosts resonance pitch nearly 3x.'
+              ),
+              h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                h('button', { type: 'button', onClick: function () { stageAcousticGasPreset('He'); }, className: 'min-h-11 sm:min-h-9 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-900 hover:bg-slate-100' }, 'Preset Helium Sound'),
+                h('button', { type: 'button', onClick: function () { stageAcousticGasPreset('Xe'); }, className: 'min-h-11 sm:min-h-9 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-black text-white hover:bg-slate-800' }, 'Preset Xenon Sound')
+              )
+            )
+          ),
+          h('div', { className: 'particle-wb-pass mt-4 grid gap-4 lg:grid-cols-3' },
+            showWbCard('doppler_spectroscopy', 'stat_spectra') && h('div', { id: 'particle-doppler-card', className: 'min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                h('h4', { className: 'text-sm font-black text-slate-950' }, 'Thermal Doppler Spectroscopy'),
+                h('span', { className: 'rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ' + (liveDoppler.regime === 'doppler_gaussian' ? 'border-emerald-200 bg-emerald-50 text-emerald-950' : (liveDoppler.regime === 'voigt_mixed' ? 'border-amber-200 bg-amber-50 text-amber-950' : 'border-rose-200 bg-rose-50 text-rose-900')) }, liveDoppler.regimeLabel)
+              ),
+              h('label', { htmlFor: 'particle-spectral-line-select', className: 'mt-2 block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Spectral Line \u03BB\u2080'),
+              h('select', {
+                id: 'particle-spectral-line-select',
+                value: String(spectralWavelengthNm),
+                onChange: function (e) {
+                  var nextWl = restoreOneOf(Number(e.target.value), SPECTRAL_WAVELENGTHS_NM, 589);
+                  setSpectralWavelengthNm(nextWl);
+                  persist({ spectralWavelengthNm: nextWl });
+                },
+                className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+              }, [
+                ['121.6', '121.6 nm (Lyman-\u03B1 UV)'],
+                ['589', '589 nm (Sodium D)'],
+                ['656.3', '656.3 nm (Balmer H\u03B1)'],
+                ['4260', '4260 nm (CO\u2082 IR)']
+              ].map(function (opt) { return h('option', { key: opt[0], value: opt[0] }, opt[1]); })),
+              h('div', { className: 'mt-3 rounded-xl border border-slate-800 bg-slate-950 p-3 text-white' },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2 text-[10px] font-black uppercase tracking-wide text-cyan-300' },
+                  h('span', null, 'Doppler vs 300 K Line Shape'),
+                  h('span', { className: 'font-mono text-emerald-300' }, '\u0394\u03BB ' + liveDoppler.dopplerFwhmPm.toFixed(2) + ' pm')
+                ),
+                (function () {
+                  var wRatio = clamp(liveDoppler.widthRatioVs300K, 0.25, 2.5);
+                  var refPts = [];
+                  var livePts = [];
+                  function mapDX(u) { return 20 + ((u + 3.5) / 7) * 220; }
+                  function mapDY(val) { return 84 - clamp(val, 0, 1) * 64; }
+                  for (var di = 0; di <= 42; di += 1) {
+                    var u = -3.5 + (di / 42) * 7;
+                    var gRef = Math.exp(-4 * Math.LN2 * u * u);
+                    var gLive = Math.exp(-4 * Math.LN2 * (u / wRatio) * (u / wRatio));
+                    refPts.push((di ? 'L' : 'M') + mapDX(u).toFixed(1) + ',' + mapDY(gRef).toFixed(1));
+                    livePts.push((di ? 'L' : 'M') + mapDX(u).toFixed(1) + ',' + mapDY(gLive).toFixed(1));
+                  }
+                  return h('svg', { id: 'particle-doppler-svg', viewBox: '0 0 260 116', className: 'mt-2 w-full', role: 'img', 'aria-label': buildDopplerSvgAriaLabel() },
+                    h('line', { x1: 20, y1: 84, x2: 240, y2: 84, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('line', { x1: 130, y1: 16, x2: 130, y2: 84, stroke: 'rgba(148,163,184,0.4)', strokeWidth: 1, strokeDasharray: '2 2' }),
+                    h('path', { d: refPts.join(' '), fill: 'none', stroke: '#94a3b8', strokeWidth: 1.4, strokeDasharray: '3 3' }),
+                    h('path', { d: livePts.join(' '), fill: 'none', stroke: '#38bdf8', strokeWidth: 2 }),
+                    h('text', { x: 20, y: 15, fontSize: 8, fill: '#bae6fd' }, 'Solid: ' + Math.round(liveDoppler.temperature) + 'K ' + liveDoppler.gas.formula),
+                    h('text', { x: 240, y: 15, textAnchor: 'end', fontSize: 8, fill: '#cbd5e1' }, 'Dashed: 300K'),
+                    h('text', { x: 130, y: 102, textAnchor: 'middle', fontSize: 8, fill: '#fde68a' }, 'Width ' + liveDoppler.widthRatioVs300K.toFixed(2) + 'x 300K | Voigt ' + liveDoppler.voigtFwhmGhz.toFixed(2) + ' GHz')
+                  );
+                })(),
+                h('div', { className: 'mt-1.5 font-mono text-[11px] text-cyan-200' }, 'Collisional/Doppler \u0393_L/\u0393_G: ' + liveDoppler.broadeningRatio.toFixed(2) + 'x')
+              ),
+              h('div', { className: 'mt-3 grid grid-cols-2 gap-2' },
+                [
+                  ['Doppler \u0394\u03BB_FWHM', liveDoppler.dopplerFwhmPm >= 100 ? Math.round(liveDoppler.dopplerFwhmPm) + ' pm' : liveDoppler.dopplerFwhmPm.toFixed(2) + ' pm'],
+                  ['Voigt Width \u0394\u03BD', liveDoppler.voigtFwhmGhz >= 100 ? Math.round(liveDoppler.voigtFwhmGhz) + ' GHz' : liveDoppler.voigtFwhmGhz.toFixed(2) + ' GHz'],
+                  ['Sightline \u03C3_vx', Math.round(liveDoppler.sigmaVxMs) + ' m/s'],
+                  ['Resolving R', liveDoppler.resolvingPower >= 10000 ? liveDoppler.resolvingPower.toExponential(2) : String(Math.round(liveDoppler.resolvingPower))]
+                ].map(function (item) {
+                  return h('div', { key: item[0], className: 'min-w-0 rounded-lg border border-slate-200 bg-white p-2.5' },
+                    h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-700' }, item[0]),
+                    h('div', { className: 'mt-0.5 font-mono text-xs font-black text-slate-950' }, item[1])
+                  );
+                })
+              ),
+              h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-700' },
+                'Thermal motion along the line of sight broadens spectral lines as \u221A(T/M); high pressure adds Lorentzian collision wings.'
+              ),
+              h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                h('button', { type: 'button', onClick: function () { stageDopplerRegime('cold_narrow'); }, className: 'min-h-11 sm:min-h-9 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-900 hover:bg-slate-100' }, 'Stage Cold Line (50 K)'),
+                h('button', { type: 'button', onClick: function () { stageDopplerRegime('hot_broad'); }, className: 'min-h-11 sm:min-h-9 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-black text-white hover:bg-slate-800' }, 'Stage Hot Line (850 K)')
+              )
+            ),
+            showWbCard('joule_thomson', 'stat_spectra') && h('div', { id: 'particle-joule-thomson-card', className: 'min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                h('h4', { className: 'text-sm font-black text-slate-950' }, 'Joule-Thomson & Liquefaction'),
+                h('span', { className: 'rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ' + (liveJouleThomson.phaseRegime === 'subcritical' ? 'border-cyan-200 bg-cyan-50 text-cyan-950' : (liveJouleThomson.phaseRegime === 'jt_cooling' ? 'border-emerald-200 bg-emerald-50 text-emerald-950' : (liveJouleThomson.phaseRegime === 'supercritical' ? 'border-amber-200 bg-amber-50 text-amber-950' : 'border-rose-200 bg-rose-50 text-rose-900'))) }, liveJouleThomson.phaseLabel)
+              ),
+              h('label', { htmlFor: 'particle-jt-drop-select', className: 'mt-2 block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Expansion Drop \u0394P'),
+              h('select', {
+                id: 'particle-jt-drop-select',
+                value: String(jtPressureDropAtm),
+                onChange: function (e) {
+                  var nextDrop = restoreOneOf(Number(e.target.value), JT_PRESSURE_DROPS_ATM, 20);
+                  setJtPressureDropAtm(nextDrop);
+                  persist({ jtPressureDropAtm: nextDrop });
+                },
+                className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+              }, JT_PRESSURE_DROPS_ATM.map(function (dp) { return h('option', { key: dp, value: String(dp) }, dp + ' atm valve drop'); })),
+              h('div', { className: 'mt-3 rounded-xl border border-slate-800 bg-slate-950 p-3 text-white' },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2 text-[10px] font-black uppercase tracking-wide text-cyan-300' },
+                  h('span', null, 'Joule-Thomson \u03BC_JT(T) Curve'),
+                  h('span', { className: 'font-mono text-emerald-300' }, 'T/Tc ' + liveJouleThomson.reducedT.toFixed(2))
+                ),
+                (function () {
+                  var pts = liveJouleThomson.curvePoints;
+                  var mus = pts.map(function (pt) { return pt.muJtKAtm; }).concat([liveJouleThomson.muJtKAtm, 0]);
+                  var minMu = Math.min.apply(Math, mus);
+                  var maxMu = Math.max.apply(Math, mus);
+                  var pad = Math.max(0.05, (maxMu - minMu) * 0.15);
+                  minMu -= pad;
+                  maxMu += pad;
+                  function mapJX(tk) { return clamp(26 + ((tk - 50) / 850) * 214, 26, 240); }
+                  function mapJY(mu) { return clamp(84 - ((mu - minMu) / Math.max(1e-6, maxMu - minMu)) * 64, 20, 84); }
+                  var zeroY = mapJY(0);
+                  var jtD = pts.map(function (pt, idx) { return (idx ? 'L' : 'M') + mapJX(pt.tempK).toFixed(1) + ',' + mapJY(pt.muJtKAtm).toFixed(1); }).join(' ');
+                  var liveX = mapJX(liveJouleThomson.temperature);
+                  var liveY = mapJY(liveJouleThomson.muJtKAtm);
+                  return h('svg', { id: 'particle-jt-svg', viewBox: '0 0 260 116', className: 'mt-2 w-full', role: 'img', 'aria-label': buildJouleThomsonSvgAriaLabel() },
+                    h('line', { x1: 26, y1: 18, x2: 26, y2: 86, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('line', { x1: 26, y1: zeroY.toFixed(1), x2: 242, y2: zeroY.toFixed(1), stroke: '#64748b', strokeWidth: 1, strokeDasharray: '3 3' }),
+                    h('path', { d: jtD, fill: 'none', stroke: '#38bdf8', strokeWidth: 2 }),
+                    h('circle', { cx: liveX.toFixed(1), cy: liveY.toFixed(1), r: 4.5, fill: '#fbbf24', stroke: '#020617', strokeWidth: 1.2 }),
+                    h('text', { x: 32, y: 15, fontSize: 8, fill: '#bae6fd' }, '\u03BC_JT > 0: cools | \u03BC_JT < 0: warms'),
+                    h('text', { x: 26, y: 103, fontSize: 8, fill: '#cbd5e1' }, '50 K'),
+                    h('text', { x: 242, y: 103, textAnchor: 'end', fontSize: 8, fill: '#fde68a' }, '900 K (T_inv=' + Math.round(liveJouleThomson.tInversionK) + 'K)')
+                  );
+                })(),
+                h('div', { className: 'mt-1.5 font-mono text-[11px] text-cyan-200' }, '2nd Virial B\u2082(T): ' + (liveJouleThomson.virialB2Cm3Mol >= 0 ? '+' : '') + liveJouleThomson.virialB2Cm3Mol.toFixed(1) + ' cm\u00B3/mol')
+              ),
+              h('div', { className: 'mt-3 grid grid-cols-2 gap-2' },
+                [
+                  ['Critical Tc / Pc', (liveJouleThomson.tCriticalK >= 100 ? Math.round(liveJouleThomson.tCriticalK) : liveJouleThomson.tCriticalK.toFixed(1)) + ' K / ' + liveJouleThomson.pCriticalAtm.toFixed(1) + ' atm'],
+                  ['Inversion T_inv', Math.round(liveJouleThomson.tInversionK) + ' K'],
+                  ['Coeff \u03BC_JT', (liveJouleThomson.muJtKAtm >= 0 ? '+' : '') + liveJouleThomson.muJtKAtm.toFixed(3) + ' K/atm'],
+                  ['Throttle \u0394T', (liveJouleThomson.deltaTThrottleK > 0 ? '+' : '') + liveJouleThomson.deltaTThrottleK.toFixed(1) + ' K (' + (liveJouleThomson.deltaTThrottleK < 0 ? 'Cool' : 'Heat') + ')']
+                ].map(function (item) {
+                  return h('div', { key: item[0], className: 'min-w-0 rounded-lg border border-slate-200 bg-white p-2.5' },
+                    h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-700' }, item[0]),
+                    h('div', { className: 'mt-0.5 font-mono text-xs font-black text-slate-950' }, item[1])
+                  );
+                })
+              ),
+              h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-700' },
+                'CO\u2082/N\u2082 cool below T_inv = 2a/(Rb), whereas He (T_inv \u2248 24 K) warms unless pre-cooled for liquefaction.'
+              ),
+              h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                h('button', { type: 'button', onClick: function () { stageJouleThomsonState('condense'); }, className: 'min-h-11 sm:min-h-9 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-900 hover:bg-slate-100' }, 'Stage Subcritical Drop'),
+                h('button', { type: 'button', onClick: function () { stageJouleThomsonState('supercritical'); }, className: 'min-h-11 sm:min-h-9 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-black text-white hover:bg-slate-800' }, 'Stage Supercritical Fluid')
+              )
+            ),
+            showWbCard('vacuum_effusion', 'stat_spectra') && h('div', { id: 'particle-effusion-card', className: 'min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                h('h4', { className: 'text-sm font-black text-slate-950' }, 'Vacuum Effusion & Micro-Thruster'),
+                h('span', { className: 'rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ' + (liveEffusion.flowRegime === 'molecular_effusion' ? 'border-emerald-200 bg-emerald-50 text-emerald-950' : (liveEffusion.flowRegime === 'transitional_effusion' ? 'border-amber-200 bg-amber-50 text-amber-950' : 'border-rose-200 bg-rose-50 text-rose-900')) }, liveEffusion.flowLabel)
+              ),
+              h('label', { htmlFor: 'particle-orifice-select', className: 'mt-2 block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Orifice / Nozzle d'),
+              h('select', {
+                id: 'particle-orifice-select',
+                value: String(orificeDiameterMm),
+                onChange: function (e) {
+                  var nextD = restoreOneOf(Number(e.target.value), ORIFICE_DIAMETERS_MM, 0.5);
+                  setOrificeDiameterMm(nextD);
+                  persist({ orificeDiameterMm: nextD });
+                },
+                className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+              }, ORIFICE_DIAMETERS_MM.map(function (mm) { return h('option', { key: mm, value: String(mm) }, mm + ' mm pinhole'); })),
+              h('div', { className: 'mt-3 rounded-xl border border-slate-800 bg-slate-950 p-3 text-white' },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2 text-[10px] font-black uppercase tracking-wide text-cyan-300' },
+                  h('span', null, 'Effusion Pump-Down (' + liveEffusion.gasA.formula + ' vs ' + liveEffusion.gasB.formula + ')'),
+                  h('span', { className: 'font-mono text-emerald-300' }, '\u03B1 ' + liveEffusion.separationFactorAB.toFixed(2) + 'x')
+                ),
+                (function () {
+                  var tauRatioAB = liveEffusion.pumpDownTauAS / Math.max(1e-6, liveEffusion.pumpDownTauBS);
+                  var ptsA = [];
+                  var ptsB = [];
+                  function mapEX(normT) { return 24 + (normT / 3) * 216; }
+                  function mapEY(frac) { return 84 - clamp(frac, 0, 1) * 64; }
+                  for (var ei = 0; ei <= 30; ei += 1) {
+                    var normT = (ei / 30) * 3;
+                    var pAFrac = Math.exp(-normT);
+                    var pBFrac = Math.exp(-normT * tauRatioAB);
+                    ptsA.push((ei ? 'L' : 'M') + mapEX(normT).toFixed(1) + ',' + mapEY(pAFrac).toFixed(1));
+                    ptsB.push((ei ? 'L' : 'M') + mapEX(normT).toFixed(1) + ',' + mapEY(pBFrac).toFixed(1));
+                  }
+                  return h('svg', { id: 'particle-effusion-svg', viewBox: '0 0 260 116', className: 'mt-2 w-full', role: 'img', 'aria-label': buildEffusionSvgAriaLabel() },
+                    h('line', { x1: 24, y1: 18, x2: 24, y2: 84, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('line', { x1: 24, y1: 84, x2: 242, y2: 84, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('path', { d: ptsB.join(' '), fill: 'none', stroke: '#fbbf24', strokeWidth: 1.5, strokeDasharray: '3 3' }),
+                    h('path', { d: ptsA.join(' '), fill: 'none', stroke: '#38bdf8', strokeWidth: 2 }),
+                    h('text', { x: 28, y: 15, fontSize: 8, fill: '#bae6fd' }, 'Solid: ' + liveEffusion.gasA.formula),
+                    h('text', { x: 240, y: 15, textAnchor: 'end', fontSize: 8, fill: '#fde68a' }, 'Dashed: ' + liveEffusion.gasB.formula),
+                    h('text', { x: 24, y: 103, fontSize: 8, fill: '#cbd5e1' }, 't = 0'),
+                    h('text', { x: 242, y: 103, textAnchor: 'end', fontSize: 8, fill: '#cbd5e1' }, 't = 3 \u03C4_A (' + liveEffusion.chamberVolumeL.toFixed(2) + ' L)')
+                  );
+                })(),
+                h('div', { className: 'mt-1.5 font-mono text-[11px] text-cyan-200' }, 'Conductance C_A: ' + (liveEffusion.conductanceALs >= 1 ? liveEffusion.conductanceALs.toFixed(2) : liveEffusion.conductanceALs.toFixed(3)) + ' L/s | v_ex ' + Math.round(liveEffusion.exhaustVelocityMs) + ' m/s')
+              ),
+              h('div', { className: 'mt-3 grid grid-cols-2 gap-2' },
+                [
+                  ['Orifice Kn_o', liveEffusion.orificeKnudsen >= 100 ? liveEffusion.orificeKnudsen.toExponential(1) : (liveEffusion.orificeKnudsen >= 0.01 ? liveEffusion.orificeKnudsen.toFixed(2) : liveEffusion.orificeKnudsen.toExponential(1))],
+                  ['Pump-Down \u03C4_A', liveEffusion.pumpDownTauAS >= 10 ? liveEffusion.pumpDownTauAS.toFixed(1) + ' s' : liveEffusion.pumpDownTauAS.toFixed(2) + ' s'],
+                  ['Enrichment \u03B1_AB', liveEffusion.separationFactorAB.toFixed(2) + 'x'],
+                  ['Thruster Isp / F', liveEffusion.specificImpulseS.toFixed(1) + ' s / ' + (liveEffusion.thrustMn >= 100 ? Math.round(liveEffusion.thrustMn) : liveEffusion.thrustMn.toFixed(2)) + ' mN']
+                ].map(function (item) {
+                  return h('div', { key: item[0], className: 'min-w-0 rounded-lg border border-slate-200 bg-white p-2.5' },
+                    h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-700' }, item[0]),
+                    h('div', { className: 'mt-0.5 font-mono text-xs font-black text-slate-950' }, item[1])
+                  );
+                })
+              ),
+              h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-700' },
+                'Molecular pinhole flux J = n\u00B7v_mean/4 separates isotopes by \u221A(M_B/M_A) and powers cold-gas spacecraft thrusters.'
+              ),
+              h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                h('button', { type: 'button', onClick: stageSelectiveEffusionChamber, className: 'min-h-11 sm:min-h-9 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-black text-white hover:bg-slate-800' }, 'Stage Selective Effusion')
+              )
+            )
+          ),
+          h('div', { className: 'particle-wb-pass mt-4 grid gap-4 lg:grid-cols-3' },
+            showWbCard('brownian_perrin', 'stat_spectra') && h('div', { id: 'particle-brownian-card', className: 'min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                h('h4', { className: 'text-sm font-black text-slate-950' }, 'Brownian Motion & Perrin Walk'),
+                h('span', { className: 'rounded-full border border-cyan-200 bg-cyan-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-cyan-950' }, liveBrownian.mediumLabel)
+              ),
+              h('div', { className: 'mt-2 grid grid-cols-2 gap-2' },
+                h('div', { className: 'min-w-0' },
+                  h('label', { htmlFor: 'particle-brownian-radius-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Bead Radius r'),
+                  h('select', {
+                    id: 'particle-brownian-radius-select',
+                    value: String(brownianBeadNm),
+                    onChange: function (e) {
+                      var nextR = restoreOneOf(Number(e.target.value), BROWNIAN_BEAD_RADII_NM, 250);
+                      setBrownianBeadNm(nextR);
+                      persist({ brownianBeadNm: nextR });
+                    },
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                  }, [
+                    ['50', '50 nm (Virion)'],
+                    ['250', '250 nm (Colloid)'],
+                    ['500', '500 nm (Bead)'],
+                    ['1000', '1000 nm (Micro)']
+                  ].map(function (opt) { return h('option', { key: opt[0], value: opt[0] }, opt[1]); }))
+                ),
+                h('div', { className: 'min-w-0' },
+                  h('label', { htmlFor: 'particle-brownian-medium-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Host Medium'),
+                  h('select', {
+                    id: 'particle-brownian-medium-select',
+                    value: brownianMedium,
+                    onChange: function (e) {
+                      var nextMed = restoreOneOf(e.target.value, BROWNIAN_MEDIA, 'water');
+                      setBrownianMedium(nextMed);
+                      persist({ brownianMedium: nextMed });
+                    },
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                  }, [
+                    ['water', 'Liquid Water'],
+                    ['cytosol', 'Cell Cytosol'],
+                    ['chamber_gas', 'Chamber Gas']
+                  ].map(function (opt) { return h('option', { key: opt[0], value: opt[0] }, opt[1]); }))
+                )
+              ),
+              h('div', { className: 'mt-3 rounded-xl border border-slate-800 bg-slate-950 p-3 text-white' },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2 text-[10px] font-black uppercase tracking-wide text-cyan-300' },
+                  h('span', null, '3D RMS Envelope r_rms(t)'),
+                  h('span', { className: 'font-mono text-emerald-300' }, 'C_c ' + liveBrownian.slipFactorCc.toFixed(2) + 'x')
+                ),
+                (function () {
+                  var dRefWater = 0.985;
+                  var rmsLiveMax = Math.sqrt(6 * liveBrownian.diffusivityUm2S * 2);
+                  var rmsRefMax = Math.sqrt(6 * dRefWater * 2);
+                  var yMax = Math.max(0.5, rmsLiveMax, rmsRefMax);
+                  var refPts = [];
+                  var livePts = [];
+                  function mapBX(sec) { return 26 + (sec / 2) * 214; }
+                  function mapBY(um) { return clamp(84 - (um / yMax) * 64, 20, 84); }
+                  for (var bi = 0; bi <= 24; bi += 1) {
+                    var sec = (bi / 24) * 2;
+                    refPts.push((bi ? 'L' : 'M') + mapBX(sec).toFixed(1) + ',' + mapBY(Math.sqrt(6 * dRefWater * sec)).toFixed(1));
+                    livePts.push((bi ? 'L' : 'M') + mapBX(sec).toFixed(1) + ',' + mapBY(Math.sqrt(6 * liveBrownian.diffusivityUm2S * sec)).toFixed(1));
+                  }
+                  return h('svg', { id: 'particle-brownian-svg', viewBox: '0 0 260 116', className: 'mt-2 w-full', role: 'img', 'aria-label': buildBrownianSvgAriaLabel() },
+                    h('line', { x1: 26, y1: 18, x2: 26, y2: 84, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('line', { x1: 26, y1: 84, x2: 242, y2: 84, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('path', { d: refPts.join(' '), fill: 'none', stroke: '#94a3b8', strokeWidth: 1.4, strokeDasharray: '3 3' }),
+                    h('path', { d: livePts.join(' '), fill: 'none', stroke: '#38bdf8', strokeWidth: 2 }),
+                    h('text', { x: 30, y: 15, fontSize: 8, fill: '#bae6fd' }, 'Solid: ' + liveBrownian.beadRadiusNm + ' nm'),
+                    h('text', { x: 240, y: 15, textAnchor: 'end', fontSize: 8, fill: '#cbd5e1' }, 'Dashed: 250 nm water'),
+                    h('text', { x: 26, y: 103, fontSize: 8, fill: '#cbd5e1' }, '0 s'),
+                    h('text', { x: 242, y: 103, textAnchor: 'end', fontSize: 8, fill: '#fde68a' }, 't = 2 s (r = \u221A6Dt)')
+                  );
+                })(),
+                h('div', { className: 'mt-1.5 font-mono text-[11px] text-cyan-200' }, 'Relaxation \u03C4_p: ' + (liveBrownian.relaxationTauNs >= 100 ? Math.round(liveBrownian.relaxationTauNs) : liveBrownian.relaxationTauNs.toFixed(1)) + ' ns | v_th ' + (liveBrownian.thermalSpeedMmS >= 100 ? Math.round(liveBrownian.thermalSpeedMmS) : liveBrownian.thermalSpeedMmS.toFixed(1)) + ' mm/s')
+              ),
+              h('div', { className: 'mt-3 grid grid-cols-2 gap-2' },
+                [
+                  ['Diffusivity D_SE', liveBrownian.diffusivityUm2S >= 100 ? Math.round(liveBrownian.diffusivityUm2S) + ' \u00B5m\u00B2/s' : liveBrownian.diffusivityUm2S.toFixed(2) + ' \u00B5m\u00B2/s'],
+                  ['1s RMS Walk', liveBrownian.rmsDisplacement1sUm >= 100 ? Math.round(liveBrownian.rmsDisplacement1sUm) + ' \u00B5m' : liveBrownian.rmsDisplacement1sUm.toFixed(2) + ' \u00B5m'],
+                  ['10 \u00B5m Cell Cross', liveBrownian.cellCrossing10UmS >= 100 ? Math.round(liveBrownian.cellCrossing10UmS) + ' s' : (liveBrownian.cellCrossing10UmS >= 1 ? liveBrownian.cellCrossing10UmS.toFixed(1) + ' s' : liveBrownian.cellCrossing10UmS.toFixed(3) + ' s')],
+                  ['Perrin Height z\u2080', liveBrownian.perrinScaleHeightUm >= 100 ? Math.round(liveBrownian.perrinScaleHeightUm) + ' \u00B5m' : (liveBrownian.perrinScaleHeightUm >= 1 ? liveBrownian.perrinScaleHeightUm.toFixed(1) + ' \u00B5m' : liveBrownian.perrinScaleHeightUm.toFixed(3) + ' \u00B5m')]
+                ].map(function (item) {
+                  return h('div', { key: item[0], className: 'min-w-0 rounded-lg border border-slate-200 bg-white p-2.5' },
+                    h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-700' }, item[0]),
+                    h('div', { className: 'mt-0.5 font-mono text-xs font-black text-slate-950' }, item[1])
+                  );
+                })
+              ),
+              h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-700' },
+                'Stokes-Einstein D = k_BT/(6\u03C0\u03B7r) connects thermal collisions to nanoscale transport and Perrin sedimentation equilibria.'
+              ),
+              h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                h('button', { type: 'button', onClick: stageBrownianTracerChamber, className: 'min-h-11 sm:min-h-9 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-black text-white hover:bg-slate-800' }, 'Stage Brownian Tracer')
+              )
+            ),
+            showWbCard('vant_hoff_osmosis', 'stat_spectra') && h('div', { id: 'particle-osmosis-biophysics-card', className: 'min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                h('h4', { className: 'text-sm font-black text-slate-950' }, 'Van \u2019t Hoff Osmosis & Tonicity'),
+                h('span', { className: 'rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ' + (liveOsmosisBio.tonicity === 'isotonic' ? 'border-emerald-200 bg-emerald-50 text-emerald-950' : (liveOsmosisBio.tonicity === 'hypotonic' ? 'border-cyan-200 bg-cyan-50 text-cyan-950' : 'border-amber-200 bg-amber-50 text-amber-950')) }, liveOsmosisBio.tonicityLabel)
+              ),
+              h('div', { className: 'mt-2 grid grid-cols-2 gap-2' },
+                h('div', { className: 'min-w-0' },
+                  h('label', { htmlFor: 'particle-osmotic-molarity-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Solute Molarity C'),
+                  h('select', {
+                    id: 'particle-osmotic-molarity-select',
+                    value: String(osmoticMolarityM),
+                    onChange: function (e) {
+                      var nextC = restoreOneOf(Number(e.target.value), OSMOTIC_SOLUTE_MOLARITIES, 0.15);
+                      setOsmoticMolarityM(nextC);
+                      persist({ osmoticMolarityM: nextC });
+                    },
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                  }, [
+                    ['0.05', '0.05 M (Hypo)'],
+                    ['0.15', '0.15 M (Saline)'],
+                    ['0.5', '0.50 M (Seawater)'],
+                    ['1.2', '1.20 M (Brine)']
+                  ].map(function (opt) { return h('option', { key: opt[0], value: opt[0] }, opt[1]); }))
+                ),
+                h('div', { className: 'min-w-0' },
+                  h('label', { htmlFor: 'particle-osmotic-i-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Van \u2019t Hoff Factor i'),
+                  h('select', {
+                    id: 'particle-osmotic-i-select',
+                    value: String(osmoticVanTHoffI),
+                    onChange: function (e) {
+                      var nextI = restoreOneOf(Number(e.target.value), OSMOTIC_VAN_T_HOFF_FACTORS, 2);
+                      setOsmoticVanTHoffI(nextI);
+                      persist({ osmoticVanTHoffI: nextI });
+                    },
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                  }, [
+                    ['1', 'i = 1 (Glucose)'],
+                    ['2', 'i = 2 (NaCl)'],
+                    ['3', 'i = 3 (CaCl\u2082)']
+                  ].map(function (opt) { return h('option', { key: opt[0], value: opt[0] }, opt[1]); }))
+                )
+              ),
+              h('div', { className: 'mt-3 rounded-xl border border-slate-800 bg-slate-950 p-3 text-white' },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2 text-[10px] font-black uppercase tracking-wide text-cyan-300' },
+                  h('span', null, 'Staverman \u03A0 = \u03C3 i M R T'),
+                  h('span', { className: 'font-mono text-emerald-300' }, Math.round(liveOsmosisBio.effectiveOsmolarityMOsm) + ' mOsm/L')
+                ),
+                (function () {
+                  var pts = liveOsmosisBio.curvePoints;
+                  var maxAtm = Math.max(10, pts[pts.length - 1].idealAtm, liveOsmosisBio.idealOsmoticAtm);
+                  var isotonicAtm = (0.3 * 8.314462618 * liveOsmosisBio.temperature) / 101325;
+                  function mapOX(cM) { return clamp(26 + (cM / 1.4) * 214, 26, 240); }
+                  function mapOY(atm) { return clamp(84 - (atm / maxAtm) * 64, 18, 84); }
+                  var idealD = pts.map(function (pt, idx) { return (idx ? 'L' : 'M') + mapOX(pt.molarityM).toFixed(1) + ',' + mapOY(pt.idealAtm).toFixed(1); }).join(' ');
+                  var effD = pts.map(function (pt, idx) { return (idx ? 'L' : 'M') + mapOX(pt.molarityM).toFixed(1) + ',' + mapOY(pt.effectiveAtm).toFixed(1); }).join(' ');
+                  var isoY = mapOY(isotonicAtm);
+                  var liveOX = mapOX(liveOsmosisBio.molarityM);
+                  var liveOY = mapOY(liveOsmosisBio.effectiveOsmoticAtm);
+                  return h('svg', { id: 'particle-osmosis-svg', viewBox: '0 0 260 116', className: 'mt-2 w-full', role: 'img', 'aria-label': buildOsmosisBioSvgAriaLabel() },
+                    h('line', { x1: 26, y1: 18, x2: 26, y2: 84, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('line', { x1: 26, y1: 84, x2: 242, y2: 84, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('line', { x1: 26, y1: isoY.toFixed(1), x2: 242, y2: isoY.toFixed(1), stroke: '#34d399', strokeWidth: 1, strokeDasharray: '2 2' }),
+                    h('path', { d: idealD, fill: 'none', stroke: '#94a3b8', strokeWidth: 1.4, strokeDasharray: '3 3' }),
+                    h('path', { d: effD, fill: 'none', stroke: '#38bdf8', strokeWidth: 2 }),
+                    h('circle', { cx: liveOX.toFixed(1), cy: liveOY.toFixed(1), r: 4.5, fill: '#fbbf24', stroke: '#020617', strokeWidth: 1.2 }),
+                    h('text', { x: 30, y: 15, fontSize: 8, fill: '#bae6fd' }, 'Solid: \u03A0_eff (\u03C3=' + liveOsmosisBio.reflectionSigma.toFixed(2) + ')'),
+                    h('text', { x: 240, y: 15, textAnchor: 'end', fontSize: 8, fill: '#6ee7b7' }, 'Isotonic 300 mOsm'),
+                    h('text', { x: 26, y: 103, fontSize: 8, fill: '#cbd5e1' }, '0 M'),
+                    h('text', { x: 242, y: 103, textAnchor: 'end', fontSize: 8, fill: '#fde68a' }, '1.4 M (Live \u03A0=' + liveOsmosisBio.effectiveOsmoticAtm.toFixed(1) + ' atm)')
+                  );
+                })(),
+                h('div', { className: 'mt-1.5 font-mono text-[11px] text-cyan-200' }, 'Ideal \u03A0_0: ' + liveOsmosisBio.idealOsmoticAtm.toFixed(2) + ' atm (' + Math.round(liveOsmosisBio.idealOsmoticPa / 1000) + ' kPa)')
+              ),
+              h('div', { className: 'mt-3 grid grid-cols-2 gap-2' },
+                [
+                  ['Effective \u03A0_eff', liveOsmosisBio.effectiveOsmoticAtm.toFixed(2) + ' atm'],
+                  ['Reflection \u03C3', liveOsmosisBio.reflectionSigma.toFixed(2)],
+                  ['Osmotic Head h', liveOsmosisBio.waterColumnHeightM >= 100 ? Math.round(liveOsmosisBio.waterColumnHeightM) + ' m' : liveOsmosisBio.waterColumnHeightM.toFixed(1) + ' m'],
+                  ['RO Min Energy', liveOsmosisBio.roMinEnergyKwhM3.toFixed(2) + ' kWh/m\u00B3']
+                ].map(function (item) {
+                  return h('div', { key: item[0], className: 'min-w-0 rounded-lg border border-slate-200 bg-white p-2.5' },
+                    h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-700' }, item[0]),
+                    h('div', { className: 'mt-0.5 font-mono text-xs font-black text-slate-950' }, item[1])
+                  );
+                })
+              ),
+              h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-700' },
+                'Membrane permeability to solute drops Staverman reflection \u03C3 below 1, reducing sustained osmotic head.'
+              ),
+              h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                h('button', { type: 'button', onClick: function () { stageOsmoticBiophysicsChamber('ideal_semi'); }, className: 'min-h-11 sm:min-h-9 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-900 hover:bg-slate-100' }, 'Stage Ideal Osmosis'),
+                h('button', { type: 'button', onClick: function () { stageOsmoticBiophysicsChamber('leaky_pore'); }, className: 'min-h-11 sm:min-h-9 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-black text-white hover:bg-slate-800' }, 'Stage Leaky Membrane')
+              )
+            ),
+            showWbCard('paschen_plasma', 'stat_spectra') && h('div', { id: 'particle-plasma-card', className: 'min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                h('h4', { className: 'text-sm font-black text-slate-950' }, 'Paschen Breakdown & Glow Plasma'),
+                h('span', { className: 'rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ' + (livePlasma.regime === 'glow_plasma' ? 'border-emerald-200 bg-emerald-50 text-emerald-950' : (livePlasma.regime === 'vacuum_standoff' ? 'border-cyan-200 bg-cyan-50 text-cyan-950' : 'border-amber-200 bg-amber-50 text-amber-950')) }, livePlasma.regimeLabel)
+              ),
+              h('div', { className: 'mt-2 grid grid-cols-2 gap-2' },
+                h('div', { className: 'min-w-0' },
+                  h('label', { htmlFor: 'particle-electrode-gap-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Electrode Gap d'),
+                  h('select', {
+                    id: 'particle-electrode-gap-select',
+                    value: String(electrodeGapCm),
+                    onChange: function (e) {
+                      var nextGap = restoreOneOf(Number(e.target.value), ELECTRODE_GAPS_CM, 1);
+                      setElectrodeGapCm(nextGap);
+                      persist({ electrodeGapCm: nextGap });
+                    },
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                  }, ELECTRODE_GAPS_CM.map(function (cm) { return h('option', { key: cm, value: String(cm) }, cm + ' cm gap'); }))
+                ),
+                h('div', { className: 'min-w-0' },
+                  h('label', { htmlFor: 'particle-discharge-voltage-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Applied Voltage'),
+                  h('select', {
+                    id: 'particle-discharge-voltage-select',
+                    value: String(appliedVoltageV),
+                    onChange: function (e) {
+                      var nextV = restoreOneOf(Number(e.target.value), DISCHARGE_VOLTAGES_V, 1000);
+                      setAppliedVoltageV(nextV);
+                      persist({ appliedVoltageV: nextV });
+                    },
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                  }, DISCHARGE_VOLTAGES_V.map(function (v) { return h('option', { key: v, value: String(v) }, v + ' V'); }))
+                )
+              ),
+              h('div', { className: 'mt-3 rounded-xl border border-slate-800 bg-slate-950 p-3 text-white' },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2 text-[10px] font-black uppercase tracking-wide text-cyan-300' },
+                  h('span', null, 'Paschen Curve V_B(p d) (' + livePlasma.gas.formula + ')'),
+                  h('span', { className: 'font-mono text-emerald-300' }, 'E_ion ' + livePlasma.ionEv.toFixed(1) + ' eV')
+                ),
+                (function () {
+                  var pts = livePlasma.curvePoints;
+                  var logPdMin = Math.log10(0.2);
+                  var logPdMax = 3;
+                  var logVMin = 2;
+                  var logVMax = 5;
+                  function mapPX(pd) {
+                    var lp = clamp(Math.log10(Math.max(1e-4, pd)), logPdMin, logPdMax);
+                    return 26 + ((lp - logPdMin) / (logPdMax - logPdMin)) * 214;
+                  }
+                  function mapPY(volts) {
+                    var lv = clamp(Math.log10(Math.max(10, volts)), logVMin, logVMax);
+                    return 84 - ((lv - logVMin) / (logVMax - logVMin)) * 64;
+                  }
+                  var paschenD = pts.map(function (pt, idx) { return (idx ? 'L' : 'M') + mapPX(pt.pdTorrCm).toFixed(1) + ',' + mapPY(pt.breakdownV).toFixed(1); }).join(' ');
+                  var livePX = mapPX(livePlasma.pdEffTorrCm);
+                  var livePY = mapPY(livePlasma.appliedVoltageV);
+                  var dotFill = livePlasma.ignited ? '#34d399' : '#fbbf24';
+                  return h('svg', { id: 'particle-plasma-svg', viewBox: '0 0 260 116', className: 'mt-2 w-full', role: 'img', 'aria-label': buildPlasmaSvgAriaLabel() },
+                    h('line', { x1: 26, y1: 18, x2: 26, y2: 84, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('line', { x1: 26, y1: 84, x2: 242, y2: 84, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('path', { d: paschenD, fill: 'none', stroke: '#38bdf8', strokeWidth: 2 }),
+                    h('circle', { cx: livePX.toFixed(1), cy: livePY.toFixed(1), r: 4.5, fill: dotFill, stroke: '#020617', strokeWidth: 1.2 }),
+                    h('text', { x: 30, y: 15, fontSize: 8, fill: '#bae6fd' }, 'V_min ' + Math.round(livePlasma.vMinV) + 'V @ ' + livePlasma.pdMinTorrCm.toFixed(2) + ' Torr\u00B7cm'),
+                    h('text', { x: 26, y: 103, fontSize: 8, fill: '#cbd5e1' }, '0.2'),
+                    h('text', { x: 242, y: 103, textAnchor: 'end', fontSize: 8, fill: '#fde68a' }, 'pd = ' + (livePlasma.pdEffTorrCm >= 100 ? Math.round(livePlasma.pdEffTorrCm) : livePlasma.pdEffTorrCm.toFixed(2)) + ' Torr\u00B7cm (10^3)')
+                  );
+                })(),
+                h('div', { className: 'mt-1.5 font-mono text-[11px] text-cyan-200' }, 'Live pd: ' + (livePlasma.pdEffTorrCm >= 100 ? Math.round(livePlasma.pdEffTorrCm) : livePlasma.pdEffTorrCm.toFixed(2)) + ' Torr\u00B7cm | n_e ' + livePlasma.electronDensityM3.toExponential(1) + '/m\u00B3')
+              ),
+              h('div', { className: 'mt-3 grid grid-cols-2 gap-2' },
+                [
+                  ['Breakdown V_B', livePlasma.vacuumQuenched ? 'Vacuum >99 kV' : (livePlasma.breakdownVoltageV >= 1000 ? (livePlasma.breakdownVoltageV / 1000).toFixed(1) + ' kV' : Math.round(livePlasma.breakdownVoltageV) + ' V')],
+                  ['Paschen V_min', Math.round(livePlasma.vMinV) + ' V'],
+                  ['Debye \u03BB_D', livePlasma.debyeLengthUm >= 100 ? Math.round(livePlasma.debyeLengthUm) + ' \u00B5m' : livePlasma.debyeLengthUm.toFixed(1) + ' \u00B5m'],
+                  ['Plasma f_pe / E/N', livePlasma.plasmaFreqGhz.toFixed(2) + ' GHz / ' + (livePlasma.reducedFieldTd >= 100 ? Math.round(livePlasma.reducedFieldTd) : livePlasma.reducedFieldTd.toFixed(1)) + ' Td']
+                ].map(function (item) {
+                  return h('div', { key: item[0], className: 'min-w-0 rounded-lg border border-slate-200 bg-white p-2.5' },
+                    h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-700' }, item[0]),
+                    h('div', { className: 'mt-0.5 font-mono text-xs font-black text-slate-950' }, item[1])
+                  );
+                })
+              ),
+              h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-700' },
+                'Too dense shortens mean free path; too sparse starves ionizing collisions, creating Paschen\u2019s V-shaped breakdown curve.'
+              ),
+              h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                h('button', { type: 'button', onClick: function () { stagePlasmaDischargePreset('neon_glow'); }, className: 'min-h-11 sm:min-h-9 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-900 hover:bg-slate-100' }, 'Stage Neon Glow Tube'),
+                h('button', { type: 'button', onClick: function () { stagePlasmaDischargePreset('argon_arc'); }, className: 'min-h-11 sm:min-h-9 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-black text-white hover:bg-slate-800' }, 'Stage Argon Arc')
+              )
+            )
+          )
+        ),
+        showWbGroup('matter_frontier') && h('div', { id: 'particle-workbench-group-matter-frontier', className: 'particle-wb-pass min-w-0' },
+          h('div', { className: 'particle-wb-pass mt-4 grid gap-4 border-t border-slate-200 pt-4 lg:grid-cols-3' },
+            showWbCard('debye_lindemann', 'matter_frontier') && h('div', { id: 'particle-lattice-solid-card', className: 'min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                h('div', { className: 'min-w-0' },
+                  h('p', { className: 'text-[10px] font-black uppercase tracking-wide text-cyan-900' }, 'Solid-State Phonons & Melting'),
+                  h('h4', { className: 'text-sm font-black text-slate-950' }, 'Debye Heat Capacity & Lindemann Limit')
+                ),
+                h('span', {
+                  className: 'rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ' + (
+                    liveLattice.regime === 'molten_fluid'
+                      ? 'border-rose-200 bg-rose-50 text-rose-900'
+                      : (liveLattice.regime === 'anharmonic_pre_melt'
+                        ? 'border-amber-200 bg-amber-50 text-amber-950'
+                        : (liveLattice.regime === 'quantum_frozen' ? 'border-cyan-200 bg-cyan-50 text-cyan-950' : 'border-emerald-200 bg-emerald-50 text-emerald-950'))
+                  )
+                }, liveLattice.regimeLabel)
+              ),
+              h('div', { className: 'mt-2 min-w-0' },
+                h('label', { htmlFor: 'particle-crystal-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Crystal Lattice'),
+                h('select', {
+                  id: 'particle-crystal-select',
+                  value: solidCrystalId,
+                  onChange: function (e) {
+                    var nextCrystal = restoreOneOf(e.target.value, SOLID_CRYSTAL_IDS, 'Cu');
+                    setSolidCrystalId(nextCrystal);
+                    persist({ solidCrystalId: nextCrystal });
+                  },
+                  className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                }, SOLID_CRYSTAL_IDS.map(function (cid) {
+                  var cSpec = SOLID_CRYSTAL_SPECS[cid];
+                  return h('option', { key: cid, value: cid }, cSpec.label + ' (\u0398_D=' + cSpec.debyeTempK + ' K)');
+                }))
+              ),
+              h('div', { className: 'mt-3 rounded-xl border border-slate-800 bg-slate-950 p-3 text-white' },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2 text-[10px] font-black uppercase tracking-wide text-cyan-300' },
+                  h('span', null, 'Debye C_V(T / \u0398_D)'),
+                  h('span', { className: 'font-mono text-emerald-300' }, liveLattice.crystal.formula + ' | ' + Math.round(liveLattice.temperature) + ' K')
+                ),
+                (function () {
+                  var pts = liveLattice.curvePoints;
+                  function mapLX(tempK) { return clamp(26 + ((tempK - 20) / 1180) * 214, 26, 240); }
+                  function mapLY(frac) { return clamp(84 - frac * 62, 22, 84); }
+                  var curveD = pts.map(function (pt, idx) {
+                    return (idx ? 'L' : 'M') + mapLX(pt.temperatureK).toFixed(1) + ',' + mapLY(pt.cvFraction).toFixed(1);
+                  }).join(' ');
+                  var liveLX = mapLX(liveLattice.temperature);
+                  var liveLY = mapLY(liveLattice.cvFraction);
+                  var debyeX = liveLattice.debyeTempK <= 1200 ? mapLX(liveLattice.debyeTempK) : null;
+                  var dotColor = liveLattice.melted ? '#fb7185' : '#fbbf24';
+                  return h('svg', { id: 'particle-lattice-svg', viewBox: '0 0 260 116', className: 'mt-2 w-full', role: 'img', 'aria-label': buildLatticeSvgAriaLabel() },
+                    h('line', { x1: 26, y1: 20, x2: 26, y2: 84, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('line', { x1: 26, y1: 84, x2: 242, y2: 84, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('line', { x1: 26, y1: 22, x2: 242, y2: 22, stroke: '#34d399', strokeWidth: 1, strokeDasharray: '2 2' }),
+                    debyeX !== null && h('line', { x1: debyeX.toFixed(1), y1: 22, x2: debyeX.toFixed(1), y2: 84, stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '3 3' }),
+                    h('path', { d: curveD, fill: 'none', stroke: '#38bdf8', strokeWidth: 2 }),
+                    h('circle', { cx: liveLX.toFixed(1), cy: liveLY.toFixed(1), r: 4.5, fill: dotColor, stroke: '#020617', strokeWidth: 1.2 }),
+                    h('text', { x: 30, y: 15, fontSize: 8, fill: '#6ee7b7' }, '3R Dulong-Petit (24.94 J/mol\u00B7K)'),
+                    h('text', { x: 26, y: 103, fontSize: 8, fill: '#cbd5e1' }, '20 K'),
+                    h('text', { x: 242, y: 103, textAnchor: 'end', fontSize: 8, fill: '#fde68a' }, '1200 K (Live ' + Math.round(liveLattice.cvFraction * 100) + '%)')
+                  );
+                })(),
+                h('div', { className: 'mt-1.5 font-mono text-[11px] text-cyan-200' }, 'u_rms: ' + liveLattice.rmsDisplacementPm.toFixed(1) + ' pm | T_m = ' + Math.round(liveLattice.meltingTempK) + ' K')
+              ),
+              h('div', { className: 'mt-3 grid grid-cols-2 gap-2' },
+                [
+                  ['C_V,m (Debye)', liveLattice.cvMolarJMK.toFixed(1) + ' J/(mol\u00B7K)'],
+                  ['Dulong-Petit %', Math.round(liveLattice.cvFraction * 100) + '% of 3R'],
+                  ['Lindemann \u03B4_L / u_rms', (liveLattice.lindemannRatio * 100).toFixed(1) + '% / ' + liveLattice.rmsDisplacementPm.toFixed(1) + ' pm'],
+                  ['Debye \u0398_D / T_m', liveLattice.debyeTempK + ' K / ' + Math.round(liveLattice.meltingTempK) + ' K']
+                ].map(function (item) {
+                  return h('div', { key: item[0], className: 'min-w-0 rounded-lg border border-slate-200 bg-white p-2.5' },
+                    h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-700' }, item[0]),
+                    h('div', { className: 'mt-0.5 font-mono text-xs font-black text-slate-950' }, item[1])
+                  );
+                })
+              ),
+              h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-700' },
+                'Phonon freeze-out drops C_V as T\u00B3 below \u0398_D; melting begins once thermal RMS amplitude exceeds ~12% of bond spacing.'
+              ),
+              h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                h('button', { type: 'button', onClick: function () { stageLatticeSolidPreset('quantum_cold'); }, className: 'min-h-11 sm:min-h-9 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-900 hover:bg-slate-100' }, 'Stage Cold Diamond (120 K)'),
+                h('button', { type: 'button', onClick: function () { stageLatticeSolidPreset('cu_pre_melt'); }, className: 'min-h-11 sm:min-h-9 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-black text-white hover:bg-slate-800' }, 'Stage Pre-Melt Copper')
+              )
+            ),
+            showWbCard('clausius_clapeyron', 'matter_frontier') && h('div', { id: 'particle-vapor-equilibrium-card', className: 'min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                h('div', { className: 'min-w-0' },
+                  h('p', { className: 'text-[10px] font-black uppercase tracking-wide text-cyan-900' }, 'Phase Coexistence & Psychrometrics'),
+                  h('h4', { className: 'text-sm font-black text-slate-950' }, 'Clausius\u2013Clapeyron Vapor & Dew Point')
+                ),
+                h('span', {
+                  className: 'rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ' + (
+                    liveVapor.regime === 'supercritical_fluid'
+                      ? 'border-rose-200 bg-rose-50 text-rose-900'
+                      : (liveVapor.regime === 'subcooled_liquid' ? 'border-cyan-200 bg-cyan-50 text-cyan-950' : 'border-amber-200 bg-amber-50 text-amber-950')
+                  )
+                }, liveVapor.regimeLabel)
+              ),
+              h('div', { className: 'mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2' },
+                h('div', { className: 'min-w-0' },
+                  h('label', { htmlFor: 'particle-liquid-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Volatile Liquid'),
+                  h('select', {
+                    id: 'particle-liquid-select',
+                    value: volatileLiquidId,
+                    onChange: function (e) {
+                      var nextLiquid = restoreOneOf(e.target.value, VOLATILE_LIQUID_IDS, 'water');
+                      setVolatileLiquidId(nextLiquid);
+                      persist({ volatileLiquidId: nextLiquid });
+                    },
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                  }, VOLATILE_LIQUID_IDS.map(function (lid) {
+                    var lSpec = VOLATILE_LIQUID_SPECS[lid];
+                    return h('option', { key: lid, value: lid }, lSpec.label + ' (' + lSpec.normalBoilK.toFixed(0) + ' K)');
+                  }))
+                ),
+                h('div', { className: 'min-w-0' },
+                  h('label', { htmlFor: 'particle-humidity-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Relative Humidity'),
+                  h('select', {
+                    id: 'particle-humidity-select',
+                    value: String(relativeHumidityPct),
+                    onChange: function (e) {
+                      var nextRh = restoreOneOf(Number(e.target.value), RELATIVE_HUMIDITY_OPTIONS, 50);
+                      setRelativeHumidityPct(nextRh);
+                      persist({ relativeHumidityPct: nextRh });
+                    },
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                  }, RELATIVE_HUMIDITY_OPTIONS.map(function (rh) {
+                    return h('option', { key: rh, value: String(rh) }, rh + '% RH');
+                  }))
+                )
+              ),
+              h('div', { className: 'mt-3 rounded-xl border border-slate-800 bg-slate-950 p-3 text-white' },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2 text-[10px] font-black uppercase tracking-wide text-cyan-300' },
+                  h('span', null, 'P_sat(T) vs P_amb (' + liveVapor.liquid.formula + ')'),
+                  h('span', { className: 'font-mono text-emerald-300' }, 'P_amb ' + liveVapor.ambientPressureAtm.toFixed(2) + ' atm')
+                ),
+                (function () {
+                  var pts = liveVapor.curvePoints;
+                  var tFirst = pts[0].temperatureK;
+                  var tLast = pts[pts.length - 1].temperatureK;
+                  var tSpan = Math.max(10, tLast - tFirst);
+                  var logPMin = -3;
+                  var logPMax = 2;
+                  function mapVX(tempK) { return clamp(26 + ((tempK - tFirst) / tSpan) * 214, 26, 240); }
+                  function mapVY(atm) {
+                    var lp = clamp(Math.log10(Math.max(1e-4, atm)), logPMin, logPMax);
+                    return clamp(84 - ((lp - logPMin) / (logPMax - logPMin)) * 62, 22, 84);
+                  }
+                  var satD = pts.map(function (pt, idx) {
+                    return (idx ? 'L' : 'M') + mapVX(pt.temperatureK).toFixed(1) + ',' + mapVY(pt.pSatAtm).toFixed(1);
+                  }).join(' ');
+                  var pAmbY = mapVY(liveVapor.ambientPressureAtm);
+                  var liveVX = mapVX(liveVapor.temperature);
+                  var liveVY = mapVY(liveVapor.pSatAtm);
+                  var dotFill = liveVapor.pSatAtm >= liveVapor.ambientPressureAtm ? '#fbbf24' : '#34d399';
+                  return h('svg', { id: 'particle-vapor-svg', viewBox: '0 0 260 116', className: 'mt-2 w-full', role: 'img', 'aria-label': buildVaporSvgAriaLabel() },
+                    h('line', { x1: 26, y1: 20, x2: 26, y2: 84, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('line', { x1: 26, y1: 84, x2: 242, y2: 84, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('line', { x1: 26, y1: pAmbY.toFixed(1), x2: 242, y2: pAmbY.toFixed(1), stroke: '#fbbf24', strokeWidth: 1, strokeDasharray: '2 2' }),
+                    h('path', { d: satD, fill: 'none', stroke: '#38bdf8', strokeWidth: 2 }),
+                    h('circle', { cx: liveVX.toFixed(1), cy: liveVY.toFixed(1), r: 4.5, fill: dotFill, stroke: '#020617', strokeWidth: 1.2 }),
+                    h('text', { x: 30, y: 15, fontSize: 8, fill: '#bae6fd' }, 'Solid: P_sat(T) | Dash: P_amb=' + liveVapor.ambientPressureAtm.toFixed(2) + ' atm'),
+                    h('text', { x: 26, y: 103, fontSize: 8, fill: '#cbd5e1' }, Math.round(tFirst) + ' K'),
+                    h('text', { x: 242, y: 103, textAnchor: 'end', fontSize: 8, fill: '#fde68a' }, Math.round(tLast) + ' K (T_boil=' + liveVapor.boilingPointK.toFixed(0) + ' K)')
+                  );
+                })(),
+                h('div', { className: 'mt-1.5 font-mono text-[11px] text-cyan-200' }, 'P_vapor: ' + (liveVapor.partialVaporAtm * 101.325).toFixed(2) + ' kPa | RH=' + liveVapor.relativeHumidityPct + '%')
+              ),
+              h('div', { className: 'mt-3 grid grid-cols-2 gap-2' },
+                [
+                  ['Sat. P_sat', liveVapor.pSatKpa >= 1000 ? (liveVapor.pSatKpa / 1000).toFixed(2) + ' MPa' : (liveVapor.pSatKpa >= 10 ? liveVapor.pSatKpa.toFixed(1) + ' kPa' : liveVapor.pSatKpa.toFixed(2) + ' kPa')],
+                  ['Boil T_boil(P)', liveVapor.boilingPointK.toFixed(1) + ' K'],
+                  ['Dew Point T_dew', liveVapor.dewPointK.toFixed(1) + ' K'],
+                  ['Latent \u0394H_vap', liveVapor.liquid.enthalpyVapKjMol.toFixed(1) + ' kJ/mol']
+                ].map(function (item) {
+                  return h('div', { key: item[0], className: 'min-w-0 rounded-lg border border-slate-200 bg-white p-2.5' },
+                    h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-700' }, item[0]),
+                    h('div', { className: 'mt-0.5 font-mono text-xs font-black text-slate-950' }, item[1])
+                  );
+                })
+              ),
+              h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-700' },
+                'Lowering ambient pressure drops the boiling threshold T_boil(P); cooling humid vapor to T_dew saturates at 100% RH.'
+              ),
+              h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                h('button', { type: 'button', onClick: function () { stageVaporEquilibriumPreset('water_simmer'); }, className: 'min-h-11 sm:min-h-9 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-900 hover:bg-slate-100' }, 'Stage Simmering Water'),
+                h('button', { type: 'button', onClick: function () { stageVaporEquilibriumPreset('vacuum_flash_boil'); }, className: 'min-h-11 sm:min-h-9 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-black text-white hover:bg-slate-800' }, 'Stage Vacuum Flash Boil')
+              )
+            ),
+            showWbCard('tyndall_greenhouse', 'matter_frontier') && h('div', { id: 'particle-greenhouse-ir-card', className: 'min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                h('div', { className: 'min-w-0' },
+                  h('p', { className: 'text-[10px] font-black uppercase tracking-wide text-cyan-900' }, 'Molecular Vibrations & Climate'),
+                  h('h4', { className: 'text-sm font-black text-slate-950' }, 'Tyndall IR Modes & Greenhouse Forcing')
+                ),
+                h('span', {
+                  className: 'rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ' + (
+                    liveGreenhouse.regime === 'ir_transparent'
+                      ? 'border-slate-300 bg-white text-slate-900'
+                      : (liveGreenhouse.regime === 'potent_greenhouse' ? 'border-amber-200 bg-amber-50 text-amber-950' : 'border-emerald-200 bg-emerald-50 text-emerald-950')
+                  )
+                }, liveGreenhouse.regimeLabel)
+              ),
+              h('div', { className: 'mt-2 min-w-0' },
+                h('label', { htmlFor: 'particle-co2-ppm-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Atmospheric CO\u2082 Reference (ppm)'),
+                h('select', {
+                  id: 'particle-co2-ppm-select',
+                  value: String(co2MixingPpm),
+                  onChange: function (e) {
+                    var nextPpm = restoreOneOf(Number(e.target.value), CO2_MIXING_PPM_OPTIONS, 425);
+                    setCo2MixingPpm(nextPpm);
+                    persist({ co2MixingPpm: nextPpm });
+                  },
+                  className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                }, CO2_MIXING_PPM_OPTIONS.map(function (ppm) {
+                  var tag = ppm === 280 ? ' (Pre-industrial)' : (ppm === 425 ? ' (Modern)' : (ppm === 560 ? ' (2x CO\u2082)' : ' (3x CO\u2082)'));
+                  return h('option', { key: ppm, value: String(ppm) }, ppm + ' ppm' + tag);
+                }))
+              ),
+              h('div', { className: 'mt-3 rounded-xl border border-slate-800 bg-slate-950 p-3 text-white' },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2 text-[10px] font-black uppercase tracking-wide text-cyan-300' },
+                  h('span', null, 'IPCC \u0394F = 5.35 ln(C / 280)'),
+                  h('span', { className: 'font-mono text-emerald-300' }, liveGreenhouse.gas.formula + ' | ' + liveGreenhouse.irActiveModes + '/' + liveGreenhouse.totalModes + ' IR')
+                ),
+                (function () {
+                  var pts = liveGreenhouse.curvePoints;
+                  var maxF = 5.35 * Math.log(900 / 280);
+                  var f2x = 5.35 * Math.log(2);
+                  function mapGX(ppm) { return clamp(26 + ((ppm - 280) / 620) * 214, 26, 240); }
+                  function mapGY(forcing) { return clamp(84 - (clamp(forcing, 0, maxF) / maxF) * 62, 22, 84); }
+                  var irD = pts.map(function (pt, idx) {
+                    return (idx ? 'L' : 'M') + mapGX(pt.co2Ppm).toFixed(1) + ',' + mapGY(pt.forcingWm2).toFixed(1);
+                  }).join(' ');
+                  var y2x = mapGY(f2x);
+                  var liveGX = mapGX(liveGreenhouse.co2Ppm);
+                  var liveGY = mapGY(liveGreenhouse.forcingWm2);
+                  return h('svg', { id: 'particle-greenhouse-svg', viewBox: '0 0 260 116', className: 'mt-2 w-full', role: 'img', 'aria-label': buildGreenhouseSvgAriaLabel() },
+                    h('line', { x1: 26, y1: 20, x2: 26, y2: 84, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('line', { x1: 26, y1: 84, x2: 242, y2: 84, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('line', { x1: 26, y1: y2x.toFixed(1), x2: 242, y2: y2x.toFixed(1), stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '2 2' }),
+                    h('path', { d: irD, fill: 'none', stroke: '#34d399', strokeWidth: 2 }),
+                    h('circle', { cx: liveGX.toFixed(1), cy: liveGY.toFixed(1), r: 4.5, fill: liveGreenhouse.irActive ? '#fbbf24' : '#94a3b8', stroke: '#020617', strokeWidth: 1.2 }),
+                    h('text', { x: 30, y: 15, fontSize: 8, fill: '#6ee7b7' }, '2x CO\u2082: +' + f2x.toFixed(2) + ' W/m\u00B2 (+3.0 K ECS)'),
+                    h('text', { x: 26, y: 103, fontSize: 8, fill: '#cbd5e1' }, '280 ppm'),
+                    h('text', { x: 242, y: 103, textAnchor: 'end', fontSize: 8, fill: '#fde68a' }, '900 ppm (Live ' + liveGreenhouse.co2Ppm + ' ppm)')
+                  );
+                })(),
+                h('div', { className: 'mt-1.5 font-mono text-[11px] text-cyan-200' }, liveGreenhouse.bandLabel)
+              ),
+              h('div', { className: 'mt-3 grid grid-cols-2 gap-2' },
+                [
+                  ['IR Active Modes', liveGreenhouse.irActiveModes + ' / ' + liveGreenhouse.totalModes],
+                  ['8 cm Cell Absorb.', liveGreenhouse.tyndallAbsorbancePct.toFixed(1) + '%'],
+                  ['CO\u2082 Forcing \u0394F', '+' + liveGreenhouse.forcingWm2.toFixed(2) + ' W/m\u00B2'],
+                  ['Eq. Warming \u0394T_eq', '+' + liveGreenhouse.eqWarmingK.toFixed(2) + ' K']
+                ].map(function (item) {
+                  return h('div', { key: item[0], className: 'min-w-0 rounded-lg border border-slate-200 bg-white p-2.5' },
+                    h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-700' }, item[0]),
+                    h('div', { className: 'mt-0.5 font-mono text-xs font-black text-slate-950' }, item[1])
+                  );
+                })
+              ),
+              h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-700' },
+                'Monatomic and homonuclear gases (N\u2082, O\u2082) have zero dipole change (\u0394\u03BC=0), whereas asymmetric modes in CO\u2082 and CH\u2084 trap outgoing thermal IR.'
+              ),
+              h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                h('button', { type: 'button', onClick: function () { stageGreenhouseIrPreset('dry_n2_transparent'); }, className: 'min-h-11 sm:min-h-9 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-900 hover:bg-slate-100' }, 'Stage Transparent N2'),
+                h('button', { type: 'button', onClick: function () { stageGreenhouseIrPreset('doubled_co2_absorber'); }, className: 'min-h-11 sm:min-h-9 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-black text-white hover:bg-slate-800' }, 'Stage 2x CO2 Absorber')
+              )
+            )
+          ),
+          h('div', { className: 'particle-wb-pass mt-4 grid gap-4 border-t border-slate-200 pt-4 lg:grid-cols-3' },
+            showWbCard('rankine_hugoniot', 'matter_frontier') && h('div', { id: 'particle-shock-aero-card', className: 'min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                h('div', { className: 'min-w-0' },
+                  h('p', { className: 'text-[10px] font-black uppercase tracking-wide text-cyan-900' }, 'Compressible Flow & Aerothermodynamics'),
+                  h('h4', { className: 'text-sm font-black text-slate-950' }, 'Rankine\u2013Hugoniot Shock & Stagnation')
+                ),
+                h('span', {
+                  className: 'rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ' + (
+                    liveShockAero.regime === 'hypersonic_bow_shock'
+                      ? 'border-rose-200 bg-rose-50 text-rose-900'
+                      : (liveShockAero.regime === 'subsonic_isentropic' ? 'border-cyan-200 bg-cyan-50 text-cyan-950' : 'border-amber-200 bg-amber-50 text-amber-950')
+                  )
+                }, liveShockAero.regimeLabel)
+              ),
+              h('div', { className: 'mt-2 min-w-0' },
+                h('label', { htmlFor: 'particle-shock-mach-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Freestream Mach M\u2081 (' + liveShockAero.gas.formula + ', \u03B3=' + liveShockAero.gamma.toFixed(2) + ')'),
+                h('select', {
+                  id: 'particle-shock-mach-select',
+                  value: String(shockMachNumber),
+                  onChange: function (e) {
+                    var nextMach = restoreOneOf(Number(e.target.value), SHOCK_MACH_OPTIONS, 3);
+                    setShockMachNumber(nextMach);
+                    persist({ shockMachNumber: nextMach });
+                  },
+                  className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                }, SHOCK_MACH_OPTIONS.map(function (mOpt) {
+                  var tag = mOpt < 1 ? ' (Subsonic)' : (mOpt >= 5 ? ' (Hypersonic)' : ' (Supersonic)');
+                  return h('option', { key: mOpt, value: String(mOpt) }, 'Mach ' + mOpt + tag);
+                }))
+              ),
+              h('div', { className: 'mt-3 rounded-xl border border-slate-800 bg-slate-950 p-3 text-white' },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2 text-[10px] font-black uppercase tracking-wide text-cyan-300' },
+                  h('span', null, 'Normal Shock \u03C1\u2082/\u03C1\u2081 vs Mach'),
+                  h('span', { className: 'font-mono text-emerald-300' }, 'u\u221E ' + Math.round(liveShockAero.flowSpeedMs) + ' m/s')
+                ),
+                (function () {
+                  var pts = liveShockAero.curvePoints;
+                  var rhoMax = Math.max(2, liveShockAero.maxDensityRatio);
+                  function mapSX(mach) { return clamp(26 + ((mach - 1) / 9) * 214, 26, 240); }
+                  function mapSY(rhoRatio) { return clamp(84 - ((clamp(rhoRatio, 1, rhoMax) - 1) / (rhoMax - 1)) * 62, 22, 84); }
+                  var shockD = pts.map(function (pt, idx) {
+                    return (idx ? 'L' : 'M') + mapSX(pt.mach).toFixed(1) + ',' + mapSY(pt.densityRatio).toFixed(1);
+                  }).join(' ');
+                  var liveSX = mapSX(liveShockAero.machNumber);
+                  var liveSY = mapSY(liveShockAero.densityRatio);
+                  var dotColor = liveShockAero.shockFormed ? (liveShockAero.machNumber >= 5 ? '#fb7185' : '#fbbf24') : '#38bdf8';
+                  return h('svg', { id: 'particle-shock-aero-svg', viewBox: '0 0 260 116', className: 'mt-2 w-full', role: 'img', 'aria-label': buildShockAeroSvgAriaLabel() },
+                    h('line', { x1: 26, y1: 20, x2: 26, y2: 84, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('line', { x1: 26, y1: 84, x2: 242, y2: 84, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('line', { x1: 26, y1: 22, x2: 242, y2: 22, stroke: '#34d399', strokeWidth: 1, strokeDasharray: '2 2' }),
+                    h('path', { d: shockD, fill: 'none', stroke: '#38bdf8', strokeWidth: 2 }),
+                    h('circle', { cx: liveSX.toFixed(1), cy: liveSY.toFixed(1), r: 4.5, fill: dotColor, stroke: '#020617', strokeWidth: 1.2 }),
+                    h('text', { x: 30, y: 15, fontSize: 8, fill: '#6ee7b7' }, 'Limit (\u03B3+1)/(\u03B3-1) = ' + liveShockAero.maxDensityRatio.toFixed(2) + 'x'),
+                    h('text', { x: 26, y: 103, fontSize: 8, fill: '#cbd5e1' }, 'M=1.0'),
+                    h('text', { x: 242, y: 103, textAnchor: 'end', fontSize: 8, fill: '#fde68a' }, 'M=10 (\u03C1\u2082/\u03C1\u2081 = ' + liveShockAero.densityRatio.toFixed(2) + 'x)')
+                  );
+                })(),
+                h('div', { className: 'mt-1.5 font-mono text-[11px] text-cyan-200' }, 'Pitot P\u2080\u2082: ' + liveShockAero.pitotTotalAtm.toFixed(2) + ' atm | T\u2082=' + Math.round(liveShockAero.t2K) + ' K')
+              ),
+              h('div', { className: 'mt-3 grid grid-cols-2 gap-2' },
+                [
+                  ['Jump P\u2082/P\u2081 & \u03C1\u2082/\u03C1\u2081', liveShockAero.pressureRatio.toFixed(2) + 'x / ' + liveShockAero.densityRatio.toFixed(2) + 'x'],
+                  ['Stagnation T\u2080', Math.round(liveShockAero.stagnationTempK) + ' K'],
+                  ['Downstream M\u2082', liveShockAero.downstreamMach.toFixed(3)],
+                  ['Shock Width / \u0394S', liveShockAero.shockFormed ? ((liveShockAero.shockThicknessUm >= 100 ? Math.round(liveShockAero.shockThicknessUm) + ' \u00B5m' : liveShockAero.shockThicknessUm.toFixed(2) + ' \u00B5m') + ' / +' + liveShockAero.entropyJumpR.toFixed(2) + ' R') : 'None / 0']
+                ].map(function (item) {
+                  return h('div', { key: item[0], className: 'min-w-0 rounded-lg border border-slate-200 bg-white p-2.5' },
+                    h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-700' }, item[0]),
+                    h('div', { className: 'mt-0.5 font-mono text-xs font-black text-slate-950' }, item[1])
+                  );
+                })
+              ),
+              h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-700' },
+                'Molecular degrees of freedom (\u03B3) cap density compression across strong shocks at (\u03B3+1)/(\u03B3\u22121), converting bulk Mach kinetic energy into random thermal agitation.'
+              ),
+              h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                h('button', { type: 'button', onClick: function () { stageShockAeroPreset('transonic_cruise'); }, className: 'min-h-11 sm:min-h-9 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-900 hover:bg-slate-100' }, 'Stage Transonic Cruise'),
+                h('button', { type: 'button', onClick: function () { stageShockAeroPreset('hypersonic_reentry'); }, className: 'min-h-11 sm:min-h-9 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-black text-white hover:bg-slate-800' }, 'Stage Mach 5 Hypersonic')
+              )
+            ),
+            showWbCard('gamow_nuclear', 'matter_frontier') && h('div', { id: 'particle-nuclear-gamow-card', className: 'min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                h('div', { className: 'min-w-0' },
+                  h('p', { className: 'text-[10px] font-black uppercase tracking-wide text-cyan-900' }, 'Quantum Barrier Penetration'),
+                  h('h4', { className: 'text-sm font-black text-slate-950' }, 'Gamow Fusion Peak & UF\u2086 Cascade')
+                ),
+                h('span', {
+                  className: 'rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ' + (
+                    liveNuclearGamow.regime === 'thermonuclear_burn'
+                      ? 'border-emerald-200 bg-emerald-50 text-emerald-950'
+                      : (liveNuclearGamow.regime === 'quantum_tunneling' ? 'border-amber-200 bg-amber-50 text-amber-950' : 'border-rose-200 bg-rose-50 text-rose-900')
+                  )
+                }, liveNuclearGamow.regimeLabel)
+              ),
+              h('div', { className: 'mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2' },
+                h('div', { className: 'min-w-0' },
+                  h('label', { htmlFor: 'particle-fusion-fuel-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Fusion Fuel Pair'),
+                  h('select', {
+                    id: 'particle-fusion-fuel-select',
+                    value: fusionFuelId,
+                    onChange: function (e) {
+                      var nextFuel = restoreOneOf(e.target.value, FUSION_FUEL_IDS, 'DT');
+                      setFusionFuelId(nextFuel);
+                      persist({ fusionFuelId: nextFuel });
+                    },
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                  }, FUSION_FUEL_IDS.map(function (fid) {
+                    var fSpec = FUSION_FUEL_SPECS[fid];
+                    return h('option', { key: fid, value: fid }, fSpec.label);
+                  }))
+                ),
+                h('div', { className: 'min-w-0' },
+                  h('label', { htmlFor: 'particle-gamow-temp-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Plasma Thermal k_B T'),
+                  h('select', {
+                    id: 'particle-gamow-temp-select',
+                    value: String(gamowTempKeV),
+                    onChange: function (e) {
+                      var nextKev = restoreOneOf(Number(e.target.value), GAMOW_TEMP_KEV_OPTIONS, 15);
+                      setGamowTempKeV(nextKev);
+                      persist({ gamowTempKeV: nextKev });
+                    },
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                  }, GAMOW_TEMP_KEV_OPTIONS.map(function (kev) {
+                    return h('option', { key: kev, value: String(kev) }, kev + ' keV (' + Math.round(kev * 11.6045) + ' MK)');
+                  }))
+                )
+              ),
+              h('div', { className: 'mt-3 rounded-xl border border-slate-800 bg-slate-950 p-3 text-white' },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2 text-[10px] font-black uppercase tracking-wide text-cyan-300' },
+                  h('span', null, 'Gamow Window g(E) (' + liveNuclearGamow.fuel.formula + ')'),
+                  h('span', { className: 'font-mono text-emerald-300' }, Math.round(liveNuclearGamow.plasmaTempMK) + ' MK')
+                ),
+                (function () {
+                  var pts = liveNuclearGamow.curvePoints;
+                  var eFirst = pts[0].energyKeV;
+                  var eLast = pts[pts.length - 1].energyKeV;
+                  var eSpan = Math.max(1e-3, eLast - eFirst);
+                  function mapNX(eKev) { return clamp(26 + ((eKev - eFirst) / eSpan) * 214, 26, 240); }
+                  function mapNY(norm) { return clamp(84 - clamp(norm, 0, 1) * 62, 22, 84); }
+                  var mbD = pts.map(function (pt, idx) {
+                    return (idx ? 'L' : 'M') + mapNX(pt.energyKeV).toFixed(1) + ',' + mapNY(pt.mbNorm).toFixed(1);
+                  }).join(' ');
+                  var gamowD = pts.map(function (pt, idx) {
+                    return (idx ? 'L' : 'M') + mapNX(pt.energyKeV).toFixed(1) + ',' + mapNY(pt.gamowPeakNorm).toFixed(1);
+                  }).join(' ');
+                  var peakX = mapNX(liveNuclearGamow.gamowPeakKeV);
+                  var peakY = 22;
+                  var dotFill = liveNuclearGamow.regime === 'thermonuclear_burn' ? '#34d399' : '#fbbf24';
+                  return h('svg', { id: 'particle-nuclear-gamow-svg', viewBox: '0 0 260 116', className: 'mt-2 w-full', role: 'img', 'aria-label': buildNuclearGamowSvgAriaLabel() },
+                    h('line', { x1: 26, y1: 20, x2: 26, y2: 84, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('line', { x1: 26, y1: 84, x2: 242, y2: 84, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('path', { d: mbD, fill: 'none', stroke: '#94a3b8', strokeWidth: 1.2, strokeDasharray: '3 3' }),
+                    h('path', { d: gamowD, fill: 'none', stroke: '#38bdf8', strokeWidth: 2 }),
+                    h('circle', { cx: peakX.toFixed(1), cy: peakY, r: 4.5, fill: dotFill, stroke: '#020617', strokeWidth: 1.2 }),
+                    h('text', { x: 30, y: 15, fontSize: 8, fill: '#bae6fd' }, 'Solid: Gamow Peak E\u2080=' + liveNuclearGamow.gamowPeakKeV.toFixed(1) + ' keV'),
+                    h('text', { x: 26, y: 103, fontSize: 8, fill: '#cbd5e1' }, eFirst.toFixed(1) + ' keV'),
+                    h('text', { x: 242, y: 103, textAnchor: 'end', fontSize: 8, fill: '#fde68a' }, eLast.toFixed(0) + ' keV (\u03C4_G=' + liveNuclearGamow.tauGamow.toFixed(1) + ')')
+                  );
+                })(),
+                h('div', { className: 'mt-1.5 font-mono text-[11px] text-cyan-200' }, 'Gamow E_G: ' + Math.round(liveNuclearGamow.gamowEnergyKeV) + ' keV | Tunneling ' + (liveNuclearGamow.peakToBarrierRatio * 100).toFixed(1) + '% of E_C')
+              ),
+              h('div', { className: 'mt-3 grid grid-cols-2 gap-2' },
+                [
+                  ['Gamow Peak E\u2080', liveNuclearGamow.gamowPeakKeV.toFixed(1) + ' keV'],
+                  ['Window \u0394E\u2080 / \u03C4_G', liveNuclearGamow.gamowWidthKeV.toFixed(1) + ' keV / ' + liveNuclearGamow.tauGamow.toFixed(1)],
+                  ['Reaction Q / E_C', liveNuclearGamow.fuel.qValueMeV.toFixed(2) + ' MeV / ' + liveNuclearGamow.fuel.coulombBarrierKeV + ' keV'],
+                  ['UF\u2086 4.5% Stages', '\u03B1=' + liveNuclearGamow.uf6Alpha.toFixed(4) + ' (' + liveNuclearGamow.uf6SymmetricStages + ' stg)']
+                ].map(function (item) {
+                  return h('div', { key: item[0], className: 'min-w-0 rounded-lg border border-slate-200 bg-white p-2.5' },
+                    h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-700' }, item[0]),
+                    h('div', { className: 'mt-0.5 font-mono text-xs font-black text-slate-950' }, item[1])
+                  );
+                })
+              ),
+              h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-700' },
+                'Nuclei fuse below the Coulomb barrier where Maxwell\u2013Boltzmann tail population intersects quantum tunneling probability at peak E\u2080.'
+              ),
+              h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                h('button', { type: 'button', onClick: function () { stageNuclearGamowPreset('solar_core_dd'); }, className: 'min-h-11 sm:min-h-9 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-900 hover:bg-slate-100' }, 'Stage Solar Core (1.3 keV)'),
+                h('button', { type: 'button', onClick: function () { stageNuclearGamowPreset('iter_dt_burn'); }, className: 'min-h-11 sm:min-h-9 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-black text-white hover:bg-slate-800' }, 'Stage ITER D-T (15 keV)')
+              )
+            ),
+            showWbCard('johnson_nyquist', 'matter_frontier') && h('div', { id: 'particle-thermal-noise-card', className: 'min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                h('div', { className: 'min-w-0' },
+                  h('p', { className: 'text-[10px] font-black uppercase tracking-wide text-cyan-900' }, 'Electronic Fluctuations & Conduction'),
+                  h('h4', { className: 'text-sm font-black text-slate-950' }, 'Johnson\u2013Nyquist Noise & Drude Drift')
+                ),
+                h('span', {
+                  className: 'rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ' + (
+                    liveThermalNoise.regime === 'cryogenic_low_noise'
+                      ? 'border-emerald-200 bg-emerald-50 text-emerald-950'
+                      : (liveThermalNoise.regime === 'high_thermal_hiss' ? 'border-rose-200 bg-rose-50 text-rose-900' : 'border-cyan-200 bg-cyan-50 text-cyan-950')
+                  )
+                }, liveThermalNoise.regimeLabel)
+              ),
+              h('div', { className: 'mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2' },
+                h('div', { className: 'min-w-0' },
+                  h('label', { htmlFor: 'particle-noise-resistance-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Load Resistance R'),
+                  h('select', {
+                    id: 'particle-noise-resistance-select',
+                    value: String(noiseResistanceOhm),
+                    onChange: function (e) {
+                      var nextR = restoreOneOf(Number(e.target.value), NOISE_RESISTANCE_OHM_OPTIONS, 1000);
+                      setNoiseResistanceOhm(nextR);
+                      persist({ noiseResistanceOhm: nextR });
+                    },
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                  }, NOISE_RESISTANCE_OHM_OPTIONS.map(function (rVal) {
+                    var label = rVal >= 1e6 ? (rVal / 1e6) + ' M\u03A9' : (rVal >= 1e3 ? (rVal / 1e3) + ' k\u03A9' : rVal + ' \u03A9');
+                    return h('option', { key: rVal, value: String(rVal) }, label);
+                  }))
+                ),
+                h('div', { className: 'min-w-0' },
+                  h('label', { htmlFor: 'particle-noise-bandwidth-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Bandwidth \u0394f'),
+                  h('select', {
+                    id: 'particle-noise-bandwidth-select',
+                    value: String(noiseBandwidthHz),
+                    onChange: function (e) {
+                      var nextBw = restoreOneOf(Number(e.target.value), NOISE_BANDWIDTH_HZ_OPTIONS, 20000);
+                      setNoiseBandwidthHz(nextBw);
+                      persist({ noiseBandwidthHz: nextBw });
+                    },
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                  }, NOISE_BANDWIDTH_HZ_OPTIONS.map(function (bwVal) {
+                    var label = bwVal >= 1e6 ? (bwVal / 1e6) + ' MHz' : (bwVal / 1e3) + ' kHz';
+                    return h('option', { key: bwVal, value: String(bwVal) }, label);
+                  }))
+                )
+              ),
+              h('div', { className: 'mt-3 rounded-xl border border-slate-800 bg-slate-950 p-3 text-white' },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2 text-[10px] font-black uppercase tracking-wide text-cyan-300' },
+                  h('span', null, 'V_rms(T) = \u221A(4 k_B T R \u0394f)'),
+                  h('span', { className: 'font-mono text-emerald-300' }, Math.round(liveThermalNoise.temperature) + ' K')
+                ),
+                (function () {
+                  var pts = liveThermalNoise.curvePoints;
+                  var vMax = Math.max(0.1, pts[pts.length - 1].vRmsUv);
+                  function mapTX(tempK) { return clamp(26 + ((tempK - 20) / 1180) * 214, 26, 240); }
+                  function mapTY(vUv) { return clamp(84 - (clamp(vUv, 0, vMax) / vMax) * 62, 22, 84); }
+                  var noiseD = pts.map(function (pt, idx) {
+                    return (idx ? 'L' : 'M') + mapTX(pt.temperatureK).toFixed(1) + ',' + mapTY(pt.vRmsUv).toFixed(1);
+                  }).join(' ');
+                  var liveTX = mapTX(liveThermalNoise.temperature);
+                  var liveTY = mapTY(liveThermalNoise.vRmsUv);
+                  var vText = liveThermalNoise.vRmsUv >= 1000 ? (liveThermalNoise.vRmsUv / 1000).toFixed(2) + ' mV' : liveThermalNoise.vRmsUv.toFixed(2) + ' \u00B5V';
+                  return h('svg', { id: 'particle-thermal-noise-svg', viewBox: '0 0 260 116', className: 'mt-2 w-full', role: 'img', 'aria-label': buildThermalNoiseSvgAriaLabel() },
+                    h('line', { x1: 26, y1: 20, x2: 26, y2: 84, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('line', { x1: 26, y1: 84, x2: 242, y2: 84, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('path', { d: noiseD, fill: 'none', stroke: '#34d399', strokeWidth: 2 }),
+                    h('circle', { cx: liveTX.toFixed(1), cy: liveTY.toFixed(1), r: 4.5, fill: '#fbbf24', stroke: '#020617', strokeWidth: 1.2 }),
+                    h('text', { x: 30, y: 15, fontSize: 8, fill: '#6ee7b7' }, 'Live V_n,rms = ' + vText + ' | P_N = ' + liveThermalNoise.noisePowerDbm.toFixed(1) + ' dBm'),
+                    h('text', { x: 26, y: 103, fontSize: 8, fill: '#cbd5e1' }, '20 K'),
+                    h('text', { x: 242, y: 103, textAnchor: 'end', fontSize: 8, fill: '#fde68a' }, '1200 K (Drude \u03C4=' + liveThermalNoise.tauDrudeFs.toFixed(1) + ' fs)')
+                  );
+                })(),
+                h('div', { className: 'mt-1.5 font-mono text-[11px] text-cyan-200' }, 'I_n,rms: ' + (liveThermalNoise.iRmsNa >= 1000 ? (liveThermalNoise.iRmsNa / 1000).toFixed(2) + ' \u00B5A' : liveThermalNoise.iRmsNa.toFixed(2) + ' nA') + ' | v_th ' + (liveThermalNoise.thermalElectronSpeedMs / 1000).toFixed(0) + ' km/s')
+              ),
+              h('div', { className: 'mt-3 grid grid-cols-2 gap-2' },
+                [
+                  ['Johnson V_rms', liveThermalNoise.vRmsUv >= 1000 ? (liveThermalNoise.vRmsUv / 1000).toFixed(2) + ' mV' : liveThermalNoise.vRmsUv.toFixed(2) + ' \u00B5V'],
+                  ['Noise Floor P_N', liveThermalNoise.noisePowerDbm.toFixed(1) + ' dBm'],
+                  ['Cu Drift (100 V/m)', liveThermalNoise.driftSpeedMmS.toFixed(0) + ' mm/s'],
+                  ['Thermal / Drift', Math.round(liveThermalNoise.thermalToDriftRatio).toLocaleString() + 'x']
+                ].map(function (item) {
+                  return h('div', { key: item[0], className: 'min-w-0 rounded-lg border border-slate-200 bg-white p-2.5' },
+                    h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-700' }, item[0]),
+                    h('div', { className: 'mt-0.5 font-mono text-xs font-black text-slate-950' }, item[1])
+                  );
+                })
+              ),
+              h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-700' },
+                'Random electron agitation creates universal k_B T \u0394f Johnson hiss and scatters copper carriers far faster (~10^5 km/s) than steady current drift.'
+              ),
+              h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                h('button', { type: 'button', onClick: function () { stageThermalNoisePreset('cryo_low_noise'); }, className: 'min-h-11 sm:min-h-9 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-900 hover:bg-slate-100' }, 'Stage Cryo 45 K Low-Noise'),
+                h('button', { type: 'button', onClick: function () { stageThermalNoisePreset('hot_high_z'); }, className: 'min-h-11 sm:min-h-9 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-black text-white hover:bg-slate-800' }, 'Stage Hot 10M High-Z')
+              )
+            )
+          ),
+          h('div', { className: 'particle-wb-pass mt-4 grid gap-4 border-t border-slate-200 pt-4 lg:grid-cols-3' },
+            showWbCard('interstellar_jeans', 'matter_frontier') && h('div', { id: 'particle-astro-jeans-card', className: 'min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                h('div', { className: 'min-w-0' },
+                  h('p', { className: 'text-[10px] font-black uppercase tracking-wide text-cyan-900' }, 'Astrophysics & Star Formation'),
+                  h('h4', { className: 'text-sm font-black text-slate-950' }, 'Interstellar Jeans Cloud Collapse')
+                ),
+                h('span', {
+                  className: 'rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ' + (
+                    liveAstroJeans.regime === 'fragmenting_collapse'
+                      ? 'border-rose-200 bg-rose-50 text-rose-900'
+                      : (liveAstroJeans.regime === 'jeans_collapse' ? 'border-amber-200 bg-amber-50 text-amber-950' : 'border-emerald-200 bg-emerald-50 text-emerald-950')
+                  )
+                }, liveAstroJeans.regimeLabel)
+              ),
+              h('label', { htmlFor: 'particle-astro-cloud-select', className: 'mt-2 block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Interstellar Cloud Preset'),
+              h('select', {
+                id: 'particle-astro-cloud-select',
+                value: astroCloudId,
+                onChange: function (e) {
+                  var nextCloud = restoreOneOf(e.target.value, ASTRO_CLOUD_IDS, 'bok_globule');
+                  setAstroCloudId(nextCloud);
+                  persist({ astroCloudId: nextCloud });
+                },
+                className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+              }, ASTRO_CLOUD_IDS.map(function (cId) {
+                return h('option', { key: cId, value: cId }, ASTRO_CLOUD_SPECS[cId].label);
+              })),
+              h('div', { className: 'mt-3 rounded-xl border border-slate-800 bg-slate-950 p-3 text-white' },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2 text-[10px] font-black uppercase tracking-wide text-cyan-300' },
+                  h('span', null, 'M_J(T) \u221D (T/m)^{3/2} \u03C1^{-1/2}'),
+                  h('span', { className: 'font-mono text-emerald-300' }, Math.round(liveAstroJeans.temperature) + ' K')
+                ),
+                (function () {
+                  var pts = liveAstroJeans.curvePoints;
+                  var logVals = pts.map(function (pt) {
+                    return Math.log10(Math.max(1e-6, pt.jeansMassSolar));
+                  });
+                  logVals.push(Math.log10(Math.max(1e-6, liveAstroJeans.cloudMassSolar)));
+                  logVals.push(Math.log10(Math.max(1e-6, liveAstroJeans.jeansMassSolar)));
+                  var logMin = Math.floor(Math.min.apply(null, logVals)) - 0.5;
+                  var logMax = Math.ceil(Math.max.apply(null, logVals)) + 0.5;
+                  var logSpan = Math.max(1, logMax - logMin);
+                  function mapAX(tempK) { return clamp(26 + ((tempK - 10) / 890) * 214, 26, 240); }
+                  function mapAY(massSolar) {
+                    var lv = Math.log10(Math.max(1e-6, massSolar));
+                    return clamp(84 - ((lv - logMin) / logSpan) * 62, 22, 84);
+                  }
+                  var jeansD = pts.map(function (pt, idx) {
+                    return (idx ? 'L' : 'M') + mapAX(pt.temperatureK).toFixed(1) + ',' + mapAY(pt.jeansMassSolar).toFixed(1);
+                  }).join(' ');
+                  var cloudY = mapAY(liveAstroJeans.cloudMassSolar);
+                  var liveAX = mapAX(liveAstroJeans.temperature);
+                  var liveAY = mapAY(liveAstroJeans.jeansMassSolar);
+                  var mJText = liveAstroJeans.jeansMassSolar < 0.01 ? liveAstroJeans.jeansMassSolar.toExponential(1) : liveAstroJeans.jeansMassSolar.toFixed(2);
+                  return h('svg', { id: 'particle-astro-jeans-svg', viewBox: '0 0 260 116', className: 'mt-2 w-full', role: 'img', 'aria-label': buildAstroJeansSvgAriaLabel() },
+                    h('line', { x1: 26, y1: 20, x2: 26, y2: 84, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('line', { x1: 26, y1: 84, x2: 242, y2: 84, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('line', { x1: 26, y1: cloudY.toFixed(1), x2: 242, y2: cloudY.toFixed(1), stroke: '#38bdf8', strokeWidth: 1.4, strokeDasharray: '4 3' }),
+                    h('path', { d: jeansD, fill: 'none', stroke: '#34d399', strokeWidth: 2 }),
+                    h('circle', { cx: liveAX.toFixed(1), cy: liveAY.toFixed(1), r: 4.5, fill: liveAstroJeans.collapsing ? '#fb7185' : '#fbbf24', stroke: '#020617', strokeWidth: 1.2 }),
+                    h('text', { x: 30, y: 15, fontSize: 8, fill: '#6ee7b7' }, 'Live M_J = ' + mJText + ' M\u2609 vs Cloud ' + liveAstroJeans.cloudMassSolar + ' M\u2609'),
+                    h('text', { x: 26, y: 103, fontSize: 8, fill: '#cbd5e1' }, '10 K'),
+                    h('text', { x: 242, y: 103, textAnchor: 'end', fontSize: 8, fill: '#fde68a' }, '900 K (M/M_J = ' + liveAstroJeans.collapseRatio.toFixed(2) + 'x)')
+                  );
+                })(),
+                h('div', { className: 'mt-1.5 font-mono text-[11px] text-cyan-200' }, 'R_J: ' + (liveAstroJeans.jeansLengthPc >= 0.01 ? liveAstroJeans.jeansLengthPc.toFixed(3) + ' pc' : Math.round(liveAstroJeans.jeansLengthAu).toLocaleString() + ' AU') + ' | c_s ' + Math.round(liveAstroJeans.isothermalSoundMs) + ' m/s')
+              ),
+              h('div', { className: 'mt-3 grid grid-cols-2 gap-2' },
+                [
+                  ['Jeans Mass M_J', (liveAstroJeans.jeansMassSolar < 0.01 ? liveAstroJeans.jeansMassSolar.toExponential(2) : liveAstroJeans.jeansMassSolar.toFixed(2)) + ' M\u2609'],
+                  ['Collapse Ratio', liveAstroJeans.collapseRatio.toFixed(2) + 'x'],
+                  ['Sound Speed c_s', Math.round(liveAstroJeans.isothermalSoundMs) + ' m/s'],
+                  ['Free-Fall t_ff', (liveAstroJeans.freeFallMyr < 0.01 ? liveAstroJeans.freeFallMyr.toExponential(1) : liveAstroJeans.freeFallMyr.toFixed(3)) + ' Myr']
+                ].map(function (item) {
+                  return h('div', { key: item[0], className: 'min-w-0 rounded-lg border border-slate-200 bg-white p-2.5' },
+                    h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-700' }, item[0]),
+                    h('div', { className: 'mt-0.5 font-mono text-xs font-black text-slate-950' }, item[1])
+                  );
+                })
+              ),
+              h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-700' },
+                'When cloud mass exceeds the thermal Jeans mass (or cooling lowers T), self-gravity overwhelms kinetic gas pressure and triggers protostellar collapse.'
+              ),
+              h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                h('button', { type: 'button', onClick: function () { stageAstroJeansPreset('cold_bok_collapse'); }, className: 'min-h-11 sm:min-h-9 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-900 hover:bg-slate-100' }, 'Stage Cold Bok Collapse'),
+                h('button', { type: 'button', onClick: function () { stageAstroJeansPreset('warm_diffuse_stable'); }, className: 'min-h-11 sm:min-h-9 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-black text-white hover:bg-slate-800' }, 'Stage Warm Diffuse Cloud')
+              )
+            ),
+            showWbCard('wells_riley_aerosol', 'matter_frontier') && h('div', { id: 'particle-aerosol-epi-card', className: 'min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                h('div', { className: 'min-w-0' },
+                  h('p', { className: 'text-[10px] font-black uppercase tracking-wide text-cyan-900' }, 'Environmental Aerosol Kinetics'),
+                  h('h4', { className: 'text-sm font-black text-slate-950' }, 'Wells\u2013Riley Plumes & Stokes Settling')
+                ),
+                h('span', {
+                  className: 'rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ' + (
+                    liveAerosolEpi.regime === 'high_airborne_risk'
+                      ? 'border-rose-200 bg-rose-50 text-rose-900'
+                      : (liveAerosolEpi.regime === 'moderate_airborne' ? 'border-amber-200 bg-amber-50 text-amber-950' : 'border-emerald-200 bg-emerald-50 text-emerald-950')
+                  )
+                }, liveAerosolEpi.regimeLabel)
+              ),
+              h('div', { className: 'mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2' },
+                h('div', { className: 'min-w-0' },
+                  h('label', { htmlFor: 'particle-aerosol-size-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Droplet Diameter d_p'),
+                  h('select', {
+                    id: 'particle-aerosol-size-select',
+                    value: String(aerosolDropletUm),
+                    onChange: function (e) {
+                      var nextD = restoreOneOf(Number(e.target.value), AEROSOL_DROPLET_UM_OPTIONS, 2.5);
+                      setAerosolDropletUm(nextD);
+                      persist({ aerosolDropletUm: nextD });
+                    },
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                  }, AEROSOL_DROPLET_UM_OPTIONS.map(function (dUm) {
+                    return h('option', { key: dUm, value: String(dUm) }, dUm + ' \u00B5m');
+                  }))
+                ),
+                h('div', { className: 'min-w-0' },
+                  h('label', { htmlFor: 'particle-ventilation-ach-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Ventilation (ACH)'),
+                  h('select', {
+                    id: 'particle-ventilation-ach-select',
+                    value: String(ventilationAch),
+                    onChange: function (e) {
+                      var nextA = restoreOneOf(Number(e.target.value), VENTILATION_ACH_OPTIONS, 2);
+                      setVentilationAch(nextA);
+                      persist({ ventilationAch: nextA });
+                    },
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                  }, VENTILATION_ACH_OPTIONS.map(function (achVal) {
+                    return h('option', { key: achVal, value: String(achVal) }, achVal + ' ACH');
+                  }))
+                )
+              ),
+              h('div', { className: 'mt-3 rounded-xl border border-slate-800 bg-slate-950 p-3 text-white' },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2 text-[10px] font-black uppercase tracking-wide text-cyan-300' },
+                  h('span', null, 'P_infect = 1 \u2212 exp(\u2212I q p t / Q_eff)'),
+                  h('span', { className: 'font-mono text-emerald-300' }, liveAerosolEpi.ventilationAch + ' ACH')
+                ),
+                (function () {
+                  var pts = liveAerosolEpi.curvePoints;
+                  var rMax = Math.max(5, pts[0] ? pts[0].riskPct : 20, liveAerosolEpi.wellsRileyRiskPct);
+                  function mapEX(achVal) { return clamp(26 + ((achVal - 0.5) / 14.5) * 214, 26, 240); }
+                  function mapEY(riskVal) { return clamp(84 - (clamp(riskVal, 0, rMax) / rMax) * 62, 22, 84); }
+                  var epiD = pts.map(function (pt, idx) {
+                    return (idx ? 'L' : 'M') + mapEX(pt.ach).toFixed(1) + ',' + mapEY(pt.riskPct).toFixed(1);
+                  }).join(' ');
+                  var liveEX = mapEX(liveAerosolEpi.ventilationAch);
+                  var liveEY = mapEY(liveAerosolEpi.wellsRileyRiskPct);
+                  return h('svg', { id: 'particle-aerosol-epi-svg', viewBox: '0 0 260 116', className: 'mt-2 w-full', role: 'img', 'aria-label': buildAerosolEpiSvgAriaLabel() },
+                    h('line', { x1: 26, y1: 20, x2: 26, y2: 84, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('line', { x1: 26, y1: 84, x2: 242, y2: 84, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('path', { d: epiD, fill: 'none', stroke: '#38bdf8', strokeWidth: 2 }),
+                    h('circle', { cx: liveEX.toFixed(1), cy: liveEY.toFixed(1), r: 4.5, fill: '#fbbf24', stroke: '#020617', strokeWidth: 1.2 }),
+                    h('text', { x: 30, y: 15, fontSize: 8, fill: '#bae6fd' }, 'Live Risk = ' + liveAerosolEpi.wellsRileyRiskPct.toFixed(1) + '% | Slip Cc = ' + liveAerosolEpi.slipCc.toFixed(2)),
+                    h('text', { x: 26, y: 103, fontSize: 8, fill: '#cbd5e1' }, '0.5 ACH'),
+                    h('text', { x: 242, y: 103, textAnchor: 'end', fontSize: 8, fill: '#fde68a' }, '15 ACH (v_s=' + (liveAerosolEpi.settlingSpeedMmS >= 1 ? liveAerosolEpi.settlingSpeedMmS.toFixed(1) : liveAerosolEpi.settlingSpeedMmS.toFixed(3)) + ' mm/s)')
+                  );
+                })(),
+                h('div', { className: 'mt-1.5 font-mono text-[11px] text-cyan-200' },
+                  '1.5 m fall: ' + (liveAerosolEpi.fallTime1p5mSec >= 3600 ? (liveAerosolEpi.fallTime1p5mSec / 3600).toFixed(1) + ' hr' : (liveAerosolEpi.fallTime1p5mSec >= 60 ? (liveAerosolEpi.fallTime1p5mSec / 60).toFixed(1) + ' min' : liveAerosolEpi.fallTime1p5mSec.toFixed(1) + ' s')) + ' | Q_eff ' + Math.round(liveAerosolEpi.effectiveCleanAirM3Hr) + ' m\u00B3/h'
+                )
+              ),
+              h('div', { className: 'mt-3 grid grid-cols-2 gap-2' },
+                [
+                  ['Stokes Speed v_s', (liveAerosolEpi.settlingSpeedMmS >= 1 ? liveAerosolEpi.settlingSpeedMmS.toFixed(1) : liveAerosolEpi.settlingSpeedMmS.toFixed(4)) + ' mm/s'],
+                  ['1.5 m Fall Time', liveAerosolEpi.fallTime1p5mSec >= 3600 ? (liveAerosolEpi.fallTime1p5mSec / 3600).toFixed(1) + ' hr' : (liveAerosolEpi.fallTime1p5mSec >= 60 ? (liveAerosolEpi.fallTime1p5mSec / 60).toFixed(1) + ' min' : liveAerosolEpi.fallTime1p5mSec.toFixed(1) + ' s')],
+                  ['1-hr Infect Risk', liveAerosolEpi.wellsRileyRiskPct.toFixed(1) + '%'],
+                  ['Clean Removal', liveAerosolEpi.totalRemovalPerHr.toFixed(2) + ' /hr']
+                ].map(function (item) {
+                  return h('div', { key: item[0], className: 'min-w-0 rounded-lg border border-slate-200 bg-white p-2.5' },
+                    h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-700' }, item[0]),
+                    h('div', { className: 'mt-0.5 font-mono text-xs font-black text-slate-950' }, item[1])
+                  );
+                })
+              ),
+              h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-700' },
+                'Sub-5 \u00B5m droplets remain aloft for hours via Cunningham slip so ventilation dilution dominates risk, whereas 80 \u00B5m ballistic droplets settle in seconds.'
+              ),
+              h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                h('button', { type: 'button', onClick: function () { stageAerosolEpiPreset('stuffy_fine_aerosol'); }, className: 'min-h-11 sm:min-h-9 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-900 hover:bg-slate-100' }, 'Stage Stuffy 0.5 ACH'),
+                h('button', { type: 'button', onClick: function () { stageAerosolEpiPreset('clean_hospital_air'); }, className: 'min-h-11 sm:min-h-9 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-black text-white hover:bg-slate-800' }, 'Stage 12 ACH Clean Air')
+              )
+            ),
+            showWbCard('langmuir_betz', 'matter_frontier') && h('div', { id: 'particle-energy-sorbent-card', className: 'min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                h('div', { className: 'min-w-0' },
+                  h('p', { className: 'text-[10px] font-black uppercase tracking-wide text-cyan-900' }, 'Clean Energy & Surface Storage'),
+                  h('h4', { className: 'text-sm font-black text-slate-950' }, 'Langmuir Storage & Betz Wind Flux')
+                ),
+                h('span', {
+                  className: 'rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ' + (
+                    liveEnergySorbent.regime === 'monolayer_saturated'
+                      ? 'border-emerald-200 bg-emerald-50 text-emerald-950'
+                      : (liveEnergySorbent.regime === 'reversible_swing' ? 'border-amber-200 bg-amber-50 text-amber-950' : 'border-cyan-200 bg-cyan-50 text-cyan-950')
+                  )
+                }, liveEnergySorbent.regimeLabel)
+              ),
+              h('div', { className: 'mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2' },
+                h('div', { className: 'min-w-0' },
+                  h('label', { htmlFor: 'particle-sorbent-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Sorbent Material'),
+                  h('select', {
+                    id: 'particle-sorbent-select',
+                    value: sorbentSurfaceId,
+                    onChange: function (e) {
+                      var nextS = restoreOneOf(e.target.value, SORBENT_SURFACE_IDS, 'activated_carbon');
+                      setSorbentSurfaceId(nextS);
+                      persist({ sorbentSurfaceId: nextS });
+                    },
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                  }, SORBENT_SURFACE_IDS.map(function (sId) {
+                    return h('option', { key: sId, value: sId }, SORBENT_SURFACE_SPECS[sId].label);
+                  }))
+                ),
+                h('div', { className: 'min-w-0' },
+                  h('label', { htmlFor: 'particle-wind-speed-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Stream Wind Speed v'),
+                  h('select', {
+                    id: 'particle-wind-speed-select',
+                    value: String(windSpeedMs),
+                    onChange: function (e) {
+                      var nextW = restoreOneOf(Number(e.target.value), WIND_SPEED_MS_OPTIONS, 12);
+                      setWindSpeedMs(nextW);
+                      persist({ windSpeedMs: nextW });
+                    },
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                  }, WIND_SPEED_MS_OPTIONS.map(function (wVal) {
+                    return h('option', { key: wVal, value: String(wVal) }, wVal + ' m/s');
+                  }))
+                )
+              ),
+              h('div', { className: 'mt-3 rounded-xl border border-slate-800 bg-slate-950 p-3 text-white' },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2 text-[10px] font-black uppercase tracking-wide text-cyan-300' },
+                  h('span', null, '\u03B8(P) = K P / (1 + K P)'),
+                  h('span', { className: 'font-mono text-emerald-300' }, (liveEnergySorbent.coverageTheta * 100).toFixed(1) + '% \u03B8')
+                ),
+                (function () {
+                  var pts = liveEnergySorbent.curvePoints;
+                  function mapSX(pAtm) { return clamp(26 + ((pAtm - 0.05) / 9.95) * 214, 26, 240); }
+                  function mapSY(theta) { return clamp(84 - clamp(theta, 0, 1) * 62, 22, 84); }
+                  var sorbentD = pts.map(function (pt, idx) {
+                    return (idx ? 'L' : 'M') + mapSX(pt.pressureAtm).toFixed(1) + ',' + mapSY(pt.coverageTheta).toFixed(1);
+                  }).join(' ');
+                  var liveSX = mapSX(liveEnergySorbent.pressureAtm);
+                  var liveSY = mapSY(liveEnergySorbent.coverageTheta);
+                  return h('svg', { id: 'particle-energy-sorbent-svg', viewBox: '0 0 260 116', className: 'mt-2 w-full', role: 'img', 'aria-label': buildEnergySorbentSvgAriaLabel() },
+                    h('line', { x1: 26, y1: 20, x2: 26, y2: 84, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('line', { x1: 26, y1: 84, x2: 242, y2: 84, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('line', { x1: 26, y1: 53, x2: 242, y2: 53, stroke: '#38bdf8', strokeWidth: 1.1, strokeDasharray: '4 3' }),
+                    h('path', { d: sorbentD, fill: 'none', stroke: '#34d399', strokeWidth: 2 }),
+                    h('circle', { cx: liveSX.toFixed(1), cy: liveSY.toFixed(1), r: 4.5, fill: '#fbbf24', stroke: '#020617', strokeWidth: 1.2 }),
+                    h('text', { x: 30, y: 15, fontSize: 8, fill: '#6ee7b7' }, 'Live \u03B8 = ' + (liveEnergySorbent.coverageTheta * 100).toFixed(1) + '% | Betz P_max = ' + Math.round(liveEnergySorbent.betzMaxWm2) + ' W/m\u00B2'),
+                    h('text', { x: 26, y: 103, fontSize: 8, fill: '#cbd5e1' }, '0.05 atm'),
+                    h('text', { x: 242, y: 103, textAnchor: 'end', fontSize: 8, fill: '#fde68a' }, '10 atm (\u03C1=' + liveEnergySorbent.gasDensityKgM3.toFixed(2) + ' kg/m\u00B3)')
+                  );
+                })(),
+                h('div', { className: 'mt-1.5 font-mono text-[11px] text-cyan-200' },
+                  'Raw wind: ' + Math.round(liveEnergySorbent.rawWindFluxWm2) + ' W/m\u00B2 | P_1/2 = ' + (liveEnergySorbent.halfCoverageAtm >= 100 ? liveEnergySorbent.halfCoverageAtm.toExponential(1) : liveEnergySorbent.halfCoverageAtm.toFixed(3)) + ' atm'
+                )
+              ),
+              h('div', { className: 'mt-3 grid grid-cols-2 gap-2' },
+                [
+                  ['Surface Coverage \u03B8', (liveEnergySorbent.coverageTheta * 100).toFixed(1) + '%'],
+                  ['Half-Load P_1/2', (liveEnergySorbent.halfCoverageAtm >= 100 ? liveEnergySorbent.halfCoverageAtm.toExponential(1) : liveEnergySorbent.halfCoverageAtm.toFixed(3)) + ' atm'],
+                  ['Betz Limit (16/27)', Math.round(liveEnergySorbent.betzMaxWm2).toLocaleString() + ' W/m\u00B2'],
+                  ['Gas Density \u03C1', liveEnergySorbent.gasDensityKgM3.toFixed(2) + ' kg/m\u00B3']
+                ].map(function (item) {
+                  return h('div', { key: item[0], className: 'min-w-0 rounded-lg border border-slate-200 bg-white p-2.5' },
+                    h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-700' }, item[0]),
+                    h('div', { className: 'mt-0.5 font-mono text-xs font-black text-slate-950' }, item[1])
+                  );
+                })
+              ),
+              h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-700' },
+                'Lower temperature shifts Langmuir equilibrium toward dense monolayer gas capture, while wind power scales with \u03C1 v^3 up to the 59.3% Betz aerodynamic ceiling.'
+              ),
+              h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                h('button', { type: 'button', onClick: function () { stageEnergySorbentPreset('cryo_mof_storage'); }, className: 'min-h-11 sm:min-h-9 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-900 hover:bg-slate-100' }, 'Stage 90 K MOF Storage'),
+                h('button', { type: 'button', onClick: function () { stageEnergySorbentPreset('thermal_dac_desorb'); }, className: 'min-h-11 sm:min-h-9 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-black text-white hover:bg-slate-800' }, 'Stage 520 K DAC Desorb')
+              )
+            )
+          )
+        ),
+        showWbGroup('earth_ocean_phys') && h('div', { id: 'particle-workbench-group-earth-ocean-phys', className: 'particle-wb-pass min-w-0' },
+          h('div', { className: 'particle-wb-pass mt-4 grid gap-4 border-t border-slate-200 pt-4 lg:grid-cols-3' },
+            showWbCard('henrys_ocean', 'earth_ocean_phys') && h('div', { id: 'particle-henrys-ocean-card', className: 'min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                h('div', { className: 'min-w-0' },
+                  h('p', { className: 'text-[10px] font-black uppercase tracking-wide text-cyan-900' }, 'Ocean & Aquatic Gas Equilibrium'),
+                  h('h4', { className: 'text-sm font-black text-slate-950' }, 'Henry\u2019s Law & Ocean Gas Solubility')
+                ),
+                h('span', {
+                  className: 'rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ' + (
+                    liveHenrysOcean.regime === 'bends_supersaturated'
+                      ? 'border-rose-200 bg-rose-50 text-rose-900'
+                      : (liveHenrysOcean.regime === 'thermal_outgassing' ? 'border-amber-200 bg-amber-50 text-amber-950' : 'border-emerald-200 bg-emerald-50 text-emerald-950')
+                  )
+                }, liveHenrysOcean.regimeLabel)
+              ),
+              h('div', { className: 'mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2' },
+                h('div', { className: 'min-w-0' },
+                  h('label', { htmlFor: 'particle-ocean-depth-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Ocean Depth (Hydrostatic P)'),
+                  h('select', {
+                    id: 'particle-ocean-depth-select',
+                    value: String(oceanDepthM),
+                    onChange: function (e) {
+                      var nextDepth = restoreOneOf(Number(e.target.value), OCEAN_DEPTH_M_OPTIONS, 0);
+                      setOceanDepthM(nextDepth);
+                      persist({ oceanDepthM: nextDepth });
+                    },
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                  }, OCEAN_DEPTH_M_OPTIONS.map(function (dVal) {
+                    return h('option', { key: dVal, value: String(dVal) }, dVal + ' m');
+                  }))
+                ),
+                h('div', { className: 'min-w-0' },
+                  h('label', { htmlFor: 'particle-ocean-salinity-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Water Salinity (Sechenov)'),
+                  h('select', {
+                    id: 'particle-ocean-salinity-select',
+                    value: String(oceanSalinityPsu),
+                    onChange: function (e) {
+                      var nextSal = restoreOneOf(Number(e.target.value), OCEAN_SALINITY_PSU_OPTIONS, 35);
+                      setOceanSalinityPsu(nextSal);
+                      persist({ oceanSalinityPsu: nextSal });
+                    },
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                  }, OCEAN_SALINITY_PSU_OPTIONS.map(function (sVal) {
+                    var label = sVal === 0 ? '0 PSU (Fresh)' : (sVal === 18 ? '18 PSU (Brackish)' : '35 PSU (Seawater)');
+                    return h('option', { key: sVal, value: String(sVal) }, label);
+                  }))
+                )
+              ),
+              h('div', { className: 'mt-3 rounded-xl border border-slate-800 bg-slate-950 p-3 text-white' },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2 text-[10px] font-black uppercase tracking-wide text-cyan-300' },
+                  h('span', null, 'C(T) = k_H(T, S) \u00B7 P_hyd'),
+                  h('span', { className: 'font-mono text-emerald-300' }, liveHenrysOcean.waterTempC.toFixed(1) + ' \u00B0C')
+                ),
+                (function () {
+                  var pts = liveHenrysOcean.curvePoints;
+                  var cMax = Math.max(1, pts[0] ? pts[0].dissolvedMgL : 10, liveHenrysOcean.dissolvedMgL);
+                  function mapHX(tempC) { return clamp(26 + (tempC / 40) * 214, 26, 240); }
+                  function mapHY(mgL) { return clamp(84 - (clamp(mgL, 0, cMax) / cMax) * 62, 22, 84); }
+                  var henryD = pts.map(function (pt, idx) {
+                    return (idx ? 'L' : 'M') + mapHX(pt.tempC).toFixed(1) + ',' + mapHY(pt.dissolvedMgL).toFixed(1);
+                  }).join(' ');
+                  var liveHX = mapHX(clamp(liveHenrysOcean.waterTempC, 0, 40));
+                  var liveHY = mapHY(liveHenrysOcean.dissolvedMgL);
+                  return h('svg', { id: 'particle-henrys-ocean-svg', viewBox: '0 0 260 116', className: 'mt-2 w-full', role: 'img', 'aria-label': buildHenrysOceanSvgAriaLabel() },
+                    h('line', { x1: 26, y1: 20, x2: 26, y2: 84, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('line', { x1: 26, y1: 84, x2: 242, y2: 84, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('path', { d: henryD, fill: 'none', stroke: '#38bdf8', strokeWidth: 2 }),
+                    h('circle', { cx: liveHX.toFixed(1), cy: liveHY.toFixed(1), r: 4.5, fill: '#fbbf24', stroke: '#020617', strokeWidth: 1.2 }),
+                    h('text', { x: 30, y: 15, fontSize: 8, fill: '#bae6fd' }, 'Live [' + liveHenrysOcean.gas.formula + '] = ' + liveHenrysOcean.dissolvedMgL.toFixed(1) + ' mg/L | DO_air = ' + liveHenrysOcean.airDoMgL.toFixed(1) + ' mg/L'),
+                    h('text', { x: 26, y: 103, fontSize: 8, fill: '#cbd5e1' }, '0 \u00B0C'),
+                    h('text', { x: 242, y: 103, textAnchor: 'end', fontSize: 8, fill: '#fde68a' }, '40 \u00B0C (' + liveHenrysOcean.depthM + ' m, ' + liveHenrysOcean.salinityPsu + ' PSU)')
+                  );
+                })(),
+                h('div', { className: 'mt-1.5 font-mono text-[11px] text-cyan-200' }, 'k_H: ' + liveHenrysOcean.kHMolLAtm.toFixed(4) + ' M/atm | Salting \u00D7' + liveHenrysOcean.saltingFactor.toFixed(2))
+              ),
+              h('div', { className: 'mt-3 grid grid-cols-2 gap-2' },
+                [
+                  ['Dissolved Gas', liveHenrysOcean.dissolvedMgL >= 1000 ? (liveHenrysOcean.dissolvedMgL / 1000).toFixed(2) + ' g/L' : liveHenrysOcean.dissolvedMgL.toFixed(1) + ' mg/L'],
+                  ['Air-Eq DO (O\u2082)', liveHenrysOcean.airDoMgL.toFixed(2) + ' mg/L'],
+                  ['Hydrostatic P', liveHenrysOcean.hydrostaticAtm.toFixed(2) + ' atm'],
+                  ['Ascent Supersat', liveHenrysOcean.surfacingSupersatRatio.toFixed(2) + 'x']
+                ].map(function (item) {
+                  return h('div', { key: item[0], className: 'min-w-0 rounded-lg border border-slate-200 bg-white p-2.5' },
+                    h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-700' }, item[0]),
+                    h('div', { className: 'mt-0.5 font-mono text-xs font-black text-slate-950' }, item[1])
+                  );
+                })
+              ),
+              h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-700' },
+                'Warming or added seawater salt ions squeeze dissolved O\u2082 out of solution, while deep hydrostatic pressure forces extra N\u2082 into tissues that can bubble during rapid ascent.'
+              ),
+              h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                h('button', { type: 'button', onClick: function () { stageHenrysOceanPreset('cold_fresh_oxygen'); }, className: 'min-h-11 sm:min-h-9 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-900 hover:bg-slate-100' }, 'Stage Cold Freshwater O2'),
+                h('button', { type: 'button', onClick: function () { stageHenrysOceanPreset('deep_n2_dive'); }, className: 'min-h-11 sm:min-h-9 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-black text-white hover:bg-slate-800' }, 'Stage 30m Scuba N2 Dive')
+              )
+            ),
+            showWbCard('alveolar_hill_bohr', 'earth_ocean_phys') && h('div', { id: 'particle-alveolar-physiology-card', className: 'min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                h('div', { className: 'min-w-0' },
+                  h('p', { className: 'text-[10px] font-black uppercase tracking-wide text-cyan-900' }, 'Respiratory Gas & Hemoglobin'),
+                  h('h4', { className: 'text-sm font-black text-slate-950' }, 'Alveolar Gas & Hill\u2013Bohr O\u2082 Curve')
+                ),
+                h('span', {
+                  className: 'rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ' + (
+                    liveAlveolarPhys.regime === 'severe_hypoxia'
+                      ? 'border-rose-200 bg-rose-50 text-rose-900'
+                      : (liveAlveolarPhys.regime === 'altitude_desaturation' ? 'border-amber-200 bg-amber-50 text-amber-950' : 'border-emerald-200 bg-emerald-50 text-emerald-950')
+                  )
+                }, liveAlveolarPhys.regimeLabel)
+              ),
+              h('div', { className: 'mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2' },
+                h('div', { className: 'min-w-0' },
+                  h('label', { htmlFor: 'particle-alveolar-altitude-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Altitude Elevation'),
+                  h('select', {
+                    id: 'particle-alveolar-altitude-select',
+                    value: String(alveolarAltitudeM),
+                    onChange: function (e) {
+                      var nextAlt = restoreOneOf(Number(e.target.value), ALVEOLAR_ALTITUDE_M_OPTIONS, 0);
+                      setAlveolarAltitudeM(nextAlt);
+                      persist({ alveolarAltitudeM: nextAlt });
+                    },
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                  }, ALVEOLAR_ALTITUDE_M_OPTIONS.map(function (aVal) {
+                    var label = aVal === 0 ? '0 m (Sea Level)' : (aVal === 2400 ? '2400 m (Cabin)' : (aVal === 5300 ? '5300 m (Base Camp)' : '8848 m (Everest)'));
+                    return h('option', { key: aVal, value: String(aVal) }, label);
+                  }))
+                ),
+                h('div', { className: 'min-w-0' },
+                  h('label', { htmlFor: 'particle-blood-ph-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Blood pH (Bohr Shift)'),
+                  h('select', {
+                    id: 'particle-blood-ph-select',
+                    value: String(bloodPh),
+                    onChange: function (e) {
+                      var nextPh = restoreOneOf(Number(e.target.value), BLOOD_PH_OPTIONS, 7.4);
+                      setBloodPh(nextPh);
+                      persist({ bloodPh: nextPh });
+                    },
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                  }, BLOOD_PH_OPTIONS.map(function (phVal) {
+                    var label = phVal === 7.2 ? 'pH 7.20 (Acidosis)' : (phVal === 7.6 ? 'pH 7.60 (Alkalosis)' : 'pH 7.40 (Normal)');
+                    return h('option', { key: phVal, value: String(phVal) }, label);
+                  }))
+                )
+              ),
+              h('div', { className: 'mt-3 rounded-xl border border-slate-800 bg-slate-950 p-3 text-white' },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2 text-[10px] font-black uppercase tracking-wide text-cyan-300' },
+                  h('span', null, 'S_O2 = P^{2.7} / (P_50^{2.7} + P^{2.7})'),
+                  h('span', { className: 'font-mono text-emerald-300' }, 'pH ' + liveAlveolarPhys.bloodPh.toFixed(2))
+                ),
+                (function () {
+                  var pts = liveAlveolarPhys.curvePoints;
+                  function mapPX(po2) { return clamp(26 + (po2 / 120) * 214, 26, 240); }
+                  function mapPY(pct) { return clamp(84 - (clamp(pct, 0, 100) / 100) * 62, 22, 84); }
+                  var hillD = pts.map(function (pt, idx) {
+                    return (idx ? 'L' : 'M') + mapPX(pt.po2MmHg).toFixed(1) + ',' + mapPY(pt.satPct).toFixed(1);
+                  }).join(' ');
+                  var p50X = mapPX(liveAlveolarPhys.p50MmHg);
+                  var p50Y = mapPY(50);
+                  var livePX = mapPX(clamp(liveAlveolarPhys.alveolarPo2MmHg, 0, 120));
+                  var livePY = mapPY(liveAlveolarPhys.arterialSaO2Pct);
+                  return h('svg', { id: 'particle-alveolar-physiology-svg', viewBox: '0 0 260 116', className: 'mt-2 w-full', role: 'img', 'aria-label': buildAlveolarPhysSvgAriaLabel() },
+                    h('line', { x1: 26, y1: 20, x2: 26, y2: 84, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('line', { x1: 26, y1: 84, x2: 242, y2: 84, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('line', { x1: 26, y1: p50Y.toFixed(1), x2: p50X.toFixed(1), y2: p50Y.toFixed(1), stroke: '#38bdf8', strokeWidth: 1.1, strokeDasharray: '4 3' }),
+                    h('line', { x1: p50X.toFixed(1), y1: p50Y.toFixed(1), x2: p50X.toFixed(1), y2: 84, stroke: '#38bdf8', strokeWidth: 1.1, strokeDasharray: '4 3' }),
+                    h('path', { d: hillD, fill: 'none', stroke: '#34d399', strokeWidth: 2 }),
+                    h('circle', { cx: livePX.toFixed(1), cy: livePY.toFixed(1), r: 4.5, fill: liveAlveolarPhys.arterialSaO2Pct < 75 ? '#fb7185' : '#fbbf24', stroke: '#020617', strokeWidth: 1.2 }),
+                    h('text', { x: 30, y: 15, fontSize: 8, fill: '#6ee7b7' }, 'Live P_AO2 = ' + liveAlveolarPhys.alveolarPo2MmHg.toFixed(0) + ' mmHg | SaO2 = ' + liveAlveolarPhys.arterialSaO2Pct.toFixed(1) + '%'),
+                    h('text', { x: 26, y: 103, fontSize: 8, fill: '#cbd5e1' }, '0 mmHg'),
+                    h('text', { x: 242, y: 103, textAnchor: 'end', fontSize: 8, fill: '#fde68a' }, '120 mmHg (P50=' + liveAlveolarPhys.p50MmHg.toFixed(1) + ')')
+                  );
+                })(),
+                h('div', { className: 'mt-1.5 font-mono text-[11px] text-cyan-200' }, 'Baro ' + Math.round(liveAlveolarPhys.baroMmHg) + ' mmHg | Krogh(' + liveAlveolarPhys.gas.formula + '/O\u2082) ' + liveAlveolarPhys.kroghRelToO2.toFixed(2) + 'x')
+              ),
+              h('div', { className: 'mt-3 grid grid-cols-2 gap-2' },
+                [
+                  ['Alveolar P_AO\u2082', liveAlveolarPhys.alveolarPo2MmHg.toFixed(1) + ' mmHg'],
+                  ['Arterial S_aO\u2082', liveAlveolarPhys.arterialSaO2Pct.toFixed(1) + '%'],
+                  ['Bohr Half-Sat P_50', liveAlveolarPhys.p50MmHg.toFixed(1) + ' mmHg'],
+                  ['Krogh vs O\u2082', (liveAlveolarPhys.kroghRelToO2 >= 10 ? liveAlveolarPhys.kroghRelToO2.toFixed(1) : liveAlveolarPhys.kroghRelToO2.toFixed(2)) + 'x']
+                ].map(function (item) {
+                  return h('div', { key: item[0], className: 'min-w-0 rounded-lg border border-slate-200 bg-white p-2.5' },
+                    h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-700' }, item[0]),
+                    h('div', { className: 'mt-0.5 font-mono text-xs font-black text-slate-950' }, item[1])
+                  );
+                })
+              ),
+              h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-700' },
+                'Sigmoidal Hill cooperativity protects O\u2082 loading down to ~60 mmHg before steep high-altitude desaturation, while acidotic tissue (low pH) right-shifts P_50 to unload O\u2082.'
+              ),
+              h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                h('button', { type: 'button', onClick: function () { stageAlveolarPhysPreset('everest_hypoxia'); }, className: 'min-h-11 sm:min-h-9 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-900 hover:bg-slate-100' }, 'Stage Everest Hypoxia'),
+                h('button', { type: 'button', onClick: function () { stageAlveolarPhysPreset('exercise_bohr_shift'); }, className: 'min-h-11 sm:min-h-9 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-black text-white hover:bg-slate-800' }, 'Stage Exercise Bohr Shift')
+              )
+            ),
+            showWbCard('magma_volatiles', 'earth_ocean_phys') && h('div', { id: 'particle-magma-volatiles-card', className: 'min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                h('div', { className: 'min-w-0' },
+                  h('p', { className: 'text-[10px] font-black uppercase tracking-wide text-cyan-900' }, 'Volcanic Conduit Degassing'),
+                  h('h4', { className: 'text-sm font-black text-slate-950' }, 'Magmatic Volatiles & Fragmentation')
+                ),
+                h('span', {
+                  className: 'rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ' + (
+                    liveMagmaVolatiles.regime === 'explosive_fragmentation'
+                      ? 'border-rose-200 bg-rose-50 text-rose-900'
+                      : (liveMagmaVolatiles.regime === 'effusive_fountain' ? 'border-amber-200 bg-amber-50 text-amber-950' : 'border-cyan-200 bg-cyan-50 text-cyan-950')
+                  )
+                }, liveMagmaVolatiles.regimeLabel)
+              ),
+              h('div', { className: 'mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2' },
+                h('div', { className: 'min-w-0' },
+                  h('label', { htmlFor: 'particle-magma-melt-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Silicate Melt Composition'),
+                  h('select', {
+                    id: 'particle-magma-melt-select',
+                    value: magmaMeltId,
+                    onChange: function (e) {
+                      var nextMelt = restoreOneOf(e.target.value, MAGMA_MELT_IDS, 'basalt');
+                      setMagmaMeltId(nextMelt);
+                      persist({ magmaMeltId: nextMelt });
+                    },
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                  }, MAGMA_MELT_IDS.map(function (mId) {
+                    return h('option', { key: mId, value: mId }, MAGMA_MELT_SPECS[mId].label);
+                  }))
+                ),
+                h('div', { className: 'min-w-0' },
+                  h('label', { htmlFor: 'particle-magma-depth-select', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-700' }, 'Conduit Depth z'),
+                  h('select', {
+                    id: 'particle-magma-depth-select',
+                    value: String(magmaDepthKm),
+                    onChange: function (e) {
+                      var nextZ = restoreOneOf(Number(e.target.value), MAGMA_DEPTH_KM_OPTIONS, 1);
+                      setMagmaDepthKm(nextZ);
+                      persist({ magmaDepthKm: nextZ });
+                    },
+                    className: 'mt-1 min-h-11 sm:min-h-9 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-900'
+                  }, MAGMA_DEPTH_KM_OPTIONS.map(function (zVal) {
+                    return h('option', { key: zVal, value: String(zVal) }, zVal + ' km');
+                  }))
+                )
+              ),
+              h('div', { className: 'mt-3 rounded-xl border border-slate-800 bg-slate-950 p-3 text-white' },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2 text-[10px] font-black uppercase tracking-wide text-cyan-300' },
+                  h('span', null, 'H\u2082O_sat(P) \u221D P^{1/2} | Arrhenius \u03B7'),
+                  h('span', { className: 'font-mono text-emerald-300' }, liveMagmaVolatiles.depthKm + ' km')
+                ),
+                (function () {
+                  var pts = liveMagmaVolatiles.curvePoints;
+                  function mapMX(zKm) { return clamp(26 + ((zKm - 0.2) / 9.8) * 214, 26, 240); }
+                  function mapMY(pct) { return clamp(84 - (clamp(pct, 0, 100) / 100) * 62, 22, 84); }
+                  var magmaD = pts.map(function (pt, idx) {
+                    return (idx ? 'L' : 'M') + mapMX(pt.depthKm).toFixed(1) + ',' + mapMY(pt.gasVolPct).toFixed(1);
+                  }).join(' ');
+                  var fragY = mapMY(75);
+                  var liveMX = mapMX(clamp(liveMagmaVolatiles.depthKm, 0.2, 10));
+                  var liveMY = mapMY(liveMagmaVolatiles.gasVolPct);
+                  return h('svg', { id: 'particle-magma-volatiles-svg', viewBox: '0 0 260 116', className: 'mt-2 w-full', role: 'img', 'aria-label': buildMagmaVolatilesSvgAriaLabel() },
+                    h('line', { x1: 26, y1: 20, x2: 26, y2: 84, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('line', { x1: 26, y1: 84, x2: 242, y2: 84, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('line', { x1: 26, y1: fragY.toFixed(1), x2: 242, y2: fragY.toFixed(1), stroke: '#fb7185', strokeWidth: 1.3, strokeDasharray: '4 3' }),
+                    h('path', { d: magmaD, fill: 'none', stroke: '#fbbf24', strokeWidth: 2 }),
+                    h('circle', { cx: liveMX.toFixed(1), cy: liveMY.toFixed(1), r: 4.5, fill: liveMagmaVolatiles.fragmenting ? '#fb7185' : '#34d399', stroke: '#020617', strokeWidth: 1.2 }),
+                    h('text', { x: 30, y: 15, fontSize: 8, fill: '#fde68a' }, 'Live Vesicularity = ' + liveMagmaVolatiles.gasVolPct.toFixed(0) + '% (75% Frag Limit)'),
+                    h('text', { x: 26, y: 103, fontSize: 8, fill: '#cbd5e1' }, '0.2 km (Vent)'),
+                    h('text', { x: 242, y: 103, textAnchor: 'end', fontSize: 8, fill: '#bae6fd' }, '10 km (log \u03B7=' + liveMagmaVolatiles.log10ViscosityPaS.toFixed(1) + ')')
+                  );
+                })(),
+                h('div', { className: 'mt-1.5 font-mono text-[11px] text-cyan-200' }, 'T_melt ' + Math.round(liveMagmaVolatiles.magmaTempK) + ' K | P ' + liveMagmaVolatiles.lithostaticMpa.toFixed(1) + ' MPa')
+              ),
+              h('div', { className: 'mt-3 grid grid-cols-2 gap-2' },
+                [
+                  ['Gas Vesicularity', liveMagmaVolatiles.gasVolPct.toFixed(1) + '%'],
+                  ['Melt log\u2081\u2080 \u03B7', liveMagmaVolatiles.log10ViscosityPaS.toFixed(2) + ' Pa\u00B7s'],
+                  ['Lithostatic P', liveMagmaVolatiles.lithostaticMpa.toFixed(1) + ' MPa'],
+                  ['Exsolved H\u2082O', liveMagmaVolatiles.exsolvedWtPct.toFixed(2) + ' wt%']
+                ].map(function (item) {
+                  return h('div', { key: item[0], className: 'min-w-0 rounded-lg border border-slate-200 bg-white p-2.5' },
+                    h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-700' }, item[0]),
+                    h('div', { className: 'mt-0.5 font-mono text-xs font-black text-slate-950' }, item[1])
+                  );
+                })
+              ),
+              h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-700' },
+                'Decompression lowers dissolved volatile capacity (~P^1/2) so steam bubbles expand rapidly; low-viscosity basalt vents effusively whereas viscous rhyolite shatters at ~75% vesicularity.'
+              ),
+              h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                h('button', { type: 'button', onClick: function () { stageMagmaVolatilesPreset('hawaii_basalt_degas'); }, className: 'min-h-11 sm:min-h-9 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-900 hover:bg-slate-100' }, 'Stage Basalt Degassing'),
+                h('button', { type: 'button', onClick: function () { stageMagmaVolatilesPreset('plinian_rhyolite_burst'); }, className: 'min-h-11 sm:min-h-9 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-black text-white hover:bg-slate-800' }, 'Stage Plinian Rhyolite')
+              )
+            )
+          )
+        )
+        )
         ),
         h('section', { className: 'overflow-hidden rounded-2xl border border-indigo-200 bg-gradient-to-br from-white via-indigo-50/40 to-cyan-50/60 shadow-sm', 'aria-labelledby': 'particle-notebook-title' },
           h('div', { className: 'flex flex-wrap items-center justify-between gap-3 border-b border-indigo-100 bg-white/70 px-5 py-4' },
             h('div', null, h('p', { className: 'text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600' }, 'Scientific notebook'), h('h3', { id: 'particle-notebook-title', className: 'text-lg font-black text-slate-950' }, 'Predict \u2192 Observe \u2192 Explain')),
-            h('div', { className: 'flex items-center gap-2 text-[10px] font-black uppercase tracking-wide' },
+            h('div', { className: 'flex flex-wrap items-center gap-2 text-[10px] font-black uppercase tracking-wide' },
               h('span', { className: 'rounded-full px-2 py-1 ' + (prediction.trim() ? 'bg-cyan-100 text-cyan-800' : 'bg-slate-100 text-slate-600') }, prediction.trim() ? '\u2713 Prediction' : '1 Prediction'),
               h('span', { className: 'rounded-full px-2 py-1 ' + (observation.trim() ? 'bg-violet-100 text-violet-800' : 'bg-slate-100 text-slate-600') }, observation.trim() ? '\u2713 Observation' : '2 Observation'),
-              h('span', { className: 'rounded-full px-2 py-1 ' + (conclusion.trim().length >= 20 ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600') }, conclusion.trim().length >= 20 ? '\u2713 Conclusion' : '3 Conclusion')
+              h('span', { className: 'rounded-full px-2 py-1 ' + (conclusion.trim().length >= 20 ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600') }, conclusion.trim().length >= 20 ? '\u2713 Conclusion' : '3 Conclusion'),
+              h('button', {
+                id: 'particle-notebook-scaffolds-btn',
+                type: 'button',
+                'aria-expanded': notebookScaffoldsOpen,
+                onClick: function () {
+                  setNotebookScaffoldsOpen(function (v) {
+                    var next = !v;
+                    persist({ notebookScaffoldsOpen: next });
+                    return next;
+                  });
+                },
+                className: 'min-h-11 sm:min-h-8 rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-[11px] font-black normal-case tracking-normal text-indigo-900 hover:bg-indigo-100'
+              }, notebookScaffoldsOpen ? 'Hide Writing Starters' : 'Writing Starters')
+            )
+          ),
+          h('div', { id: 'particle-cer-checklist', className: 'flex flex-wrap items-center justify-between gap-2 border-b border-indigo-100 bg-white/80 px-5 py-2.5 text-xs' },
+            h('span', { className: 'font-black text-slate-900' }, 'CER Readiness: ' + notebookReadiness.completedCount + '/' + notebookReadiness.totalCount),
+            h('div', { className: 'flex flex-wrap items-center gap-1.5' },
+              notebookReadiness.checks.map(function (chk) {
+                return h('span', {
+                  key: chk.id,
+                  className: 'rounded-full px-2 py-0.5 text-[11px] font-bold ' + (chk.done ? 'bg-emerald-100 text-emerald-900' : 'bg-slate-100 text-slate-700')
+                }, (chk.done ? '\u2713 ' : '\u25CB ') + chk.label);
+              })
+            )
+          ),
+          h('details', { id: 'particle-mastery-rubric-details', className: 'border-b border-indigo-100 bg-indigo-50/50 px-5 py-1.5' },
+            h('summary', { className: 'min-h-11 sm:min-h-8 cursor-pointer select-none py-1.5 leading-5 text-xs font-black text-slate-900' }, 'NGSS Investigation Portfolio: ' + investigationMastery.levelLabel),
+            h('div', { className: 'mt-2 flex flex-wrap gap-1.5 pb-1' },
+              investigationMastery.dimensions.map(function (dim) {
+                return h('span', {
+                  key: dim.id,
+                  className: 'rounded-lg border px-2 py-1 text-[11px] font-bold ' + (dim.met ? 'border-emerald-300 bg-emerald-100 text-emerald-900' : 'border-slate-300 bg-white text-slate-800')
+                }, (dim.met ? '\u2713 ' : '\u25CB ') + dim.sepCode + ' \u2022 ' + dim.label);
+              })
             )
           ),
           h('div', { className: 'grid gap-0 lg:grid-cols-3' },
-            h('label', { className: 'block border-b border-indigo-100 p-5 lg:border-b-0 lg:border-r' }, h('span', { className: 'flex items-center gap-2 text-sm font-black text-cyan-900' }, h('span', { className: 'flex h-7 w-7 items-center justify-center rounded-full bg-cyan-100' }, '1'), 'Predict'), h('span', { className: 'mt-2 block text-xs leading-relaxed text-slate-600' }, currentIdea ? 'You are testing the idea: \u201C' + currentIdea.idea + '\u201D Before running, predict what ' + currentIdea.watch + ' will do.' : (currentProtocol ? 'Before running: ' + currentProtocol.prompt.split('.')[0] + '.' : 'Before changing a variable, state what you think will happen and why.')), h('textarea', { id: 'particle-prediction-input', value: prediction, onChange: function (e) { updateNotebook('prediction', e.target.value); }, rows: 5, maxLength: 800, placeholder: __alloT('stem.particlelab3d.i_predict_that_because','I predict that... because...'), className: 'mt-3 w-full resize-y rounded-xl border border-cyan-600 bg-white p-3 text-sm text-slate-800 outline-none transition focus:border-cyan-600 focus:ring-2 focus:ring-cyan-100' })),
-            h('label', { className: 'block border-b border-indigo-100 p-5 lg:border-b-0 lg:border-r' }, h('span', { className: 'flex items-center gap-2 text-sm font-black text-violet-900' }, h('span', { className: 'flex h-7 w-7 items-center justify-center rounded-full bg-violet-100' }, '2'), 'Observe'), h('span', { className: 'mt-2 block text-xs leading-relaxed text-slate-600' }, 'Describe visible motion and cite at least one measurement from the chamber.'), h('textarea', { id: 'particle-observation-input', value: observation, onChange: function (e) { updateNotebook('observation', e.target.value); }, rows: 5, maxLength: 800, placeholder: __alloT('stem.particlelab3d.i_observed_the_measurement_changed_from_to','I observed... The measurement changed from... to...'), className: 'mt-3 w-full resize-y rounded-xl border border-violet-500 bg-white p-3 text-sm text-slate-800 outline-none transition focus:border-violet-500 focus:ring-2 focus:ring-violet-100' })),
-            h('label', { className: 'block p-5' }, h('span', { className: 'flex items-center gap-2 text-sm font-black text-emerald-900' }, h('span', { className: 'flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100' }, '3'), 'Explain'), h('span', { className: 'mt-2 block text-xs leading-relaxed text-slate-600' }, 'Connect the particle behavior to your evidence. State whether your prediction was supported.'), h('textarea', { id: 'particle-conclusion-input', value: conclusion, onChange: function (e) { updateNotebook('conclusion', e.target.value); }, rows: 5, maxLength: 1000, placeholder: __alloT('stem.particlelab3d.my_prediction_was_supported_not_supported_be','My prediction was supported/not supported because...'), className: 'mt-3 w-full resize-y rounded-xl border border-emerald-600 bg-white p-3 text-sm text-slate-800 outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100' }))
+            h('div', { className: 'border-b border-indigo-100 p-5 lg:border-b-0 lg:border-r' },
+              h('label', { htmlFor: 'particle-prediction-input', className: 'block' },
+                h('span', { className: 'flex items-center gap-2 text-sm font-black text-cyan-900' }, h('span', { className: 'flex h-7 w-7 items-center justify-center rounded-full bg-cyan-100' }, '1'), 'Predict'),
+                h('span', { className: 'mt-2 block text-xs leading-relaxed text-slate-600' }, currentIdea ? 'You are testing the idea: \u201C' + currentIdea.idea + '\u201D Before running, predict what ' + currentIdea.watch + ' will do.' : (currentProtocol ? 'Before running: ' + currentProtocol.prompt.split('.')[0] + '.' : 'Before changing a variable, state what you think will happen and why.')),
+                h('textarea', { id: 'particle-prediction-input', value: prediction, onChange: function (e) { updateNotebook('prediction', e.target.value); }, rows: 5, maxLength: 800, placeholder: __alloT('stem.particlelab3d.i_predict_that_because','I predict that... because...'), className: 'mt-3 w-full resize-y rounded-xl border border-cyan-600 bg-white p-3 text-sm text-slate-800 outline-none transition focus:border-cyan-600 focus:ring-2 focus:ring-cyan-100' })
+              ),
+              notebookScaffoldsOpen && h('div', { className: 'mt-2 flex flex-wrap gap-1.5' },
+                NOTEBOOK_SENTENCE_STARTERS.prediction.map(function (st) {
+                  return h('button', {
+                    key: st.id,
+                    type: 'button',
+                    'data-starter-id': st.id,
+                    onClick: function () { insertSentenceStarter('prediction', st.text); },
+                    className: 'min-h-11 sm:min-h-8 rounded-lg border border-cyan-300 bg-cyan-50 px-2.5 py-1 text-xs font-bold text-cyan-950 hover:bg-cyan-100'
+                  }, st.label);
+                })
+              )
+            ),
+            h('div', { className: 'border-b border-indigo-100 p-5 lg:border-b-0 lg:border-r' },
+              h('label', { htmlFor: 'particle-observation-input', className: 'block' }, h('span', { className: 'flex items-center gap-2 text-sm font-black text-violet-900' }, h('span', { className: 'flex h-7 w-7 items-center justify-center rounded-full bg-violet-100' }, '2'), 'Observe'), h('span', { className: 'mt-2 block text-xs leading-relaxed text-slate-600' }, 'Describe visible motion and cite at least one measurement from the chamber.'), h('textarea', { id: 'particle-observation-input', value: observation, onChange: function (e) { updateNotebook('observation', e.target.value); }, rows: 5, maxLength: 800, placeholder: __alloT('stem.particlelab3d.i_observed_the_measurement_changed_from_to','I observed... The measurement changed from... to...'), className: 'mt-3 w-full resize-y rounded-xl border border-violet-500 bg-white p-3 text-sm text-slate-800 outline-none transition focus:border-violet-500 focus:ring-2 focus:ring-violet-100' })),
+              h('div', { className: 'mt-2 flex flex-wrap gap-1.5' },
+                h('button', { type: 'button', onClick: function () { insertNotebookEvidence('observation'); }, className: 'min-h-11 sm:min-h-9 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 hover:bg-slate-100' }, '+ Insert chamber evidence'),
+                notebookScaffoldsOpen && NOTEBOOK_SENTENCE_STARTERS.observation.map(function (st) {
+                  return h('button', {
+                    key: st.id,
+                    type: 'button',
+                    'data-starter-id': st.id,
+                    onClick: function () { insertSentenceStarter('observation', st.text); },
+                    className: 'min-h-11 sm:min-h-8 rounded-lg border border-violet-300 bg-violet-50 px-2.5 py-1 text-xs font-bold text-violet-950 hover:bg-violet-100'
+                  }, st.label);
+                })
+              )
+            ),
+            h('div', { className: 'p-5' },
+              h('label', { htmlFor: 'particle-conclusion-input', className: 'block' }, h('span', { className: 'flex items-center gap-2 text-sm font-black text-emerald-900' }, h('span', { className: 'flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100' }, '3'), 'Explain'), h('span', { className: 'mt-2 block text-xs leading-relaxed text-slate-600' }, 'Connect the particle behavior to your evidence. State whether your prediction was supported.'), h('textarea', { id: 'particle-conclusion-input', value: conclusion, onChange: function (e) { updateNotebook('conclusion', e.target.value); }, rows: 5, maxLength: 1000, placeholder: __alloT('stem.particlelab3d.my_prediction_was_supported_not_supported_be','My prediction was supported/not supported because...'), className: 'mt-3 w-full resize-y rounded-xl border border-emerald-600 bg-white p-3 text-sm text-slate-800 outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100' })),
+              h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                h('button', { type: 'button', onClick: function () { insertNotebookEvidence('conclusion'); }, className: 'min-h-11 sm:min-h-9 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 hover:bg-slate-100' }, '+ Insert KMT & fit summary'),
+                h('button', { id: 'particle-insert-domain-evidence-btn', type: 'button', onClick: insertActiveWorkbenchEvidence, className: 'min-h-11 sm:min-h-9 rounded-lg border border-cyan-300 bg-cyan-50 px-3 py-1.5 text-xs font-black text-cyan-950 hover:bg-cyan-100' }, '+ Insert active workbench evidence'),
+                notebookScaffoldsOpen && NOTEBOOK_SENTENCE_STARTERS.conclusion.map(function (st) {
+                  return h('button', {
+                    key: st.id,
+                    type: 'button',
+                    'data-starter-id': st.id,
+                    onClick: function () { insertSentenceStarter('conclusion', st.text); },
+                    className: 'min-h-11 sm:min-h-8 rounded-lg border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-950 hover:bg-emerald-100'
+                  }, st.label);
+                })
+              )
+            )
           ),
           coachFeedback && h('div', { className: 'border-t border-indigo-100 bg-indigo-950 px-5 py-4 text-white', role: 'status', 'aria-live': 'polite' }, h('div', { className: 'flex items-start gap-3' }, h('span', { className: 'flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-cyan-300 to-violet-400 text-lg text-slate-950 shadow-lg' }, '\u2728'), h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300' }, ctx.aiHintsEnabled ? 'Socratic lab coach' : 'Built-in lab coach'), h('p', { className: 'mt-1 max-w-4xl text-sm leading-relaxed text-indigo-50' }, coachFeedback)))),
           h('div', { className: 'flex flex-wrap items-center justify-between gap-3 border-t border-indigo-100 bg-slate-950 px-5 py-4 text-white' },
             h('div', null, h('div', { className: 'text-xs text-slate-300' }, h('strong', { className: 'text-cyan-300' }, trials.length + ' trial' + (trials.length === 1 ? '' : 's') + ' recorded'), ' \u2022 ', conclusion.trim().length, ' conclusion characters'), h('div', { className: 'mt-1 text-[10px] text-slate-300' }, ctx.aiHintsEnabled ? 'Notebook text is sent to the coach only when you press Ask lab coach.' : 'AI hints are off; Ask lab coach uses built-in prompts and sends nothing.')),
-            h('div', { className: 'flex flex-wrap gap-2' }, h('button', { type: 'button', onClick: requestLabCoach, disabled: isCoaching, className: 'rounded-xl border border-violet-400/40 bg-violet-500/20 px-4 py-2 text-xs font-black text-violet-100 hover:bg-violet-500/30 disabled:cursor-wait disabled:opacity-60' }, isCoaching ? '\u2728 Coach is thinking\u2026' : '\u2728 Ask lab coach'), h('button', { type: 'button', onClick: copyLabReport, className: 'rounded-xl bg-gradient-to-r from-cyan-400 to-indigo-400 px-4 py-2 text-xs font-black text-slate-950 shadow-lg hover:from-cyan-300 hover:to-indigo-300' }, '\uD83D\uDCCB Copy complete lab report'))
+            h('div', { className: 'flex flex-wrap gap-2' },
+              h('button', { type: 'button', onClick: requestLabCoach, disabled: isCoaching, className: 'min-h-11 sm:min-h-9 rounded-xl border border-violet-400/40 bg-violet-500/20 px-4 py-2 text-xs font-black text-violet-100 hover:bg-violet-500/30 disabled:cursor-wait disabled:opacity-60' }, isCoaching ? '\u2728 Coach is thinking\u2026' : '\u2728 Ask lab coach'),
+              h('button', { type: 'button', onClick: copyLabReport, className: 'min-h-11 sm:min-h-9 rounded-xl bg-gradient-to-r from-cyan-400 to-indigo-400 px-4 py-2 text-xs font-black text-slate-950 shadow-lg hover:from-cyan-300 hover:to-indigo-300' }, '\uD83D\uDCCB Copy complete lab report'),
+              h('button', {
+                id: 'particle-copy-markdown-report-btn',
+                type: 'button',
+                onClick: copyMarkdownLabReport,
+                className: 'min-h-11 sm:min-h-9 rounded-xl border border-cyan-400/50 bg-cyan-950 px-3.5 py-2 text-xs font-black text-cyan-100 hover:bg-cyan-900'
+              }, 'Copy Markdown Report'),
+              h('button', {
+                id: 'particle-session-json-toggle-btn',
+                type: 'button',
+                'aria-expanded': sessionJsonOpen,
+                onClick: function () {
+                  setSessionJsonOpen(function (v) {
+                    var next = !v;
+                    if (next && !sessionJsonDraft) {
+                      setSessionJsonDraft(buildCurrentSessionJson());
+                    }
+                    return next;
+                  });
+                },
+                className: 'min-h-11 sm:min-h-9 rounded-xl border border-slate-500 bg-slate-800 px-3.5 py-2 text-xs font-black text-slate-100 hover:bg-slate-700'
+              }, sessionJsonOpen ? 'Hide Session JSON' : 'Session JSON Import/Export')
+            )
+          ),
+          sessionJsonOpen && h('div', {
+            id: 'particle-session-json-drawer',
+            role: 'region',
+            'aria-label': __alloT('stem.particlelab3d.session_json_region', 'Portable session JSON import and export'),
+            className: 'border-t border-slate-800 bg-slate-900 px-5 py-4 text-slate-100'
+          },
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+              h('div', null,
+                h('h4', { className: 'text-sm font-black text-white' }, 'Portable Session Snapshot (' + PARTICLE_SESSION_SCHEMA + ')'),
+                h('p', { className: 'text-xs text-slate-300' }, 'Export your full lab parameters, sweep log, snapshots, pinned cards, and notebook, or paste a JSON snapshot to restore.')
+              ),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                h('button', {
+                  id: 'particle-copy-session-json-btn',
+                  type: 'button',
+                  onClick: copySessionJson,
+                  className: 'min-h-11 sm:min-h-9 rounded-lg border border-cyan-400/50 bg-cyan-950 px-3 py-1.5 text-xs font-black text-cyan-100 hover:bg-cyan-900'
+                }, 'Copy Session JSON'),
+                h('button', {
+                  id: 'particle-apply-session-json-btn',
+                  type: 'button',
+                  onClick: applySessionJsonImport,
+                  className: 'min-h-11 sm:min-h-9 rounded-lg bg-emerald-400 px-3 py-1.5 text-xs font-black text-slate-950 hover:bg-emerald-300'
+                }, 'Import Session JSON')
+              )
+            ),
+            h('label', { htmlFor: 'particle-import-session-json-input', className: 'mt-3 block text-xs font-bold text-slate-200' }, 'Session JSON payload'),
+            h('textarea', {
+              id: 'particle-import-session-json-input',
+              value: sessionJsonDraft,
+              onChange: function (e) { setSessionJsonDraft(e.target.value); },
+              rows: 5,
+              placeholder: __alloT('stem.particlelab3d.session_json_placeholder', 'Paste exported alloflow.particleLab3d.v1 JSON here...'),
+              className: 'mt-1.5 w-full resize-y rounded-xl border border-slate-600 bg-slate-950 p-3 font-mono text-xs text-cyan-100 placeholder-slate-400 outline-none focus:border-cyan-400'
+            })
           )
         )
       );

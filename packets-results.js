@@ -513,6 +513,209 @@
       if (cue) cue.hidden = !wide;
     });
   }
+  function parseMathFactText(raw) {
+    var m = /^(\d{1,3})\s*([-+xX*/:\u2212\u00D7\u00F7])\s*(\d{1,3})$/.exec(String(raw || '').trim());
+    if (!m) return null;
+    var op = m[2] === '+' ? '+' : (m[2] === '-' || m[2] === '\u2212') ? '-' : (m[2] === 'x' || m[2] === 'X' || m[2] === '*' || m[2] === '\u00D7') ? 'x' : '/';
+    return { text: m[0], a: m[1], b: m[3], op: op, key: m[1] + op + m[3] };
+  }
+
+  function mentalMathFlags(factTexts) {
+    var flags = { make10: false, doubles: false, mult2510: false, squares: false };
+    (factTexts || []).forEach(function (txt) {
+      var parsed = parseMathFactText(txt);
+      if (!parsed) return;
+      var a = Number(parsed.a), b = Number(parsed.b);
+      if (parsed.op === '+') {
+        if (a >= 0 && b >= 0 && a + b === 10) flags.make10 = true;
+        if (a >= 2 && b >= 2 && Math.abs(a - b) <= 1) flags.doubles = true;
+      } else if (parsed.op === 'x') {
+        if (a >= 1 && b >= 1 && a <= 12 && b <= 12 && (a === 2 || a === 5 || a === 10 || b === 2 || b === 5 || b === 10)) flags.mult2510 = true;
+        if (a >= 2 && a <= 10 && a === b) flags.squares = true;
+      }
+    });
+    return flags;
+  }
+
+  function navButton(label, target) {
+    var btn = el('button', 'btn btn-small', label);
+    btn.type = 'button';
+    btn.setAttribute('data-href', target);
+    btn.addEventListener('click', function () {
+      var link = doc.createElement('a');
+      link.href = target;
+      link.hidden = true;
+      doc.body.appendChild(link);
+      link.click();
+      doc.body.removeChild(link);
+    });
+    return btn;
+  }
+
+  function drawGroupMissed() {
+    var viewGroup = $('view-group');
+    var groupTable = $('group-table');
+    if (!viewGroup || !groupTable) return;
+    var host = $('group-missed');
+    if (!host) {
+      host = el('div', 'group-missed');
+      host.id = 'group-missed';
+      viewGroup.appendChild(host);
+    }
+    host.textContent = '';
+    if (!model || !Array.isArray(model.learners) || model.learners.length < 2) {
+      host.hidden = true;
+      return;
+    }
+
+    var byKey = Object.create(null);
+    var list = [];
+    var mathEverMastered = Object.create(null);
+    var mathAnyMissed = Object.create(null);
+
+    function ensureEntry(uid, display, kind) {
+      if (!byKey[uid]) {
+        byKey[uid] = { uid: uid, display: display, kind: kind, students: 0, misses: 0, wrongCounts: Object.create(null) };
+        list.push(byKey[uid]);
+      }
+      return byKey[uid];
+    }
+
+    function recordMiss(learnerSeen, uid, display, kind, it) {
+      var entry = ensureEntry(uid, display, kind);
+      entry.misses += 1;
+      if (!learnerSeen[uid]) {
+        learnerSeen[uid] = true;
+        entry.students += 1;
+      }
+      var targetLower = String(it.target || it.word || display || '').trim().toLowerCase();
+      var responses = Array.isArray(it.responses) ? it.responses : [];
+      var wrongSeen = Object.create(null);
+      responses.forEach(function (raw) {
+        var r = String(raw || '').trim();
+        var rl = r.toLowerCase();
+        if (!rl || rl === targetLower || wrongSeen[rl]) return;
+        wrongSeen[rl] = true;
+        if (!entry.wrongCounts[rl]) entry.wrongCounts[rl] = { value: r, count: 0 };
+        entry.wrongCounts[rl].count += 1;
+      });
+    }
+
+    model.learners.forEach(function (learner) {
+      var learnerSeen = Object.create(null);
+      (learner.sessions || []).forEach(function (s) {
+        (s.items || []).forEach(function (it) {
+          if (it.practice || !it.attempted) return;
+          var act = String(it.activity || '');
+          if (/^math_(?:computation|ccc|rehearsal)$/i.test(act)) {
+            var mf = parseMathFactText(it.word);
+            if (!mf) return;
+            if (it.firstTry && it.correct) {
+              if (!mathEverMastered[mf.key]) mathEverMastered[mf.key] = mf;
+            } else {
+              mathAnyMissed[mf.key] = true;
+              if (mf.op === '+' || mf.op === 'x') mathAnyMissed[mf.b + mf.op + mf.a] = true;
+              recordMiss(learnerSeen, 'math:' + mf.key, mf.text, 'math', it);
+            }
+            return;
+          }
+          if (it.firstTry && it.correct) return;
+          if (act === 'symbol_runner') {
+            var sym = String(it.target || it.word || '').trim();
+            if (!sym) return;
+            recordMiss(learnerSeen, 'sr:' + sym.toLowerCase(), sym, 'sr', it);
+          } else if (/^vocab_/i.test(act)) {
+            var vw = String(it.word || it.target || '').trim();
+            if (!vw) return;
+            recordMiss(learnerSeen, 'vocab:' + vw.toLowerCase(), vw, 'vocab', it);
+          } else if (act === 'quantity_discrimination') {
+            var qdDisp = String(it.word || it.target || '').trim();
+            if (!qdDisp) return;
+            recordMiss(learnerSeen, 'qd:' + qdDisp.toLowerCase(), qdDisp, 'qd', it);
+          } else if (act === 'missing_number') {
+            var mnDisp = String(it.word || it.target || '').trim();
+            if (!mnDisp) return;
+            recordMiss(learnerSeen, 'mn:' + mnDisp.toLowerCase(), mnDisp, 'mn', it);
+          } else if (reader && reader.ACTIVITIES && reader.ACTIVITIES[act]) {
+            var ww = String(it.word || it.target || '').trim();
+            if (!ww || !/^[a-z]{2,16}$/i.test(ww)) return;
+            recordMiss(learnerSeen, 'ws:' + ww.toLowerCase(), ww.toLowerCase(), 'ws', it);
+          }
+        });
+      });
+    });
+
+    if (!list.length) {
+      host.hidden = true;
+      return;
+    }
+
+    list.sort(function (a, b) {
+      return (b.students - a.students) || (b.misses - a.misses) || a.display.localeCompare(b.display);
+    });
+
+    function topWrongText(entry) {
+      var best = null;
+      Object.keys(entry.wrongCounts).forEach(function (k) {
+        var row = entry.wrongCounts[k];
+        if (!best || row.count > best.count || (row.count === best.count && row.value < best.value)) best = row;
+      });
+      if (!best) return '\u2014';
+      return best.value + (best.count > 1 ? ' (' + best.count + ')' : '');
+    }
+
+    host.hidden = false;
+    add(host, el('h4', 'group-sub', 'Most missed across the group'));
+    add(host, plainTable('Most missed across the group', ['Item', 'Students', 'Misses', 'Common wrong answer'],
+      list.slice(0, 10).map(function (entry) {
+        return [entry.display, entry.students + ' of ' + model.learners.length, String(entry.misses), topWrongText(entry)];
+      }), 'narrow'));
+
+    var srList = list.filter(function (e) { return e.kind === 'sr'; }).slice(0, 6).map(function (e) { return e.display; });
+    var vocabList = list.filter(function (e) { return e.kind === 'vocab'; }).slice(0, 12).map(function (e) { return e.display; });
+    var wsList = list.filter(function (e) { return e.kind === 'ws'; }).slice(0, 12).map(function (e) { return e.display; });
+    var mathList = list.filter(function (e) { return e.kind === 'math'; }).slice(0, 12).map(function (e) { return e.display; });
+    var hasQd = list.some(function (e) { return e.kind === 'qd'; });
+    var hasMn = list.some(function (e) { return e.kind === 'mn'; });
+
+    if (srList.length) {
+      add(host, add(el('p', 'actions no-print'), navButton('Practice group missed symbols in Symbol Runner', 'packets-symbol-runner.html#rehearse=' + encodeURIComponent(srList.join(',')))));
+    }
+    if (vocabList.length) {
+      add(host, add(el('p', 'actions no-print'),
+        navButton('Practice group missed words in Vocabulary', 'packets-vocab.html#rehearse=' + encodeURIComponent(vocabList.join(','))),
+        navButton('Open group missed words in Present and Export', 'packets-present-export.html#words=' + encodeURIComponent(vocabList.join(',')))));
+    }
+    if (wsList.length) {
+      var wsGroupRow = add(el('p', 'actions no-print'), navButton('Practice group missed words in Word Sounds', 'packets-make.html#rehearse=' + encodeURIComponent(wsList.join(','))));
+      if (!vocabList.length) {
+        add(wsGroupRow, navButton('Open group missed words in Present and Export', 'packets-present-export.html#words=' + encodeURIComponent(wsList.join(','))));
+      }
+      add(host, wsGroupRow);
+    }
+    if (mathList.length) {
+      var groupKnown = [];
+      Object.keys(mathEverMastered).forEach(function (k) {
+        if (groupKnown.length >= 8 || mathAnyMissed[k]) return;
+        groupKnown.push(mathEverMastered[k].text);
+      });
+      var mathGroupHref = 'packets-math-practice.html#rehearse=' + encodeURIComponent(mathList.join(',')) + (groupKnown.length >= 3 ? '&known=' + encodeURIComponent(groupKnown.join(',')) : '');
+      var mathGroupRow = add(el('p', 'actions no-print'), navButton('Practice group missed facts in Math Facts', mathGroupHref));
+      var gMental = mentalMathFlags(mathList);
+      if (gMental.make10) add(mathGroupRow, navButton('Practice group make-10 partners in Symbol Runner', 'packets-symbol-runner.html#mode=math_make_10'));
+      if (gMental.doubles) add(mathGroupRow, navButton('Practice group doubles facts in Symbol Runner', 'packets-symbol-runner.html#mode=math_doubles'));
+      if (gMental.mult2510) add(mathGroupRow, navButton('Practice group 2s, 5s, and 10s in Symbol Runner', 'packets-symbol-runner.html#mode=math_mult_2_5_10'));
+      if (gMental.squares) add(mathGroupRow, navButton('Practice group multiplication squares in Symbol Runner', 'packets-symbol-runner.html#mode=math_squares'));
+      add(host, mathGroupRow);
+    }
+    if (hasQd || hasMn) {
+      var numGroupRow = el('p', 'actions no-print');
+      if (hasQd) add(numGroupRow, navButton('Practice group number comparison in Symbol Runner', 'packets-symbol-runner.html#mode=number_size_stroop'));
+      if (hasMn) add(numGroupRow, navButton('Practice group teen and decade numbers in Symbol Runner', 'packets-symbol-runner.html#mode=digits_teen_decade'));
+      add(host, numGroupRow);
+    }
+  }
+
   function drawGroup() {
     drawMiddles();
     var host = $('group-table');
@@ -569,6 +772,7 @@
       add(host, title, add(scroll, add(table, add(el('thead'), headRow), body)),
         el('p', 'hint', spec.hint + (n === tables.length - 1 ? ' Choose a name to see that student over time.' : '')));
     });
+    drawGroupMissed();
     measureCues();
   }
 
@@ -744,6 +948,99 @@
     if (wrong.length) {
       add(body, el('h4', 'learner-sub', 'Most frequent wrong answers in practice'),
         plainTable('Most frequent wrong answers in practice', ['Word', 'Answered', 'Times'], wrong.map(function (row) { return [row.word, row.answer, String(row.times)]; }), 'narrow'));
+    }
+    var srSeen = Object.create(null), srMissed = [];
+    var vocabSeen = Object.create(null), vocabMissed = [];
+    var wsSeen = Object.create(null), wsMissed = [];
+    var mathSeen = Object.create(null), mathMissed = [];
+    var mathKnownSeen = Object.create(null), mathKnownCandidates = [];
+    var qdMissedCount = 0, mnMissedCount = 0;
+    learner.sessions.forEach(function (s) {
+      (s.items || []).forEach(function (it) {
+        if (it.practice || !it.attempted) return;
+        var act = String(it.activity || '');
+        if (/^math_(?:computation|ccc|rehearsal)$/i.test(act)) {
+          var mf = parseMathFactText(it.word);
+          if (!mf) return;
+          if (!(it.firstTry && it.correct)) {
+            if (!mathSeen[mf.key] && mathMissed.length < 12) {
+              mathSeen[mf.key] = true;
+              mathMissed.push(mf.text);
+            }
+          } else if (!mathKnownSeen[mf.key] && mathKnownCandidates.length < 24) {
+            mathKnownSeen[mf.key] = true;
+            mathKnownCandidates.push(mf);
+          }
+          return;
+        }
+        if (it.firstTry && it.correct) return;
+        if (act === 'symbol_runner') {
+          var sym = String(it.target || it.word || '').trim();
+          var key = sym.toLowerCase();
+          if (!sym || srSeen[key] || srMissed.length >= 6) return;
+          srSeen[key] = true;
+          srMissed.push(sym);
+        } else if (/^vocab_/i.test(act)) {
+          var vw = String(it.word || it.target || '').trim();
+          var vKey = vw.toLowerCase();
+          if (!vw || vocabSeen[vKey] || vocabMissed.length >= 12) return;
+          vocabSeen[vKey] = true;
+          vocabMissed.push(vw);
+        } else if (act === 'quantity_discrimination') {
+          qdMissedCount += 1;
+        } else if (act === 'missing_number') {
+          mnMissedCount += 1;
+        } else {
+          var ww = String(it.word || it.target || '').trim();
+          var wKey = ww.toLowerCase();
+          if (!ww || !/^[a-z]/i.test(ww) || wsSeen[wKey] || wsMissed.length >= 12) return;
+          wsSeen[wKey] = true;
+          wsMissed.push(ww);
+        }
+      });
+    });
+    var mathBlocked = Object.create(null);
+    mathMissed.forEach(function (raw) {
+      var parsed = parseMathFactText(raw);
+      if (!parsed) return;
+      mathBlocked[parsed.key] = true;
+      if (parsed.op === '+' || parsed.op === 'x') mathBlocked[parsed.b + parsed.op + parsed.a] = true;
+    });
+    var mathKnown = [];
+    mathKnownCandidates.forEach(function (cand) {
+      if (mathKnown.length >= 8 || mathBlocked[cand.key]) return;
+      mathKnown.push(cand.text);
+    });
+    if (srMissed.length) {
+      add(body, add(el('p', 'actions no-print'), navButton('Practice missed symbols in Symbol Runner', 'packets-symbol-runner.html#rehearse=' + encodeURIComponent(srMissed.join(',')))));
+    }
+    if (vocabMissed.length) {
+      add(body, add(el('p', 'actions no-print'),
+        navButton('Practice missed words in Vocabulary', 'packets-vocab.html#rehearse=' + encodeURIComponent(vocabMissed.join(','))),
+        navButton('Open missed words in Present and Export', 'packets-present-export.html#words=' + encodeURIComponent(vocabMissed.join(',')))));
+    }
+    if (wsMissed.length) {
+      var wsRow = add(el('p', 'actions no-print'), navButton('Practice missed words in Word Sounds', 'packets-make.html#rehearse=' + encodeURIComponent(wsMissed.join(','))));
+      if (!vocabMissed.length) {
+        add(wsRow, navButton('Open missed words in Present and Export', 'packets-present-export.html#words=' + encodeURIComponent(wsMissed.join(','))));
+      }
+      add(body, wsRow);
+    }
+    if (mathMissed.length) {
+      var mathTarget = 'packets-math-practice.html#rehearse=' + encodeURIComponent(mathMissed.join(',')) + (mathKnown.length >= 3 ? '&known=' + encodeURIComponent(mathKnown.join(',')) : '');
+      var mathLearnerRow = add(el('p', 'actions no-print'), navButton('Practice missed facts in Math Facts', mathTarget));
+      var lMental = mentalMathFlags(mathMissed);
+      if (lMental.make10) add(mathLearnerRow, navButton('Practice make-10 partners in Symbol Runner', 'packets-symbol-runner.html#mode=math_make_10'));
+      if (lMental.doubles) add(mathLearnerRow, navButton('Practice doubles facts in Symbol Runner', 'packets-symbol-runner.html#mode=math_doubles'));
+      if (lMental.mult2510) add(mathLearnerRow, navButton('Practice 2s, 5s, and 10s in Symbol Runner', 'packets-symbol-runner.html#mode=math_mult_2_5_10'));
+      if (lMental.squares) add(mathLearnerRow, navButton('Practice multiplication squares in Symbol Runner', 'packets-symbol-runner.html#mode=math_squares'));
+      add(body, mathLearnerRow);
+    }
+    if (qdMissedCount || mnMissedCount) {
+      var numRow = el('p', 'actions no-print');
+      if (qdMissedCount) add(numRow, navButton('Practice number comparison in Symbol Runner', 'packets-symbol-runner.html#mode=number_size_stroop'));
+      if (mnMissedCount) add(numRow, navButton('Practice teen and decade numbers in Symbol Runner', 'packets-symbol-runner.html#mode=digits_teen_decade'));
+      add(body, numRow);
     }
     add(body, el('h4', 'learner-sub', 'Every result, in date order'),
       plainTable('Every result for ' + learner.label + ', in date order', ['Date', 'What', 'Result', 'Answered', 'Time taken', 'Notes'], learner.sessions.map(function (s) {

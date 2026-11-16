@@ -47,6 +47,20 @@
     for (var i = 0; i < value.length; i++) { h ^= value.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
     return ('0000000' + h.toString(16)).slice(-8);
   }
+  function validCustomDataUri(uri, art) {
+    if (typeof uri !== 'string' || uri.length > 600000) return '';
+    var norm = uri.replace(/^data:image\/jpg;base64,/i, 'data:image/jpeg;base64,');
+    var m = /^data:image\/(png|jpeg|svg\+xml);base64,([A-Za-z0-9+/=]+)$/i.exec(norm);
+    if (!m) return '';
+    if (m[1].toLowerCase() === 'svg+xml') {
+      try {
+        var decoded = typeof atob === 'function' ? decodeURIComponent(escape(atob(m[2]))) : '';
+        if (!decoded || /<script|foreignobject|on[a-z]+\s*=|https?:\/\/|javascript:|\\/i.test(decoded)) return '';
+        if (art && typeof art.svgRefusal === 'function' && art.svgRefusal(decoded)) return '';
+      } catch (_) { return ''; }
+    }
+    return 'data:image/' + m[1].toLowerCase() + ';base64,' + m[2];
+  }
   // A fixed mix of a list: the same seed text gives the same order (xorshift32 seeded by FNV-1a), as in
   // packet_math_practice_builder.js.
   function mixed(list, seed) {
@@ -424,6 +438,8 @@
     var o = input || {};
     var bank = o.bank || null;
     var pics = o.pictures && typeof o.pictures.has === 'function' && typeof o.pictures.file === 'function' ? o.pictures : null;
+    var art = o.art && typeof o.art.svgRefusal === 'function' ? o.art : null;
+    var useDiagrams = o.diagrams === true && o.matcher && typeof o.matcher.matchWord === 'function' ? o.matcher : null;
     var edits = isObject(o.edits) ? o.edits : {};
     var wordEdits = isObject(edits.words) ? edits.words : {};
     var senseEdits = isObject(edits.senses) ? edits.senses : {};
@@ -455,11 +471,42 @@
         // A meaning found online (packets-vocab-lookup.html): "from the internet, not checked", or changed by the teacher since.
         if (isObject(mine.net) && line(mine.net.def) && row.def) row.net = { source: line(mine.net.source, 120), license: line(mine.net.license, 40), changed: line(mine.net.def) !== row.def };
       }
-      // Its picture, when the picture set has one and the teacher did not leave it out: the picture's file name.
+      // Its picture, when the picture set, opt-in diagram matcher, or teacher upload has one and the teacher did not leave it out.
       row.picture = '';
+      row.pictureSource = '';
+      row.customPicture = '';
+      row.diagramSvg = '';
+      row.pictureLookupWord = '';
       row.pictureOff = mine.noPicture === true;
       row.group = isGroupWord(word);
-      if (pics && !row.pictureOff && !row.group) { try { row.picture = pics.has(word) ? String(pics.file(word) || '') : ''; } catch (_) { row.picture = ''; } }
+      if (!row.pictureOff && !row.group) {
+        var rawCustom = isObject(mine.customPicture) ? mine.customPicture.dataUri : (typeof mine.customPicture === 'string' ? mine.customPicture : '');
+        var safeCustom = rawCustom ? validCustomDataUri(rawCustom, art) : '';
+        if (safeCustom) {
+          row.customPicture = safeCustom;
+          row.picture = 'own:' + key;
+          row.pictureSource = 'own';
+        } else {
+          if (pics) {
+            try { row.picture = pics.has(word) ? String(pics.file(word) || '') : ''; } catch (_) { row.picture = ''; }
+            if (row.picture) row.pictureSource = 'symbol';
+          }
+          if (!row.picture && useDiagrams) {
+            try {
+              var matched = useDiagrams.matchWord({ word: word, lemma: row.base || '', definition: row.def || '' }, { symbols: pics, preferDiagrams: true });
+              if (matched && matched.set === 'diagram' && typeof matched.svg === 'string' && (!art || !art.svgRefusal(matched.svg))) {
+                row.picture = 'diagram:' + String(matched.matchedKey || key);
+                row.pictureSource = 'diagram';
+                row.diagramSvg = matched.svg;
+              } else if (matched && matched.file) {
+                row.picture = String(matched.file);
+                row.pictureSource = 'symbol';
+                row.pictureLookupWord = String(matched.word || '');
+              }
+            } catch (_) { /* ignore diagram match failure */ }
+          }
+        }
+      }
       row.mine = mine;
       return row;
     });
@@ -487,7 +534,7 @@
       });
       delete row.mine;
     });
-    rows.forEach(function (row) { row.pictureWrong = row.picture ? pictureWrong(row, rows, bank, pics) : []; });
+    rows.forEach(function (row) { row.pictureWrong = row.picture ? pictureWrong(row, rows, bank, pics, useDiagrams) : []; });
     return rows;
   }
   // The 3 other words of a picture question: list words with a picture (a fixed mix, the same kind of word first),
@@ -503,15 +550,18 @@
     var k = keyOf(word);
     return !!GROUP_WORDS[k] || (/s$/.test(k) && (!!GROUP_WORDS[k.slice(0, -1)] || (/es$/.test(k) && !!GROUP_WORDS[k.slice(0, -2)]))) || /ies$/.test(k) && !!GROUP_WORDS[k.slice(0, -3) + 'y'] || k === 'children';
   }
-  function pictureWrong(row, rows, bank, pics) {
+  function pictureWrong(row, rows, bank, pics, matcher) {
     var out = [], files = [row.picture];
     var base = function (w) { try { return bank && typeof bank.head === 'function' ? keyOf(bank.head(w) || w) : keyOf(w); } catch (_) { return keyOf(w); } };
     var mine = meaningsOf(bank, row.word, [row.def]);
-    var add = function (word, pos, from) {
+    var add = function (word, pos, from, knownFile) {
       if (out.length >= WRONG) return;
-      var k = keyOf(word), file = '';
+      var k = keyOf(word), file = knownFile || '';
       if (!k || k === row.key || isGroupWord(word) || base(word) === base(row.word) || sameFamily(row.word, word, bank) || out.some(function (c) { return c.key === k; })) return;
-      try { file = pics.has(word) ? String(pics.file(word) || '') : ''; } catch (_) { file = ''; }
+      if (!file && pics) { try { file = pics.has(word) ? String(pics.file(word) || '') : ''; } catch (_) { file = ''; } }
+      if (!file && matcher && typeof matcher.getDiagram === 'function') {
+        try { var dg = matcher.getDiagram(word); if (dg && dg.matchedKey) file = 'diagram:' + dg.matchedKey; } catch (_) {}
+      }
       if (!file || files.indexOf(file) >= 0) return;
       var theirs = meaningsOf(bank, word, []);
       if (theirs.some(function (d) { return hasWord(d, row.word) || mine.some(function (m) { return closeMeaning(m, d); }); })) return;
@@ -522,7 +572,7 @@
     var same = function (o) { return row.pos && o.pos === row.pos ? 0 : 1; };
     mixed(rows.filter(function (o) { return o !== row && o.picture; }), 'picture|' + row.key).map(function (o, i) { return { o: o, i: i }; })
       .sort(function (x, y) { return same(x.o) - same(y.o) || x.i - y.i; })
-      .forEach(function (p) { add(p.o.word, p.o.pos, 'list'); });
+      .forEach(function (p) { add(p.o.word, p.o.pos, 'list', p.o.picture); });
     (row.sense && Array.isArray(row.sense.distractors) ? row.sense.distractors : []).forEach(function (id) {
       var s = senseById(bank, id);
       if (s && line(s.word)) add(line(s.word, 60), s.pos, 'bank');
@@ -676,17 +726,50 @@
       if (!audio[cid]) { audio[cid] = uri; recorded.push(line(word, 60)); }
       return cid;
     };
-    // Pictures (o.pictures: the Word Sounds picture set, its drawings added; o.art: word_sounds_packet_builder.js, whose
-    // svgRefusal tests each drawing again as it goes into the file). A picture id says nothing about its word.
+    // Pictures (o.pictures: the Word Sounds picture set, o.matcher: built-in concept diagrams, and per-row custom uploads;
+    // o.art: word_sounds_packet_builder.js, whose svgRefusal tests each drawing as it goes into the file).
     var pics = o.pictures && typeof o.pictures.get === 'function' ? o.pictures : null, art = o.art && typeof o.art.svgRefusal === 'function' ? o.art : null;
+    var matcher = o.diagrams === true && o.matcher && typeof o.matcher.getDiagram === 'function' ? o.matcher : null;
+    var rowByWord = {};
+    rows.forEach(function (r) { if (r && r.key) rowByWord[r.key] = r; });
     var imageOf = function (word) {
+      var wk = keyOf(word), r = own(rowByWord, wk) ? rowByWord[wk] : null;
+      if (r && r.customPicture) {
+        var safeOwn = validCustomDataUri(r.customPicture, art);
+        if (safeOwn) {
+          var oid = 'p' + fnv('own|' + wk + '|' + safeOwn.slice(-48));
+          if (!images[oid]) images[oid] = safeOwn;
+          if (!own(pictured, wk)) pictured[wk] = { word: line(word, 60), set: 'own' };
+          return oid;
+        }
+      }
       var got = null;
-      try { got = pics && art ? pics.get(word) : null; } catch (_) { got = null; }
-      if (!got || typeof got.svg !== 'string' || art.svgRefusal(got.svg)) return null;
-      var iid = 'p' + fnv('picture|' + String(got.file || keyOf(word)));
-      if (!images[iid]) images[iid] = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(got.svg)));
-      if (!own(pictured, keyOf(word))) pictured[keyOf(word)] = { word: line(word, 60), set: got.set === 'openmoji' ? 'openmoji' : 'mulberry' };
-      return iid;
+      try { got = pics && art ? (pics.get(word) || (r && r.pictureLookupWord ? pics.get(r.pictureLookupWord) : null)) : null; } catch (_) { got = null; }
+      if (got && typeof got.svg === 'string' && art && !art.svgRefusal(got.svg)) {
+        var iid = 'p' + fnv('picture|' + String(got.file || wk));
+        if (!images[iid]) images[iid] = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(got.svg)));
+        if (!own(pictured, wk)) pictured[wk] = { word: line(word, 60), set: got.set === 'openmoji' ? 'openmoji' : 'mulberry' };
+        return iid;
+      }
+      var diag = null;
+      if (r && r.diagramSvg && art && !art.svgRefusal(r.diagramSvg)) {
+        diag = { svg: r.diagramSvg, matchedKey: r.picture || wk };
+      } else if (matcher && art) {
+        try {
+          diag = matcher.getDiagram(word, (r && r.base) || '', word);
+          if (!diag && typeof matcher.matchWord === 'function') {
+            var m = matcher.matchWord({ word: word, lemma: (r && r.base) || '', definition: (r && r.def) || '' }, { symbols: pics, preferDiagrams: true });
+            if (m && m.set === 'diagram' && m.svg) diag = m;
+          }
+        } catch (_) { diag = null; }
+      }
+      if (diag && typeof diag.svg === 'string' && art && !art.svgRefusal(diag.svg)) {
+        var did = 'p' + fnv('diagram|' + String(diag.matchedKey || wk));
+        if (!images[did]) images[did] = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(diag.svg)));
+        if (!own(pictured, wk)) pictured[wk] = { word: line(word, 60), set: 'diagram' };
+        return did;
+      }
+      return null;
     };
     // The order of the kinds (2026-11-13): with Word to meaning and Meaning to word both on, Meaning to word comes first.
     // Its choices are words, so every meaning is asked before it is ever shown as a choice; Word to meaning then shows the
@@ -842,11 +925,16 @@
     var notices = [];
     // Each picture set is credited, and its notice carried, only when one of its pictures is in the file (as in a Word Sounds file).
     var art = media.art;
-    if (art && media.pictured.length) {
+    if (media.pictured.length) {
       var om = media.pictured.filter(function (p) { return p.set === 'openmoji'; }).map(function (p) { return p.word; });
-      var mb = media.pictured.filter(function (p) { return p.set !== 'openmoji'; }).map(function (p) { return p.word; });
-      if (mb.length) { credits.push(om.length ? art.pictureCredit(mb) : art.pictureCredit()); notices.push({ id: 'mulberry', name: art.MULBERRY_CREDIT.set, text: om.length ? art.mulberryNotice(mb) : art.MULBERRY_NOTICE }); }
-      if (om.length) { credits.push(art.openMojiCredit(om)); notices.push({ id: 'openmoji', name: art.OPENMOJI_CREDIT.set, text: art.openMojiNotice(om, '') }); }
+      var mb = media.pictured.filter(function (p) { return p.set === 'mulberry' || (p.set !== 'openmoji' && p.set !== 'diagram' && p.set !== 'own'); }).map(function (p) { return p.word; });
+      var dg = media.pictured.filter(function (p) { return p.set === 'diagram'; }).map(function (p) { return p.word; });
+      var ownPics = media.pictured.filter(function (p) { return p.set === 'own'; }).map(function (p) { return p.word; });
+      var mixedSets = om.length > 0 || dg.length > 0 || ownPics.length > 0;
+      if (art && mb.length) { credits.push(mixedSets ? art.pictureCredit(mb) : art.pictureCredit()); notices.push({ id: 'mulberry', name: art.MULBERRY_CREDIT.set, text: mixedSets ? art.mulberryNotice(mb) : art.MULBERRY_NOTICE }); }
+      if (art && om.length) { credits.push(art.openMojiCredit(om)); notices.push({ id: 'openmoji', name: art.OPENMOJI_CREDIT.set, text: art.openMojiNotice(om, '') }); }
+      if (dg.length) credits.push('School concept diagrams from AlloFlow: ' + dg.join(', ') + '.');
+      if (ownPics.length) credits.push('Pictures added by the teacher: ' + ownPics.join(', ') + '.');
     }
     if (media.recorded.length) {
       credits.push('Recordings of ' + media.recorded.join(', ') + ': made ahead of time with Kokoro-82M text-to-speech (voice af_heart), a machine voice. They passed automatic checks; no person has listened to each one.');
@@ -860,6 +948,7 @@
       words: rows.map(function (r) { return { word: r.word, sense: r.senseId }; }) };
     if (media.recorded.length) recipe.recordings = media.recorded.length;
     if (o.voices === false) recipe.voices = false;
+    if (o.diagrams === true || media.pictured.some(function (p) { return p.set === 'diagram'; })) recipe.diagrams = true;
     var noPicture = rows.filter(function (r) { return r.pictureOff; }).map(function (r) { return r.word; });
     if (noPicture.length) recipe.noPicture = noPicture;
     // A practice file holds its answers anyway, so it also keeps what the teacher chose and changed, for "Open a file I made".
@@ -880,7 +969,7 @@
   // words: [word], senses: { key: senseId }, rows: [...] (a practice file only), teacherCode }
   function readBack(parts) {
     var p = parts || {}, m = isObject(p.manifest) ? p.manifest : {}, v = isObject(m.vocab) ? m.vocab : null, lesson = isObject(p.lesson) ? p.lesson : {};
-    var out = { ok: false, why: '', title: '', mode: 'practice', types: [], readAloud: true, voices: true, noPicture: [], learner: '', words: [], senses: {}, rows: [], teacherCode: false };
+    var out = { ok: false, why: '', title: '', mode: 'practice', types: [], readAloud: true, voices: true, diagrams: false, noPicture: [], learner: '', words: [], senses: {}, rows: [], teacherCode: false };
     if (!v) { out.why = 'This file was not made on this page.'; return out; }
     out.ok = true;
     out.title = line(m.title || lesson.title, 120);
@@ -888,6 +977,7 @@
     out.types = (Array.isArray(v.types) ? v.types : []).filter(function (id) { return !!typeOf(id); });
     out.readAloud = v.readAloud !== false;
     out.voices = v.voices !== false;
+    out.diagrams = v.diagrams === true;
     out.noPicture = (Array.isArray(v.noPicture) ? v.noPicture : []).map(normalizeWord).filter(Boolean).slice(0, MAX_WORDS);
     out.learner = codeName(m.learner);
     out.teacherCode = isObject(lesson.check) && isObject(lesson.check.lock);
@@ -908,7 +998,7 @@
   var api = { VERSION: VERSION, MAX_WORDS: MAX_WORDS, WRONG: WRONG, TYPES: TYPES.map(function (t) { return Object.assign({}, t); }), MEASURE: Object.assign({}, MEASURE),
     normalizeWord: normalizeWord, keyOf: keyOf, parseWords: parseWords, closeMeaning: closeMeaning, contentWords: contentWords, flat: flat, wrongProblem: wrongProblem,
     balancedTrio: balancedTrio, blankSentence: blankSentence, formOf: formOf, inflect: inflect, draftRows: draftRows, swap: swap, rowStop: rowStop, questions: questions,
-    lessonFromVocab: lessonFromVocab, creditLines: creditLines, MIN_PICTURES: MIN_PICTURES, pictureCount: pictureCount, pictureWrong: pictureWrong, wordsToHear: wordsToHear, buildVocabPacket: buildVocabPacket, withCodeName: withCodeName, codeName: codeName, readBack: readBack, mixed: mixed };
+    lessonFromVocab: lessonFromVocab, creditLines: creditLines, MIN_PICTURES: MIN_PICTURES, pictureCount: pictureCount, pictureWrong: pictureWrong, wordsToHear: wordsToHear, buildVocabPacket: buildVocabPacket, withCodeName: withCodeName, codeName: codeName, readBack: readBack, mixed: mixed, validCustomDataUri: validCustomDataUri };
   root.AlloPacketVocab = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

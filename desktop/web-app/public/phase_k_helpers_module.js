@@ -1563,6 +1563,7 @@ const handleSpeak = async (text, contentId, startIndex = 0, deps, forceRestart =
       return;
     }
     let audioUrl = null;
+    const directIsSingleWord = /^[A-Za-z][A-Za-z'-]{0,31}$/.test(String(effectiveText || "").trim());
     try {
       audioUrl = await callTTS(effectiveText, selectedVoice, 1, {
         language: ttsLanguage,
@@ -1570,7 +1571,8 @@ const handleSpeak = async (text, contentId, startIndex = 0, deps, forceRestart =
         priority: "interactive",
         reason: "direct-read-aloud",
         signal: directSignal,
-        allowProviderFallback: !directKokoro
+        allowProviderFallback: !directKokoro,
+        ...directIsSingleWord ? { word: true } : {}
       });
       if (!directIsCurrent()) return;
       if (!audioUrl) {

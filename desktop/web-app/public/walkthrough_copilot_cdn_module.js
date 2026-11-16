@@ -1700,14 +1700,14 @@
   'use strict';
   window.AlloModules = window.AlloModules || {};
   var previous = window.AlloModules.WalkthroughScriptSource;
-  if (previous && previous.version === 2 && previous.sha256 === "98dd1bf07136d934ff45755953a71b416837aad068bd8a3e331ff3be33801c5c") {
+  if (previous && previous.version === 2 && previous.sha256 === "587dc558f430c8e1cf3eef30ac392a6f14a4fb3b49efe46943265476deec0f31") {
     console.log('[CDN] WalkthroughScriptSource already loaded, skipping');
     return;
   }
   window.AlloModules.WalkthroughScriptSource = Object.freeze({
     service: 'alloflow-walkthrough-records',
     version: 2,
-    sha256: "98dd1bf07136d934ff45755953a71b416837aad068bd8a3e331ff3be33801c5c",
+    sha256: "587dc558f430c8e1cf3eef30ac392a6f14a4fb3b49efe46943265476deec0f31",
     filename: 'Code.gs',
     projectName: 'AlloFlow Walkthrough Records',
     newProjectUrl: 'https://script.new',
@@ -1747,7 +1747,7 @@
   ]),
     manifest: "{\n  \"timeZone\": \"America/New_York\",\n  \"dependencies\": {},\n  \"exceptionLogging\": \"STACKDRIVER\",\n  \"runtimeVersion\": \"V8\",\n  \"webapp\": {\n    \"access\": \"ANYONE_ANONYMOUS\",\n    \"executeAs\": \"USER_DEPLOYING\"\n  },\n  \"oauthScopes\": [\n    \"https://www.googleapis.com/auth/userinfo.email\",\n    \"https://www.googleapis.com/auth/drive.file\",\n    \"https://www.googleapis.com/auth/script.send_mail\"\n  ]\n}\n",
     execUrlPattern: '^https://script\\.google\\.com/macros/s/[A-Za-z0-9_-]+/exec$',
-    source: "/**\n * AlloFlow Walkthrough Records - principal-owned delivery script.\n *\n * WHAT THIS IS. A small Apps Script that a principal deploys in their OWN\n * Google account. AlloFlow sends it walkthrough feedback the principal has\n * already written and approved. The script writes that feedback to a folder in\n * the principal's own Drive and shares each file with exactly one named teacher\n * account, then sends that teacher a notification containing no feedback text.\n *\n * WHY IT IS SHAPED THIS WAY. The Class Mailbox proves the deployment pattern,\n * but its security model does not transfer: there, possession of a link stands\n * in for a student's identity, which is acceptable for anonymous class traffic\n * and unacceptable for anything about a named staff member. Here the token only\n * authorizes the principal's own tool to write to the principal's own Drive.\n * The TEACHER's identity is enforced by Google at the sharing boundary: the\n * file is Restricted and shared with one address, so opening it requires\n * signing in as that person. A forwarded link grants nothing.\n *\n * WHAT THIS IS NOT. Not an evaluation system of record, not a rating engine,\n * and not a substitute for a district-authorized portal. It stores feedback a\n * human wrote and approved, and it never scores anyone. For a district-run\n * system of record with verified identity, assignments and a tamper-evident\n * audit trail, see apps_script/educator_evaluation/.\n *\n * SCOPES. Drive access is limited to drive.file; email identity verifies owner\n * setup, and send_mail permits the approved teacher notification. Drive consent\n * reads \"see, edit, create and\n * delete only the specific Google Drive files you use with this app\" rather\n * than granting access to the principal's whole Drive. Everything below is\n * designed to stay inside that scope: the working folder id is remembered in\n * Script Properties rather than found by searching Drive, because searching\n * would require broader access.\n */\n\nvar WR_SERVICE = 'alloflow-walkthrough-records';\nvar WR_VERSION = 2;\nvar WR_FOLDER_NAME = 'AlloFlow Walkthrough Records';\nvar WR_PROP_TOKEN = 'wr_admin_token';\nvar WR_PROP_FOLDER = 'wr_folder_id';\nvar WR_PROP_DOMAIN = 'wr_allowed_domain';\nvar WR_MAX_FIELD = 20000;\nvar WR_MAX_FIELDS = 24;\n\nfunction wrProps_() {\n  return PropertiesService.getScriptProperties();\n}\n\nfunction wrJson_(payload) {\n  return ContentService.createTextOutput(JSON.stringify(payload))\n    .setMimeType(ContentService.MimeType.JSON);\n}\n\nfunction wrError_(code, message) {\n  return { ok: false, code: code, error: message };\n}\n\nfunction wrString_(value, max) {\n  if (typeof value !== 'string') return '';\n  var trimmed = value.trim();\n  return trimmed.length > max ? trimmed.slice(0, max) : trimmed;\n}\n\nfunction wrToken_() {\n  var bytes = Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '');\n  return bytes.slice(0, 48);\n}\n\nfunction wrEmailOk_(email) {\n  return /^[^@\\s]+@[^@\\s.]+\\.[^@\\s]+$/.test(String(email || ''));\n}\n\nfunction wrDomainOf_(email) {\n  var at = String(email || '').lastIndexOf('@');\n  return at === -1 ? '' : String(email).slice(at + 1).toLowerCase();\n}\n\nfunction wrOwnerEmail_() {\n  try { return String(Session.getEffectiveUser().getEmail() || '').trim().toLowerCase(); } catch (err) { return ''; }\n}\n\n/**\n * The working folder is remembered by id. It is never located by searching\n * Drive, which drive.file would not permit anyway.\n */\nfunction wrFolder_() {\n  var props = wrProps_();\n  var id = props.getProperty(WR_PROP_FOLDER);\n  if (id) {\n    try { return DriveApp.getFolderById(id); } catch (err) { /* recreate below */ }\n  }\n  var folder = DriveApp.createFolder(WR_FOLDER_NAME);\n  props.setProperty(WR_PROP_FOLDER, folder.getId());\n  return folder;\n}\n\nfunction wrAuthorize_(request) {\n  var stored = wrProps_().getProperty(WR_PROP_TOKEN);\n  if (!stored) return wrError_('not_claimed', 'Run setupWalkthroughOwner in the Apps Script editor, then paste the owner token into AlloFlow.');\n  var supplied = wrString_(request && request.token, 128);\n  if (!supplied || supplied !== stored) return wrError_('denied', 'This request did not carry the connecting device token.');\n  return null;\n}\n\nfunction doGet(e) {\n  // Deliberately no HTML UI. This script is a delivery endpoint, not a portal.\n  var mode = String((e && e.parameter && e.parameter.api) || '');\n  if (mode === 'health') {\n    return wrJson_({\n      ok: true,\n      service: WR_SERVICE,\n      version: WR_VERSION,\n      claimed: !!wrProps_().getProperty(WR_PROP_TOKEN),\n      owner: wrOwnerEmail_()\n    });\n  }\n  return wrJson_(wrError_('not_found', 'This endpoint serves the AlloFlow Walkthrough Records API.'));\n}\n\nfunction doPost(e) {\n  var request;\n  try {\n    request = JSON.parse((e && e.postData && e.postData.contents) || '{}');\n  } catch (parseErr) {\n    return wrJson_(wrError_('bad_request', 'The request body was not valid JSON.'));\n  }\n  var action = wrString_(request.action, 40);\n\n  try {\n    if (action === 'claim') return wrJson_(wrClaim_());\n    if (action === 'selftest') return wrJson_(wrSelfTest_(request));\n    if (action === 'deliver') return wrJson_(wrDeliver_(request));\n    if (action === 'revoke') return wrJson_(wrRevoke_(request));\n    return wrJson_(wrError_('unknown_action', 'Unrecognized action.'));\n  } catch (err) {\n    return wrJson_(wrError_('failed', String((err && err.message) || err)));\n  }\n}\n\nfunction wrClaim_() {\n  return wrError_('owner_setup_required', 'Run setupWalkthroughOwner in the Apps Script editor as the deploying owner, then paste wr_admin_token from Script properties into AlloFlow.');\n}\n\nfunction wrRequireOwner_() {\n  var active = String(Session.getActiveUser().getEmail() || '').trim().toLowerCase();\n  var effective = wrOwnerEmail_();\n  var bound = wrProps_().getProperty('wr_owner_email');\n  if (!active || !effective || active !== effective || (bound && bound !== active)) {\n    throw new Error('Owner identity could not be verified. Run setupWalkthroughOwner in the Apps Script editor as the deploying owner.');\n  }\n  return active;\n}\n\n// Run from the editor. Re-running preserves the current connecting-device token.\nfunction setupWalkthroughOwner() {\n  return wrConfigureOwner_(false);\n}\n\nfunction wrConfigureOwner_(rotate) {\n  wrRequireOwner_();\n  var lock = LockService.getScriptLock();\n  if (!lock.tryLock(5000)) throw new Error('Walkthrough setup is busy. Retry.');\n  try {\n    var owner = wrRequireOwner_();\n    var props = wrProps_();\n    if (!props.getProperty(WR_PROP_TOKEN) || rotate) props.setProperty(WR_PROP_TOKEN, wrToken_());\n    props.setProperty('wr_owner_email', owner);\n    if (!props.getProperty(WR_PROP_DOMAIN)) props.setProperty(WR_PROP_DOMAIN, wrDomainOf_(owner));\n    return 'Owner setup complete. Copy wr_admin_token from Project Settings > Script properties into the AlloFlow Owner token field. Keep it private.';\n  } finally { lock.releaseLock(); }\n}\n\nfunction wrSelfTest_(request) {\n  var denied = wrAuthorize_(request);\n  if (denied) return denied;\n  var folder = wrFolder_();\n  return {\n    ok: true,\n    service: WR_SERVICE,\n    version: WR_VERSION,\n    owner: wrOwnerEmail_(),\n    folderName: folder.getName(),\n    allowedDomain: wrProps_().getProperty(WR_PROP_DOMAIN) || '',\n    canSendMail: MailApp.getRemainingDailyQuota() > 0\n  };\n}\n\n/**\n * Writes one walkthrough to Drive and shares it with exactly one teacher.\n *\n * request: {\n *   token, teacherEmail, teacherDisplayName?, subject?, disclosure,\n *   fields: [{label, text}], notify?: boolean, restrictToDomain?: boolean\n * }\n */\nfunction wrDeliver_(request) {\n  var denied = wrAuthorize_(request);\n  if (denied) return denied;\n\n  var teacherEmail = wrString_(request.teacherEmail, 320).toLowerCase();\n  if (!wrEmailOk_(teacherEmail)) {\n    return wrError_('bad_recipient', 'A valid teacher email address is required. Feedback is never shared by link.');\n  }\n\n  // Optional, on by default: keep delivery inside the deploying account's\n  // domain so a typo cannot send staff feedback to a personal address.\n  var allowedDomain = wrProps_().getProperty(WR_PROP_DOMAIN) || '';\n  var restrict = request.restrictToDomain !== false;\n  if (restrict && allowedDomain && wrDomainOf_(teacherEmail) !== allowedDomain) {\n    return wrError_('outside_domain', 'That address is outside ' + allowedDomain + '. Correct it, or turn off the domain restriction deliberately.');\n  }\n\n  var disclosure = wrString_(request.disclosure, 2000);\n  if (!disclosure) {\n    return wrError_('disclosure_required', 'Feedback cannot be delivered without its disclosure line.');\n  }\n\n  var rawFields = Array.isArray(request.fields) ? request.fields : [];\n  if (!rawFields.length) return wrError_('empty', 'There is no approved feedback to deliver.');\n  if (rawFields.length > WR_MAX_FIELDS) return wrError_('too_many', 'Too many sections in one delivery.');\n\n  var fields = [];\n  for (var i = 0; i < rawFields.length; i++) {\n    var label = wrString_(rawFields[i] && rawFields[i].label, 200);\n    var text = wrString_(rawFields[i] && rawFields[i].text, WR_MAX_FIELD);\n    if (label && text) fields.push({ label: label, text: text });\n  }\n  if (!fields.length) return wrError_('empty', 'There is no approved feedback to deliver.');\n\n  var subject = wrString_(request.subject, 200) || 'Walkthrough feedback';\n  var teacherName = wrString_(request.teacherDisplayName, 200);\n  var stamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm');\n\n  var body = [];\n  body.push(subject);\n  body.push(teacherName ? 'For: ' + teacherName : '');\n  body.push('Shared: ' + stamp);\n  body.push('');\n  body.push(disclosure);\n  body.push('');\n  for (var f = 0; f < fields.length; f++) {\n    body.push(fields[f].label);\n    body.push(fields[f].text);\n    body.push('');\n  }\n\n  var folder = wrFolder_();\n  var fileName = subject + ' - ' + (teacherName || teacherEmail) + ' - ' + stamp;\n  var file = folder.createFile(fileName + '.txt', body.join('\\n'), MimeType.PLAIN_TEXT);\n\n  // Restricted by construction. The file is never made link-accessible, so a\n  // forwarded URL is worthless without the named account.\n  try {\n    file.setSharing(DriveApp.Access.PRIVATE, DriveApp.Permission.NONE);\n  } catch (shareErr) { /* new files are private by default */ }\n  file.addViewer(teacherEmail);\n\n  var notified = false;\n  if (request.notify !== false) {\n    try {\n      // The notification deliberately carries no feedback text. The content\n      // lives behind Google sign-in, not in an inbox.\n      MailApp.sendEmail({\n        to: teacherEmail,\n        subject: 'Walkthrough feedback shared with you',\n        body: [\n          'A walkthrough note has been shared with you in Google Drive.',\n          '',\n          'Open it here (you will be asked to sign in with your school account):',\n          file.getUrl(),\n          '',\n          'This message intentionally contains no feedback text.'\n        ].join('\\n')\n      });\n      notified = true;\n    } catch (mailErr) { notified = false; }\n  }\n\n  return {\n    ok: true,\n    fileId: file.getId(),\n    url: file.getUrl(),\n    sharedWith: teacherEmail,\n    notified: notified,\n    at: new Date().toISOString()\n  };\n}\n\n/**\n * Removes a teacher's access to one previously delivered file. Only files this\n * script created are reachable under drive.file.\n */\nfunction wrRevoke_(request) {\n  var denied = wrAuthorize_(request);\n  if (denied) return denied;\n  var fileId = wrString_(request.fileId, 200);\n  var teacherEmail = wrString_(request.teacherEmail, 320).toLowerCase();\n  if (!fileId || !wrEmailOk_(teacherEmail)) return wrError_('bad_request', 'A file id and a teacher email are required.');\n  var file = DriveApp.getFileById(fileId);\n  file.removeViewer(teacherEmail);\n  return { ok: true, fileId: fileId, revokedFor: teacherEmail };\n}\n\n/**\n * Run from the Apps Script editor to disconnect this script from a device.\n * Deliberately not exposed over HTTP: resetting the token is an owner action.\n */\nfunction forgetConnection() {\n  return wrConfigureOwner_(true);\n}\n"
+    source: "/**\n * AlloFlow Walkthrough Records - principal-owned delivery script.\n *\n * WHAT THIS IS. A small Apps Script that a principal deploys in their OWN\n * Google account. AlloFlow sends it walkthrough feedback the principal has\n * already written and approved. The script writes that feedback to a folder in\n * the principal's own Drive and shares each file with exactly one named teacher\n * account, then sends that teacher a notification containing no feedback text.\n *\n * WHY IT IS SHAPED THIS WAY. The Class Mailbox proves the deployment pattern,\n * but its security model does not transfer: there, possession of a link stands\n * in for a student's identity, which is acceptable for anonymous class traffic\n * and unacceptable for anything about a named staff member. Here the token only\n * authorizes the principal's own tool to write to the principal's own Drive.\n * The TEACHER's identity is enforced by Google at the sharing boundary: the\n * file is Restricted and shared with one address, so opening it requires\n * signing in as that person. A forwarded link grants nothing.\n *\n * WHAT THIS IS NOT. Not an evaluation system of record, not a rating engine,\n * and not a substitute for a district-authorized portal. It stores feedback a\n * human wrote and approved, and it never scores anyone. For a district-run\n * system of record with verified identity, assignments and a tamper-evident\n * audit trail, see apps_script/educator_evaluation/.\n *\n * SCOPES. Drive access is limited to drive.file; email identity verifies owner\n * setup, and send_mail permits the approved teacher notification. Drive consent\n * reads \"see, edit, create and\n * delete only the specific Google Drive files you use with this app\" rather\n * than granting access to the principal's whole Drive. Everything below is\n * designed to stay inside that scope: the working folder id is remembered in\n * Script Properties rather than found by searching Drive, because searching\n * would require broader access.\n */\n\nvar WR_SERVICE = 'alloflow-walkthrough-records';\nvar WR_VERSION = 2;\nvar WR_FOLDER_NAME = 'AlloFlow Walkthrough Records';\nvar WR_PROP_TOKEN = 'wr_admin_token';\nvar WR_PROP_FOLDER = 'wr_folder_id';\nvar WR_PROP_DOMAIN = 'wr_allowed_domain';\nvar WR_MAX_FIELD = 20000;\nvar WR_MAX_FIELDS = 24;\n\nfunction wrProps_() {\n  return PropertiesService.getScriptProperties();\n}\n\nfunction wrJson_(payload) {\n  return ContentService.createTextOutput(JSON.stringify(payload))\n    .setMimeType(ContentService.MimeType.JSON);\n}\n\nfunction wrError_(code, message) {\n  return { ok: false, code: code, error: message };\n}\n\nfunction wrString_(value, max) {\n  if (typeof value !== 'string') return '';\n  var trimmed = value.trim();\n  return trimmed.length > max ? trimmed.slice(0, max) : trimmed;\n}\n\nfunction wrToken_() {\n  var bytes = Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '');\n  return bytes.slice(0, 48);\n}\n\nfunction wrEmailOk_(email) {\n  return /^[^@\\s]+@[^@\\s.]+\\.[^@\\s]+$/.test(String(email || ''));\n}\n\nfunction wrDomainOf_(email) {\n  var at = String(email || '').lastIndexOf('@');\n  return at === -1 ? '' : String(email).slice(at + 1).toLowerCase();\n}\n\nfunction wrOwnerEmail_() {\n  try { return String(Session.getEffectiveUser().getEmail() || '').trim().toLowerCase(); } catch (err) { return ''; }\n}\n\n/**\n * The working folder is remembered by id. It is never located by searching\n * Drive, which drive.file would not permit anyway.\n */\nfunction wrFolder_() {\n  var props = wrProps_();\n  var id = props.getProperty(WR_PROP_FOLDER);\n  if (id) {\n    try { return DriveApp.getFolderById(id); } catch (err) { /* recreate below */ }\n  }\n  var folder = DriveApp.createFolder(WR_FOLDER_NAME);\n  props.setProperty(WR_PROP_FOLDER, folder.getId());\n  return folder;\n}\n\nfunction wrAuthorize_(request) {\n  var stored = wrProps_().getProperty(WR_PROP_TOKEN);\n  if (!stored) return wrError_('not_claimed', 'Run setupWalkthroughOwner in the Apps Script editor, then paste the owner token into AlloFlow.');\n  var supplied = wrString_(request && request.token, 128);\n  if (!supplied || supplied !== stored) return wrError_('denied', 'This request did not carry the connecting device token.');\n  return null;\n}\n\nfunction doGet(e) {\n  // Deliberately no HTML UI. This script is a delivery endpoint, not a portal.\n  var mode = String((e && e.parameter && e.parameter.api) || '');\n  if (mode === 'health') {\n    return wrJson_({\n      ok: true,\n      service: WR_SERVICE,\n      version: WR_VERSION,\n      claimed: !!wrProps_().getProperty(WR_PROP_TOKEN),\n      owner: wrOwnerEmail_()\n    });\n  }\n  return wrJson_(wrError_('not_found', 'This endpoint serves the AlloFlow Walkthrough Records API.'));\n}\n\nfunction doPost(e) {\n  var request;\n  try {\n    request = JSON.parse((e && e.postData && e.postData.contents) || '{}');\n  } catch (parseErr) {\n    return wrJson_(wrError_('bad_request', 'The request body was not valid JSON.'));\n  }\n  var action = wrString_(request.action, 40);\n\n  try {\n    if (action === 'claim') return wrJson_(wrClaim_());\n    if (action === 'selftest') return wrJson_(wrSelfTest_(request));\n    if (action === 'deliver') return wrJson_(wrDeliver_(request));\n    if (action === 'revoke') return wrJson_(wrRevoke_(request));\n    return wrJson_(wrError_('unknown_action', 'Unrecognized action.'));\n  } catch (err) {\n    return wrJson_(wrError_('failed', String((err && err.message) || err)));\n  }\n}\n\nfunction wrClaim_() {\n  return wrError_('owner_setup_required', 'Run setupWalkthroughOwner in the Apps Script editor as the deploying owner, then paste wr_admin_token from Script properties into AlloFlow.');\n}\n\nfunction wrRequireOwner_() {\n  var active = String(Session.getActiveUser().getEmail() || '').trim().toLowerCase();\n  var effective = wrOwnerEmail_();\n  var bound = wrProps_().getProperty('wr_owner_email');\n  if (!active || !effective || active !== effective || (bound && bound !== active)) {\n    throw new Error('Owner identity could not be verified. Run setupWalkthroughOwner in the Apps Script editor as the deploying owner.');\n  }\n  return active;\n}\n\n// Run from the editor. Re-running preserves the current connecting-device token.\nfunction setupWalkthroughOwner() {\n  return wrConfigureOwner_(false);\n}\n\nfunction wrConfigureOwner_(rotate) {\n  wrRequireOwner_();\n  var lock = LockService.getScriptLock();\n  if (!lock.tryLock(5000)) throw new Error('Walkthrough setup is busy. Retry.');\n  try {\n    var owner = wrRequireOwner_();\n    var props = wrProps_();\n    if (!props.getProperty(WR_PROP_TOKEN) || rotate) props.setProperty(WR_PROP_TOKEN, wrToken_());\n    props.setProperty('wr_owner_email', owner);\n    if (!props.getProperty(WR_PROP_DOMAIN)) props.setProperty(WR_PROP_DOMAIN, wrDomainOf_(owner));\n    return 'Owner setup complete. Copy wr_admin_token from Project Settings > Script properties into the AlloFlow Owner token field. Keep it private.';\n  } finally { lock.releaseLock(); }\n}\n\nfunction wrSelfTest_(request) {\n  var denied = wrAuthorize_(request);\n  if (denied) return denied;\n  var folder = wrFolder_();\n  return {\n    ok: true,\n    service: WR_SERVICE,\n    version: WR_VERSION,\n    owner: wrOwnerEmail_(),\n    folderName: folder.getName(),\n    allowedDomain: wrProps_().getProperty(WR_PROP_DOMAIN) || '',\n    canSendMail: MailApp.getRemainingDailyQuota() > 0\n  };\n}\n\n/**\n * Writes one walkthrough to Drive and shares it with exactly one teacher.\n *\n * request: {\n *   token, teacherEmail, teacherDisplayName?, subject?, disclosure,\n *   fields: [{label, text}], notify?: boolean, restrictToDomain?: boolean\n * }\n */\nfunction wrDeliver_(request) {\n  var denied = wrAuthorize_(request);\n  if (denied) return denied;\n\n  var teacherEmail = wrString_(request.teacherEmail, 320).toLowerCase();\n  if (!wrEmailOk_(teacherEmail)) {\n    return wrError_('bad_recipient', 'A valid teacher email address is required. Feedback is never shared by link.');\n  }\n\n  // Always enforce WR_PROP_DOMAIN when configured in Script Properties so a\n  // caller-controlled restrictToDomain=false flag cannot bypass it.\n  var allowedDomain = (wrProps_().getProperty(WR_PROP_DOMAIN) || '').trim().toLowerCase();\n  if (allowedDomain && wrDomainOf_(teacherEmail) !== allowedDomain) {\n    return wrError_('outside_domain', 'That address is outside ' + allowedDomain + '. Ask your Apps Script administrator to update the allowed domain property.');\n  }\n\n  var disclosure = wrString_(request.disclosure, 2000);\n  if (!disclosure) {\n    return wrError_('disclosure_required', 'Feedback cannot be delivered without its disclosure line.');\n  }\n\n  var rawFields = Array.isArray(request.fields) ? request.fields : [];\n  if (!rawFields.length) return wrError_('empty', 'There is no approved feedback to deliver.');\n  if (rawFields.length > WR_MAX_FIELDS) return wrError_('too_many', 'Too many sections in one delivery.');\n\n  var fields = [];\n  for (var i = 0; i < rawFields.length; i++) {\n    var label = wrString_(rawFields[i] && rawFields[i].label, 200);\n    var text = wrString_(rawFields[i] && rawFields[i].text, WR_MAX_FIELD);\n    if (label && text) fields.push({ label: label, text: text });\n  }\n  if (!fields.length) return wrError_('empty', 'There is no approved feedback to deliver.');\n\n  var subject = wrString_(request.subject, 200) || 'Walkthrough feedback';\n  var teacherName = wrString_(request.teacherDisplayName, 200);\n  var stamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm');\n\n  var body = [];\n  body.push(subject);\n  body.push(teacherName ? 'For: ' + teacherName : '');\n  body.push('Shared: ' + stamp);\n  body.push('');\n  body.push(disclosure);\n  body.push('');\n  for (var f = 0; f < fields.length; f++) {\n    body.push(fields[f].label);\n    body.push(fields[f].text);\n    body.push('');\n  }\n\n  var folder = wrFolder_();\n  var fileName = subject + ' - ' + (teacherName || teacherEmail) + ' - ' + stamp;\n  var file = folder.createFile(fileName + '.txt', body.join('\\n'), MimeType.PLAIN_TEXT);\n\n  // Restricted by construction. The file is never made link-accessible, so a\n  // forwarded URL is worthless without the named account.\n  try {\n    file.setSharing(DriveApp.Access.PRIVATE, DriveApp.Permission.NONE);\n  } catch (shareErr) { /* new files are private by default */ }\n  file.addViewer(teacherEmail);\n\n  var notified = false;\n  if (request.notify !== false) {\n    try {\n      // The notification deliberately carries no feedback text. The content\n      // lives behind Google sign-in, not in an inbox.\n      MailApp.sendEmail({\n        to: teacherEmail,\n        subject: 'Walkthrough feedback shared with you',\n        body: [\n          'A walkthrough note has been shared with you in Google Drive.',\n          '',\n          'Open it here (you will be asked to sign in with your school account):',\n          file.getUrl(),\n          '',\n          'This message intentionally contains no feedback text.'\n        ].join('\\n')\n      });\n      notified = true;\n    } catch (mailErr) { notified = false; }\n  }\n\n  return {\n    ok: true,\n    fileId: file.getId(),\n    url: file.getUrl(),\n    sharedWith: teacherEmail,\n    notified: notified,\n    at: new Date().toISOString()\n  };\n}\n\n/**\n * Removes a teacher's access to one previously delivered file. Only files this\n * script created are reachable under drive.file.\n */\nfunction wrRevoke_(request) {\n  var denied = wrAuthorize_(request);\n  if (denied) return denied;\n  var fileId = wrString_(request.fileId, 200);\n  var teacherEmail = wrString_(request.teacherEmail, 320).toLowerCase();\n  if (!fileId || !wrEmailOk_(teacherEmail)) return wrError_('bad_request', 'A file id and a teacher email are required.');\n  var file = DriveApp.getFileById(fileId);\n  file.removeViewer(teacherEmail);\n  return { ok: true, fileId: fileId, revokedFor: teacherEmail };\n}\n\n/**\n * Run from the Apps Script editor to disconnect this script from a device.\n * Deliberately not exposed over HTTP: resetting the token is an owner action.\n */\nfunction forgetConnection() {\n  return wrConfigureOwner_(true);\n}\n"
   });
   console.log('[CDN] WalkthroughScriptSource loaded');
 })();
@@ -1882,7 +1882,13 @@ function wcopAnnounce(message) {
 function WcopFlag(props) {
   const tone = props.tone || "warn";
   const cls = tone === "stop" ? "bg-rose-50 text-rose-800 border-rose-200" : tone === "go" ? "bg-emerald-50 text-emerald-800 border-emerald-200" : "bg-amber-50 text-amber-900 border-amber-200";
-  return React.createElement("p", { className: "text-sm border rounded px-3 py-2 mt-2 " + cls }, props.children);
+  const roleAttr = tone === "stop" ? "alert" : tone === "go" ? "status" : void 0;
+  const liveAttr = tone === "stop" ? "assertive" : tone === "go" ? "polite" : void 0;
+  return React.createElement("p", {
+    className: "text-sm border rounded px-3 py-2 mt-2 " + cls,
+    role: roleAttr,
+    "aria-live": liveAttr
+  }, props.children);
 }
 function WcopFrozenNotes(props) {
   return React.createElement(
@@ -1890,7 +1896,7 @@ function WcopFrozenNotes(props) {
     { className: "rounded-lg border border-stone-300 bg-stone-50 p-3" },
     React.createElement(
       "p",
-      { className: "text-[11px] uppercase tracking-wider text-stone-500 font-semibold mb-2" },
+      { className: "text-[11px] uppercase tracking-wider text-stone-600 font-semibold mb-2" },
       "Source notes, locked"
     ),
     React.createElement(
@@ -1900,7 +1906,7 @@ function WcopFrozenNotes(props) {
     ),
     React.createElement(
       "p",
-      { className: "text-xs text-stone-500 mt-2" },
+      { className: "text-xs text-stone-600 mt-2" },
       "These are never edited by this tool."
     )
   );
@@ -1925,13 +1931,13 @@ function WcopSuggestion(props) {
       id: titleId,
       className: "text-xs uppercase tracking-wider font-bold text-teal-700 mb-1"
     }, props.componentLabel));
-    body.push(React.createElement("p", { key: "l1", className: "text-[11px] uppercase tracking-wider text-slate-500 font-semibold mt-2" }, "What was observed"));
+    body.push(React.createElement("p", { key: "l1", className: "text-[11px] uppercase tracking-wider text-slate-600 font-semibold mt-2" }, "What was observed"));
     body.push(React.createElement("p", { key: "e", className: "text-sm text-slate-800" }, s.objectiveEvidence));
     if (s.interpretation) {
-      body.push(React.createElement("p", { key: "l2", className: "text-[11px] uppercase tracking-wider text-slate-500 font-semibold mt-2" }, "What it might mean"));
+      body.push(React.createElement("p", { key: "l2", className: "text-[11px] uppercase tracking-wider text-slate-600 font-semibold mt-2" }, "What it might mean"));
       body.push(React.createElement("p", { key: "i", className: "text-sm text-slate-700 italic" }, s.interpretation));
     }
-    body.push(React.createElement("p", { key: "l3", className: "text-[11px] uppercase tracking-wider text-slate-500 font-semibold mt-2" }, "Cited from the notes"));
+    body.push(React.createElement("p", { key: "l3", className: "text-[11px] uppercase tracking-wider text-slate-600 font-semibold mt-2" }, "Cited from the notes"));
     s.sourceSpans.forEach((span, i) => {
       body.push(React.createElement("blockquote", {
         key: "q" + i,
@@ -1943,7 +1949,7 @@ function WcopSuggestion(props) {
     body.push(React.createElement(WcopFlag, { key: "w" + i }, flag.message));
   });
   if (s.decision === "edited" && s.approvedText) {
-    body.push(React.createElement("p", { key: "l4", className: "text-[11px] uppercase tracking-wider text-slate-500 font-semibold mt-2" }, "Your wording"));
+    body.push(React.createElement("p", { key: "l4", className: "text-[11px] uppercase tracking-wider text-slate-600 font-semibold mt-2" }, "Your wording"));
     body.push(React.createElement("p", { key: "a", className: "text-sm text-slate-800" }, s.approvedText));
   }
   if (props.editing) {
@@ -1956,14 +1962,14 @@ function WcopSuggestion(props) {
       }, "Your wording for this feedback"),
       React.createElement("textarea", {
         id: "wcop-edit-" + s.id,
-        className: "w-full rounded border border-slate-300 p-2 text-sm",
+        className: "w-full rounded border border-slate-300 p-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600",
         rows: 3,
         value: props.editText,
         onChange: (e) => props.onEditText(e.target.value)
       }),
       React.createElement("button", {
         type: "button",
-        className: "mt-2 px-3 py-1.5 rounded bg-teal-700 text-white text-sm font-semibold",
+        className: "mt-2 min-h-11 px-3 py-2 rounded bg-teal-700 text-white text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1",
         onClick: () => props.onDecide(s.id, "edited", props.editText)
       }, "Save and approve this wording")
     ));
@@ -1975,21 +1981,21 @@ function WcopSuggestion(props) {
       type: "button",
       "aria-pressed": s.decision === "accepted",
       "aria-describedby": titleId,
-      className: "px-3 py-1.5 rounded border text-sm font-semibold " + (s.decision === "accepted" ? "bg-emerald-50 border-emerald-600 text-emerald-800" : "border-slate-300 text-slate-700"),
+      className: "min-h-11 min-w-11 px-3 py-2 rounded border text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 " + (s.decision === "accepted" ? "bg-emerald-50 border-emerald-600 text-emerald-800" : "border-slate-300 text-slate-700"),
       onClick: () => props.onDecide(s.id, "accepted")
     }, "Keep"),
     React.createElement("button", {
       type: "button",
       "aria-pressed": s.decision === "edited",
       "aria-describedby": titleId,
-      className: "px-3 py-1.5 rounded border text-sm font-semibold " + (s.decision === "edited" ? "bg-amber-50 border-amber-600 text-amber-900" : "border-slate-300 text-slate-700"),
+      className: "min-h-11 min-w-11 px-3 py-2 rounded border text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 " + (s.decision === "edited" ? "bg-amber-50 border-amber-600 text-amber-900" : "border-slate-300 text-slate-700"),
       onClick: () => props.onStartEdit(s)
     }, "Reword"),
     React.createElement("button", {
       type: "button",
       "aria-pressed": s.decision === "rejected",
       "aria-describedby": titleId,
-      className: "px-3 py-1.5 rounded border text-sm font-semibold " + (s.decision === "rejected" ? "bg-rose-50 border-rose-600 text-rose-800" : "border-slate-300 text-slate-700"),
+      className: "min-h-11 min-w-11 px-3 py-2 rounded border text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 " + (s.decision === "rejected" ? "bg-rose-50 border-rose-600 text-rose-800" : "border-slate-300 text-slate-700"),
       onClick: () => props.onDecide(s.id, "rejected")
     }, "Throw out")
   );
@@ -2007,7 +2013,7 @@ function WcopIntro(props) {
       React.createElement("h3", { className: "font-bold text-slate-800" }, "What this does"),
       React.createElement("button", {
         type: "button",
-        className: "text-sm px-2 py-1 rounded border border-slate-300",
+        className: "min-h-11 min-w-11 text-sm px-3 py-2 rounded border border-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1",
         onClick: props.onHide
       }, "Hide this")
     ),
@@ -2016,7 +2022,7 @@ function WcopIntro(props) {
       { className: "text-sm text-slate-700 mt-2" },
       "You type the shorthand you already write during a walkthrough. This organizes it into evidence-based feedback under your framework, shows you the exact line of your notes behind every claim, and lets you keep, reword, or throw out each one. You write and approve the feedback. It never rates anyone."
     ),
-    React.createElement("p", { className: "text-[11px] uppercase tracking-wider text-slate-500 font-semibold mt-3" }, "Four steps"),
+    React.createElement("p", { className: "text-[11px] uppercase tracking-wider text-slate-600 font-semibold mt-3" }, "Four steps"),
     React.createElement(
       "ol",
       { className: "list-decimal ml-5 text-sm text-slate-700" },
@@ -2029,7 +2035,7 @@ function WcopIntro(props) {
     ),
     React.createElement(
       "p",
-      { className: "text-[11px] uppercase tracking-wider text-slate-500 font-semibold mt-3" },
+      { className: "text-[11px] uppercase tracking-wider text-slate-600 font-semibold mt-3" },
       "Before using this with a real staff member"
     ),
     React.createElement(
@@ -2044,12 +2050,12 @@ function WcopIntro(props) {
     ),
     React.createElement(
       "p",
-      { className: "text-xs text-slate-500 mt-2" },
+      { className: "text-xs text-slate-600 mt-2" },
       "This build analyzes the practice scenarios only. Analyzing notes you write yourself needs an approved AI provider, which is a separate decision."
     ),
     React.createElement(
       "p",
-      { className: "text-[11px] uppercase tracking-wider text-slate-500 font-semibold mt-3" },
+      { className: "text-[11px] uppercase tracking-wider text-slate-600 font-semibold mt-3" },
       "Three ways this gets used"
     ),
     React.createElement(
@@ -2062,7 +2068,7 @@ function WcopIntro(props) {
           className: "rounded border p-2 " + (tier.key === "practice" ? "border-teal-600 bg-teal-50" : tier.key === "deliver" && props.connected ? "border-emerald-600 bg-emerald-50" : "border-slate-200 bg-white")
         },
         React.createElement("h4", { className: "text-sm font-bold" }, tier.name),
-        React.createElement("p", { className: "text-[11px] uppercase tracking-wider text-slate-500 font-semibold" }, tier.cost),
+        React.createElement("p", { className: "text-[11px] uppercase tracking-wider text-slate-600 font-semibold" }, tier.cost),
         React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, tier.body),
         tier.key === "deliver" && props.connected ? React.createElement(
           "p",
@@ -2071,7 +2077,7 @@ function WcopIntro(props) {
         ) : null,
         tier.key === "deliver" && !props.connected ? React.createElement("button", {
           type: "button",
-          className: "mt-2 px-2 py-1 rounded border border-slate-300 text-xs font-semibold",
+          className: "mt-2 min-h-11 px-3 py-2 rounded border border-slate-300 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1",
           onClick: props.onSetup
         }, "Set up delivery") : null
       ))
@@ -2084,24 +2090,24 @@ function WcopAffirm(props) {
     "div",
     null,
     React.createElement("h3", { className: "font-bold text-slate-800 mb-1" }, "Use this for a real observation"),
-    React.createElement("p", { className: "text-xs text-slate-500 mb-3" }, described.note),
+    React.createElement("p", { className: "text-xs text-slate-600 mb-3" }, described.note),
     React.createElement(
       "div",
       { className: "rounded-lg border border-slate-200 bg-white p-4 mb-3" },
       React.createElement(
         "p",
-        { className: "text-[11px] uppercase tracking-wider text-slate-500 font-semibold mb-1" },
+        { className: "text-[11px] uppercase tracking-wider text-slate-600 font-semibold mb-1" },
         "Confirm each of these"
       ),
       described.terms.map((term) => React.createElement(
         "label",
         {
           key: term.key,
-          className: "flex gap-2 items-start text-sm my-2"
+          className: "flex gap-2.5 items-center min-h-11 py-1 text-sm cursor-pointer"
         },
         React.createElement("input", {
           type: "checkbox",
-          className: "w-5 h-5 mt-0.5 flex-none",
+          className: "w-5 h-5 flex-none rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600",
           checked: !!props.checks[term.key],
           onChange: (e) => props.onCheck(term.key, e.target.checked)
         }),
@@ -2115,7 +2121,7 @@ function WcopAffirm(props) {
       React.createElement("input", {
         id: "wcop-affirm-name",
         type: "text",
-        className: "w-full rounded border border-slate-300 p-2 text-sm",
+        className: "w-full min-h-11 rounded border border-slate-300 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600",
         value: props.name,
         onChange: (e) => props.onName(e.target.value)
       }),
@@ -2125,12 +2131,12 @@ function WcopAffirm(props) {
         { className: "flex flex-wrap gap-2 mt-3" },
         React.createElement("button", {
           type: "button",
-          className: "px-4 py-2 rounded bg-teal-700 text-white text-sm font-semibold",
+          className: "min-h-11 px-4 py-2 rounded bg-teal-700 text-white text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1",
           onClick: props.onAffirm
         }, "Affirm and continue"),
         React.createElement("button", {
           type: "button",
-          className: "px-3 py-2 rounded border border-slate-300 text-sm",
+          className: "min-h-11 px-3 py-2 rounded border border-slate-300 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1",
           onClick: props.onCancel
         }, "Stay in practice mode")
       )
@@ -2154,7 +2160,7 @@ function WcopManualEntry(props) {
     React.createElement("h4", { className: "font-semibold text-sm mb-1" }, "Add evidence"),
     React.createElement(
       "p",
-      { className: "text-xs text-slate-500 mb-2" },
+      { className: "text-xs text-slate-600 mb-2" },
       "Pick the component, quote the line of your notes it rests on, then say what you observed. Keep any conclusion in the separate interpretation field."
     ),
     React.createElement(
@@ -2166,7 +2172,7 @@ function WcopManualEntry(props) {
       "select",
       {
         id: "wcop-manual-component",
-        className: "w-full rounded border border-slate-300 p-2 text-sm mb-2",
+        className: "w-full min-h-11 rounded border border-slate-300 px-3 py-2 text-sm mb-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600",
         value: props.entry.componentId,
         onChange: (e) => props.onField("componentId", e.target.value)
       },
@@ -2191,7 +2197,7 @@ function WcopManualEntry(props) {
       ),
       React.createElement("textarea", {
         id: "wcop-manual-" + spec[0],
-        className: "w-full rounded border border-slate-300 p-2 text-sm",
+        className: "w-full rounded border border-slate-300 p-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600",
         rows: 2,
         placeholder: spec[2],
         value: props.entry[spec[0]],
@@ -2201,7 +2207,7 @@ function WcopManualEntry(props) {
     props.message ? React.createElement(WcopFlag, { tone: "stop" }, props.message) : null,
     React.createElement("button", {
       type: "button",
-      className: "px-3 py-2 rounded bg-teal-700 text-white text-sm font-semibold",
+      className: "min-h-11 px-3 py-2 rounded bg-teal-700 text-white text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1",
       onClick: props.onAdd
     }, "Add this evidence")
   );
@@ -2219,7 +2225,7 @@ function WcopSetup(props) {
       ),
       React.createElement("button", {
         type: "button",
-        className: "mt-2 px-3 py-2 rounded border border-slate-300 text-sm",
+        className: "mt-2 min-h-11 px-3 py-2 rounded border border-slate-300 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1",
         onClick: props.onBack
       }, "Back")
     );
@@ -2230,7 +2236,7 @@ function WcopSetup(props) {
     React.createElement("h3", { className: "font-bold text-slate-800 mb-1" }, "Set up delivery to your teachers"),
     React.createElement(
       "p",
-      { className: "text-xs text-slate-500 mb-3" },
+      { className: "text-xs text-slate-600 mb-3" },
       "This runs in your own Google account. Finished notes are saved to your Drive and shared with one named teacher at a time. Nothing goes to an AlloFlow server, and there is no AlloFlow database."
     ),
     React.createElement(
@@ -2247,17 +2253,17 @@ function WcopSetup(props) {
         { className: "flex flex-wrap gap-2 items-center mt-2" },
         React.createElement("button", {
           type: "button",
-          className: "px-3 py-2 rounded bg-teal-700 text-white text-sm font-semibold",
+          className: "min-h-11 px-3 py-2 rounded bg-teal-700 text-white text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1",
           onClick: () => props.onCopyScript(source.source)
         }, "Copy script code"),
         React.createElement("button", {
           type: "button",
-          className: "px-3 py-2 rounded border border-slate-300 text-sm",
+          className: "min-h-11 px-3 py-2 rounded border border-slate-300 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1",
           onClick: () => props.onCopyScript(source.manifest, "Manifest")
         }, "Copy manifest"),
         React.createElement(
           "span",
-          { className: "text-xs text-slate-500" },
+          { className: "text-xs text-slate-600" },
           source.source.length + " characters. The script ships inside this tool, so this works offline."
         )
       )
@@ -2274,7 +2280,7 @@ function WcopSetup(props) {
       React.createElement("input", {
         id: "wcop-exec-url",
         type: "text",
-        className: "w-full rounded border border-slate-300 p-2 text-sm",
+        className: "w-full min-h-11 rounded border border-slate-300 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600",
         placeholder: "https://script.google.com/macros/s/.../exec",
         value: props.execUrl,
         onChange: (e) => props.onExecUrl(e.target.value)
@@ -2285,13 +2291,13 @@ function WcopSetup(props) {
         type: "password",
         autoComplete: "off",
         spellCheck: false,
-        className: "w-full rounded border border-slate-300 p-2 text-sm",
+        className: "w-full min-h-11 rounded border border-slate-300 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600",
         value: props.token || "",
         onChange: (e) => props.onToken(e.target.value)
       }),
       React.createElement(
         "p",
-        { className: "text-xs text-slate-500 mt-1" },
+        { className: "text-xs text-slate-600 mt-1" },
         "Run setupWalkthroughOwner in the Apps Script editor as the deploying owner, then copy wr_admin_token from Project Settings > Script properties. Existing tokens still work."
       ),
       React.createElement(
@@ -2301,18 +2307,18 @@ function WcopSetup(props) {
           type: "button",
           disabled: props.busy,
           onClick: props.onConnect,
-          className: "px-3 py-2 rounded bg-teal-700 text-white text-sm font-semibold " + (props.busy ? "opacity-50" : "")
+          className: "min-h-11 px-3 py-2 rounded bg-teal-700 text-white text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 " + (props.busy ? "opacity-50" : "")
         }, props.connected ? "Reconnect" : "Connect"),
         props.connected ? React.createElement("button", {
           type: "button",
-          className: "px-3 py-2 rounded border border-slate-300 text-sm",
+          className: "min-h-11 px-3 py-2 rounded border border-slate-300 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1",
           onClick: props.onForget
         }, "Forget this connection") : null
       ),
       props.message ? React.createElement(WcopFlag, { tone: props.tone }, props.message) : null,
       props.selfTest ? React.createElement(
         "p",
-        { className: "text-xs text-slate-500 mt-2" },
+        { className: "text-xs text-slate-600 mt-2" },
         "Owner: " + (props.selfTest.owner || "unknown") + " | folder: " + (props.selfTest.folderName || "not created yet") + " | email quota available: " + (props.selfTest.canSendMail ? "yes" : "no")
       ) : null
     ),
@@ -2322,7 +2328,7 @@ function WcopSetup(props) {
       React.createElement("h4", { className: "font-semibold text-sm mb-1" }, "Before you use this on a real staff member"),
       React.createElement(
         "p",
-        { className: "text-xs text-slate-500" },
+        { className: "text-xs text-slate-600" },
         "This stores feedback you wrote and approved. It does not rate anyone and it is not an evaluation system of record. Using it on real staff is a district decision. Get answers to:"
       ),
       React.createElement(
@@ -2333,7 +2339,7 @@ function WcopSetup(props) {
     ),
     React.createElement("button", {
       type: "button",
-      className: "px-3 py-2 rounded border border-slate-300 text-sm",
+      className: "min-h-11 px-3 py-2 rounded border border-slate-300 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1",
       onClick: props.onBack
     }, "Back to the tool")
   );
@@ -2343,6 +2349,8 @@ function WalkthroughCopilotPanel(props) {
   const core = wcopCore();
   const fixtures = wcopFixtures();
   const scenarioLib = wcopScenarios();
+  const isClosed = !!(props && props.isOpen === false);
+  const hasModalShell = !isClosed && typeof (props && props.onClose) === "function";
   const [stage, setStage] = React.useState("capture");
   const [scenario, setScenario] = React.useState(null);
   const [notes, setNotes] = React.useState("");
@@ -2363,20 +2371,135 @@ function WalkthroughCopilotPanel(props) {
   const [manual, setManual] = React.useState({ componentId: "", quote: "", evidence: "", interpretation: "" });
   const [manualMessage, setManualMessage] = React.useState("");
   const [realNotes, setRealNotes] = React.useState("");
-  if (!core || !fixtures || !scenarioLib) {
-    return React.createElement(
-      "div",
-      { className: "p-4 text-sm text-rose-800" },
-      "The Walkthrough Copilot modules did not finish loading. Close and reopen this tool."
-    );
-  }
+  const dialogRef = React.useRef(null);
+  const closeRef = React.useRef(props && props.onClose);
+  closeRef.current = props && props.onClose;
   const componentLabels = React.useMemo(() => {
     const map = {};
+    if (!fixtures || !fixtures.PORTLAND_FRAMEWORK) return map;
     fixtures.PORTLAND_FRAMEWORK.components.forEach((c) => {
       map[c.id] = c.id + " " + c.label;
     });
     return map;
   }, [fixtures]);
+  React.useEffect(() => {
+    if (!hasModalShell) return void 0;
+    const dialog = dialogRef.current;
+    if (!dialog) return void 0;
+    const previousFocus = document.activeElement;
+    const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
+    const trap = { root: dialog };
+    trapStack.push(trap);
+    const isTopTrap = () => trapStack[trapStack.length - 1] === trap;
+    const getFocusable = () => Array.from(dialog.querySelectorAll(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"]), [contenteditable="true"]'
+    )).filter((el) => {
+      if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      const closedDetails = el.closest("details:not([open])");
+      if (closedDetails) {
+        const summary = closedDetails.querySelector(":scope > summary");
+        if (!summary || el !== summary && !summary.contains(el)) return false;
+      }
+      if (typeof el.getClientRects === "function" && el.getClientRects().length === 0) return false;
+      try {
+        const s = window.getComputedStyle(el);
+        if (s.display === "none" || s.visibility === "hidden") return false;
+      } catch (_) {
+      }
+      return true;
+    });
+    const initialTarget = getFocusable()[0] || dialog;
+    if (initialTarget && typeof initialTarget.focus === "function") {
+      try {
+        initialTarget.focus();
+      } catch (_) {
+      }
+    }
+    const onKeyDown = (event) => {
+      if (!isTopTrap()) return;
+      if (event.isComposing || event.keyCode === 229) return;
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        if (typeof closeRef.current === "function") closeRef.current();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const focusable = getFocusable();
+      if (focusable.length === 0) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (!dialog.contains(document.activeElement)) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus();
+        return;
+      }
+      if (event.shiftKey && (document.activeElement === first || document.activeElement === dialog)) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      const wasTopTrap = trapStack[trapStack.length - 1] === trap;
+      const idx = trapStack.lastIndexOf(trap);
+      if (idx >= 0) trapStack.splice(idx, 1);
+      if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus !== document.documentElement && previousFocus.isConnected && typeof previousFocus.focus === "function") {
+        try {
+          previousFocus.focus();
+        } catch (_) {
+        }
+      }
+    };
+  }, [hasModalShell]);
+  if (isClosed) return null;
+  if (!core || !fixtures || !scenarioLib) {
+    const errPanel = React.createElement(
+      "div",
+      { className: "p-4 text-sm text-rose-800", role: "alert" },
+      "The Walkthrough Copilot modules did not finish loading. Close and reopen this tool."
+    );
+    if (!hasModalShell) return errPanel;
+    return React.createElement("div", {
+      className: "fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4",
+      role: "presentation",
+      onClick: (e) => {
+        if (e.target === e.currentTarget && typeof closeRef.current === "function") closeRef.current();
+      }
+    }, React.createElement(
+      "div",
+      {
+        ref: dialogRef,
+        role: "dialog",
+        "aria-modal": "true",
+        "aria-labelledby": "wcop-dialog-title",
+        tabIndex: -1,
+        className: "relative w-full max-w-lg rounded-2xl bg-stone-50 p-4 shadow-2xl border border-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600"
+      },
+      React.createElement(
+        "div",
+        { className: "flex items-center justify-between gap-3 mb-2" },
+        React.createElement("h2", { id: "wcop-dialog-title", className: "text-base font-bold text-slate-900" }, "Walkthrough Copilot"),
+        React.createElement("button", {
+          type: "button",
+          "aria-label": t("walkthrough_copilot.close", "Close Walkthrough Copilot"),
+          className: "min-h-11 min-w-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600",
+          onClick: () => {
+            if (typeof closeRef.current === "function") closeRef.current();
+          }
+        }, "Close")
+      ),
+      errPanel
+    ));
+  }
   const edited = !!scenario && notes !== scenario.notes;
   function pickScenario(id) {
     const next = scenarioLib.getScenario(id);
@@ -2650,7 +2773,7 @@ function WalkthroughCopilotPanel(props) {
           disabled: !stageReachable(s.id) && stage !== s.id,
           "aria-current": stage === s.id ? "step" : void 0,
           onClick: () => setStage(s.id),
-          className: "w-full text-left rounded border px-3 py-2 text-sm " + (stage === s.id ? "border-teal-600 text-slate-800 bg-white" : "border-slate-200 text-slate-500 bg-white") + (!stageReachable(s.id) && stage !== s.id ? " opacity-50 cursor-not-allowed" : "")
+          className: "w-full min-h-11 text-left rounded border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 " + (stage === s.id ? "border-teal-600 text-slate-800 bg-white" : "border-slate-200 text-slate-600 bg-white") + (!stageReachable(s.id) && stage !== s.id ? " opacity-50 cursor-not-allowed" : "")
         },
         React.createElement("span", { className: "block text-[10px] uppercase tracking-wider opacity-75" }, s.n),
         React.createElement("span", null, s.label)
@@ -2698,13 +2821,13 @@ function WalkthroughCopilotPanel(props) {
         React.createElement("h3", { className: "font-bold text-slate-800 mb-1" }, "Your observation notes"),
         React.createElement(
           "p",
-          { className: "text-xs text-slate-500 mb-2" },
+          { className: "text-xs text-slate-600 mb-2" },
           "Type the shorthand you wrote during the visit. Locking it keeps your original wording exactly as written, and every claim you record afterwards has to quote a line from it."
         ),
         React.createElement("textarea", {
-          className: "w-full rounded border border-slate-300 p-2 font-mono text-[13px]",
+          className: "w-full rounded border border-slate-300 p-2 font-mono text-[13px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600",
           rows: 10,
-          "aria-label": "Observation notes",
+          "aria-label": t("walkthrough_copilot.observation_notes", "Observation notes"),
           value: realNotes,
           onChange: (e) => setRealNotes(e.target.value)
         }),
@@ -2715,11 +2838,11 @@ function WalkthroughCopilotPanel(props) {
             type: "button",
             disabled: !realNotes.trim(),
             onClick: lockRealNotes,
-            className: "px-4 py-2 rounded bg-teal-700 text-white text-sm font-semibold " + (!realNotes.trim() ? "opacity-50 cursor-not-allowed" : "")
+            className: "min-h-11 px-4 py-2 rounded bg-teal-700 text-white text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 " + (!realNotes.trim() ? "opacity-50 cursor-not-allowed" : "")
           }, "Lock these notes"),
           React.createElement("button", {
             type: "button",
-            className: "px-3 py-2 rounded border border-slate-300 text-sm",
+            className: "min-h-11 px-3 py-2 rounded border border-slate-300 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1",
             onClick: () => {
               setApproval(null);
               setRealNotes("");
@@ -2731,7 +2854,7 @@ function WalkthroughCopilotPanel(props) {
       ),
       React.createElement(
         "p",
-        { className: "text-xs text-slate-500" },
+        { className: "text-xs text-slate-600" },
         "There is no AI connected in this build, so you will write each piece of evidence yourself in the next step. The tool still checks that every claim quotes your notes, keeps what you observed separate from what you concluded, and flags language that reaches past the evidence."
       )
     );
@@ -2744,12 +2867,12 @@ function WalkthroughCopilotPanel(props) {
         { className: "flex flex-wrap gap-2 items-center mb-3" },
         React.createElement("button", {
           type: "button",
-          className: "px-3 py-1.5 rounded border border-slate-300 text-sm",
+          className: "min-h-11 px-3 py-2 rounded border border-slate-300 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1",
           onClick: () => setStage("affirm")
         }, "Use this for a real observation"),
         React.createElement(
           "span",
-          { className: "text-xs text-slate-500" },
+          { className: "text-xs text-slate-600" },
           "Requires confirming what your district has approved."
         )
       ),
@@ -2760,7 +2883,7 @@ function WalkthroughCopilotPanel(props) {
         onSetup: () => setStage("setup")
       }) : React.createElement("button", {
         type: "button",
-        className: "mb-4 px-3 py-1.5 rounded border border-slate-300 text-sm",
+        className: "mb-4 min-h-11 px-3 py-2 rounded border border-slate-300 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1",
         onClick: () => setIntroOpen(true)
       }, "What is this?"),
       React.createElement(
@@ -2769,7 +2892,7 @@ function WalkthroughCopilotPanel(props) {
         React.createElement("h3", { className: "font-bold text-slate-800 mb-1" }, "Choose a practice scenario"),
         React.createElement(
           "p",
-          { className: "text-xs text-slate-500 mb-3" },
+          { className: "text-xs text-slate-600 mb-3" },
           "Each scenario is a synthetic observation that teaches one habit of evidence-based feedback. They carry their own suggestions, so nothing here calls an AI service."
         ),
         scenarioLib.listScenarios().map((meta) => React.createElement(
@@ -2779,12 +2902,12 @@ function WalkthroughCopilotPanel(props) {
             type: "button",
             "aria-pressed": !!scenario && scenario.id === meta.id,
             onClick: () => pickScenario(meta.id),
-            className: "block w-full text-left rounded border px-3 py-2 mb-2 " + (scenario && scenario.id === meta.id ? "border-teal-600 bg-teal-50" : "border-slate-200 bg-white")
+            className: "block w-full min-h-11 text-left rounded border px-3 py-2 mb-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 " + (scenario && scenario.id === meta.id ? "border-teal-600 bg-teal-50" : "border-slate-200 bg-white")
           },
           React.createElement("span", { className: "block font-semibold text-sm text-slate-800" }, meta.title),
           React.createElement(
             "span",
-            { className: "block text-xs text-slate-500" },
+            { className: "block text-xs text-slate-600" },
             meta.setting + " | about " + meta.minutes + " minutes | teaches: " + meta.teaches
           )
         ))
@@ -2795,13 +2918,13 @@ function WalkthroughCopilotPanel(props) {
         React.createElement("h3", { className: "font-bold text-slate-800 mb-1" }, "The observer notes"),
         React.createElement(
           "p",
-          { className: "text-xs text-slate-500 mb-2" },
+          { className: "text-xs text-slate-600 mb-2" },
           "This is the shorthand someone typed during the visit. Locking it means your original wording is kept exactly as written for the rest of the session, so nothing can quietly tidy it up, summarize it, or put words in your mouth. Every claim later has to point back to a line in here."
         ),
         React.createElement("textarea", {
-          className: "w-full rounded border border-slate-300 p-2 font-mono text-[13px]",
+          className: "w-full rounded border border-slate-300 p-2 font-mono text-[13px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600",
           rows: 10,
-          "aria-label": "Observation notes",
+          "aria-label": t("walkthrough_copilot.observation_notes", "Observation notes"),
           value: notes,
           onChange: (e) => setNotes(e.target.value)
         }),
@@ -2817,11 +2940,11 @@ function WalkthroughCopilotPanel(props) {
             type: "button",
             disabled: !scenario || edited,
             onClick: lockAndAnalyze,
-            className: "px-4 py-2 rounded bg-teal-700 text-white text-sm font-semibold " + (!scenario || edited ? "opacity-50 cursor-not-allowed" : "")
+            className: "min-h-11 px-4 py-2 rounded bg-teal-700 text-white text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 " + (!scenario || edited ? "opacity-50 cursor-not-allowed" : "")
           }, "Lock these notes and see suggestions"),
           edited ? React.createElement("button", {
             type: "button",
-            className: "px-3 py-2 rounded border border-slate-300 text-sm",
+            className: "min-h-11 px-3 py-2 rounded border border-slate-300 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1",
             onClick: () => {
               setNotes(scenario.notes);
               wcopAnnounce("Scenario notes restored.");
@@ -2829,7 +2952,7 @@ function WalkthroughCopilotPanel(props) {
           }, "Restore scenario notes") : null,
           !scenario ? React.createElement(
             "span",
-            { className: "text-xs text-slate-500 self-center" },
+            { className: "text-xs text-slate-600 self-center" },
             "Pick a scenario first."
           ) : null
         )
@@ -2848,12 +2971,12 @@ function WalkthroughCopilotPanel(props) {
         React.createElement("h3", { className: "font-bold text-slate-800" }, "Your call on each suggestion"),
         React.createElement(
           "p",
-          { className: "text-sm font-bold text-teal-700 mb-1", role: "status" },
+          { className: "text-sm font-bold text-teal-700 mb-1", role: "status", "aria-live": "polite" },
           settled === total ? "All " + total + " decided. You can move on." : settled + " of " + total + " decided."
         ),
         React.createElement(
           "p",
-          { className: "text-xs text-slate-500 mb-3" },
+          { className: "text-xs text-slate-600 mb-3" },
           "Nothing reaches your form until you decide on it. Keep what the notes genuinely support, reword anything you would put differently, and throw out the rest. Rejecting a lot is a normal outcome, not a sign something went wrong."
         ),
         draft.mode === "approved" ? React.createElement(WcopManualEntry, {
@@ -2879,7 +3002,7 @@ function WalkthroughCopilotPanel(props) {
           type: "button",
           disabled: settled !== total,
           onClick: () => setStage("feedback"),
-          className: "mt-3 px-4 py-2 rounded bg-teal-700 text-white text-sm font-semibold " + (settled !== total ? "opacity-50 cursor-not-allowed" : "")
+          className: "mt-3 min-h-11 px-4 py-2 rounded bg-teal-700 text-white text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 " + (settled !== total ? "opacity-50 cursor-not-allowed" : "")
         }, "Continue to the feedback")
       )
     );
@@ -2895,7 +3018,7 @@ function WalkthroughCopilotPanel(props) {
         React.createElement("h4", { className: "font-semibold text-sm mb-1" }, "Disclosure"),
         React.createElement(
           "p",
-          { className: "text-xs text-slate-500 mb-2" },
+          { className: "text-xs text-slate-600 mb-2" },
           "This travels with every field you copy. You can reword it, but it cannot be empty, and the last sentence is a claim only your school can make truthfully."
         ),
         React.createElement(
@@ -2905,7 +3028,7 @@ function WalkthroughCopilotPanel(props) {
         ),
         React.createElement("textarea", {
           id: "wcop-disclosure",
-          className: "w-full rounded border border-slate-300 p-2 text-sm",
+          className: "w-full rounded border border-slate-300 p-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600",
           rows: 3,
           value: draft.disclosure.text,
           onChange: (e) => setDisclosureText(e.target.value)
@@ -2917,9 +3040,9 @@ function WalkthroughCopilotPanel(props) {
             type: "button",
             "aria-pressed": draft.disclosure.includeFormativeSentence,
             onClick: toggleFormative,
-            className: "px-3 py-1.5 rounded border border-slate-300 text-sm"
+            className: "min-h-11 px-3 py-2 rounded border border-slate-300 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1"
           }, draft.disclosure.includeFormativeSentence ? "Formative sentence included" : "Formative sentence removed"),
-          React.createElement("span", { className: "text-xs text-slate-500" }, draft.disclosure.formativeSentence)
+          React.createElement("span", { className: "text-xs text-slate-600" }, draft.disclosure.formativeSentence)
         )
       ),
       readiness.ok ? React.createElement(
@@ -2943,19 +3066,19 @@ function WalkthroughCopilotPanel(props) {
           type: "button",
           disabled: !readiness.ok,
           onClick: () => setStage("copy"),
-          className: "px-4 py-2 rounded bg-teal-700 text-white text-sm font-semibold " + (!readiness.ok ? "opacity-50 cursor-not-allowed" : "")
+          className: "min-h-11 px-4 py-2 rounded bg-teal-700 text-white text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 " + (!readiness.ok ? "opacity-50 cursor-not-allowed" : "")
         }, "Continue to copy"),
         React.createElement("button", {
           type: "button",
           onClick: compare,
-          className: "px-4 py-2 rounded border border-slate-300 text-sm font-semibold"
+          className: "min-h-11 px-4 py-2 rounded border border-slate-300 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1"
         }, "Compare with the reference reading")
       ),
       comparison ? React.createElement(
         "div",
         { className: "rounded-lg border border-slate-200 bg-white p-4 mt-3" },
         React.createElement("h4", { className: "font-semibold text-sm" }, "Your reading and the reference reading"),
-        React.createElement("p", { className: "text-xs text-slate-500 mb-2" }, comparison.disclaimer),
+        React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, comparison.disclaimer),
         comparison.agreements.map((a, i) => React.createElement(
           WcopFlag,
           { key: "a" + i, tone: "go" },
@@ -2970,7 +3093,7 @@ function WalkthroughCopilotPanel(props) {
         comparison.discussion.length ? React.createElement(
           "div",
           { className: "mt-2" },
-          React.createElement("p", { className: "text-[11px] uppercase tracking-wider text-slate-500 font-semibold" }, "Worth discussing"),
+          React.createElement("p", { className: "text-[11px] uppercase tracking-wider text-slate-600 font-semibold" }, "Worth discussing"),
           React.createElement(
             "ul",
             { className: "list-disc ml-5 text-sm text-slate-700" },
@@ -2987,13 +3110,13 @@ function WalkthroughCopilotPanel(props) {
       React.createElement("h3", { className: "font-bold text-slate-800 mb-1" }, "Copy into your walkthrough form"),
       React.createElement(
         "p",
-        { className: "text-xs text-slate-500 mb-3" },
+        { className: "text-xs text-slate-600 mb-3" },
         "This tool does not submit anything, send anything, or store anything. You paste these into the form your school already uses."
       ),
       React.createElement("button", {
         type: "button",
         onClick: () => copyText(output.value.copyAll, "All fields"),
-        className: "px-4 py-2 rounded bg-teal-700 text-white text-sm font-semibold mb-3"
+        className: "min-h-11 px-4 py-2 rounded bg-teal-700 text-white text-sm font-semibold mb-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1"
       }, "Copy everything"),
       output.value.contextFields.concat(output.value.fields).map((f, i) => React.createElement(
         "div",
@@ -3008,7 +3131,7 @@ function WalkthroughCopilotPanel(props) {
           React.createElement("button", {
             type: "button",
             onClick: () => copyText(f.text, f.key),
-            className: "px-3 py-1 rounded border border-slate-300 text-sm"
+            className: "min-h-11 min-w-11 px-3 py-2 rounded border border-slate-300 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1"
           }, "Copy")
         ),
         React.createElement("pre", { className: "whitespace-pre-wrap break-words text-[13px] mt-1 font-mono" }, f.text)
@@ -3022,12 +3145,12 @@ function WalkthroughCopilotPanel(props) {
           null,
           React.createElement(
             "p",
-            { className: "text-xs text-slate-500 mb-2" },
+            { className: "text-xs text-slate-600 mb-2" },
             "You can paste the fields above into whatever form your school uses. If you would rather have this saved to your Drive and shared with the teacher directly, set that up once."
           ),
           React.createElement("button", {
             type: "button",
-            className: "px-3 py-2 rounded border border-slate-300 text-sm",
+            className: "min-h-11 px-3 py-2 rounded border border-slate-300 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1",
             onClick: () => setStage("setup")
           }, "Set up delivery")
         ) : draft.mode === "demo" ? React.createElement(
@@ -3045,21 +3168,21 @@ function WalkthroughCopilotPanel(props) {
           React.createElement("input", {
             id: "wcop-send-to",
             type: "text",
-            className: "w-full rounded border border-slate-300 p-2 text-sm",
-            placeholder: "teacher@yourschool.org",
+            className: "w-full min-h-11 rounded border border-slate-300 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600",
+            placeholder: t("walkthrough_copilot.email_placeholder", "teacher@yourschool.org"),
             value: sendTo,
             onChange: (e) => setSendTo(e.target.value)
           }),
           React.createElement(
             "p",
-            { className: "text-xs text-slate-500 my-2" },
+            { className: "text-xs text-slate-600 my-2" },
             "The note is saved to your Drive and shared with that one address. Google asks them to sign in to open it, so a forwarded link shows nothing. The notification email contains no feedback text."
           ),
           React.createElement("button", {
             type: "button",
             disabled: setupState.busy,
             onClick: deliver,
-            className: "px-3 py-2 rounded bg-teal-700 text-white text-sm font-semibold " + (setupState.busy ? "opacity-50" : "")
+            className: "min-h-11 px-3 py-2 rounded bg-teal-700 text-white text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 " + (setupState.busy ? "opacity-50" : "")
           }, "Save to my Drive and share")
         ),
         sendResult ? React.createElement(WcopFlag, { tone: sendResult.ok ? "go" : "stop" }, sendResult.message) : null
@@ -3067,20 +3190,20 @@ function WalkthroughCopilotPanel(props) {
       React.createElement("button", {
         type: "button",
         onClick: clearAll,
-        className: "mt-3 px-3 py-2 rounded border border-slate-300 text-sm"
+        className: "mt-3 min-h-11 px-3 py-2 rounded border border-slate-300 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1"
       }, "Clear and start over")
     ) : React.createElement(WcopFlag, { tone: "stop" }, output.errors[0].message);
   }
-  return React.createElement(
+  const panelContent = React.createElement(
     "div",
-    { className: "p-4" },
+    { className: "p-4", "data-testid": "wcop-panel" },
     banner,
     nav,
     problem ? React.createElement(WcopFlag, { tone: "stop" }, problem) : null,
     bodyNode,
     React.createElement(
       "div",
-      { className: "mt-6 pt-3 border-t border-slate-200 text-xs text-slate-500" },
+      { className: "mt-6 pt-3 border-t border-slate-200 text-xs text-slate-600" },
       React.createElement(
         "p",
         null,
@@ -3092,6 +3215,42 @@ function WalkthroughCopilotPanel(props) {
         "Practice material here is invented. Before using this with a real staff member, confirm with your district which AI provider may process observation notes, whether a walkthrough counts as evidence in your evaluation system, and how long anything typed here is retained."
       ),
       React.createElement("p", { className: "mt-1" }, scenarioLib.DISCLAIMER)
+    )
+  );
+  if (!hasModalShell) return panelContent;
+  return React.createElement(
+    "div",
+    {
+      className: "fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4",
+      role: "presentation",
+      onClick: (e) => {
+        if (e.target === e.currentTarget && typeof closeRef.current === "function") closeRef.current();
+      }
+    },
+    React.createElement(
+      "div",
+      {
+        ref: dialogRef,
+        role: "dialog",
+        "aria-modal": "true",
+        "aria-labelledby": "wcop-dialog-title",
+        tabIndex: -1,
+        className: "relative max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-stone-50 shadow-2xl border border-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600"
+      },
+      React.createElement(
+        "div",
+        { className: "sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3" },
+        React.createElement("h2", { id: "wcop-dialog-title", className: "text-base font-bold text-slate-900" }, "Walkthrough Copilot"),
+        React.createElement("button", {
+          type: "button",
+          "aria-label": t("walkthrough_copilot.close", "Close Walkthrough Copilot"),
+          className: "min-h-11 min-w-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-semibold hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1",
+          onClick: () => {
+            if (typeof closeRef.current === "function") closeRef.current();
+          }
+        }, "Close")
+      ),
+      panelContent
     )
   );
 }

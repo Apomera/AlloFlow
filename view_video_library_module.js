@@ -59,16 +59,165 @@ function VideoLibraryOverlay({ onClose, t }) {
   const [activeId, setActiveId] = React.useState(VIDEO_CATALOG.length === 1 ? VIDEO_CATALOG[0].id : null);
   const [failed, setFailed] = React.useState({});
   const rootRef = React.useRef(null);
+  const onCloseRef = React.useRef(onClose);
+  onCloseRef.current = onClose;
   React.useEffect(() => {
+    const dialog = rootRef.current;
+    if (!dialog || typeof document === "undefined") return void 0;
+    const previousFocus = document.activeElement;
+    const trap = { root: dialog };
+    const trapStack = typeof window !== "undefined" ? window.__alloFocusTrapStack = window.__alloFocusTrapStack || [] : null;
+    if (trapStack) trapStack.push(trap);
+    const isolated = [];
+    const seenSiblings = /* @__PURE__ */ new Set();
+    let cursor = dialog;
+    while (cursor && cursor.parentElement) {
+      const parent = cursor.parentElement;
+      Array.from(parent.children).forEach((sibling) => {
+        if (!sibling || sibling === cursor || seenSiblings.has(sibling) || !sibling.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName)) return;
+        seenSiblings.add(sibling);
+        isolated.push({
+          sibling,
+          hadInert: sibling.hasAttribute("inert"),
+          prevInert: sibling.inert,
+          ariaHidden: sibling.getAttribute("aria-hidden")
+        });
+        try {
+          sibling.inert = true;
+        } catch (_) {
+        }
+        try {
+          sibling.setAttribute("inert", "");
+        } catch (_) {
+        }
+        try {
+          sibling.setAttribute("aria-hidden", "true");
+        } catch (_) {
+        }
+      });
+      if (parent === document.body) break;
+      cursor = parent;
+    }
+    const body = document.body;
+    const scrollLock = typeof window !== "undefined" ? window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: "" }) : null;
+    let scrollLocked = false;
     try {
-      if (rootRef.current) rootRef.current.focus();
+      if (body && scrollLock) {
+        scrollLocked = true;
+        if (++scrollLock.count === 1) {
+          scrollLock.prev = body.style.overflow;
+          body.style.overflow = "hidden";
+        }
+      }
+    } catch (_) {
+    }
+    const getFocusable = () => Array.from(dialog.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])')).filter((el) => {
+      if (!el || el.hidden || el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      let ancestor = el.parentElement;
+      while (ancestor && ancestor !== dialog) {
+        if (ancestor.matches && ancestor.matches("details:not([open])")) {
+          const directSummary = ancestor.querySelector(":scope > summary");
+          if (el !== directSummary) return false;
+        }
+        ancestor = ancestor.parentElement;
+      }
+      try {
+        const st = typeof window !== "undefined" && window.getComputedStyle ? window.getComputedStyle(el) : null;
+        if (st && (st.display === "none" || st.visibility === "hidden")) return false;
+      } catch (_) {
+      }
+      return true;
+    });
+    try {
+      (getFocusable()[0] || dialog).focus();
     } catch (_) {
     }
     const onKey = (e) => {
-      if (e.key === "Escape") onClose();
+      if (!dialog.isConnected || e.defaultPrevented) return;
+      const topTrap = trapStack && trapStack[trapStack.length - 1];
+      if (topTrap && topTrap !== trap && !(topTrap.root && typeof topTrap.root.contains === "function" && topTrap.root.contains(dialog))) return;
+      if (e.key === "Escape") {
+        if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+        e.preventDefault();
+        e.stopPropagation();
+        if (typeof onCloseRef.current === "function") onCloseRef.current();
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const focusable = getFocusable();
+      if (!focusable.length) {
+        e.preventDefault();
+        try {
+          dialog.focus();
+        } catch (_) {
+        }
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const active2 = document.activeElement;
+      if (!dialog.contains(active2) || active2 === dialog) {
+        e.preventDefault();
+        (e.shiftKey ? last : first).focus();
+      } else if (e.shiftKey && active2 === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && active2 === last) {
+        e.preventDefault();
+        first.focus();
+      }
     };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      try {
+        if (scrollLocked && body && scrollLock) {
+          scrollLock.count = Math.max(0, scrollLock.count - 1);
+          if (scrollLock.count === 0) body.style.overflow = scrollLock.prev;
+        }
+      } catch (_) {
+      }
+      isolated.forEach(({ sibling, hadInert, prevInert, ariaHidden }) => {
+        if (!sibling || !sibling.isConnected) return;
+        if (!hadInert) {
+          try {
+            sibling.inert = false;
+          } catch (_) {
+          }
+          try {
+            sibling.removeAttribute("inert");
+          } catch (_) {
+          }
+        } else {
+          try {
+            sibling.inert = Boolean(prevInert);
+          } catch (_) {
+          }
+        }
+        if (ariaHidden == null) {
+          try {
+            sibling.removeAttribute("aria-hidden");
+          } catch (_) {
+          }
+        } else {
+          try {
+            sibling.setAttribute("aria-hidden", ariaHidden);
+          } catch (_) {
+          }
+        }
+      });
+      const wasTopTrap = !trapStack || trapStack[trapStack.length - 1] === trap;
+      if (trapStack) {
+        const idx = trapStack.lastIndexOf(trap);
+        if (idx >= 0) trapStack.splice(idx, 1);
+      }
+      if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus !== document.documentElement && previousFocus.isConnected && typeof previousFocus.focus === "function") {
+        try {
+          previousFocus.focus();
+        } catch (_) {
+        }
+      }
+    };
   }, []);
   const active = VIDEO_CATALOG.filter((v) => v.id === activeId)[0] || null;
   const renderPlayer = (video) => {
@@ -106,7 +255,7 @@ function VideoLibraryOverlay({ onClose, t }) {
           label: tr("video_library.captions_track", "Captions")
         }
       )
-    ), video.silent && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-xs text-slate-500" }, tr("video_library.silent_note", "This video has no narration or soundtrack, so there is nothing to caption. The full on-screen text is below.")));
+    ), video.silent && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-xs text-slate-600" }, tr("video_library.silent_note", "This video has no narration or soundtrack, so there is nothing to caption. The full on-screen text is below.")));
   };
   return /* @__PURE__ */ React.createElement(
     "div",
@@ -115,6 +264,7 @@ function VideoLibraryOverlay({ onClose, t }) {
       style: { background: "rgba(15,23,42,0.72)" },
       role: "dialog",
       "aria-modal": "true",
+      "aria-labelledby": "video-library-title",
       "aria-label": tr("video_library.title", "Video library")
     },
     /* @__PURE__ */ React.createElement(
@@ -124,17 +274,17 @@ function VideoLibraryOverlay({ onClose, t }) {
         tabIndex: -1,
         className: "flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl focus:outline-none"
       },
-      /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between border-b border-slate-200 bg-gradient-to-r from-indigo-50 to-violet-50 px-5 py-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex min-w-0 items-center gap-2" }, /* @__PURE__ */ React.createElement(MonitorPlay, { size: 20, className: "shrink-0 text-violet-700", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("h2", { className: "truncate text-base font-bold text-slate-800" }, tr("video_library.title", "Video library"))), /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between border-b border-slate-200 bg-gradient-to-r from-indigo-50 to-violet-50 px-5 py-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex min-w-0 items-center gap-2" }, /* @__PURE__ */ React.createElement(MonitorPlay, { size: 20, className: "shrink-0 text-violet-700", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("h2", { id: "video-library-title", className: "truncate text-base font-bold text-slate-800" }, tr("video_library.title", "Video library"))), /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
           onClick: onClose,
-          className: "min-h-11 px-2 py-1 text-2xl leading-none text-slate-600 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
+          className: "min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg px-2 py-1 text-2xl leading-none text-slate-600 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
           "aria-label": tr("video_library.close", "Close video library")
         },
         /* @__PURE__ */ React.createElement(X, { size: 20, "aria-hidden": "true" })
       )),
-      /* @__PURE__ */ React.createElement("div", { className: "custom-scrollbar flex-1 overflow-y-auto overscroll-contain p-5" }, /* @__PURE__ */ React.createElement("p", { className: "mb-4 text-xs leading-relaxed text-slate-500" }, tr("video_library.intro", "These stream from the AlloFlow CDN, not from a video platform. No account, no cookies, nothing recorded about what you watch.")), VIDEO_CATALOG.length > 1 && /* @__PURE__ */ React.createElement("div", { className: "mb-4 grid grid-cols-1 gap-2 sm:grid-cols-2" }, VIDEO_CATALOG.map((video) => /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("div", { className: "custom-scrollbar flex-1 overflow-y-auto overscroll-contain p-5" }, /* @__PURE__ */ React.createElement("p", { className: "mb-4 text-xs leading-relaxed text-slate-600" }, tr("video_library.intro", "These stream from the AlloFlow CDN, not from a video platform. No account, no cookies, nothing recorded about what you watch.")), VIDEO_CATALOG.length > 1 && /* @__PURE__ */ React.createElement("div", { className: "mb-4 grid grid-cols-1 gap-2 sm:grid-cols-2" }, VIDEO_CATALOG.map((video) => /* @__PURE__ */ React.createElement(
         "button",
         {
           key: video.id,
@@ -144,8 +294,8 @@ function VideoLibraryOverlay({ onClose, t }) {
           className: "min-h-11 rounded-lg border p-3 text-left transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 " + (activeId === video.id ? "border-indigo-400 bg-indigo-50" : "border-slate-200 bg-white hover:border-indigo-300")
         },
         /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2 text-sm font-bold text-slate-800" }, /* @__PURE__ */ React.createElement(PlayCircle, { size: 15, className: "shrink-0 text-indigo-600", "aria-hidden": "true" }), video.title),
-        /* @__PURE__ */ React.createElement("span", { className: "mt-1 block text-[11px] text-slate-500" }, formatDuration(video.durationSec))
-      ))), active && /* @__PURE__ */ React.createElement("div", null, VIDEO_CATALOG.length > 1 && /* @__PURE__ */ React.createElement("h3", { className: "mb-1 text-sm font-bold text-slate-800" }, active.title), /* @__PURE__ */ React.createElement("p", { className: "mb-3 text-xs text-slate-500" }, formatDuration(active.durationSec), active.blurb ? " \xB7 " + active.blurb : ""), renderPlayer(active), active.transcript && active.transcript.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3" }, /* @__PURE__ */ React.createElement("summary", { className: "min-h-11 cursor-pointer select-none py-2 text-sm font-bold text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600" }, tr("video_library.transcript", "Text version")), /* @__PURE__ */ React.createElement("ol", { className: "mt-2 list-decimal space-y-1.5 pl-5 text-xs leading-relaxed text-slate-600" }, active.transcript.map((line, i) => /* @__PURE__ */ React.createElement("li", { key: "tr-" + i }, line))))))
+        /* @__PURE__ */ React.createElement("span", { className: "mt-1 block text-[11px] text-slate-600" }, formatDuration(video.durationSec))
+      ))), active && /* @__PURE__ */ React.createElement("div", null, VIDEO_CATALOG.length > 1 && /* @__PURE__ */ React.createElement("h3", { className: "mb-1 text-sm font-bold text-slate-800" }, active.title), /* @__PURE__ */ React.createElement("p", { className: "mb-3 text-xs text-slate-600" }, formatDuration(active.durationSec), active.blurb ? " \xB7 " + active.blurb : ""), renderPlayer(active), active.transcript && active.transcript.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3" }, /* @__PURE__ */ React.createElement("summary", { className: "min-h-11 cursor-pointer select-none py-2 text-sm font-bold text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600" }, tr("video_library.transcript", "Text version")), /* @__PURE__ */ React.createElement("ol", { className: "mt-2 list-decimal space-y-1.5 pl-5 text-xs leading-relaxed text-slate-600" }, active.transcript.map((line, i) => /* @__PURE__ */ React.createElement("li", { key: "tr-" + i }, line))))))
     )
   );
 }

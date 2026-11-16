@@ -16,6 +16,13 @@ window.SelHub = window.SelHub || {
 
 (function() {
   'use strict';
+  function __alloT(key, fallback) {
+    try {
+      var fn = typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : null;
+      if (fn) { var v = fn(key, fallback); if (v != null && v !== key) return v; }
+    } catch (_) {}
+    return fallback != null ? fallback : key;
+  }
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-conflict')) return;
@@ -3051,7 +3058,7 @@ window.SelHub = window.SelHub || {
             };
             return h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
-                _cflAiOn ? h('button', { 'aria-label': 'Back to role-play modes', onClick: function() { upd('rpModeRP', null); }, style: { background: 'none', border: 'none', color: _cflFg('#94a3b8'), cursor: 'pointer', fontSize: 14, padding: 4 } }, '←') : null,
+                _cflAiOn ? h('button', { 'aria-label': __alloT('sel.conflict.back_to_roleplay_aria', 'Back to role-play modes'), onClick: function() { upd('rpModeRP', null); }, style: { background: 'none', border: 'none', color: _cflFg('#94a3b8'), cursor: 'pointer', fontSize: 14, padding: 4 } }, '←') : null,
                 h('h3', { style: { color: _cflFg('#f1f5f9'), fontSize: 18, margin: 0 } }, '🎬 Scripted Role-Play')
               ),
               h('p', { style: { color: _cflFg('#94a3b8'), fontSize: 12, marginBottom: 16 } }, 'Choose what to say and see how they react. Each scene has more than one ending; replay to find them all.'),

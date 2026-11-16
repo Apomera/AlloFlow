@@ -250,9 +250,16 @@ const PersonaSessionArtifact = (() => {
         const resolver = options.resolveVoice || input.resolveVoice;
         if (typeof resolver === 'function') voice = cleanVoice(resolver(planItem));
         if (!voice && speakerMap && typeof speakerMap === 'object') {
-            voice = cleanVoice(speakerMap[planItem.speaker] || speakerMap[planItem.speaker.toLowerCase()]);
+            var spKey = planItem.speaker;
+            var spLower = spKey.toLowerCase();
+            var rawSpVoice = Object.prototype.hasOwnProperty.call(speakerMap, spKey)
+                ? speakerMap[spKey]
+                : (Object.prototype.hasOwnProperty.call(speakerMap, spLower) ? speakerMap[spLower] : '');
+            voice = cleanVoice(rawSpVoice);
         }
-        if (!voice && roleMap && typeof roleMap === 'object') voice = cleanVoice(roleMap[planItem.role]);
+        if (!voice && roleMap && typeof roleMap === 'object' && Object.prototype.hasOwnProperty.call(roleMap, planItem.role)) {
+            voice = cleanVoice(roleMap[planItem.role]);
+        }
         if (!voice) voice = cleanVoice(options.selectedVoice || input.selectedVoice);
         if (!voice) voice = cleanVoice(options.defaultVoice || input.defaultVoice);
         return voice;
@@ -541,9 +548,11 @@ const PersonaSessionArtifact = (() => {
                 let audioHtml = '';
                 if (audio && audio.base64 && audio.mime) {
                     audioClips += 1;
-                    audioHtml = '<audio class="narration" controls preload="metadata" aria-label="Narration for '
-                        + speaker + '"><source src="data:' + escapeHtmlText(audio.mime) + ';base64,'
-                        + audio.base64 + '" type="' + escapeHtmlText(audio.mime) + '" /></audio>';
+                    var cleanBase64 = escapeHtmlText(String(audio.base64 || '').replace(/\s+/g, ''));
+                    var clipLabel = escapeHtmlText((speaker || 'Message') + ' audio clip');
+                    audioHtml = '<audio class="narration" controls preload="metadata" aria-label="' + clipLabel + '"><source src="data:'
+                        + escapeHtmlText(audio.mime) + ';base64,' + cleanBase64 + '" type="'
+                        + escapeHtmlText(audio.mime) + '" /></audio>';
                 }
                 return '<p class="chunk">' + text + '</p>' + audioHtml;
             }).join('');
@@ -556,7 +565,7 @@ const PersonaSessionArtifact = (() => {
             + '<style>\n'
             + 'body{font-family:Georgia,serif;line-height:1.7;color:#1f2937;max-width:760px;margin:0 auto;padding:32px 20px;background:#fbfaf7;}\n'
             + 'h1{font-family:system-ui,sans-serif;font-size:1.9em;margin:0 0 4px;color:#111827;}\n'
-            + '.meta{color:#6b7280;font-style:italic;margin-bottom:8px;}\n'
+            + '.meta{color:#4b5563;font-style:italic;margin-bottom:8px;}\n'
             + '.privacy{background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:10px 14px;font-family:system-ui,sans-serif;font-size:0.85em;color:#78350f;margin-bottom:28px;}\n'
             + '.turn{margin-bottom:18px;padding:14px 16px;border-radius:12px;page-break-inside:avoid;}\n'
             + '.turn.learner{background:#eff6ff;border:1px solid #bfdbfe;margin-left:32px;margin-inline-start:32px;margin-inline-end:0;}\n'
@@ -567,9 +576,10 @@ const PersonaSessionArtifact = (() => {
             + 'audio.narration{width:100%;max-width:420px;display:block;margin:2px 0 10px;}\n'
             + '.sourcing{background:#eef2ff;border:1px solid #c7d2fe;border-radius:8px;padding:10px 14px;font-family:system-ui,sans-serif;font-size:0.85em;color:#3730a3;margin-top:28px;}\n'
             + '.sourcing h2{font-size:1em;margin:0 0 4px;}\n'
-            + 'footer{margin-top:36px;padding-top:14px;border-top:1px solid #e5e7eb;font-family:system-ui,sans-serif;font-size:0.8em;color:#6b7280;}\n'
+            + 'footer{margin-top:36px;padding-top:14px;border-top:1px solid #e5e7eb;font-family:system-ui,sans-serif;font-size:0.8em;color:#4b5563;}\n'
             + '@media print{audio.narration{display:none;}}\n'
             + '</style>\n</head>\n<body>\n'
+            + '<main>\n'
             + '<h1>' + escapeHtmlText(title) + '</h1>\n'
             + '<p class="meta">' + escapeHtmlText(speakers.join(' & ') || 'Persona conversation')
             + ' · ' + escapeHtmlText(language) + ' · saved ' + escapeHtmlText(new Date().toLocaleDateString()) + '</p>\n'
@@ -578,6 +588,7 @@ const PersonaSessionArtifact = (() => {
             + ' — store and share it the way you would any private student record.</p>\n'
             + messageHtml
             + questionCraftHtml
+            + '\n</main>'
             + '\n<footer>Created with AlloFlow · self-contained page (works offline; audio plays without the app).</footer>\n'
             + '</body>\n</html>\n';
         return { html, stats: { messages: messages.length, audioClips } };

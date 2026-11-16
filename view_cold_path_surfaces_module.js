@@ -122,17 +122,18 @@ function AiBackendSettingsView(props) {
     onKeyDown: e => {
       if (e.key === 'Escape') e.currentTarget.click();
     },
-    className: "fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300",
+    className: "fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-300",
     onClick: () => setShowAIBackendModal(false),
     "aria-label": t('common.close') || 'Close'
   }, /*#__PURE__*/React.createElement("div", {
     ref: aiBackendModalRef,
-    className: "bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto",
+    className: "bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in motion-reduce:animate-none zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto",
     role: "dialog",
     "aria-modal": "true",
     "aria-labelledby": "ai-backend-canvas-title",
     onClick: e => e.stopPropagation()
   }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => setShowAIBackendModal(false),
     className: "absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10",
     "aria-label": t('common.close') || "Close"
@@ -191,6 +192,7 @@ function AiBackendSettingsView(props) {
   }, t('canvas_settings.device_storage_label') || 'Device Storage'), /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] text-slate-600 mb-2"
   }, t('canvas_settings.device_storage_hint2') || 'Open your saved resource packs to restore, pin, export, or erase them. Everything is kept on this device only, nothing goes to a server.'), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: openCanvasRecoveryManager,
     className: "bg-white text-violet-700 border-2 border-violet-200 px-4 py-2 rounded-xl font-bold text-sm hover:bg-violet-50 transition-colors active:scale-95"
   }, "\uD83D\uDDC2\uFE0F ", t('canvas_settings.device_storage_btn2') || 'Open saved work')), /*#__PURE__*/React.createElement("div", {
@@ -200,6 +202,7 @@ function AiBackendSettingsView(props) {
   }, t('canvas_settings.diagnostics_label') || 'Diagnostics & Logs'), /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] text-slate-600 mb-2"
   }, t('canvas_settings.diagnostics_hint') || 'View captured errors and the read-aloud (text-to-speech) activity trace — useful when audio stalls without a visible error.'), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => {
       if (typeof window.__alloOpenDiagnosticsLog !== 'function') return;
       let hasErrors = false;
@@ -212,6 +215,7 @@ function AiBackendSettingsView(props) {
   }, "\uD83E\uDE7A ", t('canvas_settings.diagnostics_btn') || 'Open error & read-aloud log')), /*#__PURE__*/React.createElement("div", {
     className: "flex justify-end pt-2"
   }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => setShowAIBackendModal(false),
     className: "bg-violet-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-violet-700 transition-colors shadow-lg shadow-violet-200 active:scale-95"
   }, t('common.done') || 'Done')))));
@@ -242,6 +246,7 @@ function LmsAuditBannerView(props) {
   }, "\u267F ", t(lmsAuditUrls.length === 1 ? 'lms.queued_one' : 'lms.queued_other', {
     count: lmsAuditUrls.length
   }) || `${lmsAuditUrls.length} document${lmsAuditUrls.length !== 1 ? 's' : ''} queued from LMS`), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => setLmsAuditUrls([]),
     className: "bg-white/20 hover:bg-white/30 px-2 py-0.5 rounded-md text-xs transition-colors"
   }, t('lms.dismiss_button') || 'Dismiss')), /*#__PURE__*/React.createElement("div", {
@@ -470,7 +475,7 @@ function ReadThisPagePanelView(props) {
   const handleStop = () => stopReadThisPage();
   const handleItemClick = idx => _readThisPageItemAt(idx);
   return /*#__PURE__*/React.createElement("div", {
-    className: "fixed top-16 right-4 z-[45] w-[360px] max-h-[calc(100vh-5rem)] flex flex-col rounded-2xl shadow-2xl border-s-4 border-purple-500 overflow-hidden animate-in slide-in-from-right-5 duration-300",
+    className: "fixed top-16 right-4 z-[45] w-[360px] max-h-[calc(100vh-5rem)] flex flex-col rounded-2xl shadow-2xl border-s-4 border-purple-500 overflow-hidden animate-in motion-reduce:animate-none slide-in-from-right-5 duration-300",
     style: {
       background: theme === 'contrast' ? '#000' : '#0f172a',
       color: theme === 'contrast' ? '#fbbf24' : '#e2e8f0',
@@ -495,6 +500,7 @@ function ReadThisPagePanelView(props) {
   }), /*#__PURE__*/React.createElement("span", null, t('read_this_page.title') || 'Read This Page')), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-1"
   }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     id: "rtp-read-all-btn",
     onClick: handleReadAll,
     className: "px-3 py-1 rounded-lg text-white text-[11px] font-bold transition-colors hover:brightness-110",
@@ -503,12 +509,14 @@ function ReadThisPagePanelView(props) {
     },
     "aria-pressed": rtpPlaybackState === 'reading'
   }, '\u25B6', " ", t('read_this_page.read_all_button') || 'Read All'), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: handleStop,
     className: "px-2 py-1 rounded-lg text-white text-[11px] font-bold hover:bg-red-600 transition-colors",
     style: {
       background: '#dc2626'
     }
   }, '\u23F9', " ", t('read_this_page.stop_button') || 'Stop'), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: closeReadThisPage,
     "aria-label": (t('common.close') || 'Close') + ': ' + (t('read_this_page.title') || 'Read This Page'),
     className: "ms-1 px-2 py-1 rounded-lg text-slate-600 hover:text-white hover:bg-slate-700 transition-colors text-[11px] font-bold"

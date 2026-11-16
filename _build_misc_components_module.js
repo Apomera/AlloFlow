@@ -74,12 +74,15 @@ var _lazyIcon = function (name) {
 };
 // Icons used by WordSoundsReviewPanel:
 var Ban = _lazyIcon('Ban');
+var CheckCircle2 = _lazyIcon('CheckCircle2');
 var ChevronDown = _lazyIcon('ChevronDown');
 var ChevronLeft = _lazyIcon('ChevronLeft');
 var ImageIcon = _lazyIcon('ImageIcon');
 var Play = _lazyIcon('Play');
 var RefreshCw = _lazyIcon('RefreshCw');
+var Send = _lazyIcon('Send');
 var Sparkles = _lazyIcon('Sparkles');
+var Volume2 = _lazyIcon('Volume2');
 ${compiled}
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.AnimatedNumber = (typeof AnimatedNumber !== 'undefined') ? AnimatedNumber : null;

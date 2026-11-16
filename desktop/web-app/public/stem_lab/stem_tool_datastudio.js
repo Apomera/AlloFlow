@@ -237,6 +237,74 @@ var d = (labToolData && labToolData._dataStudio) || {};
             })
           );
 
+          var plHandoffActive = (d.fromTool === 'particleLab3d' || String(d.dataSource || '').indexOf('particleLab3d') === 0);
+          var plHandoffKey = String(d.handoffId || (plHandoffActive ? ((d.dataSource || 'particleLab3d') + ':' + (d.chartTitle || '')) : ''));
+          var showPlHandoffBanner = !!(plHandoffActive && plHandoffKey && d.dismissedParticleHandoffId !== plHandoffKey);
+          var returnToParticleLab = function () {
+            if (typeof setLabToolData === 'function') {
+              setLabToolData(function (prev) {
+                var dsPrev = Object.assign({}, (prev && prev._dataStudio) || {}, { dismissedParticleHandoffId: plHandoffKey });
+                var plPrev = Object.assign({}, (prev && prev.particleLab3d) || {}, {
+                  fromTool: 'dataStudio',
+                  sourceGasId: d.sourceGasId || 'N2',
+                  sourceTemperatureK: isFinite(Number(d.sourceTemperatureK)) ? Number(d.sourceTemperatureK) : 300,
+                  sourcePreset: d.sourcePreset || 'gas',
+                  sourceAxisId: d.sourceAxisId || 'boylePV',
+                  handoffId: 'ds-pl3d-' + Date.now()
+                });
+                return Object.assign({}, prev, { _dataStudio: dsPrev, particleLab3d: plPrev });
+              });
+            }
+            if (typeof setStemLabTab === 'function') setStemLabTab('explore');
+            if (typeof setStemLabTool === 'function') setStemLabTool('particleLab3d');
+            if (typeof announceToSR === 'function') announceToSR(t('stem.datastudio.sr_returning_particlelab', 'Returning to Particle Lab 3D.'));
+          };
+          var dismissPlHandoff = function () {
+            updDS('dismissedParticleHandoffId', plHandoffKey);
+            if (typeof announceToSR === 'function') announceToSR(t('stem.datastudio.sr_dismissed_particle_handoff', 'Dismissed Particle Lab 3D data notice.'));
+          };
+          var plRowCount = Array.isArray(d.dataRows) ? d.dataRows.length : 0;
+          var plMetaParts = [d.chartTitle || 'Gas-Law Sweep', plRowCount + ' points'];
+          if (d.sourceGasFormula) plMetaParts.push(d.sourceGasFormula + (d.sourceTemperatureK != null ? (' \u2022 ' + Math.round(Number(d.sourceTemperatureK)) + ' K') : ''));
+          var particleHandoffBanner = showPlHandoffBanner ? React.createElement("div", {
+            id: "datastudio-particle-handoff-banner",
+            role: "region",
+            "aria-label": t('stem.datastudio.particle_handoff_region', 'Imported Particle Lab 3D dataset'),
+            className: "rounded-xl p-3 mb-3 flex flex-wrap items-center justify-between gap-2",
+            style: {
+              background: isDark || isContrast ? '#0f172a' : '#ecfeff',
+              border: '1px solid ' + (isDark || isContrast ? 'rgba(34,211,238,0.45)' : '#0e7490'),
+              color: isDark || isContrast ? '#f8fafc' : '#0f172a'
+            }
+          },
+            React.createElement("div", { className: "min-w-0 flex-1" },
+              React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wide", style: { color: isDark || isContrast ? '#22d3ee' : '#0e7490' } },
+                t('stem.datastudio.imported_from_particlelab', 'Imported from Particle Lab 3D')),
+              React.createElement("div", { className: "text-xs font-bold mt-0.5" }, plMetaParts.join(' \u2022 '))
+            ),
+            React.createElement("div", { className: "flex flex-wrap items-center gap-2" },
+              React.createElement("button", {
+                id: "datastudio-return-particlelab-btn",
+                type: "button",
+                onClick: returnToParticleLab,
+                className: "px-3 py-1.5 rounded-lg text-xs font-bold",
+                style: { minHeight: 44, background: '#0e7490', color: '#ffffff' }
+              }, t('stem.datastudio.return_to_particlelab', '\u2190 Return to Particle Lab 3D')),
+              React.createElement("button", {
+                id: "datastudio-dismiss-particle-handoff-btn",
+                type: "button",
+                onClick: dismissPlHandoff,
+                className: "px-3 py-1.5 rounded-lg text-xs font-bold border",
+                style: {
+                  minHeight: 44,
+                  background: isDark || isContrast ? '#1e293b' : '#ffffff',
+                  color: isDark || isContrast ? '#f8fafc' : '#0f172a',
+                  borderColor: isDark || isContrast ? '#475569' : '#0e7490'
+                }
+              }, t('stem.datastudio.dismiss_handoff', 'Dismiss'))
+            )
+          ) : null;
+
           if (studioMode === 'regression') {
             var _plotter = window.StemLab && window.StemLab._registry && window.StemLab._registry.dataPlot;
             if (_plotter && typeof _plotter.render === 'function') {
@@ -249,6 +317,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
                   }, t('stem.datastudio.back_2', '← Back')),
                   modeSwitcher
                 ),
+                particleHandoffBanner,
                 _plotter.render(Object.assign({}, ctx, { embedded: true }))
               );
             }
@@ -723,6 +792,8 @@ var d = (labToolData && labToolData._dataStudio) || {};
             ),
 
 
+
+            particleHandoffBanner,
 
             React.createElement("div", { className: "rounded-xl p-3 flex flex-wrap items-center gap-2", role: "region", "aria-label": t('stem.datastudio.chart_coach_recommendation','Chart Coach recommendation'), style: { background: _card, border: '1px solid ' + _border } },
               React.createElement("div", { className: "min-w-0 flex-1" },

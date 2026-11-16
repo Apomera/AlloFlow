@@ -259,6 +259,16 @@ if [[ "${SKIP_COMMENT_BUDGET:-0}" != "1" ]]; then
   } || true
 fi
 
+# ── Step 0.76: cloud deploy mirror + config parity (ADVISORY) ──────
+if [[ "${SKIP_CLOUD_PARITY:-0}" != "1" ]]; then
+  {
+    echo ""
+    echo "=== Step 0.76: cloud deploy mirror and config parity (advisory) ==="
+    node dev-tools/check_cloud_deploy_parity.cjs
+    echo "=== end Step 0.76 ==="
+  } || true
+fi
+
 # ── Step 0.8: behavioural gate (tests affected by this change) ─────
 # Every gate above this line is STATIC — it reads source, it never RUNS it. That
 # is why two ReferenceError crashes (an undeclared __alloT in an SVG aria-label,

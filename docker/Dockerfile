@@ -36,6 +36,7 @@ COPY sel_hub/ ./public/sel_hub/
 # Copy supporting files
 COPY ui_strings.js ./public/ui_strings.js
 COPY help_strings.js ./public/help_strings.js
+COPY dictionary_loader.js ./public/dictionary_loader.js
 COPY shared.css ./public/shared.css
 
 # Copy data layer (PocketBase/Firebase/localStorage adapters)

@@ -85,6 +85,16 @@ function build({ name, guardKey, footer = '', logTag, writeFile = writeBuildFile
   } catch (e) {
     console.warn('[' + tag + '] Could not sync to desktop/web-app/public/:', e.message);
   }
+  for (const extraOut of [
+    path.join(ROOT, 'desktop', 'app-build', name + '_module.js'),
+    path.join(ROOT, 'desktop', 'web-app', 'build', name + '_module.js')
+  ]) {
+    try {
+      if (fs.existsSync(path.dirname(extraOut))) writeFile(extraOut, outputCode, 'utf-8');
+    } catch (e) {
+      console.warn('[' + tag + '] Could not sync to ' + path.relative(ROOT, extraOut) + ':', e.message);
+    }
+  }
 
   // Syntax check — catches unbalanced template literals / stray syntax
   try {

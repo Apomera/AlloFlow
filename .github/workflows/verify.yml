@@ -164,6 +164,8 @@ jobs:
         env:
           ALLOFLOW_REQUIRE_RENDER_DEPS: '1'
         run: npm run verify:gate
+      - name: Cloud deploy mirror and config parity preflight
+        run: node dev-tools/check_cloud_deploy_parity.cjs
 
   adventure-journey:
     name: Adventure journey (choice + free response + debate)
@@ -216,6 +218,8 @@ jobs:
           node-version: '24'
       - name: Install pinned parser dependencies for native runtime checks
         run: npm ci --no-audit --no-fund
+      - name: Install locked web-app dependencies for native React harnesses
+        run: npm ci --prefix desktop/web-app --no-audit --no-fund
       - name: Run native host, catalog, and project regressions
         run: npm run test:native
 

@@ -43,6 +43,8 @@ function LessonSpokenDirections({
     back = React.useRef(null);
   const alive = React.useRef(true);
   const ownsFullscreen = React.useRef(false);
+  const onBackRef = React.useRef(onBack);
+  onBackRef.current = onBack;
   const [fullscreen, setFullscreen] = React.useState(false);
   const stop = () => {
     playbackRevision.current += 1;
@@ -74,9 +76,67 @@ function LessonSpokenDirections({
   };
   React.useEffect(() => {
     alive.current = true;
-    if (typeof surface.current?.showModal === 'function') surface.current.showModal();else surface.current?.setAttribute('open', '');
+    const node = surface.current;
+    if (node) {
+      if (typeof node.showModal === 'function') {
+        try {
+          if (!node.open) node.showModal();
+        } catch (_) {
+          node.setAttribute('open', '');
+        }
+      } else node.setAttribute('open', '');
+    }
+    const stack = window.__alloFocusTrapStack = window.__alloFocusTrapStack || [];
+    const trap = node ? {
+      root: node
+    } : null;
+    if (trap) stack.push(trap);
     back.current?.focus();
     refresh();
+    const isTopTrap = () => !trap || stack.length > 0 && stack[stack.length - 1] === trap;
+    const getFocusable = () => {
+      if (!node || typeof node.querySelectorAll !== 'function') return [];
+      return Array.from(node.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])')).filter(el => {
+        if (el.disabled || el.hidden || el.getAttribute('aria-hidden') === 'true') return false;
+        if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+        const closedDetails = el.closest('details:not([open])');
+        if (closedDetails && !(el.tagName === 'SUMMARY' && el.parentElement === closedDetails)) return false;
+        return true;
+      });
+    };
+    const onDocumentKeyDown = event => {
+      if (!isTopTrap()) return;
+      if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229) return;
+      if (event.key === 'Escape') {
+        if (event.defaultPrevented) return;
+        event.preventDefault();
+        event.stopPropagation();
+        onBackRef.current?.();
+        return;
+      }
+      if (event.key !== 'Tab' || !node) return;
+      const focusable = getFocusable();
+      if (!focusable.length) {
+        event.preventDefault();
+        node.focus?.();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (!node.contains(document.activeElement)) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus();
+        return;
+      }
+      if (event.shiftKey && (document.activeElement === first || document.activeElement === node)) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', onDocumentKeyDown);
     const changed = () => {
       setFullscreen(!!document.fullscreenElement);
       if (!document.fullscreenElement) ownsFullscreen.current = false;
@@ -84,6 +144,11 @@ function LessonSpokenDirections({
     document.addEventListener('fullscreenchange', changed);
     return () => {
       alive.current = false;
+      document.removeEventListener('keydown', onDocumentKeyDown);
+      if (trap) {
+        const index = stack.lastIndexOf(trap);
+        if (index !== -1) stack.splice(index, 1);
+      }
       downloads.current.forEach((timer, url) => {
         clearTimeout(timer);
         URL.revokeObjectURL(url);
@@ -700,7 +765,14 @@ function LessonTeachingScriptPanel(props) {
   const hostRun = String(scriptRun.planId || '') === planId ? scriptRun : {};
   const busy = !!hostRun.busy || localBusy;
   const error = localError || _ltsText(hostRun.error?.message || hostRun.error);
-  const canGenerate = capabilities.canGenerate === true && typeof onGenerateTeachingScript === 'function';
+  const aiDoor = (() => {
+    try {
+      return typeof window !== 'undefined' && typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway('text', props.t) : null;
+    } catch (_) {
+      return null;
+    }
+  })();
+  const canGenerate = capabilities.canGenerate === true && typeof onGenerateTeachingScript === 'function' && !aiDoor?.disabled;
   const canResearch = capabilities.canResearch === true;
   const rules = scopes[scope] || _LTS_SCOPES.segment;
   const durationValid = Number.isInteger(Number(durationMinutes)) && Number(durationMinutes) >= rules.minMinutes && Number(durationMinutes) <= rules.maxMinutes;
@@ -1270,7 +1342,7 @@ function LessonTeachingScriptPanel(props) {
       if (mounted.current) setDeleting(false);
     }
   };
-  const fieldClass = 'w-full rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:bg-slate-100';
+  const fieldClass = 'min-h-11 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:bg-slate-100';
   const buttonClass = 'min-h-11 rounded-lg border border-indigo-600 px-3 py-2 text-sm font-bold text-indigo-900 hover:bg-indigo-50 focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-50';
   const stepFields = [['teacherSays', tr('teacher_says', 'Teacher says')], ['studentDoes', tr('student_does', 'Learners do')], ['checkQuestion', tr('check_question', 'Check for understanding')], ['possibleResponse', tr('possible_response', 'Possible learner response')], ['ifStruggling', tr('if_struggling', 'If learners need support (likely misconception)')], ['ifReady', tr('if_ready', 'If learners are ready to go further')]];
   const fieldIssue = (step, key) => {
@@ -1673,7 +1745,10 @@ function LessonTeachingScriptPanel(props) {
   }, tr('research_reused', 'Resume will reuse this run’s saved research. Starting over with research requires live research access.'))), !canGenerate && !canFinishSaving && /*#__PURE__*/React.createElement("p", {
     role: "status",
     className: "rounded-lg bg-amber-50 p-3 text-sm text-amber-950"
-  }, tr('ai_unavailable', 'Script generation needs an available AI connection. Saved versions remain available to read, edit and export.')), !!draft && /*#__PURE__*/React.createElement("p", {
+  }, tr('ai_unavailable', 'Script generation needs an available AI connection. Saved versions remain available to read, edit and export.')), aiDoor?.disabled && typeof window !== 'undefined' && typeof window.AlloAiSetupNotice === 'function' && /*#__PURE__*/React.createElement(window.AlloAiSetupNotice, {
+    t: props.t,
+    kind: "text"
+  }), !!draft && /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-indigo-900"
   }, tr('finish_edits', 'Save or discard your script edits before generating another version.')), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600"
@@ -1769,6 +1844,7 @@ function LessonTeachingScriptPanel(props) {
     "aria-label": tr('delete_confirm', 'Delete this script version and its saved audio?'),
     className: "rounded-lg border border-amber-300 bg-amber-50 p-3 text-amber-950",
     onKeyDown: event => {
+      if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229) return;
       if (event.key === 'Escape') {
         event.preventDefault();
         event.stopPropagation();
@@ -2076,6 +2152,7 @@ function LessonTeachingScriptPanel(props) {
     "aria-label": tr('discard_question', 'Discard your unsaved script changes?'),
     className: "w-full space-y-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-amber-950",
     onKeyDown: event => {
+      if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229) return;
       if (event.key === 'Escape') {
         event.preventDefault();
         event.stopPropagation();

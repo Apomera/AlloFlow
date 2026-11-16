@@ -5253,7 +5253,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
               )}
               <svg width={ALLOBOT_RENDER_PX} height={ALLOBOT_RENDER_PX} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" data-allobot-detail={ALLOBOT_SHOWS_FINE_DETAIL ? 'full' : 'compact'} className="select-none overflow-visible" aria-hidden="true">
                 {activeView === 'image' && !isFlightActive && !isDragging && (
-                   <g transform="translate(110, 30) scale(0.85) rotate(8)" className="animate-in fade-in zoom-in-95 duration-500" opacity="0.95">
+                   <g transform="translate(110, 30) scale(0.85) rotate(8)" className="animate-in motion-reduce:animate-none fade-in zoom-in-95 duration-500" opacity="0.95">
                       <rect x="8" y="5" width="4" height="55" rx="2" fill="#92400E" stroke="#78350F" strokeWidth="0.5" />
                       <rect x="38" y="5" width="4" height="55" rx="2" fill="#92400E" stroke="#78350F" strokeWidth="0.5" />
                       <rect x="22" y="8" width="4" height="52" rx="2" fill="#78350F" transform="rotate(-4 24 35)" />
@@ -5977,7 +5977,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                         data-allobot-held-item-grip={`${heldItemGripX},${heldItemGripY}`}
                         data-allobot-held-item-authored-grip={`${heldItemAuthoredGrip.x},${heldItemAuthoredGrip.y}`}
                         data-allobot-held-item-support={heldItemUsesSupportHand ? heldItemSupportSide : 'none'}
-                        className="animate-in fade-in slide-in-from-bottom-2 duration-300"
+                        className="animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-2 duration-300"
                     >
                         <g
                             data-allobot-held-item-motion={heldItemMotionClass || 'static'}
@@ -6266,7 +6266,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                               style={sideAccessoryVisualStyle || centeredAccessoryVisualStyle}
                           >
                          {effectiveAccessory === 'grad-cap' && (
-                            <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                            <g className="animate-in motion-reduce:animate-none fade-in slide-in-from-top-2 duration-700 origin-center">
                             <g className="animate-allobot-perk" style={{ animationDelay: '1.2s' }}>
                                 <path d="M32 30 Q50 36 68 30 V 22 H 32 V 30 Z" fill="#1F2937" />
                                 <path d="M15 22 L50 8 L85 22 L50 36 Z" fill="#111827" stroke="#374151" strokeWidth="2" />
@@ -6276,7 +6276,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                             </g>
                         )}
                         {effectiveAccessory === 'explorer-hat' && (
-                            <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                            <g className="animate-in motion-reduce:animate-none fade-in slide-in-from-top-2 duration-700 origin-center">
                             <g className="animate-allobot-perk" style={{ animationDelay: '3.3s' }}>
                                 <ellipse cx="50" cy="22" rx="38" ry="10" fill="#D2B48C" stroke="#8B4513" strokeWidth="1.5" transform="rotate(-5 50 22)" />
                                 <path d="M32 22 L35 4 Q50 0 65 4 L68 22 Z" fill="#D2B48C" stroke="#8B4513" strokeWidth="1.5" transform="rotate(-5 50 22)" />
@@ -6285,7 +6285,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                             </g>
                         )}
                         {effectiveAccessory === 'magnifying-glass' && (
-                            <g className="animate-in fade-in slide-in-from-bottom-2 duration-500 origin-bottom-right">
+                            <g className="animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-2 duration-500 origin-bottom-right">
                                 <path d="M72 78 L84 58" stroke="#374151" strokeWidth="4" strokeLinecap="round" />
                                 <circle cx="84" cy="58" r="14" stroke="#94A3B8" strokeWidth="3" fill="rgba(255, 255, 255, 0.1)" />
                                 <circle cx="84" cy="58" r="12" fill="rgba(147, 197, 253, 0.3)" />
@@ -6293,7 +6293,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                             </g>
                         )}
                         {effectiveAccessory === 'artist' && (
-                            <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                            <g className="animate-in motion-reduce:animate-none fade-in slide-in-from-top-2 duration-700 origin-center">
                             <g className="animate-allobot-perk" style={{ animationDelay: '5.1s' }}>
                                 <path
                                     d="M 25 28 Q 15 28 15 20 Q 15 5 45 2 Q 85 -2 90 10 Q 95 22 80 26 Q 70 29 55 27"
@@ -6313,7 +6313,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                             </g>
                         )}
                         {effectiveAccessory === 'hard-hat' && (
-                            <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                            <g className="animate-in motion-reduce:animate-none fade-in slide-in-from-top-2 duration-700 origin-center">
                                 <path d="M25 26 Q25 6 50 4 Q75 6 75 26 Z" fill="#F59E0B" stroke="#D97706" strokeWidth="1.5" />
                                 <path d="M18 26 Q50 32 82 26 Q80 28 50 33 Q20 28 18 26 Z" fill="#D97706" stroke="#B45309" strokeWidth="1" />
                                 <path d="M38 8 Q50 5 62 8" stroke="#FCD34D" strokeWidth="2" fill="none" opacity="0.6" />
@@ -6323,7 +6323,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                             </g>
                         )}
                         {effectiveAccessory === 'sleep-cap' && (
-                            <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                            <g className="animate-in motion-reduce:animate-none fade-in slide-in-from-top-2 duration-700 origin-center">
                                 <path d="M30 24 Q28 12 40 6 Q55 0 70 10 Q85 22 80 40 Q78 48 74 52" fill="#6366F1" stroke="#4F46E5" strokeWidth="1.5" />
                                 <path d="M35 18 Q50 12 65 18" stroke="#818CF8" strokeWidth="2.5" fill="none" opacity="0.5" />
                                 <path d="M40 12 Q52 7 64 14" stroke="#818CF8" strokeWidth="2" fill="none" opacity="0.4" />
@@ -6334,7 +6334,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                         )}
                         {effectiveAccessory === 'microscope' && (
                             <g
-                                className="animate-in fade-in slide-in-from-left-3 duration-500"
+                                className="animate-in motion-reduce:animate-none fade-in slide-in-from-left-3 duration-500"
                                 transform={accessoryRenderSide === 'right' ? 'translate(-32, 8) scale(-1 1)' : 'translate(8, 8)'}
                                 data-accessory-placement={`side-${accessoryRenderSide || 'left'}`}
                                 data-accessory-name="Microscope"
@@ -6359,7 +6359,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                             </g>
                         )}
                         {effectiveAccessory === 'historian' && (
-                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-22, 38)" data-accessory-placement="side-left" data-accessory-name="History Sources">
+                            <g className="animate-in motion-reduce:animate-none fade-in slide-in-from-left-3 duration-500" transform="translate(-22, 38)" data-accessory-placement="side-left" data-accessory-name="History Sources">
                                 <ellipse cx="14" cy="48" rx="18" ry="3" fill="#7C2D12" opacity="0.25" />
                                 <g transform="rotate(-14 6 32)">
                                     <rect x="-4" y="14" width="20" height="26" rx="1" fill="#FEF3C7" stroke="#92400E" strokeWidth="1" />
@@ -6394,7 +6394,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                             </g>
                         )}
                         {effectiveAccessory === 'teacher-stack' && (
-                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-20, 34)" data-accessory-placement="side-left" data-accessory-name="Teacher Resource Stack">
+                            <g className="animate-in motion-reduce:animate-none fade-in slide-in-from-left-3 duration-500" transform="translate(-20, 34)" data-accessory-placement="side-left" data-accessory-name="Teacher Resource Stack">
                             <g className="animate-allobot-float" style={{ animationDelay: '3.5s' }}>
                                 <ellipse cx="16" cy="52" rx="18" ry="3" fill="#1F2937" opacity="0.18" />
                                 <rect x="0" y="40" width="34" height="11" rx="1.5" fill="#FCD34D" stroke="#B45309" strokeWidth="1.2" transform="rotate(-3 17 45)" />
@@ -6414,7 +6414,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                             </g>
                         )}
                         {effectiveAccessory === 'scholar-specs' && (
-                            <g className="animate-in fade-in slide-in-from-top-2 duration-500 origin-center">
+                            <g className="animate-in motion-reduce:animate-none fade-in slide-in-from-top-2 duration-500 origin-center">
                             <g className="animate-allobot-float" style={{ animationDelay: '1.0s' }}>
                                 <circle cx="38" cy="48" r="9" fill="rgba(219, 234, 254, 0.25)" stroke="#1F2937" strokeWidth="1.5" />
                                 <circle cx="62" cy="48" r="9" fill="rgba(219, 234, 254, 0.25)" stroke="#1F2937" strokeWidth="1.5" />
@@ -6440,7 +6440,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                             </g>
                         )}
                         {effectiveAccessory === 'librarian-kit' && (
-                            <g className="animate-in fade-in slide-in-from-top-2 duration-500 origin-center">
+                            <g className="animate-in motion-reduce:animate-none fade-in slide-in-from-top-2 duration-500 origin-center">
                             <g className="animate-allobot-float" style={{ animationDelay: '0.8s' }}>
                                 <g>
                                     <circle cx="38" cy="48" r="8.5" fill="rgba(219, 234, 254, 0.22)" stroke="#334155" strokeWidth="1.5" />
@@ -6473,7 +6473,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                             </g>
                         )}
                         {effectiveAccessory === 'thinking-cap' && (
-                            <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                            <g className="animate-in motion-reduce:animate-none fade-in slide-in-from-top-2 duration-700 origin-center">
                                 <path d="M 28 26 Q 25 8 50 6 Q 75 8 72 26 Z" fill="#7C3AED" stroke="#5B21B6" strokeWidth="1.5" />
                                 <path d="M 28 26 Q 50 30 72 26" stroke="#4C1D95" strokeWidth="2" fill="none" />
                                 <ellipse cx="50" cy="6" rx="4" ry="2" fill="#A78BFA" opacity="0.5" />
@@ -6511,7 +6511,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                             <g data-accessory-placement="head-and-side" data-accessory-name="Sort-of-a-Hat">
                                 {/* A playful, original concept-sorting cap: crooked and patchwork, but
                                     category-themed rather than modeled on any existing character. */}
-                                <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                                <g className="animate-in motion-reduce:animate-none fade-in slide-in-from-top-2 duration-700 origin-center">
                                     <g className="animate-allobot-perk" style={{ animationDelay: '2.4s' }}>
                                         <ellipse cx="50" cy="26" rx="28" ry="5" fill="#312E81" stroke="#1E1B4B" strokeWidth="1.2" transform="rotate(-2 50 26)" />
                                         <path d="M27 24 Q30 16 39 12 Q44 4 41 -7 Q52 -4 58 7 Q69 11 72 24 Q50 29 27 24 Z" fill="#7C3AED" stroke="#4C1D95" strokeWidth="1.4" />
@@ -6526,7 +6526,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                                 </g>
 
                                 {/* Sortable objects belong beside the bot, not balanced on its head. */}
-                                <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-30, 32)">
+                                <g className="animate-in motion-reduce:animate-none fade-in slide-in-from-left-3 duration-500" transform="translate(-30, 32)">
                                     <g className="animate-allobot-float" style={{ animationDelay: '1.1s' }}>
                                         <ellipse cx="17" cy="49" rx="17" ry="3" fill="#1F2937" opacity="0.18" />
                                         <g transform="translate(3 33) rotate(-6)">
@@ -6549,7 +6549,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                             </g>
                         )}
                         {effectiveAccessory === 'clarity-crown' && (
-                            <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                            <g className="animate-in motion-reduce:animate-none fade-in slide-in-from-top-2 duration-700 origin-center">
                             <g className="animate-allobot-perk" style={{ animationDelay: '4.2s' }}>
                                 <path d="M 22 28 L 28 12 L 35 22 L 42 8 L 50 20 L 58 8 L 65 22 L 72 12 L 78 28 Z" fill="#FCD34D" stroke="#B45309" strokeWidth="1.4" />
                                 <path d="M 22 28 Q 50 32 78 28" stroke="#92400E" strokeWidth="1.6" fill="none" />
@@ -6571,7 +6571,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                             </g>
                         )}
                         {effectiveAccessory === 'deerstalker' && (
-                            <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                            <g className="animate-in motion-reduce:animate-none fade-in slide-in-from-top-2 duration-700 origin-center">
                             <g className="animate-allobot-perk" style={{ animationDelay: '0s' }}>
                                 <ellipse cx="50" cy="25" rx="33" ry="6.5" fill="#8C7A6B" stroke="#5C4D40" strokeWidth="1.2" />
                                 <path d="M19 23 Q11 25 14 35 Q21 35 25 28 Z" fill="#8C7A6B" stroke="#5C4D40" strokeWidth="1.1" />
@@ -6584,7 +6584,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                             </g>
                         )}
                         {effectiveAccessory === 'persona-masks' && (
-                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-24, 40)" data-accessory-placement="side-left" data-accessory-name="Persona Masks">
+                            <g className="animate-in motion-reduce:animate-none fade-in slide-in-from-left-3 duration-500" transform="translate(-24, 40)" data-accessory-placement="side-left" data-accessory-name="Persona Masks">
                             <g className="animate-allobot-sway" style={{ animationDelay: '0s' }}>
                                 <ellipse cx="14" cy="46" rx="16" ry="3" fill="#1F2937" opacity="0.16" />
                                 <g transform="rotate(-8 8 26)">
@@ -6601,7 +6601,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                             </g>
                         )}
                         {effectiveAccessory === 'sentence-frames' && (
-                            <g className="animate-in fade-in slide-in-from-top-2 duration-500" transform="translate(76, 36)" data-accessory-placement="side-right" data-accessory-name="Sentence Frames">
+                            <g className="animate-in motion-reduce:animate-none fade-in slide-in-from-top-2 duration-500" transform="translate(76, 36)" data-accessory-placement="side-right" data-accessory-name="Sentence Frames">
                             <g className="animate-allobot-float" style={{ animationDelay: '0.7s' }}>
                                 <rect x="0" y="0" width="40" height="30" rx="2.5" fill={colors.accPaper} stroke={colors.accInk} strokeWidth="2" />
                                 <rect x="4" y="4" width="32" height="22" rx="1" fill={colors.accPaper} stroke={colors.accInk} strokeWidth="0.8" opacity="0.6" />
@@ -6615,7 +6615,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                             </g>
                         )}
                         {effectiveAccessory === 'outline-doc' && (
-                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-31, 32)" data-accessory-placement="side-left" data-accessory-name="Outline Document">
+                            <g className="animate-in motion-reduce:animate-none fade-in slide-in-from-left-3 duration-500" transform="translate(-31, 32)" data-accessory-placement="side-left" data-accessory-name="Outline Document">
                             <g className="animate-allobot-float" style={{ animationDelay: '1.4s' }}>
                                 <ellipse cx="18" cy="50" rx="16" ry="3" fill="#1F2937" opacity="0.16" />
                                 <rect x="2" y="6" width="34" height="42" rx="2" fill={colors.accPaper} stroke={colors.accInk} strokeWidth="1.5" />
@@ -6630,7 +6630,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                             </g>
                         )}
                         {effectiveAccessory === 'sticky-notes' && (
-                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-30, 34)" data-accessory-placement="side-left">
+                            <g className="animate-in motion-reduce:animate-none fade-in slide-in-from-left-3 duration-500" transform="translate(-30, 34)" data-accessory-placement="side-left">
                                 <g className="animate-allobot-float" style={{ animationDelay: '2.5s' }}>
                                     <ellipse cx="18" cy="48" rx="18" ry="3" fill="#1F2937" opacity="0.16" />
                                     <g transform="rotate(-8 13 23)"><rect x="2" y="12" width="24" height="22" rx="1" fill="#FDE047" stroke="#CA8A04" strokeWidth="1" /><path d="M20 34 L26 34 L26 28 Z" fill="#FACC15" /><line x1="6" y1="19" x2="22" y2="19" stroke="#A16207" strokeWidth="1" /><line x1="6" y1="24" x2="19" y2="24" stroke="#A16207" strokeWidth="1" /></g>
@@ -6640,7 +6640,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                             </g>
                         )}
                         {effectiveAccessory === 'anchor-easel' && (
-                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-30, 18)" data-accessory-placement="side-left" data-accessory-name="Anchor Chart Easel">
+                            <g className="animate-in motion-reduce:animate-none fade-in slide-in-from-left-3 duration-500" transform="translate(-30, 18)" data-accessory-placement="side-left" data-accessory-name="Anchor Chart Easel">
                             <g className="animate-allobot-float" style={{ animationDelay: '2.1s' }}>
                                 <line x1="6" y1="20" x2="-2" y2="62" stroke="#92400E" strokeWidth="2.4" strokeLinecap="round" />
                                 <line x1="30" y1="20" x2="38" y2="62" stroke="#92400E" strokeWidth="2.4" strokeLinecap="round" />
@@ -6655,7 +6655,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                             </g>
                         )}
                         {effectiveAccessory === 'behavior-watch' && (
-                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-28, 42)" data-accessory-placement="side-left" data-accessory-name="Behavior Timer">
+                            <g className="animate-in motion-reduce:animate-none fade-in slide-in-from-left-3 duration-500" transform="translate(-28, 42)" data-accessory-placement="side-left" data-accessory-name="Behavior Timer">
                             <g className="animate-allobot-float" style={{ animationDelay: '2.8s' }}>
                                 <ellipse cx="15" cy="42" rx="15" ry="3" fill="#1F2937" opacity="0.16" />
                                 <g transform="translate(15, 24)">
@@ -6673,7 +6673,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                             </g>
                         )}
                         {effectiveAccessory === 'bard-cap' && (
-                            <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                            <g className="animate-in motion-reduce:animate-none fade-in slide-in-from-top-2 duration-700 origin-center">
                             <g className="animate-allobot-perk" style={{ animationDelay: '4.5s' }}>
                                 <path d="M22 26 Q20 12 50 8 Q80 12 78 26 Q50 30 22 26 Z" fill="#0D9488" stroke="#0F766E" strokeWidth="1.4" />
                                 <path d="M22 24 Q50 30 78 24" stroke="#FCD34D" strokeWidth="3" fill="none" />
@@ -6687,7 +6687,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                             </g>
                         )}
                         {effectiveAccessory === 'phoneme-headset' && (
-                            <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center" data-accessory-placement="head-and-ears" data-accessory-name="Phoneme Phones">
+                            <g className="animate-in motion-reduce:animate-none fade-in slide-in-from-top-2 duration-700 origin-center" data-accessory-placement="head-and-ears" data-accessory-name="Phoneme Phones">
                                 <g className="animate-allobot-perk" style={{ animationDelay: '1.8s' }}>
                                     <path d="M18 52 C18 19 29 5 50 5 C71 5 82 19 82 52" stroke="#4F46E5" strokeWidth="5" fill="none" strokeLinecap="round" />
                                     <path d="M23 42 C23 18 33 10 50 10 C67 10 77 18 77 42" stroke="#A5B4FC" strokeWidth="2" fill="none" opacity="0.85" />
@@ -6706,7 +6706,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                             </g>
                         )}
                         {effectiveAccessory === 'choice-fan' && (
-                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-31, 34)" data-accessory-placement="side-left" data-accessory-name="UDL Choice Fan">
+                            <g className="animate-in motion-reduce:animate-none fade-in slide-in-from-left-3 duration-500" transform="translate(-31, 34)" data-accessory-placement="side-left" data-accessory-name="UDL Choice Fan">
                                 <g className="animate-allobot-float" style={{ animationDelay: '1.3s' }}>
                                     <ellipse cx="18" cy="50" rx="18" ry="3" fill="#1F2937" opacity="0.16" />
                                     <g transform="rotate(-17 14 43)">
@@ -6730,7 +6730,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                             </g>
                         )}
                         {effectiveAccessory === 'alignment-target' && (
-                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-31, 31)" data-accessory-placement="side-left" data-accessory-name="Alignment Target">
+                            <g className="animate-in motion-reduce:animate-none fade-in slide-in-from-left-3 duration-500" transform="translate(-31, 31)" data-accessory-placement="side-left" data-accessory-name="Alignment Target">
                                 <g className="animate-allobot-float" style={{ animationDelay: '2.2s' }}>
                                     <ellipse cx="18" cy="52" rx="18" ry="3" fill="#1F2937" opacity="0.16" />
                                     <line x1="7" y1="43" x2="2" y2="52" stroke="#475569" strokeWidth="2.2" strokeLinecap="round" />
@@ -6748,7 +6748,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                             </g>
                         )}
                         {effectiveAccessory === 'wayfinder-sign' && (
-                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-31, 27)" data-accessory-placement="side-left" data-accessory-name="Next-Step Signpost">
+                            <g className="animate-in motion-reduce:animate-none fade-in slide-in-from-left-3 duration-500" transform="translate(-31, 27)" data-accessory-placement="side-left" data-accessory-name="Next-Step Signpost">
                                 <g className="animate-allobot-float" style={{ animationDelay: '2.7s' }}>
                                     <ellipse cx="18" cy="58" rx="17" ry="3" fill="#1F2937" opacity="0.16" />
                                     <rect x="16" y="10" width="4" height="48" rx="1.5" fill="#92400E" stroke="#78350F" strokeWidth="0.8" />
@@ -6762,7 +6762,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                             </g>
                         )}
                         {effectiveAccessory === 'question-cards' && (
-                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-31, 34)" data-accessory-placement="side-left" data-accessory-name="Curiosity Cards">
+                            <g className="animate-in motion-reduce:animate-none fade-in slide-in-from-left-3 duration-500" transform="translate(-31, 34)" data-accessory-placement="side-left" data-accessory-name="Curiosity Cards">
                                 <g className="animate-allobot-float" style={{ animationDelay: '3.1s' }}>
                                     <ellipse cx="18" cy="49" rx="18" ry="3" fill="#1F2937" opacity="0.16" />
                                     <g transform="rotate(-9 14 27)">
@@ -6779,7 +6779,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                             </g>
                         )}
                         {effectiveAccessory === 'test-prep-kit' && (
-                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-31, 30)" data-accessory-placement="side-left" data-accessory-name="Ready, Set, Prep Kit">
+                            <g className="animate-in motion-reduce:animate-none fade-in slide-in-from-left-3 duration-500" transform="translate(-31, 30)" data-accessory-placement="side-left" data-accessory-name="Ready, Set, Prep Kit">
                                 <g className="animate-allobot-float" style={{ animationDelay: '1.6s' }}>
                                     <ellipse cx="18" cy="53" rx="18" ry="3" fill="#1F2937" opacity="0.16" />
                                     <rect x="2" y="11" width="29" height="38" rx="3" fill="#FFFBEB" stroke="#92400E" strokeWidth="1.3" transform="rotate(-4 16 30)" />
@@ -6802,7 +6802,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                             </g>
                         )}
                         {effectiveAccessory === 'source-inbox' && (
-                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-31, 31)" data-accessory-placement="side-left" data-accessory-name="Source Inbox">
+                            <g className="animate-in motion-reduce:animate-none fade-in slide-in-from-left-3 duration-500" transform="translate(-31, 31)" data-accessory-placement="side-left" data-accessory-name="Source Inbox">
                                 <g className="animate-allobot-float" style={{ animationDelay: '2.0s' }}>
                                     <ellipse cx="18" cy="52" rx="18" ry="3" fill="#1F2937" opacity="0.16" />
                                     <rect x="7" y="4" width="26" height="31" rx="2" fill="#FFFFFF" stroke="#475569" strokeWidth="1.2" transform="rotate(5 20 19)" />
@@ -6814,7 +6814,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                             </g>
                         )}
                         {effectiveAccessory === 'progress-orbit' && (
-                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-31, 32)" data-accessory-placement="side-left" data-accessory-name="Progress Pulse">
+                            <g className="animate-in motion-reduce:animate-none fade-in slide-in-from-left-3 duration-500" transform="translate(-31, 32)" data-accessory-placement="side-left" data-accessory-name="Progress Pulse">
                                 <g className="animate-allobot-float" style={{ animationDelay: '2.3s' }}>
                                     <ellipse cx="18" cy="51" rx="18" ry="3" fill="#1F2937" opacity="0.16" />
                                     <rect x="0" y="6" width="36" height="42" rx="4" fill="#F8FAFC" stroke="#334155" strokeWidth="1.4" />
@@ -6828,7 +6828,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                             </g>
                         )}
                         {effectiveAccessory === 'maze-scroll' && (
-                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-31, 31)" data-accessory-placement="side-left" data-accessory-name="Fluency Maze Map">
+                            <g className="animate-in motion-reduce:animate-none fade-in slide-in-from-left-3 duration-500" transform="translate(-31, 31)" data-accessory-placement="side-left" data-accessory-name="Fluency Maze Map">
                                 <g className="animate-allobot-float" style={{ animationDelay: '2.6s' }}>
                                     <ellipse cx="18" cy="52" rx="18" ry="3" fill="#1F2937" opacity="0.16" />
                                     <path d="M3 8 Q7 5 11 8 H31 Q35 5 38 9 V45 Q34 48 30 45 H10 Q6 49 2 45 Z" fill="#FEF3C7" stroke="#92400E" strokeWidth="1.4" />
@@ -6843,7 +6843,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                             </g>
                         )}
                         {effectiveAccessory === 'resource-folder' && (
-                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-31, 34)" data-accessory-placement="side-left" data-accessory-name="Resource Review Folder">
+                            <g className="animate-in motion-reduce:animate-none fade-in slide-in-from-left-3 duration-500" transform="translate(-31, 34)" data-accessory-placement="side-left" data-accessory-name="Resource Review Folder">
                                 <g className="animate-allobot-float" style={{ animationDelay: '2.9s' }}>
                                     <ellipse cx="18" cy="48" rx="18" ry="3" fill="#1F2937" opacity="0.16" />
                                     <path d="M2 13 H15 L19 18 H35 V44 H2 Z" fill="#FCD34D" stroke="#92400E" strokeWidth="1.3" />
@@ -6857,7 +6857,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                             </g>
                         )}
                         {effectiveAccessory === 'math-tools' && (
-                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-30, 32)" data-accessory-placement="side-left" data-accessory-name="Math Tools">
+                            <g className="animate-in motion-reduce:animate-none fade-in slide-in-from-left-3 duration-500" transform="translate(-30, 32)" data-accessory-placement="side-left" data-accessory-name="Math Tools">
                                 <g className="animate-allobot-float" style={{ animationDelay: '0.5s' }}>
                                     <ellipse cx="18" cy="48" rx="16" ry="3" fill="#1F2937" opacity="0.16" />
                                     <path d="M2 46 L2 20 L30 46 Z" fill="#93C5FD" stroke="#1D4ED8" strokeWidth="1.4" />
@@ -6870,7 +6870,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                             </g>
                         )}
                         {effectiveAccessory === 'gear' && (
-                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-21, 38)" data-accessory-placement="side-left">
+                            <g className="animate-in motion-reduce:animate-none fade-in slide-in-from-left-3 duration-500" transform="translate(-21, 38)" data-accessory-placement="side-left">
                                 <g className="animate-allobot-float" style={{ animationDelay: '1.5s' }}>
                                     <ellipse cx="18" cy="51" rx="17" ry="3" fill="#1F2937" opacity="0.16" />
                                     <g transform="translate(18, 28)">
@@ -6888,7 +6888,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                             </g>
                         )}
                         {effectiveAccessory === 'game-pad' && (
-                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-32, 40)" data-accessory-placement="side-left" data-accessory-name="STEM Game Pad">
+                            <g className="animate-in motion-reduce:animate-none fade-in slide-in-from-left-3 duration-500" transform="translate(-32, 40)" data-accessory-placement="side-left" data-accessory-name="STEM Game Pad">
                                 <g className="animate-allobot-float" style={{ animationDelay: '1.1s' }}>
                                     <ellipse cx="19" cy="34" rx="18" ry="3" fill="#1F2937" opacity="0.16" />
                                     <path d="M5 14 Q0 15 1 24 L4 31 Q7 34 12 31 L26 31 Q31 34 34 31 L37 24 Q38 15 33 14 Q19 11 5 14 Z" fill="#5B6472" stroke="#1F2937" strokeWidth="1.4" />

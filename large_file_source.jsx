@@ -256,14 +256,20 @@ const LargeFileTranscriptionModal = React.memo(({
         trapStack.push(trap);
         const isTopTrap = () => trapStack[trapStack.length - 1] === trap;
         const getFocusable = () => Array.from(dialog.querySelectorAll(
-            'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
+            'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
         )).filter((element) => {
             if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+            const closedDetails = element.closest('details:not([open])');
+            if (closedDetails && !(element.tagName === 'SUMMARY' && element.parentElement === closedDetails)) return false;
             const style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(element) : null;
-            return !style || (style.display !== 'none' && style.visibility !== 'hidden');
+            if (style && (style.display === 'none' || style.visibility === 'hidden')) return false;
+            const hasLayout = typeof dialog.getBoundingClientRect === 'function' && (dialog.getBoundingClientRect().width > 0 || dialog.getBoundingClientRect().height > 0);
+            if (hasLayout && typeof element.getClientRects === 'function' && element.getClientRects().length === 0) return false;
+            return true;
         });
         (getFocusable()[0] || dialog).focus();
         const onKeyDown = (event) => {
+            if (event.isComposing || event.keyCode === 229) return;
             if (!isTopTrap()) return;
             if (event.key === 'Escape') {
                 if (!processingRef.current) {
@@ -290,7 +296,7 @@ const LargeFileTranscriptionModal = React.memo(({
             const wasTopTrap = isTopTrap();
             const trapIndex = trapStack.indexOf(trap);
             if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
-            if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus.isConnected && typeof previousFocus.focus === 'function') previousFocus.focus();
+            if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus !== document.documentElement && previousFocus.isConnected && typeof previousFocus.focus === 'function') previousFocus.focus();
         };
     }, [isOpen]);
 
@@ -321,7 +327,7 @@ const LargeFileTranscriptionModal = React.memo(({
                     aria-label={t?.('common.close') || 'Close'}
                     onClick={onClose} data-help-key="dashboard_close_btn"
                     disabled={isProcessing}
-                    className="absolute top-4 right-4 min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-full text-slate-600 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="absolute top-4 right-4 min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-full text-slate-600 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-600 transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <span className="text-xl" aria-hidden="true">{'\u00D7'}</span>
                 </button>
@@ -353,7 +359,7 @@ const LargeFileTranscriptionModal = React.memo(({
                             <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">
                                 {status || 'Processing...'}
                             </span>
-                            <span className="text-xs font-bold text-indigo-600">
+                            <span className="text-xs font-bold text-indigo-700">
                                 {chunkProgress}/{chunkTotal} ({progressPercent}%)
                             </span>
                         </div>
@@ -370,7 +376,7 @@ const LargeFileTranscriptionModal = React.memo(({
                         type="button"
                         onClick={onClose}
                         disabled={isProcessing}
-                        className="min-h-11 px-4 py-2 rounded-lg text-slate-600 font-bold hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="min-h-11 px-4 py-2 rounded-lg text-slate-700 font-bold hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-600 transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {t?.('common.cancel') || 'Cancel'}
                     </button>
@@ -379,7 +385,7 @@ const LargeFileTranscriptionModal = React.memo(({
                         onClick={() => { if (!isProcessing) onConfirm(); }}
                         aria-disabled={isProcessing}
                         aria-busy={isProcessing}
-                        className={`min-h-11 px-6 py-2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 transition-colors shadow-md flex items-center justify-center gap-2 ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        className={`min-h-11 px-6 py-2 bg-indigo-700 text-white font-bold rounded-xl hover:bg-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-700 transition-colors motion-reduce:transition-none shadow-md flex items-center justify-center gap-2 ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                         {isProcessing ? (
                             <>

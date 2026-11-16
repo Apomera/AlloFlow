@@ -149,16 +149,22 @@ function WcopFlag(props) {
     : tone === 'go'
       ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
       : 'bg-amber-50 text-amber-900 border-amber-200';
-  return React.createElement('p', { className: 'text-sm border rounded px-3 py-2 mt-2 ' + cls }, props.children);
+  const roleAttr = tone === 'stop' ? 'alert' : (tone === 'go' ? 'status' : undefined);
+  const liveAttr = tone === 'stop' ? 'assertive' : (tone === 'go' ? 'polite' : undefined);
+  return React.createElement('p', {
+    className: 'text-sm border rounded px-3 py-2 mt-2 ' + cls,
+    role: roleAttr,
+    'aria-live': liveAttr
+  }, props.children);
 }
 
 function WcopFrozenNotes(props) {
   return React.createElement('div', { className: 'rounded-lg border border-stone-300 bg-stone-50 p-3' },
-    React.createElement('p', { className: 'text-[11px] uppercase tracking-wider text-stone-500 font-semibold mb-2' },
+    React.createElement('p', { className: 'text-[11px] uppercase tracking-wider text-stone-600 font-semibold mb-2' },
       'Source notes, locked'),
     React.createElement('pre', { className: 'whitespace-pre-wrap break-words text-[13px] leading-relaxed text-stone-800 m-0 font-mono' },
       props.notes),
-    React.createElement('p', { className: 'text-xs text-stone-500 mt-2' },
+    React.createElement('p', { className: 'text-xs text-stone-600 mt-2' },
       'These are never edited by this tool.')
   );
 }
@@ -184,13 +190,13 @@ function WcopSuggestion(props) {
     body.push(React.createElement('p', {
       key: 'h', id: titleId, className: 'text-xs uppercase tracking-wider font-bold text-teal-700 mb-1'
     }, props.componentLabel));
-    body.push(React.createElement('p', { key: 'l1', className: 'text-[11px] uppercase tracking-wider text-slate-500 font-semibold mt-2' }, 'What was observed'));
+    body.push(React.createElement('p', { key: 'l1', className: 'text-[11px] uppercase tracking-wider text-slate-600 font-semibold mt-2' }, 'What was observed'));
     body.push(React.createElement('p', { key: 'e', className: 'text-sm text-slate-800' }, s.objectiveEvidence));
     if (s.interpretation) {
-      body.push(React.createElement('p', { key: 'l2', className: 'text-[11px] uppercase tracking-wider text-slate-500 font-semibold mt-2' }, 'What it might mean'));
+      body.push(React.createElement('p', { key: 'l2', className: 'text-[11px] uppercase tracking-wider text-slate-600 font-semibold mt-2' }, 'What it might mean'));
       body.push(React.createElement('p', { key: 'i', className: 'text-sm text-slate-700 italic' }, s.interpretation));
     }
-    body.push(React.createElement('p', { key: 'l3', className: 'text-[11px] uppercase tracking-wider text-slate-500 font-semibold mt-2' }, 'Cited from the notes'));
+    body.push(React.createElement('p', { key: 'l3', className: 'text-[11px] uppercase tracking-wider text-slate-600 font-semibold mt-2' }, 'Cited from the notes'));
     s.sourceSpans.forEach((span, i) => {
       body.push(React.createElement('blockquote', {
         key: 'q' + i,
@@ -204,7 +210,7 @@ function WcopSuggestion(props) {
   });
 
   if (s.decision === 'edited' && s.approvedText) {
-    body.push(React.createElement('p', { key: 'l4', className: 'text-[11px] uppercase tracking-wider text-slate-500 font-semibold mt-2' }, 'Your wording'));
+    body.push(React.createElement('p', { key: 'l4', className: 'text-[11px] uppercase tracking-wider text-slate-600 font-semibold mt-2' }, 'Your wording'));
     body.push(React.createElement('p', { key: 'a', className: 'text-sm text-slate-800' }, s.approvedText));
   }
 
@@ -215,14 +221,14 @@ function WcopSuggestion(props) {
       }, 'Your wording for this feedback'),
       React.createElement('textarea', {
         id: 'wcop-edit-' + s.id,
-        className: 'w-full rounded border border-slate-300 p-2 text-sm',
+        className: 'w-full rounded border border-slate-300 p-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600',
         rows: 3,
         value: props.editText,
         onChange: (e) => props.onEditText(e.target.value)
       }),
       React.createElement('button', {
         type: 'button',
-        className: 'mt-2 px-3 py-1.5 rounded bg-teal-700 text-white text-sm font-semibold',
+        className: 'mt-2 min-h-11 px-3 py-2 rounded bg-teal-700 text-white text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1',
         onClick: () => props.onDecide(s.id, 'edited', props.editText)
       }, 'Save and approve this wording')
     ));
@@ -231,19 +237,19 @@ function WcopSuggestion(props) {
   const controls = React.createElement('div', { className: 'flex flex-wrap gap-2 mt-3' },
     React.createElement('button', {
       type: 'button', 'aria-pressed': s.decision === 'accepted', 'aria-describedby': titleId,
-      className: 'px-3 py-1.5 rounded border text-sm font-semibold '
+      className: 'min-h-11 min-w-11 px-3 py-2 rounded border text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 '
         + (s.decision === 'accepted' ? 'bg-emerald-50 border-emerald-600 text-emerald-800' : 'border-slate-300 text-slate-700'),
       onClick: () => props.onDecide(s.id, 'accepted')
     }, 'Keep'),
     React.createElement('button', {
       type: 'button', 'aria-pressed': s.decision === 'edited', 'aria-describedby': titleId,
-      className: 'px-3 py-1.5 rounded border text-sm font-semibold '
+      className: 'min-h-11 min-w-11 px-3 py-2 rounded border text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 '
         + (s.decision === 'edited' ? 'bg-amber-50 border-amber-600 text-amber-900' : 'border-slate-300 text-slate-700'),
       onClick: () => props.onStartEdit(s)
     }, 'Reword'),
     React.createElement('button', {
       type: 'button', 'aria-pressed': s.decision === 'rejected', 'aria-describedby': titleId,
-      className: 'px-3 py-1.5 rounded border text-sm font-semibold '
+      className: 'min-h-11 min-w-11 px-3 py-2 rounded border text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 '
         + (s.decision === 'rejected' ? 'bg-rose-50 border-rose-600 text-rose-800' : 'border-slate-300 text-slate-700'),
       onClick: () => props.onDecide(s.id, 'rejected')
     }, 'Throw out')
@@ -259,7 +265,7 @@ function WcopIntro(props) {
     React.createElement('div', { className: 'flex items-start justify-between gap-3' },
       React.createElement('h3', { className: 'font-bold text-slate-800' }, 'What this does'),
       React.createElement('button', {
-        type: 'button', className: 'text-sm px-2 py-1 rounded border border-slate-300', onClick: props.onHide
+        type: 'button', className: 'min-h-11 min-w-11 text-sm px-3 py-2 rounded border border-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1', onClick: props.onHide
       }, 'Hide this')
     ),
     React.createElement('p', { className: 'text-sm text-slate-700 mt-2' },
@@ -267,21 +273,21 @@ function WcopIntro(props) {
       + 'evidence-based feedback under your framework, shows you the exact line of your notes behind '
       + 'every claim, and lets you keep, reword, or throw out each one. You write and approve the '
       + 'feedback. It never rates anyone.'),
-    React.createElement('p', { className: 'text-[11px] uppercase tracking-wider text-slate-500 font-semibold mt-3' }, 'Four steps'),
+    React.createElement('p', { className: 'text-[11px] uppercase tracking-wider text-slate-600 font-semibold mt-3' }, 'Four steps'),
     React.createElement('ol', { className: 'list-decimal ml-5 text-sm text-slate-700' },
       WCOP_STEPS.map((step) => React.createElement('li', { key: step[0], className: 'mb-1' },
         React.createElement('strong', null, step[0] + '. '), step[1]))),
-    React.createElement('p', { className: 'text-[11px] uppercase tracking-wider text-slate-500 font-semibold mt-3' },
+    React.createElement('p', { className: 'text-[11px] uppercase tracking-wider text-slate-600 font-semibold mt-3' },
       'Before using this with a real staff member'),
     React.createElement('p', { className: 'text-sm text-slate-700' },
       'Everything built in here is invented practice material, so you can explore it freely. Using it '
       + 'on a real observation is a district decision, not a settings change. Get answers to:'),
     React.createElement('ul', { className: 'list-disc ml-5 text-sm text-slate-700' },
       WCOP_ADVISORY_QUESTIONS.map((q, i) => React.createElement('li', { key: i, className: 'mb-1' }, q))),
-    React.createElement('p', { className: 'text-xs text-slate-500 mt-2' },
+    React.createElement('p', { className: 'text-xs text-slate-600 mt-2' },
       'This build analyzes the practice scenarios only. Analyzing notes you write yourself needs an '
       + 'approved AI provider, which is a separate decision.'),
-    React.createElement('p', { className: 'text-[11px] uppercase tracking-wider text-slate-500 font-semibold mt-3' },
+    React.createElement('p', { className: 'text-[11px] uppercase tracking-wider text-slate-600 font-semibold mt-3' },
       'Three ways this gets used'),
     React.createElement('div', { className: 'grid gap-2 sm:grid-cols-3' },
       WCOP_TIERS.map((tier) => React.createElement('div', {
@@ -292,7 +298,7 @@ function WcopIntro(props) {
               : 'border-slate-200 bg-white')
       },
         React.createElement('h4', { className: 'text-sm font-bold' }, tier.name),
-        React.createElement('p', { className: 'text-[11px] uppercase tracking-wider text-slate-500 font-semibold' }, tier.cost),
+        React.createElement('p', { className: 'text-[11px] uppercase tracking-wider text-slate-600 font-semibold' }, tier.cost),
         React.createElement('p', { className: 'text-xs text-slate-600 mt-1' }, tier.body),
         tier.key === 'deliver' && props.connected
           ? React.createElement('p', { className: 'text-xs text-emerald-800 font-semibold mt-1' },
@@ -301,7 +307,7 @@ function WcopIntro(props) {
         tier.key === 'deliver' && !props.connected
           ? React.createElement('button', {
             type: 'button',
-            className: 'mt-2 px-2 py-1 rounded border border-slate-300 text-xs font-semibold',
+            className: 'mt-2 min-h-11 px-3 py-2 rounded border border-slate-300 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1',
             onClick: props.onSetup
           }, 'Set up delivery')
           : null)))
@@ -312,16 +318,16 @@ function WcopAffirm(props) {
   const described = props.described;
   return React.createElement('div', null,
     React.createElement('h3', { className: 'font-bold text-slate-800 mb-1' }, 'Use this for a real observation'),
-    React.createElement('p', { className: 'text-xs text-slate-500 mb-3' }, described.note),
+    React.createElement('p', { className: 'text-xs text-slate-600 mb-3' }, described.note),
     React.createElement('div', { className: 'rounded-lg border border-slate-200 bg-white p-4 mb-3' },
-      React.createElement('p', { className: 'text-[11px] uppercase tracking-wider text-slate-500 font-semibold mb-1' },
+      React.createElement('p', { className: 'text-[11px] uppercase tracking-wider text-slate-600 font-semibold mb-1' },
         'Confirm each of these'),
       described.terms.map((term) => React.createElement('label', {
-        key: term.key, className: 'flex gap-2 items-start text-sm my-2'
+        key: term.key, className: 'flex gap-2.5 items-center min-h-11 py-1 text-sm cursor-pointer'
       },
         React.createElement('input', {
           type: 'checkbox',
-          className: 'w-5 h-5 mt-0.5 flex-none',
+          className: 'w-5 h-5 flex-none rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600',
           checked: !!props.checks[term.key],
           onChange: (e) => props.onCheck(term.key, e.target.checked)
         }),
@@ -331,7 +337,7 @@ function WcopAffirm(props) {
       React.createElement('input', {
         id: 'wcop-affirm-name',
         type: 'text',
-        className: 'w-full rounded border border-slate-300 p-2 text-sm',
+        className: 'w-full min-h-11 rounded border border-slate-300 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600',
         value: props.name,
         onChange: (e) => props.onName(e.target.value)
       }),
@@ -339,12 +345,12 @@ function WcopAffirm(props) {
       React.createElement('div', { className: 'flex flex-wrap gap-2 mt-3' },
         React.createElement('button', {
           type: 'button',
-          className: 'px-4 py-2 rounded bg-teal-700 text-white text-sm font-semibold',
+          className: 'min-h-11 px-4 py-2 rounded bg-teal-700 text-white text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1',
           onClick: props.onAffirm
         }, 'Affirm and continue'),
         React.createElement('button', {
           type: 'button',
-          className: 'px-3 py-2 rounded border border-slate-300 text-sm',
+          className: 'min-h-11 px-3 py-2 rounded border border-slate-300 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1',
           onClick: props.onCancel
         }, 'Stay in practice mode'))),
     React.createElement('div', { className: 'rounded-lg border border-slate-200 bg-white p-4' },
@@ -359,14 +365,14 @@ function WcopAffirm(props) {
 function WcopManualEntry(props) {
   return React.createElement('div', { className: 'rounded-lg border border-slate-200 bg-white p-3 mb-3' },
     React.createElement('h4', { className: 'font-semibold text-sm mb-1' }, 'Add evidence'),
-    React.createElement('p', { className: 'text-xs text-slate-500 mb-2' },
+    React.createElement('p', { className: 'text-xs text-slate-600 mb-2' },
       'Pick the component, quote the line of your notes it rests on, then say what you observed. '
       + 'Keep any conclusion in the separate interpretation field.'),
     React.createElement('label', { className: 'block text-xs font-semibold mb-1', htmlFor: 'wcop-manual-component' },
       'Component'),
     React.createElement('select', {
       id: 'wcop-manual-component',
-      className: 'w-full rounded border border-slate-300 p-2 text-sm mb-2',
+      className: 'w-full min-h-11 rounded border border-slate-300 px-3 py-2 text-sm mb-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600',
       value: props.entry.componentId,
       onChange: (e) => props.onField('componentId', e.target.value)
     },
@@ -382,7 +388,7 @@ function WcopManualEntry(props) {
         spec[1]),
       React.createElement('textarea', {
         id: 'wcop-manual-' + spec[0],
-        className: 'w-full rounded border border-slate-300 p-2 text-sm',
+        className: 'w-full rounded border border-slate-300 p-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600',
         rows: 2,
         placeholder: spec[2],
         value: props.entry[spec[0]],
@@ -391,7 +397,7 @@ function WcopManualEntry(props) {
     props.message ? React.createElement(WcopFlag, { tone: 'stop' }, props.message) : null,
     React.createElement('button', {
       type: 'button',
-      className: 'px-3 py-2 rounded bg-teal-700 text-white text-sm font-semibold',
+      className: 'min-h-11 px-3 py-2 rounded bg-teal-700 text-white text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1',
       onClick: props.onAdd
     }, 'Add this evidence')
   );
@@ -404,12 +410,12 @@ function WcopSetup(props) {
       React.createElement(WcopFlag, { tone: 'stop' },
         'The script could not be loaded, so the copy button is unavailable. Close and reopen this tool.'),
       React.createElement('button', {
-        type: 'button', className: 'mt-2 px-3 py-2 rounded border border-slate-300 text-sm', onClick: props.onBack
+        type: 'button', className: 'mt-2 min-h-11 px-3 py-2 rounded border border-slate-300 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1', onClick: props.onBack
       }, 'Back'));
   }
   return React.createElement('div', null,
     React.createElement('h3', { className: 'font-bold text-slate-800 mb-1' }, 'Set up delivery to your teachers'),
-    React.createElement('p', { className: 'text-xs text-slate-500 mb-3' },
+    React.createElement('p', { className: 'text-xs text-slate-600 mb-3' },
       'This runs in your own Google account. Finished notes are saved to your Drive and shared with one '
       + 'named teacher at a time. Nothing goes to an AlloFlow server, and there is no AlloFlow database.'),
 
@@ -420,15 +426,15 @@ function WcopSetup(props) {
       React.createElement('div', { className: 'flex flex-wrap gap-2 items-center mt-2' },
         React.createElement('button', {
           type: 'button',
-          className: 'px-3 py-2 rounded bg-teal-700 text-white text-sm font-semibold',
+          className: 'min-h-11 px-3 py-2 rounded bg-teal-700 text-white text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1',
           onClick: () => props.onCopyScript(source.source)
         }, 'Copy script code'),
         React.createElement('button', {
           type: 'button',
-          className: 'px-3 py-2 rounded border border-slate-300 text-sm',
+          className: 'min-h-11 px-3 py-2 rounded border border-slate-300 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1',
           onClick: () => props.onCopyScript(source.manifest, 'Manifest')
         }, 'Copy manifest'),
-        React.createElement('span', { className: 'text-xs text-slate-500' },
+        React.createElement('span', { className: 'text-xs text-slate-600' },
           source.source.length + ' characters. The script ships inside this tool, so this works offline.'))),
 
     React.createElement('div', { className: 'rounded-lg border border-slate-200 bg-white p-4 mb-3' },
@@ -438,7 +444,7 @@ function WcopSetup(props) {
       React.createElement('input', {
         id: 'wcop-exec-url',
         type: 'text',
-        className: 'w-full rounded border border-slate-300 p-2 text-sm',
+        className: 'w-full min-h-11 rounded border border-slate-300 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600',
         placeholder: 'https://script.google.com/macros/s/.../exec',
         value: props.execUrl,
         onChange: (e) => props.onExecUrl(e.target.value)
@@ -446,37 +452,37 @@ function WcopSetup(props) {
       React.createElement('label', { className: 'block text-xs font-semibold mt-2 mb-1', htmlFor: 'wcop-owner-token' }, 'Owner token'),
       React.createElement('input', {
         id: 'wcop-owner-token', type: 'password', autoComplete: 'off', spellCheck: false,
-        className: 'w-full rounded border border-slate-300 p-2 text-sm',
+        className: 'w-full min-h-11 rounded border border-slate-300 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600',
         value: props.token || '', onChange: (e) => props.onToken(e.target.value)
       }),
-      React.createElement('p', { className: 'text-xs text-slate-500 mt-1' },
+      React.createElement('p', { className: 'text-xs text-slate-600 mt-1' },
         'Run setupWalkthroughOwner in the Apps Script editor as the deploying owner, then copy wr_admin_token from Project Settings > Script properties. Existing tokens still work.'),
       React.createElement('div', { className: 'flex flex-wrap gap-2 mt-2' },
         React.createElement('button', {
           type: 'button',
           disabled: props.busy,
           onClick: props.onConnect,
-          className: 'px-3 py-2 rounded bg-teal-700 text-white text-sm font-semibold ' + (props.busy ? 'opacity-50' : '')
+          className: 'min-h-11 px-3 py-2 rounded bg-teal-700 text-white text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 ' + (props.busy ? 'opacity-50' : '')
         }, props.connected ? 'Reconnect' : 'Connect'),
         props.connected ? React.createElement('button', {
-          type: 'button', className: 'px-3 py-2 rounded border border-slate-300 text-sm', onClick: props.onForget
+          type: 'button', className: 'min-h-11 px-3 py-2 rounded border border-slate-300 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1', onClick: props.onForget
         }, 'Forget this connection') : null),
       props.message ? React.createElement(WcopFlag, { tone: props.tone }, props.message) : null,
-      props.selfTest ? React.createElement('p', { className: 'text-xs text-slate-500 mt-2' },
+      props.selfTest ? React.createElement('p', { className: 'text-xs text-slate-600 mt-2' },
         'Owner: ' + (props.selfTest.owner || 'unknown')
         + ' | folder: ' + (props.selfTest.folderName || 'not created yet')
         + ' | email quota available: ' + (props.selfTest.canSendMail ? 'yes' : 'no')) : null),
 
     React.createElement('div', { className: 'rounded-lg border border-slate-200 bg-white p-4 mb-3' },
       React.createElement('h4', { className: 'font-semibold text-sm mb-1' }, 'Before you use this on a real staff member'),
-      React.createElement('p', { className: 'text-xs text-slate-500' },
+      React.createElement('p', { className: 'text-xs text-slate-600' },
         'This stores feedback you wrote and approved. It does not rate anyone and it is not an evaluation '
         + 'system of record. Using it on real staff is a district decision. Get answers to:'),
       React.createElement('ul', { className: 'list-disc ml-5 text-sm text-slate-700 mt-1' },
         WCOP_ADVISORY_QUESTIONS.map((q, i) => React.createElement('li', { key: i, className: 'mb-1' }, q)))),
 
     React.createElement('button', {
-      type: 'button', className: 'px-3 py-2 rounded border border-slate-300 text-sm', onClick: props.onBack
+      type: 'button', className: 'min-h-11 px-3 py-2 rounded border border-slate-300 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1', onClick: props.onBack
     }, 'Back to the tool')
   );
 }
@@ -490,6 +496,8 @@ function WalkthroughCopilotPanel(props) {
   const core = wcopCore();
   const fixtures = wcopFixtures();
   const scenarioLib = wcopScenarios();
+  const isClosed = !!(props && props.isOpen === false);
+  const hasModalShell = !isClosed && typeof (props && props.onClose) === 'function';
 
   const [stage, setStage] = React.useState('capture');
   const [scenario, setScenario] = React.useState(null);
@@ -514,16 +522,126 @@ function WalkthroughCopilotPanel(props) {
   const [manualMessage, setManualMessage] = React.useState('');
   const [realNotes, setRealNotes] = React.useState('');
 
-  if (!core || !fixtures || !scenarioLib) {
-    return React.createElement('div', { className: 'p-4 text-sm text-rose-800' },
-      'The Walkthrough Copilot modules did not finish loading. Close and reopen this tool.');
-  }
+  const dialogRef = React.useRef(null);
+  const closeRef = React.useRef(props && props.onClose);
+  closeRef.current = props && props.onClose;
 
   const componentLabels = React.useMemo(() => {
     const map = {};
+    if (!fixtures || !fixtures.PORTLAND_FRAMEWORK) return map;
     fixtures.PORTLAND_FRAMEWORK.components.forEach((c) => { map[c.id] = c.id + ' ' + c.label; });
     return map;
   }, [fixtures]);
+
+  React.useEffect(() => {
+    if (!hasModalShell) return undefined;
+    const dialog = dialogRef.current;
+    if (!dialog) return undefined;
+    const previousFocus = document.activeElement;
+    const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
+    const trap = { root: dialog };
+    trapStack.push(trap);
+    const isTopTrap = () => trapStack[trapStack.length - 1] === trap;
+    const getFocusable = () => Array.from(dialog.querySelectorAll(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"]), [contenteditable="true"]'
+    )).filter((el) => {
+      if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      const closedDetails = el.closest('details:not([open])');
+      if (closedDetails) {
+        const summary = closedDetails.querySelector(':scope > summary');
+        if (!summary || (el !== summary && !summary.contains(el))) return false;
+      }
+      if (typeof el.getClientRects === 'function' && el.getClientRects().length === 0) return false;
+      try {
+        const s = window.getComputedStyle(el);
+        if (s.display === 'none' || s.visibility === 'hidden') return false;
+      } catch (_) {}
+      return true;
+    });
+    const initialTarget = getFocusable()[0] || dialog;
+    if (initialTarget && typeof initialTarget.focus === 'function') {
+      try { initialTarget.focus(); } catch (_) {}
+    }
+    const onKeyDown = (event) => {
+      if (!isTopTrap()) return;
+      if (event.isComposing || event.keyCode === 229) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        if (typeof closeRef.current === 'function') closeRef.current();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const focusable = getFocusable();
+      if (focusable.length === 0) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (!dialog.contains(document.activeElement)) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus();
+        return;
+      }
+      if (event.shiftKey && (document.activeElement === first || document.activeElement === dialog)) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      const wasTopTrap = trapStack[trapStack.length - 1] === trap;
+      const idx = trapStack.lastIndexOf(trap);
+      if (idx >= 0) trapStack.splice(idx, 1);
+      if (
+        wasTopTrap
+        && previousFocus
+        && previousFocus !== document.body
+        && previousFocus !== document.documentElement
+        && previousFocus.isConnected
+        && typeof previousFocus.focus === 'function'
+      ) {
+        try { previousFocus.focus(); } catch (_) {}
+      }
+    };
+  }, [hasModalShell]);
+
+  if (isClosed) return null;
+
+  if (!core || !fixtures || !scenarioLib) {
+    const errPanel = React.createElement('div', { className: 'p-4 text-sm text-rose-800', role: 'alert' },
+      'The Walkthrough Copilot modules did not finish loading. Close and reopen this tool.');
+    if (!hasModalShell) return errPanel;
+    return React.createElement('div', {
+      className: 'fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4',
+      role: 'presentation',
+      onClick: (e) => { if (e.target === e.currentTarget && typeof closeRef.current === 'function') closeRef.current(); }
+    }, React.createElement('div', {
+      ref: dialogRef,
+      role: 'dialog',
+      'aria-modal': 'true',
+      'aria-labelledby': 'wcop-dialog-title',
+      tabIndex: -1,
+      className: 'relative w-full max-w-lg rounded-2xl bg-stone-50 p-4 shadow-2xl border border-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600'
+    },
+      React.createElement('div', { className: 'flex items-center justify-between gap-3 mb-2' },
+        React.createElement('h2', { id: 'wcop-dialog-title', className: 'text-base font-bold text-slate-900' }, 'Walkthrough Copilot'),
+        React.createElement('button', {
+          type: 'button',
+          'aria-label': t('walkthrough_copilot.close', 'Close Walkthrough Copilot'),
+          className: 'min-h-11 min-w-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600',
+          onClick: () => { if (typeof closeRef.current === 'function') closeRef.current(); }
+        }, 'Close')
+      ),
+      errPanel
+    ));
+  }
 
   const edited = !!scenario && notes !== scenario.notes;
 
@@ -798,8 +916,8 @@ function WalkthroughCopilotPanel(props) {
         disabled: !stageReachable(s.id) && stage !== s.id,
         'aria-current': stage === s.id ? 'step' : undefined,
         onClick: () => setStage(s.id),
-        className: 'w-full text-left rounded border px-3 py-2 text-sm '
-          + (stage === s.id ? 'border-teal-600 text-slate-800 bg-white' : 'border-slate-200 text-slate-500 bg-white')
+        className: 'w-full min-h-11 text-left rounded border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 '
+          + (stage === s.id ? 'border-teal-600 text-slate-800 bg-white' : 'border-slate-200 text-slate-600 bg-white')
           + (!stageReachable(s.id) && stage !== s.id ? ' opacity-50 cursor-not-allowed' : '')
       },
         React.createElement('span', { className: 'block text-[10px] uppercase tracking-wider opacity-75' }, s.n),
@@ -840,13 +958,13 @@ function WalkthroughCopilotPanel(props) {
     bodyNode = React.createElement('div', null,
       React.createElement('div', { className: 'rounded-lg border border-slate-200 bg-white p-4 mb-3' },
         React.createElement('h3', { className: 'font-bold text-slate-800 mb-1' }, 'Your observation notes'),
-        React.createElement('p', { className: 'text-xs text-slate-500 mb-2' },
+        React.createElement('p', { className: 'text-xs text-slate-600 mb-2' },
           'Type the shorthand you wrote during the visit. Locking it keeps your original wording exactly as '
           + 'written, and every claim you record afterwards has to quote a line from it.'),
         React.createElement('textarea', {
-          className: 'w-full rounded border border-slate-300 p-2 font-mono text-[13px]',
+          className: 'w-full rounded border border-slate-300 p-2 font-mono text-[13px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600',
           rows: 10,
-          'aria-label': 'Observation notes',
+          'aria-label': t('walkthrough_copilot.observation_notes', 'Observation notes'),
           value: realNotes,
           onChange: (e) => setRealNotes(e.target.value)
         }),
@@ -855,12 +973,12 @@ function WalkthroughCopilotPanel(props) {
             type: 'button',
             disabled: !realNotes.trim(),
             onClick: lockRealNotes,
-            className: 'px-4 py-2 rounded bg-teal-700 text-white text-sm font-semibold '
+            className: 'min-h-11 px-4 py-2 rounded bg-teal-700 text-white text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 '
               + (!realNotes.trim() ? 'opacity-50 cursor-not-allowed' : '')
           }, 'Lock these notes'),
           React.createElement('button', {
             type: 'button',
-            className: 'px-3 py-2 rounded border border-slate-300 text-sm',
+            className: 'min-h-11 px-3 py-2 rounded border border-slate-300 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1',
             onClick: () => {
               setApproval(null);
               setRealNotes('');
@@ -868,7 +986,7 @@ function WalkthroughCopilotPanel(props) {
               wcopAnnounce('Back in practice mode.');
             }
           }, 'Back to practice'))),
-      React.createElement('p', { className: 'text-xs text-slate-500' },
+      React.createElement('p', { className: 'text-xs text-slate-600' },
         'There is no AI connected in this build, so you will write each piece of evidence yourself in the '
         + 'next step. The tool still checks that every claim quotes your notes, keeps what you observed '
         + 'separate from what you concluded, and flags language that reaches past the evidence.')
@@ -878,10 +996,10 @@ function WalkthroughCopilotPanel(props) {
       React.createElement('div', { className: 'flex flex-wrap gap-2 items-center mb-3' },
         React.createElement('button', {
           type: 'button',
-          className: 'px-3 py-1.5 rounded border border-slate-300 text-sm',
+          className: 'min-h-11 px-3 py-2 rounded border border-slate-300 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1',
           onClick: () => setStage('affirm')
         }, 'Use this for a real observation'),
-        React.createElement('span', { className: 'text-xs text-slate-500' },
+        React.createElement('span', { className: 'text-xs text-slate-600' },
           'Requires confirming what your district has approved.')),
       introOpen
         ? React.createElement(WcopIntro, {
@@ -891,12 +1009,12 @@ function WalkthroughCopilotPanel(props) {
           onSetup: () => setStage('setup')
         })
         : React.createElement('button', {
-          type: 'button', className: 'mb-4 px-3 py-1.5 rounded border border-slate-300 text-sm',
+          type: 'button', className: 'mb-4 min-h-11 px-3 py-2 rounded border border-slate-300 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1',
           onClick: () => setIntroOpen(true)
         }, 'What is this?'),
       React.createElement('div', { className: 'rounded-lg border border-slate-200 bg-white p-4 mb-4' },
         React.createElement('h3', { className: 'font-bold text-slate-800 mb-1' }, 'Choose a practice scenario'),
-        React.createElement('p', { className: 'text-xs text-slate-500 mb-3' },
+        React.createElement('p', { className: 'text-xs text-slate-600 mb-3' },
           'Each scenario is a synthetic observation that teaches one habit of evidence-based feedback. '
           + 'They carry their own suggestions, so nothing here calls an AI service.'),
         scenarioLib.listScenarios().map((meta) => React.createElement('button', {
@@ -904,23 +1022,23 @@ function WalkthroughCopilotPanel(props) {
           type: 'button',
           'aria-pressed': !!scenario && scenario.id === meta.id,
           onClick: () => pickScenario(meta.id),
-          className: 'block w-full text-left rounded border px-3 py-2 mb-2 '
+          className: 'block w-full min-h-11 text-left rounded border px-3 py-2 mb-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 '
             + (scenario && scenario.id === meta.id ? 'border-teal-600 bg-teal-50' : 'border-slate-200 bg-white')
         },
           React.createElement('span', { className: 'block font-semibold text-sm text-slate-800' }, meta.title),
-          React.createElement('span', { className: 'block text-xs text-slate-500' },
+          React.createElement('span', { className: 'block text-xs text-slate-600' },
             meta.setting + ' | about ' + meta.minutes + ' minutes | teaches: ' + meta.teaches)))
       ),
       React.createElement('div', { className: 'rounded-lg border border-slate-200 bg-white p-4' },
         React.createElement('h3', { className: 'font-bold text-slate-800 mb-1' }, 'The observer notes'),
-        React.createElement('p', { className: 'text-xs text-slate-500 mb-2' },
+        React.createElement('p', { className: 'text-xs text-slate-600 mb-2' },
           'This is the shorthand someone typed during the visit. Locking it means your original wording '
           + 'is kept exactly as written for the rest of the session, so nothing can quietly tidy it up, '
           + 'summarize it, or put words in your mouth. Every claim later has to point back to a line in here.'),
         React.createElement('textarea', {
-          className: 'w-full rounded border border-slate-300 p-2 font-mono text-[13px]',
+          className: 'w-full rounded border border-slate-300 p-2 font-mono text-[13px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600',
           rows: 10,
-          'aria-label': 'Observation notes',
+          'aria-label': t('walkthrough_copilot.observation_notes', 'Observation notes'),
           value: notes,
           onChange: (e) => setNotes(e.target.value)
         }),
@@ -933,15 +1051,15 @@ function WalkthroughCopilotPanel(props) {
             type: 'button',
             disabled: !scenario || edited,
             onClick: lockAndAnalyze,
-            className: 'px-4 py-2 rounded bg-teal-700 text-white text-sm font-semibold '
+            className: 'min-h-11 px-4 py-2 rounded bg-teal-700 text-white text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 '
               + (!scenario || edited ? 'opacity-50 cursor-not-allowed' : '')
           }, 'Lock these notes and see suggestions'),
           edited ? React.createElement('button', {
             type: 'button',
-            className: 'px-3 py-2 rounded border border-slate-300 text-sm',
+            className: 'min-h-11 px-3 py-2 rounded border border-slate-300 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1',
             onClick: () => { setNotes(scenario.notes); wcopAnnounce('Scenario notes restored.'); }
           }, 'Restore scenario notes') : null,
-          !scenario ? React.createElement('span', { className: 'text-xs text-slate-500 self-center' },
+          !scenario ? React.createElement('span', { className: 'text-xs text-slate-600 self-center' },
             'Pick a scenario first.') : null)
       )
     );
@@ -952,9 +1070,9 @@ function WalkthroughCopilotPanel(props) {
       React.createElement(WcopFrozenNotes, { notes: draft.sourceNotesOriginal }),
       React.createElement('div', null,
         React.createElement('h3', { className: 'font-bold text-slate-800' }, 'Your call on each suggestion'),
-        React.createElement('p', { className: 'text-sm font-bold text-teal-700 mb-1', role: 'status' },
+        React.createElement('p', { className: 'text-sm font-bold text-teal-700 mb-1', role: 'status', 'aria-live': 'polite' },
           settled === total ? 'All ' + total + ' decided. You can move on.' : settled + ' of ' + total + ' decided.'),
-        React.createElement('p', { className: 'text-xs text-slate-500 mb-3' },
+        React.createElement('p', { className: 'text-xs text-slate-600 mb-3' },
           'Nothing reaches your form until you decide on it. Keep what the notes genuinely support, reword '
           + 'anything you would put differently, and throw out the rest. Rejecting a lot is a normal outcome, '
           + 'not a sign something went wrong.'),
@@ -981,7 +1099,7 @@ function WalkthroughCopilotPanel(props) {
           type: 'button',
           disabled: settled !== total,
           onClick: () => setStage('feedback'),
-          className: 'mt-3 px-4 py-2 rounded bg-teal-700 text-white text-sm font-semibold '
+          className: 'mt-3 min-h-11 px-4 py-2 rounded bg-teal-700 text-white text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 '
             + (settled !== total ? 'opacity-50 cursor-not-allowed' : '')
         }, 'Continue to the feedback')
       )
@@ -992,14 +1110,14 @@ function WalkthroughCopilotPanel(props) {
       React.createElement('h3', { className: 'font-bold text-slate-800 mb-2' }, 'The feedback as the teacher will read it'),
       React.createElement('div', { className: 'rounded-lg border border-slate-200 bg-white p-4 mb-3' },
         React.createElement('h4', { className: 'font-semibold text-sm mb-1' }, 'Disclosure'),
-        React.createElement('p', { className: 'text-xs text-slate-500 mb-2' },
+        React.createElement('p', { className: 'text-xs text-slate-600 mb-2' },
           'This travels with every field you copy. You can reword it, but it cannot be empty, and the last '
           + 'sentence is a claim only your school can make truthfully.'),
         React.createElement('label', { className: 'block text-xs font-semibold mb-1', htmlFor: 'wcop-disclosure' },
           'Disclosure wording'),
         React.createElement('textarea', {
           id: 'wcop-disclosure',
-          className: 'w-full rounded border border-slate-300 p-2 text-sm',
+          className: 'w-full rounded border border-slate-300 p-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600',
           rows: 3,
           value: draft.disclosure.text,
           onChange: (e) => setDisclosureText(e.target.value)
@@ -1009,9 +1127,9 @@ function WalkthroughCopilotPanel(props) {
             type: 'button',
             'aria-pressed': draft.disclosure.includeFormativeSentence,
             onClick: toggleFormative,
-            className: 'px-3 py-1.5 rounded border border-slate-300 text-sm'
+            className: 'min-h-11 px-3 py-2 rounded border border-slate-300 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1'
           }, draft.disclosure.includeFormativeSentence ? 'Formative sentence included' : 'Formative sentence removed'),
-          React.createElement('span', { className: 'text-xs text-slate-500' }, draft.disclosure.formativeSentence))
+          React.createElement('span', { className: 'text-xs text-slate-600' }, draft.disclosure.formativeSentence))
       ),
       readiness.ok
         ? React.createElement(WcopFlag, { tone: 'go' },
@@ -1029,24 +1147,24 @@ function WalkthroughCopilotPanel(props) {
           type: 'button',
           disabled: !readiness.ok,
           onClick: () => setStage('copy'),
-          className: 'px-4 py-2 rounded bg-teal-700 text-white text-sm font-semibold '
+          className: 'min-h-11 px-4 py-2 rounded bg-teal-700 text-white text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 '
             + (!readiness.ok ? 'opacity-50 cursor-not-allowed' : '')
         }, 'Continue to copy'),
         React.createElement('button', {
           type: 'button',
           onClick: compare,
-          className: 'px-4 py-2 rounded border border-slate-300 text-sm font-semibold'
+          className: 'min-h-11 px-4 py-2 rounded border border-slate-300 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1'
         }, 'Compare with the reference reading')),
       comparison ? React.createElement('div', { className: 'rounded-lg border border-slate-200 bg-white p-4 mt-3' },
         React.createElement('h4', { className: 'font-semibold text-sm' }, 'Your reading and the reference reading'),
-        React.createElement('p', { className: 'text-xs text-slate-500 mb-2' }, comparison.disclaimer),
+        React.createElement('p', { className: 'text-xs text-slate-600 mb-2' }, comparison.disclaimer),
         comparison.agreements.map((a, i) => React.createElement(WcopFlag, { key: 'a' + i, tone: 'go' },
           (a.componentId ? a.componentId + ': ' : '') + a.note)),
         comparison.divergences.map((d, i) => React.createElement(WcopFlag, { key: 'd' + i },
           (d.componentId ? d.componentId + ': ' : '') + d.note)),
         comparison.referenceNote ? React.createElement('p', { className: 'text-sm text-slate-700 mt-2' }, comparison.referenceNote) : null,
         comparison.discussion.length ? React.createElement('div', { className: 'mt-2' },
-          React.createElement('p', { className: 'text-[11px] uppercase tracking-wider text-slate-500 font-semibold' }, 'Worth discussing'),
+          React.createElement('p', { className: 'text-[11px] uppercase tracking-wider text-slate-600 font-semibold' }, 'Worth discussing'),
           React.createElement('ul', { className: 'list-disc ml-5 text-sm text-slate-700' },
             comparison.discussion.map((p, i) => React.createElement('li', { key: i }, p)))) : null
       ) : null
@@ -1056,13 +1174,13 @@ function WalkthroughCopilotPanel(props) {
     bodyNode = output.ok
       ? React.createElement('div', null,
         React.createElement('h3', { className: 'font-bold text-slate-800 mb-1' }, 'Copy into your walkthrough form'),
-        React.createElement('p', { className: 'text-xs text-slate-500 mb-3' },
+        React.createElement('p', { className: 'text-xs text-slate-600 mb-3' },
           'This tool does not submit anything, send anything, or store anything. You paste these into the '
           + 'form your school already uses.'),
         React.createElement('button', {
           type: 'button',
           onClick: () => copyText(output.value.copyAll, 'All fields'),
-          className: 'px-4 py-2 rounded bg-teal-700 text-white text-sm font-semibold mb-3'
+          className: 'min-h-11 px-4 py-2 rounded bg-teal-700 text-white text-sm font-semibold mb-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1'
         }, 'Copy everything'),
         output.value.contextFields.concat(output.value.fields).map((f, i) => React.createElement('div', {
           key: 'f' + i,
@@ -1073,7 +1191,7 @@ function WalkthroughCopilotPanel(props) {
             React.createElement('button', {
               type: 'button',
               onClick: () => copyText(f.text, f.key),
-              className: 'px-3 py-1 rounded border border-slate-300 text-sm'
+              className: 'min-h-11 min-w-11 px-3 py-2 rounded border border-slate-300 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1'
             }, 'Copy')),
           React.createElement('pre', { className: 'whitespace-pre-wrap break-words text-[13px] mt-1 font-mono' }, f.text)
         )),
@@ -1081,11 +1199,11 @@ function WalkthroughCopilotPanel(props) {
           React.createElement('h4', { className: 'font-semibold text-sm mb-1' }, 'Send it to the teacher'),
           !connected
             ? React.createElement('div', null,
-              React.createElement('p', { className: 'text-xs text-slate-500 mb-2' },
+              React.createElement('p', { className: 'text-xs text-slate-600 mb-2' },
                 'You can paste the fields above into whatever form your school uses. If you would rather have '
                 + 'this saved to your Drive and shared with the teacher directly, set that up once.'),
               React.createElement('button', {
-                type: 'button', className: 'px-3 py-2 rounded border border-slate-300 text-sm',
+                type: 'button', className: 'min-h-11 px-3 py-2 rounded border border-slate-300 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1',
                 onClick: () => setStage('setup')
               }, 'Set up delivery'))
             : draft.mode === 'demo'
@@ -1098,36 +1216,36 @@ function WalkthroughCopilotPanel(props) {
                 React.createElement('input', {
                   id: 'wcop-send-to',
                   type: 'text',
-                  className: 'w-full rounded border border-slate-300 p-2 text-sm',
-                  placeholder: 'teacher@yourschool.org',
+                  className: 'w-full min-h-11 rounded border border-slate-300 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600',
+                  placeholder: t('walkthrough_copilot.email_placeholder', 'teacher@yourschool.org'),
                   value: sendTo,
                   onChange: (e) => setSendTo(e.target.value)
                 }),
-                React.createElement('p', { className: 'text-xs text-slate-500 my-2' },
+                React.createElement('p', { className: 'text-xs text-slate-600 my-2' },
                   'The note is saved to your Drive and shared with that one address. Google asks them to sign in '
                   + 'to open it, so a forwarded link shows nothing. The notification email contains no feedback text.'),
                 React.createElement('button', {
                   type: 'button',
                   disabled: setupState.busy,
                   onClick: deliver,
-                  className: 'px-3 py-2 rounded bg-teal-700 text-white text-sm font-semibold ' + (setupState.busy ? 'opacity-50' : '')
+                  className: 'min-h-11 px-3 py-2 rounded bg-teal-700 text-white text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 ' + (setupState.busy ? 'opacity-50' : '')
                 }, 'Save to my Drive and share')),
           sendResult ? React.createElement(WcopFlag, { tone: sendResult.ok ? 'go' : 'stop' }, sendResult.message) : null),
         React.createElement('button', {
           type: 'button',
           onClick: clearAll,
-          className: 'mt-3 px-3 py-2 rounded border border-slate-300 text-sm'
+          className: 'mt-3 min-h-11 px-3 py-2 rounded border border-slate-300 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1'
         }, 'Clear and start over')
       )
       : React.createElement(WcopFlag, { tone: 'stop' }, output.errors[0].message);
   }
 
-  return React.createElement('div', { className: 'p-4' },
+  const panelContent = React.createElement('div', { className: 'p-4', 'data-testid': 'wcop-panel' },
     banner,
     nav,
     problem ? React.createElement(WcopFlag, { tone: 'stop' }, problem) : null,
     bodyNode,
-    React.createElement('div', { className: 'mt-6 pt-3 border-t border-slate-200 text-xs text-slate-500' },
+    React.createElement('div', { className: 'mt-6 pt-3 border-t border-slate-200 text-xs text-slate-600' },
       React.createElement('p', null,
         'Formative walkthrough and coaching support. This tool never assigns a rating, calculates a '
         + 'summative score, or makes an employment recommendation.'),
@@ -1136,5 +1254,33 @@ function WalkthroughCopilotPanel(props) {
         + 'district which AI provider may process observation notes, whether a walkthrough counts as '
         + 'evidence in your evaluation system, and how long anything typed here is retained.'),
       React.createElement('p', { className: 'mt-1' }, scenarioLib.DISCLAIMER))
+  );
+
+  if (!hasModalShell) return panelContent;
+
+  return React.createElement('div', {
+    className: 'fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4',
+    role: 'presentation',
+    onClick: (e) => { if (e.target === e.currentTarget && typeof closeRef.current === 'function') closeRef.current(); }
+  },
+    React.createElement('div', {
+      ref: dialogRef,
+      role: 'dialog',
+      'aria-modal': 'true',
+      'aria-labelledby': 'wcop-dialog-title',
+      tabIndex: -1,
+      className: 'relative max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-stone-50 shadow-2xl border border-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600'
+    },
+      React.createElement('div', { className: 'sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3' },
+        React.createElement('h2', { id: 'wcop-dialog-title', className: 'text-base font-bold text-slate-900' }, 'Walkthrough Copilot'),
+        React.createElement('button', {
+          type: 'button',
+          'aria-label': t('walkthrough_copilot.close', 'Close Walkthrough Copilot'),
+          className: 'min-h-11 min-w-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-semibold hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1',
+          onClick: () => { if (typeof closeRef.current === 'function') closeRef.current(); }
+        }, 'Close')
+      ),
+      panelContent
+    )
   );
 }

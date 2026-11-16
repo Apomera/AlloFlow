@@ -68,6 +68,13 @@ try {
     if (!fs.existsSync(path.dirname(DEPLOY_OUT))) fs.mkdirSync(path.dirname(DEPLOY_OUT), { recursive: true });
     writeBuildFile(DEPLOY_OUT, outputCode, 'utf-8');
 } catch (e) { console.warn('[ViewExportPreview] sync failed:', e.message); }
+for (const extraOut of [
+    path.join(ROOT, 'desktop', 'app-build', 'view_export_preview_module.js'),
+    path.join(ROOT, 'desktop', 'web-app', 'build', 'view_export_preview_module.js')
+]) {
+    try { if (fs.existsSync(path.dirname(extraOut))) writeBuildFile(extraOut, outputCode, 'utf-8'); }
+    catch (e) { console.warn('[ViewExportPreview] mirror sync failed:', e.message); }
+}
 
 try { execSync('node -c "' + OUTPUT + '"', { stdio: 'pipe' }); }
 catch (e) { console.error('[ViewExportPreview] Syntax check failed:', (e.stderr && e.stderr.toString()) || e.message); process.exit(1); }

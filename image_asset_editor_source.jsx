@@ -52,7 +52,7 @@ function AiImageGenerationToggle() {
   return <div className="mt-3" data-help-key="universal_image_generation">
     <label className="flex min-h-11 items-center gap-3 text-sm font-bold text-slate-800">
       <input type="checkbox" role="switch" checked={enabled} aria-describedby={helpId}
-        onChange={event => policy.setEnabled(event.target.checked)} className="h-5 w-5 accent-indigo-600" />
+        onChange={event => policy.setEnabled(event.target.checked)} className="h-5 w-5 accent-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 rounded" />
       Allow AI image generation
     </label>
     <p id={helpId} className="mt-1 text-xs text-slate-600">Remembered on this device. When off, new AI pictures and AI image edits are skipped across resources. You can still upload images, draw, and use existing pictures.</p>
@@ -382,7 +382,7 @@ function ImageAssetPicker(props) {
         disabled={!!props.disabled || busy}
         onChange={handleChange}
         aria-describedby={helpId + (error ? ' ' + errorId : '')}
-        className="mt-1 block min-h-11 w-full cursor-pointer rounded-xl border border-fuchsia-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 file:mr-3 file:rounded-lg file:border-0 file:bg-fuchsia-100 file:px-3 file:py-2 file:font-black file:text-fuchsia-900 disabled:cursor-not-allowed disabled:opacity-50"
+        className="mt-1 block min-h-11 w-full cursor-pointer rounded-xl border border-fuchsia-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 file:mr-3 file:rounded-lg file:border-0 file:bg-fuchsia-100 file:px-3 file:py-2 file:font-black file:text-fuchsia-900 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600"
       />
       <p id={helpId} className="mt-1 text-xs leading-relaxed text-slate-600">PNG, JPEG, or WebP; up to 10 MB. The file is processed in this browser, and only the resized result is saved with the resource.</p>
       {busy && <p role="status" className="mt-1 text-xs font-bold text-fuchsia-900">Reading image…</p>}
@@ -451,7 +451,17 @@ function ImageAssetEditor(props) {
     : { width: '100%', height: '100%', objectFit: 'contain' };
 
   return (
-    <section className="rounded-2xl border-2 border-fuchsia-300 bg-white p-4" aria-labelledby={headingRef.current} aria-busy={busy}>
+    <section
+      className="rounded-2xl border-2 border-fuchsia-300 bg-white p-4"
+      aria-labelledby={headingRef.current}
+      aria-busy={busy}
+      onKeyDown={(event) => {
+        if (event.key === 'Escape' && !busy && !event.isComposing && !event.nativeEvent?.isComposing && event.keyCode !== 229 && event.nativeEvent?.keyCode !== 229 && typeof props.onCancel === 'function') {
+          event.stopPropagation();
+          props.onCancel();
+        }
+      }}
+    >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <h4 id={headingRef.current} className="text-sm font-black text-fuchsia-950">Position your visual</h4>
@@ -470,11 +480,11 @@ function ImageAssetEditor(props) {
             <legend className="text-xs font-black text-slate-800">Image treatment</legend>
             <div className="mt-1 grid gap-2 sm:grid-cols-2">
               <label className="flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-slate-300 px-3 py-2 text-sm font-bold text-slate-800">
-                <input type="radio" name={headingRef.current + '-mode'} checked={settings.mode === 'fit'} onChange={() => patchSettings({ mode: 'fit' })} />
+                <input type="radio" name={headingRef.current + '-mode'} checked={settings.mode === 'fit'} onChange={() => patchSettings({ mode: 'fit' })} className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600" />
                 Fit whole image
               </label>
               <label className="flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-slate-300 px-3 py-2 text-sm font-bold text-slate-800">
-                <input type="radio" name={headingRef.current + '-mode'} checked={settings.mode === 'crop'} onChange={() => patchSettings({ mode: 'crop', aspect: 'square' })} />
+                <input type="radio" name={headingRef.current + '-mode'} checked={settings.mode === 'crop'} onChange={() => patchSettings({ mode: 'crop', aspect: 'square' })} className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600" />
                 Crop to frame
               </label>
             </div>
@@ -488,13 +498,13 @@ function ImageAssetEditor(props) {
                 </select>
               </label>
               <label className="block text-xs font-black text-slate-700">Zoom <output className="font-medium">{settings.zoom}%</output>
-                <input type="range" min="100" max="250" step="5" value={settings.zoom} onChange={(event) => patchSettings({ zoom: event.target.value })} aria-label="Image zoom" className="mt-1 block min-h-11 w-full accent-fuchsia-700" />
+                <input type="range" min="100" max="250" step="5" value={settings.zoom} onChange={(event) => patchSettings({ zoom: event.target.value })} aria-label="Image zoom" className="mt-1 block min-h-11 w-full accent-fuchsia-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600 rounded" />
               </label>
               <label className="block text-xs font-black text-slate-700">Horizontal focus <output className="font-medium">{settings.focalX}%</output>
-                <input type="range" min="0" max="100" step="5" value={settings.focalX} onChange={(event) => patchSettings({ focalX: event.target.value })} aria-label="Horizontal image focus" className="mt-1 block min-h-11 w-full accent-fuchsia-700" />
+                <input type="range" min="0" max="100" step="5" value={settings.focalX} onChange={(event) => patchSettings({ focalX: event.target.value })} aria-label="Horizontal image focus" className="mt-1 block min-h-11 w-full accent-fuchsia-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600 rounded" />
               </label>
               <label className="block text-xs font-black text-slate-700">Vertical focus <output className="font-medium">{settings.focalY}%</output>
-                <input type="range" min="0" max="100" step="5" value={settings.focalY} onChange={(event) => patchSettings({ focalY: event.target.value })} aria-label="Vertical image focus" className="mt-1 block min-h-11 w-full accent-fuchsia-700" />
+                <input type="range" min="0" max="100" step="5" value={settings.focalY} onChange={(event) => patchSettings({ focalY: event.target.value })} aria-label="Vertical image focus" className="mt-1 block min-h-11 w-full accent-fuchsia-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600 rounded" />
               </label>
               <button type="button" onClick={() => setSettings(normalizeImageAssetSettings({ mode: 'crop', aspect: settings.aspect }))} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600">Center and reset zoom</button>
             </React.Fragment>

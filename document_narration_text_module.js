@@ -134,6 +134,108 @@ var AlloNarrationText = (() => {
       }
     });
   }
+  var _ALLO_TEACHER_ONLY_SEL = ".teacher-view, [data-allo-teacher-only], [data-teacher-only], .teacher-only, .answer-key, .alloflow-teacher-copy-banner, .alloflow-cs-answer-key, .alloflow-glossary-worksheet-key, .alloflow-math-solution, .alloflow-fluency-key, .alloflow-teacher-plan, .alloflow-teacher-annotations, .alloflow-teacher-annotations-by-resource, .alloflow-gm-check-btn, .alloflow-gm-feedback, .alloflow-match-check-btn, .alloflow-match-feedback, .alloflow-teacher-notes, .alloflow-rubric-key, .alloflow-model-answer, .alloflow-sample-response, .alloflow-scoring-guide, #alloflow-interactive-object-profile, [data-teacher-note], [data-answer-key]";
+  function _alloLinearizeSpeechMath(mathEl) {
+    if (!mathEl) return "";
+    const cleanSp = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
+    const explicit = cleanSp(mathEl.getAttribute && (mathEl.getAttribute("aria-label") || mathEl.getAttribute("alttext")) || "");
+    if (explicit) return explicit;
+    const mathAtom = (s) => /^[A-Za-z0-9.]+$/.test(s) ? s : "(" + s + ")";
+    const mathScript = (s) => /^-?[A-Za-z0-9]+$/.test(s) ? s : "(" + s + ")";
+    const walkMath = (node) => {
+      if (!node) return "";
+      if (node.nodeType === 3) return String(node.nodeValue || node.textContent || "");
+      if (node.nodeType !== 1) return "";
+      const t = String(node.tagName || "").toLowerCase();
+      if (t === "annotation" || t === "annotation-xml") return "";
+      if (t === "mspace") return " ";
+      const ch = Array.from(node.children || []);
+      if (t === "mfrac" && ch.length >= 2) return "(" + cleanSp(walkMath(ch[0])) + ")/(" + cleanSp(walkMath(ch[1])) + ")";
+      if (t === "msup" && ch.length >= 2) {
+        const b = cleanSp(walkMath(ch[0]));
+        const e = cleanSp(walkMath(ch[1]));
+        return b ? mathAtom(b) + "^" + mathScript(e) : e;
+      }
+      if (t === "msub" && ch.length >= 2) {
+        const b = cleanSp(walkMath(ch[0]));
+        const s = cleanSp(walkMath(ch[1]));
+        return b ? mathAtom(b) + "_" + mathScript(s) : s;
+      }
+      if (t === "msubsup" && ch.length >= 3) {
+        const b = cleanSp(walkMath(ch[0]));
+        const s = cleanSp(walkMath(ch[1]));
+        const e = cleanSp(walkMath(ch[2]));
+        return b ? mathAtom(b) + "_" + mathScript(s) + "^" + mathScript(e) : "";
+      }
+      if (t === "msqrt") {
+        const inner = cleanSp(Array.from(node.childNodes || []).map(walkMath).join(""));
+        return inner ? "sqrt(" + inner + ")" : "";
+      }
+      if (t === "mroot" && ch.length >= 2) {
+        const b = cleanSp(walkMath(ch[0]));
+        const idx = cleanSp(walkMath(ch[1]));
+        return b && idx ? "root(" + idx + ", " + b + ")" : b;
+      }
+      return Array.from(node.childNodes || []).map(walkMath).join("");
+    };
+    return cleanSp(walkMath(mathEl)) || cleanSp(mathEl.getAttribute && mathEl.getAttribute("data-allo-latex") || "");
+  }
+  function _replaceAccessibleMathAndSvgForSpeech(root, opts) {
+    if (!root || !root.querySelectorAll) return;
+    const doc = opts && opts.doc || root.ownerDocument || document;
+    const includeTeacherOnly = !!(opts && opts.includeTeacherOnly);
+    const preserveLanguageNodes = !!(opts && opts.preserveLanguageNodes);
+    if (!includeTeacherOnly) {
+      root.querySelectorAll(_ALLO_TEACHER_ONLY_SEL).forEach((el) => {
+        try {
+          el.remove();
+        } catch (_) {
+        }
+      });
+    }
+    const makeSpokenNode = (sourceEl, labelText) => {
+      const clean = String(labelText || "").replace(/\s+/g, " ").trim();
+      if (!clean) return doc.createTextNode("");
+      if (preserveLanguageNodes) {
+        const span = doc.createElement("span");
+        span.setAttribute("data-allo-spoken-media", "1");
+        const lang = sourceEl && sourceEl.getAttribute && (sourceEl.getAttribute("lang") || sourceEl.getAttribute("xml:lang"));
+        if (lang) span.setAttribute("lang", lang);
+        span.textContent = " " + clean + " ";
+        return span;
+      }
+      return doc.createTextNode(" " + clean + " ");
+    };
+    root.querySelectorAll("math").forEach((mathEl) => {
+      try {
+        if (mathEl.closest && mathEl.closest('[hidden], [aria-hidden="true"]')) {
+          mathEl.remove();
+          return;
+        }
+        const readable = _alloLinearizeSpeechMath(mathEl);
+        mathEl.replaceWith(makeSpokenNode(mathEl, readable));
+      } catch (_) {
+      }
+    });
+    root.querySelectorAll("svg").forEach((svgEl) => {
+      try {
+        if (svgEl.closest && svgEl.closest(".alloflow-inline-chart")) {
+          svgEl.remove();
+          return;
+        }
+        if (svgEl.getAttribute("aria-hidden") === "true" || svgEl.getAttribute("role") === "presentation" || svgEl.getAttribute("role") === "none" || svgEl.closest && svgEl.closest('[hidden], [aria-hidden="true"]')) {
+          svgEl.remove();
+          return;
+        }
+        const label = String(
+          svgEl.getAttribute("aria-label") || Array.from(svgEl.querySelectorAll("title, desc")).map((n) => (n.textContent || "").trim()).filter(Boolean).join(". ")
+        ).replace(/\s+/g, " ").trim();
+        if (label) svgEl.replaceWith(makeSpokenNode(svgEl, label));
+        else svgEl.remove();
+      } catch (_) {
+      }
+    });
+  }
   function _audioReadyText(html, narrationOptions) {
     const options = narrationOptions || {};
     const doc = new DOMParser().parseFromString(html || "", "text/html");
@@ -163,7 +265,8 @@ var AlloNarrationText = (() => {
       span.textContent = btn.textContent || "";
       btn.replaceWith(span);
     });
-    root.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], [data-allo-translation-note], [data-allo-plain-note], [data-allo-footnote-backlink], details.allo-math-source, .alloflow-reading-tools-shell, .alloflow-hud-bar, #alloflow-term-popover, .alloflow-term-popover, .alloflow-export-prompt-overlay, .alloflow-save-bar, .alloflow-turnin-bar, .alloflow-keycap, .alloflow-inline-chart svg, [hidden], [aria-hidden="true"], script, style, button, input, select, textarea, ' + _ALLO_INTERACTIVE_CHROME_SEL).forEach((el) => el.remove());
+    root.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], [data-allo-translation-note], [data-allo-plain-note], [data-allo-footnote-backlink], details.allo-math-source, .alloflow-reading-tools-shell, .alloflow-hud-bar, #alloflow-term-popover, .alloflow-term-popover, .alloflow-export-prompt-overlay, .alloflow-save-bar, .alloflow-turnin-bar, .alloflow-keycap, .alloflow-inline-chart svg, [hidden], [aria-hidden="true"], script, style, button, input, select, textarea, del[data-allo-change-id],[data-allo-change-kind="structure-delete"], ' + _ALLO_INTERACTIVE_CHROME_SEL).forEach((el) => el.remove());
+    _replaceAccessibleMathAndSvgForSpeech(root, { doc, includeTeacherOnly: !!options.includeTeacherOnly, preserveLanguageNodes: false });
     root.querySelectorAll("details.allo-chart-data > summary, details.allo-image-desc > summary").forEach((el) => el.remove());
     root.querySelectorAll("details em, figcaption em").forEach((el) => {
       if (/verify|AI-estimated|AI-generated|Transcribed from the image/i.test(el.textContent || "")) el.remove();
@@ -190,13 +293,20 @@ var AlloNarrationText = (() => {
       }
       if (img) {
         const alt = (img.getAttribute("alt") || "").trim();
-        const isPres = img.getAttribute("role") === "presentation" || img.getAttribute("aria-hidden") === "true";
+        const role = img.getAttribute("role");
+        const isPres = role === "presentation" || role === "none" || img.getAttribute("aria-hidden") === "true";
         const capText = cap ? cap.textContent.trim() : "";
         const say = capText || (isPres ? "" : alt);
         const replacement = options.languageRuns ? imageText(img, capText ? cap : null, say) : doc.createTextNode(say ? "Image: " + say + ". " : "");
         if (cap) cap.remove();
         img.replaceWith(replacement);
       }
+    });
+    root.querySelectorAll("img").forEach((img) => {
+      const role = img.getAttribute("role");
+      const isPres = role === "presentation" || role === "none" || img.getAttribute("aria-hidden") === "true";
+      const alt = isPres ? "" : (img.getAttribute("alt") || "").trim();
+      img.replaceWith(options.languageRuns ? imageText(img, null, alt) : doc.createTextNode(alt ? "Image: " + alt + ". " : ""));
     });
     root.querySelectorAll("p, h1, h2, h3, h4, h5, h6, li, blockquote, dd, dt, tr, caption, figcaption, .alloflow-cs-strip, .alloflow-tl-strip").forEach((el) => {
       el.appendChild(doc.createTextNode(". "));
@@ -221,10 +331,11 @@ var AlloNarrationText = (() => {
       span.textContent = btn.textContent || "";
       btn.replaceWith(span);
     });
-    doc.querySelectorAll('script,style,button,input,select,textarea,audio,video,template,[hidden],[aria-hidden="true"],.allo-img-controls,[data-alloflow-picker],[data-alloflow-nomsg],[data-allo-footnote-backlink],details.allo-math-source,#allo-reader-bar,#allo-reader-ruler,.alloflow-reading-tools-shell,.alloflow-hud-bar,#alloflow-term-popover,.alloflow-term-popover,.alloflow-export-prompt-overlay,.alloflow-save-bar,.alloflow-turnin-bar,.alloflow-keycap,.alloflow-inline-chart svg,annotation,annotation-xml,[data-allo-latex-src],' + _ALLO_INTERACTIVE_CHROME_SEL).forEach((node) => node.remove());
+    doc.querySelectorAll('script,style,button,input,select,textarea,audio,video,template,[hidden],[aria-hidden="true"],.allo-img-controls,[data-alloflow-picker],[data-alloflow-nomsg],[data-allo-footnote-backlink],details.allo-math-source,#allo-reader-bar,#allo-reader-ruler,.alloflow-reading-tools-shell,.alloflow-hud-bar,#alloflow-term-popover,.alloflow-term-popover,.alloflow-export-prompt-overlay,.alloflow-save-bar,.alloflow-turnin-bar,.alloflow-keycap,.alloflow-inline-chart svg,annotation,annotation-xml,[data-allo-latex-src],del[data-allo-change-id],[data-allo-change-kind="structure-delete"],' + _ALLO_INTERACTIVE_CHROME_SEL).forEach((node) => node.remove());
     doc.querySelectorAll("[style]").forEach((node) => {
       if (node.style.display === "none" || node.style.visibility === "hidden") node.remove();
     });
+    _replaceAccessibleMathAndSvgForSpeech(doc.body || doc, { doc, includeTeacherOnly: !!(options && options.includeTeacherOnly), preserveLanguageNodes: !!(options && options.languageRuns) });
   }
   function _narrationTextRuns(node, fallback) {
     const runs = [];
@@ -241,11 +352,11 @@ var AlloNarrationText = (() => {
         return;
       }
       if (/^(math|svg)$/i.test(n.tagName)) {
-        const description = n.getAttribute("aria-label") || n.getAttribute("alttext") || (n.tagName.toLowerCase() === "svg" ? Array.from(n.querySelectorAll("title,desc")).map((el) => el.textContent.trim()).filter(Boolean).join(". ") : "");
-        if (description) {
-          runs.push({ text: description + ". ", language });
-          return;
-        }
+        const tag = n.tagName.toLowerCase();
+        if (tag === "svg" && (n.getAttribute("aria-hidden") === "true" || n.getAttribute("role") === "presentation" || n.getAttribute("role") === "none" || n.closest && n.closest(".alloflow-inline-chart"))) return;
+        const description = tag === "math" ? _alloLinearizeSpeechMath(n) : n.getAttribute("aria-label") || n.getAttribute("alttext") || Array.from(n.querySelectorAll("title,desc")).map((el) => el.textContent.trim()).filter(Boolean).join(". ");
+        if (description) runs.push({ text: description + ". ", language });
+        return;
       }
       Array.from(n.childNodes).forEach(visit);
     };
@@ -308,16 +419,29 @@ var AlloNarrationText = (() => {
           continue;
         }
         if (tag === "ul" || tag === "ol") {
-          const items = Array.from(node.children).filter((c) => c.tagName && c.tagName.toLowerCase() === "li");
-          add(node, say(node, tag === "ul" ? "list" : "numbered", (tag === "ul" ? "List, " : "Numbered list, ") + items.length + " item" + (items.length === 1 ? "" : "s"), items.length) + ".");
-          items.forEach((li, i) => {
-            if (readable(li)) add(li, (tag === "ul" ? say(li, "bullet", "Bullet") : say(li, "item", "Item " + (i + 1), i + 1)) + ". ", li, ".");
-          });
-          add(node, say(node, "listEnd", "List end") + ".");
+          const emitList = (listEl) => {
+            const lTag = listEl.tagName.toLowerCase();
+            const items = Array.from(listEl.children).filter((c) => c.tagName && c.tagName.toLowerCase() === "li");
+            add(listEl, say(listEl, lTag === "ul" ? "list" : "numbered", (lTag === "ul" ? "List, " : "Numbered list, ") + items.length + " item" + (items.length === 1 ? "" : "s"), items.length) + ".");
+            items.forEach((li, i) => {
+              const prefix = (lTag === "ul" ? say(li, "bullet", "Bullet") : say(li, "item", "Item " + (i + 1), i + 1)) + ". ";
+              const nestedLists = Array.from(li.querySelectorAll("ul,ol")).filter((sub) => sub.parentElement && sub.parentElement.closest("li") === li);
+              if (!nestedLists.length) {
+                if (readable(li)) add(li, prefix, li, ".");
+                return;
+              }
+              const ownClone = li.cloneNode(true);
+              ownClone.querySelectorAll("ul,ol").forEach((sub) => sub.remove());
+              if (readable(ownClone)) add(li, prefix, ownClone, ".");
+              nestedLists.forEach(emitList);
+            });
+            add(listEl, say(listEl, "listEnd", "List end") + ".");
+          };
+          emitList(node);
           continue;
         }
         if (tag === "table") {
-          const rows = Array.from(node.querySelectorAll("tr")), cols = rows.length ? Math.max.apply(null, rows.map((r) => r.children.length)) : 0, cap = node.querySelector("caption");
+          const rows = Array.from(node.querySelectorAll("tr")), cols = rows.length ? Math.max.apply(null, rows.map((r) => Array.from(r.children).reduce((sum, c) => sum + Math.max(1, parseInt(c.getAttribute && c.getAttribute("colspan"), 10) || 1), 0))) : 0, cap = node.querySelector("caption");
           add(node, say(node, "table", "Table"), ...cap && cap.textContent.trim() ? [", ", cap] : [], ", " + say(node, "rows", rows.length + " row" + (rows.length === 1 ? "" : "s"), rows.length) + ", " + say(node, "columns", cols + " column" + (cols === 1 ? "" : "s"), cols) + ".");
           rows.forEach((row, i) => {
             const cells = Array.from(row.children).filter((c) => readable(c));
@@ -331,7 +455,7 @@ var AlloNarrationText = (() => {
           if (node.getAttribute("role") !== "presentation" && node.getAttribute("role") !== "none" && alt) add(node, say(node, "image", "Image") + ". " + alt + ".");
           continue;
         }
-        if (options.languageRuns && (tag === "math" || tag === "svg")) {
+        if (options.languageRuns && (tag === "math" || tag === "svg" || node.getAttribute("data-allo-spoken-media") === "1")) {
           add(node, node);
           continue;
         }

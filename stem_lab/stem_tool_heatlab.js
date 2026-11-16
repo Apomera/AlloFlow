@@ -6820,7 +6820,9 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         var invs = ids.indexOf('investigate') !== -1 ? heatInvestigations(t) : [];
         var words = {};
         ids.forEach(function (id) { (HT_SECTION_WORDS[id] || []).forEach(function (w) { words[w] = true; }); });
-        var out = ['<!doctype html><html><head><meta charset="utf-8"><title>' + htEsc(t('stem.heatlab.ws_title', 'Heat Lab worksheet')) + '</title>',
+        var pageLang = htEsc(((typeof document !== 'undefined' && document.documentElement && document.documentElement.lang) || 'en').trim() || 'en');
+        var pageDir = (typeof document !== 'undefined' && document.documentElement && document.documentElement.dir === 'rtl') ? ' dir="rtl"' : '';
+        var out = ['<!doctype html><html lang="' + pageLang + '"' + pageDir + '><head><meta charset="utf-8"><title>' + htEsc(t('stem.heatlab.ws_title', 'Heat Lab worksheet')) + '</title>',
           '<style>body{font:14px/1.5 system-ui,sans-serif;color:#111;max-width:46rem;margin:1.5rem auto;padding:0 1rem}h1{font-size:1.4rem}h2{font-size:1.1rem;margin-top:1.4rem;border-bottom:1px solid #999}li{margin:.3rem 0}.line{border-bottom:1px solid #777;height:1.6rem}@media print{button{display:none}}</style></head><body>',
           '<button type="button" onclick="window.print()">' + htEsc(t('stem.heatlab.ws_print', 'Print this worksheet')) + '</button>',
           '<h1>' + htEsc(t('stem.heatlab.ws_title', 'Heat Lab worksheet')) + '</h1>',

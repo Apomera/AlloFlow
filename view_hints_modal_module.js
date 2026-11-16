@@ -13,6 +13,25 @@
   var React = window.React;
   if (!React) { console.error('[HintsModal] React not found on window'); return; }
 
+function _hintsAiDoor(t) {
+  try {
+    if (typeof window !== "undefined" && typeof window.__alloAiSetupDoorway === "function") {
+      return window.__alloAiSetupDoorway("text", t);
+    }
+  } catch (_) {
+  }
+  return { disabled: false };
+}
+function formatHintTime(timestamp) {
+  if (!timestamp) return "";
+  try {
+    const parsed = new Date(timestamp);
+    if (Number.isNaN(parsed.getTime())) return "";
+    return parsed.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  } catch (_) {
+    return "";
+  }
+}
 function HintsModal({
   handleApplyHint,
   handleGenerateLessonIdeas,
@@ -32,6 +51,9 @@ function HintsModal({
   const Save = window.Save || (() => null);
   const Sparkles = window.Sparkles || (() => null);
   const X = window.X || (() => null);
+  const hintsAiDoor = _hintsAiDoor(t);
+  const hintsAiOff = !!(hintsAiDoor && (hintsAiDoor.disabled || hintsAiDoor.available === false));
+  const hintsAiTitle = hintsAiOff ? hintsAiDoor.title || typeof t === "function" && t("ai.setup_required") || "Set up AI to use this feature" : void 0;
   const dialogRef = React.useRef(null);
   const messages = Array.isArray(toastHistory) ? toastHistory : [];
   const [tab, setTab] = React.useState(initialTab === "messages" && messages.length ? "messages" : "hints");
@@ -42,20 +64,39 @@ function HintsModal({
     const dialog = dialogRef.current;
     if (!dialog) return void 0;
     const previousFocus = document.activeElement;
+    const backgroundState = [];
+    const seenNodes = /* @__PURE__ */ new Set();
+    for (let branch = dialog; branch && branch !== document.body && branch.parentElement; branch = branch.parentElement) {
+      Array.from(branch.parentElement.children).forEach((sibling) => {
+        if (sibling === branch || seenNodes.has(sibling) || /^(?:SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName)) return;
+        seenNodes.add(sibling);
+        backgroundState.push({
+          node: sibling,
+          hadInert: sibling.hasAttribute("inert"),
+          ariaHidden: sibling.getAttribute("aria-hidden")
+        });
+        sibling.setAttribute("inert", "");
+        sibling.setAttribute("aria-hidden", "true");
+      });
+    }
+    const prevBodyOverflow = document.body ? document.body.style.overflow : "";
+    if (document.body) document.body.style.overflow = "hidden";
     const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
     const trap = { root: dialog };
     trapStack.push(trap);
     const isTopTrap = () => trapStack[trapStack.length - 1] === trap;
     const getFocusable = () => Array.from(dialog.querySelectorAll(
-      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
     )).filter((element) => {
-      if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      if (element.hidden || element.getAttribute("aria-hidden") === "true" || element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      const closedDetails = element.closest("details:not([open])");
+      if (closedDetails && !(element.tagName === "SUMMARY" && element.parentElement === closedDetails)) return false;
       const style = typeof window.getComputedStyle === "function" ? window.getComputedStyle(element) : null;
       return !style || style.display !== "none" && style.visibility !== "hidden";
     });
     (getFocusable()[0] || dialog).focus();
     const onKeyDown = (event) => {
-      if (!isTopTrap()) return;
+      if (!dialog.isConnected || event.isComposing || event.keyCode === 229 || !isTopTrap()) return;
       if (event.key === "Escape") {
         event.preventDefault();
         event.stopPropagation();
@@ -71,7 +112,7 @@ function HintsModal({
       }
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
-      if (!dialog.contains(document.activeElement)) {
+      if (!dialog.contains(document.activeElement) || document.activeElement === dialog) {
         event.preventDefault();
         (event.shiftKey ? last : first).focus();
       } else if (event.shiftKey && document.activeElement === first) {
@@ -85,13 +126,23 @@ function HintsModal({
     document.addEventListener("keydown", onKeyDown);
     return () => {
       document.removeEventListener("keydown", onKeyDown);
+      if (document.body) document.body.style.overflow = prevBodyOverflow;
+      backgroundState.forEach(({ node, hadInert, ariaHidden }) => {
+        if (!node || !node.isConnected) return;
+        if (!hadInert) node.removeAttribute("inert");
+        if (ariaHidden == null) node.removeAttribute("aria-hidden");
+        else node.setAttribute("aria-hidden", ariaHidden);
+      });
       const wasTopTrap = isTopTrap();
       const trapIndex = trapStack.indexOf(trap);
       if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
       if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus.isConnected && typeof previousFocus.focus === "function") previousFocus.focus();
     };
   }, [handleSetShowHintsModalToFalse]);
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[110] flex items-center justify-center p-4 animate-in fade-in duration-200 motion-reduce:animate-none", onClick: handleSetShowHintsModalToFalse, role: "presentation" }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, className: "bg-white rounded-2xl shadow-2xl max-w-2xl w-full flex flex-col max-h-[80vh] overflow-hidden relative", onClick: (e) => e.stopPropagation(), role: "dialog", "aria-modal": "true", "aria-labelledby": "hints-modal-title" }, /* @__PURE__ */ React.createElement("div", { className: "bg-yellow-50 p-4 border-b border-yellow-100 flex justify-between items-center shrink-0" }, /* @__PURE__ */ React.createElement("h3", { id: "hints-modal-title", className: "font-bold text-lg text-yellow-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Lightbulb, { size: 20, className: "fill-yellow-500 text-yellow-600", "aria-hidden": "true" }), " ", t("hints.title")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSetShowHintsModalToFalse, className: "min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-full hover:bg-yellow-100 text-yellow-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-600", "aria-label": t?.("common.close") || "Close" }, /* @__PURE__ */ React.createElement(X, { size: 20, "aria-hidden": "true" }))), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": t("hints.sections_aria") || "What AlloFlow has told you", className: "flex shrink-0 gap-2 border-b border-yellow-100 bg-yellow-50/60 px-4 py-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", "aria-pressed": tab === "hints", onClick: () => setTab("hints"), className: tabButtonStyle("hints") }, t("hints.tab_ideas") || "Ideas"), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-pressed": tab === "messages", onClick: () => setTab("messages"), className: tabButtonStyle("messages") }, messagesLabel)), tab === "messages" ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-6 custom-scrollbar", role: "region", "aria-label": t("hints.tab_messages") || "Messages", tabIndex: messages.length > 0 ? 0 : void 0 }, /* @__PURE__ */ React.createElement("p", { className: "mb-4 text-xs leading-relaxed text-slate-600" }, t("hints.messages_intro") || "Every notice AlloFlow showed you this session, newest first. Notices disappear on their own so they do not sit on top of your work; they are kept here so you can read them again."), messages.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "py-10 text-center italic text-slate-600" }, t("hints.messages_empty") || "No notices yet.") : /* @__PURE__ */ React.createElement("ul", { className: "space-y-3" }, messages.slice().reverse().map((entry) => /* @__PURE__ */ React.createElement("li", { key: entry.id, className: `rounded-xl border-l-4 p-3 shadow-sm ${entry.type === "error" ? "border-red-400 bg-red-50" : entry.type === "warning" ? "border-amber-400 bg-amber-50" : entry.type === "success" ? "border-emerald-400 bg-emerald-50" : "border-indigo-400 bg-indigo-50"}` }, /* @__PURE__ */ React.createElement("div", { className: "mb-1 flex items-baseline justify-between gap-3" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold uppercase tracking-wider text-slate-600" }, t("hints.message_kind_" + (entry.type || "info")) || (entry.type || "info")), /* @__PURE__ */ React.createElement("span", { className: "shrink-0 text-[11px] text-slate-600" }, new Date(entry.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }))), /* @__PURE__ */ React.createElement("p", { className: "text-sm font-medium leading-relaxed text-slate-800" }, entry.message))))), /* @__PURE__ */ React.createElement("div", { className: "shrink-0 border-t border-slate-100 bg-slate-50 p-4" }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[110] flex items-center justify-center p-4 animate-in fade-in duration-200 motion-reduce:animate-none", onClick: handleSetShowHintsModalToFalse, role: "presentation" }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, className: "bg-white rounded-2xl shadow-2xl max-w-2xl w-full flex flex-col max-h-[80vh] overflow-hidden relative", onClick: (e) => e.stopPropagation(), role: "dialog", "aria-modal": "true", "aria-labelledby": "hints-modal-title" }, /* @__PURE__ */ React.createElement("div", { className: "bg-yellow-50 p-4 border-b border-yellow-100 flex justify-between items-center shrink-0" }, /* @__PURE__ */ React.createElement("h3", { id: "hints-modal-title", className: "font-bold text-lg text-yellow-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Lightbulb, { size: 20, className: "fill-yellow-500 text-yellow-600", "aria-hidden": "true" }), " ", t("hints.title")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSetShowHintsModalToFalse, className: "min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-full hover:bg-yellow-100 text-yellow-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-600", "aria-label": t?.("common.close") || "Close" }, /* @__PURE__ */ React.createElement(X, { size: 20, "aria-hidden": "true" }))), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": t("hints.sections_aria") || "What AlloFlow has told you", className: "flex shrink-0 gap-2 border-b border-yellow-100 bg-yellow-50/60 px-4 py-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", "aria-pressed": tab === "hints", onClick: () => setTab("hints"), className: tabButtonStyle("hints") }, t("hints.tab_ideas") || "Ideas"), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-pressed": tab === "messages", onClick: () => setTab("messages"), className: tabButtonStyle("messages") }, messagesLabel)), tab === "messages" ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-6 custom-scrollbar", role: "region", "aria-label": t("hints.tab_messages") || "Messages", tabIndex: messages.length > 0 ? 0 : void 0 }, /* @__PURE__ */ React.createElement("p", { className: "mb-4 text-xs leading-relaxed text-slate-600" }, t("hints.messages_intro") || "Every notice AlloFlow showed you this session, newest first. Notices disappear on their own so they do not sit on top of your work; they are kept here so you can read them again."), messages.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "py-10 text-center italic text-slate-600" }, t("hints.messages_empty") || "No notices yet.") : /* @__PURE__ */ React.createElement("ul", { className: "space-y-3" }, messages.slice().reverse().map((entry) => /* @__PURE__ */ React.createElement("li", { key: entry.id, className: `rounded-xl border-l-4 p-3 shadow-sm ${entry.type === "error" ? "border-red-400 bg-red-50" : entry.type === "warning" ? "border-amber-400 bg-amber-50" : entry.type === "success" ? "border-emerald-400 bg-emerald-50" : "border-indigo-400 bg-indigo-50"}` }, /* @__PURE__ */ React.createElement("div", { className: "mb-1 flex items-baseline justify-between gap-3" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold uppercase tracking-wider text-slate-600" }, t("hints.message_kind_" + (entry.type || "info")) || (entry.type || "info")), (() => {
+    const entryTime = formatHintTime(entry.timestamp);
+    return entryTime ? /* @__PURE__ */ React.createElement("span", { className: "shrink-0 text-[11px] text-slate-600" }, entryTime) : null;
+  })()), /* @__PURE__ */ React.createElement("p", { className: "text-sm font-medium leading-relaxed text-slate-800" }, entry.message))))), /* @__PURE__ */ React.createElement("div", { className: "shrink-0 border-t border-slate-100 bg-slate-50 p-4" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -100,7 +151,10 @@ function HintsModal({
       className: "min-h-11 w-full rounded-xl border-2 border-slate-300 py-3 font-bold text-slate-700 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-500 disabled:cursor-not-allowed disabled:opacity-50"
     },
     t("hints.messages_clear") || "Clear this list"
-  ))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-6 custom-scrollbar", role: "region", "aria-label": t?.("hints.title") || "Hints", tabIndex: hintHistory.length > 0 ? 0 : void 0 }, hintHistory.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-10 text-slate-600 italic" }, t("hints.empty_state")) : /* @__PURE__ */ React.createElement("ul", { className: "space-y-4" }, hintHistory.map((hint) => /* @__PURE__ */ React.createElement("li", { key: hint.id, className: `p-4 rounded-xl border-l-4 shadow-sm ${hint.isExtension ? "bg-purple-50 border-purple-400" : "bg-white border-yellow-400"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start mb-2" }, /* @__PURE__ */ React.createElement("span", { className: `text-[11px] font-bold uppercase tracking-wider ${hint.isExtension ? "text-purple-700" : "text-yellow-800"}` }, hint.tool), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600" }, new Date(hint.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }))), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 font-medium leading-relaxed whitespace-pre-line mb-3" }, renderFormattedText(hint.text, false)), /* @__PURE__ */ React.createElement("div", { className: "flex justify-end gap-2" }, hint.isExtension ? /* @__PURE__ */ React.createElement(
+  ))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-6 custom-scrollbar", role: "region", "aria-label": t?.("hints.title") || "Hints", tabIndex: hintHistory.length > 0 ? 0 : void 0 }, hintHistory.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-10 text-slate-600 italic" }, t("hints.empty_state")) : /* @__PURE__ */ React.createElement("ul", { className: "space-y-4" }, hintHistory.map((hint) => /* @__PURE__ */ React.createElement("li", { key: hint.id, className: `p-4 rounded-xl border-l-4 shadow-sm ${hint.isExtension ? "bg-purple-50 border-purple-400" : "bg-white border-yellow-400"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start mb-2" }, /* @__PURE__ */ React.createElement("span", { className: `text-[11px] font-bold uppercase tracking-wider ${hint.isExtension ? "text-purple-700" : "text-yellow-800"}` }, hint.tool), (() => {
+    const hintTime = formatHintTime(hint.timestamp);
+    return hintTime ? /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600" }, hintTime) : null;
+  })()), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 font-medium leading-relaxed whitespace-pre-line mb-3" }, renderFormattedText(hint.text, false)), /* @__PURE__ */ React.createElement("div", { className: "flex justify-end gap-2" }, hint.isExtension ? /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -126,8 +180,9 @@ function HintsModal({
     {
       type: "button",
       onClick: handleGenerateLessonIdeas,
-      disabled: isGeneratingExtension || history.length === 0,
+      disabled: isGeneratingExtension || history.length === 0 || hintsAiOff,
       "aria-busy": isGeneratingExtension,
+      title: hintsAiTitle,
       className: "w-full min-h-11 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md flex items-center justify-center gap-2",
       "data-help-key": "hints_generate_extension"
     },

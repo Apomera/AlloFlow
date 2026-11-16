@@ -168,10 +168,19 @@ describe('the button and the panel', () => {
       // 2026-11-12, deliberately: "Read the choices when a question opens" (hearAllIn; tests/packets_hear_all.test.js). Off by
       // default; shown in this Find Sounds file, whose opening does not play its sound choices.
       ['choices', 'Read the choices when a question opens', ['Off=true', 'On=false']],
+      // 2026-11-15, deliberately: "Spoken directions" (directionsOnce). Default "Every question" unless set in maker;
+      // shown in practice packets with spoken directions and hidden in checks/facts without them.
+      ['directions', 'Spoken directions', ['Every question=true', 'First question only=false']],
     ]);
     expect(groups[5].hidden).toBe(false);
+    expect(groups[6].hidden).toBe(false);
     // No running text on the start screen: the reading focus is not offered.
     expect(groups[3].hidden).toBe(true);
+    for (const noDir of [FILES.check, FILES.facts]) {
+      const nt = open(noDir);
+      nt.q('[data-tools-open]').click();
+      expect(nt.q('[data-tool-group="directions"]').hidden).toBe(true);
+    }
     t.tool('size', 1);
     expect([...groups[0].querySelectorAll('button')].map((b) => b.getAttribute('aria-pressed'))).toEqual(['false', 'true', 'false']);
     t.key('Escape', groups[0].querySelector('button'));
@@ -249,6 +258,22 @@ describe('the settings are kept in the file\'s one storage item', () => {
     plain.d.getElementById('learner-name').value = 'Ana';
     plain.button('Start').click();
     expect(Object.values(plain.dump())[0]).not.toHaveProperty('tools');
+  });
+
+  it('Spoken directions persists in the file storage item without being counted in item supports', () => {
+    const keyName = manifestOf(FILES.practice).stores[0].key;
+    const t = open(FILES.practice);
+    t.tool('directions', 1);
+    expect(t.dump()).toEqual({ [keyName]: { tools: { directions: 1 } } });
+    t.d.getElementById('learner-name').value = 'Ana';
+    t.button('Start').click();
+    t.key('1', t.d.body);
+    t.button('Next').click();
+    t.key('3', t.d.body);
+    t.button('See my results').click();
+    expect(t.json().items.map((it) => it.supports)).toEqual([{}, {}]);
+    const again = open(FILES.practice, { storage: { [keyName]: JSON.stringify(t.dump()[keyName]) } });
+    expect(again.q('[data-tool="directions-1"]').getAttribute('aria-pressed')).toBe('true');
   });
 });
 

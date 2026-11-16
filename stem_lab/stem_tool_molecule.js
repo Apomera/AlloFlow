@@ -3193,6 +3193,64 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
             ),
 
+            d.fromTool === 'particleLab3d' && d._dismissedParticleHandoff !== (d.handoffId || 'particleLab3d') && React.createElement("section", {
+              id: "molecule-particle-handoff-banner",
+              role: "region",
+              "aria-label": __alloT('stem.molecule.particle_handoff_banner', 'Particle Lab 3D handoff'),
+              className: "mb-3 rounded-xl border border-cyan-300 bg-cyan-50 p-3 text-slate-900 shadow-sm"
+            },
+              React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" },
+                React.createElement("div", { className: "min-w-0" },
+                  React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wide text-cyan-900" }, __alloT('stem.molecule.imported_from_particle_lab', 'Imported from Particle Lab 3D')),
+                  React.createElement("p", { className: "mt-0.5 text-xs font-bold text-slate-900" }, (d.sourceGasFormula || d.sourceGasId || 'N\u2082') + ' \u2022 ' + (Math.round(Number(d.sourceTemperatureK) || 300)) + ' K chamber conditions')
+                ),
+                React.createElement("div", { className: "flex flex-wrap items-center gap-2" },
+                  React.createElement("button", {
+                    id: "molecule-apply-particle-handoff-btn",
+                    type: "button",
+                    onClick: function() {
+                      var targetGas = ['He', 'N2', 'O2', 'CO2'].indexOf(d.sourceGasId) >= 0 ? d.sourceGasId : 'N2';
+                      var targetTemp = Math.max(100, Math.min(1000, Math.round(Number(d.sourceTemperatureK) || 300)));
+                      updMulti({ referenceLibraryOpen: true, expSection: 'gaslaws', glGas: targetGas, glT: targetTemp, _dismissedParticleHandoff: d.handoffId || 'particleLab3d' });
+                      if (typeof announceToSR === 'function') announceToSR(__alloT('stem.molecule.sr_loaded_particle_gas_laws', 'Loaded chamber gas and temperature into Gas Laws.'));
+                    },
+                    className: "min-h-[40px] rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-black text-white hover:bg-slate-800"
+                  }, __alloT('stem.molecule.load_in_gas_laws', 'Load in Gas Laws')),
+                  React.createElement("button", {
+                    id: "molecule-return-particlelab-btn",
+                    type: "button",
+                    onClick: function() {
+                      var returnTemp = Math.max(40, Math.min(900, Math.round(Number(d.glT) || Number(d.sourceTemperatureK) || 300)));
+                      var returnGas = d.glGas || d.sourceGasId || 'N2';
+                      if (typeof setLabToolData === 'function') setLabToolData(function(prev) {
+                        return Object.assign({}, prev, {
+                          particleLab3d: Object.assign({}, (prev && prev.particleLab3d) || {}, {
+                            fromTool: 'molecule',
+                            sourceGasId: returnGas,
+                            sourceTemperatureK: returnTemp,
+                            sourcePreset: 'gas',
+                            handoffId: 'mol-' + Date.now()
+                          })
+                        });
+                      });
+                      if (typeof setStemLabTab === 'function') setStemLabTab('explore');
+                      if (typeof setStemLabTool === 'function') {
+                        setStemLabTool('particleLab3d');
+                        if (typeof announceToSR === 'function') announceToSR(__alloT('stem.molecule.sr_opening_particle_lab', 'Opening Particle Lab 3D.'));
+                      }
+                    },
+                    className: "min-h-[40px] rounded-lg border border-cyan-300 bg-white px-3 py-1.5 text-xs font-black text-cyan-950 hover:bg-cyan-100"
+                  }, __alloT('stem.molecule.send_to_particle_lab', 'Send to Particle Lab 3D \u2192')),
+                  React.createElement("button", {
+                    id: "molecule-dismiss-particle-handoff-btn",
+                    type: "button",
+                    onClick: function() { upd('_dismissedParticleHandoff', d.handoffId || 'particleLab3d'); },
+                    className: "min-h-[40px] rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 hover:bg-slate-100"
+                  }, __alloT('stem.molecule.dismiss', 'Dismiss'))
+                )
+              )
+            ),
+
             (function() {
               var openRealStructures = function() {
                 if (typeof setLabToolData === 'function') setLabToolData(function(prev) {
@@ -9098,7 +9156,32 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               })
             ),
             h('p', { className: 'text-[10.5px] text-slate-600 leading-snug mt-1.5' },
-              __alloT('stem.molecule.gl_graham_body', 'At one temperature every gas carries the same average kinetic energy — so the light molecules must move faster to match the heavy ones. Helium is seven times lighter than nitrogen and moves about 2.6 times quicker, which is exactly √7. That is Graham\'s law, and it is why the helium balloon is on the floor by morning while the air-filled one is not.'))
+              __alloT('stem.molecule.gl_graham_body', 'At one temperature every gas carries the same average kinetic energy — so the light molecules must move faster to match the heavy ones. Helium is seven times lighter than nitrogen and moves about 2.6 times quicker, which is exactly √7. That is Graham\'s law, and it is why the helium balloon is on the floor by morning while the air-filled one is not.')),
+            typeof setStemLabTool === 'function' && h('div', { className: 'mt-2.5 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-2' },
+              h('span', { className: 'text-[11px] font-bold text-slate-700' }, __alloT('stem.molecule.gl_particle_bridge_hint', 'Test these conditions in the 3D kinetic chamber:')),
+              h('button', {
+                id: 'molecule-gaslaws-to-particlelab-btn',
+                type: 'button',
+                onClick: function () {
+                  if (typeof setLabToolData === 'function') setLabToolData(function (prev) {
+                    return Object.assign({}, prev, {
+                      particleLab3d: Object.assign({}, (prev && prev.particleLab3d) || {}, {
+                        fromTool: 'molecule',
+                        sourceGasId: gas.id,
+                        sourceGasFormula: gas.sym,
+                        sourceTemperatureK: Math.max(40, Math.min(900, Math.round(st.T))),
+                        sourcePreset: 'gas',
+                        handoffId: 'mol-gl-' + Date.now()
+                      })
+                    });
+                  });
+                  if (typeof setStemLabTab === 'function') setStemLabTab('explore');
+                  setStemLabTool('particleLab3d');
+                  if (typeof announceToSR === 'function') announceToSR(__alloT('stem.molecule.sr_opening_particle_lab', 'Opening Particle Lab 3D.'));
+                },
+                className: 'min-h-[40px] rounded-lg border border-cyan-700 bg-cyan-50 px-3 py-1.5 text-xs font-black text-cyan-950 hover:bg-cyan-100'
+              }, '\u2728 Simulate ' + gas.sym + ' at ' + Math.round(st.T) + ' K in Particle Lab 3D \u2192')
+            )
           ),
           React.createElement('div', { className: 'space-y-2' },
             GAS_LAWS.map(function(g, i) {

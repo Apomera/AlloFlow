@@ -840,6 +840,12 @@
     var doc = root.document;
     var previous = trigger || doc.activeElement;
     var item = lookup(id);
+    if (!doc.getElementById('allo-ev-a11y-style')) {
+      var st = doc.createElement('style');
+      st.id = 'allo-ev-a11y-style';
+      st.textContent = '[data-allo-research-evidence] :is(button,blockquote):focus-visible{outline:2px solid #7c3aed;outline-offset:2px;}';
+      (doc.head || doc.body || doc.documentElement).appendChild(st);
+    }
     var overlay = doc.createElement('div');
     overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483000;background:rgba(15,23,42,.65);display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box';
     var panel = doc.createElement('section');
@@ -856,7 +862,7 @@
     quote.setAttribute('role', 'region'); quote.setAttribute('aria-label', 'Saved document passage');
     quote.style.cssText = 'white-space:pre-wrap;overflow-wrap:anywhere;box-sizing:border-box;max-height:45vh;overflow:auto;border-left:4px solid #7c3aed;padding:8px 12px;margin:16px 0;outline-offset:2px';
     quote.textContent = item ? item.passage : '';
-    var button = doc.createElement('button'); button.type = 'button'; button.textContent = 'Close passage'; button.style.cssText = 'padding:10px 18px;background:#5b21b6;color:white;border:0;border-radius:6px;cursor:pointer;font:inherit';
+    var button = doc.createElement('button'); button.type = 'button'; button.textContent = 'Close passage'; button.style.cssText = 'padding:10px 18px;min-height:44px;background:#5b21b6;color:white;border:0;border-radius:6px;cursor:pointer;font:inherit;outline-offset:2px';
     button.style.flexShrink = '0';
     var header = doc.createElement('div'); header.style.cssText = 'display:flex;align-items:flex-start;gap:16px;justify-content:space-between';
     if (title.textContent.length > 80) {
@@ -864,14 +870,34 @@
       button.style.alignSelf = 'flex-end';
       header.appendChild(button); header.appendChild(title);
     } else { header.appendChild(title); header.appendChild(button); }
+    overlay.setAttribute('data-allo-research-evidence', 'true');
+    var trapStack = (root.__alloFocusTrapStack = Array.isArray(root.__alloFocusTrapStack) ? root.__alloFocusTrapStack : []);
+    var trapEntry = { id: 'allo-research-evidence', root: panel, container: panel };
+    function isTopTrap() {
+      var s = root && root.__alloFocusTrapStack;
+      return !Array.isArray(s) || !s.length || s[s.length - 1] === trapEntry;
+    }
     function close() {
       doc.removeEventListener('keydown', keydown, true); doc.removeEventListener('focusin', containFocus, true); overlay.remove(); closeViewer = null;
-      if (previous && previous.isConnected && typeof previous.focus === 'function') previous.focus();
+      var s = root && root.__alloFocusTrapStack;
+      var wasTop = true;
+      if (Array.isArray(s)) {
+        wasTop = !s.length || s[s.length - 1] === trapEntry;
+        var idx = s.lastIndexOf(trapEntry);
+        if (idx >= 0) s.splice(idx, 1);
+      }
+      var validOpener = previous && previous !== doc.body && previous !== doc.documentElement
+        && (previous.isConnected === true || (previous.isConnected === undefined && typeof doc.contains === 'function' && doc.contains(previous)))
+        && typeof previous.focus === 'function';
+      if (wasTop && validOpener) previous.focus();
     }
     function containFocus(event) {
+      if (!isTopTrap()) return;
       if (!panel.contains(event.target)) button.focus();
     }
     function keydown(event) {
+      if (event.isComposing || event.keyCode === 229) return;
+      if (!isTopTrap()) return;
       if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); close(); }
       if (event.key === 'Tab') {
         event.preventDefault(); event.stopPropagation();
@@ -886,6 +912,7 @@
     panel.appendChild(header); panel.appendChild(location);
     if (item) { panel.appendChild(note); panel.appendChild(quote); }
     overlay.appendChild(panel); doc.body.appendChild(overlay);
+    trapStack.push(trapEntry);
     doc.addEventListener('keydown', keydown, true); doc.addEventListener('focusin', containFocus, true); button.focus();
   }
   if (root.document) root.document.addEventListener('click', function(event) {

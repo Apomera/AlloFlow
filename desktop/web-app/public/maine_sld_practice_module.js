@@ -487,7 +487,7 @@ function MaineSldStateRequirements(props) {
     });
   };
   const focusTitle = () => deferFocus(() => {
-    if (titleRef.current && titleRef.current.getClientRects().length) {
+    if (titleRef.current && titleRef.current.isConnected && !titleRef.current.closest('[hidden], [inert], [aria-hidden="true"], details:not([open])')) {
       titleRef.current.scrollIntoView({ block: "center" });
       titleRef.current.focus({ preventScroll: true });
     }
@@ -1144,14 +1144,64 @@ function MaineSldPracticePanel(props) {
       } else target.focus();
     }
   }, [work.findings]);
+  const onCloseRef = React.useRef(props.onClose);
+  onCloseRef.current = props.onClose;
+  const initialOpenerRef = React.useRef(void 0);
+  if (initialOpenerRef.current === void 0 && typeof document !== "undefined") {
+    initialOpenerRef.current = document.activeElement;
+  }
   React.useEffect(() => {
-    const previous = document.activeElement, root = dialogRef.current;
+    const root = dialogRef.current;
+    if (!root || typeof document === "undefined") return void 0;
+    const previous = document.activeElement && root.contains(document.activeElement) ? initialOpenerRef.current : document.activeElement;
     const stack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []), trap = { root };
     stack.push(trap);
-    const oldOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    const isolated = [];
+    const seenSiblings = /* @__PURE__ */ new Set();
+    let cursor = root;
+    while (cursor && cursor.parentElement) {
+      const parent = cursor.parentElement;
+      Array.from(parent.children).forEach((sibling) => {
+        if (!sibling || sibling === cursor || seenSiblings.has(sibling) || !sibling.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName)) return;
+        seenSiblings.add(sibling);
+        isolated.push({
+          sibling,
+          hadInert: sibling.hasAttribute("inert"),
+          prevInert: sibling.inert,
+          ariaHidden: sibling.getAttribute("aria-hidden")
+        });
+        try {
+          sibling.inert = true;
+        } catch (_) {
+        }
+        try {
+          sibling.setAttribute("inert", "");
+        } catch (_) {
+        }
+        try {
+          sibling.setAttribute("aria-hidden", "true");
+        } catch (_) {
+        }
+      });
+      if (parent === document.body) break;
+      cursor = parent;
+    }
+    const body = document.body;
+    const scrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: "" });
+    let scrollLocked = false;
+    try {
+      if (body) {
+        scrollLocked = true;
+        if (++scrollLock.count === 1) {
+          scrollLock.prev = body.style.overflow;
+          body.style.overflow = "hidden";
+        }
+      }
+    } catch (_) {
+    }
     const keydown = (event) => {
-      if (stack[stack.length - 1] !== trap) return;
+      if (event.defaultPrevented || !root.isConnected || stack[stack.length - 1] !== trap) return;
+      if (event.nativeEvent && event.nativeEvent.isComposing || event.isComposing || event.keyCode === 229) return;
       if (event.key === "Escape") {
         event.preventDefault();
         event.stopPropagation();
@@ -1160,19 +1210,25 @@ function MaineSldPracticePanel(props) {
         } else if (toolsOpenRef.current) {
           setToolsOpen(false);
           if (toolsToggleRef.current) toolsToggleRef.current.focus();
-        } else if (props.onClose) props.onClose();
+        } else if (onCloseRef.current) onCloseRef.current();
         return;
       }
       if (event.key !== "Tab") return;
       const area = root.querySelector("[data-confirm-dialog]") || root;
-      const nodes = Array.from(area.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),summary,[tabindex="0"]')).filter((el) => el.tabIndex >= 0 && !el.closest("[hidden],[inert]") && el.getClientRects().length);
+      const nodes = Array.from(area.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),summary,[tabindex]:not([tabindex="-1"])')).filter((el) => {
+        if (el.tabIndex < 0 || el.closest('[hidden],[inert],[aria-hidden="true"]')) return false;
+        const closedDetails = el.closest("details:not([open])");
+        if (closedDetails && !(el.tagName === "SUMMARY" && el.parentElement === closedDetails)) return false;
+        const st = typeof window !== "undefined" && typeof window.getComputedStyle === "function" ? window.getComputedStyle(el) : null;
+        return !st || st.display !== "none" && st.visibility !== "hidden";
+      });
       if (!nodes.length) {
         event.preventDefault();
         root.focus();
         return;
       }
       const first = nodes[0], last = nodes[nodes.length - 1];
-      if (!area.contains(document.activeElement)) {
+      if (!area.contains(document.activeElement) || document.activeElement === area) {
         event.preventDefault();
         (event.shiftKey ? last : first).focus();
       } else if (event.shiftKey && document.activeElement === first) {
@@ -1186,10 +1242,46 @@ function MaineSldPracticePanel(props) {
     document.addEventListener("keydown", keydown);
     return () => {
       document.removeEventListener("keydown", keydown);
-      const index = stack.indexOf(trap);
+      try {
+        if (scrollLocked && body) {
+          scrollLock.count = Math.max(0, scrollLock.count - 1);
+          if (scrollLock.count === 0) body.style.overflow = scrollLock.prev;
+        }
+      } catch (_) {
+      }
+      isolated.forEach(({ sibling, hadInert, prevInert, ariaHidden }) => {
+        if (!sibling || !sibling.isConnected) return;
+        if (!hadInert) {
+          try {
+            sibling.inert = false;
+          } catch (_) {
+          }
+          try {
+            sibling.removeAttribute("inert");
+          } catch (_) {
+          }
+        } else {
+          try {
+            sibling.inert = Boolean(prevInert);
+          } catch (_) {
+          }
+        }
+        if (ariaHidden == null) {
+          try {
+            sibling.removeAttribute("aria-hidden");
+          } catch (_) {
+          }
+        } else {
+          try {
+            sibling.setAttribute("aria-hidden", ariaHidden);
+          } catch (_) {
+          }
+        }
+      });
+      const wasTop = stack[stack.length - 1] === trap;
+      const index = stack.lastIndexOf(trap);
       if (index !== -1) stack.splice(index, 1);
-      document.body.style.overflow = oldOverflow;
-      if (previous && previous.isConnected) previous.focus();
+      if (wasTop && previous && previous !== document.body && previous !== document.documentElement && previous.isConnected && typeof previous.focus === "function") previous.focus();
     };
   }, []);
   React.useEffect(() => {

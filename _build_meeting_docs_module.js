@@ -17,7 +17,7 @@ const TMP = path.join(ROOT, '_tmp_meeting_docs_entry.jsx');
 if (!fs.existsSync(SOURCE)) { console.error('Source not found:', SOURCE); process.exit(1); }
 
 const source = fs.readFileSync(SOURCE, 'utf-8');
-const entry = `/* global React */\n\n${source}\n\nwindow.__meetingDocsExports = { MeetingDocsPanel, meetdocsMask, meetdocsUnmask, meetdocsMaskPairs, meetdocsVerifyQuote, meetdocsParseAiJson, meetdocsBuildFromAi, meetdocsActionRollup, meetdocsMeetingHtml, meetdocsAiPrompt, MEETDOCS_BUILTIN_TEMPLATES };\n`;
+const entry = `/* global React */\n\n${source}\n\nwindow.__meetingDocsExports = { MeetingDocsPanel, meetdocsMask, meetdocsUnmask, meetdocsMaskPairs, meetdocsExpandMaskPairs, meetdocsScrubStructuredPii, meetdocsVerifyQuote, meetdocsParseAiJson, meetdocsBuildFromAi, meetdocsActionRollup, meetdocsMeetingHtml, meetdocsAiPrompt, MEETDOCS_BUILTIN_TEMPLATES };\n`;
 fs.writeFileSync(TMP, entry, 'utf-8');
 
 console.log('Compiling meeting_docs_source.jsx with esbuild...');
@@ -79,6 +79,8 @@ ${compiled}
       meetdocsMask: meetdocsMask,
       meetdocsUnmask: meetdocsUnmask,
       meetdocsMaskPairs: meetdocsMaskPairs,
+      meetdocsExpandMaskPairs: meetdocsExpandMaskPairs,
+      meetdocsScrubStructuredPii: meetdocsScrubStructuredPii,
       meetdocsVerifyQuote: meetdocsVerifyQuote,
       meetdocsParseAiJson: meetdocsParseAiJson,
       meetdocsBuildFromAi: meetdocsBuildFromAi,

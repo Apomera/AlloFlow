@@ -138,6 +138,10 @@
     progress_all: 'Question {n} of {total} in all',
     tools_choices: 'Read the choices when a question opens',
     tools_choices_hint: 'Each answer choice is played or read aloud in turn. Press Stop, or choose an answer, to stop it.',
+    tools_directions: 'Spoken directions',
+    tools_directions_0: 'Every question',
+    tools_directions_1: 'First question only',
+    tools_directions_hint: 'Says what to do on the first question of each activity, then goes straight to each word or sound. Hear the question still plays everything.',
     // "Hear all" (hearAllIn): plays or reads each answer choice in turn.
     hear_all: 'Hear all',
     hear_all_name: 'Hear all the choices, one at a time',
@@ -650,7 +654,7 @@
         // Opening sequence (word_sounds_module.js:16790-16845): instruction, each
         // sound, "Which word did you hear?", then every choice in turn.
         if (!ctx.isDone()) {
-          run([{ id: item.instruction, gap: 200 }].concat(soundSteps(), optionSteps(200)));
+          run((ctx.skipDirections || !item.instruction ? [] : [{ id: item.instruction, gap: 200 }]).concat(soundSteps(), optionSteps(200)));
         }
         return {
           // The R key: the sounds and the question again.
@@ -2530,7 +2534,7 @@
         if (hear) ctx.root.appendChild(hear.node);
         ctx.root.appendChild(list);
         if (!ctx.isDone()) {
-          run([{ id: item.promptAudio, gap: 200 }, { id: item.wordAudio, gap: 200 }].concat(item.choices.map(function (c, i) { return { id: c.audio, gap: 350, hi: i }; })));
+          run((ctx.skipDirections ? [] : [{ id: item.promptAudio, gap: 200 }]).concat([{ id: item.wordAudio, gap: 200 }], item.choices.map(function (c, i) { return { id: c.audio, gap: 350, hi: i }; })));
         }
         return {
           // The R key: the question and the word again.
@@ -3615,7 +3619,7 @@
         if (hear) ctx.root.appendChild(hear.node);
         ctx.root.appendChild(list);
         setState();
-        if (!ctx.isDone()) runSyllables(true);
+        if (!ctx.isDone()) runSyllables(!ctx.skipDirections);
         return {
           // The R key: the question and the syllables again (the choices wait for them, as on the button).
           replay: function () { if (!ctx.isDone()) runSyllables(true); },
@@ -3791,8 +3795,9 @@
         ctx.root.appendChild(status);
         ctx.root.appendChild(ctx.el('div', { class: 'row' }, [submit]));
         update();
-        if (!ctx.isDone()) hear([item.promptAudio, item.wordAudio], true);
+        if (!ctx.isDone()) hear(ctx.skipDirections ? [item.wordAudio] : [item.promptAudio, item.wordAudio], true);
         return {
+          replay: function () { if (!ctx.isDone()) hear([item.promptAudio, item.wordAudio], true); },
           reveal: function () {
             token++;
             busy = false;
@@ -4901,6 +4906,468 @@
     };
     return module.exports;
   })();
+  CHECK_ADAPTERS["symbol_runner"] = (function () {
+    var module = { exports: {} };
+    // Practice and check adapter: Rapid symbol, letter, digit, and subitizing trainer (symbol_runner).
+    // Supports Direct response mode and Aim and lock-on challenge mode (hover or ArrowLeft/ArrowRight
+    // onto the target lane before responding), plus incremental rehearsal study cards and cue pictures.
+    module.exports = {
+      id: 'symbol_runner',
+      title: 'Symbol runner',
+      labels: {
+        symbol_runner_intro: 'Read or name each symbol shown on the lane. Aim first if lock-on mode is active.',
+        symbol_runner_study: 'A new symbol to learn. Look closely at it, then choose Cover it.',
+        symbol_runner_cover: 'Cover it',
+        symbol_runner_direct: 'Choose the matching key or type the answer.',
+        symbol_runner_lockon_wait: 'Lock onto lane {n} by hovering over it or using Left and Right arrows.',
+        symbol_runner_lockon_ready: 'Target locked on. Now choose or type the answer.',
+        symbol_runner_lane_group: 'Three-lane target track',
+        symbol_runner_lane: 'Lane {n}',
+        symbol_runner_target_lane: 'Target in lane {n}: {word}',
+        symbol_runner_hear: 'Hear symbol',
+        symbol_runner_picture_alt: 'Picture cue for {word}',
+        symbol_runner_input_label: 'Type your answer',
+        symbol_runner_keys: 'Response choices',
+        symbol_runner_done: 'Check',
+        symbol_runner_correct: 'Yes. {word} matches {answer}.',
+        symbol_runner_retry: 'Not quite. Look at {word} and try {answer} once more.',
+        symbol_runner_missed: 'Here is the answer for {word}: {answer}.',
+      },
+      prepare: function (p) {
+        p = p || {};
+        var word = String(p.word == null ? '' : p.word).replace(/\s+/g, ' ').trim();
+        if (!word || word.length > 24) return { missing: ['a symbol prompt of 1 to 24 characters'] };
+        var answer = String(p.answer == null ? '' : p.answer).replace(/\s+/g, ' ').trim().toLowerCase();
+        if (!answer || answer.length > 24) return { missing: ['an answer of 1 to 24 characters'] };
+        var role = p.role === 'new' || p.role === 'known' ? p.role : '';
+        var study = p.study === true && role !== 'known';
+        var laneNum = Number(p.lane);
+        var lane = laneNum === 0 || laneNum === 1 || laneNum === 2 ? laneNum : 1;
+        var control = p.control === 'lockon' ? 'lockon' : 'direct';
+        var dotsNum = Number(p.dots);
+        var dots = Number.isInteger(dotsNum) && dotsNum >= 1 && dotsNum <= 9 ? dotsNum : 0;
+        var rawChoices = Array.isArray(p.choices) ? p.choices : [answer];
+        var choices = [];
+        var seen = {};
+        for (var i = 0; i < rawChoices.length && choices.length < 6; i++) {
+          var c = String(rawChoices[i] == null ? '' : rawChoices[i]).replace(/\s+/g, ' ').trim();
+          var k = c.toLowerCase();
+          if (!c || c.length > 24 || seen[k]) continue;
+          seen[k] = true;
+          choices.push(c);
+        }
+        if (!seen[answer]) {
+          if (choices.length >= 6) choices.pop();
+          choices.push(answer);
+        }
+        var image = typeof p.image === 'string' && /^[a-z0-9_-]{1,40}$/i.test(p.image) ? p.image : '';
+        var audio = typeof p.audio === 'string' && /^[a-z0-9_-]{1,40}$/i.test(p.audio) ? p.audio : '';
+        var mode = typeof p.mode === 'string' ? p.mode.replace(/[^a-z0-9_-]/gi, '').slice(0, 24) : '';
+        var maxAttempts = Number(p.maxAttempts);
+        if (!Number.isInteger(maxAttempts) || maxAttempts < 1 || maxAttempts > 5) maxAttempts = 3;
+        var prompt = typeof p.prompt === 'string' ? p.prompt.replace(/\s+/g, ' ').trim().slice(0, 80) : '';
+        var flankerCenter = Number.isInteger(Number(p.flankerCenter)) && Number(p.flankerCenter) >= 0 && Number(p.flankerCenter) < word.length ? Number(p.flankerCenter) : -1;
+        var stroopInk = typeof p.stroopInk === 'string' && /^#[0-9a-f]{6}$/i.test(p.stroopInk.trim()) ? p.stroopInk.trim() : '';
+        var allowedShapes = { '●': 1, '▲': 1, '■': 1, '★': 1 };
+        var stroopShape = typeof p.stroopShape === 'string' && allowedShapes[p.stroopShape.trim()] ? p.stroopShape.trim() : '';
+        var sizePair = null;
+        if (p.sizePair && typeof p.sizePair === 'object') {
+          var spL = String(p.sizePair.left == null ? '' : p.sizePair.left).replace(/\s+/g, ' ').trim().slice(0, 8);
+          var spR = String(p.sizePair.right == null ? '' : p.sizePair.right).replace(/\s+/g, ' ').trim().slice(0, 8);
+          if (spL && spR) {
+            var ls = Math.max(0.5, Math.min(2.0, Number(p.sizePair.leftScale) || 1));
+            var rs = Math.max(0.5, Math.min(2.0, Number(p.sizePair.rightScale) || 1));
+            sizePair = { left: spL, right: spR, leftScale: ls, rightScale: rs, pick: p.sizePair.pick === 'size' ? 'size' : 'value' };
+          }
+        }
+        var congruent = typeof p.congruent === 'boolean' ? p.congruent : null;
+        return {
+          item: {
+            word: word,
+            answer: answer,
+            target: answer,
+            role: role,
+            study: study,
+            lane: lane,
+            control: control,
+            dots: dots,
+            choices: choices,
+            image: image,
+            audio: audio,
+            mode: mode,
+            maxAttempts: maxAttempts,
+            prompt: prompt,
+            flankerCenter: flankerCenter,
+            stroopInk: stroopInk,
+            stroopShape: stroopShape,
+            sizePair: sizePair,
+            congruent: congruent,
+          },
+        };
+      },
+      render: function (item, ctx) {
+        var L = ctx.L;
+        var phase = item.study ? 'study' : 'play';
+        var isLockOn = item.control === 'lockon';
+        var aimLane = isLockOn ? (item.lane === 1 ? 0 : 1) : item.lane;
+        var lockedOn = !isLockOn;
+        var tried = {};
+        var outcome = null;
+
+        var imgSrc = item.image ? ctx.image(item.image) : null;
+        var hasSafeImg = typeof imgSrc === 'string' && /^data:image\//i.test(imgSrc);
+
+        var say = ctx.el('p', {
+          'data-sr-say': '',
+          style: 'text-align:center;font-weight:700;margin:0 0 10px',
+        });
+
+        var coverButton = ctx.el('button', {
+          type: 'button',
+          class: 'primary',
+          'data-sr-cover': '',
+          style: 'display:block;margin:8px auto',
+          on: {
+            click: function () {
+              if (phase !== 'study' || ctx.isDone()) return;
+              phase = 'play';
+              redraw();
+            },
+          },
+        }, [L.symbol_runner_cover]);
+
+        var hearButton = item.audio
+          ? ctx.el('button', {
+            type: 'button',
+            'data-sr-hear': '',
+            style: 'display:inline-flex;align-items:center;gap:6px;margin:0 auto 10px',
+            on: {
+              click: function () {
+                if (typeof ctx.play === 'function') ctx.play(item.audio);
+                ctx.support('audio');
+              },
+            },
+          }, [L.symbol_runner_hear])
+          : null;
+
+        function buildDotGrid(count) {
+          var wrap = ctx.el('span', {
+            'data-sr-dots': String(count),
+            'aria-hidden': 'true',
+            style: 'display:inline-grid;grid-template-columns:repeat(3,14px);gap:6px;padding:6px;vertical-align:middle',
+          });
+          var layouts = {
+            1: [4],
+            2: [0, 8],
+            3: [0, 4, 8],
+            4: [0, 2, 6, 8],
+            5: [0, 2, 4, 6, 8],
+            6: [0, 2, 3, 5, 6, 8],
+            7: [0, 2, 3, 4, 5, 6, 8],
+            8: [0, 1, 2, 3, 5, 6, 7, 8],
+            9: [0, 1, 2, 3, 4, 5, 6, 7, 8],
+          };
+          var active = layouts[count] || layouts[1];
+          for (var d = 0; d < 9; d++) {
+            var on = active.indexOf(d) >= 0;
+            wrap.appendChild(ctx.el('span', {
+              style: 'width:12px;height:12px;border-radius:50%;display:block;' + (on ? 'background:currentColor;' : 'opacity:0;'),
+            }));
+          }
+          return wrap;
+        }
+
+        var laneTrack = ctx.el('div', {
+          'data-sr-lanes': '',
+          'data-control': item.control,
+          'data-locked': String(!lockedOn),
+          role: 'group',
+          'aria-label': L.symbol_runner_lane_group,
+          style: 'display:grid;grid-template-columns:repeat(3,minmax(88px,1fr));gap:10px;max-width:460px;margin:0 auto 14px;padding:12px;border-radius:16px;background:var(--line);border:2px solid var(--muted)',
+        });
+
+        var laneButtons = [];
+        function lockToLane(idx) {
+          if (phase !== 'play' || ctx.isDone()) return;
+          aimLane = idx;
+          if (isLockOn && idx === item.lane && !lockedOn) {
+            lockedOn = true;
+            ctx.support('lockon');
+            ctx.announce(L.symbol_runner_lockon_ready);
+          }
+          redraw();
+        }
+
+        for (var i = 0; i < 3; i++) {
+          (function (laneIndex) {
+            var isTarget = laneIndex === item.lane;
+            var children = [];
+            children.push(ctx.el('span', {
+              style: 'font-size:0.75rem;font-weight:700;opacity:0.8',
+              text: ctx.fmt(L.symbol_runner_lane, { n: laneIndex + 1 }),
+            }));
+            if (isTarget) {
+              if (item.dots > 0 && item.mode === 'quantity_stroop') {
+                var qWrap = ctx.el('div', {
+                  style: 'position:relative;display:inline-flex;align-items:center;justify-content:center;padding:4px',
+                });
+                qWrap.appendChild(ctx.el('span', {
+                  'aria-hidden': 'true',
+                  style: 'position:absolute;font-size:2.6rem;font-weight:900;opacity:0.32;color:#d97706;pointer-events:none',
+                  text: item.word,
+                }));
+                qWrap.appendChild(buildDotGrid(item.dots));
+                children.push(qWrap);
+              } else if (item.dots > 0) {
+                children.push(buildDotGrid(item.dots));
+              } else if (item.sizePair) {
+                children.push(ctx.el('div', {
+                  'data-sr-symbol': item.word,
+                  style: 'display:flex;align-items:baseline;justify-content:center;gap:12px;line-height:1.1;margin:4px 0',
+                }, [
+                  ctx.el('span', { style: 'font-weight:900;font-size:' + (1.45 * item.sizePair.leftScale).toFixed(2) + 'rem', text: item.sizePair.left }),
+                  ctx.el('span', { 'aria-hidden': 'true', style: 'opacity:0.4;font-size:1rem', text: '|' }),
+                  ctx.el('span', { style: 'font-weight:900;font-size:' + (1.45 * item.sizePair.rightScale).toFixed(2) + 'rem', text: item.sizePair.right }),
+                ]));
+              } else if (item.stroopInk) {
+                var badgeChildren = [];
+                if (item.stroopShape) {
+                  badgeChildren.push(ctx.el('span', { 'aria-hidden': 'true', style: 'margin-inline-end:6px', text: item.stroopShape }));
+                }
+                badgeChildren.push(ctx.el('span', { text: item.word }));
+                children.push(ctx.el('span', {
+                  'data-sr-symbol': item.word,
+                  style: 'font-size:1.7rem;font-weight:900;line-height:1.1;margin:4px 0;color:' + item.stroopInk,
+                }, badgeChildren));
+              } else if (item.flankerCenter >= 0) {
+                var chars = item.word.split('');
+                var fNodes = chars.map(function (ch, idx) {
+                  return idx === item.flankerCenter
+                    ? ctx.el('span', { style: 'text-decoration:underline;font-weight:900;padding:0 2px', text: ch })
+                    : ctx.el('span', { text: ch });
+                });
+                children.push(ctx.el('span', {
+                  'data-sr-symbol': item.word,
+                  style: 'font-size:1.8rem;font-weight:800;line-height:1.1;margin:4px 0;letter-spacing:0.08em',
+                }, fNodes));
+              } else {
+                children.push(ctx.el('span', {
+                  'data-sr-symbol': item.word,
+                  style: 'font-size:2.4rem;font-weight:900;line-height:1.1;margin:4px 0',
+                  text: item.word,
+                }));
+              }
+              if (hasSafeImg) {
+                children.push(ctx.el('img', {
+                  src: imgSrc,
+                  alt: ctx.fmt(L.symbol_runner_picture_alt, { word: item.word }),
+                  style: 'width:52px;height:52px;object-fit:contain;margin-top:4px;border-radius:8px;background:#fff;padding:2px',
+                }));
+              }
+            } else {
+              children.push(ctx.el('span', { 'aria-hidden': 'true', style: 'font-size:1.5rem;opacity:0.3', text: '·' }));
+            }
+            var lb = ctx.el('button', {
+              type: 'button',
+              'data-lane': String(laneIndex),
+              'data-sr-target': isTarget ? 'true' : 'false',
+              'aria-label': isTarget
+                ? ctx.fmt(L.symbol_runner_target_lane, { n: laneIndex + 1, word: item.word })
+                : ctx.fmt(L.symbol_runner_lane, { n: laneIndex + 1 }),
+              style: 'display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:112px;padding:10px;border-radius:12px;border:3px solid var(--muted);background:var(--bg)',
+              on: {
+                mouseenter: function () { if (isTarget) lockToLane(laneIndex); else { aimLane = laneIndex; redraw(); } },
+                pointerenter: function () { if (isTarget) lockToLane(laneIndex); },
+                click: function () { lockToLane(laneIndex); },
+                keydown: function (e) {
+                  if (e.key === 'ArrowLeft') { e.preventDefault(); var p1 = Math.max(0, aimLane - 1); aimLane = p1; if (laneButtons[p1]) laneButtons[p1].focus(); lockToLane(p1); }
+                  else if (e.key === 'ArrowRight') { e.preventDefault(); var p2 = Math.min(2, aimLane + 1); aimLane = p2; if (laneButtons[p2]) laneButtons[p2].focus(); lockToLane(p2); }
+                  else if ((e.key === 'Enter' || e.key === ' ') && isTarget) { e.preventDefault(); lockToLane(laneIndex); }
+                },
+              },
+            }, children);
+            laneButtons.push(lb);
+            laneTrack.appendChild(lb);
+          })(i);
+        }
+
+        var textInput = ctx.el('input', {
+          type: 'text',
+          autocomplete: 'off',
+          autocapitalize: 'off',
+          spellcheck: 'false',
+          'data-sr-input': '',
+          'aria-label': L.symbol_runner_input_label,
+          style: 'max-width:160px;text-align:center;font-size:1.3rem;font-weight:700',
+        });
+
+        var submitBtn = ctx.el('button', {
+          type: 'button',
+          class: 'primary',
+          'data-sr-submit': '',
+          on: {
+            click: function () {
+              submitAnswer(textInput.value);
+            },
+          },
+        }, [L.symbol_runner_done]);
+
+        textInput.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' && !e.isComposing) {
+            e.preventDefault();
+            submitAnswer(textInput.value);
+          }
+        });
+
+        var typedRow = ctx.el('div', {
+          class: 'row',
+          style: 'justify-content:center;gap:8px;margin-bottom:12px',
+        }, [textInput, submitBtn]);
+
+        var choiceGroup = ctx.el('div', {
+          role: 'group',
+          'aria-label': L.symbol_runner_keys,
+          style: 'display:flex;flex-wrap:wrap;justify-content:center;gap:10px;max-width:440px;margin:0 auto',
+        });
+
+        var shapeMap = { red: '●', blue: '▲', green: '■', gold: '★' };
+        var choiceButtons = item.choices.map(function (c, cIdx) {
+          var shapeCue = item.stroopInk ? (shapeMap[String(c).toLowerCase()] || '') : '';
+          var labelChildren = [];
+          if (ctx.check) {
+            labelChildren.push(ctx.el('span', { 'aria-hidden': 'true', style: 'font-size:0.85rem;opacity:0.75;margin-inline-end:6px', text: String(cIdx + 1) }));
+          }
+          labelChildren.push(ctx.el('span', { text: shapeCue ? (shapeCue + ' ' + c) : c }));
+          var cb = ctx.el('button', {
+            type: 'button',
+            'data-sr-choice': c,
+            style: 'min-width:64px;min-height:52px;font-size:1.35rem;font-weight:800;padding:8px 16px;border-radius:12px',
+            on: {
+              click: function () {
+                submitAnswer(c);
+              },
+            },
+          }, labelChildren);
+          choiceGroup.appendChild(cb);
+          return { val: c, node: cb };
+        });
+
+        var padWrap = ctx.el('div', { 'data-sr-pad': '' }, [typedRow, choiceGroup]);
+        var sealedPick = false;
+        var revealAnswer = null;
+
+        function submitAnswer(raw) {
+          if (phase !== 'play' || !lockedOn || ctx.isDone() || sealedPick) return;
+          var clean = String(raw == null ? '' : raw).replace(/\s+/g, ' ').trim().toLowerCase();
+          if (!clean) return;
+          if (ctx.check) {
+            var said = ctx.answer(clean);
+            if (said !== 'ignored' && said !== 'time_up') {
+              sealedPick = true;
+              redraw();
+            }
+            return;
+          }
+          var right = clean === item.answer;
+          var res = ctx.answer(clean, right, {
+            correctText: ctx.fmt(L.symbol_runner_correct, { word: item.word, answer: item.answer }),
+            retryText: ctx.fmt(L.symbol_runner_retry, { word: item.word, answer: item.answer }),
+            missedText: ctx.fmt(L.symbol_runner_missed, { word: item.word, answer: item.answer }),
+          });
+          if (res === 'retry') {
+            tried[clean] = true;
+            textInput.value = '';
+            redraw();
+          }
+        }
+
+        function redraw() {
+          laneTrack.setAttribute('data-locked', String(!lockedOn));
+          for (var j = 0; j < laneButtons.length; j++) {
+            var btn = laneButtons[j];
+            var isTarget = j === item.lane;
+            var isAimed = j === aimLane;
+            btn.style.borderColor = phase === 'done' && isTarget
+              ? (outcome ? 'var(--ok)' : 'var(--warn)')
+              : isTarget && lockedOn
+                ? 'var(--accent)'
+                : isAimed
+                  ? 'var(--warn)'
+                  : 'var(--muted)';
+            btn.style.background = isTarget && lockedOn ? 'var(--ok-bg)' : isAimed ? 'var(--warn-bg)' : 'var(--bg)';
+            btn.style.transform = isAimed ? 'scale(1.03)' : 'scale(1)';
+          }
+
+          if (phase === 'study') {
+            say.textContent = L.symbol_runner_study;
+            coverButton.hidden = false;
+            padWrap.hidden = true;
+          } else if (phase === 'play') {
+            coverButton.hidden = true;
+            padWrap.hidden = false;
+            say.textContent = lockedOn
+              ? (item.prompt || L.symbol_runner_direct)
+              : ctx.fmt(L.symbol_runner_lockon_wait, { n: item.lane + 1 });
+          } else {
+            coverButton.hidden = true;
+            padWrap.hidden = false;
+            say.textContent = '';
+          }
+
+          var inputsBlocked = phase !== 'play' || !lockedOn || ctx.isDone() || sealedPick;
+          textInput.disabled = inputsBlocked;
+          submitBtn.disabled = inputsBlocked;
+          submitBtn.setAttribute('aria-disabled', inputsBlocked ? 'true' : 'false');
+          choiceButtons.forEach(function (entry) {
+            var usedUp = !!tried[entry.val.toLowerCase()];
+            var off = inputsBlocked || usedUp;
+            entry.node.disabled = off;
+            entry.node.setAttribute('aria-disabled', off ? 'true' : 'false');
+            if (phase === 'done' && entry.val.toLowerCase() === (revealAnswer || item.answer)) {
+              entry.node.style.borderColor = 'var(--ok)';
+              entry.node.style.background = 'var(--ok-bg)';
+            }
+          });
+        }
+
+        if (typeof ctx.keys === 'function') {
+          ctx.keys(function (key) {
+            var n = Number(key);
+            if (!(n >= 1 && n <= item.choices.length)) return false;
+            if (phase !== 'play' || !lockedOn || ctx.isDone() || sealedPick) return false;
+            submitAnswer(item.choices[n - 1]);
+            return true;
+          });
+        }
+
+        ctx.root.appendChild(say);
+        if (hearButton) ctx.root.appendChild(ctx.el('div', { class: 'row', style: 'justify-content:center' }, [hearButton]));
+        ctx.root.appendChild(laneTrack);
+        ctx.root.appendChild(coverButton);
+        ctx.root.appendChild(padWrap);
+        redraw();
+
+        return {
+          reveal: function (correct) {
+            phase = 'done';
+            if (typeof correct === 'string') {
+              revealAnswer = String(correct).replace(/\s+/g, ' ').trim().toLowerCase();
+              outcome = true;
+            } else {
+              outcome = correct === true;
+            }
+            redraw();
+          },
+        };
+      },
+      score: function (item, answer, response) {
+        var a = String(answer == null ? '' : answer).replace(/\s+/g, ' ').trim().toLowerCase();
+        var r = String(response == null ? '' : response).replace(/\s+/g, ' ').trim().toLowerCase();
+        return { correct: r !== '' && r === a, digitsCorrect: null, digitsPossible: null };
+      },
+    };
+    return module.exports;
+  })();
   CHECK_ADAPTERS["vocab_blank"] = (function () {
     var module = { exports: {} };
     // Practice and check adapter: Fill the blank (vocab_blank). A sentence with ___ is shown; the choices are words.
@@ -5932,6 +6399,7 @@
     Object.keys(images).forEach(function (id) { if (!used[id]) delete images[id]; });
     var title = str(opts.title).trim().slice(0, 120) || DEFAULT_LABELS.title;
     var content = { title: title, showLetters: !!opts.showLetters, blocks: blocks };
+    if (opts.instructionsOnce === true) content.instructionsOnce = true;
     var lesson = {
       schema: LESSON_SCHEMA,
       player: PLAYER,
@@ -5951,6 +6419,7 @@
       submit: opts.submit && /^https:\/\/script\.google\.com\/(?:a\/macros\/[A-Za-z0-9.-]+\/|macros\/)s\/[A-Za-z0-9_-]+\/exec$/.test(str(opts.submit.url)) && /^PK-[0-9a-f-]{36}$/i.test(str(opts.submit.packId))
         ? { url: str(opts.submit.url), packId: str(opts.submit.packId), secret: str(opts.submit.secret).slice(0, 64), expiresAt: str(opts.submit.expiresAt).slice(0, 40) } : null,
     };
+    if (opts.instructionsOnce === true) lesson.instructionsOnce = true;
     // Only a lesson with word pictures says when they show.
     if (Object.keys(pictured).length) lesson.pictures = { rule: pictured };
     var ready = blocks.reduce(function (n, b) { return n + b.items.length; }, 0);
@@ -6008,7 +6477,7 @@
     '[hidden]{display:none!important}summary{cursor:pointer;min-height:48px;padding:12px 0;font-weight:600}',
     // Hear all: the choice being heard is outlined and shows its number. No movement, so nothing to turn off for reduced motion.
     '[data-hearing]{position:relative;outline:4px solid var(--accent);outline-offset:2px}[data-hearing]::before{content:attr(data-hearing);position:absolute;top:-14px;inset-inline-start:-10px;min-width:30px;height:30px;padding:0 6px;border-radius:15px;background:var(--accent);color:var(--accent-ink);font-weight:700;line-height:30px;text-align:center}',
-    '@media (forced-colors:active){[data-hearing]{outline-color:Highlight}[data-hearing]::before{forced-color-adjust:none;background:Highlight;color:HighlightText}}.hear-now{min-height:1.5em;margin:0}[data-tool-group=choices] .lt-l,[data-tool-group=colors] .lt-l{flex-basis:100%}[data-hear-row]{margin:12px 0}',
+    '@media (forced-colors:active){[data-hearing]{outline-color:Highlight}[data-hearing]::before{forced-color-adjust:none;background:Highlight;color:HighlightText}}.hear-now{min-height:1.5em;margin:0}[data-tool-group=choices] .lt-l,[data-tool-group=colors] .lt-l,[data-tool-group=directions] .lt-l{flex-basis:100%}[data-hear-row]{margin:12px 0}',
     // Phones: a choice's two buttons side by side (half the scrolling), and the next-step button across the card.
     '@media (max-width:480px){.choice:not([style]){flex-direction:row;align-items:stretch}.choice:not([style])>button{flex:1 1 0;min-width:0}[data-next],[data-practice-next]{width:100%}}',
     // Reading tools (takeHomeTools): attributes on <html> set the size, the colors (the variables above) and the spacing.
@@ -6044,10 +6513,14 @@
   // ---------------------------------------------------------------------------
   function takeHomeTools(o) {
     var doc = o.doc, win = o.win, L = o.L, el = o.el, page = o.page, html = doc.documentElement;
-    var NAMES = { size: ['', 'textLarger', 'textLargest'], colors: ['', 'contrastHigh', 'contrastSoft', 'colorsDark', 'colorsOcean', 'colorsSunny', 'colorsForest'], spacing: ['', 'spacingWide'], focus: ['', 'readingFocus'], lens: ['', 'magnifier'], choices: ['', 'readChoices'] };
+    var NAMES = { size: ['', 'textLarger', 'textLargest'], colors: ['', 'contrastHigh', 'contrastSoft', 'colorsDark', 'colorsOcean', 'colorsSunny', 'colorsForest'], spacing: ['', 'spacingWide'], focus: ['', 'readingFocus'], lens: ['', 'magnifier'], choices: ['', 'readChoices'], directions: ['', ''] };
     var KEYS = Object.keys(NAMES), p = {}, groups = {}, rec = null, text = null, at = 0, painted = '';
+    var def = function (k) { return k === 'directions' && o.directionsOnce ? 1 : 0; };
     var clean = function (raw) {
-      KEYS.forEach(function (k) { var v = Math.floor(Number(raw && raw[k])) || 0; p[k] = v > 0 && v < NAMES[k].length ? v : 0; });
+      KEYS.forEach(function (k) {
+        var v = raw && (typeof raw[k] === 'number' || (typeof raw[k] === 'string' && /^\d+$/.test(raw[k]))) ? Math.floor(Number(raw[k])) : -1;
+        p[k] = v >= 0 && v < NAMES[k].length ? v : def(k);
+      });
     };
     var showPanel = function (on) { panel.hidden = !on; aa.setAttribute('aria-expanded', String(on)); };
     var back = function () { showPanel(false); aa.focus(); };
@@ -6066,13 +6539,12 @@
       group('spacing', L.tools_spacing, [L.tools_normal, L.tools_spacing_1]),
       group('focus', L.tools_focus, [L.tools_off, L.tools_on], L.tools_focus_hint),
       group('lens', L.tools_lens, [L.tools_off, L.tools_on], L.tools_lens_hint),
-      // Read the choices when a question opens (hearAllIn): shown only in a file whose choices can be read (o.choices).
       group('choices', L.tools_choices, [L.tools_off, L.tools_on], L.tools_choices_hint),
+      group('directions', L.tools_directions, [L.tools_directions_0, L.tools_directions_1], L.tools_directions_hint),
       el('div', { class: 'row' }, [
         el('button', { type: 'button', 'data-tools-reset': '', on: { click: function () { clean(); apply(); o.store(); } }, text: L.tools_reset }),
         el('button', { type: 'button', 'data-tools-close': '', on: { click: back }, text: L.tools_close })]),
     ]);
-    // Magnifier: a copy of the page (no ids, names or tab stops; aria-hidden) at 2x, in a lens taps go through.
     var grip = el('button', { type: 'button', class: 'lt-grip', hidden: true, 'aria-label': L.tools_lens_move, 'aria-describedby': 'lt-lens-hint', 'data-lens-grip': '' },
       [el('span', { 'aria-hidden': 'true', text: String.fromCharCode(0x2725) })]);
     var lens = el('div', { class: 'lt-lens', 'aria-hidden': 'true', hidden: true, 'data-lens': '' });
@@ -6102,7 +6574,6 @@
       lens.style.left = P.x - 90 + 'px'; lens.style.top = y - 90 + 'px';
       copy.style.width = box.width + 'px';
       copy.style.transform = 'translate(' + (87 - 2 * (P.x - box.left)) + 'px,' + (87 - 2 * (P.y - box.top)) + 'px) scale(2)';
-      // Touch: the lens above the finger. Else the handle is on its edge, never under the mouse.
       grip.style.left = P.x + (touch ? -24 : 40) + 'px'; grip.style.top = (touch ? P.y + 14 : y + 40) + 'px';
       if (touch) grip.setAttribute('data-touch', ''); else grip.removeAttribute('data-touch');
     };
@@ -6130,7 +6601,6 @@
       var all = lines(), l = all[at = Math.max(0, Math.min(all.length - 1, at))], dim = 'rgba(0,0,0,.45)';
       line.hidden = !l;
       if (!l) { shade.style.background = 'none'; return; }
-      // A fifth of the text size around the letters, so a blank's underline is inside.
       var pad = Math.round((parseFloat(win.getComputedStyle(text).fontSize) || 16) / 5), t = Math.max(0, Math.round(l.t) - pad), b = Math.round(l.b) + pad;
       shade.style.background = 'linear-gradient(' + dim + ' ' + t + 'px,transparent ' + t + 'px,transparent ' + b + 'px,' + dim + ' ' + b + 'px)';
       line.style.top = t + 'px'; line.style.height = b - t + 'px';
@@ -6157,7 +6627,6 @@
       }
       if (on) paint();
     };
-    // Each tool on while an item is shown counts once (colors not under forced colors).
     var mark = function () {
       if (!rec) return;
       var s = rec.supports = rec.supports && typeof rec.supports === 'object' ? rec.supports : {}, changed = false, forced = false;
@@ -6214,17 +6683,17 @@
     win.addEventListener('scroll', queue, true);
     win.addEventListener('resize', function () { copy = null; queue(); });
     groups.choices.box.hidden = !o.choices;
+    groups.directions.box.hidden = !o.directions;
     clean(o.prefs);
     apply();
     return {
       item: function (r) { rec = r && !r.done ? r : null; scan(); mark(); },
-      // Each screen puts the tools right after its heading, so Tab from the heading (where the focus goes) reaches them.
       dock: function (h) { h.parentNode.insertBefore(bar, h.nextSibling); h.parentNode.insertBefore(panel, bar.nextSibling); },
       autoRead: function () { return !!o.choices && p.choices === 1; },
-      // null: every tool at its first setting.
+      directionsOnce: function () { return !!o.directions && p.directions === 1; },
       prefs: function () {
         var out = null;
-        KEYS.forEach(function (k) { if (p[k]) (out = out || {})[k] = p[k]; });
+        KEYS.forEach(function (k) { if (p[k] !== def(k)) (out = out || {})[k] = p[k]; });
         return out;
       },
     };
@@ -6709,6 +7178,8 @@
     var renderItem = function () {
       if (state.index >= items.length) { renderFinish(); return; }
       var entry = items[state.index];
+      var prevEntry = state.index > 0 ? items[state.index - 1] : null;
+      var skipDirections = entry.n > 1 && !!(tools && tools.directionsOnce && tools.directionsOnce());
       var item = entry.item;
       var rec = state.items[state.index];
       var render = renders[entry.activity];
@@ -6735,7 +7206,7 @@
         nextButton.focus();
       };
       var ctx = {
-        root: area, el: el, fmt: fmt, L: L, item: item, matches: matches, showLetters: !!lesson.showLetters,
+        root: area, el: el, fmt: fmt, L: L, item: item, matches: matches, showLetters: !!lesson.showLetters, skipDirections: skipDirections,
         play: play, playAll: playAll, stop: stop, announce: announce,
         hearAll: hearAllIn(area, function (name) { ctx.support(name); }),
         image: function (id) { return (id && lesson.images && lesson.images[id]) || null; },
@@ -6801,7 +7272,20 @@
         rec.shown = true; rec.ms = 0;
         clockStart(rec);
         save();
-        autoHear(item.introAudio && item.introAudio.length ? playAll(item.introAudio) : null);
+        var openingAudio = item.introAudio || [];
+        if (skipDirections && openingAudio.length) {
+          if (entry.activity === 'isolation') {
+            openingAudio = prevEntry && prevEntry.activity === 'isolation' && prevEntry.item && prevEntry.item.position === item.position
+              ? (item.wordAudio ? [item.wordAudio] : []) : openingAudio;
+          } else if (entry.activity === 'letter_tracing') {
+            openingAudio = item.promptAudio && openingAudio[0] === item.promptAudio ? openingAudio.slice(1) : openingAudio;
+          } else if (/^(counting|missing_letter|orthography|segmentation|spelling_bee)$/.test(entry.activity)) {
+            openingAudio = item.wordAudio ? [item.wordAudio] : [];
+          } else if (/^(mapping|word_scramble|decoding|read_sentence|read_passage|sentence_match)$/.test(entry.activity)) {
+            openingAudio = [];
+          }
+        }
+        autoHear(openingAudio.length ? playAll(openingAudio) : null);
       }
     };
 
@@ -6994,7 +7478,9 @@
     var tools = kit.tools ? kit.tools({ doc: doc, win: win, L: L, el: el, page: doc.querySelector('main') || main.parentNode, app: main,
       prefs: (stored() || {}).tools, store: function () { storePrefs(); }, save: function () { save(); },
       // Read the choices: in a file whose choices are read by the device voice, or whose opening does not play its sound choices.
-      choices: lesson.blocks.some(function (b) { return /^(isolation|segmentation|mapping)$/.test(b.activity) || b.items.some(function (it) { return it.read === true; }); }) }) : null;
+      choices: lesson.blocks.some(function (b) { return /^(isolation|segmentation|mapping)$/.test(b.activity) || b.items.some(function (it) { return it.read === true; }); }),
+      directions: lesson.mode !== 'probe' && lesson.blocks.some(function (b) { return !/^(math_|vocab_|manipulation$|sound_sort$|word_families$)/.test(b.activity); }),
+      directionsOnce: !!lesson.instructionsOnce }) : null;
     // A check (lesson.mode 'probe') brings its own flow in kit.check; a practice file has none.
     var check = kit.check ? kit.check({ doc: doc, win: win, lesson: lesson, L: L, kit: kit, items: items, renders: renders, matches: matches, el: el, fmt: fmt, announce: announce,
       screen: screen, statusLine: statusLine, fresh: fresh, save: save, now: now, clockStart: clockStart, clockStop: clockStop, clockHold: clockHold, play: play, playAll: playAll, stop: stop,

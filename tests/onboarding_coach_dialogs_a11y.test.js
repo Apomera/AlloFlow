@@ -33,8 +33,8 @@ describe('Onboarding coach dialog accessibility', () => {
     expect(source).toContain("inert={showConsent ? '' : undefined}");
   });
 
-  it('provides a 24 CSS pixel Start over target and deploy parity', () => {
-    expect(source).toContain("padding: '2px 0', minHeight: '24px'");
+  it('provides a 44 CSS pixel Start over target and deploy parity', () => {
+    expect(source).toContain("padding: '2px 0', minHeight: '44px'");
     expect(fs.readFileSync('desktop/web-app/public/onboarding_coach_module.js', 'utf8')).toBe(fs.readFileSync('onboarding_coach_module.js', 'utf8'));
   });
 });

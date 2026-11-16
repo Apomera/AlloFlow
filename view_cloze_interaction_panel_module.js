@@ -1,7 +1,7 @@
 /**
  * AlloFlow ClozeInteractionPanel Module
  * Auto-generated. Source: view_cloze_interaction_panel_source.jsx
- * Source SHA-256: c205aca3ebf53090
+ * Source SHA-256: 1ab2921500798c52
  */
 (function() {
   'use strict';
@@ -44,6 +44,11 @@ function ClozeInteractionPanel(props) {
   const panelId = React.useId();
   const [resetPrompt, setResetPrompt] = React.useState(null);
   const [resetStatus, setResetStatus] = React.useState("");
+  const [dockTop, setDockTop] = React.useState(false);
+  const [isMinimized, setIsMinimized] = React.useState(false);
+  React.useEffect(() => {
+    if (wordBankPosition) setDockTop(false);
+  }, [wordBankPosition]);
   const hasCompletedAnswers = !Number.isInteger(completedBlankCount) || completedBlankCount > 0;
   const isEnglishPassage = !leveledTextLanguage || leveledTextLanguage === "English";
   const [bankLang, setBankLang] = React.useState("target");
@@ -121,14 +126,20 @@ function ClozeInteractionPanel(props) {
     "div",
     {
       ref: wordBankRef,
-      style: wordBankPosition ? {
+      style: dockTop ? {
+        position: "fixed",
+        left: "50%",
+        top: "16px",
+        bottom: "auto",
+        transform: "translateX(-50%)"
+      } : wordBankPosition ? {
         position: "fixed",
         left: wordBankPosition.x,
         top: wordBankPosition.y,
         bottom: "auto",
         transform: "none"
       } : {},
-      className: `z-40 w-[90%] max-w-3xl bg-blue-50/95 backdrop-blur-md p-4 rounded-xl border-2 border-blue-300 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] animate-in fade-in duration-300 ${!wordBankPosition ? "absolute bottom-28 left-1/2 -translate-x-1/2 slide-in-from-bottom-10" : ""}`
+      className: `z-40 w-[90%] max-w-3xl bg-blue-50/95 backdrop-blur-md p-4 rounded-xl border-2 border-blue-300 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] animate-in fade-in motion-reduce:animate-none duration-300 ${!wordBankPosition && !dockTop ? "absolute bottom-28 left-1/2 -translate-x-1/2 slide-in-from-bottom-10" : ""}`
     },
     /* @__PURE__ */ React.createElement(
       "div",
@@ -137,7 +148,33 @@ function ClozeInteractionPanel(props) {
         className: "flex flex-wrap gap-2 justify-between items-center mb-2 border-b border-blue-200/50 pb-2 cursor-move select-none"
       },
       /* @__PURE__ */ React.createElement("h4", { ref: bankHeadingRef, tabIndex: -1, className: "font-bold text-blue-800 flex items-center gap-2 text-sm uppercase tracking-wider pointer-events-none" }, /* @__PURE__ */ React.createElement(Globe, { size: 16 }), " ", t("simplified.word_bank")),
-      /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2", onMouseDown: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          style: controlSize,
+          "data-cloze-dock-toggle": "true",
+          "aria-pressed": dockTop,
+          onClick: () => setDockTop((prev) => !prev),
+          className: "text-blue-800 bg-blue-100/50 hover:bg-blue-100 px-2.5 py-1 rounded-full text-xs font-bold transition-colors flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600",
+          "aria-label": dockTop ? t("simplified.dock_bottom") || "Move word bank to bottom" : t("simplified.dock_top") || "Move word bank to top",
+          title: dockTop ? t("simplified.dock_bottom") || "Move word bank to bottom" : t("simplified.dock_top") || "Move word bank to top"
+        },
+        dockTop ? "\u2B07" : "\u2B06"
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          style: controlSize,
+          "data-cloze-minimize-toggle": "true",
+          "aria-expanded": !isMinimized,
+          onClick: () => setIsMinimized((prev) => !prev),
+          className: "text-blue-800 bg-blue-100/50 hover:bg-blue-100 px-2.5 py-1 rounded-full text-xs font-bold transition-colors flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600",
+          "aria-label": isMinimized ? t("simplified.expand_word_bank") || "Expand word bank" : t("simplified.minimize_word_bank") || "Minimize word bank",
+          title: isMinimized ? t("simplified.expand_word_bank") || "Expand word bank" : t("simplified.minimize_word_bank") || "Minimize word bank"
+        },
+        isMinimized ? "+" : "\u2212"
+      ), /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
@@ -170,7 +207,7 @@ function ClozeInteractionPanel(props) {
         /* @__PURE__ */ React.createElement(X, { size: 14 })
       ))
     ),
-    resetOpen && /* @__PURE__ */ React.createElement(
+    !isMinimized && /* @__PURE__ */ React.createElement(React.Fragment, null, resetOpen && /* @__PURE__ */ React.createElement(
       "div",
       {
         id: panelId + "-reset",
@@ -190,9 +227,7 @@ function ClozeInteractionPanel(props) {
       /* @__PURE__ */ React.createElement("p", { id: panelId + "-reset-heading", className: "font-bold text-sm text-blue-900" }, tx("simplified.cloze_reset_title", "Reset completed answers?")),
       /* @__PURE__ */ React.createElement("p", { id: panelId + "-reset-description", className: "mt-1 text-sm text-blue-900" }, tx("simplified.cloze_reset_description", "Completed blanks will be empty again. Your passage and word bank stay available.")),
       /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", autoFocus: true, style: controlSize, onClick: (event) => closeReset(event, false), className: "rounded-md border border-blue-300 bg-white px-3 text-sm font-bold text-blue-800" }, tx("common.cancel", "Cancel")), /* @__PURE__ */ React.createElement("button", { type: "button", style: controlSize, "data-cloze-reset-confirm": true, disabled: !hasCompletedAnswers, onClick: (event) => closeReset(event, true), className: "rounded-md bg-blue-700 px-3 text-sm font-bold text-white" }, tx("simplified.cloze_reset_confirm", "Clear completed answers")))
-    ),
-    /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: "text-sm text-blue-800", "data-cloze-reset-status": true }, resetStatus),
-    !isEnglishPassage && /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": t("simplified.word_bank_language") || "Word bank language", className: "flex items-center justify-center gap-1 mb-2" }, [
+    ), /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: "text-sm text-blue-800", "data-cloze-reset-status": true }, resetStatus), !isEnglishPassage && /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": t("simplified.word_bank_language") || "Word bank language", className: "flex items-center justify-center gap-1 mb-2" }, [
       { id: "target", label: leveledTextLanguage },
       { id: "english", label: t("simplified.word_bank_english") || "English" },
       { id: "both", label: t("simplified.word_bank_both") || "Both" }
@@ -206,8 +241,7 @@ function ClozeInteractionPanel(props) {
         className: `px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wide border transition-colors ${bankLang === opt.id ? "bg-blue-600 text-white border-blue-600" : "bg-white text-blue-700 border-blue-200 hover:bg-blue-100"}`
       },
       opt.label
-    ))),
-    /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 justify-center max-h-32 overflow-y-auto custom-scrollbar p-1" }, bankEntries.map(({ label, payload }, idx) => {
+    ))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 justify-center max-h-32 overflow-y-auto custom-scrollbar p-1" }, bankEntries.map(({ label, payload }, idx) => {
       const isPicked = pickedIdx === idx;
       return /* @__PURE__ */ React.createElement(
         "span",
@@ -217,7 +251,7 @@ function ClozeInteractionPanel(props) {
           tabIndex: 0,
           "aria-pressed": isPicked,
           "data-cloze-bank-chip": "true",
-          className: `px-3 py-1.5 font-bold text-sm rounded-lg border shadow-sm cursor-grab active:cursor-grabbing hover:scale-105 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 ${isPicked ? "bg-blue-600 text-white border-blue-700 ring-2 ring-blue-700 ring-offset-1" : "bg-white text-blue-700 border-blue-200"}`,
+          className: `px-3 py-1.5 font-bold text-sm rounded-lg border shadow-sm cursor-grab active:cursor-grabbing hover:scale-105 motion-reduce:transform-none hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 ${isPicked ? "bg-blue-600 text-white border-blue-700 ring-2 ring-blue-700 ring-offset-1" : "bg-white text-blue-700 border-blue-200"}`,
           draggable: "true",
           onDragStart: (e) => e.dataTransfer.setData("text/plain", payload),
           onClick: () => pickChip(idx, payload),
@@ -230,8 +264,7 @@ function ClozeInteractionPanel(props) {
         },
         label
       );
-    })),
-    /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-blue-500 mt-2 text-center font-medium pointer-events-none" }, t("simplified.cloze_instructions_tap"))
+    })), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-blue-700 mt-2 text-center font-medium pointer-events-none" }, t("simplified.cloze_instructions_tap")))
   );
 }
 

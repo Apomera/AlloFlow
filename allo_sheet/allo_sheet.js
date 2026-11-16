@@ -110,9 +110,7 @@
         || host === 'usercontent.goog'
         || host.endsWith('.usercontent.goog')
         || host === 'idx.google'
-        || host.endsWith('.idx.google')
-        || host === 'run.app'
-        || host.endsWith('.run.app');
+        || host.endsWith('.idx.google');
     } catch (_) {
       return false;
     }
@@ -2892,7 +2890,9 @@
     }
     if (!raw) throw new Error('The spreadsheet is still preparing.');
     var url = new URL(raw);
+    if (url.username || url.password) throw new Error('The workbook address cannot include embedded credentials.');
     if (url.protocol !== 'http:' && url.protocol !== 'https:') throw new Error('The workbook address must use HTTP or HTTPS.');
+    if (url.protocol === 'http:' && !isLoopbackHostname(url.hostname)) throw new Error('Non-local workbook addresses must use HTTPS.');
     if (!url.searchParams.has('style') && !url.searchParams.has('embed')) url.searchParams.set('style', 'singlePage');
     url.searchParams.set('themeSyncWithOs', 'false');
     url.searchParams.set('themeAppearance', document.documentElement.dataset.theme === 'light' ? 'light' : 'dark');

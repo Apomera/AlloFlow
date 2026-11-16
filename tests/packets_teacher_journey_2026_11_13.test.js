@@ -59,7 +59,7 @@ describe('the vocabulary maker is exact about what it fetches and where AI was u
   it('it says the meanings marked checked were checked with AI help, not by a person, as the word list itself records', () => {
     const bank = read('packets_vocab_bank_en.js');
     // 2026-11-13: the science and social-studies pass updates the dates and puts the editing note last.
-    expect(bank).toMatch(/checking: "Checked and corrected with AI assistance on November 12 and 13, 2026[^"]*Not reviewed by a person\./);
+    expect(bank).toMatch(/checking: "Checked and corrected with AI assistance on November 12, 13 and 14, 2026[^"]*Not reviewed by a person\./);
     expect(squash(doc.getElementById('legend').textContent)).toBe('checked This meaning was checked with AI help when the word list was prepared, not by a person. not checked yet Read these first.');
     const sources = squash(doc.getElementById('sources').textContent);
     expect(sources).toContain('Some meanings were checked and corrected with AI help when the word list was prepared, not by a person.');
@@ -101,7 +101,7 @@ const opened = [];
 afterAll(() => { opened.forEach((w) => { try { w.close(); } catch (_) {} }); });
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const PAGE_SCRIPTS = ['packets-page.js', 'word_sounds_take_home_loader.js', 'packets_verify_core.js', 'packets_zip.js', 'packets_handoff.js', 'packets_vocab_bank_en.js',
-  'word_sounds_symbols_en.js', 'word_sounds_packet_builder.js', 'packets_vocab_media.js', 'packet_vocab_builder.js', 'packets-vocab.js'];
+  'word_sounds_symbols_en.js', 'word_picture_matcher.js', 'word_sounds_packet_builder.js', 'packets_vocab_media.js', 'packet_vocab_builder.js', 'packets-vocab.js'];
 async function maker() {
   const dom = new JSDOM(read('packets-vocab.html'), { runScripts: 'outside-only', pretendToBeVisual: true, url: 'https://site.test/packets-vocab.html' });
   const w = dom.window, d = w.document;

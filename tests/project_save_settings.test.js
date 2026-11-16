@@ -255,7 +255,7 @@ describe('Project Settings progressive disclosure', () => {
     expect(html).toContain('Balanced');
     expect(html).toContain('Everyday controls');
     expect(html).toContain('Hide student AI tools');
-    expect(html).toContain('Allow students to connect their own AI provider');
+    expect(html).toContain('Allow adult students (18+) to connect their own AI provider');
     expect(html).toContain('<details');
     expect(html).toContain('Advanced lesson configuration');
     expect(html).toContain('Preferred name or codename');

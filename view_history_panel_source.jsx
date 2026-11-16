@@ -14,6 +14,13 @@
  * destructure defaults below stay as safety nets but are no longer the
  * real source of these values.
  */
+function _hpCopy(t, key, fallback) {
+  try {
+    const fn = typeof t === 'function' ? t : (typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : null);
+    const v = fn ? fn(key) : '';
+    return v && v !== key ? v : fallback;
+  } catch (_) { return fallback; }
+}
 const HistoryThemeFallbackContext = (window.React && window.React.createContext)
   ? window.React.createContext({ theme: 'light' })
   : null;
@@ -514,7 +521,7 @@ function HistoryPanel(props) {
     if (visibleItems.some(item => getSafeArtifactField(item, 'sourceSnapshot')
       || getSafeArtifactField(item, 'readingSupports')
       || getInstructionalTextProfile(item).form === 'same-text-supported')) {
-      addToast && addToast('This pack contains preserved reading sources. Community sharing does not support them yet. Use a student resource pack or document export.', 'warning');
+      addToast && addToast(_hpCopy(t, 'history.share_preserved_unsupported', 'This pack contains preserved reading sources. Community sharing does not support them yet. Use a student resource pack or document export.'), 'warning');
       return;
     }
     const activeUnit = Array.isArray(units) ? units.find(u => u.id === activeUnitId) : null;
@@ -549,11 +556,11 @@ function HistoryPanel(props) {
         advisoryOnly: true,
       };
       if (textAccessPreflight.supplementalWithoutPrimary) {
-        addToast && addToast('This pack includes a supplemental adapted text but no designated primary text. Confirm that readers will receive the primary text separately.', 'warning');
+        addToast && addToast(_hpCopy(t, 'history.share_supplemental_no_primary', 'This pack includes a supplemental adapted text but no designated primary text. Confirm that readers will receive the primary text separately.'), 'warning');
       } else if (textAccessPreflight.unspecifiedAdaptedWithoutPrimary) {
-        addToast && addToast('This pack includes an adapted text whose instructional role is not set and no designated primary text. Review the relationship before publishing.', 'warning');
+        addToast && addToast(_hpCopy(t, 'history.share_unspecified_no_primary', 'This pack includes an adapted text whose instructional role is not set and no designated primary text. Review the relationship before publishing.'), 'warning');
       } else if (unauthorizedPrimaryAdaptationCount > 0) {
-        addToast && addToast('An adapted text is marked primary without an explicit educator replacement decision. Review its role before publishing.', 'warning');
+        addToast && addToast(_hpCopy(t, 'history.share_unauthorized_primary', 'An adapted text is marked primary without an explicit educator replacement decision. Review its role before publishing.'), 'warning');
       }
       const cleanedItems = stripU(sanitizeForCloud(visibleItems.map(item => {
         const rawConfig = getSafeArtifactField(item, 'config');
@@ -601,7 +608,7 @@ function HistoryPanel(props) {
       }));
       setIsCommunityCatalogOpen(true);
     } catch (err) {
-      addToast && addToast('Could not open submission form: ' + (err && err.message), 'error');
+      addToast && addToast(_hpCopy(t, 'history.submit_form_open_failed', 'Could not open submission form: {error}').replace('{error}', String((err && err.message) || '')), 'error');
     }
   };
 
@@ -1009,7 +1016,7 @@ function HistoryPanel(props) {
                                     aria-label={(canvasRecoverySaveStatus === 'error' ? 'Device save needs attention' : canvasRecoverySaveStatus === 'locked' ? 'Protected recovery workspaces locked, ' + canvasRecoverySnapshotCount + ' workspaces' : canvasRecoverySaveStatus === 'idle' ? 'Current workspace is not saved yet' : (lastSaved ? 'Saved on this device at ' + lastSaved.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'On-device saved work')) + '. Open saved work manager.'}
                                     data-help-key="history_device_storage">
                                     {(canvasRecoverySaveStatus === 'checking' || canvasRecoverySaveStatus === 'saving' || canvasRecoverySaveStatus === 'restoring') ? (
-                                        <RefreshCw size={10} className="animate-spin" aria-hidden="true" />
+                                        <RefreshCw size={10} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
                                     ) : canvasRecoverySaveStatus === 'error' ? (
                                         <AlertCircle size={10} aria-hidden="true" />
                                     ) : canvasRecoverySaveStatus === 'locked' ? (
@@ -1043,7 +1050,7 @@ function HistoryPanel(props) {
                                 <>
                                         {cloudSyncStatus === 'syncing' && (
                                             <span className="text-slate-500 flex items-center gap-1">
-                                                <RefreshCw size={10} className="animate-spin" /> {t('status.syncing')}
+                                                <RefreshCw size={10} className="animate-spin motion-reduce:animate-none" /> {t('status.syncing')}
                                             </span>
                                         )}
                                         {cloudSyncStatus === 'error' && (
@@ -1068,7 +1075,7 @@ function HistoryPanel(props) {
                                         </span>
                                     ) : (
                                         <span className="text-slate-500 flex items-center gap-1">
-                                            <RefreshCw size={10} className="animate-spin" /> {t('status.syncing')}
+                                            <RefreshCw size={10} className="animate-spin motion-reduce:animate-none" /> {t('status.syncing')}
                                         </span>
                                     )
                                 )}
@@ -1258,7 +1265,7 @@ function HistoryPanel(props) {
                                     <option key={u.id} value={u.id}>{u.name}</option>
                                 ))}
                             </select>
-                            <button
+                            <button type="button"
                                 data-help-key="history_create_unit_btn"
                                 onClick={handleSetIsUnitModalOpenToTrue}
                                 className="min-h-11 min-w-11 grid place-items-center rounded-lg border border-slate-300 bg-white text-indigo-700 transition-colors hover:bg-indigo-50"
@@ -1268,7 +1275,7 @@ function HistoryPanel(props) {
                                 <FolderPlus size={14}/>
                             </button>
                             {activeUnitId !== 'all' && activeUnitId !== 'uncategorized' && typeof onVisualizeUnit === 'function' && (
-                                <button
+                                <button type="button"
                                     onClick={() => onVisualizeUnit(activeUnitId)}
                                     className="min-h-11 min-w-11 grid place-items-center rounded-lg border border-slate-300 bg-white text-amber-700 transition-colors hover:bg-amber-50"
                                     title={t('history.visualize_unit_tooltip') || 'Open this unit in Learning Web: Unit Path'}
@@ -1278,7 +1285,7 @@ function HistoryPanel(props) {
                                 </button>
                             )}
                             {activeUnitId !== 'all' && activeUnitId !== 'uncategorized' && (
-                                <button
+                                <button type="button"
                                     data-help-key="history_delete_unit_btn"
                                     onClick={handleDeleteUnit}
                                     className="min-h-11 min-w-11 grid place-items-center rounded-lg border border-slate-300 bg-white text-red-700 transition-colors hover:bg-red-50"
@@ -1294,7 +1301,7 @@ function HistoryPanel(props) {
                         <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm shadow-slate-900/5" role="search" aria-label={t('history.find_resources_aria')}>
                             <div className="relative min-w-[150px] flex-1">
                                 <Search size={14} aria-hidden="true" className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-600" />
-                                <input type="search" value={resourceSearch} onChange={(e) => setResourceSearch(e.target.value)} placeholder={t('history.search_resources_placeholder')} aria-label={t('history.search_resources_aria')} className="min-h-11 w-full rounded-lg border border-slate-300 bg-white py-2 pl-8 pr-9 text-xs text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
+                                <input type="search" value={resourceSearch} onChange={(e) => setResourceSearch(e.target.value)} placeholder={t('history.search_resources_placeholder')} aria-label={t('history.search_resources_aria')} className="min-h-11 w-full rounded-lg border border-slate-300 bg-white py-2 pl-8 pr-9 text-xs text-slate-800 placeholder:text-slate-600 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
                                 {resourceSearch && (
                                     <button type="button" onClick={() => setResourceSearch('')} aria-label={t('history.clear_resource_search_aria')} className="absolute right-0 top-0 min-h-11 min-w-11 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900">
                                         <X size={14} className="mx-auto" aria-hidden="true" />
@@ -1358,7 +1365,7 @@ function HistoryPanel(props) {
                         </div>
                     )}
                     {isUnitModalOpen && (
-                        <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-3 animate-in slide-in-from-top-2">
+                        <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-3 animate-in motion-reduce:animate-none slide-in-from-top-2">
                             <label className="block text-xs font-bold text-slate-700 mb-1">{t('history.new_unit_label')}</label>
                             <div className="flex flex-wrap gap-2">
                                 <input aria-label={t('common.enter_new_unit_name')}
@@ -1372,8 +1379,8 @@ function HistoryPanel(props) {
                                     autoFocus
                                     onKeyDown={(e) => e.key === 'Enter' && createUnit()}
                                 />
-                                <button data-help-key="history_save_unit_btn" onClick={createUnit} className="min-h-11 rounded-lg border border-indigo-700 bg-indigo-700 px-3 text-xs font-bold text-white hover:bg-indigo-800">{t('common.save')}</button>
-                                <button data-help-key="history_cancel_unit_btn" onClick={handleSetIsUnitModalOpenToFalse} className="min-h-11 rounded-lg px-3 text-xs font-bold text-slate-600 hover:bg-white">{t('common.cancel')}</button>
+                                <button type="button" data-help-key="history_save_unit_btn" onClick={createUnit} className="min-h-11 rounded-lg border border-indigo-700 bg-indigo-700 px-3 text-xs font-bold text-white hover:bg-indigo-800">{t('common.save')}</button>
+                                <button type="button" data-help-key="history_cancel_unit_btn" onClick={handleSetIsUnitModalOpenToFalse} className="min-h-11 rounded-lg px-3 text-xs font-bold text-slate-600 hover:bg-white">{t('common.cancel')}</button>
                             </div>
                             {canMoveInBulk && unfiledCount > 0 && (
                                 <label className="mt-2 flex min-h-11 cursor-pointer items-center gap-2 text-xs text-slate-700">
@@ -1431,13 +1438,13 @@ function HistoryPanel(props) {
                                             <span className="block text-sm font-bold text-slate-800 truncate">{st.name}</span>
                                             <span className="block text-xs text-slate-600">{st.tools.length} tool{st.tools.length !== 1 ? 's' : ''}</span>
                                         </button>
-                                        <button
+                                        <button type="button"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 const updated = stations.filter(s => s.id !== st.id);
                                                 localStorage.setItem('alloflow_stem_stations', JSON.stringify(updated));
                                                 if (activeStation && activeStation.id === st.id) setActiveStation(null);
-                                                addToast && addToast('Station removed');
+                                                addToast && addToast(_hpCopy(t, 'history.station_removed', 'Station removed'));
                                             }}
                                             className="min-h-11 min-w-11 grid place-items-center rounded-lg text-red-700 transition-colors hover:bg-red-50"
                                             aria-label={t('history.delete_station_aria') || 'Delete station'}
@@ -1494,13 +1501,13 @@ function HistoryPanel(props) {
                                             <span className="block text-sm font-bold text-slate-800 truncate">{st.name}</span>
                                             <span className="block text-xs text-slate-600">{(st.tools || []).length} tool{(st.tools || []).length !== 1 ? 's' : ''}{(st.quests || []).length > 0 ? ` · ${st.quests.length} quest${st.quests.length !== 1 ? 's' : ''}` : ''}</span>
                                         </button>
-                                        <button
+                                        <button type="button"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 const updated = stations.filter(s => s.id !== st.id);
                                                 localStorage.setItem('alloflow_sel_stations', JSON.stringify(updated));
                                                 if (activeSelStation && activeSelStation.id === st.id) setActiveSelStation(null);
-                                                addToast && addToast('SEL Station removed');
+                                                addToast && addToast(_hpCopy(t, 'history.sel_station_removed', 'SEL Station removed'));
                                             }}
                                             className="min-h-11 min-w-11 grid place-items-center rounded-lg text-red-700 transition-colors hover:bg-red-50"
                                             aria-label={`Delete SEL Station ${st.name}`}
@@ -1655,8 +1662,8 @@ function HistoryPanel(props) {
                                             className="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-2 text-sm text-slate-800 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
                                             autoFocus
                                         />
-                                        <button onClick={(e) => finishResourceRename(e, itemInstanceId)} className="min-h-11 min-w-11 grid place-items-center rounded-lg text-emerald-700 hover:bg-emerald-50" aria-label={t('common.save')}><Save size={14}/></button>
-                                        <button onClick={(e) => finishResourceRename(e, itemInstanceId, true)} className="min-h-11 min-w-11 grid place-items-center rounded-lg text-red-700 hover:bg-red-50" aria-label={t('common.cancel')}><X size={14}/></button>
+                                        <button type="button" onClick={(e) => finishResourceRename(e, itemInstanceId)} className="min-h-11 min-w-11 grid place-items-center rounded-lg text-emerald-700 hover:bg-emerald-50" aria-label={t('common.save')}><Save size={14}/></button>
+                                        <button type="button" onClick={(e) => finishResourceRename(e, itemInstanceId, true)} className="min-h-11 min-w-11 grid place-items-center rounded-lg text-red-700 hover:bg-red-50" aria-label={t('common.cancel')}><X size={14}/></button>
                                     </div>
                                 ) : (
                                     <>
@@ -1673,37 +1680,55 @@ function HistoryPanel(props) {
                                             }}
                                             style={{ flexBasis: '10rem' }}
                                             className={`min-h-11 min-w-0 flex-grow rounded-lg px-2 py-1.5 text-left flex flex-col items-start gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white ${isCurrent ? 'cursor-default bg-indigo-50/80 text-slate-900' : 'hover:bg-slate-100 text-slate-800'} aria-disabled:opacity-60`}
-                                            aria-label={(isCurrent ? `${itemTitle}. ${currentLabel}` : `${openLabel}: ${itemTitle}`) + (itemPhaseLabel ? `. ${resourceUiText('history.lesson_part', 'Lesson part')}: ${itemPhaseLabel}` : '') + (itemOlderSourceLabel ? `. ${itemOlderSourceLabel}` : '')}
+                                            aria-label={[
+                                                isOpening ? t('common.loading') : '',
+                                                itemTitle,
+                                                itemTypeLabel,
+                                                itemPhase ? itemPhaseLabel : '',
+                                                itemTextBadge ? itemTextBadge.label : '',
+                                                itemOlderSourceLabel,
+                                                itemDateLabel,
+                                                itemUnit ? itemUnitName : '',
+                                                itemFromDA ? ('DA' + (itemDaItemIndex !== null ? ` · #${itemDaItemIndex + 1}` : '')) : '',
+                                                itemMeta ? ((isTeacherMode && !isIndependentMode) ? itemMeta : sanitizeString(itemMeta)) : '',
+                                                (itemType === 'word-sounds' && itemConfigSummary) ? itemConfigSummary : '',
+                                            ].filter(Boolean).join(' ') + `. ${isCurrent ? currentLabel : openLabel}` + (itemPhaseLabel ? `. ${resourceUiText('history.lesson_part', 'Lesson part')}: ${itemPhaseLabel}` : '')}
                                             aria-current={isCurrent ? 'page' : undefined}
                                             aria-busy={isOpening || undefined}
                                             aria-disabled={isSyncMode || isCurrent}
                                         >
                                             <div className="min-w-0 w-full">
-                                                {isOpening && <span role="status" className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-700"><RefreshCw size={12} className="animate-spin" aria-hidden="true" />{t('common.loading')}</span>}
+                                                {isOpening && <span role="status" className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-700"><RefreshCw size={12} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />{t('common.loading')}</span>}
                                                 <div data-history-resource-title className="text-sm font-bold leading-snug" style={{ overflowWrap: 'anywhere' }} title={itemTitle}>
                                                     {itemTitle}
                                                 </div>
+                                                {' '}
                                                 <div className="mt-1 flex min-w-0 flex-wrap items-center gap-1.5 text-xs text-slate-500">
                                                     <span className={`rounded-full border px-2 py-0.5 font-semibold ${isCurrent ? 'border-indigo-200 bg-white text-indigo-700' : 'border-slate-200 bg-slate-100 text-slate-600'}`}>
                                                         {itemTypeLabel}
                                                     </span>
+                                                    {' '}
                                                     {itemPhase && (
                                                         <span data-history-lesson-part data-lesson-phase={itemPhase} className="rp-phase-chip rounded-full border px-2 py-0.5 font-semibold">
                                                             {itemPhaseLabel}
                                                         </span>
                                                     )}
+                                                    {itemPhase && ' '}
                                                     {itemTextBadge && (
                                                         <span className={`rounded-full border px-2 py-0.5 font-semibold ${itemTextBadgeClass}`}>
                                                             {itemTextBadge.label}
                                                         </span>
                                                     )}
+                                                    {itemTextBadge && ' '}
                                                     {itemOlderSourceLabel && (
                                                         <span data-history-source-version className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 font-semibold text-amber-900" title={t('history.from_source_version_hint') || 'Your source has changed since this was made. Open it to remake it from the current version.'}>
                                                             {itemOlderSourceLabel}
                                                         </span>
                                                     )}
+                                                    {itemOlderSourceLabel && ' '}
                                                     {itemDateLabel && <time dateTime={itemDateTime}>{itemDateLabel}</time>}
                                                 </div>
+                                                {' '}
                                                 {(itemUnit || itemFromDA || itemMeta) && (
                                                     <div className="mt-1 flex min-w-0 items-center gap-1 truncate text-xs text-slate-500">
                                                         {itemUnit && (
@@ -1711,6 +1736,7 @@ function HistoryPanel(props) {
                                                                 <Folder size={8}/> {itemUnitName}
                                                             </span>
                                                         )}
+                                                        {itemUnit && ' '}
                                                         {itemFromDA && (
                                                             <span
                                                                 className="bg-violet-100 text-violet-700 border border-violet-300 px-1 rounded font-bold"
@@ -1718,18 +1744,21 @@ function HistoryPanel(props) {
                                                                     ? `Auto-generated by Dynamic Assessment for item ${itemDaItemIndex + 1}`
                                                                     : 'Auto-generated by Dynamic Assessment'}
                                                             >
-                                                                🔬 DA{itemDaItemIndex !== null ? ` · #${itemDaItemIndex + 1}` : ''}
+                                                                <span aria-hidden="true">🔬</span>{' DA'}{itemDaItemIndex !== null ? ` · #${itemDaItemIndex + 1}` : ''}
                                                             </span>
                                                         )}
+                                                        {itemFromDA && itemMeta && ' '}
                                                         {itemMeta && <span>{(isTeacherMode && !isIndependentMode) ? itemMeta : sanitizeString(itemMeta)}</span>}
                                                     </div>
                                                 )}
+                                                {' '}
                                                 {itemType === 'word-sounds' && itemConfigSummary && (
                                                     <div className="mt-1 flex items-center gap-1 truncate text-xs text-slate-500" title={itemConfigSummary}>
-                                                        <span className="rounded border border-violet-200 bg-violet-50 px-1.5 py-0.5 text-violet-700">📋 {itemConfigSummary}</span>
+                                                        <span className="rounded border border-violet-200 bg-violet-50 px-1.5 py-0.5 text-violet-700"><span aria-hidden="true">📋</span>{' '}{itemConfigSummary}</span>
                                                     </div>
                                                 )}
                                             </div>
+                                            {' '}
                                             <span
                                                 aria-hidden="true"
                                                 className={`shrink-0 rounded-md px-2 py-1 text-xs font-bold ${isCurrent ? 'bg-emerald-100 text-emerald-800' : 'border border-slate-200 bg-white text-indigo-700'}`}
@@ -1864,9 +1893,18 @@ function HistoryPanel(props) {
                                     </div>
                                 </div>
                                 {itemType === 'word-sounds' && (
-                                    <button
+                                    <button type="button"
                                         onClick={(e) => {
                                             e.stopPropagation();
+                                            const rtiCsvCell = (val) => {
+                                                if (val == null) return '';
+                                                let s = String(val);
+                                                const guarded = typeof val === 'string' && (/^\s*[=+\-@|]/.test(s) || /^[\t\r\n]/.test(s));
+                                                if (guarded) s = "'" + s;
+                                                return (guarded || /[",\r\n]/.test(s)) ? '"' + s.replace(/"/g, '""') + '"' : s;
+                                            };
+                                            const rawDate = itemDate instanceof Date ? itemDate : new Date(itemDate || Date.now());
+                                            const validDate = Number.isNaN(rawDate.getTime()) ? new Date() : rawDate;
                                             const words = getSafeArraySnapshot(itemData, 10000);
                                             const lines = [
                                                 'Date,Resource,Word,Activity,TotalWords',
@@ -1878,21 +1916,27 @@ function HistoryPanel(props) {
                                                         '',
                                                         240
                                                     );
-                                                    return `${(itemDate || new Date()).toLocaleDateString()},${itemTitle || 'Word Sounds'},${word},,${words.length}`;
+                                                    return `${rtiCsvCell(validDate.toLocaleDateString())},${rtiCsvCell(itemTitle || 'Word Sounds')},${rtiCsvCell(word)},,${words.length}`;
                                                 })
                                             ];
                                             if (itemConfigSummary) {
-                                                lines.unshift('# Config: ' + itemConfigSummary);
+                                                const cleanCfg = String(itemConfigSummary).replace(/[\r\n]+/g, ' ').trim();
+                                                if (cleanCfg) lines.unshift(rtiCsvCell('# Config: ' + cleanCfg));
                                             }
-                                            const csv = lines.join('\n');
-                                            const blob = new Blob([csv], { type: 'text/csv' });
+                                            const csv = lines.join('\r\n');
+                                            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
                                             const url = URL.createObjectURL(blob);
                                             const a = document.createElement('a');
                                             a.href = url;
-                                            a.download = `word-sounds-${(itemDate || new Date()).toISOString().split('T')[0]}.csv`;
-                                            a.click();
-                                            URL.revokeObjectURL(url);
-                                            addToast && addToast('CSV downloaded for RTI progress monitoring', 'success');
+                                            a.download = `word-sounds-${validDate.toISOString().split('T')[0]}.csv`;
+                                            document.body.appendChild(a);
+                                            try {
+                                                a.click();
+                                            } finally {
+                                                document.body.removeChild(a);
+                                                URL.revokeObjectURL(url);
+                                            }
+                                            addToast && addToast(_hpCopy(t, 'history.rti_csv_downloaded', 'CSV downloaded for RTI progress monitoring'), 'success');
                                         }}
                                         className={`min-h-11 rounded-lg px-2 text-xs font-semibold transition-colors flex items-center gap-1 ${isCurrent ? 'text-emerald-800' : 'text-emerald-700'} hover:bg-emerald-50`}
                                         title={t('common.export_csv_for_rti')}
@@ -1900,7 +1944,7 @@ function HistoryPanel(props) {
                                         <Download size={12} /> CSV
                                     </button>
                                 )}
-                                <button
+                                <button type="button"
                                     onClick={(e) => handleDeleteHistoryItem(e, itemPublicId, item)}
                                     className="min-h-11 rounded-lg px-2 text-xs font-semibold text-red-700 transition-colors hover:bg-red-50 flex items-center gap-1"
                                     title={t('history.tooltips.remove_item')}

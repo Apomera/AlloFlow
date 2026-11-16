@@ -120,6 +120,156 @@ function LiveSessionDockView(props) {
   const reviewLabel = reviewApi?.organizerReviewText?.(props.t, 'review_title', 'Review organizer reflections') || 'Review organizer reflections';
   const imageApi = window.AlloModules?.LiveAac;
   const MailboxImageStatus = imageApi?.MailboxImageStatus;
+  const fallbackDockRef = React.useRef(null);
+  const resolvedDockRef = liveDockPanelRef || fallbackDockRef;
+  const closeDockRef = React.useRef(setShowLiveDock);
+  closeDockRef.current = setShowLiveDock;
+  React.useEffect(() => {
+    const dialog = resolvedDockRef.current;
+    if (!dialog || typeof document === 'undefined') return undefined;
+    const previousFocus = document.activeElement;
+    const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
+    const trap = {
+      root: dialog
+    };
+    trapStack.push(trap);
+    const isTopTrap = () => trapStack[trapStack.length - 1] === trap;
+    const isolated = [];
+    const seenSiblings = new Set();
+    let cursor = dialog;
+    while (cursor && cursor.parentElement) {
+      const parent = cursor.parentElement;
+      Array.from(parent.children).forEach(sibling => {
+        if (!sibling || sibling === cursor || seenSiblings.has(sibling) || !sibling.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName)) return;
+        seenSiblings.add(sibling);
+        isolated.push({
+          sibling,
+          hadInert: sibling.hasAttribute('inert'),
+          prevInert: sibling.inert,
+          ariaHidden: sibling.getAttribute('aria-hidden')
+        });
+        try {
+          sibling.inert = true;
+        } catch (_) {}
+        try {
+          sibling.setAttribute('inert', '');
+        } catch (_) {}
+        try {
+          sibling.setAttribute('aria-hidden', 'true');
+        } catch (_) {}
+      });
+      if (parent === document.body) break;
+      cursor = parent;
+    }
+    const body = document.body;
+    const scrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = {
+      count: 0,
+      prev: ''
+    });
+    let scrollLocked = false;
+    try {
+      if (body) {
+        scrollLocked = true;
+        if (++scrollLock.count === 1) {
+          scrollLock.prev = body.style.overflow;
+          body.style.overflow = 'hidden';
+        }
+      }
+    } catch (_) {}
+    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), summary, [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])')).filter(element => {
+      if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      let ancestor = element.parentElement;
+      while (ancestor && ancestor !== dialog) {
+        if (ancestor.matches && ancestor.matches('details:not([open])')) {
+          const directSummary = ancestor.querySelector(':scope > summary');
+          if (element !== directSummary) return false;
+        }
+        ancestor = ancestor.parentElement;
+      }
+      const style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(element) : null;
+      return !style || style.display !== 'none' && style.visibility !== 'hidden';
+    });
+    if (!dialog.contains(document.activeElement) && typeof dialog.focus === 'function') {
+      dialog.focus();
+    }
+    const handleKeyDown = event => {
+      if (!isTopTrap()) return;
+      if (!dialog.isConnected) return;
+      if (event.key === 'Escape') {
+        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+        event.preventDefault();
+        event.stopPropagation();
+        if (typeof closeDockRef.current === 'function') closeDockRef.current(false);
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const focusable = getFocusable();
+      if (focusable.length === 0) {
+        event.preventDefault();
+        if (typeof dialog.focus === 'function') dialog.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (!dialog.contains(document.activeElement) || document.activeElement === dialog) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus();
+      } else if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown, true);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown, true);
+      try {
+        if (scrollLocked && body) {
+          scrollLock.count = Math.max(0, scrollLock.count - 1);
+          if (scrollLock.count === 0) body.style.overflow = scrollLock.prev;
+        }
+      } catch (_) {}
+      isolated.forEach(({
+        sibling,
+        hadInert,
+        prevInert,
+        ariaHidden
+      }) => {
+        if (!sibling || !sibling.isConnected) return;
+        if (!hadInert) {
+          try {
+            sibling.inert = false;
+          } catch (_) {}
+          try {
+            sibling.removeAttribute('inert');
+          } catch (_) {}
+        } else {
+          try {
+            sibling.inert = Boolean(prevInert);
+          } catch (_) {}
+        }
+        if (ariaHidden == null) {
+          try {
+            sibling.removeAttribute('aria-hidden');
+          } catch (_) {}
+        } else {
+          try {
+            sibling.setAttribute('aria-hidden', ariaHidden);
+          } catch (_) {}
+        }
+      });
+      const wasTopTrap = isTopTrap();
+      const idx = trapStack.lastIndexOf(trap);
+      if (idx !== -1) trapStack.splice(idx, 1);
+      if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus !== document.documentElement && previousFocus.isConnected && typeof previousFocus.focus === 'function') {
+        try {
+          previousFocus.focus();
+        } catch (_) {}
+      }
+    };
+  }, [resolvedDockRef]);
   // Resolve each displayed resource once per render. Preparation can finish
   // without replacing History, and only its filtered payload defines receipts.
   const imageEvidenceById = new Map();
@@ -137,7 +287,7 @@ function LiveSessionDockView(props) {
     return evidence;
   };
   return /*#__PURE__*/React.createElement("div", {
-    ref: liveDockPanelRef,
+    ref: resolvedDockRef,
     tabIndex: -1,
     role: "dialog",
     "aria-modal": "true",
@@ -199,6 +349,7 @@ function LiveSessionDockView(props) {
       fontSize: '0.8rem'
     }
   }, t('session.action_end') || 'End Session'), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => setShowLiveDock(false),
     "aria-label": t('common.close') || 'Close',
     style: {
@@ -212,6 +363,7 @@ function LiveSessionDockView(props) {
       fontWeight: 700
     }
   }, "\u2715"))), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => {
       setShowLiveDock(false);
       setShowSessionModal(true);
@@ -345,10 +497,10 @@ function LiveSessionDockView(props) {
     }].filter(item => liveOrganizerSummary[item.key] > 0);
     return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
       style: dockGroupLabel
-    }, "Live organizer activity"), /*#__PURE__*/React.createElement("section", {
+    }, t('live_dock.group_organizer') || 'Live organizer activity'), /*#__PURE__*/React.createElement("section", {
       role: "status",
       "aria-live": "polite",
-      "aria-label": "Live visual organizer activity status",
+      "aria-label": t('live_dock.organizer_status_aria') || 'Live visual organizer activity status',
       style: {
         padding: '0.65rem',
         border: '1px solid #a5b4fc',
@@ -378,7 +530,7 @@ function LiveSessionDockView(props) {
         fontSize: '0.8rem',
         fontWeight: 900
       }
-    }, liveOrganizer.structureType || 'Visual organizer', " is live"), /*#__PURE__*/React.createElement("div", {
+    }, (liveOrganizer.structureType || t('live_dock.visual_organizer') || 'Visual organizer') + ' ' + (t('live_dock.is_live') || 'is live')), /*#__PURE__*/React.createElement("div", {
       style: {
         fontSize: '0.65rem',
         marginTop: 2,
@@ -412,7 +564,7 @@ function LiveSessionDockView(props) {
         cursor: organizerResource ? 'pointer' : 'not-allowed',
         opacity: organizerResource ? 1 : 0.55
       }
-    }, "Open activity"), retryableLiveOrganizerUids.length > 0 && /*#__PURE__*/React.createElement("button", {
+    }, t('live_dock.open_activity') || 'Open activity'), retryableLiveOrganizerUids.length > 0 && /*#__PURE__*/React.createElement("button", {
       type: "button",
       disabled: interactiveOrganizerRetrying,
       onClick: () => retryInteractiveOrganizerStudents(retryableLiveOrganizerUids),
@@ -442,9 +594,9 @@ function LiveSessionDockView(props) {
         cursor: interactiveOrganizerSync.status === 'stopping' ? 'wait' : 'pointer',
         opacity: interactiveOrganizerSync.status === 'stopping' ? 0.65 : 1
       }
-    }, interactiveOrganizerSync.status === 'stopping' ? 'Stopping…' : 'Stop for students'))), countBadges.length > 0 && /*#__PURE__*/React.createElement("div", {
+    }, interactiveOrganizerSync.status === 'stopping' ? t('live_dock.stopping') || 'Stopping…' : t('live_dock.stop_for_students') || 'Stop for students'))), countBadges.length > 0 && /*#__PURE__*/React.createElement("div", {
       role: "group",
-      "aria-label": "Student activity launch summary",
+      "aria-label": t('live_dock.organizer_summary_aria') || 'Student activity launch summary',
       style: {
         display: 'flex',
         gap: 5,
@@ -505,6 +657,7 @@ function LiveSessionDockView(props) {
       gap: 6
     }
   }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     style: {
       ...dockCardStyle,
       border: '1px solid #a5b4fc',
@@ -532,6 +685,7 @@ function LiveSessionDockView(props) {
       color: '#4f46e5'
     }
   }, activeView === 'adventure' && (adventureState?.currentScene?.options || []).length >= 2 ? t('live_dock.current_outcomes') || 'current outcomes' : t('live_dock.edit_choices') || 'edit choices')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     style: dockCardStyle,
     onClick: () => {
       setLivePollPreset(null);
@@ -595,6 +749,7 @@ function LiveSessionDockView(props) {
       cursor: 'pointer'
     }
   }, t('live_dock.moderate') || 'Moderate')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     style: dockCardStyle,
     onClick: () => {
       setLivePollPreset({
@@ -611,6 +766,7 @@ function LiveSessionDockView(props) {
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
   }, "\u26A1"), t('live_dock.quick_check') || 'Check understanding'), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     style: dockCardStyle,
     onClick: () => {
       setLivePollPreset({
@@ -624,6 +780,7 @@ function LiveSessionDockView(props) {
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
   }, "\u2601\uFE0F"), t('live_dock.word_cloud') || 'Word Cloud'), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     style: dockCardStyle,
     onClick: () => {
       setLivePollPreset({
@@ -640,6 +797,7 @@ function LiveSessionDockView(props) {
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
   }, "\u270D\uFE0F"), t('live_dock.feedback_response') || 'Feedback Response'), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     style: dockCardStyle,
     onClick: () => {
       setPictionaryPreparedInteraction(null);
@@ -650,6 +808,7 @@ function LiveSessionDockView(props) {
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
   }, "\uD83C\uDFA8"), t('pictionary.button') || 'Concept Pictionary'), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     style: dockCardStyle,
     onClick: () => {
       setPictionaryPreparedInteraction(null);
@@ -707,6 +866,7 @@ function LiveSessionDockView(props) {
       fontVariantNumeric: 'tabular-nums'
     }
   }, formatTime(studyTimeLeft)) : null), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     style: dockCardStyle,
     onClick: () => toggleSessionMode()
   }, /*#__PURE__*/React.createElement("span", {
@@ -719,6 +879,7 @@ function LiveSessionDockView(props) {
       color: '#1d4ed8'
     }
   }, t('live_dock.toggle') || 'toggle')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     style: dockCardStyle,
     onClick: () => {
       setShowLiveDock(false);
@@ -728,7 +889,7 @@ function LiveSessionDockView(props) {
     "aria-hidden": "true"
   }, "\uD83D\uDC65"), t('groups.manage_button') || 'Groups')), /*#__PURE__*/React.createElement("div", {
     style: dockGroupLabel
-  }, "Recognize"), /*#__PURE__*/React.createElement("div", {
+  }, t('live_dock.group_recognize') || 'Recognize'), /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'grid',
       gridTemplateColumns: '1fr auto',
@@ -770,7 +931,7 @@ function LiveSessionDockView(props) {
       fontWeight: 900,
       cursor: havenConfigBusy ? 'wait' : 'pointer'
     }
-  }, /*#__PURE__*/React.createElement("span", null, havenRecognitionConfig.enabled ? 'Recognition enabled' : 'Recognition off'), /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("span", null, havenRecognitionConfig.enabled ? t('allohaven.recognition_enabled') || 'Recognition enabled' : t('allohaven.recognition_off') || 'Recognition off'), /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true",
     style: {
       width: 30,
@@ -798,7 +959,7 @@ function LiveSessionDockView(props) {
       fontWeight: 800,
       color: '#166534'
     }
-  }, "Session cap", /*#__PURE__*/React.createElement("select", {
+  }, t('allohaven.session_cap') || 'Session cap', /*#__PURE__*/React.createElement("select", {
     value: havenRecognitionConfig.perStudentTokenCap,
     disabled: !havenRecognitionConfig.enabled || havenConfigBusy || havenRewardBusy,
     onChange: event => handleUpdateHavenRecognitionConfig({
@@ -833,7 +994,7 @@ function LiveSessionDockView(props) {
       fontWeight: 800,
       color: '#166534'
     }
-  }, "Positive progress", /*#__PURE__*/React.createElement("select", {
+  }, t('allohaven.positive_progress') || 'Positive progress', /*#__PURE__*/React.createElement("select", {
     value: havenRewardReasonId,
     onChange: event => setHavenRewardReasonId(event.target.value),
     disabled: !havenRecognitionConfig.enabled || havenConfigBusy || havenRewardBusy,
@@ -860,7 +1021,7 @@ function LiveSessionDockView(props) {
       fontWeight: 800,
       color: '#166534'
     }
-  }, "Tokens", /*#__PURE__*/React.createElement("select", {
+  }, t('allohaven.tokens_label') || 'Tokens', /*#__PURE__*/React.createElement("select", {
     value: havenRewardAmount,
     onChange: event => setHavenRewardAmount(Number(event.target.value) === 2 ? 2 : 1),
     disabled: !havenRecognitionConfig.enabled || havenConfigBusy || havenRewardBusy,
@@ -908,7 +1069,7 @@ function LiveSessionDockView(props) {
       cursor: havenRewardBusy ? 'wait' : 'pointer',
       opacity: havenRewardBusy ? 0.65 : 1
     }
-  }, havenRewardBusy ? 'Sending…' : '🌿 Recognize class'), Object.entries(sessionData && sessionData.groups || {}).map(([groupId, group]) => {
+  }, havenRewardBusy ? t('common.sending') || 'Sending…' : '🌿 ' + (t('allohaven.recognize_class') || 'Recognize class')), Object.entries(sessionData && sessionData.groups || {}).map(([groupId, group]) => {
     const groupUids = Object.keys(rosterEntries).filter(uid => rosterEntries[uid] && rosterEntries[uid].groupId === groupId);
     if (!groupUids.length) return null;
     const groupLabel = group && group.name || 'Group';
@@ -1026,7 +1187,7 @@ function LiveSessionDockView(props) {
     }
   }, "Teacher-only delivery audit. No balances, rankings, or behavior notes.")) : null), /*#__PURE__*/React.createElement("div", {
     style: dockGroupLabel
-  }, "Class Goals"), (() => {
+  }, t('live_dock.group_class_goals') || 'Class Goals'), (() => {
     // Class Goals (docs/GROUP_CONTINGENCY_DESIGN.md, Ring A):
     // whole-class interdependent contingencies, earn-only,
     // teacher-observed. "Met" fans out ONE private group_goal
@@ -1937,6 +2098,7 @@ function LiveSessionDockView(props) {
           padding: '0.05rem 0.3rem'
         }
       }, "\uD83D\uDCCA ", entry.wsProbeResult.correct, "/", entry.wsProbeResult.total) : null, entry.resourceId ? /*#__PURE__*/React.createElement("button", {
+        type: "button",
         onClick: () => handleSetStudentResource(uid, null),
         "aria-label": (t('live_dock.clear_student_resource_aria') || 'Clear individual resource for') + ' ' + (entry.name || 'student'),
         title: t('live_dock.clear_student_resource') || 'Clear individual resource',
@@ -1951,6 +2113,7 @@ function LiveSessionDockView(props) {
           color: '#b91c1c'
         }
       }, "\u2715") : null, /*#__PURE__*/React.createElement("button", {
+        type: "button",
         onClick: () => handleRecognizeStudent(uid),
         disabled: !canRecognizeStudent,
         "aria-label": 'Recognize ' + (entry.name || 'student') + ' with ' + havenRewardAmount + ' AlloHaven token' + (havenRewardAmount === 1 ? '' : 's'),
@@ -1968,6 +2131,7 @@ function LiveSessionDockView(props) {
       }, /*#__PURE__*/React.createElement("span", {
         "aria-hidden": "true"
       }, "\uD83C\uDF3F"), "+", havenRewardAmount), /*#__PURE__*/React.createElement("button", {
+        type: "button",
         onClick: () => canPushCurrent && handleSetStudentResource(uid, generatedContent.id),
         disabled: !canPushCurrent,
         "aria-label": (t('live_dock.push_student_resource_aria') || 'Send the current resource to') + ' ' + (entry.name || 'student'),
@@ -2028,6 +2192,7 @@ function LiveSessionDockView(props) {
         color: '#475569'
       }
     }, t('live_signals.' + entry.signal) || meta.label), /*#__PURE__*/React.createElement("button", {
+      type: "button",
       onClick: () => clearSignal(uid),
       "aria-label": (t('live_dock.clear_signal_aria') || 'Clear signal from') + ' ' + (entry.name || 'student'),
       style: {
@@ -2043,6 +2208,7 @@ function LiveSessionDockView(props) {
       }
     }, "\u2713"));
   }), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => activeSignals.forEach(({
       uid
     }) => clearSignal(uid)),

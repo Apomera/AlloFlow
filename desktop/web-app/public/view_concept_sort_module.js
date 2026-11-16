@@ -92,7 +92,7 @@ function ConceptSortTextEditor({
       composing.current = false;
     },
     onKeyDown: event => {
-      if (composing.current || event.nativeEvent.isComposing || event.keyCode === 229) return;
+      if (composing.current || event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229) return;
       if (event.key === 'Enter') {
         event.preventDefault();
         save(true);
@@ -228,6 +228,36 @@ function ConceptSortView(props) {
     label: t('concept_sort.uncategorized_group') || 'Uncategorized: fix before students play',
     __orphans: true
   }]) : reviewCategories;
+  var csAiDoor = function (kind) {
+    try {
+      return typeof window !== 'undefined' && typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway(kind, t) : null;
+    } catch (_) {
+      return null;
+    }
+  };
+  var csTextDoor = csAiDoor('text');
+  var csImgDoor = csAiDoor('images');
+  var csEditDoor = csAiDoor('imageEdit');
+  var csAnyAiDoorDisabled = !!(csTextDoor?.disabled || csImgDoor?.disabled || csEditDoor?.disabled);
+  var playableConceptSortData = React.useMemo(function () {
+    var raw = generatedContent && generatedContent.data;
+    if (!raw || typeof raw !== 'object') return raw;
+    if (isTeacherMode && !isIndependentMode) return raw;
+    var cats = Array.isArray(raw.categories) ? raw.categories.filter(function (c) {
+      return c && c.isSelected !== false && c.selected !== false;
+    }) : raw.categories;
+    var allowedCatIds = Array.isArray(cats) ? new Set(cats.map(function (c) {
+      return String(c.id);
+    })) : null;
+    var items = Array.isArray(raw.items) ? raw.items.filter(function (it) {
+      if (!it || it.isSelected === false || it.selected === false) return false;
+      return !allowedCatIds || allowedCatIds.has(String(it.categoryId));
+    }) : raw.items;
+    return cats === raw.categories && items === raw.items ? raw : Object.assign({}, raw, {
+      categories: cats,
+      items: items
+    });
+  }, [generatedContent && generatedContent.data, isTeacherMode, isIndependentMode]);
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-6 h-full flex flex-col",
     "data-help-key": "concept_sort_panel"
@@ -240,10 +270,15 @@ function ConceptSortView(props) {
     type: "button",
     onClick: handleSetIsConceptSortGameToTrue,
     "data-help-key": "concept_sort_start_button",
-    className: "flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-all shadow-sm"
+    className: "min-h-11 flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-all motion-reduce:transition-none shadow-sm"
   }, /*#__PURE__*/React.createElement(Filter, {
     size: 14
-  }), " ", isTeacherMode && !isIndependentMode ? t('concept_sort.preview') : t('concept_sort.start'))), !isTeacherMode || isIndependentMode ? /*#__PURE__*/React.createElement("div", {
+  }), " ", isTeacherMode && !isIndependentMode ? t('concept_sort.preview') : t('concept_sort.start')), csAnyAiDoorDisabled && typeof window !== 'undefined' && typeof window.AlloAiSetupNotice === 'function' && /*#__PURE__*/React.createElement("div", {
+    className: "w-full"
+  }, /*#__PURE__*/React.createElement(window.AlloAiSetupNotice, {
+    t: t,
+    kind: csImgDoor?.disabled ? 'images' : csEditDoor?.disabled ? 'imageEdit' : 'text'
+  }))), !isTeacherMode || isIndependentMode ? /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col items-center justify-center p-12 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 text-center animate-in motion-reduce:animate-none fade-in zoom-in duration-300 my-auto"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-indigo-100 p-4 rounded-full mb-4"
@@ -258,7 +293,7 @@ function ConceptSortView(props) {
     type: "button",
     onClick: handleSetIsConceptSortGameToTrue,
     "data-help-key": "concept_sort_start_button",
-    className: "px-8 py-4 bg-indigo-600 text-white font-bold text-lg rounded-xl shadow-lg hover:bg-indigo-700 hover:scale-105 motion-reduce:hover:scale-100 transition-all flex items-center gap-3"
+    className: "min-h-11 px-8 py-4 bg-indigo-600 text-white font-bold text-lg rounded-xl shadow-lg hover:bg-indigo-700 hover:scale-105 motion-reduce:hover:scale-100 transition-all motion-reduce:transition-none flex items-center gap-3"
   }, /*#__PURE__*/React.createElement(Gamepad2, {
     size: 24,
     className: "fill-current text-yellow-700"
@@ -275,7 +310,7 @@ function ConceptSortView(props) {
   }, t('concept_sort.pre_activity_help') || 'Edit categories and items before students play. AI outputs sometimes need tweaks.')), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-3 flex-wrap"
   }, (generatedContent?.data.items || []).some(it => it && it.image) && /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-2 bg-white/80 border border-amber-200 rounded-full px-2 py-1",
+    className: "flex items-center gap-2 bg-white/80 border border-amber-200 rounded-full px-2 py-1 min-h-11",
     "data-help-key": "concept_sort_image_scale"
   }, /*#__PURE__*/React.createElement("label", {
     htmlFor: "concept-sort-image-scale-rv",
@@ -290,23 +325,23 @@ function ConceptSortView(props) {
     onChange: e => setConceptSortImageScale(parseFloat(e.target.value) || 2.0),
     "aria-label": (t('concept_sort.image_scale_label') || 'Card image size') + ', ' + conceptSortImageScale.toFixed(2) + ' times',
     title: t('concept_sort.image_scale_hint') || 'Scales card visuals in the review panel and during play.',
-    className: "w-24 sm:w-32 accent-amber-600"
+    className: "min-h-11 w-24 sm:w-32 accent-amber-600"
   }), /*#__PURE__*/React.createElement("span", {
     className: "text-[10px] font-mono text-amber-800 min-w-[2.5em] text-right"
   }, conceptSortImageScale.toFixed(2), "×"), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => setConceptSortImageScale(2.0),
-    className: "text-[10px] text-amber-700 hover:text-amber-900 hover:underline",
+    className: "min-h-11 min-w-11 px-2 text-[10px] text-amber-700 hover:text-amber-900 hover:underline",
     title: t('concept_sort.image_size_reset_aria') || 'Reset image size to default',
     "aria-label": t('concept_sort.image_size_reset_aria') || 'Reset image size to default'
   }, t('common.reset') || 'Reset')), typeof setConceptSortAutoRemoveWords === 'function' && /*#__PURE__*/React.createElement("label", {
-    className: "flex items-center gap-1.5 bg-white/80 border border-amber-200 rounded-full px-2.5 py-1 cursor-pointer text-[10px] font-bold text-amber-800 uppercase tracking-wider",
+    className: "min-h-11 flex items-center gap-1.5 bg-white/80 border border-amber-200 rounded-full px-2.5 py-1 cursor-pointer text-[10px] font-bold text-amber-800 uppercase tracking-wider",
     title: t('concept_sort.auto_remove_tooltip') || 'Run an image-to-image edit after each generation to remove leftover text/labels'
   }, /*#__PURE__*/React.createElement("input", {
     type: "checkbox",
     checked: !!conceptSortAutoRemoveWords,
     onChange: e => setConceptSortAutoRemoveWords(!!e.target.checked),
-    className: "accent-amber-600",
+    className: "h-4 w-4 accent-amber-600",
     "aria-label": t('concept_sort.auto_remove_aria') || 'Auto-remove text from generated images'
   }), t('concept_sort.auto_remove_label') || 'Auto-remove text'), /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] font-bold text-amber-800 bg-white/80 border border-amber-200 rounded-full px-2 py-0.5"
@@ -362,7 +397,7 @@ function ConceptSortView(props) {
         setCsAddingCatId(cat.id);
         setCsAddingText('');
       },
-      className: "px-2 py-0.5 rounded-full bg-white/70 text-[11px] font-bold hover:bg-white border border-current/20",
+      className: "min-h-11 px-3 py-1 rounded-full bg-white/70 text-[11px] font-bold hover:bg-white border border-current/20",
       title: t('concept_sort.add_item_to_category') || 'Add item to this category',
       "aria-label": `${t('concept_sort.add_item_to') || 'Add item to'} ${cat.label}`,
       disabled: csBusyId === '__adding__'
@@ -370,7 +405,7 @@ function ConceptSortView(props) {
       type: "button",
       "data-help-key": "concept_sort_delete_category",
       onClick: () => csDeleteCategory(cat.id),
-      className: "px-2 py-0.5 rounded-full bg-white/70 text-[11px] font-bold hover:bg-white border border-current/20",
+      className: "min-h-11 px-3 py-1 rounded-full bg-white/70 text-[11px] font-bold hover:bg-white border border-current/20",
       title: t('concept_sort.delete_category_hint') || 'Delete this category. Its cards move to Uncategorized.',
       "aria-label": `${t('concept_sort.delete_category') || 'Delete category'} ${cat.label}`
     }, t('common.delete') || 'Delete')), /*#__PURE__*/React.createElement("div", {
@@ -386,7 +421,7 @@ function ConceptSortView(props) {
       return /*#__PURE__*/React.createElement("div", {
         key: item.id,
         "data-help-key": "concept_sort_item",
-        className: "flex flex-col gap-1 bg-white p-2 rounded-lg border border-slate-400 hover:border-slate-300 transition-colors"
+        className: "flex flex-col gap-1 bg-white p-2 rounded-lg border border-slate-400 hover:border-slate-300 transition-colors motion-reduce:transition-none"
       }, /*#__PURE__*/React.createElement("div", {
         className: "flex flex-wrap items-center gap-2"
       }, item.image ? /*#__PURE__*/React.createElement("img", {
@@ -448,7 +483,7 @@ function ConceptSortView(props) {
       }, c.label))), /*#__PURE__*/React.createElement("button", {
         type: "button",
         onClick: () => csRegenerateItem(item, generatedContent?.data.categories || []),
-        disabled: isBusy || csBusyId === '__adding__',
+        disabled: isBusy || csBusyId === '__adding__' || !!csTextDoor?.disabled,
         "data-concept-sort-action": true,
         style: {
           width: 44,
@@ -456,12 +491,12 @@ function ConceptSortView(props) {
           flexShrink: 0
         },
         className: "rounded text-sm hover:bg-indigo-50 text-indigo-600 disabled:opacity-30 flex items-center justify-center",
-        title: t("a11y.regenerate_item"),
+        title: csTextDoor?.title || t("a11y.regenerate_item"),
         "aria-label": _conceptSortText(t, "a11y.regenerate_item", "Regenerate this item — text and image") + ": " + item.content
       }, isBusy ? '⏳' : '🔄'), /*#__PURE__*/React.createElement("button", {
         type: "button",
         onClick: () => csRegenerateItemImage(item),
-        disabled: isBusy || csBusyId === '__adding__',
+        disabled: isBusy || csBusyId === '__adding__' || !!csImgDoor?.disabled,
         "data-concept-sort-action": true,
         style: {
           width: 44,
@@ -469,7 +504,7 @@ function ConceptSortView(props) {
           flexShrink: 0
         },
         className: "rounded text-sm hover:bg-purple-50 text-purple-600 disabled:opacity-30 flex items-center justify-center",
-        title: t("a11y.regenerate_image"),
+        title: csImgDoor?.title || t("a11y.regenerate_image"),
         "aria-label": _conceptSortText(t, "a11y.regenerate_image", "Regenerate image only") + ": " + item.content
       }, isBusy ? '⏳' : '🖼️'), /*#__PURE__*/React.createElement("button", {
         type: "button",
@@ -517,7 +552,7 @@ function ConceptSortView(props) {
       }, "🚫"), item.image && csRefineItemImage && /*#__PURE__*/React.createElement("button", {
         type: "button",
         onClick: () => csRefineItemImage(item.id, "Remove all text, labels, letters, and words from the image. Keep the illustration clean."),
-        disabled: isBusy,
+        disabled: isBusy || !!csEditDoor?.disabled,
         "data-concept-sort-action": true,
         style: {
           width: 44,
@@ -525,7 +560,7 @@ function ConceptSortView(props) {
           flexShrink: 0
         },
         className: "rounded text-sm hover:bg-red-50 text-red-600 disabled:opacity-30 flex items-center justify-center",
-        title: t("a11y.auto_remove_text"),
+        title: csEditDoor?.title || t("a11y.auto_remove_text"),
         "aria-label": _conceptSortText(t, "a11y.auto_remove_text", "Auto-remove text from image") + ": " + item.content
       }, "🔤⃠"), /*#__PURE__*/React.createElement("button", {
         type: "button",
@@ -549,25 +584,27 @@ function ConceptSortView(props) {
           [item.id]: e.target.value
         })),
         onKeyDown: e => {
-          if (e.key === 'Enter' && refineInput.trim()) {
+          if (e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229) return;
+          if (!csEditDoor?.disabled && e.key === 'Enter' && refineInput.trim()) {
             csRefineItemImage(item.id);
           }
         },
         placeholder: t("placeholders.edit_image_prompt"),
-        disabled: isBusy,
-        className: "flex-1 text-[11px] bg-white border border-amber-300 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-amber-400 placeholder:text-slate-400",
+        disabled: isBusy || !!csEditDoor?.disabled,
+        title: csEditDoor?.title || undefined,
+        className: "min-h-11 flex-1 text-[11px] bg-white border border-amber-300 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-amber-400 placeholder:text-slate-500",
         "aria-label": `${t('concept_sort.refine_prompt_for') || 'Image edit prompt for'} ${item.content}`
       }), /*#__PURE__*/React.createElement("button", {
         type: "button",
         onClick: () => csRefineItemImage(item.id),
-        disabled: isBusy || !refineInput.trim(),
-        className: "px-2 py-1 rounded text-[11px] font-bold bg-amber-700 hover:bg-amber-800 text-white disabled:opacity-30",
+        disabled: isBusy || !refineInput.trim() || !!csEditDoor?.disabled,
+        className: "min-h-11 px-2 py-1 rounded text-[11px] font-bold bg-amber-700 hover:bg-amber-800 text-white disabled:opacity-30",
         "aria-label": _conceptSortText(t, "a11y.apply_edit_prompt", "Apply edit prompt") + ": " + item.content,
         "data-concept-sort-action": true,
         style: {
           minHeight: 44
         },
-        title: t("a11y.apply_edit_prompt")
+        title: csEditDoor?.title || t("a11y.apply_edit_prompt")
       }, "✏️ ", t('common.send') || 'Send')));
     }), isAddingHere && /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-lg p-2"
@@ -578,6 +615,7 @@ function ConceptSortView(props) {
       value: csAddingText,
       onChange: e => setCsAddingText(e.target.value),
       onKeyDown: e => {
+        if (e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229) return;
         if (e.key === 'Enter' && csAddingText.trim()) {
           csAddTyped(cat.id, csAddingText, generatedContent?.data.categories || []);
         } else if (e.key === 'Escape') {
@@ -585,21 +623,21 @@ function ConceptSortView(props) {
           setCsAddingText('');
         }
       },
-      className: "flex-1 text-xs bg-white border border-emerald-300 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-emerald-400",
+      className: "min-h-11 flex-1 text-xs bg-white border border-emerald-300 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-emerald-400",
       "aria-label": t("a11y.new_item_text"),
       disabled: csBusyId === '__adding__'
     }), /*#__PURE__*/React.createElement("button", {
       type: "button",
       onClick: () => csAddTyped(cat.id, csAddingText, generatedContent?.data.categories || []),
       disabled: !csAddingText.trim() || csBusyId === '__adding__',
-      className: "px-2 py-1 bg-emerald-700 text-white rounded text-[11px] font-bold disabled:opacity-40 hover:bg-emerald-800"
+      className: "min-h-11 px-3 py-1 bg-emerald-700 text-white rounded text-[11px] font-bold disabled:opacity-40 hover:bg-emerald-800"
     }, csBusyId === '__adding__' ? '⏳' : t('common.add') || 'Add'), /*#__PURE__*/React.createElement("button", {
       type: "button",
       onClick: () => {
         setCsAddingCatId(null);
         setCsAddingText('');
       },
-      className: "px-2 py-1 bg-white text-slate-600 rounded text-[11px] font-bold border border-slate-400 hover:bg-slate-50"
+      className: "min-h-11 px-3 py-1 bg-white text-slate-600 rounded text-[11px] font-bold border border-slate-400 hover:bg-slate-50"
     }, t('common.cancel') || 'Cancel'))));
   }), typeof csAddCategory === 'function' && (csAddingCatId === '__new_category__' ? /*#__PURE__*/React.createElement("div", {
     "data-help-key": "concept_sort_add_category_row",
@@ -610,6 +648,7 @@ function ConceptSortView(props) {
     value: csAddingText,
     onChange: e => setCsAddingText(e.target.value),
     onKeyDown: e => {
+      if (e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229) return;
       if (e.key === 'Enter' && csAddingText.trim()) {
         csAddCategory(csAddingText);
         setCsAddingCatId(null);
@@ -621,7 +660,7 @@ function ConceptSortView(props) {
     },
     placeholder: t('concept_sort.new_category_placeholder') || 'Category name',
     "aria-label": t('concept_sort.new_category_label') || 'New category name',
-    className: "flex-1 text-xs bg-white border border-emerald-300 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-emerald-400"
+    className: "min-h-11 flex-1 text-xs bg-white border border-emerald-300 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-emerald-400"
   }), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => {
@@ -630,14 +669,14 @@ function ConceptSortView(props) {
       setCsAddingText('');
     },
     disabled: !csAddingText.trim(),
-    className: "px-2 py-1 bg-emerald-700 text-white rounded text-[11px] font-bold disabled:opacity-40 hover:bg-emerald-800"
+    className: "min-h-11 px-3 py-1 bg-emerald-700 text-white rounded text-[11px] font-bold disabled:opacity-40 hover:bg-emerald-800"
   }, t('common.add') || 'Add'), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => {
       setCsAddingCatId(null);
       setCsAddingText('');
     },
-    className: "px-2 py-1 bg-white text-slate-600 rounded text-[11px] font-bold border border-slate-400 hover:bg-slate-50"
+    className: "min-h-11 px-3 py-1 bg-white text-slate-600 rounded text-[11px] font-bold border border-slate-400 hover:bg-slate-50"
   }, t('common.cancel') || 'Cancel')) : /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-help-key": "concept_sort_add_category",
@@ -649,7 +688,7 @@ function ConceptSortView(props) {
   }, "＋ ", t('concept_sort.add_category') || 'Add category'))), isConceptSortGame && /*#__PURE__*/React.createElement(ErrorBoundary, {
     fallbackMessage: _conceptSortText(t, 'concept_sort.game_error', 'Concept Sort Game encountered an error.')
   }, /*#__PURE__*/React.createElement(ConceptSortGame, {
-    data: generatedContent?.data,
+    data: playableConceptSortData,
     onClose: closeConceptSort,
     playSound: playSound,
     onGenerateItem: handleGenerateConceptItem,

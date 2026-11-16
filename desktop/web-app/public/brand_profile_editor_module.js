@@ -67,8 +67,9 @@ function normHex(v) {
 }
 function BrandProfileEditor(props) {
   const onClose = props.onClose || function () {};
-  const t = typeof props.t === 'function' ? props.t : function (k, d) {
-    return d || k;
+  const t = function (k, d) {
+    const raw = typeof props.t === 'function' ? props.t(k, d) : null;
+    return raw && raw !== k ? raw : d || k;
   };
   const addToast = typeof props.addToast === 'function' ? props.addToast : function () {};
   const api = BP();
@@ -112,22 +113,31 @@ function BrandProfileEditor(props) {
   const deleteTriggerRef = React.useRef(null);
   const [deleteRequest, setDeleteRequest] = React.useState(null);
   React.useEffect(function () {
-    if (!deleteRequest) return;
-    const cancel = deleteDialogRef.current && deleteDialogRef.current.querySelector('[data-safe-default="true"]');
-    if (cancel) cancel.focus();
-  }, [deleteRequest]);
-  React.useEffect(function () {
-    const dialog = dialogRef.current;
+    if (!deleteRequest) return undefined;
+    const dialog = deleteDialogRef.current;
     if (!dialog) return undefined;
-    const previousFocus = document.activeElement;
-    (closeButtonRef.current || dialog).focus();
+    const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
+    const deleteTrap = {
+      root: dialog
+    };
+    trapStack.push(deleteTrap);
+    const isTopTrap = function () {
+      return trapStack[trapStack.length - 1] === deleteTrap;
+    };
+    const cancel = dialog.querySelector('[data-safe-default="true"]');
+    if (cancel) cancel.focus();else dialog.focus();
     const getFocusable = function () {
-      return Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+      return Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')).filter(function (el) {
+        return !el.closest('[hidden], [inert], [aria-hidden="true"]');
+      });
     };
     const onKeyDown = function (event) {
+      if (event.defaultPrevented || !isTopTrap()) return;
       if (event.key === 'Escape') {
+        if (event.nativeEvent && event.nativeEvent.isComposing || event.isComposing || event.keyCode === 229) return;
         event.preventDefault();
-        onClose();
+        event.stopPropagation();
+        closeDeleteDialog();
         return;
       }
       if (event.key !== 'Tab') return;
@@ -139,7 +149,10 @@ function BrandProfileEditor(props) {
       }
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
+      if (!dialog.contains(document.activeElement)) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus();
+      } else if (event.shiftKey && document.activeElement === first) {
         event.preventDefault();
         last.focus();
       } else if (!event.shiftKey && document.activeElement === last) {
@@ -147,12 +160,152 @@ function BrandProfileEditor(props) {
         first.focus();
       }
     };
-    dialog.addEventListener('keydown', onKeyDown);
+    document.addEventListener('keydown', onKeyDown);
     return function () {
-      dialog.removeEventListener('keydown', onKeyDown);
-      if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus();
+      document.removeEventListener('keydown', onKeyDown);
+      const idx = trapStack.indexOf(deleteTrap);
+      if (idx !== -1) trapStack.splice(idx, 1);
+      const trigger = deleteTriggerRef.current;
+      if (trigger && trigger.isConnected && typeof trigger.focus === 'function') trigger.focus();
     };
-  }, [onClose]);
+  }, [Boolean(deleteRequest)]);
+  const onCloseRef = React.useRef(onClose);
+  onCloseRef.current = onClose;
+  React.useEffect(function () {
+    const dialog = dialogRef.current;
+    if (!dialog || typeof document === 'undefined') return undefined;
+    const previousFocus = document.activeElement;
+    const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
+    const trap = {
+      root: dialog
+    };
+    trapStack.push(trap);
+    const isTopTrap = function () {
+      return trapStack[trapStack.length - 1] === trap;
+    };
+    const isolated = [];
+    const seenSiblings = new Set();
+    let cursor = dialog.parentElement || dialog;
+    while (cursor && cursor.parentElement) {
+      const parent = cursor.parentElement;
+      Array.from(parent.children).forEach(function (sibling) {
+        if (!sibling || sibling === cursor || seenSiblings.has(sibling) || !sibling.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName)) return;
+        seenSiblings.add(sibling);
+        isolated.push({
+          sibling: sibling,
+          hadInert: sibling.hasAttribute('inert'),
+          prevInert: sibling.inert,
+          ariaHidden: sibling.getAttribute('aria-hidden')
+        });
+        try {
+          sibling.inert = true;
+        } catch (_) {}
+        try {
+          sibling.setAttribute('inert', '');
+        } catch (_) {}
+        try {
+          sibling.setAttribute('aria-hidden', 'true');
+        } catch (_) {}
+      });
+      if (parent === document.body) break;
+      cursor = parent;
+    }
+    const body = document.body;
+    const scrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = {
+      count: 0,
+      prev: ''
+    });
+    let scrollLocked = false;
+    try {
+      if (body) {
+        scrollLocked = true;
+        if (++scrollLock.count === 1) {
+          scrollLock.prev = body.style.overflow;
+          body.style.overflow = 'hidden';
+        }
+      }
+    } catch (_) {}
+    if (!dialog.contains(document.activeElement)) (closeButtonRef.current || dialog).focus();
+    const getFocusable = function () {
+      return Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])')).filter(function (el) {
+        if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+        const closedDetails = el.closest('details:not([open])');
+        if (closedDetails && !(el.tagName === 'SUMMARY' && el.parentElement === closedDetails)) return false;
+        const st = typeof window !== 'undefined' && typeof window.getComputedStyle === 'function' ? window.getComputedStyle(el) : null;
+        return !st || st.display !== 'none' && st.visibility !== 'hidden';
+      });
+    };
+    const onKeyDown = function (event) {
+      if (event.defaultPrevented || !dialog.isConnected || !isTopTrap()) return;
+      if (event.key === 'Escape') {
+        if (event.nativeEvent && event.nativeEvent.isComposing || event.isComposing || event.keyCode === 229) return;
+        event.preventDefault();
+        event.stopPropagation();
+        if (typeof onCloseRef.current === 'function') onCloseRef.current();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const focusable = getFocusable();
+      if (!focusable.length) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (!dialog.contains(document.activeElement) || document.activeElement === dialog) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus();
+      } else if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return function () {
+      document.removeEventListener('keydown', onKeyDown);
+      try {
+        if (scrollLocked && body) {
+          scrollLock.count = Math.max(0, scrollLock.count - 1);
+          if (scrollLock.count === 0) body.style.overflow = scrollLock.prev;
+        }
+      } catch (_) {}
+      isolated.forEach(function (entry) {
+        const sibling = entry.sibling;
+        if (!sibling || !sibling.isConnected) return;
+        if (!entry.hadInert) {
+          try {
+            sibling.inert = false;
+          } catch (_) {}
+          try {
+            sibling.removeAttribute('inert');
+          } catch (_) {}
+        } else {
+          try {
+            sibling.inert = Boolean(entry.prevInert);
+          } catch (_) {}
+        }
+        if (entry.ariaHidden == null) {
+          try {
+            sibling.removeAttribute('aria-hidden');
+          } catch (_) {}
+        } else {
+          try {
+            sibling.setAttribute('aria-hidden', entry.ariaHidden);
+          } catch (_) {}
+        }
+      });
+      const wasTop = isTopTrap();
+      const idx = trapStack.lastIndexOf(trap);
+      if (idx !== -1) trapStack.splice(idx, 1);
+      if (wasTop && previousFocus && previousFocus.isConnected && previousFocus !== document.body && previousFocus !== document.documentElement) {
+        if (typeof previousFocus.focus === 'function') previousFocus.focus();
+      }
+    };
+  }, []);
   const refresh = React.useCallback(function () {
     if (!api) return;
     try {
@@ -240,7 +393,7 @@ function BrandProfileEditor(props) {
         addToast(t('brand.autofix_none', 'Colors already meet contrast'), 'info');
       }
     } catch (e) {
-      addToast('Auto-fix failed: ' + e.message, 'error');
+      addToast(t('brand.autofix_failed', 'Auto-fix failed: ') + e.message, 'error');
     }
   }
   function save() {
@@ -249,7 +402,7 @@ function BrandProfileEditor(props) {
     if (res.ok) {
       addToast(t('brand.saved', 'Brand profile saved'), 'success');
       if (res.warnings && res.warnings.length) {
-        addToast(res.warnings.length + ' contrast warning(s) — see editor', 'info');
+        addToast(res.warnings.length + ' ' + t('brand.contrast_warnings', 'contrast warning(s) — see editor'), 'info');
       }
       setDraft(function (d) {
         return Object.assign({}, d, {
@@ -314,7 +467,7 @@ function BrandProfileEditor(props) {
         URL.revokeObjectURL(url);
       }, 1000);
     } catch (e) {
-      addToast('Export failed: ' + e.message, 'error');
+      addToast(t('brand.export_failed_error', 'Export failed: ') + e.message, 'error');
     }
   }
   function onImportFile(e) {
@@ -429,7 +582,7 @@ function BrandProfileEditor(props) {
     ref: closeButtonRef,
     onClick: onClose,
     "aria-label": t('common.close', 'Close'),
-    className: "p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200 transition-colors text-xl leading-none"
+    className: "p-2 min-w-11 min-h-11 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200 transition-colors motion-reduce:transition-none text-xl leading-none"
   }, "\xD7")), !api ? /*#__PURE__*/React.createElement("div", {
     className: "p-8 text-center text-slate-600"
   }, t('brand.unavailable', 'Brand Profile module not loaded.')) : /*#__PURE__*/React.createElement("div", {
@@ -441,13 +594,13 @@ function BrandProfileEditor(props) {
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: newProfile,
-    className: "w-full px-3 py-2 rounded-lg bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition-colors"
+    className: "w-full min-h-11 px-3 py-2 rounded-lg bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition-colors motion-reduce:transition-none"
   }, "+ ", t('brand.new', 'New profile')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: function () {
       importInputRef.current && importInputRef.current.click();
     },
-    className: "w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-100 transition-colors"
+    className: "w-full min-h-11 px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-100 transition-colors motion-reduce:transition-none"
   }, "\u2B06 ", t('brand.import', 'Import JSON')), /*#__PURE__*/React.createElement("input", {
     ref: importInputRef,
     "aria-label": t('brand.import_file', 'Import brand profile JSON file'),
@@ -550,7 +703,7 @@ function BrandProfileEditor(props) {
   })), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: autoFix,
-    className: "mt-2 px-3 py-1.5 rounded-lg bg-amber-100 text-amber-800 text-xs font-bold hover:bg-amber-200 transition-colors"
+    className: "mt-2 min-h-11 px-3 py-1.5 rounded-lg bg-amber-100 text-amber-800 text-xs font-bold hover:bg-amber-200 transition-colors motion-reduce:transition-none"
   }, "\u2728 ", t('brand.autofix', 'Auto-fix contrast'))), /*#__PURE__*/React.createElement("label", {
     className: "block mb-4"
   }, /*#__PURE__*/React.createElement("span", {
@@ -597,11 +750,11 @@ function BrandProfileEditor(props) {
     onClick: function () {
       fileInputRef.current && fileInputRef.current.click();
     },
-    className: "px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700 text-xs font-medium hover:bg-slate-100"
+    className: "min-h-11 px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700 text-xs font-medium hover:bg-slate-100"
   }, draft.logo && safeRasterLogoSrc(draft.logo.src) ? t('brand.logo_replace', 'Replace') : t('brand.logo_upload', 'Upload logo')), draft.logo && safeRasterLogoSrc(draft.logo.src) && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: removeLogo,
-    className: "px-3 py-1.5 rounded-lg text-red-800 text-xs font-medium hover:bg-red-50"
+    className: "min-h-11 px-3 py-1.5 rounded-lg text-red-800 text-xs font-medium hover:bg-red-50"
   }, t('brand.logo_remove', 'Remove')), /*#__PURE__*/React.createElement("input", {
     ref: fileInputRef,
     "aria-label": t('brand.logo_file', 'Upload logo image file'),
@@ -766,13 +919,13 @@ function BrandProfileEditor(props) {
     type: "button",
     onClick: save,
     disabled: !validation.ok,
-    className: 'w-full px-3 py-2 rounded-lg text-sm font-bold transition-colors ' + (validation.ok ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-slate-200 text-slate-400 cursor-not-allowed')
+    className: 'w-full min-h-11 px-3 py-2 rounded-lg text-sm font-bold transition-colors motion-reduce:transition-none ' + (validation.ok ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-slate-200 text-slate-600 cursor-not-allowed')
   }, t('brand.save', 'Save profile')), draft.id && draft.id !== activeId && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: function () {
       makeActive(draft.id);
     },
-    className: "w-full px-3 py-1.5 rounded-lg bg-green-700 text-white text-sm font-bold hover:bg-green-800 transition-colors"
+    className: "w-full min-h-11 px-3 py-1.5 rounded-lg bg-green-700 text-white text-sm font-bold hover:bg-green-800 transition-colors motion-reduce:transition-none"
   }, t('brand.set_active', 'Set as active brand')))))), deleteRequest && /*#__PURE__*/React.createElement("div", {
     className: "fixed inset-0 z-[110] bg-black/60 flex items-center justify-center p-4",
     role: "presentation",
@@ -781,6 +934,7 @@ function BrandProfileEditor(props) {
     }
   }, /*#__PURE__*/React.createElement("div", {
     ref: deleteDialogRef,
+    tabIndex: -1,
     role: "alertdialog",
     "aria-modal": "true",
     "aria-labelledby": "brand-delete-dialog-title",
@@ -789,8 +943,10 @@ function BrandProfileEditor(props) {
       event.stopPropagation();
     },
     onKeyDown: function (event) {
+      if (event.defaultPrevented) return;
       event.stopPropagation();
       if (event.key === 'Escape') {
+        if (event.nativeEvent && event.nativeEvent.isComposing || event.isComposing || event.keyCode === 229) return;
         event.preventDefault();
         closeDeleteDialog();
         return;

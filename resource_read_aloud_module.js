@@ -188,10 +188,10 @@
       }, 0);
     };
     return e('details', { ref, className: 'studio-sharing mb-4 rounded-2xl border border-amber-300 bg-amber-50 p-3' },
-      e('summary', { className: 'min-h-11 cursor-pointer font-bold focus-visible:ring-2' }, tr('heading', 'Ready to share') + ' · ' + report.issues.length + ' ' + tr('items', 'items to review')),
-      e('label', { className: 'mt-2 flex flex-wrap items-center gap-2 text-sm' }, tr('channel', 'Sharing method'), e('select', { value: channel, onChange: event => setChannel(event.target.value), className: 'min-h-11 rounded-lg border bg-white px-2' }, e('option', { value: 'qr' }, tr('qr', 'Homework / QR')), e('option', { value: 'live' }, tr('live', 'Live / student pack')))),
+      e('summary', { className: 'min-h-11 cursor-pointer font-bold rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-1' }, tr('heading', 'Ready to share') + ' · ' + report.issues.length + ' ' + tr('items', 'items to review')),
+      e('label', { className: 'mt-2 flex flex-wrap items-center gap-2 text-sm' }, tr('channel', 'Sharing method'), e('select', { value: channel, onChange: event => setChannel(event.target.value), className: 'min-h-11 rounded-lg border bg-white px-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-1' }, e('option', { value: 'qr' }, tr('qr', 'Homework / QR')), e('option', { value: 'live' }, tr('live', 'Live / student pack')))),
       e('p', { role: 'status', className: 'my-2 text-sm' }, report.issues.length ? tr('review_note', 'Review these items before sharing. You decide when the resource is ready.') : tr('clear', 'No issues found by these checks. Review the content as a teacher before sharing.')),
-      report.issues.length > 0 && e('ul', { className: 'space-y-2' }, report.issues.map((issue, index) => e('li', { key: index }, e('button', { type: 'button', className: 'min-h-11 rounded-lg border border-amber-400 bg-white px-3 py-2 text-start text-sm underline focus-visible:ring-2', onClick: () => review(issue) }, descriptions[issue.code] + (issue.count ? ' (' + issue.count + ')' : '') + (issue.label ? ': ' + issue.label : ''))))),
+      report.issues.length > 0 && e('ul', { className: 'space-y-2' }, report.issues.map((issue, index) => e('li', { key: index }, e('button', { type: 'button', className: 'min-h-11 rounded-lg border border-amber-400 bg-white px-3 py-2 text-start text-sm underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-1', onClick: () => review(issue) }, descriptions[issue.code] + (issue.count ? ' (' + issue.count + ')' : '') + (issue.label ? ': ' + issue.label : ''))))),
       e('p', { className: 'mt-2 text-xs' }, report.included + ' ' + tr('clips', 'current reference clips included. Missing clips can use a device voice.')));
   }
 
@@ -240,8 +240,13 @@
     const instance = React.useRef('read-' + Math.random().toString(36).slice(2));
     const segments = enumerate(resource, { cardId, mode });
     const signature = JSON.stringify([resource?.id, segments]);
+    const effectiveRuntimeAi = Boolean(allowRuntimeAi)
+      && !window._alloQrBlocked
+      && !window.__alloStudentAiDisabled
+      && !window.__alloAiSecretsLocked
+      && (typeof window.__alloAiUsable !== 'function' || Boolean(window.__alloAiUsable()));
     const current = React.useRef(null);
-    current.current = { signature, allowRuntimeAi, canPrepare, resourceId: resource?.id, pauseBetween, followFocus };
+    current.current = { signature, allowRuntimeAi: effectiveRuntimeAi, canPrepare, resourceId: resource?.id, pauseBetween, followFocus };
     const bridge = () => window.__alloGetReadAloudAudioBridge?.();
     const inspect = segment => bridge()?.inspect(segment, 'reference') || { status: 'missing' };
     const states = segments.map(inspect);
@@ -261,13 +266,26 @@
       const other = event => { if (event.detail !== instance.current) stop(); };
       const stopped = () => stop();
       window.addEventListener('alloflow:karaoke-audio-updated', refresh);
+      window.addEventListener('alloflow:ai-config-changed', refresh);
+      window.addEventListener('alloflow:student-ai-config-changed', refresh);
+      window.addEventListener('alloflow:ai-key-lock-changed', refresh);
+      window.addEventListener('storage', refresh);
       window.addEventListener('alloflow:resource-read-aloud-start', other);
       window.addEventListener('alloflow:playback-stopped', stopped);
-      return () => { mounted.current = false; stop(); runtime.current.prepare?.abort(); window.removeEventListener('alloflow:karaoke-audio-updated', refresh); window.removeEventListener('alloflow:resource-read-aloud-start', other); window.removeEventListener('alloflow:playback-stopped', stopped); };
+      return () => {
+        mounted.current = false; stop(); runtime.current.prepare?.abort();
+        window.removeEventListener('alloflow:karaoke-audio-updated', refresh);
+        window.removeEventListener('alloflow:ai-config-changed', refresh);
+        window.removeEventListener('alloflow:student-ai-config-changed', refresh);
+        window.removeEventListener('alloflow:ai-key-lock-changed', refresh);
+        window.removeEventListener('storage', refresh);
+        window.removeEventListener('alloflow:resource-read-aloud-start', other);
+        window.removeEventListener('alloflow:playback-stopped', stopped);
+      };
     }, []);
-    React.useEffect(() => { stop(); runtime.current.prepare?.abort(); }, [signature, allowRuntimeAi, canPrepare]);
+    React.useEffect(() => { stop(); runtime.current.prepare?.abort(); }, [signature, effectiveRuntimeAi, canPrepare]);
     const prepare = async segment => {
-      if (!canPrepare || !allowRuntimeAi || busy) return;
+      if (!canPrepare || !effectiveRuntimeAi || busy) return;
       const api = bridge(); if (!api) { setMessage(tr('unavailable', 'Read-aloud audio is not available yet.')); return; }
       const controller = new AbortController(); runtime.current.prepare = controller;
       setBusy(true); setMessage('');
@@ -309,7 +327,12 @@
             runtime.current.finish = resolve;
             const finish = () => { runtime.current.finish = null; runtime.current.audio = null; runtime.current.utterance = null; resolve(); };
             if (url) {
-              const audio = new Audio(url); runtime.current.audio = audio;
+              const audio = (typeof Audio === 'function' && Audio.prototype && typeof Audio.prototype.play === 'function')
+        ? new Audio(url)
+        : document.createElement('audio');
+      if (typeof Audio !== 'function' || !(audio instanceof Audio)) {
+        if (audio && audio.src !== url) audio.src = url;
+      } runtime.current.audio = audio;
               audio.playbackRate = speechSetting(voiceSpeed, 0.5, 2); audio.volume = speechSetting(voiceVolume, 0, 1);
               audio.onended = finish; audio.onerror = () => reject(new Error('Audio playback failed'));
               Promise.resolve(audio.play()).catch(reject);
@@ -325,25 +348,25 @@
       if (valid()) stop();
     };
     if (!segments.length) return null;
-    const buttonClass = 'min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 disabled:opacity-50';
+    const buttonClass = 'min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 disabled:opacity-50';
     return e('section', { tabIndex: -1, 'data-studio-review': 'audio', className: 'resource-read-aloud my-3 rounded-2xl border border-slate-200 bg-slate-50 p-3', 'aria-label': tr('label', 'Saved read-aloud audio') },
       e('style', null, '@media print{.resource-read-aloud,.studio-sharing,.studio-recovery{display:none!important}}'),
       e('div', { className: 'flex flex-wrap items-center gap-2' },
         e('button', { type: 'button', className: buttonClass, onClick: () => active >= 0 ? stop() : play(0) }, active >= 0 ? tr('stop', 'Stop reading') : mode === 'cue' ? tr('read_cue', 'Read cue aloud') : tr('listen', 'Read reference aloud')),
         active >= 0 && e('button', { type: 'button', className: buttonClass, onClick: togglePause }, paused ? tr('resume', 'Resume reading') : tr('pause', 'Pause reading')),
         active >= 0 && e('button', { type: 'button', className: buttonClass, onClick: () => play(active, true) }, tr('repeat', 'Repeat this field')),
-        canPrepare && e('button', { type: 'button', className: buttonClass, disabled: !allowRuntimeAi, 'aria-busy': busy, onClick: () => busy ? runtime.current.prepare?.abort() : prepare() }, busy ? tr('cancel', 'Cancel saving') + ' ' + progress : tr('save', 'Save TTS')),
+        canPrepare && e('button', { type: 'button', className: buttonClass, disabled: !effectiveRuntimeAi, 'aria-busy': busy, onClick: () => busy ? runtime.current.prepare?.abort() : prepare() }, busy ? tr('cancel', 'Cancel saving') + ' ' + progress : tr('save', 'Save TTS')),
         e('button', { type: 'button', className: buttonClass, 'aria-expanded': expanded, 'aria-controls': instance.current, onClick: () => setExpanded(value => !value) }, tr('segments', 'Read-along and clips')),
         e('span', { role: 'status', 'aria-live': 'polite', className: 'text-xs text-slate-700' }, ready + '/' + segments.length + ' ' + tr('ready', 'ready') + (stale ? '; ' + stale + ' ' + tr('stale', 'stale') : ''))),
       e('div', { hidden: !expanded, className: 'mt-3 flex flex-wrap gap-3 text-sm' },
-        e('label', { className: 'inline-flex min-h-11 items-center gap-2' }, e('input', { type: 'checkbox', checked: pauseBetween, onChange: event => setPauseBetween(event.target.checked) }), tr('pause_between', 'Pause after each field')),
-        typeof onActiveSegment === 'function' && e('label', { className: 'inline-flex min-h-11 items-center gap-2' }, e('input', { type: 'checkbox', checked: followFocus, onChange: event => setFollowFocus(event.target.checked) }), tr('follow_focus', 'Move focus with reading'))),
+        e('label', { className: 'inline-flex min-h-11 items-center gap-2' }, e('input', { type: 'checkbox', className: 'rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-1', checked: pauseBetween, onChange: event => setPauseBetween(event.target.checked) }), tr('pause_between', 'Pause after each field')),
+        typeof onActiveSegment === 'function' && e('label', { className: 'inline-flex min-h-11 items-center gap-2' }, e('input', { type: 'checkbox', className: 'rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-1', checked: followFocus, onChange: event => setFollowFocus(event.target.checked) }), tr('follow_focus', 'Move focus with reading'))),
       paused && e('p', { role: 'status', className: 'mt-2 text-sm' }, tr('paused', 'Reading paused. Resume when you are ready.')),
       message && e('p', { role: 'status', className: 'mt-2 text-sm text-slate-700' }, message),
       e('ol', { id: instance.current, hidden: !expanded, className: 'mt-3 max-h-80 space-y-2 overflow-auto' }, segments.map((segment, index) => e('li', { key: segment.segmentId, className: 'rounded-xl border p-2 ' + (active === index ? 'border-teal-600 bg-teal-100 text-slate-950' : 'border-slate-200 bg-white'), 'aria-current': active === index ? 'step' : undefined },
-        e('button', { type: 'button', className: 'min-h-11 w-full rounded-lg p-2 text-start text-sm focus-visible:ring-2 focus-visible:ring-teal-600', onClick: () => play(index) }, segment.text),
-        canPrepare && e('button', { type: 'button', className: buttonClass, disabled: busy || !allowRuntimeAi, onClick: () => prepare(segment), 'aria-label': tr('regenerate', 'Regenerate clip') + ': ' + segment.text }, tr('regenerate', 'Regenerate clip') + ' · ' + tr(states[index].status, states[index].status)),
-        states[index].status === 'ready' && e('a', { className: 'inline-flex min-h-11 items-center rounded-lg px-3 text-sm underline focus-visible:ring-2 focus-visible:ring-teal-600', href: states[index].url || states[index].storedUrl, download: 'read-aloud-' + (index + 1) + clipExtension(resource, segment) }, tr('download', 'Download clip'))))));
+        e('button', { type: 'button', className: 'min-h-11 w-full rounded-lg p-2 text-start text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1', onClick: () => play(index) }, segment.text),
+        canPrepare && e('button', { type: 'button', className: buttonClass, disabled: busy || !effectiveRuntimeAi, onClick: () => prepare(segment), 'aria-label': tr('regenerate', 'Regenerate clip') + ': ' + segment.text }, tr('regenerate', 'Regenerate clip') + ' · ' + tr(states[index].status, states[index].status)),
+        states[index].status === 'ready' && e('a', { className: 'inline-flex min-h-11 items-center rounded-lg px-3 text-sm underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1', href: states[index].url || states[index].storedUrl, download: 'read-aloud-' + (index + 1) + clipExtension(resource, segment) }, tr('download', 'Download clip'))))));
   }
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.ResourceReadAloud = { register, supports: type => adapters.has(type), enumerate, portableAudio, deliveryLimits, sharingReview, SharingCheck, Controls, CueControls, LocalText };

@@ -1414,7 +1414,38 @@ function InfoModal({
     const dialog = dialogRef.current;
     if (!dialog) return void 0;
     const previousFocus = document.activeElement;
+    const trap = { root: dialog };
+    const trapStack = typeof window !== "undefined" ? window.__alloFocusTrapStack = window.__alloFocusTrapStack || [] : null;
+    if (trapStack) trapStack.push(trap);
     const body = document.body;
+    const isolated = [];
+    const seenSiblings = /* @__PURE__ */ new Set();
+    let cursor = dialog;
+    while (cursor && body && cursor.parentElement) {
+      const parent = cursor.parentElement;
+      Array.from(parent.children).forEach((sibling) => {
+        if (!sibling || sibling === cursor || seenSiblings.has(sibling) || !sibling.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName)) return;
+        seenSiblings.add(sibling);
+        const hadInert = sibling.hasAttribute("inert");
+        const prevInert = sibling.inert;
+        const ariaHidden = sibling.getAttribute("aria-hidden");
+        isolated.push({ sibling, hadInert, prevInert, ariaHidden });
+        try {
+          sibling.inert = true;
+        } catch (_) {
+        }
+        try {
+          sibling.setAttribute("inert", "");
+        } catch (_) {
+        }
+        try {
+          sibling.setAttribute("aria-hidden", "true");
+        } catch (_) {
+        }
+      });
+      if (parent === body) break;
+      cursor = parent;
+    }
     const scrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: "" });
     if (body && ++scrollLock.count === 1) {
       scrollLock.prev = body.style.overflow;
@@ -1432,14 +1463,20 @@ function InfoModal({
         }
         ancestor = ancestor.parentElement;
       }
-      return true;
+      const style = typeof window.getComputedStyle === "function" ? window.getComputedStyle(element) : null;
+      return !style || style.display !== "none" && style.visibility !== "hidden";
     });
     (getFocusable()[0] || dialog).focus();
     const onKeyDown = (event) => {
+      if (!dialog.isConnected || event.defaultPrevented) return;
+      const topTrap = trapStack && trapStack[trapStack.length - 1];
+      if (topTrap && topTrap !== trap && !(topTrap.root && typeof topTrap.root.contains === "function" && topTrap.root.contains(dialog))) return;
       if (event.key === "Escape") {
+        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
         const escapeClearTarget = event.target?.closest?.('[data-info-modal-escape-clears="true"]');
         if (escapeClearTarget?.value) return;
         event.preventDefault();
+        event.stopPropagation();
         closeHandlerRef.current?.();
         return;
       }
@@ -1452,7 +1489,10 @@ function InfoModal({
       }
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
+      if (!dialog.contains(document.activeElement) || document.activeElement === dialog) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus();
+      } else if (event.shiftKey && document.activeElement === first) {
         event.preventDefault();
         last.focus();
       } else if (!event.shiftKey && document.activeElement === last) {
@@ -1460,14 +1500,50 @@ function InfoModal({
         first.focus();
       }
     };
-    dialog.addEventListener("keydown", onKeyDown);
+    document.addEventListener("keydown", onKeyDown);
     return () => {
-      dialog.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("keydown", onKeyDown);
+      isolated.forEach(({ sibling, hadInert, prevInert, ariaHidden }) => {
+        if (!sibling || !sibling.isConnected) return;
+        if (!hadInert) {
+          try {
+            sibling.inert = false;
+          } catch (_) {
+          }
+          try {
+            sibling.removeAttribute("inert");
+          } catch (_) {
+          }
+        } else {
+          try {
+            sibling.inert = Boolean(prevInert);
+          } catch (_) {
+          }
+        }
+        if (ariaHidden == null) {
+          try {
+            sibling.removeAttribute("aria-hidden");
+          } catch (_) {
+          }
+        } else {
+          try {
+            sibling.setAttribute("aria-hidden", ariaHidden);
+          } catch (_) {
+          }
+        }
+      });
+      const wasTopTrap = !trapStack || trapStack[trapStack.length - 1] === trap;
+      if (trapStack) {
+        const idx = trapStack.lastIndexOf(trap);
+        if (idx >= 0) trapStack.splice(idx, 1);
+      }
       if (body) {
         scrollLock.count = Math.max(0, scrollLock.count - 1);
         if (scrollLock.count === 0) body.style.overflow = scrollLock.prev;
       }
-      if (previousFocus && typeof previousFocus.focus === "function") previousFocus.focus();
+      if (wasTopTrap && previousFocus !== body && previousFocus !== document.documentElement && previousFocus?.isConnected) {
+        if (previousFocus && typeof previousFocus.focus === "function") previousFocus.focus();
+      }
     };
   }, []);
   React.useEffect(() => {
@@ -1520,7 +1596,7 @@ function InfoModal({
     const categoryName = featuresList?.categories?.[feature.category] || feature.category || "";
     return [feature.title, feature.desc, categoryName].some((value) => String(value || "").toLocaleLowerCase().includes(normalizedFeatureQuery));
   }) : featureCatalogItems;
-  return /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[300] flex items-stretch sm:items-center justify-center p-0 sm:p-4 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200", onClick: handleSetShowInfoModalToFalse }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, className: "bg-white rounded-none sm:rounded-2xl shadow-2xl max-w-4xl w-full h-[100dvh] max-h-[100dvh] sm:h-auto sm:max-h-[90vh] overflow-hidden flex flex-col focus:outline-none", role: "dialog", "aria-modal": "true", "aria-labelledby": "info-modal-title", "aria-describedby": "info-modal-description", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("p", { id: "info-modal-description", className: "sr-only" }, "Explore AlloFlow\u2019s approach, catalog map, guided workflows, privacy data paths, and open-source credits."), /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-700 px-4 py-3 sm:p-4 text-white flex justify-between items-center gap-3 shrink-0" }, /* @__PURE__ */ React.createElement("h3", { id: "info-modal-title", className: "min-w-0 font-bold text-lg leading-tight flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Layers, { size: 20, className: "shrink-0", "aria-hidden": "true" }), " ", t("about.title")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSetShowInfoModalToFalse, className: "min-h-11 min-w-11 shrink-0 inline-flex items-center justify-center rounded-full hover:bg-indigo-600 focus:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors motion-reduce:transition-none", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 20, "aria-hidden": "true" }))), /* @__PURE__ */ React.createElement("div", { ref: tabListRef, className: "flex border-b border-slate-200 bg-slate-50 shrink-0 overflow-x-auto overscroll-x-contain scroll-px-2", role: "tablist", "aria-orientation": "horizontal", "aria-label": t("about.title") }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[300] flex items-stretch sm:items-center justify-center p-0 sm:p-4 motion-safe:animate-in motion-reduce:animate-none motion-safe:fade-in motion-safe:duration-200", onClick: handleSetShowInfoModalToFalse }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, className: "bg-white rounded-none sm:rounded-2xl shadow-2xl max-w-4xl w-full h-[100dvh] max-h-[100dvh] sm:h-auto sm:max-h-[90vh] overflow-hidden flex flex-col focus:outline-none", role: "dialog", "aria-modal": "true", "aria-labelledby": "info-modal-title", "aria-describedby": "info-modal-description", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("p", { id: "info-modal-description", className: "sr-only" }, "Explore AlloFlow\u2019s approach, catalog map, guided workflows, privacy data paths, and open-source credits."), /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-700 px-4 py-3 sm:p-4 text-white flex justify-between items-center gap-3 shrink-0" }, /* @__PURE__ */ React.createElement("h3", { id: "info-modal-title", className: "min-w-0 font-bold text-lg leading-tight flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Layers, { size: 20, className: "shrink-0", "aria-hidden": "true" }), " ", t("about.title")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSetShowInfoModalToFalse, className: "min-h-11 min-w-11 shrink-0 inline-flex items-center justify-center rounded-full hover:bg-indigo-600 focus:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors motion-reduce:transition-none", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 20, "aria-hidden": "true" }))), /* @__PURE__ */ React.createElement("div", { ref: tabListRef, className: "flex border-b border-slate-200 bg-slate-50 shrink-0 overflow-x-auto overscroll-x-contain scroll-px-2", role: "tablist", "aria-orientation": "horizontal", "aria-label": t("about.title") }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -1605,7 +1681,7 @@ function InfoModal({
     /* @__PURE__ */ React.createElement(RefreshCw, { size: 10, "aria-hidden": "true" }),
     " ",
     t("about.reset_wizard")
-  ))), /* @__PURE__ */ React.createElement(AccessibilityNote, { t }), /* @__PURE__ */ React.createElement("div", { "data-dedication": true, className: "pt-3 border-t border-slate-200 text-center text-xs text-slate-600 italic space-y-1" }, /* @__PURE__ */ React.createElement("p", null, t("about.maker") || "Made by Dr. Aaron Pomeranz, a school psychologist in Portland, Maine."), /* @__PURE__ */ React.createElement("p", null, t("about.dedication") || "For my father, Dr. Robert Pomeranz: teacher, doctor, and sci-fi nerd. He set out to repair the world, and in his own way, he did."))) : infoModalTab === "atlas" ? /* @__PURE__ */ React.createElement(AtlasTab, { t, onRequestClose: handleSetShowInfoModalToFalse }) : infoModalTab === "privacy" ? /* @__PURE__ */ React.createElement(PrivacyTab, { t }) : infoModalTab === "opensource" ? /* @__PURE__ */ React.createElement(OpenSourceTab, { t }) : selectedFeature ? /* @__PURE__ */ React.createElement("div", { className: "space-y-6 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-left motion-safe:duration-200 text-slate-700" }, /* @__PURE__ */ React.createElement(
+  ))), /* @__PURE__ */ React.createElement(AccessibilityNote, { t }), /* @__PURE__ */ React.createElement("div", { "data-dedication": true, className: "pt-3 border-t border-slate-200 text-center text-xs text-slate-600 italic space-y-1" }, /* @__PURE__ */ React.createElement("p", null, t("about.maker") || "Made by Dr. Aaron Pomeranz, a school psychologist in Portland, Maine."), /* @__PURE__ */ React.createElement("p", null, t("about.dedication") || "For my father, Dr. Robert Pomeranz: teacher, doctor, and sci-fi nerd. He set out to repair the world, and in his own way, he did."))) : infoModalTab === "atlas" ? /* @__PURE__ */ React.createElement(AtlasTab, { t, onRequestClose: handleSetShowInfoModalToFalse }) : infoModalTab === "privacy" ? /* @__PURE__ */ React.createElement(PrivacyTab, { t }) : infoModalTab === "opensource" ? /* @__PURE__ */ React.createElement(OpenSourceTab, { t }) : selectedFeature ? /* @__PURE__ */ React.createElement("div", { className: "space-y-6 motion-safe:animate-in motion-reduce:animate-none motion-safe:fade-in motion-safe:slide-in-from-left motion-safe:duration-200 text-slate-700" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       ref: featureBackRef,
@@ -1653,7 +1729,7 @@ function InfoModal({
     " Find this in AlloFlow"
   ), /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("h5", { className: "font-bold text-slate-800 text-sm flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 16, className: "text-indigo-500", "aria-hidden": "true" }), " How this workflow fits"), (() => {
     const fDetails = getFeatureDetails(selectedFeature.title);
-    return /* @__PURE__ */ React.createElement("div", { className: "space-y-6" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col md:flex-row items-stretch justify-between gap-2 md:gap-4 relative" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 bg-sky-50 border border-sky-200 p-4 rounded-xl shadow-sm" }, /* @__PURE__ */ React.createElement("h6", { className: "font-bold text-sky-800 text-xs uppercase tracking-wider mb-2 flex items-center gap-1.5" }, "\u{1F4E5} Inputs & Context"), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1.5 text-xs text-sky-900 list-disc pl-4" }, fDetails.inputs.map((item, idx) => /* @__PURE__ */ React.createElement("li", { key: idx, className: "leading-snug" }, item)))), /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "flex items-center justify-center text-slate-400 font-extrabold text-xl self-center rotate-90 md:rotate-0 my-1 md:my-0 select-none" }, "\u2794"), /* @__PURE__ */ React.createElement("div", { className: "flex-1 bg-indigo-50 border border-indigo-200 p-4 rounded-xl shadow-sm" }, /* @__PURE__ */ React.createElement("h6", { className: "font-bold text-indigo-800 text-xs uppercase tracking-wider mb-2 flex items-center gap-1.5" }, "\u2699\uFE0F AlloFlow workflow"), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1.5 text-xs text-indigo-900 list-disc pl-4" }, fDetails.engine.map((item, idx) => /* @__PURE__ */ React.createElement("li", { key: idx, className: "leading-snug" }, item)))), /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "flex items-center justify-center text-slate-400 font-extrabold text-xl self-center rotate-90 md:rotate-0 my-1 md:my-0 select-none" }, "\u2794"), /* @__PURE__ */ React.createElement("div", { className: "flex-1 bg-emerald-50 border border-emerald-200 p-4 rounded-xl shadow-sm" }, /* @__PURE__ */ React.createElement("h6", { className: "font-bold text-emerald-800 text-xs uppercase tracking-wider mb-2 flex items-center gap-1.5" }, "\u{1F4E4} Outputs & Resources"), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1.5 text-xs text-emerald-900 list-disc pl-4" }, fDetails.outputs.map((item, idx) => /* @__PURE__ */ React.createElement("li", { key: idx, className: "leading-snug" }, item))))), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border border-slate-200 p-4 rounded-xl" }, /* @__PURE__ */ React.createElement("h5", { className: "font-bold text-slate-800 text-xs uppercase tracking-wider mb-2.5 flex items-center gap-1.5" }, "\u{1F527} Customization Options"), /* @__PURE__ */ React.createElement("ul", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-700 list-none pl-1" }, fDetails.customizations.map((item, idx) => /* @__PURE__ */ React.createElement("li", { key: idx, className: "flex items-start gap-2 leading-tight" }, /* @__PURE__ */ React.createElement("span", { className: "w-1.5 h-1.5 bg-indigo-500 rounded-full shrink-0 mt-1.5" }), /* @__PURE__ */ React.createElement("span", null, item))))), /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border border-amber-200 p-4 rounded-xl text-amber-900 flex gap-2.5" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "text-xl leading-none select-none" }, "\u{1F4A1}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", { className: "text-xs uppercase tracking-wider font-extrabold block mb-0.5" }, "Pro Tip"), /* @__PURE__ */ React.createElement("p", { className: "text-xs leading-relaxed" }, fDetails.proTip))));
+    return /* @__PURE__ */ React.createElement("div", { className: "space-y-6" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col md:flex-row items-stretch justify-between gap-2 md:gap-4 relative" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 bg-sky-50 border border-sky-200 p-4 rounded-xl shadow-sm" }, /* @__PURE__ */ React.createElement("h6", { className: "font-bold text-sky-800 text-xs uppercase tracking-wider mb-2 flex items-center gap-1.5" }, "\u{1F4E5} Inputs & Context"), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1.5 text-xs text-sky-900 list-disc pl-4" }, fDetails.inputs.map((item, idx) => /* @__PURE__ */ React.createElement("li", { key: idx, className: "leading-snug" }, item)))), /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "flex items-center justify-center text-slate-600 font-extrabold text-xl self-center rotate-90 md:rotate-0 my-1 md:my-0 select-none" }, "\u2794"), /* @__PURE__ */ React.createElement("div", { className: "flex-1 bg-indigo-50 border border-indigo-200 p-4 rounded-xl shadow-sm" }, /* @__PURE__ */ React.createElement("h6", { className: "font-bold text-indigo-800 text-xs uppercase tracking-wider mb-2 flex items-center gap-1.5" }, "\u2699\uFE0F AlloFlow workflow"), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1.5 text-xs text-indigo-900 list-disc pl-4" }, fDetails.engine.map((item, idx) => /* @__PURE__ */ React.createElement("li", { key: idx, className: "leading-snug" }, item)))), /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "flex items-center justify-center text-slate-600 font-extrabold text-xl self-center rotate-90 md:rotate-0 my-1 md:my-0 select-none" }, "\u2794"), /* @__PURE__ */ React.createElement("div", { className: "flex-1 bg-emerald-50 border border-emerald-200 p-4 rounded-xl shadow-sm" }, /* @__PURE__ */ React.createElement("h6", { className: "font-bold text-emerald-800 text-xs uppercase tracking-wider mb-2 flex items-center gap-1.5" }, "\u{1F4E4} Outputs & Resources"), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1.5 text-xs text-emerald-900 list-disc pl-4" }, fDetails.outputs.map((item, idx) => /* @__PURE__ */ React.createElement("li", { key: idx, className: "leading-snug" }, item))))), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border border-slate-200 p-4 rounded-xl" }, /* @__PURE__ */ React.createElement("h5", { className: "font-bold text-slate-800 text-xs uppercase tracking-wider mb-2.5 flex items-center gap-1.5" }, "\u{1F527} Customization Options"), /* @__PURE__ */ React.createElement("ul", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-700 list-none pl-1" }, fDetails.customizations.map((item, idx) => /* @__PURE__ */ React.createElement("li", { key: idx, className: "flex items-start gap-2 leading-tight" }, /* @__PURE__ */ React.createElement("span", { className: "w-1.5 h-1.5 bg-indigo-500 rounded-full shrink-0 mt-1.5" }), /* @__PURE__ */ React.createElement("span", null, item))))), /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border border-amber-200 p-4 rounded-xl text-amber-900 flex gap-2.5" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "text-xl leading-none select-none" }, "\u{1F4A1}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", { className: "text-xs uppercase tracking-wider font-extrabold block mb-0.5" }, "Pro Tip"), /* @__PURE__ */ React.createElement("p", { className: "text-xs leading-relaxed" }, fDetails.proTip))));
   })())) : /* @__PURE__ */ React.createElement("div", { className: "space-y-6" }, /* @__PURE__ */ React.createElement("section", { className: "rounded-xl border border-indigo-100 bg-indigo-50 p-4 sm:flex sm:items-center sm:justify-between sm:gap-4", "aria-labelledby": "feature-guide-heading" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { id: "feature-guide-heading", className: "font-bold text-indigo-900" }, "Feature Guide"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed mt-1" }, featureCatalogItems.length, " curated workflow guides are available in the current interface language. Atlas is the broader current product map of ", ATLAS_HUBS.reduce((sum, hub) => sum + hub.total, 0), " catalog entries.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSetInfoModalTabToAtlas, className: "min-h-11 mt-3 sm:mt-0 shrink-0 inline-flex items-center justify-center gap-2 rounded-lg border border-indigo-200 bg-white px-3 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" }, /* @__PURE__ */ React.createElement(Layers, { size: 15, "aria-hidden": "true" }), " Open complete Atlas")), /* @__PURE__ */ React.createElement("div", { role: "search", "aria-label": "Search the Feature Guide", className: "rounded-xl border border-slate-200 bg-slate-50 p-3" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "feature-guide-search", className: "block text-xs font-bold text-slate-700 mb-1.5" }, "Search guided workflows"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "relative flex-1" }, /* @__PURE__ */ React.createElement(Search, { size: 15, className: "absolute left-3 top-1/2 -translate-y-1/2 text-slate-600 pointer-events-none", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement(
     "input",
     {

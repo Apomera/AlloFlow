@@ -175,7 +175,7 @@ function WordSoundsPreviewView(props) {
                         {practiceStatus.notice && <p role="status" aria-live="polite" aria-atomic="true" className="mt-1 text-sm text-amber-900">{practiceStatus.notice}</p>}
                       </div>}
                       {isTeacherMode && wordSoundsAudioCoverage && (
-                        <section ref={readinessPanelRef} className="mt-4 rounded-xl border border-violet-200 bg-white p-4 text-start" aria-label={label('readiness_panel', 'Ready for students: audio check')} aria-busy={readinessBusy} onKeyDown={event => { if (event.key === 'Escape' && readinessBusy) { event.preventDefault(); cancelReadiness(); } }}>
+                        <section ref={readinessPanelRef} className="mt-4 rounded-xl border border-violet-200 bg-white p-4 text-start" aria-label={label('readiness_panel', 'Ready for students: audio check')} aria-busy={readinessBusy} onKeyDown={event => { if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229) return; if (event.key === 'Escape' && readinessBusy) { event.preventDefault(); cancelReadiness(); } }}>
                           <h4 className="font-bold text-slate-800">{label('readiness_heading', 'Ready for students')} <span className="text-sm font-medium">{label('readiness_audio_qualifier', 'Audio check')}</span></h4>
                           <p role="status" aria-live="polite" aria-atomic="true" className={`mt-2 text-sm font-bold ${wordSoundsAudioCoverage.complete ? 'text-emerald-700' : 'text-amber-800'}`}>
                             {readinessBusy ? label('readiness_checking', 'Checking local clips. This may take up to 30 seconds.') : (wordSoundsAudioCoverage.teacherLedReady ? label('readiness_teacher_led_ready', 'Ready with a teacher present') : wordSoundsAudioCoverage.complete ? label('readiness_ready', 'Audio verified for this student pack') : label('readiness_review', 'Audio needs checking or review'))}
@@ -213,7 +213,7 @@ function WordSoundsPreviewView(props) {
                               setIsWordSoundsMode(true);
                               setWordSoundsAutoReview(true);
                             }}
-                            className="min-h-14 flex items-center justify-center gap-3 px-5 py-3 bg-white text-violet-800 font-bold rounded-xl border-2 border-violet-300 hover:bg-violet-100 hover:border-violet-500 shadow-sm hover:shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-violet-600 focus:ring-offset-2"
+                            className="min-h-14 flex items-center justify-center gap-3 px-5 py-3 bg-white text-violet-800 font-bold rounded-xl border-2 border-violet-300 hover:bg-violet-100 hover:border-violet-500 shadow-sm hover:shadow-md transition-all motion-reduce:transition-none focus:outline-none focus:ring-2 focus:ring-violet-600 focus:ring-offset-2"
                           >
                             <BookOpen size={20} aria-hidden="true" />
                             <span className="text-start">
@@ -239,7 +239,7 @@ function WordSoundsPreviewView(props) {
                             // no-sequence fallback.
                             launchPreparedActivity();
                           }}
-                          className="min-h-14 flex items-center justify-center gap-3 px-5 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-lg hover:shadow-xl transition-all motion-safe:hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-indigo-700 focus:ring-offset-2"
+                          className="min-h-14 flex items-center justify-center gap-3 px-5 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-lg hover:shadow-xl transition-all motion-reduce:transition-none motion-safe:hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-indigo-700 focus:ring-offset-2"
                         >
                           <Play size={20} aria-hidden="true" />
                           <span className="text-start">

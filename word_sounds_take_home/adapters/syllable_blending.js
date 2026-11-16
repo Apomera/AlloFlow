@@ -168,7 +168,7 @@ module.exports = {
     if (hear) ctx.root.appendChild(hear.node);
     ctx.root.appendChild(list);
     setState();
-    if (!ctx.isDone()) runSyllables(true);
+    if (!ctx.isDone()) runSyllables(!ctx.skipDirections);
     return {
       // The R key: the question and the syllables again (the choices wait for them, as on the button).
       replay: function () { if (!ctx.isDone()) runSyllables(true); },

@@ -10557,9 +10557,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           h('input', { type: 'text', value: codeInput, maxLength: 12, placeholder: t('stem.singing.vs_have_code', 'Have a code?'), 'aria-label': t('stem.singing.vs_code_label', 'Exercise code'),
             onChange: function (e) { setCodeInput(e.target.value); }, className: selCls + ' w-40 uppercase' }),
           h('button', { type: 'submit', className: c.btnSecondary }, t('stem.singing.vs_go', 'Go')))),
-      live && h('p', { className: 'text-sm font-bold text-rose-700 m-0', role: 'status' }, '● ' + live),
-      err && h('p', { role: 'alert', className: 'text-sm font-bold text-rose-700 m-0' }, err),
-      load === 'error' && h('p', { role: 'alert', className: 'text-sm font-bold text-rose-700 m-0' }, t('stem.singing.vs_osmd_failed', 'The music display could not load. Check the internet connection, then reopen this tab.')),
+      live && h('p', { className: 'text-sm font-bold m-0 ' + (dark ? 'text-rose-300' : 'text-rose-700'), role: 'status' }, '● ' + live),
+      err && h('p', { role: 'alert', className: 'text-sm font-bold m-0 ' + (dark ? 'text-rose-300' : 'text-rose-700') }, err),
+      load === 'error' && h('p', { role: 'alert', className: 'text-sm font-bold m-0 ' + (dark ? 'text-rose-300' : 'text-rose-700') }, t('stem.singing.vs_osmd_failed', 'The music display could not load. Check the internet connection, then reopen this tab.')),
       h('div', { ref: scoreRef, role: 'img', className: 'rounded-xl border overflow-x-auto', style: { background: '#fff', minHeight: 140, borderColor: '#cbd5e1' },
         'aria-label': meta ? vsFmt(t('stem.singing.vs_score_label', 'Melody in {key}, {meter} time, {n} notes, starting on {first}'), { key: vsKeyLabel(t, meta.key), meter: meta.meter, n: meta.notes, first: meta.first }) : t('stem.singing.vs_score_loading', 'Sight-singing melody') }),
       result && h('div', { className: c.cardClass + ' space-y-2', role: 'status' },
@@ -10841,7 +10841,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             h('option', { value: '-2' }, t('stem.singing.vs_wu_gentle', 'Gentle (stay in the middle)')),
             h('option', { value: '0' }, t('stem.singing.vs_wu_comfortable', 'Comfortable')),
             h('option', { value: '2' }, t('stem.singing.vs_wu_stretch', 'Stretch (a little higher and lower)'))))),
-      nowText && h('p', { role: 'status', className: 'text-sm font-bold text-rose-700 m-0' }, nowText),
+      nowText && h('p', { role: 'status', className: 'text-sm font-bold m-0 ' + (dark ? 'text-rose-300' : 'text-rose-700') }, nowText),
       h('div', { className: 'grid gap-2', style: { gridTemplateColumns: 'repeat(auto-fill, minmax(17rem, 1fr))' } },
         VS.WARMUPS.map(function (w) {
           var tx = texts[w.id] || w;

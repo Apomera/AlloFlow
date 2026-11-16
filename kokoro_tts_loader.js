@@ -153,7 +153,7 @@
         const LOUDNESS = Object.freeze({ target: -20, ceiling: -1.5, maxGainDb: 12 });
         const GATES = Object.freeze({ minSeconds: 0.25, maxSeconds: 2.5, under: 0.28, over: 0.45, minPeak: 0.2, minRms: 0.05, maxRms: 0.16, minAudibleSeconds: 0.08,
             maxClippedFraction: 0.0005, maxTailRatio: 0.02, minSourceTailSeconds: 0.06, minSourceLeadSeconds: 0.01, encodedDurationSlack: 0.08 });
-        const RECIPE_GATES = Object.freeze(Object.assign({}, GATES, { minRms: 0.02, offsetSeconds: 0.09 }));
+        const RECIPE_GATES = Object.freeze(Object.assign({}, GATES, { minRms: 0.02, offsetSeconds: 0.09, maxSeconds: 3.4, over: 0.75 }));
         const CARRIERS = Object.freeze(['Here is the word... {word}.', 'The word is... {word}.']);
         const CARRIER_SLOT = '{word}';
         const CALIBRATION_WORDS = Object.freeze(['man', 'sun', 'top']);

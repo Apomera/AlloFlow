@@ -597,7 +597,7 @@ function TimelineView(props) {
     size: 16
   })), item.image && isEditingTimeline && /*#__PURE__*/React.createElement("div", {
     "data-timeline-image-tools": true,
-    className: "basis-full min-w-0 flex flex-col gap-2 border-t border-slate-200 pt-2 motion-safe:animate-in motion-safe:slide-in-from-top-2"
+    className: "basis-full min-w-0 flex flex-col gap-2 border-t border-slate-200 pt-2 motion-safe:animate-in motion-safe:slide-in-from-top-2 motion-reduce:animate-none"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap items-center gap-2"
   }, /*#__PURE__*/React.createElement("button", {
@@ -650,7 +650,7 @@ function TimelineView(props) {
     size: 16
   }), " ", t('timeline.add_step'))) : isTeacherMode || isIndependentMode ? (Array.isArray(generatedContent?.data) ? generatedContent?.data : generatedContent?.data?.items || []).map((item, idx) => /*#__PURE__*/React.createElement("div", {
     key: idx,
-    className: "relative motion-safe:animate-in motion-safe:slide-in-from-bottom-2 duration-300",
+    className: "relative motion-safe:animate-in motion-safe:slide-in-from-bottom-2 motion-reduce:animate-none duration-300",
     style: {
       animationDelay: `${idx * 100}ms`
     }
@@ -724,7 +724,7 @@ function TimelineView(props) {
   }), " ", _timelineReviewLabel(t, 'timeline.ai_review.no_issue', 'AI review: no issue flagged'))))))) : /*#__PURE__*/React.createElement("div", {
     className: "relative -ml-12 sm:-ml-16"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-col items-center justify-center p-12 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 text-center motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in duration-300"
+    className: "flex flex-col items-center justify-center p-12 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 text-center motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in motion-reduce:animate-none duration-300"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-indigo-100 p-4 rounded-full mb-4"
   }, /*#__PURE__*/React.createElement(ListOrdered, {

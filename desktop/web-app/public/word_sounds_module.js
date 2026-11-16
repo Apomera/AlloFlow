@@ -2885,7 +2885,7 @@ const WS_CORE = createWordSoundsCore();
     // Headers and values are English so a spreadsheet import can key on them.
     const wsResultsCsvCell = (value) => {
       let text = value == null ? "" : String(value);
-      if (typeof value === "string" && /^[=+\-@\t\r]/.test(text)) text = "'" + text;
+      if (typeof value === "string" && (/^\s*[=+\-@|]/.test(text) || /^[\t\r\n]/.test(text))) text = "'" + text;
       return '"' + text.replace(/"/g, '""') + '"';
     };
     const WS_RESULTS_CSV_HEADER = ["Date and time", "Learner", "Activity", "Skill strand", "Word", "Right on first try", "Tries",
@@ -5486,9 +5486,27 @@ function useWordSoundsSyllableExitGuard(getDirtyWords, translate) {
     focusRef.current = typeof document !== 'undefined' ? document.activeElement : null;
     actionRef.current = action; setPending(words);
   }, [keepEditing]);
+  const stackTopRef = React.useRef(true);
   React.useLayoutEffect(() => {
-    if (pending) noticeRef.current?.querySelector('button')?.focus();
-    else if (restoreRef.current) { restoreRef.current = false; if (focusRef.current?.isConnected) focusRef.current.focus(); }
+    if (!pending) {
+      if (restoreRef.current) { restoreRef.current = false; if (stackTopRef.current && focusRef.current?.isConnected) focusRef.current.focus(); }
+      return undefined;
+    }
+    const trap = noticeRef.current ? { root: noticeRef.current } : null;
+    const stack = typeof window !== 'undefined' && Array.isArray(window.__alloFocusTrapStack)
+      ? window.__alloFocusTrapStack
+      : (typeof window !== 'undefined' ? (window.__alloFocusTrapStack = []) : null);
+    if (trap && stack) stack.push(trap);
+    noticeRef.current?.querySelector('button')?.focus();
+    return () => {
+      if (trap && stack) {
+        stackTopRef.current = stack[stack.length - 1] === trap;
+        const idx = stack.lastIndexOf(trap);
+        if (idx >= 0) stack.splice(idx, 1);
+      } else {
+        stackTopRef.current = true;
+      }
+    };
   }, [pending]);
   const tr = (key, fallback, params = {}) => {
     let value;
@@ -5502,11 +5520,25 @@ function useWordSoundsSyllableExitGuard(getDirtyWords, translate) {
     h('div', { ref: noticeRef, role: 'alertdialog', 'aria-modal': true, 'aria-labelledby': titleId, 'aria-describedby': descriptionId,
       'data-syllable-exit-notice': true, className: 'w-full max-w-lg rounded-2xl border border-amber-400 bg-white p-5 text-slate-900 shadow-xl',
       onKeyDownCapture: event => {
+        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+        const trapRoot = noticeRef.current;
+        const stack = typeof window !== 'undefined' ? window.__alloFocusTrapStack : null;
+        if (Array.isArray(stack) && stack.length > 0 && trapRoot) {
+          const top = stack[stack.length - 1];
+          if ((top && (top.root || top)) !== trapRoot) return;
+        }
         if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); keepEditing(); }
-        else if (event.key === 'Tab') {
-          const buttons = [...noticeRef.current.querySelectorAll('button')], first = buttons[0], last = buttons[buttons.length - 1];
+        else if (event.key === 'Tab' && trapRoot) {
+          const allButtons = [...trapRoot.querySelectorAll('button')].filter(el => {
+            if (el.disabled || el.hidden || el.getAttribute('aria-hidden') === 'true' || el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+            const d = el.closest('details:not([open])');
+            return !d || (el.tagName === 'SUMMARY' && el.parentElement === d);
+          });
+          if (!allButtons.length) return;
+          const first = allButtons[0], last = allButtons[allButtons.length - 1];
           event.stopPropagation();
-          if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+          if (!trapRoot.contains(document.activeElement)) { event.preventDefault(); (event.shiftKey ? last : first).focus(); }
+          else if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
           else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
         }
       } },
@@ -9636,7 +9668,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       "document.addEventListener('input',function(e){var t=e.target,el=t&&t.closest?t.closest('[data-ws-fit]'):null;if(el)wsFit(el);});" +
       // "As a separate printout": the key waits in a <template> and opens in a window of its own from this page's button.
       "function wsOpenKey(){var t=document.getElementById('ws-key-doc'),m=document.getElementById('ws-key-blocked'),w=null;if(!t)return;try{w=window.open('','_blank');}catch(e){w=null;}" +
-      "if(!w){if(m)m.hidden=false;return;}if(m)m.hidden=true;var r=document.documentElement,a=function(n){var v=r.getAttribute(n);return v?' '+n+'=\"'+v.replace(/\"/g,'')+'\"':'';};" +
+      "if(!w){if(m)m.hidden=false;return;}try{w.opener=null;}catch(e){}if(m)m.hidden=true;var r=document.documentElement,a=function(n){var v=r.getAttribute(n);return v?' '+n+'=\"'+v.replace(/\"/g,'')+'\"':'';};" +
       "w.document.open();w.document.write('<!DOCTYPE html><html'+a('lang')+a('dir')+'><head>'+document.head.innerHTML+'</head><body>'+t.innerHTML+'</body></html>');w.document.close();" +
       "try{w.document.title=t.getAttribute('data-title')||'';}catch(e){}setTimeout(function(){try{w.focus();w.print();}catch(e){}},400);}</script>";
     const wsPrintCards = (entries, perPage, wordAttrs, fit) => {
@@ -9840,7 +9872,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
     // fonts, for the font stylesheet and the faces too (or 5 s).
     const wsPrintOpen = (html, fonts) => {
       let win = null;
-      try { win = window.open("", "_blank"); } catch (_) { win = null; }
+      try { win = window.open("", "_blank"); if (win) { try { win.opener = null; } catch (_) {} } } catch (_) { win = null; }
       if (!win) return false;
       try {
         win.document.open();
@@ -11380,7 +11412,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
             how: ts("word_sounds.print_edit_how") || "To change any text first, close the print dialog, choose Edit text, then Print.",
           }) + "</div>" + wsPrintPage(copy.outerHTML) + WS_PRINT_EDIT_SCRIPT + "</body></html>";
         let win = null;
-        try { win = window.open("", "_blank"); } catch (_) { win = null; }
+        try { win = window.open("", "_blank"); if (win) { try { win.opener = null; } catch (_) {} } } catch (_) { win = null; }
         if (win) {
           try {
             win.document.open();
@@ -25502,6 +25534,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
       const [takeHomeOpen, setTakeHomeOpen] = React.useState(false);
       const [takeHomeTitle, setTakeHomeTitle] = React.useState("");
       const [takeHomeLetters, setTakeHomeLetters] = React.useState(false);
+      const [takeHomeDirectionsOnce, setTakeHomeDirectionsOnce] = React.useState(false);
       // "Include pictures": off = the file is made from rows without their pictures.
       const [takeHomePictures, setTakeHomePictures] = React.useState(true);
       const takeHomeHasPicture = (w) => !!w && ((typeof w.image === "string" && !!w.image && !w.image.startsWith("ref::")) ||
@@ -25563,6 +25596,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
       const takeHomeLesson = async (lib, submit, words) => takeHomeOwn(lib.lessonFromPack(takeHomeRows(words || preloadedWords), {
         adapters: takeHomeAdapters(lib),
         core: WS_CORE, banks: await takeHomeBanks(), isEnglish: true, showLetters: takeHomeLetters,
+        ...(takeHomeDirectionsOnce ? { instructionsOnce: true } : {}),
         activities: takeHomeChosen(lib.activities()), submit: submit || null,
         title: takeHomeTitle.trim() || printTr("word_sounds.take_home_default_title", "Find the sound"),
         lessonId: historyResourceId != null ? "ws-" + String(historyResourceId) : undefined,
@@ -25580,7 +25614,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           if (run === takeHomeRunRef.current) setTakeHomeReady(built);
         })().catch(() => { if (run === takeHomeRunRef.current) setTakeHomeReady({ error: true }); });
         return undefined;
-      }, [takeHomeOpen, preloadedWords, takeHomeLetters, takeHomeActivities, takeHomePictures]);
+      }, [takeHomeOpen, preloadedWords, takeHomeLetters, takeHomeDirectionsOnce, takeHomeActivities, takeHomePictures]);
       const closeTakeHome = React.useCallback(() => {
         takeHomeFocusBackRef.current = true;
         setTakeHomeOpen(false);
@@ -25982,6 +26016,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 h("label", { className: "mt-3 flex min-h-11 items-center gap-3 text-sm font-semibold" },
                   h("input", { type: "checkbox", checked: takeHomeLetters, onChange: (event) => setTakeHomeLetters(event.target.checked), className: "h-5 w-5" }),
                   printTr("word_sounds.take_home_letters", "Show letters on the answer choices (off: students choose by listening)")),
+                h("label", { className: "mt-1 flex min-h-11 items-center gap-3 text-sm font-semibold" },
+                  h("input", { type: "checkbox", checked: takeHomeDirectionsOnce, onChange: (event) => setTakeHomeDirectionsOnce(event.target.checked), className: "h-5 w-5", "data-ws-take-home-directions-once": "true" }),
+                  printTr("word_sounds.take_home_directions_once", "Say the directions once at the start of each activity (students can still press Hear the question)")),
                 (preloadedWords || []).some(takeHomeHasPicture) && h("label", { className: "mt-1 flex min-h-11 items-center gap-3 text-sm font-semibold" },
                   h("input", { type: "checkbox", checked: takeHomePictures, onChange: (event) => setTakeHomePictures(event.target.checked), className: "h-5 w-5", "data-ws-take-home-pictures": "true" }),
                   h("span", null, printTr("word_sounds.take_home_include_pictures", "Include pictures"),

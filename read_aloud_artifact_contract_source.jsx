@@ -133,7 +133,7 @@ const ReadAloudArtifactContract = (() => {
             if (required) errors.push(issue('missing-stable-id', path, path + ' is required.'));
             return null;
         }
-        if (typeof value !== 'string' || !STABLE_ID_RE.test(value)) {
+        if (typeof value !== 'string' || !STABLE_ID_RE.test(value) || value === '__proto__' || value === 'constructor' || value === 'prototype') {
             errors.push(issue(
                 'invalid-stable-id',
                 path,
@@ -181,7 +181,12 @@ const ReadAloudArtifactContract = (() => {
             if (!isPlainObject(value)) throw contractError('non-plain-object', 'Artifacts may contain plain objects only.');
             output = {};
             Object.keys(value).sort().forEach((key) => {
-                output[key] = canonicalize(value[key], stack);
+                Object.defineProperty(output, key, {
+                    value: canonicalize(value[key], stack),
+                    enumerable: true,
+                    configurable: true,
+                    writable: true,
+                });
             });
         }
         stack.delete(value);

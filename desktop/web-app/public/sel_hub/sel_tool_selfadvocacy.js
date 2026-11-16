@@ -21,6 +21,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
 
 (function() {
   'use strict';
+  function __alloT(key, fallback) {
+    try {
+      var fn = typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : null;
+      if (fn) { var v = fn(key, fallback); if (v != null && v !== key) return v; }
+    } catch (_) {}
+    return fallback != null ? fallback : key;
+  }
 
   // ── A11y live region ──
   (function() {
@@ -5079,7 +5086,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
           id: 'selfadv-main-content',
           tabIndex: -1,
           role: 'main',
-          'aria-label': 'Self-Advocacy Studio main content'
+          'aria-label': __alloT('sel.selfadvocacy.main_content_aria', 'Self-Advocacy Studio main content')
         }, h('div', {
           id: 'selfadv-tabpanel',
           role: 'tabpanel',

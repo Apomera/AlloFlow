@@ -237,9 +237,9 @@
     }).catch(function () { return url; });
   }
   // CSV cell: escape quotes AND neutralize spreadsheet formula injection. A field
-  // beginning with = + - @ (or tab/CR, with optional leading spaces) becomes a live formula in Excel/Sheets — IEP
+  // beginning with = + - @ | (or tab/CR/LF, with optional leading spaces) becomes a live formula in Excel/Sheets — IEP
   // goal text, notes, and labels are user/AI-authored, so prefix a single quote.
-  var csvCell = function (s) { s = String(s == null ? '' : s); if (/^(?:[\t\r\n ]*[=+\-@]|[\t\r])/.test(s)) s = "'" + s; return '"' + s.replace(/"/g, '""') + '"'; };
+  var csvCell = function (s) { s = String(s == null ? '' : s); if (/^(?:[\t\r\n ]*[=+\-@|]|[\t\r\n])/.test(s)) s = "'" + s; return '"' + s.replace(/"/g, '""') + '"'; };
 
   // ── Print CSS injection ───────────────────────────────────────────────────
   (function injectPrintStyles() {
@@ -10180,7 +10180,7 @@
       html += name + '\'s vocabulary is tracked across all tools automatically. No words are lost. Every interaction counts.<br>';
       html += '<strong>Every word in this garden belongs to ' + name + '.</strong>';
       html += '</div>' + pictureCreditsHTML(creditsForPrintedImages(html, galleryStateRef.current)) + '</body></html>';
-      var w2 = window.open('', '_blank'); if (w2) { w2.document.write(html); w2.document.close(); w2.print(); }
+      var w2 = window.open('', '_blank'); if (w2) { try { w2.opener = null; } catch (_) {} } if (w2) { w2.document.write(html); w2.document.close(); w2.print(); }
     }
 
     function printGardenPoster(_, grouped, studentName, total) {
@@ -10225,7 +10225,7 @@
       });
       html += '<div class="footer">Every word in this garden belongs to ' + studentName + '. 🌳</div>';
       html += pictureCreditsHTML(creditsForPrintedImages(html, galleryStateRef.current)) + '</div></body></html>';
-      var w2 = window.open('', '_blank'); if (w2) { w2.document.write(html); w2.document.close(); w2.print(); }
+      var w2 = window.open('', '_blank'); if (w2) { try { w2.opener = null; } catch (_) {} } if (w2) { w2.document.write(html); w2.document.close(); w2.print(); }
     }
 
     function printGardenHomeNote(bank, counts, total) {
@@ -10320,7 +10320,7 @@
       html += '<br>This note contains vocabulary guidance only — no clinical assessments or diagnoses.<br>';
       html += '<strong>Thank you for helping ' + name + '\'s words grow. 🌳</strong>';
       html += '</div></body></html>';
-      var w2 = window.open('', '_blank'); if (w2) { w2.document.write(html); w2.document.close(); w2.print(); }
+      var w2 = window.open('', '_blank'); if (w2) { try { w2.opener = null; } catch (_) {} } if (w2) { w2.document.write(html); w2.document.close(); w2.print(); }
     }
 
     function exportGardenCSV(bank) {
@@ -10384,7 +10384,7 @@
         });
       }
       var csv = rows.join('\n');
-      var blob = new Blob([csv], { type: 'text/csv' });
+      var blob = new Blob(['\uFEFF' + String(csv || '').replace(/^\uFEFF/, '')], { type: 'text/csv;charset=utf-8' });
       var url = URL.createObjectURL(blob);
       var a = document.createElement('a');
       a.href = url; a.download = 'garden_' + codename.replace(/\s+/g, '_') + '_' + now + '.csv';
@@ -12685,7 +12685,7 @@
         + escHtml(t('symbol_studio.print_window_hint', 'If the print dialog does not open, press Ctrl+P (⌘P on a Mac).')) + '</span></div>'
         + opts.body + '</body></html>';
       var win = null;
-      try { win = window.open('', '_blank'); } catch (_) { win = null; }
+      try { win = window.open('', '_blank'); if (win) { try { win.opener = null; } catch (_) {} } } catch (_) { win = null; }
       if (win) {
         try {
           win.document.open(); win.document.write(html); win.document.close();
@@ -13321,7 +13321,7 @@
           var t = new Date(en.ts);
           rows.push(csvCell(t.toLocaleTimeString()) + ',' + csvCell(en.label) + ',' + csvCell(en.boardTitle));
         });
-        var blob = new Blob([rows.join('\n')], { type: 'text/csv' });
+        var blob = new Blob(['\uFEFF' + rows.join('\n')], { type: 'text/csv;charset=utf-8' });
         var a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         a.download = 'comm_log_' + new Date().toISOString().slice(0, 10) + '.csv';

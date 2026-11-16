@@ -278,19 +278,69 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
       }
     }
   }, [isOpen, currentNickname, parseNickname, randomizeName]);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+  const focusTrapRef = useRef(null);
   useEffect(() => {
     if (!isOpen) return undefined;
     const previousFocus = document.activeElement;
+    const dialog = dialogRef.current;
+    const stack = typeof window !== 'undefined'
+      ? (window.__alloFocusTrapStack = window.__alloFocusTrapStack || [])
+      : null;
+    const trap = { root: dialog };
+    focusTrapRef.current = trap;
+    if (stack) stack.push(trap);
+    const isTopTrap = () => {
+      if (!stack || !stack.length) return true;
+      const top = stack[stack.length - 1];
+      return top === trap || Boolean(top && top.root && dialog && dialog.contains(top.root) && top.root === dialog);
+    };
     const focusTimer = window.setTimeout(() => {
-      const dialog = dialogRef.current;
-      if (!dialog) return;
-      const focusable = dialog.querySelector('button, select, input, textarea, a[href], [tabindex]:not([tabindex="-1"])');
+      const currentDialog = dialogRef.current;
+      if (!currentDialog) return;
+      const focusable = currentDialog.querySelector('button:not([disabled]), select:not([disabled]), input:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])');
       if (focusable && typeof focusable.focus === 'function') focusable.focus();
-      else dialog.focus();
+      else currentDialog.focus();
     }, 0);
+    const onDocKeyDown = (e) => {
+      if (e.defaultPrevented || e.isComposing || e.keyCode === 229 || !isTopTrap()) return;
+      const currentDialog = dialogRef.current;
+      if (!currentDialog) return;
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        if (typeof onCloseRef.current === 'function') onCloseRef.current();
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      const focusable = Array.from(currentDialog.querySelectorAll('button:not([disabled]), select:not([disabled]), input:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'))
+        .filter((el) => !el.disabled && !el.hidden && !el.closest('[inert]') && el.getAttribute('aria-hidden') !== 'true');
+      if (!focusable.length) {
+        e.preventDefault();
+        currentDialog.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && (document.activeElement === first || document.activeElement === currentDialog || !currentDialog.contains(document.activeElement))) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && (document.activeElement === last || !currentDialog.contains(document.activeElement))) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', onDocKeyDown);
     return () => {
       window.clearTimeout(focusTimer);
-      if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus();
+      document.removeEventListener('keydown', onDocKeyDown);
+      if (stack) {
+        const idx = stack.lastIndexOf(trap);
+        if (idx >= 0) stack.splice(idx, 1);
+      }
+      if (focusTrapRef.current === trap) focusTrapRef.current = null;
+      if (previousFocus && previousFocus.isConnected && typeof previousFocus.focus === 'function') previousFocus.focus();
     };
   }, [isOpen]);
   const getFullName = () => `${selectedAdj} ${selectedAnimal}`;
@@ -414,20 +464,32 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
     };
   }, [isOpen]);
   const handleDialogKeyDown = (e) => {
+    if (e.defaultPrevented || e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229) return;
+    const dialog = dialogRef.current;
+    const stack = typeof window !== 'undefined' ? window.__alloFocusTrapStack : null;
+    const trap = focusTrapRef.current;
+    if (Array.isArray(stack) && stack.length > 0 && trap) {
+      const top = stack[stack.length - 1];
+      if (top !== trap && !(top && top.root && dialog && dialog.contains(top.root) && top.root === dialog)) return;
+    }
     if (e.key === 'Escape') {
+      e.preventDefault();
       e.stopPropagation();
       onClose();
       return;
     }
     if (e.key !== 'Tab') return;
-    const dialog = dialogRef.current;
     if (!dialog) return;
-    const focusable = Array.from(dialog.querySelectorAll('button, select, input, textarea, a[href], [tabindex]:not([tabindex="-1"])'))
-      .filter((el) => !el.disabled && el.getAttribute('aria-hidden') !== 'true');
-    if (!focusable.length) return;
+    const focusable = Array.from(dialog.querySelectorAll('button:not([disabled]), select:not([disabled]), input:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'))
+      .filter((el) => !el.disabled && !el.hidden && !el.closest('[inert]') && el.getAttribute('aria-hidden') !== 'true');
+    if (!focusable.length) {
+      e.preventDefault();
+      dialog.focus();
+      return;
+    }
     const first = focusable[0];
     const last = focusable[focusable.length - 1];
-    if (e.shiftKey && document.activeElement === first) {
+    if (e.shiftKey && (document.activeElement === first || document.activeElement === dialog)) {
       e.preventDefault();
       last.focus();
     } else if (!e.shiftKey && document.activeElement === last) {
@@ -451,7 +513,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
         <button
             type="button"
             onClick={onClose}
-            className={cx('absolute top-4 right-4 p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors motion-reduce:transition-none', styles.secondary, styles.focusOffset)}
+            className={cx('absolute top-4 right-4 min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors motion-reduce:transition-none', styles.secondary, styles.focusOffset)}
             aria-label={t('common.close')}
         >
             <X size={20} aria-hidden="true" />
@@ -510,7 +572,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
                     <button
                         type="button"
                         onClick={randomizeName}
-                        className={cx('p-2 rounded-full hover:scale-110 transition-all motion-reduce:transition-none shrink-0', styles.secondary)}
+                        className={cx('min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-full hover:scale-110 transition-all motion-reduce:transition-none shrink-0', styles.secondary)}
                         title={t('modals.entry.randomize_codename')}
                         aria-label={t('modals.entry.randomize_codename')}
                         data-help-key="entry_randomize_btn"
@@ -635,7 +697,7 @@ const DraftFeedbackInterface = React.memo(({
                         <p className={cx('text-xs', styles.headerText)}>{t('mastery.instruction')}</p>
                     </div>
                 </div>
-                <button type="button" onClick={onCancel} className={cx('p-2 rounded-full', styles.secondary)} aria-label={t('common.close')}><X size={20}/></button>
+                <button type="button" onClick={onCancel} className={cx('min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-full', styles.secondary)} aria-label={t('common.close')}><X size={20}/></button>
             </div>
             <div className="p-6">
                 <textarea
@@ -694,7 +756,7 @@ const DraftFeedbackInterface = React.memo(({
                      <Star size={16} className="text-yellow-500 fill-current" />
                      <span className={cx('text-xs font-bold', styles.text)}>{t('mastery.current_progress')}: {gradingDetails?.rawScore}/100</span>
                  </div>
-                 <button type="button" onClick={onCancel} className={cx('p-2 rounded-full', styles.secondary)} aria-label={t('common.close')}><X size={20}/></button>
+                 <button type="button" onClick={onCancel} className={cx('min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-full', styles.secondary)} aria-label={t('common.close')}><X size={20}/></button>
              </div>
         </div>
         {renderRubric()}

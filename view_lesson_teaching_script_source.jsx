@@ -13,6 +13,8 @@ function LessonSpokenDirections({ planId, version, draft, onBack, createAudio, t
   const audioController = React.useRef(null), request = React.useRef(null), player = React.useRef(null), surface = React.useRef(null), back = React.useRef(null);
   const alive = React.useRef(true);
   const ownsFullscreen = React.useRef(false);
+  const onBackRef = React.useRef(onBack);
+  onBackRef.current = onBack;
   const [fullscreen, setFullscreen] = React.useState(false);
   const stop = () => {
     playbackRevision.current += 1;
@@ -31,11 +33,60 @@ function LessonSpokenDirections({ planId, version, draft, onBack, createAudio, t
   const refresh = () => { try { setSummary(controller().summary()); } catch (_) {} };
   React.useEffect(() => {
     alive.current = true;
-    if (typeof surface.current?.showModal === 'function') surface.current.showModal(); else surface.current?.setAttribute('open', '');
+    const node = surface.current;
+    if (node) {
+      if (typeof node.showModal === 'function') { try { if (!node.open) node.showModal(); } catch (_) { node.setAttribute('open', ''); } }
+      else node.setAttribute('open', '');
+    }
+    const stack = (window.__alloFocusTrapStack = window.__alloFocusTrapStack || []);
+    const trap = node ? { root: node } : null;
+    if (trap) stack.push(trap);
     back.current?.focus(); refresh();
+    const isTopTrap = () => !trap || (stack.length > 0 && stack[stack.length - 1] === trap);
+    const getFocusable = () => {
+      if (!node || typeof node.querySelectorAll !== 'function') return [];
+      return Array.from(node.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])')).filter(el => {
+        if (el.disabled || el.hidden || el.getAttribute('aria-hidden') === 'true') return false;
+        if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+        const closedDetails = el.closest('details:not([open])');
+        if (closedDetails && !(el.tagName === 'SUMMARY' && el.parentElement === closedDetails)) return false;
+        return true;
+      });
+    };
+    const onDocumentKeyDown = event => {
+      if (!isTopTrap()) return;
+      if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229) return;
+      if (event.key === 'Escape') {
+        if (event.defaultPrevented) return;
+        event.preventDefault();
+        event.stopPropagation();
+        onBackRef.current?.();
+        return;
+      }
+      if (event.key !== 'Tab' || !node) return;
+      const focusable = getFocusable();
+      if (!focusable.length) { event.preventDefault(); node.focus?.(); return; }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (!node.contains(document.activeElement)) { event.preventDefault(); (event.shiftKey ? last : first).focus(); return; }
+      if (event.shiftKey && (document.activeElement === first || document.activeElement === node)) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    document.addEventListener('keydown', onDocumentKeyDown);
     const changed = () => { setFullscreen(!!document.fullscreenElement); if (!document.fullscreenElement) ownsFullscreen.current = false; };
     document.addEventListener('fullscreenchange', changed);
-    return () => { alive.current = false; downloads.current.forEach((timer, url) => { clearTimeout(timer); URL.revokeObjectURL(url); }); downloads.current.clear(); document.removeEventListener('fullscreenchange', changed); if (ownsFullscreen.current && document.fullscreenElement) document.exitFullscreen?.().catch(() => {}); stop(); audioController.current?.dispose?.(); audioController.current = null; };
+    return () => {
+      alive.current = false;
+      document.removeEventListener('keydown', onDocumentKeyDown);
+      if (trap) {
+        const index = stack.lastIndexOf(trap);
+        if (index !== -1) stack.splice(index, 1);
+      }
+      downloads.current.forEach((timer, url) => { clearTimeout(timer); URL.revokeObjectURL(url); }); downloads.current.clear();
+      document.removeEventListener('fullscreenchange', changed);
+      if (ownsFullscreen.current && document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
+      stop(); audioController.current?.dispose?.(); audioController.current = null;
+    };
   }, []);
   const play = async segment => {
     stop(); const pending = new AbortController(); request.current = pending;
@@ -379,7 +430,8 @@ function LessonTeachingScriptPanel(props) {
   const hostRun = String(scriptRun.planId || '') === planId ? scriptRun : {};
   const busy = !!hostRun.busy || localBusy;
   const error = localError || _ltsText(hostRun.error?.message || hostRun.error);
-  const canGenerate = capabilities.canGenerate === true && typeof onGenerateTeachingScript === 'function';
+  const aiDoor = (() => { try { return typeof window !== 'undefined' && typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway('text', props.t) : null; } catch (_) { return null; } })();
+  const canGenerate = capabilities.canGenerate === true && typeof onGenerateTeachingScript === 'function' && !aiDoor?.disabled;
   const canResearch = capabilities.canResearch === true;
   const rules = scopes[scope] || _LTS_SCOPES.segment;
   const durationValid = Number.isInteger(Number(durationMinutes)) && Number(durationMinutes) >= rules.minMinutes && Number(durationMinutes) <= rules.maxMinutes;
@@ -755,7 +807,7 @@ function LessonTeachingScriptPanel(props) {
     } catch (error) { if (mounted.current) setLocalError(_ltsText(error?.message || error) || tr('delete_failed', 'The version could not be deleted. Try again.')); }
     finally { deletingRequest.current = false; if (mounted.current) setDeleting(false); }
   };
-  const fieldClass = 'w-full rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:bg-slate-100';
+  const fieldClass = 'min-h-11 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:bg-slate-100';
   const buttonClass = 'min-h-11 rounded-lg border border-indigo-600 px-3 py-2 text-sm font-bold text-indigo-900 hover:bg-indigo-50 focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-50';
   const stepFields = [
     ['teacherSays', tr('teacher_says', 'Teacher says')],
@@ -940,6 +992,7 @@ function LessonTeachingScriptPanel(props) {
             {researchEnabled && !canResearch && canReuseResearch && !canFinishSaving && <p className="text-sm text-slate-700">{tr('research_reused', 'Resume will reuse this run’s saved research. Starting over with research requires live research access.')}</p>}
           </div>
           {!canGenerate && !canFinishSaving && <p role="status" className="rounded-lg bg-amber-50 p-3 text-sm text-amber-950">{tr('ai_unavailable', 'Script generation needs an available AI connection. Saved versions remain available to read, edit and export.')}</p>}
+          {aiDoor?.disabled && typeof window !== 'undefined' && typeof window.AlloAiSetupNotice === 'function' && <window.AlloAiSetupNotice t={props.t} kind="text" />}
           {!!draft && <p className="text-sm text-indigo-900">{tr('finish_edits', 'Save or discard your script edits before generating another version.')}</p>}
           <p className="text-xs text-slate-600">{tr('history_retention', 'Script versions are kept until you delete them. Deleting a version also removes its saved audio.')}</p>
           {generationRecovery && <p role="status" className="rounded-lg bg-indigo-50 p-3 text-sm text-indigo-950">{generationRecovery.completedChunks === generationRecovery.totalChunks ? tr('resume_save_progress', 'All sections are ready. Finish saving to add the completed script to this lesson.') : generationRecovery.completedChunks === 0 ? tr('resume_setup_progress', 'Your lesson setup is ready. Resume to write the script.') : tr('resume_progress', '{completed} of {total} sections are ready. Resume to finish the remaining sections.').replace('{completed}', String(generationRecovery.completedChunks)).replace('{total}', String(generationRecovery.totalChunks))}</p>}
@@ -971,7 +1024,7 @@ function LessonTeachingScriptPanel(props) {
           </div>
           <p className="text-sm text-slate-700">{tr('history_retention', 'Script versions are kept until you delete them. Deleting a version also removes its saved audio.')}</p>
           {!draft && typeof props.onDeleteTeachingScript === 'function' && <div className="no-print space-y-2">
-            {deleteCandidate ? <div role="group" aria-label={tr('delete_confirm', 'Delete this script version and its saved audio?')} className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-amber-950" onKeyDown={event => { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); keepVersion(); } }}>
+            {deleteCandidate ? <div role="group" aria-label={tr('delete_confirm', 'Delete this script version and its saved audio?')} className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-amber-950" onKeyDown={event => { if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229) return; if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); keepVersion(); } }}>
               <p>{tr('delete_confirm', 'Delete this script version and its saved audio?')} {_ltsText(deleteCandidate.title)}</p>
               <div className="mt-2 flex flex-wrap gap-2"><button type="button" className={buttonClass} disabled={deleting || busy} onClick={deleteScript}>{tr('confirm_delete', 'Delete version and audio')}</button><button autoFocus type="button" className={buttonClass} disabled={deleting} onClick={keepVersion}>{tr('keep_version', 'Keep version')}</button></div>
             </div> : <button ref={deleteToggle} type="button" className={buttonClass} disabled={saving || busy || deleting} onClick={() => { setLocalError(''); setNotice(''); setDeleteCandidate(JSON.parse(JSON.stringify(version))); }}>{tr('delete_version', 'Delete this version')}</button>}
@@ -1056,7 +1109,7 @@ function LessonTeachingScriptPanel(props) {
             <div className="flex flex-wrap gap-2">
               <button type="button" className={buttonClass} disabled={saving || busy || invalidTiming || invalidDraftText || invalidDraftLength || staleDraft} onClick={saveEdits}>{saving ? tr('saving', 'Adding edits…') : tr('save', 'Save edits')}</button>
               {!confirmDiscard && <button ref={discardToggle} type="button" className={buttonClass} disabled={saving || busy} onClick={() => draftChanged ? setConfirmDiscard(true) : discardEdits()}>{tr('discard', 'Discard edits')}</button>}
-              {confirmDiscard && <div role="group" aria-label={tr('discard_question', 'Discard your unsaved script changes?')} className="w-full space-y-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-amber-950" onKeyDown={event => { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); keepEditing(); } }}>
+              {confirmDiscard && <div role="group" aria-label={tr('discard_question', 'Discard your unsaved script changes?')} className="w-full space-y-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-amber-950" onKeyDown={event => { if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229) return; if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); keepEditing(); } }}>
                 <p className="text-sm">{tr('discard_question', 'Discard your unsaved script changes?')}</p>
                 <div className="flex flex-wrap gap-2"><button autoFocus type="button" className={buttonClass} disabled={saving || busy} onClick={keepEditing}>{tr('keep_editing', 'Keep editing')}</button><button type="button" className={buttonClass} disabled={saving || busy} onClick={discardEdits}>{tr('discard_confirm', 'Discard changes')}</button></div>
               </div>}

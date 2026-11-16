@@ -2230,9 +2230,10 @@ function reportUncompiledSources() {
         if (orphans.length > show.length) console.log('      · …and ' + (orphans.length - show.length) + ' more');
     } catch (_) { /* reporting must never break a build */ }
 }
-function compileSources() {
+function compileSources(onlyNames = null) {
     const results = [];
     for (const pair of COMPILE_PAIRS) {
+        if (onlyNames && !onlyNames.has(pair.name.toLowerCase())) continue;
         if (!fs.existsSync(pair.srcPath)) {
             results.push({ name: pair.name, status: 'skipped', reason: 'source not found' });
             continue;
@@ -2253,7 +2254,10 @@ function compileSources() {
         const changed = existing !== finalOutput;
         if (changed) {
             fs.writeFileSync(pair.modPath, finalOutput, 'utf-8');
-            if (pair.publicPath) {
+        }
+        if (pair.publicPath) {
+            const publicExisting = fs.existsSync(pair.publicPath) ? fs.readFileSync(pair.publicPath, 'utf-8') : null;
+            if (changed || publicExisting !== finalOutput) {
                 try {
                     if (!fs.existsSync(path.dirname(pair.publicPath))) {
                         fs.mkdirSync(path.dirname(pair.publicPath), { recursive: true });
@@ -2296,6 +2300,24 @@ if (hasFlag('copy-student-shell')) {
         console.error('Student shell publish failed: ' + error.message);
         process.exit(1);
     }
+}
+const compileOnlyArg = getArg('compile-only');
+if (compileOnlyArg !== null) {
+    const requested = compileOnlyArg.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+    const known = new Set(COMPILE_PAIRS.map(p => p.name.toLowerCase()));
+    const unknown = requested.filter(n => !known.has(n));
+    if (!requested.length || unknown.length) {
+        console.error('Unknown or empty --compile-only target(s): ' + (unknown.join(', ') || '(none)'));
+        process.exit(1);
+    }
+    const results = compileSources(new Set(requested));
+    let hadError = false;
+    for (const r of results) {
+        const icon = r.status === 'compiled' ? '🔧' : r.status === 'unchanged' ? '✓' : '❌';
+        console.log(`  ${icon} ${r.name}: ${r.status}${r.reason ? ' — ' + r.reason : ''}${r.bytes ? ' (' + r.bytes + ' bytes)' : ''}`);
+        if (r.status === 'error' || r.status === 'syntax-error' || r.status === 'skipped') hadError = true;
+    }
+    process.exit(hadError ? 1 : 0);
 }
 // Keep the generated module, validation metadata, and public source mirror
 // synchronized with canonical Code.gs before every compile or application build.

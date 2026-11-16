@@ -289,6 +289,7 @@ const LiveAdvancedQuizResponse = React.memo(({
         text: event.target.value
       }),
       onKeyDown: event => {
+        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.nativeEvent?.keyCode === 229) return;
         if (event.key === 'Enter') {
           event.preventDefault();
           submitText();
@@ -362,6 +363,7 @@ const LiveAdvancedQuizResponse = React.memo(({
         text: event.target.value
       }),
       onKeyDown: event => {
+        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.nativeEvent?.keyCode === 229) return;
         if (event.key === 'Enter') {
           event.preventDefault();
           submitNumeric();
@@ -1345,6 +1347,7 @@ const StudentQuizOverlay = React.memo(({
     let btnClass = 'bg-white text-slate-800 border-slate-200 hover:border-purple-300 hover:bg-purple-50';
     if (isSelected) btnClass = 'bg-purple-700 text-white border-purple-700 scale-[1.05] ring-4 ring-purple-300/40 z-10';else if (isDisabled) btnClass = 'bg-slate-800 text-slate-300 border-slate-900 opacity-60 cursor-not-allowed';
     return /*#__PURE__*/React.createElement("button", {
+      type: "button",
       key: idx,
       "data-help-key": "quiz_student_likert_tick",
       "data-autofocus": idx === 0 && !isDisabled ? 'true' : undefined,
@@ -1397,6 +1400,7 @@ const StudentQuizOverlay = React.memo(({
       letterClass = 'bg-slate-700 text-slate-300 border-slate-600';
     }
     return /*#__PURE__*/React.createElement("button", {
+      type: "button",
       key: idx,
       "data-help-key": "quiz_student_answer_option",
       "data-autofocus": idx === 0 && !isDisabled ? 'true' : undefined,
@@ -1431,16 +1435,16 @@ const StudentQuizOverlay = React.memo(({
     }, /*#__PURE__*/React.createElement("span", null, liveQuizMd().inline(option)), showTranslated && currentQuestion?.options_en?.[idx] && /*#__PURE__*/React.createElement("span", {
       className: "text-xs opacity-60 font-normal italic"
     }, liveQuizMd().inline(currentQuestion.options_en[idx])))), isSelected && !isRevealed && /*#__PURE__*/React.createElement("div", {
-      className: "absolute top-2 right-2 text-indigo-900 animate-in zoom-in duration-300"
+      className: "absolute top-2 right-2 text-indigo-900 animate-in motion-reduce:animate-none zoom-in duration-300"
     }, /*#__PURE__*/React.createElement(CheckCircle2, {
       size: 24,
       className: "fill-white"
     })), isRevealed && !isUnscoredLiveQuestion && idx === correctAnswerIndex && /*#__PURE__*/React.createElement("div", {
-      className: "absolute top-2 right-2 text-white animate-in zoom-in duration-300"
+      className: "absolute top-2 right-2 text-white animate-in motion-reduce:animate-none zoom-in duration-300"
     }, /*#__PURE__*/React.createElement(CheckCircle2, {
       size: 24
     })), isRevealed && !isUnscoredLiveQuestion && isSelected && idx !== correctAnswerIndex && /*#__PURE__*/React.createElement("div", {
-      className: "absolute top-2 right-2 text-white animate-in zoom-in duration-300"
+      className: "absolute top-2 right-2 text-white animate-in motion-reduce:animate-none zoom-in duration-300"
     }, /*#__PURE__*/React.createElement(XCircle, {
       size: 24
     })));
@@ -1835,6 +1839,7 @@ const RoleSelectionModal = React.memo(({
   }, roleCopy('roles.subtitle', 'How will you be using the app today?')), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
   }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: event => handleRoleClick('student', event),
     className: "flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-teal-400 hover:bg-teal-50 transition-all group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none",
     "data-help-key": "role_student"
@@ -1845,6 +1850,7 @@ const RoleSelectionModal = React.memo(({
   })), /*#__PURE__*/React.createElement("span", {
     className: "font-bold text-slate-700 group-hover:text-teal-700"
   }, roleCopy('roles.student', 'Student')), roleDescription('roles.student_description', 'Join your class and learn with a private codename.'), lastTimeBadge('student')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: event => handleRoleClick('teacher', event),
     className: "flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-indigo-400 hover:bg-indigo-50 transition-all group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none",
     "data-help-key": "role_teacher"
@@ -1855,6 +1861,7 @@ const RoleSelectionModal = React.memo(({
   })), /*#__PURE__*/React.createElement("span", {
     className: "font-bold text-slate-700 group-hover:text-indigo-700"
   }, roleCopy('roles.teacher', 'Teacher')), roleDescription('roles.teacher_description', 'Build accessible lessons and adapt materials for your class.'), lastTimeBadge('teacher')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: event => handleRoleClick('parent', event),
     className: "flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-orange-400 hover:bg-orange-50 transition-all group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none",
     "data-help-key": "role_parent"
@@ -1865,6 +1872,7 @@ const RoleSelectionModal = React.memo(({
   })), /*#__PURE__*/React.createElement("span", {
     className: "font-bold text-slate-700 group-hover:text-orange-700"
   }, roleCopy('roles.parent', 'Parent')), roleDescription('parent_mode.role_description', 'Support learning at home with family-friendly tools.'), lastTimeBadge('parent')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: event => handleRoleClick('independent', event),
     className: "flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-cyan-400 hover:bg-cyan-50 transition-all group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-cyan-500 focus:ring-offset-2 focus:outline-none",
     "data-help-key": "role_independent"
@@ -2176,6 +2184,7 @@ const StudentEntryModal = React.memo(({
   }), " ", t('entry.warning')), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-3"
   }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => handleConfirm('new'),
     disabled: !selectedAdj || !selectedAnimal,
     className: "w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed",
@@ -2184,6 +2193,7 @@ const StudentEntryModal = React.memo(({
     size: 18,
     className: "text-yellow-400 fill-current"
   }), " ", entryFresh('entry.start_plain', 'entry.start', 'Start New Adventure', 'Start')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => handleConfirm('load'),
     disabled: !selectedAdj || !selectedAnimal,
     className: "w-full bg-white border-2 border-slate-200 text-slate-600 hover:border-indigo-300 hover:text-indigo-600 font-bold py-2.5 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed",

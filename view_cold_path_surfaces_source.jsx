@@ -4,9 +4,9 @@
 function AiBackendSettingsView(props) {
   const { GEMINI_MODELS, Settings, X, _isCanvasEnv, aiBackendModalRef, openCanvasRecoveryManager, setShowAIBackendModal, t } = props;
   return (
-<div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowAIBackendModal(false)} aria-label={t('common.close') || 'Close'}>
-          <div ref={aiBackendModalRef} className="bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="ai-backend-canvas-title" onClick={e => e.stopPropagation()}>
-            <button onClick={() => setShowAIBackendModal(false)} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10" aria-label={t('common.close') || "Close"}><X size={20}/></button>
+<div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-300" onClick={() => setShowAIBackendModal(false)} aria-label={t('common.close') || 'Close'}>
+          <div ref={aiBackendModalRef} className="bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in motion-reduce:animate-none zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="ai-backend-canvas-title" onClick={e => e.stopPropagation()}>
+            <button type="button" onClick={() => setShowAIBackendModal(false)} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10" aria-label={t('common.close') || "Close"}><X size={20}/></button>
             <div className="flex items-center gap-2 mb-5 text-violet-900">
                 <div className="bg-violet-100 p-2 rounded-full"><Settings size={20} className="text-violet-600"/></div>
                 <h3 id="ai-backend-canvas-title" className="font-black text-lg">{t('canvas_settings.title') || 'AI Settings & Diagnostics'}</h3>
@@ -56,7 +56,7 @@ function AiBackendSettingsView(props) {
                 <div className="border-t border-slate-100 pt-4">
                     <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('canvas_settings.device_storage_label') || 'Device Storage'}</label>
                     <p className="text-[11px] text-slate-600 mb-2">{t('canvas_settings.device_storage_hint2') || 'Open your saved resource packs to restore, pin, export, or erase them. Everything is kept on this device only, nothing goes to a server.'}</p>
-                    <button
+                    <button type="button"
                         onClick={openCanvasRecoveryManager}
                         className="bg-white text-violet-700 border-2 border-violet-200 px-4 py-2 rounded-xl font-bold text-sm hover:bg-violet-50 transition-colors active:scale-95"
                     >
@@ -70,7 +70,7 @@ function AiBackendSettingsView(props) {
                 <div className="border-t border-slate-100 pt-4">
                     <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('canvas_settings.diagnostics_label') || 'Diagnostics & Logs'}</label>
                     <p className="text-[11px] text-slate-600 mb-2">{t('canvas_settings.diagnostics_hint') || 'View captured errors and the read-aloud (text-to-speech) activity trace — useful when audio stalls without a visible error.'}</p>
-                    <button
+                    <button type="button"
                         onClick={() => {
                             if (typeof window.__alloOpenDiagnosticsLog !== 'function') return;
                             let hasErrors = false;
@@ -83,7 +83,7 @@ function AiBackendSettingsView(props) {
                     </button>
                 </div>
                 <div className="flex justify-end pt-2">
-                    <button
+                    <button type="button"
                         onClick={() => setShowAIBackendModal(false)}
                         className="bg-violet-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-violet-700 transition-colors shadow-lg shadow-violet-200 active:scale-95"
                     >
@@ -103,7 +103,7 @@ function LmsAuditBannerView(props) {
 <div className="bg-gradient-to-r from-green-700 to-emerald-700 text-white px-4 py-3 z-[500]">
           <div className="flex items-center justify-between mb-2">
             <span className="font-bold text-sm">♿ {t(lmsAuditUrls.length === 1 ? 'lms.queued_one' : 'lms.queued_other', { count: lmsAuditUrls.length }) || `${lmsAuditUrls.length} document${lmsAuditUrls.length !== 1 ? 's' : ''} queued from LMS`}</span>
-            <button onClick={() => setLmsAuditUrls([])} className="bg-white/20 hover:bg-white/30 px-2 py-0.5 rounded-md text-xs transition-colors">{t('lms.dismiss_button') || 'Dismiss'}</button>
+            <button type="button" onClick={() => setLmsAuditUrls([])} className="bg-white/20 hover:bg-white/30 px-2 py-0.5 rounded-md text-xs transition-colors">{t('lms.dismiss_button') || 'Dismiss'}</button>
           </div>
           <div className="flex flex-wrap gap-2">
             {lmsAuditUrls.map((url, i) => {
@@ -243,7 +243,7 @@ function ReadThisPagePanelView(props) {
           const handleStop = () => stopReadThisPage();
           const handleItemClick = (idx) => _readThisPageItemAt(idx);
           return (
-              <div className="fixed top-16 right-4 z-[45] w-[360px] max-h-[calc(100vh-5rem)] flex flex-col rounded-2xl shadow-2xl border-s-4 border-purple-500 overflow-hidden animate-in slide-in-from-right-5 duration-300"
+              <div className="fixed top-16 right-4 z-[45] w-[360px] max-h-[calc(100vh-5rem)] flex flex-col rounded-2xl shadow-2xl border-s-4 border-purple-500 overflow-hidden animate-in motion-reduce:animate-none slide-in-from-right-5 duration-300"
                   style={{ background: theme === 'contrast' ? '#000' : '#0f172a', color: theme === 'contrast' ? '#fbbf24' : '#e2e8f0', fontFamily: 'ui-monospace, monospace', fontSize: '12px' }}
                   ref={rtpPanelRef} tabIndex={-1} aria-busy={rtpPlaybackState === 'reading'}
                   role="complementary" aria-label={t('read_this_page.panel_aria') || 'Read This Page panel'}
@@ -255,16 +255,16 @@ function ReadThisPagePanelView(props) {
                           <span>{t('read_this_page.title') || 'Read This Page'}</span>
                       </div>
                       <div className="flex items-center gap-1">
-                          <button id="rtp-read-all-btn" onClick={handleReadAll}
+                          <button type="button" id="rtp-read-all-btn" onClick={handleReadAll}
                               className="px-3 py-1 rounded-lg text-white text-[11px] font-bold transition-colors hover:brightness-110"
                               style={{ background: rtpPlaybackState === 'reading' ? '#16a34a' : '#7c3aed' }}
                               aria-pressed={rtpPlaybackState === 'reading'}
                           >{'\u25B6'} {t('read_this_page.read_all_button') || 'Read All'}</button>
-                          <button onClick={handleStop}
+                          <button type="button" onClick={handleStop}
                               className="px-2 py-1 rounded-lg text-white text-[11px] font-bold hover:bg-red-600 transition-colors"
                               style={{ background: '#dc2626' }}
                           >{'\u23F9'} {t('read_this_page.stop_button') || 'Stop'}</button>
-                          <button onClick={closeReadThisPage}
+                          <button type="button" onClick={closeReadThisPage}
                               aria-label={(t('common.close') || 'Close') + ': ' + (t('read_this_page.title') || 'Read This Page')}
                               className="ms-1 px-2 py-1 rounded-lg text-slate-600 hover:text-white hover:bg-slate-700 transition-colors text-[11px] font-bold"
                           >{'\u2715'}</button>

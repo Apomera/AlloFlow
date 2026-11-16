@@ -7,6 +7,7 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const ROOT = process.env.ALLOFLOW_CANDIDATE_ROOT || path.resolve('.');
 const gate = require(path.join(ROOT, 'dev-tools/security_release_candidate.cjs'));
+const liveVerify = require(path.join(ROOT, 'dev-tools/verify_live_cdn_release.cjs'));
 // yaml is an exact direct web-app dependency installed by the existing unit CI.
 // Security-policy tests run separately where their nested dependencies exist.
 const YAML = require(path.resolve('desktop/web-app/node_modules/yaml'));
@@ -168,6 +169,93 @@ describe('exact source, artifact and independently verified release evidence', (
     }
     expect(f.calls.some(call => call.args[0] === 'attestation')).toBe(false);
     expect(() => gate.createCandidate({ root: f.root, output: path.join(f.root, 'local') }, { ...f.deps, env: {} })).toThrow(/reviewed CI/);
+  });
+  it('assembles .assetsignore-filtered root site + built /app/ without overwriting root index.html', () => {
+    const f = fixture();
+    const write = (rel, body) => {
+      const target = path.join(f.root, rel);
+      fs.mkdirSync(path.dirname(target), { recursive: true });
+      fs.writeFileSync(target, body);
+    };
+    write('.assetsignore', 'desktop/\ndev-tools/\n');
+    write('_headers', '/*\n  X-Content-Type-Options: nosniff\n');
+    write('index.html', '<!doctype html><title>Landing Root</title>');
+    write('fixture_module.js', '// root public module');
+    write('guide/index.html', '<!doctype html><title>Teacher Guide</title>');
+    write('dev-tools/secret.js', '// excluded dev helper');
+    write('.github/workflows/ci.yml', 'name: ci\n');
+    write('desktop/web-app/public/index.html', '<!doctype html><title>CRA Template</title>');
+    write('desktop/web-app/public/video_studio/vendor/ffmpeg/core/.gitignore', 'ffmpeg-core.wasm\n');
+    write('desktop/web-app/public/untracked_big.mp4', '// ignored untracked local media');
+    write('app/index.html', '<!doctype html><title>Student Shell</title>');
+    write('app/sw.js', '// student worker');
+    write('app/static/js/main.hash.js', '// hashed shell bundle');
+    const trackedList = [
+      '_headers', 'index.html', 'fixture_module.js', 'guide/index.html',
+      'dev-tools/secret.js', '.github/workflows/ci.yml',
+      'desktop/web-app/public/index.html', 'desktop/web-app/public/video_studio/vendor/ffmpeg/core/.gitignore',
+    ].join('\0') + '\0';
+    const run = (command, args) => {
+      if (command === 'git' && args[0] === 'ls-files') return trackedList;
+      return f.deps.run(command, args);
+    };
+    const env = { GITHUB_ACTIONS: 'true', GITHUB_REPOSITORY: gate.REPOSITORY, GITHUB_EVENT_NAME: 'workflow_dispatch', GITHUB_REF: 'refs/heads/candidate',
+      GITHUB_SHA: SHA, GITHUB_RUN_ID: '102', GITHUB_RUN_ATTEMPT: '2', GITHUB_WORKFLOW_REF: gate.REPOSITORY + '/.github/workflows/release-candidate.yml@refs/heads/candidate' };
+    const output = path.join(f.root, 'site-output');
+    const result = gate.createCandidate({ root: f.root, output }, { ...f.deps, run, env });
+    expect(result.files.map(file => file.path)).toEqual([
+      'site/_headers', 'site/app/index.html', 'site/app/static/js/main.hash.js',
+      'site/app/sw.js', 'site/fixture_module.js', 'site/guide/index.html', 'site/index.html',
+    ]);
+    expect(fs.readFileSync(path.join(output, 'payload/site/index.html'), 'utf8')).toContain('Landing Root');
+    fs.unlinkSync(path.join(f.root, '_headers'));
+    expect(() => gate.createCandidate({ root: f.root, output: path.join(f.root, 'missing-headers') }, { ...f.deps, run, env })).toThrow(/_headers/);
+  });
+});
+describe('standalone preflight and post-publish live CDN evaluators', () => {
+  it('evaluates local wrangler, account ID, git cleanliness, and candidate site readiness', () => {
+    const ok = liveVerify.evaluatePreflight({
+      nodeVersion: 'v24.11.1',
+      ghOk: true,
+      ghAttestationOk: true,
+      ghVersion: 'gh version 2.93.0',
+      wranglerVersion: 'wrangler 4.20.0',
+      cloudflareAccountId: '0123456789abcdef0123456789abcdef',
+      gitDirtyTracked: '',
+      site: { files: 100, totalBytes: 1024, hasHeaders: true, hasGuide: true, hasStudentShell: true, hasVeraPdf: true },
+    });
+    expect(ok.ready).toBe(true);
+    const missing = liveVerify.evaluatePreflight({
+      nodeVersion: 'v24.11.1',
+      ghOk: true,
+      ghAttestationOk: true,
+      wranglerVersion: '',
+      cloudflareAccountId: '',
+      gitDirtyTracked: ' M dev-tools/foo.cjs',
+      siteError: 'blocked',
+    });
+    expect(missing.ready).toBe(false);
+    expect(missing.checks.find(c => c.name === 'wrangler-4').remediation).toContain('npm install -g wrangler@^4');
+    expect(missing.checks.find(c => c.name === 'cloudflare-account-id').ok).toBe(false);
+    expect(missing.checks.find(c => c.name === 'git-clean-tracked').ok).toBe(false);
+    expect(missing.checks.find(c => c.name === 'candidate-site').ok).toBe(false);
+  });
+  it('validates Cloudflare _headers security and CORS headers plus veraPDF artifacts against SPA fallback', () => {
+    expect(liveVerify.evaluateSecurityHeaders({
+      rootHeaders: { 'X-Content-Type-Options': 'nosniff', 'Strict-Transport-Security': 'max-age=31536000; includeSubDomains' },
+      engineHeaders: { 'Access-Control-Allow-Origin': '*' },
+    }).ok).toBe(true);
+    expect(liveVerify.evaluateSecurityHeaders({
+      rootHeaders: {},
+      engineHeaders: {},
+    }).failures).toHaveLength(3);
+    expect(liveVerify.evaluateVeraPdfHtml(200, 'Independent PDF/UA-1 validator type: \'verapdf-ready\' boot();').ok).toBe(true);
+    expect(liveVerify.evaluateVeraPdfHtml(200, '<html><body>SPA fallback</body></html>').ok).toBe(false);
+    const fakeJar = Buffer.alloc(1000005);
+    Buffer.from('504b0304', 'hex').copy(fakeJar, 0);
+    expect(liveVerify.evaluateVeraPdfJar(200, 'application/java-archive', fakeJar).ok).toBe(true);
+    expect(liveVerify.evaluateVeraPdfJar(200, 'text/html; charset=utf-8', fakeJar).ok).toBe(false);
+    expect(liveVerify.evaluateVeraPdfJar(200, 'application/octet-stream', Buffer.from('not-a-jar')).ok).toBe(false);
   });
 });
 describe('producer and publication integration, inspected without running deploy_verified_candidate.sh', () => {

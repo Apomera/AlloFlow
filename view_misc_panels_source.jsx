@@ -20,6 +20,13 @@
 // + del-rejected + same), but emits `replacement` ONCE in place of the selected chunks. Pure +
 // unit-tested; the result is then spliced into the HTML by _applyTextSurgery (coverage-guarded),
 // so a bad rewrite can't silently corrupt the document.
+function _mpCopy(t, key, fallback) {
+  try {
+    const fn = typeof t === 'function' ? t : (typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : null);
+    const v = fn ? fn(key) : '';
+    return v && v !== key ? v : fallback;
+  } catch (_) { return fallback; }
+}
 function _spliceSelectedText(chunks, firstId, lastId, replacement) {
   if (!Array.isArray(chunks)) return replacement || '';
   let out = '', inserted = false;
@@ -484,8 +491,8 @@ function PdfDiffViewer(props) {
               }) : prev);
               if (!committed) return;
               setDiffChunks(null);
-              const pathLabel = usedFallback ? 'via Gemini fallback' : 'via text surgery';
-              addToast('Edits applied ' + pathLabel + '. Accessible HTML updated.', 'success');
+              const pathLabel = usedFallback ? dvText('toast_path_gemini', 'via Gemini fallback') : dvText('toast_path_surgery', 'via text surgery');
+              addToast(dvText('toast_edits_applied', 'Edits applied {path}. Accessible HTML updated.').replace('{path}', pathLabel), 'success');
               // The fidelity/Content-Recovery list is computed against the HTML
               // this apply just changed — tell the host to clear it so a stale
               // missing-words list isn't shown (it re-computes on next check).
@@ -500,7 +507,7 @@ function PdfDiffViewer(props) {
                 _applyVerificationFailed: surgeryFailReason || 'gemini-failed',
               }) : prev);
               if (!committed) return;
-              addToast('⚠ Apply kept original HTML — edits could not be committed cleanly (' + (surgeryFailReason || 'both paths failed') + '). Your text edits are recorded; structure was preserved.', 'warning');
+              addToast(dvText('toast_apply_kept_original', '⚠ Apply kept original HTML — edits could not be committed cleanly ({reason}). Your text edits are recorded; structure was preserved.').replace('{reason}', surgeryFailReason || 'both paths failed'), 'warning');
             }
           } finally {
             finishRemarkupOperation(_remarkupOwner);
@@ -643,7 +650,7 @@ function PdfDiffViewer(props) {
               <div className="flex items-center gap-2 px-4 py-2 border-b border-slate-200 bg-white flex-wrap">
                 <div className="inline-flex rounded-lg border border-slate-400 overflow-hidden text-[11px]">
                   {['words', 'sentences', 'chars'].map(g => (
-                    <button
+                    <button type="button"
                       key={g}
                       onClick={() => _onTryGranularityChange(g)}
                       className={`px-3 py-1 font-bold transition-colors ${diffGranularity === g ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}
@@ -659,7 +666,7 @@ function PdfDiffViewer(props) {
                     {_rejCount > 0 && (
                       <span className="inline-flex items-center gap-1 ml-1 bg-amber-100 border border-amber-300 px-1.5 py-0.5 rounded font-bold text-amber-800">
                         {dvText('rejected_count', '{count} rejected', { count: _rejCount.toLocaleString() })}
-                        <button onClick={_undoAllRejections} className="ml-1 underline hover:no-underline text-amber-900" title={t('diff_view.undo_all_tooltip') || 'Undo every rejection in this view'}>{t('diff_view.undo_all_button') || 'undo all'}</button>
+                        <button type="button" onClick={_undoAllRejections} className="ml-1 underline hover:no-underline text-amber-900" title={t('diff_view.undo_all_tooltip') || 'Undo every rejection in this view'}>{t('diff_view.undo_all_button') || 'undo all'}</button>
                       </span>
                     )}
                     {_ocrEnabled && _ocrHighCount > 0 && (
@@ -707,7 +714,7 @@ function PdfDiffViewer(props) {
                       <div className="font-bold mb-1">{t('diff_view.computing') || 'Computing diff…'}</div>
                       <div className="text-[12px] text-amber-700 leading-relaxed">{t('diff_view.computing_stale_hint') || 'If this persists, the source text and remediated HTML may have drifted out of sync (or the diff cache is stale).'}</div>
                     </div>
-                    <button
+                    <button type="button"
                       onClick={() => {
                         try { _lastDiffFingerprintRef.current = null; } catch (_) {}
                         setDiffChunks(null);
@@ -808,21 +815,21 @@ function PdfDiffViewer(props) {
                     style={{ left: `${diffSelection.anchorX}px`, top: `${Math.max(8, diffSelection.anchorY - 44)}px`, transform: 'translateX(-50%)' }}
                     onMouseDown={(e) => e.preventDefault()}
                   >
-                    <button
+                    <button type="button"
                       onClick={() => setRangeRejected(diffSelection.firstId, diffSelection.lastId, true)}
                       className="px-2 py-1 rounded bg-rose-600 hover:bg-rose-700 font-bold"
                     >{t('diff_view.reject_selection') || 'Reject selection'}</button>
-                    <button
+                    <button type="button"
                       onClick={() => setRangeRejected(diffSelection.firstId, diffSelection.lastId, false)}
                       className="px-2 py-1 rounded bg-emerald-600 hover:bg-emerald-700 font-bold"
                     >{t('diff_view.keep_selection') || 'Keep selection'}</button>
-                    <button
+                    <button type="button"
                       onClick={_refineSelection}
                       disabled={applyingRemarkup}
                       className="px-2 py-1 rounded bg-indigo-600 hover:bg-indigo-700 font-bold disabled:opacity-50"
                       title={t('diff_view.refine_title') || 'Rewrite ONLY this selection with AI — precise, reviewable, revertible'}
                     >{applyingRemarkup ? '…' : (t('diff_view.refine_selection') || '✨ Refine with AI')}</button>
-                    <button
+                    <button type="button"
                       onClick={() => setDiffSelection(null)}
                       className="px-1.5 py-1 rounded hover:bg-slate-700"
                       aria-label={t('diff_view.dismiss_toolbar_aria') || 'Dismiss toolbar'}
@@ -839,7 +846,7 @@ function PdfDiffViewer(props) {
                     on this doc). One-level undo; pressing Apply again
                     overwrites the snapshot. */}
                 {_canRevert && (
-                  <button
+                  <button type="button"
                     onClick={_revertLastApply}
                     disabled={applyingRemarkup}
                     className="ml-auto px-3 py-1.5 bg-white border border-slate-400 hover:bg-slate-100 disabled:opacity-60 text-slate-700 rounded-md font-bold inline-flex items-center gap-1.5"
@@ -849,7 +856,7 @@ function PdfDiffViewer(props) {
                   </button>
                 )}
                 {_rejCount > 0 && (
-                  <button
+                  <button type="button"
                     onClick={_applyAndExport}
                     disabled={applyingRemarkup}
                     className={(_canRevert ? '' : 'ml-auto ') + 'px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white rounded-md font-bold inline-flex items-center gap-1.5 shadow'}
@@ -936,7 +943,7 @@ function GroupSessionModal(props) {
             try {
                 const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
                 await updateDoc(sessionRef, { resources });
-                addToast((item.title || 'Resource') + (delta < 0 ? ' moved earlier' : ' moved later'), 'success');
+                addToast((item.title || _mpCopy(t, 'groups.resource_default', 'Resource')) + (delta < 0 ? _mpCopy(t, 'groups.moved_earlier', ' moved earlier') : _mpCopy(t, 'groups.moved_later', ' moved later')), 'success');
             } catch (err) {
                 warnLog('Failed to reorder resource:', err);
                 addToast(t('common.error') || 'Could not reorder resource', 'error');
@@ -1030,8 +1037,8 @@ function GroupSessionModal(props) {
             'lesson-plan': '📚', adventure: '🎮', simplified: '✨', default: '📄',
         };
         return (
-        <div role="presentation" className="fixed inset-0 bg-black/90 z-[160] flex items-center justify-center p-4 animate-in fade-in duration-200 motion-reduce:animate-none" onClick={handleSetShowGroupModalToFalse} data-help-key="group_modal_container">
-            <div ref={groupDialogRef} tabIndex={-1} onKeyDown={containGroupFocus} className="bg-white rounded-2xl shadow-2xl w-[95vw] h-[90vh] relative animate-in zoom-in-95 duration-200 motion-reduce:animate-none flex flex-col overflow-hidden" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="group-session-title" aria-describedby="group-session-description">
+        <div role="presentation" className="fixed inset-0 bg-black/90 z-[160] flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-200" onClick={handleSetShowGroupModalToFalse} data-help-key="group_modal_container">
+            <div ref={groupDialogRef} tabIndex={-1} onKeyDown={containGroupFocus} className="bg-white rounded-2xl shadow-2xl w-[95vw] h-[90vh] relative animate-in motion-reduce:animate-none zoom-in-95 duration-200 flex flex-col overflow-hidden" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="group-session-title" aria-describedby="group-session-description">
                 <div className="flex items-center justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-purple-50 to-indigo-50 flex-shrink-0">
                     <div className="flex items-center gap-4">
                         <div className="bg-purple-600 p-3 rounded-xl shadow-md">
@@ -1051,7 +1058,7 @@ function GroupSessionModal(props) {
                             className="text-sm p-3 rounded-lg border border-slate-400 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none w-48"
                             data-help-key="group_create_input"
                         />
-                        <button
+                        <button type="button"
                             aria-label={t('common.add')}
                             onClick={() => handleCreateGroup()}
                             disabled={!newGroupName.trim()}
@@ -1174,7 +1181,7 @@ function GroupSessionModal(props) {
                                     <div key={gid} className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm hover:shadow-md transition-shadow">
                                         <div className="flex justify-between items-center mb-3">
                                             <span className="font-bold text-slate-700">{group.name}</span>
-                                            <button onClick={() => handleDeleteGroup(gid)} className="text-red-800 hover:text-red-800 p-1.5 rounded-lg hover:bg-red-50 transition-colors" aria-label={t('common.delete')}><X size={16}/></button>
+                                            <button type="button" onClick={() => handleDeleteGroup(gid)} className="text-red-800 hover:text-red-800 p-1.5 rounded-lg hover:bg-red-50 transition-colors" aria-label={t('common.delete')}><X size={16}/></button>
                                         </div>
                                         <label className="text-[11px] font-bold text-slate-600 uppercase mb-1 block flex items-center gap-2">
                                             {t('groups.assign_resource_label')}
@@ -1247,7 +1254,7 @@ function GroupSessionModal(props) {
                     </div>
                 </div>
                 <div className="p-4 border-t border-slate-200 bg-slate-50 flex justify-end flex-shrink-0">
-                    <button
+                    <button type="button"
                         onClick={handleSetShowGroupModalToFalse}
                         className="px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-full transition-colors shadow-md flex items-center gap-2"
                     >
@@ -1417,7 +1424,7 @@ function FluencyModePanel(props) {
 
   if (!(isFluencyMode && generatedContent)) return null;
   return (
-        <div className="fixed inset-0 z-[200] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[200] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-300">
             {showFluencyConfetti && <div className="absolute inset-0 pointer-events-none z-[250] flex items-center justify-center"><ConfettiExplosion /></div>}
             <div
                 ref={fluencyModalRef}
@@ -1464,7 +1471,7 @@ function FluencyModePanel(props) {
                                 )}
                             </div>
                         )}
-                        <button
+                        <button type="button"
                             onClick={() => { setIsFluencyMode(false); setFluencyStatus('idle'); setFluencyTimeRemaining(fluencyTimeLimit); setIsReviewingFluency(false); setFluencyReviewDraft(null); }}
                             className="p-1.5 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors"
                             aria-label={t('fluency.close_label')}
@@ -1475,7 +1482,7 @@ function FluencyModePanel(props) {
                 </div>
                 <div className="flex-1 overflow-y-auto p-8 bg-slate-50 custom-scrollbar flex flex-col items-center">
                     {fluencyStatus === 'complete' && fluencyResult ? (
-                        <div className="w-full max-w-2xl animate-in zoom-in duration-300">
+                        <div className="w-full max-w-2xl animate-in motion-reduce:animate-none zoom-in duration-300">
                             {(() => {
                                 const rrMetrics = calculateRunningRecordMetrics(fluencyResult.wordData, fluencyResult.insertions);
                                 const benchmarkResult = getBenchmarkComparison(fluencyResult.wcpm, fluencyBenchmarkGrade, fluencyBenchmarkSeason, fluencyCustomNorms);
@@ -1503,7 +1510,7 @@ function FluencyModePanel(props) {
                                     </div>
                                     )}
                                 </div>
-                                <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-400 text-center relative overflow-hidden animate-in zoom-in duration-300 delay-100">
+                                <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-400 text-center relative overflow-hidden animate-in motion-reduce:animate-none zoom-in duration-300 delay-100">
                                     <div className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">{t('fluency.rate_label')}</div>
                                     <div className="text-6xl font-black text-indigo-600">
                                         {fluencyResult.wcpm}
@@ -1529,7 +1536,7 @@ function FluencyModePanel(props) {
                                 <span className="text-xs text-slate-600">{t('fluency.benchmark_target')}: {benchmarkResult.target} WCPM</span>
                             </div>
                             {fluencyBenchmarkGrade === 'custom' && (
-                                <div className="flex justify-center gap-3 mb-4 items-center animate-in slide-in-from-top duration-200">
+                                <div className="flex justify-center gap-3 mb-4 items-center animate-in motion-reduce:animate-none slide-in-from-top duration-200">
                                     <label className="text-[11px] font-bold text-slate-600 uppercase">{t('fluency.custom_wcpm') || 'Target WCPM'}:</label>
                                     {['fall', 'winter', 'spring'].map(s => (
                                         <div key={s} className="flex flex-col items-center gap-0.5">
@@ -1590,7 +1597,7 @@ function FluencyModePanel(props) {
                                 <div className="text-center"><span className="block text-lg font-black text-slate-700">{rrMetrics.totalErrors}</span><span className="text-slate-600 font-bold uppercase">{t('fluency.errors_label')}</span></div>
                             </div>
                             {fluencyResult.prosody && (
-                                <div className="grid grid-cols-3 gap-3 mb-4 animate-in fade-in duration-300">
+                                <div className="grid grid-cols-3 gap-3 mb-4 animate-in motion-reduce:animate-none fade-in duration-300">
                                     {[
                                         { key: 'pacing', label: t('fluency.prosody_pacing') || 'Pacing', color: 'indigo' },
                                         { key: 'expression', label: t('fluency.prosody_expression') || 'Expression', color: 'violet' },
@@ -1648,7 +1655,7 @@ function FluencyModePanel(props) {
                             </>);
                             })()}
                             {fluencyFeedback && (
-                                <div className="mb-6 animate-in slide-in-from-bottom-2 fade-in">
+                                <div className="mb-6 animate-in motion-reduce:animate-none slide-in-from-bottom-2 fade-in">
                                     <div className="flex items-start gap-2 text-left bg-indigo-50 p-3 rounded-lg border border-indigo-100">
                                         <div className="bg-indigo-100 p-1.5 rounded-full text-indigo-600 mt-0.5 shrink-0"><Sparkles size={14}/></div>
                                         <div className="text-sm text-indigo-900 leading-relaxed font-medium">
@@ -1832,7 +1839,7 @@ function FluencyModePanel(props) {
                                 </div>
                             </div>
                             <div className="mt-6 pt-4 border-t border-slate-100 flex justify-center gap-3 flex-wrap">
-                                <button
+                                <button type="button"
                                     onClick={() => generateFluencyScoreSheet(fluencyResult, typeof generatedContent?.data === 'string' ? generatedContent.data : '')}
                                     className="flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition-colors"
                                     aria-label={t('common.print_score_sheet')}
@@ -1840,7 +1847,7 @@ function FluencyModePanel(props) {
                                 >
                                     <FileText size={15} /> {t('common.print_score_sheet') || 'Print Score Sheet'}
                                 </button>
-                                <button
+                                <button type="button"
                                     onClick={exportFluencyCSV}
                                     className="flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-colors"
                                     aria-label={t('common.export_fluency_csv')}
@@ -1991,7 +1998,7 @@ function FluencyModePanel(props) {
                     </div>
                     <div className="flex gap-4 items-center">
                         {fluencyStatus === 'complete' && (
-                            <button
+                            <button type="button"
                                 onClick={() => {
                                     setFluencyTranscript('');
                                     setFluencyResult(null);
@@ -2000,13 +2007,13 @@ function FluencyModePanel(props) {
                                     setFluencyFeedback('');
                                     setFluencyStatus('idle');
                                 }}
-                                className="flex items-center gap-2 px-6 py-3 rounded-full font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors animate-in slide-in-from-right-4"
+                                className="flex items-center gap-2 px-6 py-3 rounded-full font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors animate-in motion-reduce:animate-none slide-in-from-right-4"
                                 aria-label={t('fluency.reset_label')}
                             >
                                 <RefreshCw size={18} /> {t('fluency.try_again')}
                             </button>
                         )}
-                        <button
+                        <button type="button"
                             onClick={toggleFluencyRecording}
                             disabled={fluencyStatus === 'processing'}
                             data-help-key="fluency_mode_record_btn"
@@ -2056,7 +2063,7 @@ function plainStandardText(value, limit) {
 // the engine, a registered local snapshot provider, or an AI backend is
 // unavailable — absence of data never renders as a broken affordance.
 function SurpriseTopicLauncher(props) {
-  const { addToast, gradeLevel, setSourceTopic, setSourceTone, setSourceVocabulary, setStandardInputValue, sourceVocabulary, studentInterests } = props;
+  const { addToast, gradeLevel, setSourceTopic, setSourceTone, setSourceVocabulary, setStandardInputValue, sourceVocabulary, studentInterests, t } = props;
   const [surpriseQuery, setSurpriseQuery] = React.useState('');
   // The seed box is the OTHER feature that lived here: it resolves a code or
   // skill to a standard, which Target Standard already does. It stays for the
@@ -2096,7 +2103,7 @@ function SurpriseTopicLauncher(props) {
       setDirections(engine.fallbackDirections(match, nextHood));
       setSurpriseState('ready');
       warnLog('[SurpriseMe] AI proposal unavailable; using built-in starters:', error && error.message ? error.message : 'unknown error');
-      if (addToast) addToast('AI directions were unavailable, so AlloFlow prepared three editable starters.', 'info');
+      if (addToast) addToast(_mpCopy(t, 'surprise_topic.ai_fallback_toast', 'AI directions were unavailable, so AlloFlow prepared three editable starters.'), 'info');
     }
   };
   // A surprise the teacher had to describe first is not a surprise. Draw a
@@ -2108,7 +2115,7 @@ function SurpriseTopicLauncher(props) {
       const drawn = provider.sampleStandards({ gradeLevel: gradeLevel, count: 1 });
       const match = drawn && drawn.standards && drawn.standards[0];
       if (!match) {
-        if (addToast) addToast('No standards are loaded to draw from.', 'error');
+        if (addToast) addToast(_mpCopy(t, 'surprise_topic.no_standards_loaded', 'No standards are loaded to draw from.'), 'error');
         return;
       }
       setResolution({ status: 'resolved', match: match, candidates: [] });
@@ -2117,7 +2124,7 @@ function SurpriseTopicLauncher(props) {
       setCodeMisses([]);
       proposeFor(match);
     } catch (error) {
-      if (addToast) addToast('Could not draw a standard.', 'error');
+      if (addToast) addToast(_mpCopy(t, 'surprise_topic.draw_failed', 'Could not draw a standard.'), 'error');
     }
   };
   const resolveAndPropose = () => {
@@ -2178,7 +2185,7 @@ function SurpriseTopicLauncher(props) {
       setCodeState('done');
     } catch (error) {
       setCodeState('error');
-      if (addToast) addToast('Could not look up a standard code for that.', 'error');
+      if (addToast) addToast(_mpCopy(t, 'surprise_topic.lookup_failed', 'Could not look up a standard code for that.'), 'error');
     }
   };
   const chooseCandidate = (candidate) => {
@@ -2213,7 +2220,7 @@ function SurpriseTopicLauncher(props) {
     // and an INPUT to the prompt that produced this direction, so moving it
     // would contradict what they told us.
     if (addToast) {
-      addToast('Set ' + changed.join(', ') + '. The standard code is prefilled in Universal Settings.', 'success');
+      addToast(_mpCopy(t, 'surprise_topic.applied_and_prefilled', 'Set {fields}. The standard code is prefilled in Universal Settings.').replace('{fields}', changed.join(', ')), 'success');
     }
   };
   const resolvedMatch = resolution && resolution.status === 'resolved' && resolution.match;
@@ -2308,7 +2315,7 @@ function SurpriseTopicLauncher(props) {
           Also suggested, but <strong>not in the loaded snapshots</strong> — unverified, check before relying on it:
           {codeMisses.map((miss) => (
             <button type="button" key={miss.code}
-              onClick={() => { if (setStandardInputValue) setStandardInputValue(miss.code); if (addToast) addToast('Code ' + miss.code + ' prefilled in Universal Settings — verify it before use.', 'info'); }}
+              onClick={() => { if (setStandardInputValue) setStandardInputValue(miss.code); if (addToast) addToast(_mpCopy(t, 'surprise_topic.code_prefilled', 'Code {code} prefilled in Universal Settings — verify it before use.').replace('{code}', miss.code), 'info'); }}
               className="ml-1 mt-1 rounded border border-slate-300 bg-white px-1.5 py-0.5 font-bold hover:bg-slate-100">
               {miss.code}
             </button>
@@ -3337,7 +3344,7 @@ function SourceGenPanel(props) {
     return String(sourceText(key, fallback, values)).replace(/\{(source|other)\}/g, (_, name) => values[name]);
   };
   return (
-                  <div data-source-writer className="p-4 bg-violet-50/60 border-b border-violet-200 animate-in slide-in-from-top-2 space-y-3">
+                  <div data-source-writer className="p-4 bg-violet-50/60 border-b border-violet-200 animate-in motion-reduce:animate-none slide-in-from-top-2 space-y-3">
                       <div>
                         <h3 className="text-sm font-bold text-violet-950">{sourceText('input.write_source_heading', 'Write a new source passage with AI')}</h3>
                         <p data-source-writer-intro className="mt-1 text-xs text-violet-900">{existingSourceWords > 0
@@ -3445,13 +3452,13 @@ function SourceGenPanel(props) {
                                 </label>
                                 {!isIndependentMode && (
                                 <div className="flex bg-white rounded-md border border-slate-400 p-0.5 shadow-sm">
-                                    <button
+                                    <button type="button"
                                         onClick={handleSetStandardModeToAi}
                                         className={`px-2 py-0.5 text-[11px] font-bold rounded transition-colors ${standardMode === 'ai' ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 hover:text-slate-900'}`}
                                     >
                                         {t('standards.ai_match')}
                                     </button>
-                                    <button
+                                    <button type="button"
                                         onClick={handleSetStandardModeToManual}
                                         className={`px-2 py-0.5 text-[11px] font-bold rounded transition-colors ${standardMode === 'manual' ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 hover:text-slate-600'}`}
                                     >
@@ -3461,7 +3468,7 @@ function SourceGenPanel(props) {
                                 )}
                             </div>
                             {standardMode === 'ai' ? (
-                                <div className="space-y-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                                <div className="space-y-2 animate-in motion-reduce:animate-none fade-in slide-in-from-top-1 duration-200">
                                     {/* Say which grade the search will use. It was invisible before,
                                         which is how a 3rd grade result for a 5th grade source went
                                         unnoticed. The control that changes it is the Target Level
@@ -3485,7 +3492,7 @@ function SourceGenPanel(props) {
                                             placeholder={t('standards.finder_placeholder')}
                                             className="flex-grow text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
                                         />
-                                        <button
+                                        <button type="button"
                                             aria-label={t('common.refresh')}
                                             onClick={() => handleFindStandards(finderGrade)}
                                             disabled={!aiStandardQuery.trim() || isFindingStandards}
@@ -3498,13 +3505,13 @@ function SourceGenPanel(props) {
                                     {suggestedStandards.length > 0 && (
                                         <div className="max-h-32 overflow-y-auto custom-scrollbar border border-slate-400 rounded bg-white divide-y divide-slate-100">
                                             {suggestedStandards.map((std, idx) => (
-                                                <button
+                                                <button type="button"
                                                     key={idx}
                                                     onClick={() => {
                                                         const val = `${std.code}: ${std.description}`;
                                                         if (targetStandards.length < 3 && !targetStandards.includes(val)) {
                                                             setTargetStandards(prev => [...prev, val]);
-                                                            addToast(`Added ${std.code} to list`, "success");
+                                                            addToast(_mpCopy(t, 'standards.toast_added_to_list', 'Added {code} to list').replace('{code}', std.code), "success");
                                                         } else if (targetStandards.length >= 3) {
                                                             addToast(t('standards.toast_max_limit'), "error");
                                                         }
@@ -3538,7 +3545,7 @@ function SourceGenPanel(props) {
                                         placeholder={t('standards.manual_placeholder')}
                                         className="flex-grow text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300 p-1.5"
                                     />
-                                    <button aria-label={t('common.add')}
+                                    <button type="button" aria-label={t('common.add')}
                                         onClick={handleAddStandard}
                                         disabled={!standardInputValue.trim() || targetStandards.length >= 3}
                                         className="bg-indigo-100 text-indigo-700 p-1.5 rounded-md hover:bg-indigo-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -3552,9 +3559,9 @@ function SourceGenPanel(props) {
                         {targetStandards.length > 0 && (
                             <div className="flex flex-wrap gap-2 mt-2 mb-2">
                                 {targetStandards.map((std, idx) => (
-                                    <span key={idx} className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold bg-green-100 text-green-700 border border-green-200 animate-in slide-in-from-left-1 max-w-full">
+                                    <span key={idx} className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold bg-green-100 text-green-700 border border-green-200 animate-in motion-reduce:animate-none slide-in-from-left-1 max-w-full">
                                         <span className="truncate" title={std}>{std}</span>
-                                        <button
+                                        <button type="button"
                                             aria-label={t('common.close')}
                                             onClick={() => handleRemoveStandard(idx)}
                                             className="hover:text-green-900 ml-1 shrink-0"
@@ -3818,7 +3825,7 @@ function SourceGenPanel(props) {
                           </div>
                         );
                       })()}
-                      <button
+                      <button type="button"
                         ref={writeButtonRef}
                         data-help-key="source_generate_button"
                         onClick={submitSource}
@@ -4413,16 +4420,16 @@ function VolumeBuilderView(props) {
                                 setCubeFeedback(ans === cubeChallenge.answer ? { correct: true, msg: correctMsg } : { correct: false, msg: wrongMsg });
                             };
                             return (
-                            <div className="space-y-3 p-3 bg-emerald-50 rounded-xl border border-emerald-200 animate-in fade-in slide-in-from-top-1" data-help-key="volume_builder_panel">
+                            <div className="space-y-3 p-3 bg-emerald-50 rounded-xl border border-emerald-200 animate-in motion-reduce:animate-none fade-in slide-in-from-top-1" data-help-key="volume_builder_panel">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2 text-emerald-800 font-bold text-sm">
                                         📦 {t('volume_builder.title') || '3D Volume Explorer'}
                                     </div>
                                     <div className="flex items-center gap-1">
-                                        <button onClick={() => setCubeScale(s => Math.max(0.4, s - 0.15))} className="w-7 h-7 rounded-full bg-white border border-emerald-300 text-emerald-700 font-bold text-sm hover:bg-emerald-100 transition-all flex items-center justify-center" aria-label={t('volume_builder.zoom_out_aria') || 'Zoom out'}>−</button>
+                                        <button type="button" onClick={() => setCubeScale(s => Math.max(0.4, s - 0.15))} className="w-7 h-7 rounded-full bg-white border border-emerald-300 text-emerald-700 font-bold text-sm hover:bg-emerald-100 transition-all flex items-center justify-center" aria-label={t('volume_builder.zoom_out_aria') || 'Zoom out'}>−</button>
                                         <span className="text-[11px] text-emerald-600 font-mono w-10 text-center">{Math.round(cubeScale * 100)}%</span>
-                                        <button onClick={() => setCubeScale(s => Math.min(2.5, s + 0.15))} className="w-7 h-7 rounded-full bg-white border border-emerald-300 text-emerald-700 font-bold text-sm hover:bg-emerald-100 transition-all flex items-center justify-center" aria-label={t('volume_builder.zoom_in_aria') || 'Zoom in'}>+</button>
-                                        <button onClick={() => { setCubeRotation({ x: -25, y: -35 }); setCubeScale(1.0); }} className="ml-1 px-2 py-1 rounded-md bg-white border border-emerald-300 text-emerald-700 font-bold text-[11px] hover:bg-emerald-100 transition-all" aria-label={t('volume_builder.reset_view_aria') || 'Reset view'}>↺</button>
+                                        <button type="button" onClick={() => setCubeScale(s => Math.min(2.5, s + 0.15))} className="w-7 h-7 rounded-full bg-white border border-emerald-300 text-emerald-700 font-bold text-sm hover:bg-emerald-100 transition-all flex items-center justify-center" aria-label={t('volume_builder.zoom_in_aria') || 'Zoom in'}>+</button>
+                                        <button type="button" onClick={() => { setCubeRotation({ x: -25, y: -35 }); setCubeScale(1.0); }} className="ml-1 px-2 py-1 rounded-md bg-white border border-emerald-300 text-emerald-700 font-bold text-[11px] hover:bg-emerald-100 transition-all" aria-label={t('volume_builder.reset_view_aria') || 'Reset view'}>↺</button>
                                     </div>
                                 </div>
                                 <div role="group" aria-label={t('volume_builder.rotate_group_aria') || 'Rotate 3D volume'} className="flex flex-wrap items-center gap-1.5">
@@ -4444,7 +4451,7 @@ function VolumeBuilderView(props) {
                                     ].map(s => {
                                         const sel = cubeShape === s.id;
                                         return (
-                                            <button
+                                            <button type="button"
                                                 key={s.id}
                                                 role="radio"
                                                 aria-checked={sel}
@@ -4530,7 +4537,7 @@ function VolumeBuilderView(props) {
                                         onChange={(e) => setCubeShowLayers(parseInt(e.target.value))}
                                         className="flex-1 h-1.5 bg-emerald-200 rounded-lg appearance-none cursor-pointer accent-emerald-600" />
                                     <span className="text-xs font-mono text-emerald-600 w-12 text-center">{cubeShowLayers !== null ? cubeShowLayers : cubeDims.h} / {cubeDims.h}</span>
-                                    {cubeShowLayers !== null && cubeShowLayers < cubeDims.h && <button onClick={() => setCubeShowLayers(null)} className="text-xs text-emerald-500 hover:text-emerald-700 font-bold">{t('volume_builder.layers_all') || 'All'}</button>}
+                                    {cubeShowLayers !== null && cubeShowLayers < cubeDims.h && <button type="button" onClick={() => setCubeShowLayers(null)} className="text-xs text-emerald-500 hover:text-emerald-700 font-bold">{t('volume_builder.layers_all') || 'All'}</button>}
                                 </div>
                                 <div className="bg-white/80 rounded-lg p-3 border border-emerald-100" data-help-key="volume_builder_volume_readout">
                                     <div className="grid grid-cols-2 gap-3">
@@ -4557,11 +4564,11 @@ function VolumeBuilderView(props) {
                                 <div className="flex items-center gap-2 mb-2">
                                     <span className="text-xs font-bold text-emerald-700">{t('volume_builder.difficulty_label') || 'Difficulty:'}</span>
                                     <div className="flex gap-0.5">
-                                        {['easy','medium','hard'].map(d => <button key={d} onClick={() => setExploreDifficulty(d)} className={"text-[11px] font-bold px-1.5 py-0.5 rounded-full transition-all " + (exploreDifficulty === d ? (d === 'easy' ? 'bg-green-700 text-white' : d === 'hard' ? 'bg-red-700 text-white' : 'bg-emerald-700 text-white') : 'bg-slate-100 text-slate-600 hover:bg-slate-200')}>{t('volume_builder.difficulty_' + d) || d}</button>)}
+                                        {['easy','medium','hard'].map(d => <button type="button" key={d} onClick={() => setExploreDifficulty(d)} className={"text-[11px] font-bold px-1.5 py-0.5 rounded-full transition-all " + (exploreDifficulty === d ? (d === 'easy' ? 'bg-green-700 text-white' : d === 'hard' ? 'bg-red-700 text-white' : 'bg-emerald-700 text-white') : 'bg-slate-100 text-slate-600 hover:bg-slate-200')}>{t('volume_builder.difficulty_' + d) || d}</button>)}
                                     </div>
                                 </div>
                                 <div className="flex gap-2">
-                                    <button onClick={() => {
+                                    <button type="button" onClick={() => {
                                         const vdiff = getAdaptiveDifficulty(); const vmax = vdiff === 'easy' ? 4 : vdiff === 'hard' ? 10 : 7; const l = Math.floor(Math.random() * (vmax - 1)) + 1;
                                         const w = Math.floor(Math.random() * (vmax - 1)) + 1;
                                         const h = Math.floor(Math.random() * (vmax - 1)) + 1;
@@ -4583,7 +4590,7 @@ function VolumeBuilderView(props) {
                                     }} className="flex-1 py-2 bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-bold rounded-lg text-sm hover:from-emerald-800 hover:to-teal-800 transition-all shadow-md" data-help-key="volume_builder_random_challenge_btn">
                                         🎲 {t('volume_builder.random_challenge') || 'Random Challenge'}
                                     </button>
-                                    <button onClick={() => { setCubeDims({ l: 3, w: 2, h: 2 }); setCubeChallenge(null); setCubeFeedback(null); setCubeShowLayers(null); setCubeRotation({ x: -25, y: -35 }); setCubeScale(1.0); }}
+                                    <button type="button" onClick={() => { setCubeDims({ l: 3, w: 2, h: 2 }); setCubeChallenge(null); setCubeFeedback(null); setCubeShowLayers(null); setCubeRotation({ x: -25, y: -35 }); setCubeScale(1.0); }}
                                         className="px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all" data-help-key="volume_builder_reset_btn">
                                         ↺ {t('common.reset') || 'Reset'}
                                     </button>
@@ -4601,7 +4608,7 @@ function VolumeBuilderView(props) {
                                                 className="flex-1 px-3 py-2 border border-amber-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-amber-400 outline-none"
                                                 aria-label={t('volume_builder.answer_aria') || 'Volume answer'}
                                                 data-help-key="volume_builder_answer_field" />
-                                            <button onClick={checkCubeAnswer}
+                                            <button type="button" onClick={checkCubeAnswer}
                                                 disabled={!cubeAnswer}
                                                 className="px-4 py-2 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-800 disabled:opacity-40 transition-all"
                                                 data-help-key="volume_builder_check_btn">

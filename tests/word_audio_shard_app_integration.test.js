@@ -118,6 +118,43 @@ describe('AlloFlowANTI shard bridge integration', () => {
     expect(decoded.subarray(0, 4).toString()).toBe('RIFF');
     expect(decoded.subarray(8, 12).toString()).toBe('WAVE');
   });
+
+  it('falls back to ../word_audio_shards/ from /app/ even when word_audio_shards/ returns SPA HTML or 404 and external CDN is disabled (offlineOnly)', async () => {
+    const idx = loadRealShardIndex();
+    const firstWord = Object.keys(idx.words)[0];
+    const shardId = idx.words[firstWord];
+    const shardFile = idx.shards[shardId].file;
+    const testIdx = { ...idx, words: { ...idx.words, "don't": shardId } };
+    const realIndexRaw = JSON.stringify(testIdx);
+    const realShardRaw = JSON.stringify({ format: 'alloflow-word-audio-shard/1', [firstWord]: SHARD_CLIP_URI, "don't": SHARD_CLIP_URI });
+
+    const fetchMock = vi.fn(async (url) => {
+      const clean = String(url).split('?')[0];
+      if (clean.startsWith('word_audio_shards/')) {
+        return { ok: true, status: 200, text: async () => '<!doctype html><html><body>SPA</body></html>' };
+      }
+      if (clean === '../word_audio_shards/index.json') {
+        return { ok: true, status: 200, text: async () => realIndexRaw };
+      }
+      if (clean === `../word_audio_shards/${shardFile}`) {
+        return { ok: true, status: 200, text: async () => realShardRaw };
+      }
+      if (clean.startsWith('../word_audio_shards/')) {
+        return { ok: true, status: 200, text: async () => JSON.stringify({ format: 'alloflow-word-audio-shard/1', "don't": SHARD_CLIP_URI }) };
+      }
+      return { ok: false, status: 404, text: async () => 'Not Found' };
+    });
+
+    const { sandbox, windowObj } = createHostBridgeSandbox(fetchMock);
+    windowObj.__ALLO_LOCAL_BOX = true;
+    const clip = await windowObj.getWordShardAudio(firstWord, { offlineOnly: true });
+    expect(clip).toBe(SHARD_CLIP_URI);
+    expect(fetchMock.mock.calls.every(([u]) => !String(u).startsWith('https://'))).toBe(true);
+
+    const curlyClip = await windowObj.getWordShardAudio('don’t', { offlineOnly: true });
+    expect(curlyClip).toBe(SHARD_CLIP_URI);
+    expect(sandbox._CACHE_WORD_AUDIO_BANK).toBeNull();
+  });
 });
 
 describe('word_practice_module shard lookup integration', () => {
@@ -356,6 +393,132 @@ describe('tts_module { word: true } shard fast-path integration', () => {
       URL.createObjectURL = prevCreateObj;
     }
   });
+
+  it('uses getWordShardAudio inside localAfterGemini before waking _kokoroTTS when cloud Gemini is rate-limited', async () => {
+    const shardMock = vi.fn(async (token) => (token === 'photosynthesis' ? SHARD_CLIP_URI : null));
+    window.getWordShardAudio = shardMock;
+    const kokoroSpeak = vi.fn(async () => 'blob:kokoro-fallback');
+    window._kokoroTTS = { ready: false, speak: kokoroSpeak };
+    const fetchSpy = vi.fn(async () => ({ ok: false, status: 429, json: async () => ({}) }));
+    vi.stubGlobal('fetch', fetchSpy);
+
+    const { api, state } = makeTtsHarness({ _isCanvasEnv: false, apiKey: 'synthetic-key' });
+    state.rateLimitedUntil = Date.now() + 60_000;
+    const profiles = [];
+    const res = await api.callTTS('photosynthesis', 'Kore', 1, {
+      word: true,
+      language: 'English',
+      onResolvedProfile: (p) => profiles.push(p),
+    });
+    expect(res).toBe(SHARD_CLIP_URI);
+    expect(shardMock).toHaveBeenCalledTimes(1);
+    expect(kokoroSpeak).not.toHaveBeenCalled();
+    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(profiles[0]).toMatchObject({
+      engine: 'kokoro-word-shard',
+      resolvedVoice: 'af_heart',
+      fallbackFrom: 'gemini',
+    });
+  });
+
+  it('implicitly uses word shards for single English words without { word: true }, respects { word: false }, and skips sentence punctuation', async () => {
+    const shardMock = vi.fn(async (token) => (token === 'photosynthesis' || token === "don't" ? SHARD_CLIP_URI : null));
+    window.getWordShardAudio = shardMock;
+    const kokoroSpeak = vi.fn(async () => 'blob:kokoro-fallback');
+    window._kokoroTTS = { ready: false, speak: kokoroSpeak };
+    const fetchSpy = vi.fn(async () => ({ ok: false, status: 500, json: async () => ({}) }));
+    vi.stubGlobal('fetch', fetchSpy);
+
+    // Numeric maxRetries (legacy signature) in Desktop / keyless mode
+    {
+      const { api } = makeTtsHarness({ _isCanvasEnv: false, apiKey: '' });
+      expect(await api.callTTS('photosynthesis', 'Kore', 1, 2, 'English')).toBe(SHARD_CLIP_URI);
+      expect(shardMock).toHaveBeenCalledWith('photosynthesis', undefined);
+      expect(await api.callTTS('don’t', 'Kore', 1, 2, 'English')).toBe(SHARD_CLIP_URI);
+      expect(shardMock).toHaveBeenCalledWith("don't", undefined);
+    }
+
+    // Student AI off without { word: true }
+    {
+      shardMock.mockClear();
+      window.__alloStudentAiDisabled = true;
+      const { api } = makeTtsHarness({ _isCanvasEnv: false });
+      expect(await api.callTTS('photosynthesis', 'Kore')).toBe(SHARD_CLIP_URI);
+      expect(shardMock).toHaveBeenCalledTimes(1);
+      delete window.__alloStudentAiDisabled;
+    }
+
+    // { word: false } opts out even for af_heart, and single-word sentences ('Stop.') do not implicitly use shards
+    {
+      shardMock.mockClear();
+      kokoroSpeak.mockClear();
+      window._kokoroTTS = { ready: true, speak: kokoroSpeak };
+      const { api } = makeTtsHarness({ _isCanvasEnv: false, apiKey: '' });
+
+      expect(await api.callTTS('photosynthesis', 'af_heart', 1, { word: false, language: 'English' })).toBe('blob:kokoro-fallback');
+      expect(shardMock).not.toHaveBeenCalled();
+      expect(kokoroSpeak).toHaveBeenCalledTimes(1);
+      expect(kokoroSpeak.mock.calls[0][3]).not.toHaveProperty('word');
+
+      kokoroSpeak.mockClear();
+      expect(await api.callTTS('Stop.', 'af_heart', 1, 2, 'English')).toBe('blob:kokoro-fallback');
+      expect(shardMock).not.toHaveBeenCalled();
+      expect(kokoroSpeak).toHaveBeenCalledTimes(1);
+      expect(kokoroSpeak.mock.calls[0][3]).not.toHaveProperty('word');
+
+      // Non-sharded implicit single word still omits { word: true } recipe flag on live Kokoro
+      kokoroSpeak.mockClear();
+      await api.callTTS('unlistedword', 'af_heart', 1, 2, 'English');
+      expect(shardMock).toHaveBeenCalledWith('unlistedword', undefined);
+      expect(kokoroSpeak.mock.calls[0][3]).not.toHaveProperty('word');
+    }
+  });
+});
+
+describe('phase_k_helpers_module direct handleSpeak single-word shard tagging', () => {
+  it('passes { word: true } for single English tokens on direct read-aloud and omits it for multi-word strings', async () => {
+    const React = require(path.resolve(ROOT, 'desktop/web-app/node_modules/react'));
+    global.React = window.React = React;
+    window.matchMedia ||= () => ({ matches: false });
+    global.requestAnimationFrame ||= () => 0;
+    window.speechSynthesis = { cancel: () => {}, speak: () => {}, getVoices: () => [] };
+    window.SpeechSynthesisUtterance = function (t) { this.text = t; };
+    global.Audio = window.Audio = function (src) {
+      this.src = src; this.volume = 1; this.playbackRate = 1;
+      this.play = () => Promise.resolve(); this.pause = () => {};
+    };
+    loadAlloModule('phase_k_helpers_module.js');
+    const PhaseK = window.AlloModules.PhaseKHelpers;
+
+    const ref = (v = null) => ({ current: v });
+    const callTTS = vi.fn(async () => 'blob:direct-word');
+    const deps = {
+      isPlaying: false, isPaused: false, selectedVoice: 'Kore', voiceSpeed: 1, voiceVolume: 1,
+      currentUiLanguage: 'English', leveledTextLanguage: 'English', playingContentId: null,
+      adventureState: {}, personaState: {}, _ttsState: {}, glossaryAudioCache: ref(new Map()),
+      audioRef: ref(), isPlayingRef: ref(false), isSystemAudioActiveRef: ref(false),
+      playbackRateRef: ref(1), persistentVoiceMapRef: ref({}), lastReadTurnRef: ref(),
+      lastHandleSpeakRef: ref(), playbackTimeoutRef: ref(), recognitionRef: ref(),
+      playbackSessionRef: ref(0), alloBotRef: ref(), audioBufferRef: ref({}), activeBlobUrlsRef: ref([]),
+      setIsPlaying: vi.fn(), setIsPaused: vi.fn(), setPlayingContentId: vi.fn(),
+      setError: vi.fn(), setIsGeneratingAudio: vi.fn(), setPlaybackState: vi.fn(),
+      addToast: vi.fn(), t: () => undefined, warnLog() {}, debugLog() {},
+      callTTS, stopPlayback: vi.fn(), splitTextToSentences: (s) => [String(s)],
+      getSideBySideContent: () => null, playSequence: vi.fn(), addBlobUrl: vi.fn(), releaseBlob: vi.fn(),
+      _isCanvasEnv: false, AVAILABLE_VOICES: ['Kore'],
+    };
+
+    await PhaseK.handleSpeak('photosynthesis', 'glossary-term', 0, deps, true);
+    expect(callTTS).toHaveBeenLastCalledWith('photosynthesis', 'Kore', 1, expect.objectContaining({ word: true, reason: 'direct-read-aloud' }));
+
+    await PhaseK.handleSpeak("don't", 'term-1', 0, deps, true);
+    expect(callTTS).toHaveBeenLastCalledWith("don't", 'Kore', 1, expect.objectContaining({ word: true }));
+
+    callTTS.mockClear();
+    await PhaseK.handleSpeak('Saved text.', 'term-2', 0, deps, true);
+    const phraseOpts = callTTS.mock.calls[0][3];
+    expect(phraseOpts.word).toBeUndefined();
+  });
 });
 
 describe('word_sounds_module /y/ phoneme and shard handleAudio integration', () => {
@@ -506,4 +669,152 @@ describe('word_sounds_module /y/ phoneme and shard handleAudio integration', () 
     expect(spanish.envWindow.getWordShardAudio).not.toHaveBeenCalled();
     expect(spanish.env.callTTS).toHaveBeenCalledTimes(1);
   }, 15000);
+});
+
+describe('AlloFlowANTI handleAudio and warmUpGlossaryAudio shard integration', () => {
+  const hostSource = readFileSync(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8').replace(/\r\n/g, '\n');
+
+  function extractHostHandleAudio({ voice = 'Kore', shardMap = { photosynthesis: SHARD_CLIP_URI, water: WAV_URI } } = {}) {
+    const start = hostSource.indexOf('  const handleAudio = useCallback(async (text, language) => {');
+    const end = hostSource.indexOf('  const stopAacPlayback =', start);
+    if (start < 0 || end < 0) throw new Error('Host handleAudio boundary missing');
+    const block = hostSource.slice(start, end);
+    const callTTS = vi.fn(async () => 'blob:host-tts');
+    const getWordShardAudio = vi.fn(async (w) => {
+      const k = String(w || '').trim().toLowerCase();
+      return Object.prototype.hasOwnProperty.call(shardMap, k) ? shardMap[k] : null;
+    });
+    const envWindow = { __alloSelectedVoice: voice };
+    const handleAudio = new Function(
+      'useCallback', 'window', 'callTTS', 'getWordShardAudio', 'warnLog',
+      `${block}\nreturn handleAudio;`
+    )((fn) => fn, envWindow, callTTS, getWordShardAudio, vi.fn());
+    return { handleAudio, callTTS, getWordShardAudio, envWindow };
+  }
+
+  function extractWarmUpGlossaryAudio({
+    items = [],
+    language = 'English',
+    selectedVoice = 'Kore',
+    activeView = 'glossary',
+    cachedShards = {},
+    prefetchedShards = { water: WAV_URI, photosynthesis: SHARD_CLIP_URI },
+    phonemeBank = { a: WAV_URI },
+  } = {}) {
+    const fnStart = hostSource.indexOf('        const warmUpGlossaryAudio = async () => {');
+    const fnEnd = hostSource.indexOf('        const timeoutId = setTimeout(warmUpGlossaryAudio, 2000);', fnStart);
+    if (fnStart < 0 || fnEnd < 0) throw new Error('warmUpGlossaryAudio boundary missing');
+    const block = hostSource.slice(fnStart, fnEnd);
+    const glossaryAudioCache = { current: new Map() };
+    const shardCache = Object.assign({}, cachedShards);
+    const prefetchWordShardAudio = vi.fn(async (words) => {
+      for (const w of words) {
+        if (Object.prototype.hasOwnProperty.call(prefetchedShards, w)) shardCache[w] = prefetchedShards[w];
+      }
+      return { ok: true, loaded: words.length };
+    });
+    const getWordShardAudio = vi.fn(async () => null);
+    const callTTS = vi.fn(async (term) => `blob:tts-${term}`);
+    const run = new Function(
+      'filteredGlossaryData', 'activeView', 'isEditingGlossary', 'selectedVoice',
+      'generatedContent', 'window', 'getSavedResourceLanguage', 'PHONEME_AUDIO_BANK',
+      'glossaryAudioCache', '_CACHE_WORD_SHARD_CLIPS', 'prefetchWordShardAudio',
+      'getWordShardAudio', 'callTTS', 'debugLog', 'warnLog',
+      `let cancelled = false;\n${block}\nreturn warmUpGlossaryAudio;`
+    )(
+      items,
+      activeView,
+      false,
+      selectedVoice,
+      { type: 'glossary', language, data: items },
+      { AlloModules: { TextPipelineHelpers: { getGlossaryBaseLanguage: (_doc, it) => it.language || language, getGlossaryAudioCacheKey: (t, l) => `${l}\u241f${t}` } } },
+      () => language,
+      phonemeBank,
+      glossaryAudioCache,
+      shardCache,
+      prefetchWordShardAudio,
+      getWordShardAudio,
+      callTTS,
+      vi.fn(),
+      vi.fn(),
+    );
+    return { run, glossaryAudioCache, prefetchWordShardAudio, getWordShardAudio, callTTS };
+  }
+
+  it('removes legacy unscoped executeGlossaryWarmup duplicate from AlloFlowANTI.txt', () => {
+    expect(hostSource).not.toContain('executeGlossaryWarmup');
+  });
+
+  it('routes single US-English words in host handleAudio to getWordShardAudio and passes { word: true } only for single ASCII tokens', async () => {
+    const h = extractHostHandleAudio({ voice: 'Kore' });
+    expect(await h.handleAudio('photosynthesis')).toBe(SHARD_CLIP_URI);
+    expect(h.getWordShardAudio).toHaveBeenCalledWith('photosynthesis');
+    expect(h.callTTS).not.toHaveBeenCalled();
+
+    h.envWindow.__alloSelectedVoice = 'af_heart';
+    expect(await h.handleAudio('water', 'en-US')).toBe(WAV_URI);
+    expect(h.callTTS).not.toHaveBeenCalled();
+
+    // Shard miss falls back to callTTS with { maxRetries: 2, word: true }
+    h.envWindow.__alloSelectedVoice = 'Kore';
+    expect(await h.handleAudio('unlistedword')).toBe('blob:host-tts');
+    expect(h.callTTS).toHaveBeenCalledWith('unlistedword', 'Kore', 1, { maxRetries: 2, word: true });
+
+    // Multi-word AAC utterance preserves legacy options and never touches shards
+    h.getWordShardAudio.mockClear();
+    h.callTTS.mockClear();
+    await h.handleAudio('I need help');
+    expect(h.getWordShardAudio).not.toHaveBeenCalled();
+    expect(h.callTTS).toHaveBeenCalledWith('I need help', 'Kore', 1, 2);
+
+    await h.handleAudio('I need help', 'Spanish');
+    expect(h.getWordShardAudio).not.toHaveBeenCalled();
+    expect(h.callTTS).toHaveBeenLastCalledWith('I need help', 'Kore', 1, { maxRetries: 2, language: 'Spanish' });
+
+    // Spanish, en-GB, af_bella, and browser voices must bypass US-English af_heart shards
+    for (const [lang, voice] of [['Spanish', 'Kore'], ['en-GB', 'Kore'], ['en-US', 'af_bella'], ['en-US', 'browser']]) {
+      h.getWordShardAudio.mockClear();
+      h.callTTS.mockClear();
+      h.envWindow.__alloSelectedVoice = voice;
+      await h.handleAudio('water', lang);
+      expect(h.getWordShardAudio, `${lang}/${voice}`).not.toHaveBeenCalled();
+      expect(h.callTTS, `${lang}/${voice}`).toHaveBeenCalledWith('water', voice, 1, { maxRetries: 2, language: lang, word: true });
+    }
+  });
+
+  it('batch-prefetches US-English single-word glossary terms via shards and keeps non-English / en-GB / af_bella isolated', async () => {
+    const h = extractWarmUpGlossaryAudio({
+      items: [
+        { term: 'a' },
+        { term: 'water' },
+        { term: 'photosynthesis' },
+        { term: 'constructor' },
+        { term: 'water cycle' },
+      ],
+    });
+    await h.run();
+
+    expect(h.prefetchWordShardAudio).toHaveBeenCalledTimes(1);
+    expect(h.prefetchWordShardAudio).toHaveBeenCalledWith(['water', 'photosynthesis', 'constructor']);
+    expect(h.glossaryAudioCache.current.get('English\u241fwater')).toBe(WAV_URI);
+    expect(h.glossaryAudioCache.current.get('water')).toBe(WAV_URI);
+    expect(h.glossaryAudioCache.current.get('English\u241fphotosynthesis')).toBe(SHARD_CLIP_URI);
+    // Out-of-shard single word ('constructor' must not collide with Object.prototype.constructor) & phrase fallback
+    expect(h.callTTS).toHaveBeenCalledWith('constructor', 'Kore', 1, { language: 'English', word: true });
+    expect(h.callTTS).toHaveBeenCalledWith('water cycle', 'Kore', 1, { language: 'English' });
+    expect(h.callTTS).not.toHaveBeenCalledWith('water', expect.anything(), expect.anything(), expect.anything());
+    expect(h.callTTS).not.toHaveBeenCalledWith('photosynthesis', expect.anything(), expect.anything(), expect.anything());
+
+    for (const [language, voice] of [['Spanish', 'Kore'], ['en-GB', 'af_heart'], ['English', 'af_bella'], ['English', 'browser']]) {
+      const guarded = extractWarmUpGlossaryAudio({
+        items: [{ term: 'water' }],
+        language,
+        selectedVoice: voice,
+      });
+      await guarded.run();
+      expect(guarded.prefetchWordShardAudio, `${language}/${voice}`).not.toHaveBeenCalled();
+      expect(guarded.getWordShardAudio, `${language}/${voice}`).not.toHaveBeenCalled();
+      expect(guarded.callTTS, `${language}/${voice}`).toHaveBeenCalledWith('water', voice, 1, { language, word: true });
+    }
+  });
 });

@@ -65,8 +65,14 @@ const createReadAloudAudioService = (dependencies = {}) => {
     const getSynthesisProfile = typeof dependencies.getSynthesisProfile === 'function'
         ? dependencies.getSynthesisProfile
         : () => ({});
-    const synthesize = typeof dependencies.synthesize === 'function'
-        ? dependencies.synthesize
+    const rawSynthesize = typeof dependencies.synthesize === 'function' ? dependencies.synthesize : null;
+    const synthesize = rawSynthesize
+        ? async (request) => {
+            if (rawSynthesize._alloQrBlocked === true) {
+                throw serviceError('synthesize-unavailable', 'Cloud read-aloud synthesis is disabled in this session.');
+            }
+            return rawSynthesize(request);
+        }
         : async () => { throw serviceError('synthesize-unavailable', 'No read-aloud synthesizer was provided.'); };
     const encode = typeof dependencies.encode === 'function'
         ? dependencies.encode
@@ -474,7 +480,9 @@ const createReadAloudAudioService = (dependencies = {}) => {
             const clip = (value, key) => {
                 if (!value || !storeApi) return null;
                 const identityKey = typeof key === 'object' ? storeApi.portableKeyForIdentity(key) : null;
-                const entry = identityKey && value.entries?.[identityKey];
+                const entry = identityKey && value.entries && Object.prototype.hasOwnProperty.call(value.entries, identityKey)
+                    ? value.entries[identityKey]
+                    : undefined;
                 if (entry) return JSON.stringify([entry.audio, entry.mime, entry.source, entry.synthesisProfile]);
                 const legacy = value.version === 4 ? value.legacy : value;
                 const textKey = storeApi.keyFor(typeof key === 'object' ? key.spokenText : key);
@@ -909,8 +917,14 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
     const getProfile = typeof dependencies.getProfile === 'function'
         ? dependencies.getProfile
         : () => ({});
-    const synthesize = typeof dependencies.synthesize === 'function'
-        ? dependencies.synthesize
+    const rawBridgeSynthesize = typeof dependencies.synthesize === 'function' ? dependencies.synthesize : null;
+    const synthesize = rawBridgeSynthesize
+        ? async (request) => {
+            if (rawBridgeSynthesize._alloQrBlocked === true) {
+                throw new Error('Cloud read-aloud synthesis is disabled in this session.');
+            }
+            return rawBridgeSynthesize(request);
+        }
         : async () => null;
     const encode = typeof dependencies.encode === 'function' ? dependencies.encode : null;
     const persist = typeof dependencies.persist === 'function' ? dependencies.persist : null;

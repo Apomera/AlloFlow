@@ -3,6 +3,13 @@
     console.log("[CDN] DynamicAssessment already loaded, skipping duplicate");
     return;
   }
+  function __alloT(key, fallback) {
+    try {
+      var fn = typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : null;
+      if (fn) { var v = fn(key, fallback); if (v != null && v !== key) return v; }
+    } catch (_) {}
+    return fallback != null ? fallback : key;
+  }
 
   // ═══════════════════════════════════════════════════════════
   // dynamic_assessment_module.js — Dynamic Assessment Studio
@@ -2687,7 +2694,7 @@
     (sessions || []).forEach(function (s) {
       function txt(x) {
         var raw = String(x === undefined || x === null ? "" : x);
-        var safe = /^(?:[\t\r\n ]*[=+\-@]|[\t\r])/.test(raw) ? "'" + raw : raw;
+        var safe = /^(?:[\t\r\n ]*[=+\-@|]|[\t\r\n])/.test(raw) ? "'" + raw : raw;
         return '"' + safe.replace(/"/g, '""') + '"';
       }
       function num(x) { return x === null || x === undefined ? "" : (typeof x === "number" ? x.toFixed(4) : String(x)); }
@@ -2863,7 +2870,7 @@
       function num(x) { return x === null || x === undefined ? "" : (typeof x === "number" ? x.toFixed(3) : String(x)); }
       function txt(x) {
         var raw = String(x === undefined || x === null ? "" : x);
-        var safe = /^(?:[\t\r\n ]*[=+\-@]|[\t\r])/.test(raw) ? "'" + raw : raw;
+        var safe = /^(?:[\t\r\n ]*[=+\-@|]|[\t\r\n])/.test(raw) ? "'" + raw : raw;
         return '"' + safe.replace(/"/g, '""') + '"';
       }
       rows.push([
@@ -10445,7 +10452,7 @@
               try {
                 var csv = buildSessionStatsCsv(state.sessions || []);
                 if (!daCanExport("csv")) return;
-                var blob = new Blob([csv], { type: "text/csv" });
+                var blob = new Blob(["\uFEFF" + String(csv || "").replace(/^\uFEFF/, "")], { type: "text/csv;charset=utf-8" });
                 daDownloadBlob(blob, "da-sessions-" + new Date().toISOString().slice(0, 10) + ".csv");
                 addToast("📥 Downloaded session-level CSV.");
               } catch (e) { addToast("CSV export failed: " + (e && e.message ? e.message : "unknown")); }
@@ -10588,7 +10595,7 @@
                 try {
                   var csv = buildItemAnalyticsCsv(allStats);
                   if (!daCanExport("csv")) return;
-                  var blob = new Blob([csv], { type: "text/csv" });
+                  var blob = new Blob(["\uFEFF" + String(csv || "").replace(/^\uFEFF/, "")], { type: "text/csv;charset=utf-8" });
                   daDownloadBlob(blob, "da-item-analytics-" + new Date().toISOString().slice(0, 10) + ".csv");
                   addToast("📥 Downloaded item analytics CSV.");
                 } catch (e) { addToast("CSV export failed: " + (e && e.message ? e.message : "unknown")); }
@@ -17030,8 +17037,8 @@
                 addToast("Could not build export payload.");
               }
             },
-            "aria-label": "Send DA findings to Report Writer",
-            title: "Transfer reviewed findings to the protected Report Writer workspace.",
+            "aria-label": __alloT("da.export.send_to_report_writer_aria", "Send DA findings to Report Writer"),
+            title: __alloT("da.export.send_to_report_writer_title", "Transfer reviewed findings to the protected Report Writer workspace."),
             style: { padding: "10px 18px", borderRadius: 10, border: "1px solid var(--da-accent)", background: "var(--da-blue-tint)", color: "var(--da-accent-text)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
           }, "📝 Send to Report Writer") : null,
           h("button", {

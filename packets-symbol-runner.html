@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self'; form-action 'none'; base-uri 'none'">
+<meta name="referrer" content="no-referrer">
+<!-- The product name is written once on this page, in #product-name. packets-page.js puts it in front of this title. -->
+<title>Make Symbol Runner practice</title>
+<meta name="description" content="Practice rapid letter, letter-sound, digit, subitizing, flanker, and Stroop naming in 3D, 2D, or 5x8 grid view, save offline student HTML files or 1-minute checks, or export individual PowerPoint slides. Runs without AI. No account.">
+<link rel="icon" type="image/svg+xml" href="packets-mark.svg">
+<link rel="stylesheet" href="packets.css">
+<link rel="stylesheet" href="packets-make.css">
+<link rel="stylesheet" href="packets-symbol-runner.css">
+<script src="packets-page.js" defer></script>
+<script src="packets_verify_core.js" defer></script>
+<script src="packets_reopen.js" defer></script>
+<script src="packets_handoff.js" defer></script>
+<script src="packets_zip.js" defer></script>
+<script src="vendor/pptxgenjs-3.12.0.bundle.js" defer></script>
+<script src="word_sounds_take_home_loader.js" defer></script>
+<script src="word_sounds_symbols_en.js" defer></script>
+<script src="word_picture_matcher.js" defer></script>
+<script src="word_practice_core.js" defer></script>
+<script src="word_practice_media.js" defer></script>
+<script src="symbol_runner_core.js" defer></script>
+<script src="packet_symbol_runner_builder.js" defer></script>
+<script src="packets-symbol-runner.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the main part</a>
+
+<header class="top">
+  <div class="wrap wrap-narrow top-row">
+    <a class="brand" href="packets.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3 3 7.5l9 4.5 9-4.5z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>
+      <span id="product-name">AlloFlow Packets</span>
+    </a>
+    <a class="top-link" href="packets-results.html">Add up results</a>
+  </div>
+  <details class="proof">
+    <summary class="wrap wrap-narrow">
+      <span class="proof-line">This page runs without AI. No account. Nothing you choose leaves your device.</span>
+      <span class="proof-open proof-open-closed">See the details</span>
+      <span class="proof-open proof-open-opened">Hide the details</span>
+    </summary>
+    <div class="wrap wrap-narrow proof-body">
+      <ul>
+        <li>Everything runs in your browser. Symbols, rehearsal schedules, images you import, and exported files stay on your device.</li>
+        <li>A take-home HTML file has zero internet access and saves one spreadsheet (CSV) and JSON results file on the student's device when finished.</li>
+      </ul>
+    </div>
+  </details>
+</header>
+
+<main id="main" class="maker">
+  <div class="wrap wrap-narrow">
+    <p class="breadcrumb"><a href="packets.html">AlloFlow Packets</a> / Make Symbol Runner practice</p>
+    <h1>Make Symbol Runner practice</h1>
+    <p class="intro">Build rapid naming practice or 1-minute checks for letters, letter sounds, digits, dot patterns, flanker crowds, and Stroop cards. Students can respond directly or aim and lock onto the lane gate with a mouse cursor or arrow keys.</p>
+    <div class="sr-reopen-bar">
+      <button type="button" class="btn btn-small" id="sr-reopen-btn">Open a file I made</button>
+      <input type="file" id="sr-reopen-file" accept=".html,text/html" hidden>
+    </div>
+    <p id="sr-reopen-status" class="sr-status" role="status" aria-live="polite"></p>
+
+    <section class="step" aria-labelledby="sr-step1">
+      <h2 id="sr-step1"><span class="step-num">1</span> Choose symbols, control mode, and cue pictures</h2>
+
+      <div class="sr-field">
+        <label for="sr-mode">Symbol set</label>
+        <select id="sr-mode">
+          <option value="confusable_letters">Confusable letters (b / d / p / q)</option>
+          <option value="letters_lower">Lowercase letters (a-z)</option>
+          <option value="letters_upper">Uppercase letters (A-Z)</option>
+          <option value="letter_sounds">Letter and digraph sounds</option>
+          <option value="bigrams_rimes">Letter teams and rimes</option>
+          <option value="vowel_teams_r">Vowel teams and r-controlled vowels (ar, ee, oa, ow, air)</option>
+          <option value="sight_words">High-frequency sight words</option>
+          <option value="sight_words_g1">Grade 1 sight words (after, again, every, from)</option>
+          <option value="sight_words_g2_3">Grades 2-3 sight words (always, because, together)</option>
+          <option value="multisyllable_words">Multisyllabic decoding words (planet, habitat, volcano)</option>
+          <option value="morpheme_chunks">Prefixes and suffixes (un-, re-, -ing, -ment)</option>
+          <option value="digits_single">Single digits (0-9)</option>
+          <option value="digits_teen_decade">Teens and decades (12 / 21, 13 / 30)</option>
+          <option value="math_make_10">Make-10 partners (6 + ? = 10)</option>
+          <option value="math_doubles">Doubles and near-doubles (6 + 6, 6 + 7)</option>
+          <option value="math_mult_2_5_10">Foundational 2s, 5s, and 10s (5 x 4, 10 x 6)</option>
+          <option value="math_squares">Multiplication squares (2 x 2 through 10 x 10)</option>
+          <option value="subitize_dots">Subitizing dots (1-9)</option>
+          <option value="ras_switch">Alternating letters and numbers (RAS)</option>
+          <option value="ras_triple">3-Way Alternating: letters, numbers &amp; colors (RAS)</option>
+          <option value="flanker_letters">Flanker crowd letters (focus middle in d b p q)</option>
+          <option value="quantity_stroop">Quantity Stroop (count dots, ignore numeral)</option>
+          <option value="number_size_stroop">Number-Size Stroop (greater value vs. size)</option>
+          <option value="color_word_stroop">Color-Shape Stroop (name ink color and shape badge)</option>
+          <option value="custom">Own symbol list</option>
+        </select>
+      </div>
+
+      <div class="sr-field">
+        <label for="sr-custom">Custom symbols (optional, separated by spaces or commas)</label>
+        <input id="sr-custom" type="text" placeholder="Example: b d p q m n" maxlength="200">
+      </div>
+
+      <div class="sr-grid-2">
+        <fieldset class="sr-fieldset">
+          <legend>Aiming challenge</legend>
+          <label class="sr-choice"><input type="radio" name="sr-control" value="direct" checked> Direct mode (say aloud, tap, or type immediately)</label>
+          <label class="sr-choice"><input type="radio" name="sr-control" value="lockon"> Aim and lock-on (hover cursor or use arrow keys first)</label>
+        </fieldset>
+
+        <fieldset class="sr-fieldset">
+          <legend>Lane display and pacing</legend>
+          <label class="sr-choice"><input type="radio" name="sr-view" value="3d" checked> 3D corridor view</label>
+          <label class="sr-choice"><input type="radio" name="sr-view" value="2d"> 2D three-lane view</label>
+          <label class="sr-choice"><input type="radio" name="sr-view" value="grid"> 5x8 serial grid view</label>
+          <label class="sr-choice"><input type="checkbox" id="sr-rehearsal"> Incremental rehearsal (1-1, 1-2, 1-3 spacing)</label>
+          <label class="sr-choice"><input type="checkbox" id="sr-hc"> High contrast colors</label>
+        </fieldset>
+      </div>
+
+      <div id="sr-rehearsal-box" class="sr-field" hidden>
+        <label for="sr-known">Already-known symbols (at least 3, separated by spaces or commas)</label>
+        <input id="sr-known" type="text" placeholder="Leave blank to keep the first few symbols as new and the rest as known" maxlength="200">
+      </div>
+
+      <details class="sr-pics-panel">
+        <summary>Cue pictures (auto-fill anchor pictures or import your own)</summary>
+        <div class="sr-pic-toolbar">
+          <button type="button" class="btn btn-small" id="sr-auto-pics">Auto-fill built-in cue pictures</button>
+          <a class="btn btn-small" href="packets-pictures.html">Find more pictures online</a>
+          <input type="file" id="sr-pic-file" accept="image/*" hidden>
+        </div>
+        <div id="sr-pic-list" class="sr-pic-list"></div>
+      </details>
+    </section>
+
+    <section class="step" aria-labelledby="sr-step2">
+      <h2 id="sr-step2"><span class="step-num">2</span> Practice live in your browser</h2>
+      <div class="sr-live-bar">
+        <button type="button" class="btn" id="sr-start-live">Start or reset live round</button>
+        <label class="sr-choice"><input type="checkbox" id="sr-voice"> Enable microphone speech matching when supported</label>
+      </div>
+      <div id="sr-live-host" class="sr-live-host"></div>
+    </section>
+
+    <section class="step" aria-labelledby="sr-step3">
+      <h2 id="sr-step3"><span class="step-num">3</span> Save a practice file, 1-minute check, or PowerPoint slides</h2>
+      <fieldset class="sr-fieldset sr-field">
+        <legend>File mode</legend>
+        <label class="sr-choice"><input type="radio" name="sr-packet-mode" value="practice" checked> Practice file (self-paced, tries again on a miss)</label>
+        <label class="sr-choice"><input type="radio" name="sr-packet-mode" value="check"> Timed 1-minute check (one try per symbol, 60-second timer)</label>
+      </fieldset>
+      <div id="sr-check-options" class="sr-check-options sr-field" hidden>
+        <label class="sr-choice"><input type="checkbox" id="sr-untimed"> No timer (accommodation for one student)</label>
+        <div class="sr-field">
+          <label for="sr-teacher-code">Teacher code (optional, 4 or more characters)</label>
+          <input id="sr-teacher-code" type="password" autocomplete="off" maxlength="64" placeholder="Leave blank for no lock">
+        </div>
+      </div>
+      <div class="sr-field">
+        <label for="sr-title">File or slide deck title</label>
+        <input id="sr-title" type="text" value="Symbol Runner Practice" maxlength="120">
+      </div>
+      <div class="sr-field">
+        <label for="sr-learners">Student code names (optional, one per line for separate files in a ZIP)</label>
+        <textarea id="sr-learners" rows="3" placeholder="BlueHeron7&#10;RedFox3"></textarea>
+      </div>
+      <div class="sr-field" id="sr-audio-wrap">
+        <label class="sr-choice"><input type="checkbox" id="sr-include-audio" checked> Include offline sound clips in practice file (.html)</label>
+        <div class="sr-field">
+          <label for="sr-audio-mode">Audio cue voice</label>
+          <select id="sr-audio-mode">
+            <option value="auto">Automatic (letter names for letters, sounds for phonics)</option>
+            <option value="name">Letter names (a, b, c)</option>
+            <option value="sound">Phoneme sounds (/a/, /b/, /sh/)</option>
+          </select>
+        </div>
+      </div>
+      <div class="sr-export-bar">
+        <button type="button" class="btn btn-primary" id="sr-save-html">Save practice file (.html)</button>
+        <button type="button" class="btn" id="sr-try-packet">Try file in preview</button>
+        <button type="button" class="btn" id="sr-save-pptx">Export individual symbol slides (.pptx)</button>
+        <button type="button" class="btn" id="sr-save-ran-grid">Save printable naming grid (.html)</button>
+        <button type="button" class="btn" id="sr-save-flashcards">Save printable flashcards (.html)</button>
+        <button type="button" class="btn" id="sr-save-ccc">Save Cover, Copy, Compare sheet (.html)</button>
+        <button type="button" class="btn" id="sr-open-present-export">Open words in Present and Export</button>
+      </div>
+      <p id="sr-status" class="sr-status" role="status" aria-live="polite"></p>
+    </section>
+
+    <details id="about-page" class="about">
+      <summary>About this page</summary>
+      <h2>What is built into exported files</h2>
+      <p>Practice files saved here include the symbol cards, 3-lane track interactions, incremental rehearsal sequence when enabled, and optional imported cue pictures. Picture cues come from Mulberry Symbols and OpenMoji under CC BY-SA 4.0 unless replaced with your own image.</p>
+      <p class="actions">
+        <button type="button" class="btn btn-small" id="sr-clear-local">Clear saved choices on this browser</button>
+        <a class="btn btn-small" href="packets.html">Back to AlloFlow Packets</a>
+      </p>
+      <p id="sr-clear-status" class="sr-status" role="status" aria-live="polite"></p>
+    </details>
+  </div>
+</main>
+</body>
+</html>

@@ -39,7 +39,7 @@ describe('SEL-PRIV-7 — clear-my-SEL-data affordance', () => {
   });
 
   it('scans + removes SEL-namespaced localStorage keys (no variant missed)', () => {
-    expect(HUB).toMatch(/\^\(alloflow_sel_\|alloSel\|crisisCompanion/);
+    expect(HUB).toMatch(/\^\(alloflow_sel_\|alloSel\|(?:sel_\|)?crisisCompanion/);
     expect(HUB).toMatch(/localStorage\.removeItem/);
   });
 

@@ -581,7 +581,7 @@ function udlwalkCsv(rows) {
   const cols = Object.keys(rows[0]);
   const esc = (v) => {
     const raw = v == null ? "" : String(v);
-    const s = /^[\t\r\n]/.test(raw) || /^\s*[=+\-@]/.test(raw) ? "'" + raw : raw;
+    const s = /^[\t\r\n]/.test(raw) || /^\s*[=+\-@|]/.test(raw) ? "'" + raw : raw;
     return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
   };
   return [cols.join(","), ...rows.map((r) => cols.map((c) => esc(r[c])).join(","))].join("\r\n");
@@ -645,7 +645,7 @@ function UdlWalkLookForCard({ lookFor, entry, onCycle, onNoOpp, onNote, tt }) {
       type: "button",
       onClick: onNoOpp,
       "aria-pressed": rating === "no_opp",
-      className: "min-h-8 px-2 py-0.5 rounded border text-[10px] font-bold " + (rating === "no_opp" ? UDLWALK_RATING_META.no_opp.chip : "bg-white text-slate-500 border-slate-300 hover:bg-slate-50")
+      className: "min-h-11 px-3 py-1.5 rounded border text-[10px] font-bold " + (rating === "no_opp" ? UDLWALK_RATING_META.no_opp.chip : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50")
     },
     tt("udlwalk.no_opp", "No opportunity")
   ), /* @__PURE__ */ React.createElement(
@@ -654,7 +654,7 @@ function UdlWalkLookForCard({ lookFor, entry, onCycle, onNoOpp, onNote, tt }) {
       type: "button",
       onClick: () => setShowExamples((v) => !v),
       "aria-expanded": showExamples,
-      className: "min-h-8 px-2 py-0.5 rounded text-[10px] text-slate-600 underline decoration-dotted hover:text-slate-800"
+      className: "min-h-11 px-3 py-1.5 rounded text-[10px] text-slate-600 underline decoration-dotted hover:text-slate-800"
     },
     tt("udlwalk.examples", "Examples")
   ), /* @__PURE__ */ React.createElement(
@@ -663,7 +663,7 @@ function UdlWalkLookForCard({ lookFor, entry, onCycle, onNoOpp, onNote, tt }) {
       type: "button",
       onClick: () => setShowNote((v) => !v),
       "aria-expanded": showNote,
-      className: "min-h-8 px-2 py-0.5 rounded text-[10px] text-slate-600 underline decoration-dotted hover:text-slate-800"
+      className: "min-h-11 px-3 py-1.5 rounded text-[10px] text-slate-600 underline decoration-dotted hover:text-slate-800"
     },
     entry && entry.note ? tt("udlwalk.edit_note", "Edit note") : tt("udlwalk.add_note", "Add note")
   )), showExamples && /* @__PURE__ */ React.createElement("ul", { className: "mt-1.5 text-xs text-slate-600 list-disc pl-4 space-y-0.5" }, lookFor.examples.map((ex, i) => /* @__PURE__ */ React.createElement("li", { key: i }, ex))), showNote && /* @__PURE__ */ React.createElement(
@@ -846,25 +846,77 @@ function UdlWalkthroughPanel(props) {
     const iv = setInterval(update, 3e4);
     return () => clearInterval(iv);
   }, [draft && draft.startedAt]);
+  const onCloseRef = React.useRef(onClose);
+  onCloseRef.current = onClose;
   React.useEffect(() => {
     const dialog = dialogRef.current;
-    if (!dialog) return void 0;
+    if (!dialog || typeof document === "undefined") return void 0;
     const previousFocus = document.activeElement;
     const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
     const trap = { root: dialog };
     trapStack.push(trap);
     const isTopTrap = () => trapStack[trapStack.length - 1] === trap;
+    const isolated = [];
+    const seenSiblings = /* @__PURE__ */ new Set();
+    let cursor = dialog;
+    while (cursor && cursor.parentElement) {
+      const parent = cursor.parentElement;
+      Array.from(parent.children).forEach((sibling) => {
+        if (!sibling || sibling === cursor || seenSiblings.has(sibling) || !sibling.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName)) return;
+        seenSiblings.add(sibling);
+        isolated.push({
+          sibling,
+          hadInert: sibling.hasAttribute("inert"),
+          prevInert: sibling.inert,
+          ariaHidden: sibling.getAttribute("aria-hidden")
+        });
+        try {
+          sibling.inert = true;
+        } catch (_) {
+        }
+        try {
+          sibling.setAttribute("inert", "");
+        } catch (_) {
+        }
+        try {
+          sibling.setAttribute("aria-hidden", "true");
+        } catch (_) {
+        }
+      });
+      if (parent === document.body) break;
+      cursor = parent;
+    }
+    const body = document.body;
+    const scrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: "" });
+    let scrollLocked = false;
+    try {
+      if (body) {
+        scrollLocked = true;
+        if (++scrollLock.count === 1) {
+          scrollLock.prev = body.style.overflow;
+          body.style.overflow = "hidden";
+        }
+      }
+    } catch (_) {
+    }
     const getFocusable = () => Array.from(dialog.querySelectorAll(
-      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-    )).filter((el) => !el.closest('[hidden], [inert], [aria-hidden="true"]'));
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])'
+    )).filter((el) => {
+      if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      const closedDetails = el.closest("details:not([open])");
+      if (closedDetails && !(el.tagName === "SUMMARY" && el.parentElement === closedDetails)) return false;
+      const st = typeof window !== "undefined" && typeof window.getComputedStyle === "function" ? window.getComputedStyle(el) : null;
+      return !st || st.display !== "none" && st.visibility !== "hidden";
+    });
     const first = getFocusable()[0];
-    (first || dialog).focus();
+    if (!dialog.contains(document.activeElement)) (first || dialog).focus();
     const onKeyDown = (event) => {
-      if (!isTopTrap()) return;
+      if (event.defaultPrevented || !dialog.isConnected || !isTopTrap()) return;
+      if (event.nativeEvent && event.nativeEvent.isComposing || event.isComposing || event.keyCode === 229) return;
       if (event.key === "Escape") {
         event.preventDefault();
         event.stopPropagation();
-        onClose();
+        if (typeof onCloseRef.current === "function") onCloseRef.current();
         return;
       }
       if (event.key !== "Tab") return;
@@ -875,7 +927,7 @@ function UdlWalkthroughPanel(props) {
         return;
       }
       const firstItem = focusable[0], lastItem = focusable[focusable.length - 1];
-      if (!dialog.contains(document.activeElement)) {
+      if (!dialog.contains(document.activeElement) || document.activeElement === dialog) {
         event.preventDefault();
         (event.shiftKey ? lastItem : firstItem).focus();
       } else if (event.shiftKey && document.activeElement === firstItem) {
@@ -889,12 +941,48 @@ function UdlWalkthroughPanel(props) {
     document.addEventListener("keydown", onKeyDown);
     return () => {
       document.removeEventListener("keydown", onKeyDown);
+      try {
+        if (scrollLocked && body) {
+          scrollLock.count = Math.max(0, scrollLock.count - 1);
+          if (scrollLock.count === 0) body.style.overflow = scrollLock.prev;
+        }
+      } catch (_) {
+      }
+      isolated.forEach(({ sibling, hadInert, prevInert, ariaHidden }) => {
+        if (!sibling || !sibling.isConnected) return;
+        if (!hadInert) {
+          try {
+            sibling.inert = false;
+          } catch (_) {
+          }
+          try {
+            sibling.removeAttribute("inert");
+          } catch (_) {
+          }
+        } else {
+          try {
+            sibling.inert = Boolean(prevInert);
+          } catch (_) {
+          }
+        }
+        if (ariaHidden == null) {
+          try {
+            sibling.removeAttribute("aria-hidden");
+          } catch (_) {
+          }
+        } else {
+          try {
+            sibling.setAttribute("aria-hidden", ariaHidden);
+          } catch (_) {
+          }
+        }
+      });
       const wasTop = isTopTrap();
-      const idx = trapStack.indexOf(trap);
+      const idx = trapStack.lastIndexOf(trap);
       if (idx !== -1) trapStack.splice(idx, 1);
-      if (wasTop && previousFocus && previousFocus !== document.body && previousFocus.isConnected && typeof previousFocus.focus === "function") previousFocus.focus();
+      if (wasTop && previousFocus && previousFocus !== document.body && previousFocus !== document.documentElement && previousFocus.isConnected && typeof previousFocus.focus === "function") previousFocus.focus();
     };
-  }, [onClose]);
+  }, []);
   const startDraft = (teacherId) => {
     setDraft({
       teacherId,
@@ -1075,6 +1163,7 @@ function UdlWalkthroughPanel(props) {
         if (tb.id !== "sessions") setViewSessionId(null);
       },
       onKeyDown: (e) => {
+        if (e.nativeEvent && e.nativeEvent.isComposing || e.isComposing || e.keyCode === 229) return;
         let next = null;
         if (e.key === "ArrowRight" || e.key === "ArrowDown") next = (tbIdx + 1) % tabs.length;
         else if (e.key === "ArrowLeft" || e.key === "ArrowUp") next = (tbIdx - 1 + tabs.length) % tabs.length;
@@ -1110,7 +1199,7 @@ function UdlWalkthroughPanel(props) {
       type: "button",
       "aria-pressed": draft.context.grouping === g.id,
       onClick: () => setDraft((d) => ({ ...d, context: { ...d.context, grouping: g.id } })),
-      className: "min-h-9 px-2.5 py-1 rounded-full border text-xs font-bold " + (draft.context.grouping === g.id ? "bg-indigo-600 text-white border-indigo-700" : "bg-white text-slate-600 border-slate-300 hover:bg-slate-100")
+      className: "min-h-11 px-3 py-1.5 rounded-full border text-xs font-bold " + (draft.context.grouping === g.id ? "bg-indigo-600 text-white border-indigo-700" : "bg-white text-slate-600 border-slate-300 hover:bg-slate-100")
     },
     tt("udlwalk.grouping_" + g.id, g.label)
   ))), /* @__PURE__ */ React.createElement("fieldset", { className: "flex flex-wrap gap-1.5 mb-3" }, /* @__PURE__ */ React.createElement("legend", { className: "sr-only" }, tt("udlwalk.phase_legend", "Lesson phase during this visit")), UDLWALK_PHASES.map((p) => /* @__PURE__ */ React.createElement(
@@ -1120,7 +1209,7 @@ function UdlWalkthroughPanel(props) {
       type: "button",
       "aria-pressed": draft.context.lessonPhase === p.id,
       onClick: () => setDraft((d) => ({ ...d, context: { ...d.context, lessonPhase: p.id } })),
-      className: "min-h-9 px-2.5 py-1 rounded-full border text-xs font-bold " + (draft.context.lessonPhase === p.id ? "bg-sky-700 text-white border-sky-700" : "bg-white text-slate-600 border-slate-300 hover:bg-slate-100")
+      className: "min-h-11 px-3 py-1.5 rounded-full border text-xs font-bold " + (draft.context.lessonPhase === p.id ? "bg-sky-700 text-white border-sky-700" : "bg-white text-slate-600 border-slate-300 hover:bg-slate-100")
     },
     tt("udlwalk.phase_" + p.id, p.label)
   ))), UDLWALK_PRINCIPLES.map((pr) => {
@@ -1251,7 +1340,7 @@ function UdlWalkthroughPanel(props) {
         {
           type: "button",
           onClick: () => window.__alloOpenPdCatalog({ guideline: sig.id }),
-          className: "block mt-1.5 px-2 py-1 text-[11px] font-semibold border border-indigo-600 text-indigo-700 rounded hover:bg-indigo-100"
+          className: "mt-1.5 min-h-11 inline-flex items-center px-3 py-2 text-[11px] font-semibold border border-indigo-600 text-indigo-700 rounded hover:bg-indigo-100"
         },
         tt("udlwalk.pd_find_modules", "Find related PD modules")
       ));
@@ -1322,7 +1411,7 @@ function UdlWalkthroughPanel(props) {
       "aria-label": tt("udlwalk.roster_name_aria", "Teacher name") + " " + r.code,
       onChange: (e) => setRoster((list) => list.map((x) => x.id === r.id ? { ...x, name: e.target.value } : x)),
       placeholder: tt("udlwalk.name_placeholder", "Name (optional)"),
-      className: "flex-1 min-w-0 min-h-9 border border-slate-200 rounded px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      className: "flex-1 min-w-0 min-h-11 border border-slate-200 rounded px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
     }
   ), /* @__PURE__ */ React.createElement(
     "input",
@@ -1332,7 +1421,7 @@ function UdlWalkthroughPanel(props) {
       "aria-label": tt("udlwalk.roster_grade_aria", "Grade for") + " " + r.code,
       onChange: (e) => setRoster((list) => list.map((x) => x.id === r.id ? { ...x, grade: e.target.value } : x)),
       placeholder: tt("udlwalk.grade_placeholder", "Grade"),
-      className: "w-16 min-h-9 border border-slate-200 rounded px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      className: "w-16 min-h-11 border border-slate-200 rounded px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
     }
   ), /* @__PURE__ */ React.createElement(
     "input",
@@ -1342,7 +1431,7 @@ function UdlWalkthroughPanel(props) {
       "aria-label": tt("udlwalk.roster_subject_aria", "Subject for") + " " + r.code,
       onChange: (e) => setRoster((list) => list.map((x) => x.id === r.id ? { ...x, subject: e.target.value } : x)),
       placeholder: tt("udlwalk.subject_placeholder", "Subject"),
-      className: "w-20 min-h-9 border border-slate-200 rounded px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      className: "w-20 min-h-11 border border-slate-200 rounded px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
     }
   ), /* @__PURE__ */ React.createElement(
     "button",
@@ -1351,7 +1440,7 @@ function UdlWalkthroughPanel(props) {
       "aria-pressed": !!r.archived,
       onClick: () => setRoster((list) => list.map((x) => x.id === r.id ? { ...x, archived: !x.archived } : x)),
       "aria-label": (r.archived ? tt("udlwalk.restore_aria", "Restore") : tt("udlwalk.archive_aria", "Archive")) + " " + (r.name || r.code),
-      className: "shrink-0 min-h-9 px-2 py-1 rounded border text-[10px] font-bold " + (r.archived ? "bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-50" : "bg-white text-slate-500 border-slate-300 hover:bg-slate-100")
+      className: "shrink-0 min-h-11 px-3 py-1.5 rounded border text-[10px] font-bold " + (r.archived ? "bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-50" : "bg-white text-slate-600 border-slate-300 hover:bg-slate-100")
     },
     r.archived ? tt("udlwalk.restore", "Restore") : tt("udlwalk.archive", "Archive")
   )))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 items-end bg-white border border-slate-300 rounded-xl p-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "udlwalk-new-name", className: "block text-[10px] font-bold text-slate-600 mb-0.5" }, tt("udlwalk.quick_add_name", "Teacher name (optional — a code is assigned either way)")), /* @__PURE__ */ React.createElement("input", { id: "udlwalk-new-name", type: "text", value: newTeacherName, onChange: (e) => setNewTeacherName(e.target.value), className: "w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" })), /* @__PURE__ */ React.createElement("div", { className: "w-24" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "udlwalk-new-grade", className: "block text-[10px] font-bold text-slate-600 mb-0.5" }, tt("udlwalk.quick_add_grade", "Grade")), /* @__PURE__ */ React.createElement("input", { id: "udlwalk-new-grade", type: "text", value: newTeacherGrade, onChange: (e) => setNewTeacherGrade(e.target.value), className: "w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" })), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addTeacher, className: "min-h-11 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700" }, tt("udlwalk.quick_add", "Add"))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: exportJson, className: "min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-100" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "⬇️"), " ", tt("udlwalk.export", "Export data (JSON)")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {

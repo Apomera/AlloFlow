@@ -65,7 +65,7 @@ function MaineSldStateRequirements(props) {
     return () => { aliveRef.current = false; operationRef.current += 1; if (timerRef.current) window.clearTimeout(timerRef.current); };
   }, []);
   const deferFocus = action => { const selectedState = state, origin = document.activeElement; window.requestAnimationFrame(() => { if (!aliveRef.current || !contextRef.current.visible || !contextRef.current.open || contextRef.current.state !== selectedState) return; if (document.activeElement !== origin && !(origin && !origin.isConnected && document.activeElement === document.body)) return; action(); }); };
-  const focusTitle = () => deferFocus(() => { if (titleRef.current && titleRef.current.getClientRects().length) { titleRef.current.scrollIntoView({ block: 'center' }); titleRef.current.focus({ preventScroll: true }); } });
+  const focusTitle = () => deferFocus(() => { if (titleRef.current && titleRef.current.isConnected && !titleRef.current.closest('[hidden], [inert], [aria-hidden="true"], details:not([open])')) { titleRef.current.scrollIntoView({ block: 'center' }); titleRef.current.focus({ preventScroll: true }); } });
   const canReplaceDraft = () => !draftDirty || window.confirm('Replace this unsaved reference draft? Its edits have not been saved. Your saved references will stay intact.');
   const replaceDraft = (next, dirty) => { retire(); setDraft(next); setDraftDirty(!!dirty); setError(''); focusTitle(); };
   const editDraft = patch => {

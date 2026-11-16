@@ -133,14 +133,26 @@ function glossaryCurrentDescription(item) {
   return !item.imageDecorative && (!item.imageAltHash || item.imageAltHash === glossaryImageDescriptionHash(item.image)) ? String(item.imageAlt || '') : '';
 }
 // Keep Tab cycling inside the picker, including the last link on its search page.
-function containGlossaryImageDialogFocus(event) {
+function getGlossaryImageFocusable(dialog) {
+  if (!dialog || typeof dialog.querySelectorAll !== 'function') return [];
+  return [...dialog.querySelectorAll('button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), a[href], summary, [tabindex]:not([tabindex="-1"])')].filter(element => {
+    if (element.disabled || element.hidden || element.getAttribute('aria-hidden') === 'true') return false;
+    if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+    const closedDetails = element.closest('details:not([open])');
+    if (closedDetails && !(element.tagName === 'SUMMARY' && element.parentElement === closedDetails)) return false;
+    return true;
+  });
+}
+function containGlossaryImageDialogFocus(event, dialogNode) {
   if (event.key !== 'Tab') return;
-  const dialog = event.currentTarget;
-  const controls = [...dialog.querySelectorAll('button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')].filter(element => !element.hidden && element.getClientRects().length > 0);
+  const dialog = dialogNode || event.currentTarget;
+  const controls = getGlossaryImageFocusable(dialog);
   const first = controls[0], last = controls[controls.length - 1];
   if (!first) { event.preventDefault(); dialog.focus(); return; }
-  if (event.shiftKey && (document.activeElement === first || document.activeElement === dialog)) { event.preventDefault(); last.focus(); }
-  else if (!event.shiftKey && (document.activeElement === last || document.activeElement === dialog)) { event.preventDefault(); first.focus(); }
+  const active = document.activeElement;
+  if (!dialog.contains(active)) { event.preventDefault(); (event.shiftKey ? last : first).focus(); return; }
+  if (event.shiftKey && (active === first || active === dialog)) { event.preventDefault(); last.focus(); }
+  else if (!event.shiftKey && (active === last || active === dialog)) { event.preventDefault(); first.focus(); }
 }
 // A failed preview must be visible and retryable before choosing a symbol.
 function GlossaryMulberryResult({ result, term, working, buttonClass, onChoose, text = (key, fallback) => fallback }) {
@@ -178,6 +190,8 @@ function GlossaryImageControls({ item, index, canEdit, beginTask, onGenerate, ge
   const inputRef = React.useRef(null);
   const dialogRef = React.useRef(null);
   const openerRef = React.useRef(null);
+  const previousFocusRef = React.useRef(null);
+  const trapRef = React.useRef(null);
   const searchInputRef = React.useRef(null);
   const descriptionRef = React.useRef(null);
   const focusDescriptionRef = React.useRef(false);
@@ -206,11 +220,35 @@ function GlossaryImageControls({ item, index, canEdit, beginTask, onGenerate, ge
   React.useEffect(() => {
     const dialog = dialogRef.current;
     if (!open || !dialog) return;
+    previousFocusRef.current = document.activeElement;
+    const stack = (window.__alloFocusTrapStack = window.__alloFocusTrapStack || []);
+    const trap = { root: dialog };
+    trapRef.current = trap;
+    stack.push(trap);
     // Native top-layer dialogs escape the table's overflow and make the app inert.
     if (typeof dialog.showModal === 'function') { if (!dialog.open) dialog.showModal(); }
     else dialog.setAttribute('open', '');
     dialog.querySelector('button')?.focus();
-    return () => { if (typeof dialog.close === 'function' && dialog.open) dialog.close(); };
+    const isTopTrap = () => stack.length > 0 && stack[stack.length - 1] === trap;
+    const onDocumentKeyDown = event => {
+      if (!isTopTrap() || event.defaultPrevented) return;
+      if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        closeDialog();
+        return;
+      }
+      if (event.key === 'Tab') containGlossaryImageDialogFocus(event, dialog);
+    };
+    document.addEventListener('keydown', onDocumentKeyDown);
+    return () => {
+      document.removeEventListener('keydown', onDocumentKeyDown);
+      const index = stack.lastIndexOf(trap);
+      if (index !== -1) stack.splice(index, 1);
+      trapRef.current = null;
+      if (typeof dialog.close === 'function' && dialog.open) dialog.close();
+    };
   }, [open]);
   React.useEffect(() => { if (open && mode === 'mulberry') searchInputRef.current?.focus(); }, [open, mode]);
   function stopSearch() { searchRef.current?.abort(); searchRef.current = null; setSearching(false); }
@@ -219,7 +257,10 @@ function GlossaryImageControls({ item, index, canEdit, beginTask, onGenerate, ge
     if (!generationRef.current) setBusy(false);
     if (dialogRef.current?.open && typeof dialogRef.current.close === 'function') dialogRef.current.close();
     setOpen(false); setMode('choices');
-    if (restoreFocus) openerRef.current?.focus();
+    if (restoreFocus) {
+      const target = openerRef.current && openerRef.current.isConnected ? openerRef.current : (previousFocusRef.current && previousFocusRef.current.isConnected ? previousFocusRef.current : null);
+      if (target && typeof target.focus === 'function') target.focus();
+    }
   }
   function openDialog() {
     setMode('choices'); setError(''); setStatus(''); setOpen(true);
@@ -274,7 +315,7 @@ function GlossaryImageControls({ item, index, canEdit, beginTask, onGenerate, ge
     }
   }
   async function generate() {
-    if (!onGenerate || working) return;
+    if (!onGenerate || working || aiDoor?.disabled) return;
     const before = glossaryImageSnapshot(item), token = {};
     generationRef.current = token; stopSearch(); setBusy(true); setError(''); setStatus('');
     try {
@@ -322,7 +363,7 @@ function GlossaryImageControls({ item, index, canEdit, beginTask, onGenerate, ge
     </div>
     {!open && feedback}
     {!open && item.image && descriptionDirty && <p className="text-xs text-slate-600">{text('glossary.images.unsaved_description', 'Unsaved image description draft')}</p>}
-    {open && <dialog ref={dialogRef} tabIndex={-1} aria-modal="true" aria-labelledby={dialogTitleId} onCancel={event => { event.preventDefault(); closeDialog(); }} onKeyDown={event => { containGlossaryImageDialogFocus(event); if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeDialog(); } }} className="fixed inset-0 m-auto max-w-none rounded-xl border border-slate-300 bg-white p-4 text-left text-slate-800 shadow-2xl backdrop:bg-slate-900/60" style={{ width: 'min(40rem, calc(100vw - 2rem))', maxHeight: 'calc(100dvh - 2rem)', overflowY: 'auto' }}>
+    {open && <dialog ref={dialogRef} tabIndex={-1} aria-modal="true" aria-labelledby={dialogTitleId} onCancel={event => { event.preventDefault(); closeDialog(); }} onKeyDown={event => { const stack = window.__alloFocusTrapStack; if (Array.isArray(stack) && stack.length > 0 && trapRef.current && stack[stack.length - 1] !== trapRef.current) return; if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229) return; if (event.key === 'Tab') { containGlossaryImageDialogFocus(event, dialogRef.current); return; } if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeDialog(); } }} className="fixed inset-0 m-auto max-w-none rounded-xl border border-slate-300 bg-white p-4 text-left text-slate-800 shadow-2xl backdrop:bg-slate-900/60" style={{ width: 'min(40rem, calc(100vw - 2rem))', maxHeight: 'calc(100dvh - 2rem)', overflowY: 'auto' }}>
       <div className="flex items-start justify-between gap-3">
         <h2 id={dialogTitleId} className="min-w-0 break-words text-lg font-bold">{text('glossary.images.change', 'Change image')}: {item.term}</h2>
         <button type="button" className={buttonClass + ' shrink-0'} onClick={() => closeDialog()}>{text('common.close', 'Close')}</button>
