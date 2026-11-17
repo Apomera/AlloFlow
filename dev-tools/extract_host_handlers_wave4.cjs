@@ -43,6 +43,10 @@ const MIN = Number((process.argv.find(a => a.startsWith('--min=')) || '--min=900
 // host as text and some slice a handler out and execute it; moving those bodies would turn
 // each such test into a `_alloHostHandlers is not defined` failure (wave 5 lesson, 2026-09-13).
 const EXCLUDE_TESTED = process.argv.includes('--exclude-tested');
+// --skip=a,b keeps named handlers inline. For handlers that pass every automatic
+// check but must not become async-before-load: a caller reads their return value
+// synchronously (e.g. requestGenerationSourceChoice's boolean).
+const SKIP = new Set(((process.argv.find(a => a.startsWith('--skip=')) || '').slice(7)).split(',').filter(Boolean));
 const TESTED_NAMES = (() => {
   if (!EXCLUDE_TESTED) return null;
   const dir = path.join(ROOT, 'tests');
@@ -264,6 +268,7 @@ function main() {
     if (isHook && entry.kind !== 'hook:useCallback') { reject(entry.kind); continue; }
     if (entry.kind === 'let' || entry.kind === 'var' || entry.constKind === 'let' || entry.constKind === 'var') { reject('let/var binding'); continue; }
     if (bytes < MIN) continue;
+    if (SKIP.has(name)) { reject('skipped by --skip'); continue; }
     if (/^_allo[A-Za-z]*Deps$/.test(name) || name === '_alloCmdCtx' || /^_alloHost/.test(name) || name === '__alloHostDeps') { reject('deps bag / dispatcher'); continue; }
     if (/AlloModules[\s\S]{0,400}module not loaded/.test(text) || (/\bnot loaded\b/.test(text) && /AlloModules/.test(text))) { reject('already a shim'); continue; }
     if (entry.fnPath.node.generator) { reject('generator'); continue; }
@@ -416,9 +421,26 @@ function main() {
   const preludeStart = rewritten.indexOf('  const __alloHostDeps = {\n');
   const preludeEnd = rewritten.indexOf('\n  };\n', preludeStart) + '\n  };\n'.length;
   if (preludeStart < 0) throw new Error('getter prelude not found');
-  const existingGetters = Array.from(rewritten.slice(preludeStart, preludeEnd).matchAll(/get ([A-Za-z_$][\w$]*)\(\) \{ return \1; \}/g), m => m[1]);
-  const allDeps = Array.from(new Set([...existingGetters, ...depNames])).sort();
-  const rows = [];
+  // Keep every HAND-WRITTEN entry verbatim. The prelude is regenerated from names, and
+  // a regex for the plain `get x() { return x; }` shape used to be the only thing read
+  // back: wave 6 (2026-11-16) silently dropped `nativeLanguageDefaultsVersion: 1`,
+  // `get appLanguage() { return currentUiLanguage; }` and
+  // `get ORF_SCREENING_PASSAGES() { return window.ORF_SCREENING_PASSAGES; }`, which
+  // handlers moved earlier read through __d. The pin test caught it; this prevents it.
+  const preludeText = rewritten.slice(preludeStart, preludeEnd);
+  const bagText = preludeText.slice(preludeText.indexOf('{'), preludeText.lastIndexOf('}') + 1);
+  const existingGetters = [];
+  const handWritten = [];
+  for (const prop of parser.parseExpression(bagText).properties) {
+    if (prop.type === 'SpreadElement' || prop.computed) throw new Error('host dependency keys must be explicit');
+    const propName = prop.key.name ?? prop.key.value;
+    const propText = bagText.slice(prop.start, prop.end);
+    if (propText.replace(/\s+/g, ' ') === `get ${propName}() { return ${propName}; }`) existingGetters.push(propName);
+    else handWritten.push({ name: propName, text: propText });
+  }
+  const handNames = new Set(handWritten.map(h => h.name));
+  const allDeps = Array.from(new Set([...existingGetters, ...depNames])).filter(n => !handNames.has(n)).sort();
+  const rows = handWritten.map(h => '    ' + h.text);
   for (let i = 0; i < allDeps.length; i += 4) rows.push('    ' + allDeps.slice(i, i + 4).map(n => `get ${n}() { return ${n}; }`).join(', '));
   rewritten = rewritten.slice(0, preludeStart) + '  const __alloHostDeps = {\n' + rows.join(',\n') + ',\n  };\n' + rewritten.slice(preludeEnd);
 

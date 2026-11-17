@@ -162,7 +162,10 @@ module.exports = {
       var isVowel = function (ch) { return 'aeiou'.indexOf(ch.toLowerCase()) >= 0; };
       var vowelsShown = letters.every(function (ch, i) { return !isVowel(ch) || current[i] === ch.toLowerCase(); });
       var filled = letters.map(function (ch, i) { return fixed(ch) || isVowel(ch) || current[i] === ch.toLowerCase() ? ch : '_'; });
-      if (vowelsShown) { var nextBlank = filled.indexOf('_'); if (nextBlank >= 0) filled[nextBlank] = letters[nextBlank]; }
+      var blanks = function () { return filled.filter(function (ch) { return ch === '_'; }).length; };
+      // A hint never fills in the last letter: the student always writes at least one letter of the word.
+      if (vowelsShown) { var nextBlank = filled.indexOf('_'); if (nextBlank >= 0 && blanks() > 1) filled[nextBlank] = letters[nextBlank]; }
+      else if (!blanks()) { for (var k = letters.length - 1; k >= 0; k--) { if (!fixed(letters[k]) && isVowel(letters[k]) && current[k] !== letters[k].toLowerCase()) { filled[k] = '_'; break; } } }
       edit(filled.join(''), vowelsShown ? 'spelling_more_letters' : 'spelling_vowels');
     } }, text: L.spelling_bee_hint_vowels });
     var checkBtn = ctx.el('button', { type: 'button', class: 'primary', on: { click: submit }, text: L.spelling_bee_check });

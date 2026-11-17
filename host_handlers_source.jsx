@@ -12495,5 +12495,853 @@ const handleScaffoldTextChange = (field, value) => {
      __d.setGeneratedContent(updatedContent);
      __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? updatedContent : item));
   }
-  return { analysisForSourceText, getLessonRevisionResources, prepareLessonRevision, applyLessonRevision, undoLessonRevision, discardLessonRevision, openLessonRevisionPreview, getTranslationBatchItems, onUpdateResource, focusGuidedTarget, handleGenerateGuide, handleGenerateBrainstormRubric, _alloGenerateCheckpoints, _alloRecordCheckpoint, returnToReadingPassage, rehydrateHistoryWithImages, handleLaunchORF, openPersonaTeacherEditor, savePersonaTeacherEditor, _alloAlignmentGraphExportForContext, _alloPersistCurrentAlignmentGraph, handleConfirmAlignmentAttribution, handleExportAlignmentGraph, handleImportAlignmentGraph, handleMathProblemEdit, submitMathSelfGrade, parseFlowChartData, evaluateMapWithAI, handleCheckChallengeRouter, handleCreateChallenge, requestEndLiveSession, sendEndSessionEvidenceCohort, completeLiveSessionEnd, resolveSavedFollowUpLiveDeliverySnapshot, sendSavedFollowUpPlanToLiveSession, startNewPdfAudit, restoreCachedPdfRemediation, commitOrRevertPdfFix, _playReadThisPageText, _runReadThisPage, readAllMediaDescriptions, handlePreviewBlueprintStep, handleLoadProfile, handleSyncRosterToSession, calculateReadability, handleTranslateAction, detectWorkflowIntent, getWorkflowContext, applyWorkflowModification, _ensureVisualGenerationApi, handlePrintGame, handleAiUrlSearch, handleFileUpload, cleanSourceMetaCommentary, handleRegeneratePanelFrame, handleDeletePanelFrame, handleReorderPanelFrame, createTeachingScriptAudio, handleSavePrivatePersonaSession, handleRecognizeStudent, handleRecognizeStudents, handleSubmitLiveAnswer, handleSetGroupResource, handleSetStudentResource, handleSetStudentsResource, handleReleaseStudentResources, handleStartLiveSession, getGroupDifferentiationContext, _invalidateBuilderRemediationVerification, _restoreBuilderDraftFromProject, resetCanvasWorkspaceSettings, restoreCanvasWorkspaceSnapshot, refreshStorageManagerInventory, commitCanvasRecoveryVaultEnable, confirmCanvasRecoveryCode, recoverCanvasRecoveryVault, lockCanvasRecoveryVault, disableCanvasRecoveryVault, importCanvasRecoveryVaultBackup, eraseAllCanvasRecoveryVault, setStorageRetentionPolicy, setCanvasRecoverySnapshotPinned, removeCanvasRecoverySnapshotMedia, approveAndRetryCanvasRecoveryStorage, retryCanvasRecoveryStorage, eraseCanvasRecoverySnapshot, handleCanvasRecoveryImport, handleExport, calculateStudentStats, handleSubmitAssignment, _alloFollowResourceLive, handleOpenLearningWebResource, handleDuplicateResource, handleDeleteHistoryItem, handleGenerateExtensionGuide, handleGenerateProgression, handleActivateNextLesson, handleGenerateLessonIdeas, handleAutoFillToggle, handleBroadcastOptions, handleUseItem, handleRestoreImage, handleGenerateFrayerImage, handleRefineGlossaryImage, handleGenerateWorksheet, handleGenerateWorksheetCover, handleQuizChange, handleQuizQuestionAction, handleFactCheck, restoreIntentSnapshot, performHighlight, enableGlobalVoiceAccess, handleGenerateReflectionPrompt, processPersonaTtsQueue, saveUDLAdvice, applyDetailedAutoConfig, handleRemoveFromMapList, handleOutlineChange, handleGenerateTermImage, _getFreshTextComplexityEvidence, handleContentClick, handleVoiceRecordingStop, handleAnnotationImportFile, onCorrectAnalysisText, getAnalysisSourceUndo, onUndoAnalysisSourceEdit, handleAiRefineSource,handleSaveGeneratedArtifact, handleGenerateRubric, handleAutoGrade, mergeCloudAndLocal, applyGuidedPlanToRemaining, handleCompleteGuidedMode, _alloRunActivityGeneration, _alloNoteStudentText, _alloCheckpointArtifact, applyAppUpdate, handleStemArtworkUse, saveStemArtworkAsVisualSupport, handleGameCompletion, handleAnnotationUndo, playAacSpeech, handleLaunchMathProbe, deleteStudentRecords, mergeStudentRecords, requestWordSoundsAudioConfirmation, setPersonaAutoReadSafely, launchPreparedLiveInteraction, highlightElement, handleRegisterLearningWebGraph, handleRegisterUnitPathGraph, handleUnregisterUnitPathGraph, openAdventureActionVote, handleImportResearchJSON, handleOpenPrincipalEvaluationFromSettings, handleOpenSchoolRewardsPortal, handleSaveSchoolRewardsPortalUrl, handleToggleShowExportMenu, clearMathResourceState, broadcastInteractiveOrganizer, retryInteractiveOrganizerStudents, handleNodeClick, handleCheckChallenge, handleExitChallenge, downloadKokoroModel, saveFluencyReview, handleWordSoundsPreparedAudioRetry, exportMailboxConfig, suggestPollTimes, extendAssignmentCenterShare, duplicateAssignmentCenterShare, openHomeworkShelf, connectMailbox, rotateMailboxAdmin, closeAllMailboxSessions, startMailboxLiveSession, resumeMailboxLiveSession, describeSavedFollowUpLiveFailure, pushResourceToMailbox, shareFullPackToMailbox, addDirectionsToPack, deriveDirectionsDraft, sendPackHome, savePortableAacResourceToHistory, printQrSheet, revokeHomeworkAssignment, patchAssignmentCenterActivity, patchAssignmentCenterSurveyItem, _ensurePdfLib, openCachedPdfRemediation, resumeReadThisPage, handleApplyLessonTemplate, archiveLivePlan, handleRestoreArchivedPlan, handleApplyRosterGroup, handleImportProfiles, verifyMathProblems, getTeachingScriptController, fetchReplacementSuggestion, generateDynamicBridge, generatePixelArtItem, toggleLetterSelection, handleUrlFetch, applyGlobalCitations, handleAnimatePanel, handleDuplicatePanelFrame, handleUpdateVisualLabel, handleFetchWordImage, _legacyResolveReadAloudAudio, deriveVerificationState, handlePrintResourceSheet, handleUpdateHavenRecognitionConfig, _bumpClassGoalMet, handleAwardClassGoal, openExportPreview, _decodeBuilderDraftPayload, syncCanvasRecoveryVaultState, enableCanvasRecoveryVault, unlockCanvasRecoveryVault, changeCanvasRecoveryVaultPassword, rotateCanvasRecoveryKey, removeCanvasRecoveryKey, saveEducatorAccessCode, removeEducatorAccessCode, exportCanvasRecoverySnapshot, executeExportFromPreview, sanitizeSubmissionData, formatLessonDNA, saveAdventureFluencyResult, handleShopPurchase, toggleDemocracyMode, moveItem, handleQuizBulkOptionChange, handleQuizImageRefine, handleUpdateQuestionRoutingRules, captureIntentSnapshot, _editMainVoiceEditableField, handleReturnToStart, saveFullChat, buildSanitizedBlueprintDiagnostic, _copySanitizedDiagnostic, handleTranscriptSourceAction, handleDownloadFullPackDiagnostics, handleAddToMapList, handleTimelineChange, handleTimelineDragOver, handleTimelineMove, handleAddTimelineStep, handleLessonPlanChange, handleQuizOptionClick, handleGenerateConceptItem, csRegenerateItem, csAddItem, csRegenerateItemImage, csRefineItemImage, csUploadItemImage, handleExplainConceptSortItem, handleNavigateResource, handleAnalysisTextChange, _applyTextDomain, _shiftTextStack, handleBrainstormChange, handleOpenActivityInStudio, handleAnalyzePOS, launchGradingSession, submitGradingSession, handlePresentationOptionClick, _alloUpdateBrainstormActivity, _alloStampBrainstormDerivative, _alloActivityRetryable, _alloCheckpointSupports, handleResetScaffolds, openReadingStudy, ensureReadingLibraryIndex, recordGameCompletion, closeOrganizerPreview, openLiveActivityDashboard, retryLiveSessionResources, handleToggleAllTools, _alloAlignmentExportFromRegistryEntry, toggleOverlay, submitExploreScore, handleAddManualNode, handleResetLayout, handleRetryChallenge, handleWordSoundsPreparedAudioStatus, exportAssignmentCenterCsv, downloadHomeworkShelfJson, getEndSessionSummaryApi, readSavedFollowUpLiveSessionIdentity, sharePortableAacResource, addAssignmentCenterSurveyItem, setRangeRejected, saveExportPreset, deleteExportPreset, applyExportPreset, _beginReadThisPageVoiceSpeech, handleSaveProfile, handleAddStandard, handleOpenWordSounds, evaluateMathExpression, handleGenerateBingo, handleSelectMainSearchOption, ensureTitleHeading, _updatePanelInPlan, handleSetPanelFps, _getContentEngine, handleCreateGroup, handleDeleteGroup, handleToggleInteractive, _readBuilderDraftStreamBounded, publishCanvasRecoveryVaultLockedState, downloadCanvasRecoveryCode, exportCanvasRecoveryVaultBackup, getEducatorAccessCodeApi, refreshEducatorAccessState, requestCanvasRecoveryErase, downloadSubmissionBackup, loadProjectFromJson, handleBotFinishedSpeaking, handleStartSequel, handleRetryAdventureTurn, handleAdventureCrashRecovery, handleRemoveFrayerImage, handleReflectionChange, handleCopyBlueprintDiagnostics, handleDownloadBlueprintDiagnostics, handleRemoveFullPackPlanResource, handleCopyFullPackDiagnostics, handleLockTimelineMode, handleDeleteTimelineStep, handleConceptSpacePersist, launchInteractiveFlashcards, handleGlossaryChange, handleGlossarySelectionChange, handleGlossarySelectAll, handleDeleteGlossaryItem, handleDeleteTermImage, _applySimplifiedTextMutation, handleContentMouseUp, handleCheckAlignment, handleRegenerateWithRigor, _readTextDomain, handleScaffoldChange, handleScaffoldTextChange };
+const setWordSoundsTtsSpeed = value => {
+    const resource = __d.latestWordSoundsResourceRef.current;
+    // Decline a control callback from the player that a newer delivery replaced.
+    if (__d.wordSoundsSessionConfig?.resourceId && resource?.id !== __d.wordSoundsSessionConfig.resourceId) return;
+    const previous = __d.resolveWordSoundsTtsSpeed(resource?.sessionConfig?.wordSoundsTtsSpeed,
+      resource?.sessionConfig?.ttsSpeed, resource?.wordSoundsTtsSpeed, __d.wordSoundsTtsSpeed);
+    const speed = __d.resolveWordSoundsTtsSpeed(typeof value === 'function' ? value(previous) : value, previous);
+    __d.wsDispatch({ type: 'WS_SET', field: 'wordSoundsTtsSpeed', value: speed });
+    if (!resource?.id || resource.type !== 'word-sounds') return;
+    const updateResource = saved => {
+      if (!saved || saved.type !== 'word-sounds' || saved.id !== resource.id) return saved;
+      const config = saved.sessionConfig && typeof saved.sessionConfig === 'object' && !Array.isArray(saved.sessionConfig) ? saved.sessionConfig : {};
+      if (saved.wordSoundsTtsSpeed === speed && config.wordSoundsTtsSpeed === speed && config.ttsSpeed === speed) return saved;
+      return { ...saved, wordSoundsTtsSpeed: speed, sessionConfig: { ...config, wordSoundsTtsSpeed: speed, ttsSpeed: speed } };
+    };
+    __d.latestWordSoundsResourceRef.current = updateResource(resource);
+    __d.setGeneratedContent(updateResource);
+    __d.setHistory(previous => Array.isArray(previous) ? previous.map(updateResource) : previous);
+  };
+const clearAllStudentRecords = () => {
+    __d.setProbeHistory(() => { try { localStorage.setItem('alloflow_probe_history', '{}'); } catch {} return {}; });
+    __d.setInterventionLogs(() => { try { localStorage.setItem('alloflow_intervention_logs', '{}'); } catch {} return {}; });
+    __d.setRtiGoals(() => { try { localStorage.setItem('alloflow_rti_goals', '{}'); } catch {} return {}; });
+    if (typeof __d.setExternalCBMScores === 'function') __d.setExternalCBMScores(() => { try { localStorage.setItem('alloflow_external_cbm', '{}'); } catch {} return {}; });
+    if (typeof __d.setSurveyResponses === 'function') __d.setSurveyResponses(() => { try { localStorage.setItem('alloflow_survey_responses', '[]'); } catch {} return []; });
+    if (typeof __d.setFidelityLog === 'function') __d.setFidelityLog(() => { try { localStorage.setItem('alloflow_fidelity_log', '[]'); } catch {} return []; });
+    if (typeof __d.setSessionCounter === 'function') __d.setSessionCounter(() => { try { localStorage.setItem('alloflow_session_counter', '0'); } catch {} return 0; });
+  };
+const chooseLaunchRole = async (key, opts = {}) => {
+      const roles = { teacher: 'teacher', teacher_full: 'teacher', family: 'parent', adult: 'independent', specialist: 'specialist', student_explore: 'student', student_code: 'student' };
+      if (!Object.prototype.hasOwnProperty.call(roles, key)) return;
+      const code = key === 'student_code' ? __d._alloCleanLiveSessionCode(opts.code) : null;
+      if (key === 'student_code' && !code) return;
+      const choice = ++__d.launchChoiceEpochRef.current;
+      if (roles[key] !== 'student') await __d._alloEducatorAccessCodeSettled();
+      if (choice !== __d.launchChoiceEpochRef.current) return;
+      const options = { fromLaunch: true, resume: opts.resume === true, workspace: key === 'teacher' ? 'guided' : 'full' };
+      __d.padFocusTargetRef.current = roles[key] === 'student' || key === 'specialist' ? null : 'source-ready-title';
+      __d.setHasSelectedMode(true);
+      if (roles[key] !== 'student' && __d._alloEducatorAccessCodeRequired()) {
+          __d.pendingRoleOptionsRef.current = options;
+          __d.gateFromPadRef.current = true;
+          __d.setHasSelectedRole(true);
+          __d.setPendingRole(roles[key]);
+          __d.setIsGateOpen(true);
+          return;
+      }
+      __d.executeRoleSelect(roles[key], options);
+      if (roles[key] === 'student') {
+          __d.setWorkspacePane('preview');
+          __d.studentEntryFromPadRef.current = true;
+          __d.studentHubAfterEntryRef.current = key === 'student_explore';
+          __d.setPendingJoinCode(code);
+      }
+  };
+const refineSourceSuggestion = async (instruction, text) => {
+    if (!String(instruction || '').trim() || !String(text || '').trim()) return null;
+    __d.setGenerationStep('Writing a suggested rewrite...');
+    try {
+      const prompt = 'You are an expert educational editor.\nTask: Revise the following text based on the instruction below.\nInstruction: "' + instruction + '"\nPreserve all existing Markdown citations exactly as they appear and keep them attached to the same claims.\nText to revise:\n"' + text + '"\nReturn ONLY the revised text. Do not include introductory or concluding remarks.';
+      const result = await __d.callGemini(prompt);
+      const refined = String(typeof result === 'string' ? result : (result && result.text) || '').trim().replace(/^```(?:[a-z]+)?\s*/i, '').replace(/\s*```$/, '').trim();
+      const ratio = refined.length / Math.max(1, text.length);
+      if (!refined || (text.length >= 40 && (ratio < 0.25 || ratio > 4))) { __d.addToast(__d.t('analysis.refine_rejected'), 'warning'); return null; }
+      return refined;
+    } catch (_) {
+      __d.addToast(__d.t('toasts.refinement_failed'), 'error');
+      return null;
+    } finally {
+      __d.setGenerationStep('');
+    }
+  };
+const connectMailboxForSetup = () => {
+      if (__d.mbSetupConnectPromiseRef.current) return __d.mbSetupConnectPromiseRef.current;
+      const request = __d.mbPendingHostRequestRef.current;
+      const generation = __d.mbHostRequestGenerationRef.current;
+      const attempt = (async () => {
+          try {
+              const connected = await __d.connectMailbox();
+              if (connected?.url && connected?.admin && request
+                  && generation === __d.mbHostRequestGenerationRef.current
+                  && __d.mbPendingHostRequestRef.current === request && __d.hostPackOnMailboxRef.current) {
+                  await __d.hostPackOnMailboxRef.current(request.resourceIds, {
+                      ...request.options, pendingRequest: request, mailboxConfig: connected,
+                  });
+              }
+              return connected;
+          } catch (error) {
+              __d.warnLog('Mailbox setup connection failed', error);
+              __d.addToast('Could not finish connecting the mailbox. Try connecting again when you are ready.', 'warning');
+              return null;
+          } finally {
+              __d.mbSetupConnectPromiseRef.current = null;
+          }
+      })();
+      __d.mbSetupConnectPromiseRef.current = attempt;
+      return attempt;
+  };
+const openStudentQrPreview = (url, label = 'student link') => {
+      if (!url || typeof window === 'undefined') return false;
+      let preview = null;
+      try { preview = window.open(url, '_blank'); } catch (_) {}
+      if (preview) {
+          try { preview.opener = null; } catch (_) {}
+          // The QR dialog and Assignment Center also open student links.
+          // Record only a successful opening of this run's exact assignment.
+          const context = __d.guidedLinkContextRef.current;
+          const owned = context?.resolve();
+          if (owned?.url === url && context.generation === __d.workspaceReplacementGenerationRef.current) {
+            __d.setGuidedDeliveryEvidence(prev => prev?.learnerLink?.id === owned.guidedLearnerLinkId
+              ? { ...prev, studentPreviewed: true } : prev);
+          }
+          __d.addToast('Student preview opened. Complete the check in the new tab, then return here.', 'success');
+          return true;
+      }
+      __d.addToast('Allow pop-ups to test this ' + label + '.', 'info');
+      return false;
+  };
+const handleQuickAddRosterGroup = async (rawName, grade, language) => {
+      if (!__d.isTeacherMode || __d.isParentMode || __d.isIndependentMode) return 'unavailable';
+      const name = String(rawName || '').trim().replace(/\s+/g, ' ').slice(0, 80);
+      if (!name) return 'empty';
+      if (!__d.quickGroupGradeOptions.includes(grade) || !__d.quickGroupLanguageOptions.includes(language)) return 'unavailable';
+      const previous = __d.quickRosterRef.current;
+      const groups = previous?.groups || {};
+      if (Object.values(groups).some(group => String(group?.name || '').trim().toLowerCase() === name.toLowerCase())) return 'duplicate';
+      if (Object.keys(groups).length >= 20) return 'limit';
+      const id = 'group-' + (window.crypto?.randomUUID?.() || Date.now().toString(36) + Math.random().toString(36).slice(2));
+      const colors = ['#2563eb', '#059669', '#be123c', '#7c3aed'];
+      const next = __d.alloNormalizeRosterIdentity({ ...(previous || {}), groups: { ...groups, [id]: { name, color: colors[Object.keys(groups).length % colors.length], profile: { gradeLevel: grade, leveledTextLanguage: language } } }, students: previous?.students || {} });
+      try {
+          __d.persistQuickRosterDraft(next, previous);
+      } catch (_) { return 'unavailable'; }
+      __d.quickRosterRef.current = next;
+      __d.setRosterKey(next);
+      return 'added';
+  };
+const handleCheckSeedFacts = async () => {
+      const target = __d.generatedContent;
+      const seed = target?.lessonPath?.seed;
+      if (!target || !seed || (seed.kind !== 'topic' && seed.kind !== 'word-list') || __d.seedFactCheckId) return;
+      const signature = __d.seedDataSignature(target.data);
+      __d.setSeedFactCheckId(target.id);
+      try {
+          const prompt = 'List the most important factual claims (at most 15) in this classroom resource and judge each one against well-established knowledge. It was made from '
+              + (seed.kind === 'topic' ? 'the topic "' + seed.text + '"' : 'a word list') + ' for ' + __d.gradeLevel + ' students, with no source passage to check against.\n'
+              + 'Verdicts: "supported" = well established; "uncertain" = you cannot confirm it, it depends on context, or reliable sources disagree; "incorrect" = it contradicts well-established knowledge. Never guess: when unsure, use "uncertain".\n'
+              + 'Write each claim and note in ' + (__d.getSavedResourceLanguage(target) || __d.leveledTextLanguage || 'English') + '. Each note is one short sentence saying why.\n'
+              + 'Return ONLY JSON: {"claims":[{"claim":"...","verdict":"supported|uncertain|incorrect","note":"..."}]}\n'
+              + 'Resource (' + target.type + '):\n' + JSON.stringify(target.data, (key, value) => (/image|icon|audio|svg|url$|src$/i.test(key) || (typeof value === 'string' && /^(data|blob):|^https?:\/\//.test(value)) ? undefined : value)).slice(0, 12000);
+          const parsed = __d.safeJsonParse(__d.cleanJson(await __d.callGemini(prompt, true)));
+          const verdicts = ['supported', 'uncertain', 'incorrect'];
+          const claims = (Array.isArray(parsed?.claims) ? parsed.claims : [])
+              .filter(c => c && typeof c.claim === 'string' && c.claim.trim()).slice(0, 15)
+              .map(c => ({ claim: c.claim.trim().slice(0, 400), verdict: verdicts.includes(c.verdict) ? c.verdict : 'uncertain', note: typeof c.note === 'string' ? c.note.trim().slice(0, 300) : '' }));
+          if (!claims.length) throw new Error('no claims');
+          const apply = item => item && item.id === target.id && item.lessonPath ? { ...item, lessonPath: { ...item.lessonPath, factCheck: { at: Date.now(), signature, claims } } } : item;
+          __d.setGeneratedContent(apply);
+          __d.setHistory(prev => prev.map(apply));
+      } catch (_) {
+          __d.addToast(__d.t('common.seed_check_failed') || 'The fact check did not finish. Your resource is unchanged; try again.', 'error');
+      } finally {
+          __d.setSeedFactCheckId(null);
+      }
+  };
+const runGlossaryHealthCheck = async (terms, sourceText) => {
+    const module = window.AlloModules && window.AlloModules.ExportHandlers;
+    const live = __d.glossaryLiveRef.current.resource;
+    if (!__d.isTeacherMode || !module?.runGlossaryHealthCheck || live?.type !== 'glossary') return null;
+    // Reviewing an existing lesson does not need AI. A health check is an
+    // optional teacher request, so explain setup locally before invoking AI.
+    if (!__d.resolveAiCapability().text) {
+        const key = 'glossary_health.connection_required';
+        const translated = __d.t(key);
+        __d.addToast(translated && translated !== key ? translated : 'The optional AI health check needs an AI connection. Open AI Backend Settings to connect. You can use this glossary and its activities without AI.', 'info');
+        return null;
+    }
+    const signature = JSON.stringify(terms.map(item => item && [item.term, item.def, item.tier]));
+    const task = window.AlloModules?.GlossaryHelpers?.beginGlossaryTask({
+        generatedContent: live, getGlossaryLive: () => __d.glossaryLiveRef.current,
+        glossaryTaskRegistry: __d.glossaryTaskRegistryRef.current,
+    }, null, [], 'health');
+    if (!task) return null;
+    const current = () => task.visible() && signature === JSON.stringify((__d.glossaryLiveRef.current.resource?.data || []).map(item => item && [item.term, item.def, item.tier]));
+    __d.glossaryHealthTaskRef.current = task;
+    try {
+        const result = await module.runGlossaryHealthCheck(terms, sourceText, {
+            debugLog: __d.debugLog, warnLog: __d.warnLog,
+            callGemini: (...args) => { args[5] = task.signal; return __d.callGemini(...args); },
+            setIsRunningHealthCheck: value => { if (current()) __d.setIsRunningHealthCheck(value); },
+            setShowHealthCheckPanel: value => { if (current()) __d.setShowHealthCheckPanel(value); },
+            setGlossaryHealthCheck: value => { if (current()) __d.setGlossaryHealthCheck(value); },
+        });
+        return current() ? result : null;
+    } finally { task.finish(); if (__d.glossaryHealthTaskRef.current === task) __d.glossaryHealthTaskRef.current = null; }
+  };
+const handleUpdateVisualPanel = (panelIdx, patch, expect) => {
+      if (!__d.generatedContent?.id || !patch || typeof patch !== 'object') return false;
+      return __d.onUpdateResource(expect && expect.resourceId != null ? expect.resourceId : __d.generatedContent.id, item => {
+          const plan = item?.data?.visualPlan;
+          const current = plan && Array.isArray(plan.panels) ? plan.panels[panelIdx] : null;
+          if (!current || (expect && typeof expect.accept === 'function' && !expect.accept(current))) return item;
+          const updatedPanels = [...plan.panels];
+          updatedPanels[panelIdx] = { ...current, ...patch };
+          const first = panelIdx === 0 && Object.prototype.hasOwnProperty.call(patch, 'alt')
+              ? { altText: patch.alt, altSource: patch.altSource, altHash: patch.altHash }
+              : {};
+          return { ...item, data: { ...item.data, ...first, visualPlan: { ...plan, panels: updatedPanels } } };
+      });
+  };
+const prepareReadAloudArtifactAudio = async (options = {}) => {
+      const moduleValue = window.AlloModules && window.AlloModules.ReadAloudArtifactAudio;
+      if (!moduleValue || typeof moduleValue.create !== 'function') {
+          const error = new Error('Read-aloud artifact audio is still loading. Please try again.');
+          error.code = 'artifact-audio-unavailable';
+          throw error;
+      }
+      const preparer = moduleValue.create({
+          callTTS: __d.callTTS,
+          getRequestedProfile: ({ voice, language }) => {
+              const provider = String(__d._aiConfig.ttsProvider || 'auto').trim().toLowerCase();
+              const localEnglishVoice = /^(af_|am_|bf_|bm_)/i.test(voice) && /^(english\b|en(?:[-_]|$))/i.test(language);
+              return {
+                  requestedProvider: provider === 'auto' ? 'auto:' + String(__d._aiConfig.backend || 'gemini').toLowerCase() : provider,
+                  requestedModel: (provider === 'auto' || provider === 'gemini') && !localEnglishVoice
+                      ? String(__d._aiConfig.models?.tts || __d.GEMINI_MODELS.tts || '') : '',
+              };
+          },
+      });
+      const request = {
+          ...options,
+          defaultVoice: options.defaultVoice || __d.selectedVoice || 'Kore',
+          language: options.language || __d.leveledTextLanguage || __d.currentUiLanguage || 'English',
+          speed: options.speed || __d.voiceSpeed || 1,
+      };
+      if (options.recoverPreparedAudio === true && typeof moduleValue.createRecovery === 'function') {
+          if (!__d.artifactAudioRecoveryRef.current) __d.artifactAudioRecoveryRef.current = moduleValue.createRecovery();
+          return __d.artifactAudioRecoveryRef.current.prepare(request, {
+              storage: __d.storageDB,
+              writeVerifiedStorageSnapshot: window.AlloModules.UtilsPure?.writeVerifiedStorageSnapshot,
+              prepare: value => preparer.prepare(value),
+          });
+      }
+      return preparer.prepare(request);
+  };
+const startFreshCanvasWorkspace = () => {
+      __d.canvasRecoverySaveTokenRef.current += 1;
+      __d.canvasRecoveryPendingSaveCountRef.current = 0;
+      __d.canvasRecoveryCurrentIdRef.current = __d.ALLO_WORKSPACE_RECOVERY.newId();
+      __d.clearCanvasWorkspaceState();
+      __d.setGradeLevel(__d.gradeLevel); __d.setSourceLevel(__d.sourceLevel);
+      // A new workspace needs setup even if the previous one completed or skipped it.
+      try { __d.safeRemoveItem('allo_wizard_completed'); } catch (_) {}
+      __d.setWizardInitialMode(null);
+      __d.setShowWizard(true);
+      __d.setPendingSync(false);
+      __d.setCanvasRecoveryError('');
+      __d.setCanvasRecoveryDecisionMade(true);
+      __d.setCanvasRecoveryDialogMode(null);
+      __d.setCanvasRecoverySaveStatus('idle');
+      __d.setLastSaved(null);
+      __d.setCanvasRecoveryRevision(value => value + 1);
+      __d.addToast(__d.canvasRecoveryStoreRef.current.snapshots.length > 0
+          ? 'Fresh workspace started. Your previous saved work is still available on this device.'
+          : 'Fresh workspace started.', 'info');
+  };
+const executeSaveFile = async (interactionOptions) => {
+    if (__d.projectSaveBusyRef.current) return { ok: false, reason: 'save-in-progress', narration: 'A project save is already in progress.' };
+    const context = __d.projectSaveContextRef.current;
+    const request = ++__d.projectSaveRequestRef.current;
+    const isCurrent = () => request === __d.projectSaveRequestRef.current && context === __d.projectSaveContextRef.current && context.values[0];
+    const cancelled = { ok: false, cancelled: true, reason: 'save-context-changed', narration: 'Save cancelled because the dialog or project changed. Save again to download the current project.' };
+    const stopped = (outcome) => { if (__d.projectSaveContextRef.current?.values[0]) { try { __d.addToast(outcome.narration, 'info'); } catch (_) {} } return outcome; };
+    if (!context || !isCurrent()) return cancelled;
+    __d.projectSaveBusyRef.current = true;
+    __d.setIsProjectSaving(true);
+    try {
+      const modules = [['PhaseKHelpersModule', 'PhaseKHelpers']];
+      if (context.values[3]) modules.push(['AlloCrypto', 'AlloCrypto']);
+      if (context.values[1] !== 'teacher') modules.push(['FirestoreSync', 'FirestoreSync'], ['SessionTransportModule', 'SessionTransport'], ['LiveAac', 'LiveAac'], ['InstructionalContext', 'InstructionalContext', true], ['ViewBrainstormModule', 'BrainstormView', true], ['ViewQuizModule', 'QuizView', true], ['GenDispatcherModule', 'GenDispatcher', true], ['ResourceReadAloudModule', 'ResourceReadAloud', true], ['MemoryAidModule', 'MemoryAid', true]);
+      await __d._alloAwaitModules(modules, 'project save');
+      if (!isCurrent()) return stopped(cancelled);
+      const api = window.AlloModules && window.AlloModules.PhaseKHelpers;
+      if (typeof api?.executeSaveFile !== 'function') throw new Error('Project save is unavailable');
+      const result = await api.executeSaveFile({ ...context.getDeps(), isSaveRequestCurrent: isCurrent }, interactionOptions || {});
+      if (result && result.ok === true) { try { window.dispatchEvent(new CustomEvent('alloflow-project-saved')); } catch (_) {} }
+      if (result && result.reason === 'save-context-changed') stopped(result);
+      return result;
+    } catch (error) {
+      __d.warnLog('Project save failed:', error);
+      return { ok: false, reason: 'save-failed', narration: 'The project file was not saved. Check the connection, then try again.' };
+    } finally {
+      __d.projectSaveBusyRef.current = false;
+      if (request === __d.projectSaveRequestRef.current) __d.setIsProjectSaving(false);
+    }
+  };
+const handleLoadProject = (e) => {
+    const _m = window.AlloModules && window.AlloModules.MiscHandlers;
+    // Clear the input either way so choosing the same file again fires change.
+    const _input = e && e.target, _file = _input && _input.files && _input.files[0];
+    const _clearInput = () => { try { if (_input && _file && _input.value) _input.value = ''; } catch (_) {} };
+    if (!_m) {
+      _clearInput();
+      if (!_file) return;
+      return __d._alloAwaitModules([['MiscHandlersModule', 'MiscHandlers'], ['AlloCrypto', 'AlloCrypto', true]], 'Load Project')
+        .then(() => handleLoadProject({ target: { files: [_file] }, currentTarget: { files: [_file] } }), () => {});
+    }
+    // Each import owns its captured response map until its lifecycle succeeds.
+    // Project files must restore work independently of this browser's autosave.
+    let importedResponses = null;
+    const captureImportedResponses = (rawData) => {
+      const responses = rawData && Object.prototype.hasOwnProperty.call(rawData, 'responses') ? rawData.responses : {};
+      const isRecord = value => !!value && typeof value === 'object' && !Array.isArray(value)
+        && (Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null);
+      if (!isRecord(responses) || Object.values(responses).some(value => !isRecord(value))) {
+        throw new Error('The project file contains an invalid student response map.');
+      }
+      const inspect = value => {
+        if (!value || typeof value !== 'object') return;
+        if (!Array.isArray(value) && !isRecord(value)) throw new Error('The project file contains invalid student response data.');
+        for (const key of Object.keys(value)) {
+          if (key === '__proto__' || key === 'prototype' || key === 'constructor') {
+            throw new Error('The project file contains an unsafe student response key.');
+          }
+          inspect(value[key]);
+        }
+      };
+      inspect(responses);
+      return JSON.parse(JSON.stringify(responses));
+    };
+    try { return _m.handleLoadProject(e, {
+        restoreBuilderDraft: __d._restoreBuilderDraftFromProject,
+        setStudentProgressLog: __d.setStudentProgressLog,
+        setGuidedStep: __d.setGuidedStep,
+        setGuidedMode: __d.setGuidedMode,
+        setGuidedSelectedIds: __d.setGuidedSelectedIds,
+        setGuidedCompletedIds: __d.setGuidedCompletedIds,
+        setGuidedSkippedIds: __d.setGuidedSkippedIds,
+        setGuidedCreatedHistoryIds: __d.setGuidedCreatedHistoryIds,
+        setGuidedDeliveryEvidence: __d.setGuidedDeliveryEvidence,
+        setGuidedPlanBrief: value => __d.setGuidedPlanBrief(__d.normalizeGuidedPlanBrief(value)),
+        guidedStepIds: __d.GUIDED_STEP_IDS,
+        setStudentProjectSettings: __d.setStudentProjectSettings,
+        setIsIndependentMode: __d.setIsIndependentMode,
+        setIsTeacherMode: __d.setIsTeacherMode,
+        setIsParentMode: __d.setIsParentMode,
+        setIsStudentLinkMode: __d.setIsStudentLinkMode,
+        setAdventureDifficulty: __d.setAdventureDifficulty,
+        setAdventureInputMode: __d.setAdventureInputMode,
+        setAdventureLanguageMode: __d.setAdventureLanguageMode,
+        setAdventureCustomInstructions: __d.setAdventureCustomInstructions,
+        setAdventureChanceMode: __d.setAdventureChanceMode,
+        setAdventureFreeResponseEnabled: __d.setAdventureFreeResponseEnabled,
+        setAdventureTypingPaceEnabled: __d.setAdventureTypingPaceEnabled,
+        setAdventureFluencyEnabled: __d.setAdventureFluencyEnabled,
+        setAdventureConsistentCharacters: __d.setAdventureConsistentCharacters,
+        setIsAdventureStoryMode: __d.setIsAdventureStoryMode,
+        setIsSocialStoryMode: __d.setIsSocialStoryMode,
+        setSocialStoryFocus: __d.setSocialStoryFocus,
+        setAdventureArtStyle: __d.setAdventureArtStyle,
+        setAdventureCustomArtStyle: __d.setAdventureCustomArtStyle,
+        setUseLowQualityVisuals: __d.setUseLowQualityVisuals,
+        setEnableFactionResources: __d.setEnableFactionResources,
+        setFactionResourceMode: __d.setFactionResourceMode,
+        setStudentNickname: __d.setStudentNickname,
+        setAdventureState: __d.setAdventureState,
+        setHasSavedAdventure: __d.setHasSavedAdventure,
+        setGameCompletions: __d.setGameCompletions,
+        setLabelChallengeResults: __d.setLabelChallengeResults,
+        setSocraticMessages: __d.setSocraticMessages,
+        setWordSoundsHistory: __d.setWordSoundsHistory,
+        setWordSoundsFamilies: __d.setWordSoundsFamilies,
+        setWordSoundsAudioLibrary: __d.setWordSoundsAudioLibrary,
+        setWordSoundsBadges: __d.setWordSoundsBadges,
+        setPhonemeMastery: __d.setPhonemeMastery,
+        setWordSoundsDailyProgress: __d.setWordSoundsDailyProgress,
+        setWordSoundsConfusionPatterns: __d.setWordSoundsConfusionPatterns,
+        setFluencyAssessments: __d.setFluencyAssessments,
+        setFlashcardEngagement: __d.setFlashcardEngagement,
+        setTimeOnTask: __d.setTimeOnTask,
+        setGlobalPoints: __d.setGlobalPoints,
+        setPointHistory: __d.setPointHistory,
+        setCompletedActivities: __d.setCompletedActivities,
+        setProbeHistory: __d.setProbeHistory,
+        setInterventionLogs: __d.setInterventionLogs,
+        setSurveyResponses: __d.setSurveyResponses,
+        setFidelityLog: __d.setFidelityLog,
+        setSessionCounter: __d.setSessionCounter,
+        setExternalCBMScores: __d.setExternalCBMScores,
+        setResearchMode: __d.setResearchMode,
+        setHistory: __d.setHistory,
+        setGeneratedContent: __d.setGeneratedContent,
+        setActiveView: __d.setActiveView,
+        setIsMapLocked: __d.setIsMapLocked,
+        setIsFullscreen: __d.setIsFullscreen,
+        setLeftWidth: __d.setLeftWidth,
+        projectFileInputRef: __d.projectFileInputRef,
+        t: __d.t,
+        addToast: __d.addToast,
+        warnLog: __d.warnLog,
+        hydrateHistory: __d.hydrateHistory,
+        normalizeArtifactInstanceIds: __d.normalizeArtifactInstanceIds,
+        setStickers: __d.setStickers,
+        setConceptMasteryLocal: __d.setConceptMasteryLocal,
+        // Teacher-side mastery bank for imported student files (retention
+        // dashboard reads this via teacherConceptMasteryByUid).
+        bankImportedConceptMastery: (m) => {
+            if (!m || !m.attempts) return;
+            const key = m.uid || ('file:' + (m.nickname || 'student'));
+            __d.setImportedConceptMastery(prev => ({ ...prev, [key]: { attempts: m.attempts, nickname: m.nickname || null, savedAt: m.savedAt || null } }));
+        },
+        onProjectLoadStart: ({ rawData }) => {
+            if (__d.isCanvas && __d.canvasRecoveryMutationInProgressRef.current) {
+                throw new Error('Another saved-work operation is still running.');
+            }
+            // Reject malformed work before replacing any current workspace state.
+            importedResponses = captureImportedResponses(rawData);
+            __d.setPendingQrAssignmentResource(null);
+            __d.invalidateLocalDataHydration();
+            __d.canvasRecoveryImportPreviousIdRef.current = __d.canvasRecoveryCurrentIdRef.current;
+            __d.canvasRecoveryCurrentIdRef.current = __d.ALLO_WORKSPACE_RECOVERY.newId();
+            if (!__d.isCanvas) {
+                __d.safeSetItem(__d._alloLearningWebWorkspaceKey, __d.canvasRecoveryCurrentIdRef.current);
+                return;
+            }
+            __d.canvasRecoveryMutationInProgressRef.current = true;
+            __d.canvasRecoverySaveTokenRef.current += 1;
+            __d.canvasRecoveryPendingSaveCountRef.current = 0;
+            __d.setPendingSync(false);
+            __d.setCanvasRecoveryBusyId('project-import');
+            __d.setCanvasRecoverySaveStatus('restoring');
+        },
+        onProjectLoadComplete: ({ success }) => {
+            if (success) {
+                __d.resetAllMathRuntimeState();
+                if (importedResponses !== null) {
+                    // The math reset also clears shared learner work, so restore
+                    // only after it. A new lesson replaces rather than merges.
+                    __d.studentWorkLatestRef.current = importedResponses;
+                    __d.setStudentResponses(importedResponses);
+                    importedResponses = null;
+                }
+                __d.setSelectedOwnSourceIds(null);
+                __d.setDocumentsOnly(false);
+                __d.setUseOwnSources(false);
+                __d.setIncludeSourceCitations(false);
+            }
+            if (!__d.canvasRecoveryImportPreviousIdRef.current) return;
+            if (!success) {
+                __d.canvasRecoveryCurrentIdRef.current = __d.canvasRecoveryImportPreviousIdRef.current;
+                if (!__d.isCanvas) __d.safeSetItem(__d._alloLearningWebWorkspaceKey, __d.canvasRecoveryCurrentIdRef.current);
+                if (__d.isCanvas) __d.setCanvasRecoverySaveStatus(__d.canvasRecoveryStoreRef.current.snapshots.length > 0 ? 'saved' : 'idle');
+            } else if (__d.isCanvas) {
+                __d.setCanvasRecoveryDecisionMade(true);
+                __d.setCanvasRecoveryDialogMode(null);
+                __d.setCanvasRecoverySaveStatus('idle');
+                __d.setLastSaved(null);
+                __d.setCanvasRecoveryRevision(value => value + 1);
+            } else {
+                // A non-Canvas import replaces the one active local project.
+                // Remove its prior scoped index after the import commits; the
+                // embedded history remains the authoritative graph source.
+                __d.safeSetItem(__d._alloLearningWebWorkspaceKey, __d.canvasRecoveryCurrentIdRef.current);
+                try {
+                    const registryApi = window.AlloModules && window.AlloModules.LearningWebRegistry;
+                    const registry = registryApi && typeof registryApi.getDefaultRegistry === 'function'
+                        ? registryApi.getDefaultRegistry()
+                        : null;
+                    if (registry && typeof registry.removeScope === 'function') {
+                        registry.removeScope('workspace:' + __d.canvasRecoveryImportPreviousIdRef.current);
+                    }
+                } catch (_) {}
+            }
+            __d.canvasRecoveryImportPreviousIdRef.current = null;
+            __d.canvasRecoveryMutationInProgressRef.current = false;
+            __d.setCanvasRecoveryBusyId(null);
+        },
+      }); } finally { _clearInput(); }
+  };
+const handleStartAdventure = async () => {
+    if (__d.adventureStartBusyRef.current) return false;
+    const request = ++__d.adventureStartRequestRef.current;
+    const context = __d.adventureStartContextRef.current;
+    if (!context) return false;
+    __d.adventureStartBusyRef.current = true;
+    try {
+      await __d._alloAwaitModules([['AdventureHandlersModule', 'AdventureHandlers']], 'adventure setup');
+      if (request !== __d.adventureStartRequestRef.current || context !== __d.adventureStartContextRef.current) return false;
+      const api = window.AlloModules && window.AlloModules.AdventureHandlers;
+      if (typeof api?.handleStartAdventure !== 'function') throw new Error('Adventure setup is unavailable');
+      return await api.handleStartAdventure({ ...context.getDeps(), isAdventureStartCurrent: () => request === __d.adventureStartRequestRef.current && context === __d.adventureStartContextRef.current });
+    } catch (error) { __d.warnLog('Adventure setup could not open:', error); return false; }
+    finally { __d.adventureStartBusyRef.current = false; }
+  };
+const createGuidedHomeworkShare = async () => {
+    if (!__d.guidedMode) return __d.createHomeworkAssignmentLink();
+    if (!__d.guidedLearnerMaterials || !__d.guidedLearnerScope || __d.guidedLinkRequestRef.current?.busy) return null;
+    const request = { scope: __d.guidedLearnerScope, generation: __d.liveGeneration, busy: true };
+    __d.guidedLinkRequestRef.current = request;
+    __d.setGuidedLinkCreating(true);
+    const isCurrent = () => __d.guidedLinkRequestRef.current === request && __d.guidedLinkContextRef.current?.scope === request.scope
+      && __d.workspaceReplacementGenerationRef.current === request.generation;
+    const publish = record => {
+      if (!isCurrent()) return;
+      const share = { ...record, guidedLearnerLinkId: __d.generateUUID() };
+      const learnerLink = { id: share.guidedLearnerLinkId, scope: request.scope, urlKey: __d._guidedModeConfig.guidedLinkFingerprint(share.url) };
+      if (!__d._guidedModeConfig.resolveGuidedLearnerLink(learnerLink, request.scope, [share])) return;
+      __d.openQrShareModal(share);
+      __d.setGuidedDeliveryEvidence(prev => ({ ...prev, learnerLink, shareCreated: true, studentPreviewed: false }));
+      __d.completeGuidedDelivery('shareCreated');
+      request.published = true;
+    };
+    try {
+      const url = await __d.createHomeworkAssignmentLink(__d.guidedLearnerMaterials.ids, { isCurrent, publish });
+      return request.published && isCurrent() ? url : null;
+    } finally {
+      request.busy = false;
+      if (__d.guidedLinkRequestRef.current === request) {
+        // Connect and share may publish later from the queued mailbox setup.
+        if (__d.mbPendingHostRequestRef.current?.options?.isCurrent !== isCurrent) __d.guidedLinkRequestRef.current = null;
+        __d.setGuidedLinkCreating(false);
+      }
+    }
+  };
+const onGenerateUnitLesson = async (lessonSpec, dna, opts) => {
+      const _mindMapModule = (window.AlloModules && (window.AlloModules.MindMap || window.AlloModules.Throughline)) || null;
+      if (!_mindMapModule || typeof _mindMapModule.generateUnitLesson !== 'function') {
+          throw new Error('Unit lesson generator unavailable; reload and retry.');
+      }
+      return _mindMapModule.generateUnitLesson(lessonSpec, dna, opts, {
+          modules: window.AlloModules,
+          gradeLevel: __d.gradeLevel,
+          activeResolvedStandardsContext: __d.activeResolvedStandardsContext,
+          standardsInput: __d.standardsInput,
+          targetStandards: __d.targetStandards,
+          leveledTextLanguage: __d.leveledTextLanguage, outputLanguagePreference: __d.outputLanguagePreference, nativeLanguageDefaultsVersion: 1, appLanguage: __d.currentUiLanguage,
+          inputText: __d.inputText,
+          history: __d.history,
+          aiConfig: __d._aiConfig,
+          callGemini: __d.callGemini,
+          warnLog: __d.warnLog,
+          calculateReadability: __d.calculateReadability,
+          recordSourceProvenance: __d.recordSourceProvenance,
+          handleGenerate
+      });
+  };
+const handleCopyBlueprintActionDiagnostics = async diagnosticId => {
+    if (typeof diagnosticId !== 'string' || !/^ml-[a-z0-9-]{1,80}$/i.test(diagnosticId)) return false;
+    const stages = ['module-wait', 'blueprint-preflight', 'blueprint-generation'];
+    const outcomes = ['started', 'slow', 'ready', 'recovered', 'failed', 'timeout', 'cancelled', 'completed', 'partial', 'blocked', 'waiting', 'stopped', 'paused'];
+    const statuses = ['queued', 'pending', 'loaded', 'failed', 'idle', 'unknown'];
+    const names = ['AgentCoreContracts', 'AgentCoreBlueprintService', 'GenerationMatrix', 'AgentCoreUIAdapter', 'PhaseOHandlersModule'];
+    const bounded = (value, max) => Number.isFinite(value) && value >= 0 ? Math.min(Math.floor(value), max) : 0;
+    const entries = Array.isArray(window.__alloModuleLoadTrace) ? window.__alloModuleLoadTrace : [];
+    const trace = entries.slice(-60).filter(entry => entry && entry.schemaVersion === 1
+      && (entry.attemptId === diagnosticId || entry.correlationId === diagnosticId)
+      && /^ml-[a-z0-9-]{1,80}$/i.test(entry.attemptId || '') && /^ml-[a-z0-9-]{1,80}$/i.test(entry.correlationId || '')
+      && stages.includes(entry.stage) && outcomes.includes(entry.outcome)).slice(-20).map(entry => ({
+        at: bounded(entry.at, 8640000000000000), attemptId: entry.attemptId, correlationId: entry.correlationId,
+        stage: entry.stage, outcome: entry.outcome, elapsedMs: bounded(entry.elapsedMs, 86400000),
+        modules: (Array.isArray(entry.modules) ? entry.modules : []).filter(item => item && names.includes(item.name) && statuses.includes(item.status)).slice(0, 5).map(item => ({ name: item.name, status: item.status })),
+        counts: { pending: bounded(entry.counts && entry.counts.pending, 10000), queued: bounded(entry.counts && entry.counts.queued, 10000), failed: bounded(entry.counts && entry.counts.failed, 10000) },
+      }));
+    if (!trace.length) return false;
+    const failure = trace.slice().reverse().find(entry => entry.outcome === 'failed' || entry.outcome === 'timeout');
+    const stamp = window.__alloBuildStamp || {};
+    const build = {
+      sourceHash: typeof stamp.hash === 'string' && /^[a-f0-9]{8,40}$/i.test(stamp.hash) ? stamp.hash.toLowerCase() : 'unknown',
+      surface: ['canvas', 'deployed', 'desktop', 'development', 'unknown'].includes(stamp.surface) ? stamp.surface : 'unknown',
+      hostLoaderRevision: typeof stamp.hostLoaderRevision === 'string' && /^\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])-stall-v[1-9]\d{0,2}$/.test(stamp.hostLoaderRevision) ? stamp.hostLoaderRevision : 'unknown',
+    };
+    try { return (await __d._copySanitizedDiagnostic({ reportVersion: 2, kind: 'blueprint-action-loading', diagnosticId, build,
+      failedStage: failure ? failure.stage : 'unknown', failureOutcome: failure ? failure.outcome : 'unknown', trace })) === true; }
+    catch (_) { return false; }
+  };
+const handleGenerate = (...args) => {
+    const sourceScope = __d.generationSourceChoiceContextRef.current;
+    return __d._alloAwaitModules([['GenDispatcherModule', 'GenDispatcher']].concat(
+      ['TextPipelineHelpers', 'TextUtilityHelpers', 'PhaseKHelpers', 'PromptsLibrary', 'GenerationHelpers', 'CmapHandlers', 'MiscHandlers', 'PureHelpers'].map(k => [k + 'Module', k, true])
+    ), 'the generator').then(() => {
+      const interactive = !args[2] && (args[5] !== false || (args[0] === 'memory-aid' && args[4]?.memoryAidPreviewOnly));
+      const now = __d.generationSourceChoiceContextRef.current;
+      const ids = list => (Array.isArray(list) ? list : []).map(item => item && item.id).join('\n');
+      const sameHistory = now?.history === sourceScope?.history || (typeof args[3] === 'string' && ids(now?.history) === ids(sourceScope?.history));
+      if (interactive && sourceScope && (!sameHistory || ['inputText', 'activeUnitId', 'activeView', 'isTeacherMode']
+        .some(key => now?.[key] !== sourceScope[key]))) return;
+      return __d._alloRunGenerate(...args);
+    }, () => {});
+  };
+const handleSubmitOrganizerReflection = async (reflection) => {
+    if (__d.isTeacherMode || !reflection || reflection.resourceId !== String(__d.generatedContent?.id || '')) return { ok: false, message: 'Open the matching diagram before submitting this reflection.' };
+    const resource = __d.generatedContent;
+    const submissionScope = __d.lastOrganizerProgressWriteRef.scope;
+    const remote = __d.sessionData?.interactiveOrganizer;
+    if (reflection.activityId && (!__d.activeSessionCode || remote?.activityId !== reflection.activityId || remote.type !== 'reflection')) return { ok: false, message: 'This live reflection has ended or changed. Your draft is still saved; reopen the current activity.' };
+    const safe = { version: 1, resourceId: String(resource.id), structureType: String(resource.data?.structureType || ''), activityId: reflection.activityId || null,
+      revision: Math.max(1, Math.min(10000, Number(reflection.revision) || 1)), submittedAt: Date.now(),
+      fields: (Array.isArray(reflection.fields) ? reflection.fields : []).slice(0, 6).map(field => ({ id: String(field.id || '').slice(0, 40), label: String(field.label || '').slice(0, 120), text: String(field.text || '').slice(0, 2000) })) };
+    if (!safe.fields.some(field => field.text.trim())) return { ok: false, message: 'Add your own response before submitting.' };
+    __d.setStudentResponses(previous => ({ ...previous, [resource.id]: { ...previous[resource.id], organizerReflection: safe } }));
+    if (!__d.activeSessionCode) return { ok: true, message: 'Reflection saved in your work on this device. It has not been sent to a teacher.' };
+    const submission = { kind: 'alloflow-student-submission', schemaVersion: 2, studentName: __d.studentNickname || 'Learner', nickname: __d.studentNickname || 'Learner',
+      submissionDate: new Date().toISOString(), timestamp: new Date().toISOString(), docTitle: String(resource.title || resource.data?.main || 'Organizer reflection'),
+      assignmentId: reflection.activityId || String(resource.id), answers: { [resource.id]: { organizerReflection: safe } }, responses: { [resource.id]: { organizerReflection: safe } },
+      content: [{ id: resource.id, type: 'outline', title: 'Learner reflection: ' + String(resource.title || resource.data?.main || ''), data: { structureType: resource.data?.structureType, main: resource.data?.main || '', branches: safe.fields.map(field => ({ title: field.label, items: field.text ? [field.text] : [] })), organizerReflection: safe } }] };
+    const filename = 'organizer-reflection-' + String(resource.id).replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 80) + '-v' + safe.revision + '.json';
+    let delivery = 'download';
+    if (reflection.activityId && typeof __d._alloLanConfig === 'function' && __d._alloLanConfig()) {
+      try {
+        const result = await __d._alloLanOrganizerRequest(__d.activeSessionCode, 'POST', safe);
+        safe.revision = result.reflection.revision;
+        delivery = 'lan';
+      } catch (error) { return { ok: false, message: error.message || 'Your reflection could not reach the teacher. Your draft is saved; retry submission.' }; }
+    } else if (__d.mbStudent) {
+      try {
+        const parts = __d._alloSplitPackChunks(JSON.stringify(submission), 60000);
+        const sid = 'SUB-' + __d.generateUUID();
+        for (let index = 0; index < parts.length; index += 1) await __d._alloMailboxCallWithRetry(__d.mbStudent.url, { a: 'putsubmission', c: __d.mbStudent.code, uid: __d.mbStudent.uid, pt: __d.mbStudent.participant, sid, part: index + 1, of: parts.length, data: parts[index] }, 3, 700);
+        delivery = 'mailbox';
+      } catch (_) {
+        __d.downloadSubmissionBackup(submission, filename);
+        return { ok: false, message: 'The mailbox could not receive your reflection. A backup was downloaded and your draft is saved. Share the backup or retry submission.' };
+      }
+    } else __d.downloadSubmissionBackup(submission, filename);
+    if (reflection.activityId) {
+      if (__d.lastOrganizerProgressWriteRef.scope !== submissionScope) return { ok: false, message: 'The live activity changed while sending. Your writing was saved, but reopen the current activity before submitting again.' };
+      const scope = submissionScope;
+      const receipt = __d.normalizeLiveOrganizerProgress({ activityId: reflection.activityId, type: 'reflection', gameType: null, status: 'complete', score: 0, correct: 0, total: safe.fields.length, attempts: safe.revision, at: Date.now() });
+      const progressRef = __d.doc(__d.db, 'artifacts', __d.activeSessionAppId || __d.appId, 'public', 'data', 'sessions', __d.activeSessionCode);
+      const updates = { [`roster.${__d.user.uid}.organizerProgress`]: receipt };
+      if (__d.canWriteLiveActivityProgress()) updates[`roster.${__d.user.uid}.activityProgress`] = __d.normalizeLiveActivityProgress({ version: 1, activityId: receipt.activityId, kind: 'visual_organizer', status: safe.revision > 1 ? 'revised' : 'submitted', completed: safe.fields.filter(field => field.text.trim()).length, total: safe.fields.length, at: receipt.at });
+      const saved = await __d.persistOrganizerProgress(__d.lastOrganizerProgressWriteRef, receipt.activityId + '|complete|reflection|' + safe.revision, () => __d.writeToSession(progressRef, updates), () => __d.lastOrganizerProgressWriteRef.scope === scope);
+      if (!saved) return { ok: false, message: 'Your writing was ' + (delivery === 'lan' ? 'sent privately to your teacher' : delivery === 'mailbox' ? 'sent to the mailbox' : 'downloaded') + ', but live progress could not sync. Your draft is safe; retry to update the teacher.' };
+    }
+    return { ok: true, revision: safe.revision, message: delivery === 'lan' ? 'Reflection submitted privately to your teacher. You can revise it and check for feedback below.' : delivery === 'mailbox' ? 'Reflection submitted to your teacher’s Class Mailbox. You can submit a revision later.' : (reflection.activityId ? 'Your progress was shared. ' : '') + 'Your reflection file was downloaded; send it to your teacher or LMS to share the writing.' };
+  };
+const handleRetryGlossaryTranslation = async (index, lang) => {
+    const item = __d.generatedContent?.type === 'glossary' && Array.isArray(__d.generatedContent.data) ? __d.generatedContent.data[index] : null;
+    const fingerprint = window.AlloModules?.GlossaryView?.translationFingerprint;
+    if (!__d.isTeacherMode || !item || !String(lang || '').trim() || typeof fingerprint !== 'function') return { ok: false, reason: 'unavailable' };
+    if (window.__alloStudentAiDisabled === true || __d.callGemini?._alloQrBlocked === true) return { ok: false, reason: 'ai-disabled' };
+    if (typeof __d.callGemini !== 'function' || __d.aiCapability?.text === false) return { ok: false, reason: 'ai-unavailable' };
+    try {
+      if (!window.AlloModules?.GlossaryHelpers) await __d._alloAwaitModules([['GlossaryHelpersModule', 'GlossaryHelpers']], 'this tool');
+    } catch (_) { return { ok: false, reason: 'failed' }; }
+    const task = __d._alloBeginGlossaryTask(index, ['term', 'def'], 'translation:' + lang);
+    if (!task) return { ok: false, reason: 'unavailable' };
+    try {
+      const translated = await __d.translateResourceItem({ type: 'glossary', title: __d.t('glossary.title'), data: [{ term: item.term, def: item.def }] }, lang);
+      const row = Array.isArray(translated?.data) ? translated.data[0] : null;
+      const map = row && row.translations && typeof row.translations === 'object' ? row.translations : {};
+      const found = Object.keys(map).find(key => key.toLowerCase() === String(lang).toLowerCase());
+      const value = found && typeof map[found] === 'string' ? map[found].trim() : '';
+      if (!value) return { ok: false, reason: 'failed' };
+      const saved = task.commit(entry => ({ translations: { ...(entry.translations || {}), [lang]: value }, translationSource: { ...(entry.translationSource || {}), [lang]: fingerprint(entry) } }));
+      return saved ? { ok: true } : { ok: false, reason: 'changed' };
+    } catch (error) {
+      __d.warnLog('Glossary translation retry failed:', error);
+      return { ok: false, reason: error?.code === 'allo-qr-ai-disabled' ? 'ai-disabled' : 'failed' };
+    } finally {
+      task.finish();
+    }
+  };
+const handleMoveGlossaryItem = (index, delta) => {
+    const origin = __d.generatedContent;
+    const entry = __d.isTeacherMode && origin?.type === 'glossary' && Array.isArray(origin.data) ? origin.data[index] : null;
+    if (!entry || !Number.isInteger(delta) || index + delta < 0 || index + delta >= origin.data.length) return false;
+    const id = entry.entryId || entry.glossaryEntryId || entry.id;
+    const move = resource => {
+      const at = resource && resource.id === origin.id && Array.isArray(resource.data)
+        ? resource.data.findIndex(item => item === entry || (id != null && item && (item.entryId || item.glossaryEntryId || item.id) === id)) : -1;
+      if (at < 0 || at + delta < 0 || at + delta >= resource.data.length) return resource;
+      const data = resource.data.slice();
+      data.splice(at + delta, 0, data.splice(at, 1)[0]);
+      return { ...resource, data };
+    };
+    __d.setGeneratedContent(move);
+    __d.setHistory(prev => prev.map(move));
+    return true;
+  };
+const handleMoveAllToUnit = (itemInstanceIds, targetUnitId) => {
+      const ids = Array.isArray(itemInstanceIds) ? itemInstanceIds.filter(Boolean) : [];
+      const target = __d.units.find(u => u && String(u.id) === String(targetUnitId));
+      if (!ids.length || (!target && targetUnitId !== 'uncategorized')) return 0;
+      const isMoving = item => !!item && ids.some(id => __d._alloArtifactMatchesInstanceId(item, id));
+      const count = Array.isArray(__d.history) ? __d.history.filter(isMoving).length : 0;
+      if (!count) return 0;
+      __d.setHistory(prev => prev.map(item => isMoving(item) ? { ...item, unitId: target ? target.id : null } : item));
+      __d.setMovingItemId(null);
+      const unitName = target ? target.name : __d.t('history.uncategorized');
+      __d.addToast(count === 1 ? __d.t('history.moved_one', { unit: unitName }) : __d.t('history.moved_all', { count, unit: unitName }), "success");
+      return count;
+  };
+const handleSimplifiedTextChange = (value) => {
+    if (__d.supportDraftSessionRef.current?.blocked()) return __d.requestReadingSupportTransition(() => handleSimplifiedTextChange(value));
+    if (!__d.generatedContent || __d.generatedContent.type !== 'simplified') return;
+    if (__d.generatedContent.instructionalText?.form === 'same-text-supported') { __d.addToast('The original stays unchanged. Create an adapted companion to change its wording.', 'info'); return; }
+    __d._recordTextChange('simplified', __d.generatedContent.id, typeof __d.generatedContent.data === 'string' ? __d.generatedContent.data : '', value);
+    const changedId = __d.generatedContent.id, changedInstance = __d.getArtifactInstanceId(__d.generatedContent);
+    const changeLiveText = item => item && item.id === changedId && (!changedInstance || __d._alloArtifactMatchesInstanceId(item, changedInstance)) ? __d._applySimplifiedTextMutation(item, value) : item;
+    __d.setGeneratedContent(current => changeLiveText(current));
+    __d.setHistory(prev => prev.map(changeLiveText));
+  };
+const handleReadingRoleChange = (selected, nextRole, options = {}) => {
+    const api = window.AlloModules?.InstructionalContext;
+    if (!__d.isTeacherMode || !selected || !api?.updateReadingFamilyRole) return false;
+    const result = api.updateReadingFamilyRole(__d.history, selected, nextRole, { authorizeReplacement: options.authorizeReplacement === true });
+    if (!result?.item || !result.changedIds?.length) return false;
+    __d.setHistory(previous => api.updateReadingFamilyRole(previous, selected, nextRole, { authorizeReplacement: options.authorizeReplacement === true }).items);
+    __d.setGeneratedContent(current => {
+      if (!current) return current;
+      const liveItems = [...__d.history.filter(item => String(item?.id) !== String(current.id)), current];
+      const liveSelected = String(current.id) === String(selected.id) ? current : selected;
+      const changed = api.updateReadingFamilyRole(liveItems, liveSelected, nextRole, { authorizeReplacement: options.authorizeReplacement === true });
+      return changed.items.find(item => String(item?.id) === String(current.id)) || current;
+    });
+    return true;
+  };
+const openReadingArtifact = (item, compare = false) => {
+    if (!item) return;
+    if (__d.supportDraftSessionRef.current?.blocked()) return __d.requestReadingSupportTransition(() => openReadingArtifact(item, compare));
+    const live = __d._resourceMutationStateRef.current;
+    item = [live.generatedContent, ...(live.history || [])].find(candidate => candidate?.id === item.id && candidate?._artifactInstanceId === item._artifactInstanceId) || item;
+    __d.stopPlayback(); __d.setSelectionMenu(null); __d.setRevisionData(null); __d.setPhonicsData(null);
+    __d.setIsEditingLeveledText(false); __d.setIsFluencyMode(false); __d.setIsCompareMode(!!compare); __d.setInteractionMode('read');
+    // A support save may still be queued in this React batch. Preserve that
+    // latest artifact when changing its reader layout instead of restoring a captured copy.
+    __d.setGeneratedContent(previous => previous?.id === item.id && previous?._artifactInstanceId === item._artifactInstanceId && previous?.type === item.type ? previous : item); __d.setActiveView('simplified');
+  };
+const handleReadOriginal = (selected = null, options = null) => {
+    if (__d.supportDraftSessionRef.current?.blocked()) return __d.requestReadingSupportTransition(() => handleReadOriginal(selected, options));
+    const api = window.AlloModules?.InstructionalContext;
+    if (!api?.createSourceSnapshot || !api?.createSupportedReading || !api?.resolveReadingSource) { __d.addToast('Reading tools are still loading. Try again in a moment.', 'info'); return; }
+    let sourceItem = selected, resolved = null;
+    if (!sourceItem) {
+      resolved = api.resolveReadingSource({ items: __d.history, sourceArtifactId: __d._alloReadingSourceChoice(), inputText: __d.inputText, unitId: __d.activeUnitId, language: __d.leveledTextLanguage });
+      if (resolved.status !== 'resolved') { __d.addToast(resolved.status === 'ambiguous' ? 'Choose a reading under "Make activities from" before opening its original.' : 'Add a source passage or choose an available reading first.', 'info'); return; }
+      sourceItem = resolved.artifact || null;
+    }
+    const profile = sourceItem ? api.getInstructionalText(sourceItem) : null;
+    let snapshot = sourceItem ? api.getSourceSnapshot(sourceItem) : resolved.sourceSnapshot;
+    // An analyzed adaptation retains its captured original; a source analysis
+    // opens its current saved prose without changing older companions.
+    if (sourceItem?.type === 'analysis' && profile.form !== 'adapted' && snapshot?.text !== sourceItem.data?.originalText) snapshot = null;
+    if (!snapshot) {
+      if (sourceItem?.type === 'simplified' || profile?.form === 'adapted') { __d.addToast('Original not captured. Open the matching source to read it with supports.', 'info'); return; }
+      const text = sourceItem?.type === 'analysis' ? sourceItem.data?.originalText : resolved?.text;
+      if (typeof text !== 'string' || !text.trim()) { __d.addToast('Add a source passage first.', 'info'); return; }
+      snapshot = api.createSourceSnapshot(text, { sourceArtifactId: sourceItem?.id || null, language: sourceItem?.config?.language || __d.leveledTextLanguage || 'English', format: 'plain-text', selection: sourceItem ? 'saved-analysis' : 'input' });
+    }
+    const unitId = sourceItem ? (sourceItem.unitId || null) : (__d.activeUnitId && !['all', 'uncategorized'].includes(__d.activeUnitId) ? __d.activeUnitId : null);
+    const familyId = sourceItem ? api.getReadingSourceFamilyId(sourceItem) : resolved.sourceFamilyId;
+    const family = sourceItem || { sourceFamilyId: familyId, unitId, sourceSnapshot: snapshot };
+    const existing = __d.history.find(item => api.isSupportedOriginal(item) && api.sameReadingFamily(item, family) && item.data === snapshot.text);
+    const linkedSource = sourceItem && __d.history.find(item => item.type === 'analysis' && api.getInstructionalText(item).form !== 'adapted' && api.sameReadingFamily(item, sourceItem));
+    const sourceProfile = api.getSourceInstructionalText(linkedSource || sourceItem || { instructionalText: resolved?.instructionalText });
+    // A shown passage version opens as a supporting reading in its language, linked to this original.
+    const versionLanguage = sourceItem?.type === 'analysis' && typeof options?.language === 'string' ? options.language : '';
+    const versionText = versionLanguage ? sourceItem.data?.sourceTranslations?.[versionLanguage] : null;
+    if (typeof versionText === 'string' && versionText.trim()) {
+      const known = __d.history.find(item => item?.type === 'simplified' && item.translationSourceId === sourceItem.id && item.config?.language === versionLanguage && item.data === versionText && api.getSourceSnapshot(item)?.text === snapshot.text);
+      if (known) return openReadingArtifact(known);
+      const base = api.createSupportedReading(snapshot, { id: 'version-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8), title: (sourceItem.title || __d.sourceTopic || 'Source text') + ' — ' + versionLanguage + ' with supports', config: { grade: sourceItem.config?.grade || __d.gradeLevel }, sourceInstructionalText: sourceProfile, sourceFamilyId: familyId, unitId });
+      const versionProfile = { ...base.instructionalText, form: 'adapted', role: 'supplemental', designationSource: 'workflow-default', complexity: { ...base.instructionalText.complexity, language: versionLanguage, measuredGrade: null, method: '', status: 'stale' } };
+      const link = { translationOf: sourceItem.id, translationSourceId: sourceItem.id, translationSourceLanguage: snapshot.language };
+      const version = { ...base, ...link, data: versionText, instructionalText: versionProfile, config: { ...base.config, ...link, language: versionLanguage, instructionalText: versionProfile }, timestamp: new Date() };
+      __d.setHistory(previous => [...previous, version]);
+      return openReadingArtifact(version);
+    }
+    const item = existing || api.createSupportedReading(snapshot, { id: 'original-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8), title: (sourceItem?.title || __d.sourceTopic || 'Source text') + ' — Original with supports', config: { grade: sourceItem?.config?.grade || __d.gradeLevel, language: snapshot.language }, sourceInstructionalText: sourceProfile, sourceFamilyId: familyId, unitId });
+    if (!existing) { item.timestamp = new Date(); __d.setHistory(previous => [...previous, item]); }
+    openReadingArtifact(item);
+  };
+const handleUpdateReadingSupports = (item, action) => {
+    const contract = window.AlloModules?.InstructionalContext;
+    if (contract?.isAdaptedReading?.(item)) {
+      if (!__d._resourceMutationStateRef.current.isTeacherMode) throw new Error('Switch to teacher mode to edit word help.');
+      let savedHelp = null, helpFailure = null;
+      const appliedHelp = __d.onUpdateResource(item.id, current => {
+        if (!__d._resourceMutationStateRef.current.isTeacherMode || !contract.isAdaptedReading(current)) return current;
+        try {
+          const help = current.adaptedReadingSupports;
+          if (action?.type === 'upsert') savedHelp = contract.upsertAdaptedReadingSupport(current, help, action.annotation);
+          else if (action?.type === 'remove') savedHelp = contract.removeAdaptedReadingSupport(current, help, action.id);
+          else if (action?.type === 'pin') savedHelp = contract.setAdaptedReadingSupportPinned(current, help, action.id, action.pinned === true);
+          else if (action?.type === 'show') savedHelp = contract.setAdaptedReadingSupportsShown(current, help, action.shown === true);
+          else if (action?.type === 'clear') savedHelp = contract.clearAdaptedReadingSupports(current);
+          else if (action?.type === 'rebase') savedHelp = contract.rebaseAdaptedReadingSupports(current, help);
+          else if (action?.type === 'import') savedHelp = contract.importOriginalSupportsIntoAdapted(current, help, action.annotations);
+          else throw new Error('Choose a word-help action and try again.');
+          return { ...current, adaptedReadingSupports: savedHelp };
+        } catch (error) { helpFailure = error; return current; }
+      }, { instanceId: __d.getArtifactInstanceId(item) });
+      if (!appliedHelp) throw helpFailure || new Error('The adapted reading changed before this word help was saved. Reopen it and try again.');
+      return savedHelp;
+    }
+    const snapshot = contract?.getSourceSnapshot?.(item);
+    if (!__d._resourceMutationStateRef.current.isTeacherMode || !snapshot || !contract.isSupportedOriginal(item)) throw new Error('Open a preserved original in teacher mode to edit word supports.');
+    if (!contract.upsertReadingSupport || !contract.removeReadingSupport || !contract.setReadingSupportPinned) throw new Error('Word-support tools are still loading. Try again in a moment.');
+    let saved = null, failure = null;
+    const applied = __d.onUpdateResource(item.id, current => {
+      const liveSnapshot = contract.getSourceSnapshot(current);
+      if (!__d._resourceMutationStateRef.current.isTeacherMode || !contract.isSupportedOriginal(current) || !contract.sameReadingFamily(current, item) || liveSnapshot?.fingerprint !== snapshot.fingerprint || liveSnapshot.text !== snapshot.text) return current;
+      try {
+        if (action?.type === 'upsert') saved = contract.upsertReadingSupport(current, current.readingSupports, action.annotation);
+        else if (action?.type === 'remove') saved = contract.removeReadingSupport(current, current.readingSupports, action.id);
+        else if (action?.type === 'pin') saved = contract.setReadingSupportPinned(current, current.readingSupports, action.id, action.pinned === true);
+        else throw new Error('Choose a word-support action and try again.');
+        return { ...current, readingSupports: saved };
+      } catch (error) { failure = error; return current; }
+    }, { instanceId: __d.getArtifactInstanceId(item) });
+    if (!applied) throw failure || new Error('The reading changed before this support could be saved. Reopen it and try again.');
+    return saved;
+  };
+const handleGenerateReadingSupports = async (item) => {
+    const contract = window.AlloModules?.InstructionalContext;
+    const snapshot = contract?.getSourceSnapshot?.(item);
+    const generate = window.AlloModules?.GenDispatcher?.generateReadingSupports;
+    if (contract?.isAdaptedReading?.(item)) {
+      if (!__d._resourceMutationStateRef.current.isTeacherMode) throw new Error('Switch to teacher mode before adding word help.');
+      const helpSnapshot = contract.adaptedGenerationSnapshot(item, item.adaptedReadingSupports);
+      if (!helpSnapshot) throw new Error('This adapted reading has no passage to support.');
+      if (typeof generate !== 'function' || !contract.mergeAdaptedReadingSupports) throw new Error('Word-support tools are still loading. Try again in a moment.');
+      const helpResult = await generate(helpSnapshot, { callGemini: __d.callGemini, cleanJson: __d.cleanJson, gradeLevel: item.config?.grade || __d.gradeLevel, language: helpSnapshot.language || __d.leveledTextLanguage, purpose: 'adapted' });
+      let mergedHelp = null;
+      const appliedHelp = __d.onUpdateResource(item.id, current => {
+        if (!__d._resourceMutationStateRef.current.isTeacherMode || !contract.isAdaptedReading(current)) return current;
+        const live = contract.adaptedGenerationSnapshot(current, current.adaptedReadingSupports);
+        if (!live || live.fingerprint !== helpSnapshot.fingerprint) return current;
+        mergedHelp = contract.mergeAdaptedReadingSupports(current, current.adaptedReadingSupports, helpResult);
+        return { ...current, adaptedReadingSupports: mergedHelp };
+      }, { instanceId: __d.getArtifactInstanceId(item) });
+      if (!appliedHelp) throw new Error('The adapted reading changed before word help finished. Nothing was changed.');
+      return mergedHelp;
+    }
+    if (!__d._resourceMutationStateRef.current.isTeacherMode || !snapshot || !contract.isSupportedOriginal(item)) throw new Error('Open a preserved original in teacher mode before adding word supports.');
+    if (typeof generate !== 'function' || !contract.mergeReadingSupports) throw new Error('Word-support tools are still loading. Try again in a moment.');
+    const result = await generate(snapshot, { callGemini: __d.callGemini, cleanJson: __d.cleanJson, gradeLevel: item.config?.grade || __d.gradeLevel, language: snapshot.language || __d.leveledTextLanguage });
+    let merged = null;
+    const applied = __d.onUpdateResource(item.id, current => {
+      const liveSnapshot = contract.getSourceSnapshot(current);
+      if (!__d._resourceMutationStateRef.current.isTeacherMode || !contract.isSupportedOriginal(current) || !contract.sameReadingFamily(current, item) || liveSnapshot?.fingerprint !== snapshot.fingerprint || liveSnapshot.text !== snapshot.text) return current;
+      merged = contract.mergeReadingSupports(current, current.readingSupports, result);
+      return { ...current, readingSupports: merged };
+    }, { instanceId: __d.getArtifactInstanceId(item) });
+    if (!applied) throw new Error('The reading or editing mode changed before supports finished. The original was not changed.');
+    return merged;
+  };
+  return { analysisForSourceText, getLessonRevisionResources, prepareLessonRevision, applyLessonRevision, undoLessonRevision, discardLessonRevision, openLessonRevisionPreview, getTranslationBatchItems, onUpdateResource, focusGuidedTarget, handleGenerateGuide, handleGenerateBrainstormRubric, _alloGenerateCheckpoints, _alloRecordCheckpoint, returnToReadingPassage, rehydrateHistoryWithImages, handleLaunchORF, openPersonaTeacherEditor, savePersonaTeacherEditor, _alloAlignmentGraphExportForContext, _alloPersistCurrentAlignmentGraph, handleConfirmAlignmentAttribution, handleExportAlignmentGraph, handleImportAlignmentGraph, handleMathProblemEdit, submitMathSelfGrade, parseFlowChartData, evaluateMapWithAI, handleCheckChallengeRouter, handleCreateChallenge, requestEndLiveSession, sendEndSessionEvidenceCohort, completeLiveSessionEnd, resolveSavedFollowUpLiveDeliverySnapshot, sendSavedFollowUpPlanToLiveSession, startNewPdfAudit, restoreCachedPdfRemediation, commitOrRevertPdfFix, _playReadThisPageText, _runReadThisPage, readAllMediaDescriptions, handlePreviewBlueprintStep, handleLoadProfile, handleSyncRosterToSession, calculateReadability, handleTranslateAction, detectWorkflowIntent, getWorkflowContext, applyWorkflowModification, _ensureVisualGenerationApi, handlePrintGame, handleAiUrlSearch, handleFileUpload, cleanSourceMetaCommentary, handleRegeneratePanelFrame, handleDeletePanelFrame, handleReorderPanelFrame, createTeachingScriptAudio, handleSavePrivatePersonaSession, handleRecognizeStudent, handleRecognizeStudents, handleSubmitLiveAnswer, handleSetGroupResource, handleSetStudentResource, handleSetStudentsResource, handleReleaseStudentResources, handleStartLiveSession, getGroupDifferentiationContext, _invalidateBuilderRemediationVerification, _restoreBuilderDraftFromProject, resetCanvasWorkspaceSettings, restoreCanvasWorkspaceSnapshot, refreshStorageManagerInventory, commitCanvasRecoveryVaultEnable, confirmCanvasRecoveryCode, recoverCanvasRecoveryVault, lockCanvasRecoveryVault, disableCanvasRecoveryVault, importCanvasRecoveryVaultBackup, eraseAllCanvasRecoveryVault, setStorageRetentionPolicy, setCanvasRecoverySnapshotPinned, removeCanvasRecoverySnapshotMedia, approveAndRetryCanvasRecoveryStorage, retryCanvasRecoveryStorage, eraseCanvasRecoverySnapshot, handleCanvasRecoveryImport, handleExport, calculateStudentStats, handleSubmitAssignment, _alloFollowResourceLive, handleOpenLearningWebResource, handleDuplicateResource, handleDeleteHistoryItem, handleGenerateExtensionGuide, handleGenerateProgression, handleActivateNextLesson, handleGenerateLessonIdeas, handleAutoFillToggle, handleBroadcastOptions, handleUseItem, handleRestoreImage, handleGenerateFrayerImage, handleRefineGlossaryImage, handleGenerateWorksheet, handleGenerateWorksheetCover, handleQuizChange, handleQuizQuestionAction, handleFactCheck, restoreIntentSnapshot, performHighlight, enableGlobalVoiceAccess, handleGenerateReflectionPrompt, processPersonaTtsQueue, saveUDLAdvice, applyDetailedAutoConfig, handleRemoveFromMapList, handleOutlineChange, handleGenerateTermImage, _getFreshTextComplexityEvidence, handleContentClick, handleVoiceRecordingStop, handleAnnotationImportFile, onCorrectAnalysisText, getAnalysisSourceUndo, onUndoAnalysisSourceEdit, handleAiRefineSource, handleSaveGeneratedArtifact, handleGenerateRubric, handleAutoGrade, mergeCloudAndLocal, applyGuidedPlanToRemaining, handleCompleteGuidedMode, _alloRunActivityGeneration, _alloNoteStudentText, _alloCheckpointArtifact, applyAppUpdate, handleStemArtworkUse, saveStemArtworkAsVisualSupport, handleGameCompletion, handleAnnotationUndo, playAacSpeech, handleLaunchMathProbe, deleteStudentRecords, mergeStudentRecords, requestWordSoundsAudioConfirmation, setPersonaAutoReadSafely, launchPreparedLiveInteraction, highlightElement, handleRegisterLearningWebGraph, handleRegisterUnitPathGraph, handleUnregisterUnitPathGraph, openAdventureActionVote, handleImportResearchJSON, handleOpenPrincipalEvaluationFromSettings, handleOpenSchoolRewardsPortal, handleSaveSchoolRewardsPortalUrl, handleToggleShowExportMenu, clearMathResourceState, broadcastInteractiveOrganizer, retryInteractiveOrganizerStudents, handleNodeClick, handleCheckChallenge, handleExitChallenge, downloadKokoroModel, saveFluencyReview, handleWordSoundsPreparedAudioRetry, exportMailboxConfig, suggestPollTimes, extendAssignmentCenterShare, duplicateAssignmentCenterShare, openHomeworkShelf, connectMailbox, rotateMailboxAdmin, closeAllMailboxSessions, startMailboxLiveSession, resumeMailboxLiveSession, describeSavedFollowUpLiveFailure, pushResourceToMailbox, shareFullPackToMailbox, addDirectionsToPack, deriveDirectionsDraft, sendPackHome, savePortableAacResourceToHistory, printQrSheet, revokeHomeworkAssignment, patchAssignmentCenterActivity, patchAssignmentCenterSurveyItem, _ensurePdfLib, openCachedPdfRemediation, resumeReadThisPage, handleApplyLessonTemplate, archiveLivePlan, handleRestoreArchivedPlan, handleApplyRosterGroup, handleImportProfiles, verifyMathProblems, getTeachingScriptController, fetchReplacementSuggestion, generateDynamicBridge, generatePixelArtItem, toggleLetterSelection, handleUrlFetch, applyGlobalCitations, handleAnimatePanel, handleDuplicatePanelFrame, handleUpdateVisualLabel, handleFetchWordImage, _legacyResolveReadAloudAudio, deriveVerificationState, handlePrintResourceSheet, handleUpdateHavenRecognitionConfig, _bumpClassGoalMet, handleAwardClassGoal, openExportPreview, _decodeBuilderDraftPayload, syncCanvasRecoveryVaultState, enableCanvasRecoveryVault, unlockCanvasRecoveryVault, changeCanvasRecoveryVaultPassword, rotateCanvasRecoveryKey, removeCanvasRecoveryKey, saveEducatorAccessCode, removeEducatorAccessCode, exportCanvasRecoverySnapshot, executeExportFromPreview, sanitizeSubmissionData, formatLessonDNA, saveAdventureFluencyResult, handleShopPurchase, toggleDemocracyMode, moveItem, handleQuizBulkOptionChange, handleQuizImageRefine, handleUpdateQuestionRoutingRules, captureIntentSnapshot, _editMainVoiceEditableField, handleReturnToStart, saveFullChat, buildSanitizedBlueprintDiagnostic, _copySanitizedDiagnostic, handleTranscriptSourceAction, handleDownloadFullPackDiagnostics, handleAddToMapList, handleTimelineChange, handleTimelineDragOver, handleTimelineMove, handleAddTimelineStep, handleLessonPlanChange, handleQuizOptionClick, handleGenerateConceptItem, csRegenerateItem, csAddItem, csRegenerateItemImage, csRefineItemImage, csUploadItemImage, handleExplainConceptSortItem, handleNavigateResource, handleAnalysisTextChange, _applyTextDomain, _shiftTextStack, handleBrainstormChange, handleOpenActivityInStudio, handleAnalyzePOS, launchGradingSession, submitGradingSession, handlePresentationOptionClick, _alloUpdateBrainstormActivity, _alloStampBrainstormDerivative, _alloActivityRetryable, _alloCheckpointSupports, handleResetScaffolds, openReadingStudy, ensureReadingLibraryIndex, recordGameCompletion, closeOrganizerPreview, openLiveActivityDashboard, retryLiveSessionResources, handleToggleAllTools, _alloAlignmentExportFromRegistryEntry, toggleOverlay, submitExploreScore, handleAddManualNode, handleResetLayout, handleRetryChallenge, handleWordSoundsPreparedAudioStatus, exportAssignmentCenterCsv, downloadHomeworkShelfJson, getEndSessionSummaryApi, readSavedFollowUpLiveSessionIdentity, sharePortableAacResource, addAssignmentCenterSurveyItem, setRangeRejected, saveExportPreset, deleteExportPreset, applyExportPreset, _beginReadThisPageVoiceSpeech, handleSaveProfile, handleAddStandard, handleOpenWordSounds, evaluateMathExpression, handleGenerateBingo, handleSelectMainSearchOption, ensureTitleHeading, _updatePanelInPlan, handleSetPanelFps, _getContentEngine, handleCreateGroup, handleDeleteGroup, handleToggleInteractive, _readBuilderDraftStreamBounded, publishCanvasRecoveryVaultLockedState, downloadCanvasRecoveryCode, exportCanvasRecoveryVaultBackup, getEducatorAccessCodeApi, refreshEducatorAccessState, requestCanvasRecoveryErase, downloadSubmissionBackup, loadProjectFromJson, handleBotFinishedSpeaking, handleStartSequel, handleRetryAdventureTurn, handleAdventureCrashRecovery, handleRemoveFrayerImage, handleReflectionChange, handleCopyBlueprintDiagnostics, handleDownloadBlueprintDiagnostics, handleRemoveFullPackPlanResource, handleCopyFullPackDiagnostics, handleLockTimelineMode, handleDeleteTimelineStep, handleConceptSpacePersist, launchInteractiveFlashcards, handleGlossaryChange, handleGlossarySelectionChange, handleGlossarySelectAll, handleDeleteGlossaryItem, handleDeleteTermImage, _applySimplifiedTextMutation, handleContentMouseUp, handleCheckAlignment, handleRegenerateWithRigor, _readTextDomain, handleScaffoldChange, handleScaffoldTextChange, setWordSoundsTtsSpeed, clearAllStudentRecords, chooseLaunchRole, refineSourceSuggestion, connectMailboxForSetup, openStudentQrPreview, handleQuickAddRosterGroup, handleCheckSeedFacts, runGlossaryHealthCheck, handleUpdateVisualPanel, prepareReadAloudArtifactAudio, startFreshCanvasWorkspace, executeSaveFile, handleLoadProject, handleStartAdventure, createGuidedHomeworkShare, onGenerateUnitLesson, handleCopyBlueprintActionDiagnostics, handleGenerate, handleSubmitOrganizerReflection, handleRetryGlossaryTranslation, handleMoveGlossaryItem, handleMoveAllToUnit, handleSimplifiedTextChange, handleReadingRoleChange, openReadingArtifact, handleReadOriginal, handleUpdateReadingSupports, handleGenerateReadingSupports };
 }

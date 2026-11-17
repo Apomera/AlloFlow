@@ -45,23 +45,23 @@
  },
  "fields": "word; set (mulberry or openmoji: the set of the file used, when one is); file (a Mulberry file in data/vendor/mulberry/symbols, or \"openmoji/<code>.svg\", a file in data/vendor/openmoji/symbols; empty when none is used); status; kind (how it matched, when not by name); note; candidates (the files a reviewer can choose from, when there is more than one, from either set)",
  "counts": {
-  "usableWords": 6944,
-  "usableWithRecording": 6944,
-  "matched": 1762,
-  "auto": 1475,
+  "usableWords": 6993,
+  "usableWithRecording": 6993,
+  "matched": 1774,
+  "auto": 1483,
   "reviewed": 102,
-  "ambiguous": 176,
+  "ambiguous": 180,
   "rejected": 9,
-  "viaPlural": 239,
-  "symbolsVendored": 1137,
-  "openmojiVendored": 121,
+  "viaPlural": 240,
+  "symbolsVendored": 1140,
+  "openmojiVendored": 122,
   "usedBySet": {
-   "mulberry": 1421,
-   "openmoji": 156
+   "mulberry": 1428,
+   "openmoji": 157
   },
   "byKind": {
    "name": {
-    "auto": 852,
+    "auto": 856,
     "reviewed": 2,
     "ambiguous": 62,
     "rejected": 7
@@ -73,13 +73,13 @@
     "rejected": 0
    },
    "openmoji": {
-    "auto": 156,
+    "auto": 157,
     "reviewed": 0,
     "ambiguous": 0,
     "rejected": 0
    },
    "plural": {
-    "auto": 197,
+    "auto": 198,
     "reviewed": 0,
     "ambiguous": 18,
     "rejected": 1
@@ -91,15 +91,15 @@
     "rejected": 0
    },
    "verb form": {
-    "auto": 263,
+    "auto": 265,
     "reviewed": 0,
-    "ambiguous": 30,
+    "ambiguous": 32,
     "rejected": 1
    },
    "s form": {
     "auto": 0,
     "reviewed": 70,
-    "ambiguous": 8,
+    "ambiguous": 10,
     "rejected": 0
    },
    "other name": {
@@ -127,11 +127,11 @@
     "rejected": 0
    }
   },
-  "packetWords": 1577,
-  "packetSymbols": 1018,
+  "packetWords": 1585,
+  "packetSymbols": 1022,
   "packetWordsBySet": {
-   "mulberry": 1421,
-   "openmoji": 156
+   "mulberry": 1428,
+   "openmoji": 157
   },
   "byStage": {
    "K early": {
@@ -153,40 +153,40 @@
     "recordedWithPicture": 57
    },
    "G1 early": {
-    "usable": 874,
+    "usable": 881,
     "withPicture": 248,
     "mulberry": 228,
     "openmoji": 20,
-    "ambiguous": 48,
-    "recorded": 874,
+    "ambiguous": 50,
+    "recorded": 881,
     "recordedWithPicture": 248
    },
    "G1 late": {
-    "usable": 2619,
-    "withPicture": 684,
-    "mulberry": 629,
+    "usable": 2636,
+    "withPicture": 687,
+    "mulberry": 632,
     "openmoji": 55,
-    "ambiguous": 98,
-    "recorded": 2619,
-    "recordedWithPicture": 684
+    "ambiguous": 101,
+    "recorded": 2636,
+    "recordedWithPicture": 687
    },
    "G2": {
-    "usable": 5006,
-    "withPicture": 1244,
-    "mulberry": 1131,
+    "usable": 5047,
+    "withPicture": 1251,
+    "mulberry": 1138,
     "openmoji": 113,
-    "ambiguous": 155,
-    "recorded": 5006,
-    "recordedWithPicture": 1244
+    "ambiguous": 159,
+    "recorded": 5047,
+    "recordedWithPicture": 1251
    },
    "G3+": {
-    "usable": 6792,
-    "withPicture": 1558,
-    "mulberry": 1404,
-    "openmoji": 154,
-    "ambiguous": 174,
-    "recorded": 6792,
-    "recordedWithPicture": 1558
+    "usable": 6839,
+    "withPicture": 1566,
+    "mulberry": 1411,
+    "openmoji": 155,
+    "ambiguous": 178,
+    "recorded": 6839,
+    "recordedWithPicture": 1566
    }
   }
  },
@@ -548,6 +548,7 @@
   {"word":"crib","set":"mulberry","file":"cot.svg","status":"reviewed","kind":"other name","note":"other name"},
   {"word":"cricket","file":"","status":"ambiguous","note":"symbols of different kinds share this name: cricket.svg (Sport), cricket_2.svg (Animal Spiders and Insects); more choices: openmoji/1F997.svg (OpenMoji \"cricket\")","candidates":["cricket.svg","cricket_2.svg","openmoji/1F997.svg"]},
   {"word":"crickets","file":"","status":"ambiguous","note":"plural of cricket; symbols of different kinds share this name: cricket.svg (Sport), cricket_2.svg (Animal Spiders and Insects); more choices: openmoji/1F997.svg (OpenMoji \"cricket\")","candidates":["cricket.svg","cricket_2.svg","openmoji/1F997.svg"]},
+  {"word":"crisps","set":"mulberry","file":"crisps.svg","status":"auto","note":"Food Meals and snacks"},
   {"word":"crocodile","set":"mulberry","file":"crocodile.svg","status":"auto","note":"Animal Reptiles and Amphibians; 2 drawings of it, the first is used"},
   {"word":"crocodiles","set":"mulberry","file":"crocodile.svg","status":"auto","note":"plural of crocodile: the picture shows one; Animal Reptiles and Amphibians; 2 drawings of it, the first is used"},
   {"word":"crooked","set":"mulberry","file":"crooked.svg","status":"auto","note":"Descriptive Shape"},
@@ -773,6 +774,7 @@
   {"word":"flipped","set":"mulberry","file":"flip_,_to.svg","status":"auto","kind":"verb form","note":"the -ed form of \"to flip\": the drawing of the action"},
   {"word":"flippers","set":"mulberry","file":"flipper.svg","status":"auto","note":"plural of flipper: the picture shows one; Animal Features"},
   {"word":"flipping","set":"mulberry","file":"flip_,_to.svg","status":"auto","kind":"verb form","note":"the -ing form of \"to flip\": the drawing of the action"},
+  {"word":"flips","file":"","status":"ambiguous","kind":"s form","note":"the -s form of \"to flip\" (she flips): the word may also be the plural of a noun the drawing does not show","candidates":["flip_,_to.svg"]},
   {"word":"float","set":"mulberry","file":"float.svg","status":"auto","note":"Science"},
   {"word":"floor","set":"mulberry","file":"floor.svg","status":"auto","note":"Building Structure"},
   {"word":"floors","set":"mulberry","file":"floor.svg","status":"auto","note":"plural of floor: the picture shows one; Building Structure"},
@@ -872,6 +874,7 @@
   {"word":"half","file":"","status":"rejected","note":"the symbol file is not used: a style block that loads something","candidates":["half.svg"]},
   {"word":"ham","set":"mulberry","file":"ham.svg","status":"auto","note":"Food Meat"},
   {"word":"hammer","set":"mulberry","file":"hammer.svg","status":"auto","note":"Tools Workshop"},
+  {"word":"hamster","set":"mulberry","file":"hamster.svg","status":"auto","note":"Animal Mammal"},
   {"word":"handbag","set":"mulberry","file":"hand_bag.svg","status":"auto","kind":"joined","note":"the symbol is named \"hand bag\", the same word written apart; Clothes Accessories"},
   {"word":"handshake","set":"openmoji","file":"openmoji/1F91D.svg","status":"auto","kind":"openmoji","note":"OpenMoji \"handshake\" (people-body / hands, by Julian Grüneberg)"},
   {"word":"handsome","set":"mulberry","file":"handsome.svg","status":"auto","note":"People Descriptive"},
@@ -952,6 +955,7 @@
   {"word":"hug","set":"mulberry","file":"hug_,_to.svg","status":"auto","note":"a verb (\"to hug\")"},
   {"word":"hugged","set":"mulberry","file":"hug_,_to.svg","status":"auto","kind":"verb form","note":"the -ed form of \"to hug\": the drawing of the action"},
   {"word":"hugging","set":"mulberry","file":"hug_,_to.svg","status":"auto","kind":"verb form","note":"the -ing form of \"to hug\": the drawing of the action"},
+  {"word":"hugs","file":"","status":"ambiguous","kind":"s form","note":"the -s form of \"to hug\" (she hugs): the word may also be the plural of a noun the drawing does not show","candidates":["hug_,_to.svg"]},
   {"word":"hundred","set":"mulberry","file":"hundred.svg","status":"auto","note":"Number"},
   {"word":"hung","set":"mulberry","file":"hang_,_to.svg","status":"auto","kind":"verb form","note":"the past of \"to hang\": the drawing of the action"},
   {"word":"hungry","set":"mulberry","file":"hungry.svg","status":"auto","note":"Food Feeding and eating"},
@@ -1084,6 +1088,7 @@
   {"word":"marbles","set":"mulberry","file":"marbles.svg","status":"auto","note":"Leisure Toys"},
   {"word":"married","set":"mulberry","file":"married.svg","status":"auto","note":"People Relationship"},
   {"word":"mash","set":"mulberry","file":"mash_,_to.svg","status":"auto","note":"a verb (\"to mash\")"},
+  {"word":"mashed","set":"mulberry","file":"mash_,_to.svg","status":"auto","kind":"verb form","note":"the -ed form of \"to mash\": the drawing of the action"},
   {"word":"math","set":"mulberry","file":"maths.svg","status":"reviewed","kind":"other name","note":"other name"},
   {"word":"meat","set":"mulberry","file":"meat.svg","status":"auto","note":"Food Meat"},
   {"word":"medal","set":"mulberry","file":"medal.svg","status":"auto","note":"Sport Accessories"},
@@ -1439,12 +1444,14 @@
   {"word":"scissors","set":"mulberry","file":"scissors.svg","status":"auto","note":"Healthcare Grooming items"},
   {"word":"scoop","set":"mulberry","file":"scoop.svg","status":"auto","note":"symbols of different kinds share this name (Food Kitchen items / a verb (\"to scoop\")); the everyday thing is used: chosen by the script author, not yet by a reviewer","candidates":["scoop.svg","scoop_,_to.svg"]},
   {"word":"scooped","set":"mulberry","file":"scoop_,_to.svg","status":"auto","kind":"verb form","note":"the -ed form of \"to scoop\": the drawing of the action"},
+  {"word":"scooping","set":"mulberry","file":"scoop_,_to.svg","status":"auto","kind":"verb form","note":"the -ing form of \"to scoop\": the drawing of the action"},
   {"word":"score","file":"","status":"ambiguous","kind":"action with an object","note":"the set has the action only with an object or a direction: score goal","candidates":["score_goal_,_to.svg"]},
   {"word":"scorpions","set":"openmoji","file":"openmoji/1F982.svg","status":"auto","kind":"openmoji","note":"plural of scorpion: the picture shows one; OpenMoji \"scorpion\" (animals-nature / animal-bug, by Selina Bauder)"},
   {"word":"scroll","set":"openmoji","file":"openmoji/1F4DC.svg","status":"auto","kind":"openmoji","note":"OpenMoji \"scroll\" (objects / book-paper, by Jonas Roßner)"},
   {"word":"scrub","set":"mulberry","file":"scrub_,_to.svg","status":"auto","note":"a verb (\"to scrub\")"},
   {"word":"scrubbing","set":"mulberry","file":"scrub_,_to.svg","status":"auto","kind":"verb form","note":"the -ing form of \"to scrub\": the drawing of the action"},
   {"word":"seagull","set":"mulberry","file":"seagull.svg","status":"auto","note":"Animal Birds"},
+  {"word":"seagulls","set":"mulberry","file":"seagull.svg","status":"auto","note":"plural of seagull: the picture shows one; Animal Birds"},
   {"word":"seal","set":"mulberry","file":"seal.svg","status":"auto","note":"Animal Fish and Marine mammals"},
   {"word":"seals","set":"mulberry","file":"seal.svg","status":"auto","note":"plural of seal: the picture shows one; Animal Fish and Marine mammals"},
   {"word":"seat","set":"openmoji","file":"openmoji/1F4BA.svg","status":"auto","kind":"openmoji","note":"OpenMoji \"seat\" (travel-places / transport-air, by Ronja Bäurlen)"},
@@ -1492,6 +1499,7 @@
   {"word":"shops","set":"mulberry","file":"shop.svg","status":"auto","note":"plural of shop: the picture shows one; Building Shop; 2 drawings of it, the first is used"},
   {"word":"short","set":"mulberry","file":"short.svg","status":"auto","note":"symbols of different kinds share this name (People Descriptive / Descriptive Quantity); the everyday thing is used: chosen by the script author, not yet by a reviewer","candidates":["short.svg","short_2.svg"]},
   {"word":"shorter","set":"mulberry","file":"short.svg","status":"reviewed","kind":"adjective form","note":"adjective form","candidates":["short.svg","short_2.svg"]},
+  {"word":"shorts","set":"mulberry","file":"shorts.svg","status":"auto","note":"Clothes General"},
   {"word":"shoulder","set":"mulberry","file":"shoulder.svg","status":"auto","note":"Healthcare Body parts"},
   {"word":"shoulders","set":"mulberry","file":"shoulder.svg","status":"auto","note":"plural of shoulder: the picture shows one; Healthcare Body parts"},
   {"word":"shout","set":"mulberry","file":"shout_,_to.svg","status":"auto","note":"a verb (\"to shout\")"},
@@ -1684,6 +1692,7 @@
   {"word":"sunglasses","set":"mulberry","file":"sunglasses.svg","status":"auto","note":"Clothes Accessories"},
   {"word":"sunrise","set":"openmoji","file":"openmoji/1F305.svg","status":"auto","kind":"openmoji","note":"OpenMoji \"sunrise\" (travel-places / place-other, by Louisa Mantsch)"},
   {"word":"sunset","set":"openmoji","file":"openmoji/1F307.svg","status":"auto","kind":"openmoji","note":"OpenMoji \"sunset\" (travel-places / place-other, by Louisa Mantsch)"},
+  {"word":"superhero","set":"openmoji","file":"openmoji/1F9B8.svg","status":"auto","kind":"openmoji","note":"OpenMoji \"superhero\" (people-body / person-fantasy, by Nadine Bartel)"},
   {"word":"surprised","file":"","status":"ambiguous","kind":"feeling faces","note":"the set draws this feeling twice, as a lady's face and a man's face: choose one, or neither","candidates":["surprised_lady.svg","surprised_man.svg"]},
   {"word":"swam","set":"mulberry","file":"swim_,_to.svg","status":"auto","kind":"verb form","note":"the past of \"to swim\": the drawing of the action; 2 drawings of it, the first is used","candidates":["swim_,_to.svg","swim_2_,_to.svg"]},
   {"word":"swan","set":"mulberry","file":"swan.svg","status":"auto","note":"Animal Birds"},
@@ -1773,6 +1782,7 @@
   {"word":"today","set":"mulberry","file":"today.svg","status":"auto","note":"Descriptive Time"},
   {"word":"toenail","set":"mulberry","file":"toe_nail.svg","status":"auto","kind":"joined","note":"the symbol is named \"toe nail\", the same word written apart; Healthcare Body parts"},
   {"word":"toilet","set":"mulberry","file":"toilet.svg","status":"auto","note":"Healthcare Grooming items"},
+  {"word":"toilets","set":"mulberry","file":"toilets.svg","status":"auto","note":"Communication Signs"},
   {"word":"tomato","set":"mulberry","file":"tomato.svg","status":"auto","note":"Food Vegetables and salads"},
   {"word":"tomatoes","set":"mulberry","file":"tomato.svg","status":"auto","note":"plural of tomato: the picture shows one; Food Vegetables and salads"},
   {"word":"tomorrow","set":"mulberry","file":"tomorrow.svg","status":"auto","note":"Descriptive Time"},
@@ -1825,6 +1835,7 @@
   {"word":"two","set":"mulberry","file":"two.svg","status":"auto","note":"Number"},
   {"word":"tying","set":"mulberry","file":"tie_,_to.svg","status":"auto","kind":"verb form","note":"the -ing form of \"to tie\": the drawing of the action; 2 drawings of it, the first is used","candidates":["tie_,_to.svg","tie_2_,_to.svg"]},
   {"word":"type","set":"mulberry","file":"type_,_to.svg","status":"auto","note":"a verb (\"to type\")"},
+  {"word":"typed","set":"mulberry","file":"type_,_to.svg","status":"auto","kind":"verb form","note":"the -ed form of \"to type\": the drawing of the action"},
   {"word":"types","set":"mulberry","file":"type_,_to.svg","status":"reviewed","kind":"s form","note":"s form"},
   {"word":"typing","set":"mulberry","file":"type_,_to.svg","status":"auto","kind":"verb form","note":"the -ing form of \"to type\": the drawing of the action"},
   {"word":"umbrella","set":"mulberry","file":"umbrella.svg","status":"auto","note":"Clothes Accessories"},
@@ -1952,6 +1963,7 @@
   {"word":"youngest","set":"mulberry","file":"young.svg","status":"reviewed","kind":"adjective form","note":"adjective form"},
   {"word":"zebra","set":"mulberry","file":"zebra.svg","status":"auto","note":"Animal Mammal"},
   {"word":"zip","set":"mulberry","file":"zip.svg","status":"auto","note":"Clothes Accessories"},
-  {"word":"zoomed","set":"mulberry","file":"zoom_,_to.svg","status":"auto","kind":"verb form","note":"the -ed form of \"to zoom\": the drawing of the action"}
+  {"word":"zoomed","file":"","status":"ambiguous","kind":"verb form","note":"the -ed form of \"to zoom\"; held by the script author: the drawing shows zooming in on a screen, not moving fast","candidates":["zoom_,_to.svg"]},
+  {"word":"zooming","file":"","status":"ambiguous","kind":"verb form","note":"the -ing form of \"to zoom\"; held by the script author: the drawing shows zooming in on a screen, not moving fast","candidates":["zoom_,_to.svg"]}
  ]
 }

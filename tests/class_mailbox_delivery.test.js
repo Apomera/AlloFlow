@@ -383,7 +383,28 @@ describe('fetchpage: read a page for the owner from Google servers', () => {
         expect(res.truncated).toBe(false);
         expect(res.chars).toBe(res.text.length);
         expect(fetches[0].options.headers['User-Agent']).toContain('AlloFlowClassMailbox/' + serverVersion);
-        expect(fetches[0].options.followRedirects).toBe(true);
+        // Since the 2026-11-14 change the script follows redirects itself, so it
+        // can check where each one points before going there.
+        expect(fetches[0].options.followRedirects).toBe(false);
+    });
+
+    it('follows a redirect to a public page, and refuses one that points at a private address', () => {
+        const hops = {
+            'https://example.org/old': { status: 301, headers: { Location: '/tides' }, body: '' },
+            'https://example.org/tides': { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' }, body: page },
+            'https://example.org/trap': { status: 302, headers: { Location: 'http://169.254.169.254/latest/meta-data/' }, body: '' },
+        };
+        const { call, admin, fetches } = makeSandbox({ fetch: (url) => hops[url] || { status: 404, headers: { 'Content-Type': 'text/html' }, body: '' } });
+
+        const moved = call({ a: 'fetchpage', admin, url: 'https://example.org/old' });
+        expect(moved.ok).toBe(true);
+        expect(moved.title).toBe('Maine & the Sea');
+        expect(fetches.map(f => f.url)).toEqual(['https://example.org/old', 'https://example.org/tides']);
+
+        const trapped = call({ a: 'fetchpage', admin, url: 'https://example.org/trap' });
+        expect(trapped).toMatchObject({ ok: false, e: 'blocked-url' });
+        // The private address was never requested.
+        expect(fetches.map(f => f.url)).not.toContain('http://169.254.169.254/latest/meta-data/');
     });
 
     it('passes plain text through, flags truncation, and rejects non-text responses and HTTP errors', () => {

@@ -21,10 +21,12 @@ function _useStorybookDialogFocus(dialogRef, onClose, busy) {
     const root = dialogRef.current;
     if (!root || typeof document === 'undefined') return undefined;
     const previouslyFocused = document.activeElement;
-    const prevBodyOverflow = document.body ? document.body.style.overflow : '';
+    // Shared scroll-lock counter: only the last dialog to close unlocks the page.
+    const alloScrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: '' });
+    const alloScrollLocked = !!document.body;
     const hiddenSiblings = [];
     if (document.body) {
-      document.body.style.overflow = 'hidden';
+      if (++alloScrollLock.count === 1) { alloScrollLock.prev = document.body.style.overflow; document.body.style.overflow = 'hidden'; }
       Array.from(document.body.children || []).forEach((sibling) => {
         if (!sibling || sibling === root || sibling.contains(root)) return;
         const tag = String(sibling.tagName || '').toUpperCase();
@@ -93,12 +95,14 @@ function _useStorybookDialogFocus(dialogRef, onClose, busy) {
     initialFocus.focus();
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
-      if (document.body) document.body.style.overflow = prevBodyOverflow;
+      if (alloScrollLocked) { alloScrollLock.count = Math.max(0, alloScrollLock.count - 1); if (alloScrollLock.count === 0 && document.body) document.body.style.overflow = alloScrollLock.prev; }
       hiddenSiblings.forEach(({ node, hadAriaHidden, prevAriaHidden, hadInertAttr, prevInertProp }) => {
         if (!node) return;
-        if (hadAriaHidden && prevAriaHidden !== null) node.setAttribute('aria-hidden', prevAriaHidden);
-        else node.removeAttribute('aria-hidden');
-        try { node.inert = Boolean(prevInertProp); } catch (_) {}
+        // Undo only what this dialog changed: a sibling already hidden or inert at open
+        // (a dialog underneath did that) is left as it is now, never re-applied.
+        if (!hadAriaHidden || prevAriaHidden === null) node.removeAttribute('aria-hidden');
+        else if (prevAriaHidden !== 'true') node.setAttribute('aria-hidden', prevAriaHidden);
+        if (!prevInertProp) { try { node.inert = false; } catch (_) {} }
         if (!hadInertAttr) {
           try { node.removeAttribute('inert'); } catch (_) {}
         }

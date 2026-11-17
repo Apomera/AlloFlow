@@ -306,8 +306,10 @@ describe('Track 3 Step 5 & Audit State (F-44, F-50, F-15): Submission Inbox Key 
     };
 
     const gradesWithTeacherHistory = SubmissionInboxMeta.exportedQuizAutoGrades(payloadWithWrongAnswer, [teacherQuiz]);
-    expect(gradesWithTeacherHistory['allo-response:quiz:q0:mcq'].score).toBe(0);
-    expect(gradesWithTeacherHistory['allo-response:quiz:q0:mcq'].status).toBe('incorrect');
+    // 2026-11-16: a pack saves answers under the type name "quiz" only for a
+    // quiz with no id. This quiz has one, so that key cannot be its answers and
+    // is no longer scored against it (it used to be matched to the first quiz).
+    expect(gradesWithTeacherHistory['allo-response:quiz:q0:mcq']).toBeUndefined();
     expect(gradesWithTeacherHistory['allo-response:q_bio_1:q0:mcq'].score).toBe(0);
     expect(gradesWithTeacherHistory['allo-response:q_bio_1:q0:mcq'].status).toBe('incorrect');
 
@@ -319,9 +321,15 @@ describe('Track 3 Step 5 & Audit State (F-44, F-50, F-15): Submission Inbox Key 
       }],
       responses: { 'allo-response:q_solo:q0:mcq': '1' },
     };
+    // 2026-11-16: with no teacher copy the inbox no longer scores from the
+    // student's file by itself. That score is offered, marked, for the teacher
+    // to accept (tests/inbox_auto_score_origin_and_key_source.test.js).
     const standaloneGrades = SubmissionInboxMeta.exportedQuizAutoGrades(standalonePayload, []);
-    expect(standaloneGrades['allo-response:q_solo:q0:mcq'].score).toBe(100);
-    expect(standaloneGrades['allo-response:q_solo:q0:mcq'].status).toBe('correct');
+    expect(standaloneGrades['allo-response:q_solo:q0:mcq']).toBeUndefined();
+    const offered = SubmissionInboxMeta.studentCopyOnlyGrades(standalonePayload, []);
+    expect(offered['allo-response:q_solo:q0:mcq'].score).toBe(100);
+    expect(offered['allo-response:q_solo:q0:mcq'].status).toBe('correct');
+    expect(offered['allo-response:q_solo:q0:mcq'].origin).toBe('answer-key-student-file');
   });
 
   it('neutralizes spreadsheet formula injection prefixes across LMS gradebook CSV exports (F-50)', () => {

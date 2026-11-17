@@ -119,6 +119,37 @@ th[aria-sort="descending"] .sort-name::after { content: " \2193"; content: " \21
 .goal-line { margin-top: 0.5rem; font-weight: 600; color: var(--ink); }
 .learner-sub { margin: 2rem 0 0; font-size: 1.125rem; color: var(--ink); line-height: 1.2; }
 
+/* 2026-11-17: the goal date and its aim line, growth per week, paper scores, the names under "Most missed", the line about a new tab,
+   the sentence when a practice column mixes files, and the quiet offer to save it all for next week */
+.goal-input.goal-date { width: 11rem; }
+.aim-line, .growth-line { margin-top: 0.4rem; color: var(--ink); }
+.growth-line { font-weight: 600; }
+.growth-caution { margin-top: 0.15rem; }
+.chart-aim { stroke: var(--ink); stroke-width: 1.5; }
+.chart-aim-end { stroke: var(--ink); stroke-width: 1.5; }
+.chart-paper { fill: var(--surface); stroke: var(--ink); stroke-width: 2; }
+.chart-paper-label { fill: var(--ink); font-size: 11px; font-style: italic; font-family: var(--font); paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
+.measure-paper { margin-top: 0.2rem; color: var(--muted); font-size: 0.9375rem; }
+.paper-add { margin-top: 1.5rem; padding: clamp(1rem, 3vw, 1.5rem); max-width: 46rem; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius); }
+.paper-add .learner-sub { margin-top: 0; }
+.paper-add > .hint { margin-top: 0.35rem; }
+.paper-form { display: grid; gap: 0.75rem 1rem; grid-template-columns: minmax(0, 1fr); margin-top: 0.9rem; }
+.paper-field { margin-top: 0; }
+.paper-field[hidden] { display: none; }
+.paper-field input[type="date"] { display: block; width: 100%; min-height: 3rem; margin-top: 0.35rem; padding: 0.55rem 0.75rem; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); color: var(--ink); }
+.paper-input[aria-invalid="true"] { border-width: 2px; border-color: var(--ink); border-style: dashed; }
+.paper-said { margin-top: 0.5rem; font-weight: 600; color: var(--ink); min-height: 1.6em; }
+.paper-list-title { margin-top: 1rem; font-weight: 600; color: var(--ink); }
+.paper-list { margin-top: 0.4rem; border-top: 1px solid var(--line); }
+.paper-list li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.35rem 1rem; padding: 0.5rem 0; border-bottom: 1px solid var(--line); }
+.missed-names { margin-top: 0.15rem; }
+.missed-fold { margin-top: 0.2rem; }
+.missed-fold summary { min-height: 2.75rem; display: flex; align-items: center; font-size: 0.875rem; font-weight: 600; color: var(--ink); cursor: pointer; }
+.new-tab-hint { margin-top: 0.4rem; }
+.mixed-files { margin-top: 0.75rem; }
+.save-nudge { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.9rem; margin: 1rem 0 0; padding: 0.6rem 0.9rem; max-width: 46rem; color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.save-nudge[hidden] { display: none; }
+
 /* Take it with you */
 .take { margin-top: 2.5rem; padding-top: 0.5rem; border-top: 1px solid var(--line); }
 .take-row { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.9rem; }
@@ -157,6 +188,7 @@ th[aria-sort="descending"] .sort-name::after { content: " \2193"; content: " \21
   .check-list li.pair { grid-template-columns: 1fr auto; align-items: center; }
   .pair-buttons { margin-top: 0; }
   .middles { grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); }
+  .paper-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (min-width: 58rem) {
@@ -168,9 +200,10 @@ th[aria-sort="descending"] .sort-name::after { content: " \2193"; content: " \21
 }
 
 @media (forced-colors: active) {
-  .chart-line, .chart-goal, .chart-ring, .chart-axis { stroke: CanvasText; }
+  .chart-line, .chart-goal, .chart-ring, .chart-axis, .chart-aim, .chart-aim-end, .chart-paper { stroke: CanvasText; }
   .chart-point { fill: CanvasText; }
-  .chart-scale, .chart-value, .chart-goal-label { fill: CanvasText; }
+  .chart-paper { fill: Canvas; }
+  .chart-scale, .chart-value, .chart-goal-label, .chart-paper-label { fill: CanvasText; }
   .drop.is-over { border-width: 4px; }
 }
 
@@ -203,8 +236,11 @@ th[aria-sort="descending"] .sort-name::after { content: " \2193"; content: " \21
   .honest { border: 1px solid #000000; border-left-width: 4px; }
   .measures { grid-template-columns: 1fr; gap: 0.75rem; }
   .chart-svg { max-width: 150mm; }
-  .chart-line, .chart-goal, .chart-ring { stroke: #000000; }
+  .chart-line, .chart-goal, .chart-ring, .chart-aim, .chart-aim-end { stroke: #000000; }
   .chart-point { fill: #000000; stroke: #ffffff; }
+  .chart-paper { fill: #ffffff; stroke: #000000; }
+  .chart-paper-label { fill: #000000; stroke: #ffffff; }
+  .aim-line, .growth-line, .measure-paper, .goal-line { color: #000000 !important; }
   .chart-grid { stroke: #bbbbbb; }
   .chart-axis { stroke: #000000; }
   .chart-scale, .chart-value, .chart-goal-label { fill: #000000; }

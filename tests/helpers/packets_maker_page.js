@@ -82,6 +82,10 @@ export async function openMaker(options = {}) {
   w.URL.revokeObjectURL = () => {};
   w.HTMLAnchorElement.prototype.click = function () { page.downloads.push({ name: this.getAttribute('download'), href: this.getAttribute('href') }); };
   w.HTMLElement.prototype.scrollIntoView = function () {};
+  // The tests that use this helper were written against the first-visit word choices of 2026-11-13 (the CVC pattern at
+  // any grade level). Since 2026-11-16 a true first visit starts at a grade level instead, so the page is opened as a
+  // returning browser that kept the earlier choices, which the page honours. options.firstVisit asks for a true first visit.
+  if (!(options && options.firstVisit) && !w.localStorage.getItem('alloflow-packets-maker/1')) w.localStorage.setItem('alloflow-packets-maker/1', JSON.stringify({ v: 1, mode: 'pick', shape: 'CVC', stage: '' }));
   for (const script of d.querySelectorAll('script[src]')) w.eval(read(script.getAttribute('src')));
   page.$ = (id) => d.getElementById(id);
   page.seen = (id) => !page.$(id).hidden && !page.$(id).closest('[hidden]');

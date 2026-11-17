@@ -17,7 +17,7 @@ const read = (file) => readFileSync(file, 'utf8');
 const PAGE = 'packets-open.html';
 const SCRIPT = 'packets-open.js';
 const SCRIPTS = ['packets-page.js', 'packets_verify_core.js', 'packets_handoff.js', SCRIPT];
-const RULE = "default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src data: blob:; "
+const RULE = "default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src data: blob:; font-src data:; "
   + "frame-src blob:; form-action 'none'; base-uri 'none'; connect-src https://script.google.com https://script.googleusercontent.com";
 const BRITISH = /practis|standardis|licence|colour|\bmarking\b|\bmarked\b|\btick(?:ed|s)?\b|USB stick|\bwhilst\b|\bmaths\b|favour|behaviour|\bcentre\b/i;
 const NAME = 'AlloFlow Packets';
@@ -416,7 +416,8 @@ describe('Change this file', () => {
 describe('where people are pointed to it', () => {
   it('the four makers say it after saving, and the front door says it twice, briefly', () => {
     // 2026-11-14 (T1): packets-open.html is named "Open a practice file or check", and all four makers take handed files.
-    const LINE = 'On a phone or tablet, a student opens the file on Open a practice file or check: apomera.github.io/AlloFlow/packets-open.html.';
+    // 2026-11-17 (review D14 and 2.9): any device that will not open the file, and the address is filled in by the page it is on.
+    const LINE = 'If the file does not open on a device (a phone, a tablet, or a school computer that will not open downloaded files), a student opens it on Open a practice file or check: apomera.github.io/AlloFlow/packets-open.html.';
     for (const file of ['packets-make.html', 'packets-check.html', 'packets-vocab.html', 'packets-math-practice.html']) {
       const after = parse(file).getElementById('after-save');
       const p = after.querySelector('p.after-phone');
@@ -425,7 +426,8 @@ describe('where people are pointed to it', () => {
       expect(p.previousElementSibling.tagName).toBe('OL');
     }
     const door = parse('packets.html');
-    expect([...door.querySelectorAll('a[href="packets-open.html"]')].map((a) => a.textContent)).toEqual(['Open a practice file or check']);
+    // 2026-11-16: also a card of its own, so a student finds it on the first screens (it was only a link 3,215 px down a phone page).
+    expect([...door.querySelectorAll('a[href="packets-open.html"]')].map((a) => [a.textContent, !!a.closest('.card')])).toEqual([['Open a practice file or check', true], ['Open a practice file or check', false]]);
     expect(door.getElementById('what').textContent).toContain('On a phone or tablet, the student opens it on Open a practice file or check.');
     // All four makers can open a file again and take the handed file.
     for (const file of ['packets-make.html', 'packets-vocab.html', 'packets-check.html', 'packets-math-practice.html']) {

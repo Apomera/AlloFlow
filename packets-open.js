@@ -36,6 +36,7 @@
     symbol: { href: 'packets-symbol-runner.html', name: 'Make Symbol Runner practice', reopens: true },
     math: { href: 'packets-math-practice.html', name: 'Make math fact practice', reopens: true },
     check: { href: 'packets-check.html', name: 'Make a math check', reopens: true },
+    read: { href: 'packets-read-along.html', name: 'Make a read-along', reopens: false },
   };
 
   var verify = null, handoff = null;
@@ -122,8 +123,8 @@
     var blocks = (Array.isArray(lesson.blocks) ? lesson.blocks : []).filter(function (block) { return isObject(block) && typeof block.activity === 'string' && Array.isArray(block.items); });
     var every = function (pattern) { return blocks.length > 0 && blocks.every(function (block) { return pattern.test(block.activity); }); };
     var check = packet.mode === 'check' || packet.mode === 'probe' || lesson.mode === 'probe';
-    var kind = every(/^vocab_/) ? 'vocab' : every(/^symbol_runner$/) ? 'symbol' : check ? 'check' : every(/^math_/) ? 'math' : 'words';
-    var label = kind === 'vocab' ? (check ? 'Vocabulary check' : 'Vocabulary practice') : kind === 'symbol' ? (check ? 'Symbol naming check' : 'Symbol Runner practice') : kind === 'check' ? 'A check' : kind === 'math' ? 'Math fact practice' : 'Word Sounds practice';
+    var kind = every(/^vocab_/) ? 'vocab' : every(/^symbol_runner$/) ? 'symbol' : every(/^read_along$/) ? 'read' : check ? 'check' : every(/^math_/) ? 'math' : 'words';
+    var label = kind === 'vocab' ? (check ? 'Vocabulary check' : 'Vocabulary practice') : kind === 'symbol' ? (check ? 'Symbol naming check' : 'Symbol Runner practice') : kind === 'check' ? 'A check' : kind === 'math' ? 'Math fact practice' : kind === 'read' ? 'A read-along' : 'Word Sounds practice';
     var all = blocks.reduce(function (list, block) { return list.concat(block.items); }, []);
     var items = isObject(m.check) && Number(m.check.items) > 0 ? Number(m.check.items) : all.filter(function (item) { return !(isObject(item) && item.practice); }).length;
     var title = String(m.title || lesson.title || '').replace(/\s+/g, ' ').trim().slice(0, 120);
@@ -131,6 +132,8 @@
     var named = Array.isArray(m.stores) && isObject(m.stores[0]) && typeof m.stores[0].key === 'string' ? m.stores[0].key : '';
     var base = named.indexOf(KEY_PREFIX) === 0 && named.length <= 300 ? named
       : typeof lesson.lessonId === 'string' && lesson.lessonId ? KEY_PREFIX + lesson.lessonId + ':' + lesson.revision : '';
+    // A read-along has pages to listen to, not questions.
+    if (kind === 'read') return { kind: kind, label: label, check: false, items: 0, pages: all.length, title: title, learner: learner, base: base };
     return { kind: kind, label: label, check: check, items: items, title: title, learner: learner, base: base };
   }
 
@@ -205,6 +208,7 @@
     setText('found-title', current.title);
     var line = [];
     if (about.items) line.push(count(about.items, 'question', 'questions') + '.');
+    if (about.pages) line.push(count(about.pages, 'page', 'pages') + ' to listen to.');
     if (about.learner) line.push('Made for ' + about.learner + '.');
     setText('found-line', line.join(' '));
     show('found-line', line.length > 0);

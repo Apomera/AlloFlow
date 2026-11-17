@@ -2,7 +2,10 @@
 // translation status chips with a per-term retry, and reordering in Edit.
 // The view runs from its built module; the host handlers are sliced from ANTI.
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync } from 'node:fs';
+// Host files are read through the helper so handlers moved to host_handlers_source.jsx
+// (wave 6, 2026-11-16) are found where they used to be.
+import { readFileSync } from './helpers/host_source.js';
 import { createRequire } from 'node:module';
 import { React, ReactDOMClient, act } from './helpers/games_live_harness.js';
 import { sliceBetween } from './helpers/anchored_slice.js';

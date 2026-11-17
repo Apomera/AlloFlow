@@ -8,7 +8,7 @@
      page has to allow inline script and style, as the preview page does. The file keeps its own stricter rule too.
      connect-src: a file made in the AlloFlow app with a class mailbox sends results there when the student presses
      Send; this page itself connects nowhere. frame-src blob: lets a file made before 2026-11-12 save its results
-     itself: WebKit checks that download against frame-src. --><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src data: blob:; frame-src blob:; form-action 'none'; base-uri 'none'; connect-src https://script.google.com https://script.googleusercontent.com">
+     itself: WebKit checks that download against frame-src. --><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src data: blob:; font-src data:; frame-src blob:; form-action 'none'; base-uri 'none'; connect-src https://script.google.com https://script.googleusercontent.com">
 <meta name="referrer" content="no-referrer">
 <!-- The product name is written once on this page, in #product-name. packets-page.js puts it in front of this title. -->
 <title>Open a practice file or check</title>
@@ -56,7 +56,7 @@
 <main id="main" class="opener">
   <div class="wrap wrap-narrow">
     <h1>Open a practice file or check</h1>
-    <p class="opener-lead">For a phone or a tablet. Choose the practice file or check your teacher sent. It runs here.</p>
+    <p class="opener-lead">On any device: a phone, a tablet or a computer. Choose the practice file or check your teacher sent. It runs here.</p>
     <noscript><p class="note note-problem">This page needs JavaScript to open the file.</p></noscript>
     <p id="said" class="sr-only" role="status" aria-live="polite"></p>
 

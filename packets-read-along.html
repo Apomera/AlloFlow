@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!-- This page is one of the TWO Packets pages that use an AI voice (the other is packets-voice.html), and only after the
+     teacher asks for it. Its rule is that page's rule: it may start a worker from memory (blob:), run WebAssembly, and
+     download the voice from Hugging Face. The voice's own code comes from this site and is checked before it runs.
+     The file this page saves has no AI in it: it holds the passage and the recordings, and only plays them. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' blob: 'wasm-unsafe-eval'; worker-src blob:; style-src 'self'; img-src 'self' data:; media-src blob: data:; connect-src 'self' blob: https://huggingface.co https://*.huggingface.co https://*.hf.co; form-action 'none'; base-uri 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>Make a read-along</title>
+<meta name="description" content="Turn a passage into one small file that reads it aloud, one sentence at a time, with the sentence highlighted. The reading voice is an AI voice that runs on this device. The file itself runs without AI. No account.">
+<link rel="icon" type="image/svg+xml" href="packets-mark.svg">
+<link rel="stylesheet" href="packets.css">
+<link rel="stylesheet" href="packets-voice.css">
+<link rel="stylesheet" href="packets-read-along.css">
+<script src="packets-page.js" defer></script>
+<script src="word_sounds_take_home_loader.js" defer></script>
+<script src="packet_read_along_builder.js" defer></script>
+<script src="syllable_table_en.js" defer></script>
+<script src="packets_voice_engine.js" defer></script>
+<script src="packets-read-along.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the main part</a>
+
+<header class="top">
+  <div class="wrap wrap-narrow top-row">
+    <a class="brand" href="packets.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3 3 7.5l9 4.5 9-4.5z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>
+      <span id="product-name">AlloFlow Packets</span>
+    </a>
+    <a class="top-link" href="packets.html">All the pages</a>
+  </div>
+<details class="proof">
+  <summary class="wrap wrap-narrow">
+    <span class="proof-line">This page uses an AI voice, on this device. No account. Your passage is not uploaded.</span>
+    <span class="proof-open proof-open-closed">See the details</span>
+    <span class="proof-open proof-open-opened">Hide the details</span>
+  </summary>
+  <div class="wrap wrap-narrow proof-body">
+    <ul>
+      <li>This is one of the two Packets pages that use AI. The other is Make recordings with a computer voice. The other pages do not, and nothing on them changes.</li>
+      <li>The voice is Kokoro, a computer voice made with AI. It runs inside this browser tab. The passage you type is turned into sound on this device and is not sent anywhere.</li>
+      <li>The words are yours. This page does not write, shorten or change the passage.</li>
+      <li>Nothing is downloaded until you press Get the voice. Then the page downloads the voice, about 88 MB, one time, from Hugging Face (huggingface.co). Hugging Face can see that your browser asked for the voice. It does not receive your passage.</li>
+      <li>The program that runs the voice comes from this site, and the page checks it before running it.</li>
+      <li>The passage and the recordings stay on this page only while it is open. They are not stored and not uploaded. They go only into the file you save.</li>
+      <li>There are no cookies and nothing to sign in to.</li>
+    </ul>
+    <p id="can-title">The file you save can:</p>
+    <ul aria-labelledby="can-title">
+      <li>Show the passage a page at a time, and play your recordings of it, one sentence at a time, with the sentence highlighted.</li>
+      <li>Play one sentence again when the student presses it, and play more slowly.</li>
+      <li>Show longer words in syllables when the student presses Syllables. The breaks come from a word list on this site, looked up here when you make the file. No AI is used for them.</li>
+      <li>Offer the Reading tools every Packets file has: text size, colors, spacing, letters, a reading focus line and a magnifier.</li>
+      <li>Keep the student's place on that device.</li>
+    </ul>
+    <p id="cannot-title">The file you save cannot:</p>
+    <ul aria-labelledby="cannot-title">
+      <li>Run AI. It makes no speech: it only plays the recordings that were made here.</li>
+      <li>Connect to the internet. The file tells the browser to refuse every connection, and the browser enforces it.</li>
+      <li>Listen to the student. It never uses the microphone or the camera.</li>
+    </ul>
+    <p>The rule this page gives your browser. The browser refuses anything the rule does not allow:
+      <code class="rule-text" data-show-rule>It is the Content-Security-Policy line near the top of this page's source.</code>
+    </p>
+  </div>
+</details>
+</header>
+
+<main id="main" class="maker">
+  <div class="wrap wrap-narrow">
+    <h1>Make a read-along</h1>
+    <p class="scope">Type or paste a passage. A computer voice records it one sentence at a time, and you save one file that reads it to a student with each sentence highlighted as it is read. Listening practice: nothing is scored.</p>
+
+    <noscript><p class="note note-problem">This page needs JavaScript. Nothing is sent anywhere.</p></noscript>
+
+    <div id="no-parts" class="note note-problem" hidden>
+      <p>A part of this page did not arrive, so it cannot make a file. Load the page again.</p>
+    </div>
+
+    <section class="sheet" aria-labelledby="text-title">
+      <p class="kicker">Step 1</p>
+      <h2 id="text-title">Your passage</h2>
+      <div class="field block">
+        <label for="f-title">Title</label>
+        <span class="hint" id="title-hint">The student sees it at the top of the file. Left empty, it is "Read along".</span>
+        <input type="text" id="f-title" maxlength="80" autocomplete="off" aria-describedby="title-hint">
+      </div>
+      <div class="field block">
+        <label for="f-text">The passage</label>
+        <span class="hint" id="text-hint">Up to 6,000 letters and 120 sentences. Each sentence gets its own recording. To choose the breaks yourself, put each sentence on its own line. An empty line starts a new paragraph.</span>
+        <textarea id="f-text" rows="8" maxlength="6000" aria-describedby="text-hint text-said"></textarea>
+        <span class="hint" id="text-said" role="status"></span>
+      </div>
+    </section>
+
+    <section class="sheet" aria-labelledby="voice-title">
+      <p class="kicker">Step 2</p>
+      <h2 id="voice-title">The voice</h2>
+      <div class="field">
+        <label for="f-voice">Which voice</label>
+        <select id="f-voice" aria-describedby="voice-hint">
+          <option value="af_heart">Heart, a woman's voice (US English)</option>
+          <option value="af_bella">Bella, a woman's voice (US English)</option>
+          <option value="am_adam">Adam, a man's voice (US English)</option>
+          <option value="am_michael">Michael, a man's voice (US English)</option>
+        </select>
+        <span class="hint" id="voice-hint">The voice reads English. A recording keeps the voice it was made with.</span>
+      </div>
+      <p class="row voice-get">
+        <button type="button" class="btn" id="get-voice" aria-describedby="get-voice-hint">Get the voice (about 88 MB)</button>
+        <span class="hint" id="get-voice-hint">Downloaded one time from Hugging Face, then kept by this browser. On a slow connection this takes a few minutes.</span>
+      </p>
+      <div id="voice-making" class="making" hidden>
+        <p id="voice-line" class="making-line"></p>
+        <progress id="voice-bar" max="100" value="0" aria-labelledby="voice-line"></progress>
+      </div>
+      <p id="voice-said" class="result-sub" role="status"></p>
+      <p id="voice-problem" class="actions-note" role="alert"></p>
+    </section>
+
+    <section class="sheet" aria-labelledby="make-title">
+      <p class="kicker">Step 3</p>
+      <h2 id="make-title">Make the recordings</h2>
+      <p class="sheet-intro">One recording for each sentence. Listen to each one: a computer voice can say a word wrong. Make it again, or change the sentence in step 1.</p>
+      <p class="row">
+        <button type="button" class="btn btn-primary" id="make-all" disabled>Make the recordings</button>
+        <button type="button" class="btn" id="stop" hidden>Stop</button>
+      </p>
+      <p id="make-said" class="result-sub" role="status">Type a passage in step 1 and get the voice in step 2 first.</p>
+      <p id="make-problem" class="actions-note" role="alert"></p>
+      <ol id="line-rows" class="voice-rows ra-rows" aria-label="The sentences and their recordings"></ol>
+    </section>
+
+    <section class="sheet" aria-labelledby="file-title">
+      <p class="kicker">Step 4</p>
+      <h2 id="file-title">Save the file</h2>
+      <p id="file-said" class="result-line" role="status">The file is ready when the sentences have recordings.</p>
+      <p id="file-sub" class="result-sub"></p>
+      <p id="file-problem" class="actions-note" role="alert"></p>
+      <div class="actions actions-file">
+        <a class="btn" id="try" href="packets-try.html" target="_blank" rel="noopener" hidden>Try it <span class="sr-only">(opens in a new tab)</span></a>
+        <button type="button" class="btn btn-primary" id="save" hidden>Save the file</button>
+      </div>
+      <div id="after-save" class="next" tabindex="-1" hidden>
+        <h3>Saved. What to do next</h3>
+        <ol>
+          <li>Send the file to your students the way you send any file: your learning platform, a shared drive or a USB drive. From Google Drive or Google Classroom, a student downloads the file first: the preview there does not run it.</li>
+          <li>Each student opens it in a browser and presses Read to me. The file needs no internet and no account.</li>
+          <li>Keep the file if you want the recordings again. This page does not keep them after you close it.</li>
+        </ol>
+        <p class="after-phone">If the file does not open on a device (a phone, a tablet, or a school computer that will not open downloaded files), a student opens it on <a href="packets-open.html">Open a practice file or check</a>: <span data-open-address>apomera.github.io/AlloFlow/packets-open.html</span>.</p>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="wrap wrap-narrow foot-row">
+    <p>Free to use. Open source, license AGPL-3.0. Kokoro is licensed Apache-2.0.</p>
+    <p><a href="./">More from AlloFlow</a></p>
+  </div>
+</footer>
+</body>
+</html>

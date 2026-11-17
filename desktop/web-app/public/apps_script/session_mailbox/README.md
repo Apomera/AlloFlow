@@ -58,6 +58,12 @@ bind its identity, then reconnect with the existing token. Public `claim`
 requests fail closed, including before setup; an older app must use the token
 field. Updating this source does not update an already deployed Web App.
 
+**Version 30:** the fixes made on 2026-11-14 without a new number. Sign-in
+tokens are compared in constant time and repeated failed sign-ins are slowed
+down, sign-up and availability polls are erased on their delete date, pack
+downloads are rate-limited, and the page reader refuses private network
+addresses. Nothing needs to be set up again; tokens and files are kept.
+
 **Updating later:** paste new code, then Deploy → **Manage deployments** →
 pencil icon → Version: New version → Deploy. The URL stays the same.
 

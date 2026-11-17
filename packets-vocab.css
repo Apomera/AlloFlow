@@ -35,9 +35,11 @@
   .v-line { grid-template-columns: 1fr; }
   .v-tools { justify-content: flex-start; }
   .v-head .v-change { display: inline-flex; margin-left: auto; }
-  .v-row:not(.is-changing) .v-tools, .v-row:not(.is-changing) .v-meanings, .v-row:not(.is-changing) .v-undo { display: none; }
-  .v-row:not(.is-changing) .v-wrong .v-line { margin-top: 0.2rem; }
-  .v-row:not(.is-changing) .v-own .hint { display: none; }
+  /* Only the rows of step 2 (data-row): they have the Change button. Until 2026-11-16 this also hid Edit and Swap in the
+     Fill the blank, picture and own-picture rows of step 3, which have no Change button, so a phone could not use them. */
+  .v-row[data-row]:not(.is-changing) .v-tools, .v-row[data-row]:not(.is-changing) .v-meanings, .v-row[data-row]:not(.is-changing) .v-undo { display: none; }
+  .v-row[data-row]:not(.is-changing) .v-wrong .v-line { margin-top: 0.2rem; }
+  .v-row[data-row]:not(.is-changing) .v-own .hint { display: none; }
 }
 
 /* Picture questions (2026-11-12): each word's picture, then the 3 others; white behind each drawing, as in a file. */

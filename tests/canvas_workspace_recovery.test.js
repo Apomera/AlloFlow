@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+// Host files are read through the helper so handlers moved to host_handlers_source.jsx
+// (wave 6, 2026-11-16) are found where they used to be.
+import { readFileSync } from './helpers/host_source.js';
 import { resolve } from 'node:path';
 
 // Since waves 2-5 (2026-09-13) the recovery dialog lives in view_canvas_recovery_dialog_source.jsx and

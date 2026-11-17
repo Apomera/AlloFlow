@@ -411,6 +411,12 @@
       var u = String(rem || '').trim();
       if (!u) return '';
       if (/^[0-9.,/+\-]/.test(u)) return null;
+      // Text after the number is its unit, unless it is a second number or a
+      // hedge ("3 or 4", "3 to 5", "3 and up") or a letter written straight on
+      // ("3x", an algebra term). Those are not one number: left for the teacher.
+      if (/\d/.test(u)) return null;
+      if (/^(?:or|to|and|through|thru|till|until|between|plus|minus|times)\b/i.test(u)) return null;
+      if (/^[xyzn]$/i.test(String(rem || ''))) return null;
       return u.slice(0, 80);
     }
     // Mixed fraction e.g. "-1 1/2 kg" or "2 3/4"

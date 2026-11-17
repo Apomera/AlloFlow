@@ -67,7 +67,7 @@ function ConfirmDialog({ confirmDialog, setConfirmDialog, t }) {
     while (branch && branch.parentElement) {
       const parent = branch.parentElement;
       Array.from(parent.children).forEach((node) => {
-        if (!node || node === branch || seenNodes.has(node) || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(node.tagName)) return;
+        if (!node || node === branch || seenNodes.has(node) || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(node.tagName) || typeof node.matches === "function" && node.matches('[aria-live], [role="status"], [role="alert"], [data-toast-region]')) return;
         seenNodes.add(node);
         backgroundState.push({
           node,
@@ -85,8 +85,12 @@ function ConfirmDialog({ confirmDialog, setConfirmDialog, t }) {
       if (parent === document.body) break;
       branch = parent;
     }
-    const prevBodyOverflow = document.body ? document.body.style.overflow : "";
-    if (document.body) document.body.style.overflow = "hidden";
+    const alloScrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: "" });
+    const alloScrollLocked = !!document.body;
+    if (alloScrollLocked && ++alloScrollLock.count === 1) {
+      alloScrollLock.prev = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+    }
     const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
     const trap = { root: dialog };
     trapStack.push(trap);
@@ -134,7 +138,10 @@ function ConfirmDialog({ confirmDialog, setConfirmDialog, t }) {
     document.addEventListener("keydown", onKeyDown);
     return () => {
       document.removeEventListener("keydown", onKeyDown);
-      if (document.body) document.body.style.overflow = prevBodyOverflow;
+      if (alloScrollLocked) {
+        alloScrollLock.count = Math.max(0, alloScrollLock.count - 1);
+        if (alloScrollLock.count === 0 && document.body) document.body.style.overflow = alloScrollLock.prev;
+      }
       backgroundState.forEach(({ node, hadInert, prevInert, ariaHidden }) => {
         if (!node || !node.isConnected) return;
         if (!hadInert) {
@@ -144,13 +151,9 @@ function ConfirmDialog({ confirmDialog, setConfirmDialog, t }) {
           }
           node.removeAttribute("inert");
         } else {
-          try {
-            node.inert = Boolean(prevInert);
-          } catch (_) {
-          }
         }
         if (ariaHidden == null) node.removeAttribute("aria-hidden");
-        else node.setAttribute("aria-hidden", ariaHidden);
+        else if (ariaHidden !== "true") node.setAttribute("aria-hidden", ariaHidden);
       });
       const wasTopTrap = isTopTrap();
       const trapIndex = trapStack.indexOf(trap);

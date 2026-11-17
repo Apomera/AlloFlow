@@ -15,7 +15,10 @@
 // Module scripts are served by page.route and held until the test releases them.
 // No background pump is started, which is the parked state the Launch Pad causes.
 // ALLO_ANTI_CANDIDATE points the slices at a scratch copy for mutation runs.
-import { readFileSync, mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+// Host files are read through the helper so handlers moved to host_handlers_source.jsx
+// (wave 6, 2026-11-16) are found where they used to be.
+import { readFileSync } from './helpers/host_source.js';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';

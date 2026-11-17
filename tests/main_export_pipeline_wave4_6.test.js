@@ -445,13 +445,13 @@ describe('Wave 6 · Submission Inbox round-trip, objective auto-scoring, annotat
     };
 
     const grades = inboxMeta.exportedQuizAutoGrades(payload, history);
-    expect(grades['allo-response:quizW6:q0:mcq']).toMatchObject({ score: 100, status: 'correct', origin: 'teacher-edit' });
-    expect(grades['allo-response:quizW6:q1:multi']).toMatchObject({ score: 100, status: 'correct', origin: 'teacher-edit' });
-    expect(grades['allo-response:quizW6:q2:fill']).toMatchObject({ score: 100, status: 'correct', origin: 'teacher-edit' });
-    expect(grades['allo-response:quizW6:q3:number']).toMatchObject({ score: 100, status: 'correct', origin: 'teacher-edit' });
-    expect(grades['allo-response:quizW6:q4:match:0']).toMatchObject({ score: 100, status: 'correct', origin: 'teacher-edit' });
-    expect(grades['allo-response:quizW6:q4:match:1']).toMatchObject({ score: 0, status: 'incorrect', origin: 'teacher-edit' });
-    expect(grades['allo-response:quizW6:q5:order:0']).toMatchObject({ score: 100, status: 'correct', origin: 'teacher-edit' });
+    expect(grades['allo-response:quizW6:q0:mcq']).toMatchObject({ score: 100, status: 'correct', origin: 'answer-key' });
+    expect(grades['allo-response:quizW6:q1:multi']).toMatchObject({ score: 100, status: 'correct', origin: 'answer-key' });
+    expect(grades['allo-response:quizW6:q2:fill']).toMatchObject({ score: 100, status: 'correct', origin: 'answer-key' });
+    expect(grades['allo-response:quizW6:q3:number']).toMatchObject({ score: 100, status: 'correct', origin: 'answer-key' });
+    expect(grades['allo-response:quizW6:q4:match:0']).toMatchObject({ score: 100, status: 'correct', origin: 'answer-key' });
+    expect(grades['allo-response:quizW6:q4:match:1']).toMatchObject({ score: 0, status: 'incorrect', origin: 'answer-key' });
+    expect(grades['allo-response:quizW6:q5:order:0']).toMatchObject({ score: 100, status: 'correct', origin: 'answer-key' });
 
     const feedbackHtml = inboxMeta.buildStudentFeedbackHtml({ payload, nickname: payload.nickname, docTitle: payload.docTitle }, grades, { average: 86, scored: 7, total: 7 });
     expect(feedbackHtml).toContain('Water &amp; Matter');

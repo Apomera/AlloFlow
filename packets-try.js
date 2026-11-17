@@ -27,8 +27,12 @@
     var clean = String(html || '').replace(/<script\b[^>]*id="packet-store-snapshot"[^>]*>[\s\S]*?<\/script>/i, '');
     var json = JSON.stringify({ kind: STORE_KIND, items: items || {} }).replace(/</g, '\\u003c');
     var block = '<script type="application/json" id="packet-store-snapshot">' + json + '</script>';
-    var at = clean.toLowerCase().lastIndexOf('</body>');
-    return at >= 0 ? clean.slice(0, at) + block + clean.slice(at) : clean + block;
+    // In the head, BEFORE the file's own script: the player reads the block once, while it starts. Put before
+    // </body> (as it was until 2026-11-16) it came after the script, the player found nothing, said "This browser
+    // cannot keep your work" on every screen and never told this page which question was showing, so the teacher
+    // bar stayed on question 1 and "Remove question" removed question 1. packets-open.js has always done it this way.
+    var at = clean.search(/<\/head\s*>/i);
+    return at >= 0 ? clean.slice(0, at) + block + clean.slice(at) : block + clean;
   }
 
   function showHtml(html) {

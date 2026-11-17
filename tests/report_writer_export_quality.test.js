@@ -149,6 +149,10 @@ describe('in the workflow', () => {
       await click(ui.host.querySelector('button[aria-label="Verify the current report against the structured scores using the inline psycheck port"]'));
       await click(ui.steps()[9]);
       const attest = ui.host.querySelector('input[aria-describedby="rw-attestation-help"]');
+      // No Python runtime here, so the audit's second check did not run: the
+      // clinician ticks that they have seen that before attesting (2026-11-16).
+      expect(attest.disabled).toBe(true);
+      await click(ui.host.querySelector('input[data-rw-second-check-ack]'));
       expect(attest.disabled).toBe(false);
       await click(attest);
       await click(ui.host.querySelector('button[aria-label="Copy reviewed report to clipboard"]'));

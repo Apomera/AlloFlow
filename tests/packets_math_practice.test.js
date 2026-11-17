@@ -103,11 +103,15 @@ const parseCsv = (text) => reader.parseCsv(text.charCodeAt(0) === 0xFEFF ? text.
 // ---------------------------------------------------------------------------
 // 1. The two activities in the engine
 // ---------------------------------------------------------------------------
+// 2026-11-17 (review D14): a file made on a page carries that site's Open address; the builder in node uses the usual one.
+const sameFile = (html) => String(html).replace(/Phone or tablet\? Open this file at [^<]*/, 'Phone or tablet? Open this file at (the site it was made on)');
+
 describe('the two practice activities in the engine', () => {
   it('are built into the loader and its three mirrors from their files, beside the check activities the app never lists', () => {
     // 2026-11-12: the three vocabulary activities (packet_vocab_builder.js) joined them; tests/packet_vocab_adapter.test.js covers them.
     // 2026-11-12: and the two picture activities of vocabulary files (tests/packets_vocab_pictures.test.js).
-    expect(Object.keys(TH.CHECK_ADAPTERS).sort()).toEqual(['math_ccc', 'math_computation', 'math_rehearsal', 'missing_number', 'quantity_discrimination', 'symbol_runner', 'vocab_blank', 'vocab_meaning', 'vocab_picture', 'vocab_picture_word', 'vocab_word']);
+    // 2026-11-16: and Read along, the one activity of a read-along file (packet_read_along_builder.js; tests/packets_read_along_2026_11_16.test.js).
+    expect(Object.keys(TH.CHECK_ADAPTERS).sort()).toEqual(['math_ccc', 'math_computation', 'math_rehearsal', 'missing_number', 'quantity_discrimination', 'read_along', 'symbol_runner', 'vocab_blank', 'vocab_meaning', 'vocab_picture', 'vocab_picture_word', 'vocab_word']);
     expect(readdirSync('word_sounds_take_home/check_adapters').filter((f) => /^math_(ccc|rehearsal)\.js$/.test(f)).sort()).toEqual(['math_ccc.js', 'math_rehearsal.js']);
     for (const id of ['math_ccc', 'math_rehearsal']) {
       expect(TH.ADAPTERS[id], id).toBeUndefined();
@@ -310,8 +314,8 @@ describe('the file', () => {
   const reh = build({ mode: 'rehearsal', factSet: 'mul-7' });
 
   it('is the same bytes for the same choices', () => {
-    expect(build({ mode: 'ccc', factSet: 'mul-7' }).html).toBe(ccc.html);
-    expect(build({ mode: 'rehearsal', factSet: 'mul-7' }).html).toBe(reh.html);
+    expect(sameFile(build({ mode: 'ccc', factSet: 'mul-7' }).html)).toBe(sameFile(ccc.html));
+    expect(sameFile(build({ mode: 'rehearsal', factSet: 'mul-7' }).html)).toBe(sameFile(reh.html));
     const fresh = {};
     fresh.window = fresh;
     new Function('window', read('word_sounds_take_home_loader.js')).call(fresh, fresh);
@@ -340,7 +344,11 @@ describe('the file', () => {
       // in every practice file; C:/tmp/packets_build_1111/look/NOTES.md). The page now says "About 85 KB".
       // Re-pinned 2026-11-13 (engine fixes, C:/tmp/packets_build_1111/engine2/STATUS.txt) from 90000: two tabs of one file, honest
       // saving and the sound-failed note in every file (+7.0 KB; about 95.3 KB now). The page's "About 85 KB" is the makers' to update.
-      expect(Buffer.byteLength(html, 'utf8')).toBeLessThan(100000);
+      // Re-pinned 2026-11-16 from 100000: Letters, the app reader's font choice, in every file's Reading tools, and the
+      // reading focus that follows a sentence being read aloud (+1.4 KB; about 100.4 KB now).
+      // Re-pinned 2026-11-16: every file carries the two reading fonts of Reading tools > Letters (Lexend, Atkinson Hyperlegible; +42.5 KB). About 142.8 KB now; the page says "About 145 KB".
+      // Re-pinned 2026-11-17 from 147000: the review fixes in every file (about +6 KB; about 148.4 KB). The page says "About 150 KB".
+      expect(Buffer.byteLength(html, 'utf8')).toBeLessThan(153000);
       expect(lessonOf(html)).toMatchObject({ mode: 'practice', audio: {}, images: {}, submit: null });
       // Its answers are the arithmetic of its facts.
       for (const it of lessonOf(html).blocks[0].items) {
@@ -754,7 +762,7 @@ describe('the page, run in jsdom with the scripts it names', () => {
     // The file is the one the builder makes from the same choices, and it cannot connect.
     const html = page.built();
     const known = ['mul:7:1', 'mul:7:2', 'mul:7:3', 'mul:7:4', 'mul:7:5', 'mul:7:7', 'mul:7:9', 'mul:7:10'];
-    expect(html).toBe(build({ mode: 'rehearsal', factSet: 'mul-7', known }).html);
+    expect(sameFile(html)).toBe(sameFile(build({ mode: 'rehearsal', factSet: 'mul-7', known }).html));
     expect(verify.verifyPacket(html).result).toBe('closed');
     expect(page.asked).toEqual([]);
     // It opens again the way it was left.
@@ -785,7 +793,7 @@ describe('the page, run in jsdom with the scripts it names', () => {
     await page.made();
     expect(page.rows().How).toBe('Cover, copy, compare. Every fact once, in a mixed order, so the student cannot just count on.');
     expect(page.rows().Cards).toBe('20 cards. Each one starts with the fact and its answer.');
-    expect(page.built()).toBe(build({ mode: 'ccc', factSet: 'add-0-1' }).html);
+    expect(sameFile(page.built())).toBe(sameFile(build({ mode: 'ccc', factSet: 'add-0-1' }).html));
     // A set from the doubles on: known facts come from the set before, and the page says which.
     page.$('back-3').click();
     page.$('back-2').click();
@@ -819,7 +827,7 @@ describe('the page, run in jsdom with the scripts it names', () => {
     expect(page.rows().Facts).toBe('3 facts: 7 ' + X + ' 8, 6 + 7, 12 ' + MINUS + ' 5.');
     expect(page.rows().How).toBe('Cover, copy, compare. Every fact once, in the order you typed them.');
     expect(page.rows().Title).toBe('My math facts: cover, copy, compare');
-    expect(page.built()).toBe(build({ mode: 'ccc', facts: '7 x 8, 6 + 7, 12 - 5' }).html);
+    expect(sameFile(page.built())).toBe(sameFile(build({ mode: 'ccc', facts: '7 x 8, 6 + 7, 12 - 5' }).html));
     page.wordsAreRight();
   });
 
@@ -857,7 +865,7 @@ describe('the page, run in jsdom with the scripts it names', () => {
     page.$('next-2').click();
     await page.made();
     const savedHtml = page.built();
-    expect(savedHtml).toBe(build({ mode: 'ccc', factSet: subSet.id }).html);
+    expect(sameFile(savedHtml)).toBe(sameFile(build({ mode: 'ccc', factSet: subSet.id }).html));
 
     const fresh = openPage();
     expect(fresh.seen('reopen')).toBe(true);
@@ -880,8 +888,8 @@ describe('the front door', () => {
     const card = doc.querySelector('.card-pair');
     expect(card.querySelector('h2').textContent).toBe('Make math fact practice or a math check');
     expect([...card.querySelectorAll('a')].map((a) => [a.getAttribute('href'), a.textContent])).toEqual([[PAGE, 'Math fact practice'], ['packets-check.html', 'A math check']]);
-    // Seven cards on the front door (Word Sounds, Math, Vocabulary, Symbol Runner, Present & Export, Add up results, Check).
-    expect(doc.querySelectorAll('.cards > .card')).toHaveLength(7);
+    // Eight cards on the front door (Word Sounds, Math, Vocabulary, Symbol Runner, Present & Export, Add up results, Open a file, Check).
+    expect(doc.querySelectorAll('.cards > .card')).toHaveLength(8);
     expect(existsSync(PAGE)).toBe(true);
     // Listed with the other builders on the front door and in the guide for school IT.
     for (const file of ['packets.html', 'packets-it.html']) expect(read(file), file).toContain('<code>packet_math_practice_builder.js</code>');

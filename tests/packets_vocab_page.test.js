@@ -32,7 +32,9 @@ const ALLOWED_AI_SENTENCES = ['Runs without AI.', 'This page runs without AI.', 
   'Some meanings were checked and corrected ahead of time with AI help, not by a person.',
   'The recordings of words were made ahead of time with an AI voice (Kokoro).',
   'This meaning was checked with AI help when the word list was prepared, not by a person.',
-  'Some meanings were checked and corrected with AI help when the word list was prepared, not by a person.'];
+  'Some meanings were checked and corrected with AI help when the word list was prepared, not by a person.',
+  // 2026-11-17 (review D13): the badge itself says the checking was AI help, not a person.
+  'AI-checked'];
 const parse = (file) => new JSDOM(read(file)).window.document;
 const V = require('../packet_vocab_builder.js');
 const verify = require('../packets_verify_core.js');
@@ -86,7 +88,8 @@ describe('the page as a file', () => {
     const BLOCK = 'title, h1, h2, h3, p, li, summary, legend, label, button, dt, dd, option, span';
     const found = [...doc.querySelectorAll(BLOCK)].filter((n) => !n.querySelector(BLOCK)).flatMap((n) => sentences(n.textContent));
     for (const s of found.concat(sentences(doc.querySelector('meta[name="description"]').getAttribute('content')))) expect(ALLOWED_AI_SENTENCES, s).toContain(s);
-    for (const line of read(SCRIPT).split('\n')) if (/\bAI\b/.test(line)) expect(line.trim().startsWith('//'), line).toBe(true);
+    // 2026-11-17 (review D13): the one badge that says AI-checked is allowed in code too.
+    for (const line of read(SCRIPT).split('\n')) if (/\bAI\b/.test(line.replace(/'AI-checked'/g, ''))) expect(line.trim().startsWith('//'), line).toBe(true);
     // Honest about the meanings: prepared ahead of time, from open dictionaries, cleaned up by a program; never "reviewed".
     expect(doc.getElementById('sources').textContent).toContain('They were shortened and cleaned up by a program when the word list was prepared, ahead of time.');
   });
@@ -159,8 +162,8 @@ describe('the maker, run with the stand-in word list', () => {
     expect([...p.$('rows').querySelectorAll('.v-row')].map((r) => r.getAttribute('data-row'))).toEqual(['habitat', 'predator', 'prey', 'cell', 'bat', 'adapt', 'camouflage']);
     expect(p.$('rows-line').textContent).toBe('7 words. 3 not checked yet.');
     const cell = p.row('cell');
-    expect(cell.querySelector('.v-mark').textContent).toBe('checked');
-    expect(p.row('prey').querySelector('.v-mark').textContent).toBe('not checked yet');
+    expect(cell.querySelector('.v-mark').textContent).toBe('AI-checked'); // 2026-11-17 (review D13)
+    expect(p.row('prey').querySelector('.v-mark').textContent).toBe('not checked');
     expect(cell.querySelector('.v-right .v-text').textContent).toBe('Right answer The smallest living part of a plant or an animal');
     expect(cell.querySelectorAll('.v-wrong li')).toHaveLength(3);
     expect(cell.querySelector('.v-meanings').open).toBe(false);
@@ -260,6 +263,25 @@ describe('the maker, run with the stand-in word list', () => {
     await wait(300);
     // 2026-11-13: 20, not 21: the wrong words of Fill the blank are of the same kind, and adapt (a verb) has no 3 other verbs.
     expect(p.$('summary-facts').textContent).toMatch(/^20 questions\./);
+    // 2026-11-16: the list of what is in the file sits under the choices, so questions left out are also said beside Save.
+    const leftRow = [...p.$('summary-rows').querySelectorAll('dt')].find((dt) => dt.textContent === 'Left out').nextElementSibling.textContent;
+    expect(leftRow).not.toBe('Nothing.');
+    expect(p.$('left-note').hidden).toBe(false);
+    expect(p.$('left-note').textContent).toMatch(/^\d+ questions? (was|were) left out\. See which, and why$/);
+    expect(p.$('left-note').querySelector('a').getAttribute('href')).toBe('#summary-list');
+    expect(p.$('left-note').closest('#summary')).toBeTruthy();
+    // 2026-11-16: a word that cannot be asked this way sits in a fold under the others, closed, with its reason and its Edit.
+    const fold = p.$('blank-left');
+    const leftOut = [...fold.querySelectorAll('[data-blank-row]')], asked = [...p.d.querySelectorAll('#blank-rows > [data-blank-row]')];
+    expect(fold.tagName).toBe('DETAILS');
+    expect(fold.open).toBe(false);
+    expect(fold.parentNode.lastElementChild).toBe(fold);
+    expect(leftOut.map((row) => row.getAttribute('data-blank-row'))).toContain('adapt');
+    expect(asked.map((row) => row.getAttribute('data-blank-row'))).toContain('bat');
+    expect(leftOut.length + asked.length).toBe(7);
+    expect(fold.querySelector('summary').textContent).toBe(leftOut.length === 1 ? '1 word is left out of Fill the blank. See why.' : leftOut.length + ' words are left out of Fill the blank. See why.');
+    for (const row of leftOut) { expect(row.querySelector('.v-out').textContent).toMatch(/^Left out: /); expect(row.querySelector('.v-tools button')).toBeTruthy(); }
+    for (const row of asked) { expect(row.textContent).not.toContain('Left out: '); expect(row.querySelectorAll('.v-word').length).toBe(3); }
 
     // A check, with a teacher code that is never kept.
     const check = p.d.querySelector('input[name="mode"][value="check"]');

@@ -154,17 +154,31 @@
     {
       "file": "alt_text_module.js",
       "rule": "typeof-ai-gate",
-      "snippet": "const vision = typeof opts.callGeminiVision === \"function\" ? opts.callGeminiVision : null;",
+      "snippet": "const rawVision = typeof opts.callGeminiVision === \"function\" ? opts.callGeminiVision : null;",
       "class": "fine",
-      "reason": "Alt-text service; invoked from teacher alt-text editors (visual panel / image view are isTeacherMode). [2026-11-04 line 157]"
+      "reason": "The resolved function is passed through _atVisionUsable() on the next line, which is the real gate (window.__alloAiUsable); this line only picks which function to test. [2026-11-16]"
     },
     {
       "file": "alt_text_module.js",
       "rule": "typeof-ai-gate",
-      "snippet": "const vision = typeof opts.callGeminiVision === \"function\" ? opts.callGeminiVision : typeof window !== \"undefined\" && typeof win",
+      "snippet": "const rawVision = typeof opts.callGeminiVision === \"function\" ? opts.callGeminiVision : typeof window !== \"undefined\" && typeof win",
       "max": 2,
       "class": "fine",
-      "reason": "Alt-text service; invoked from teacher alt-text editors (visual panel / image view are isTeacherMode). [2026-11-04 line 428, 500]"
+      "reason": "The resolved function is passed through _atVisionUsable() on the next line, which is the real gate (window.__alloAiUsable); this line only picks which function to test. [2026-11-16]"
+    },
+    {
+      "file": "alt_text_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "const resolvedVision = typeof callGeminiVision === \"function\" ? callGeminiVision : typeof window !== \"undefined\" && typeof window.c",
+      "class": "fine",
+      "reason": "The resolved function is passed through _atVisionUsable() on the next line, which is the real gate (window.__alloAiUsable); this line only picks which function to test. [2026-11-16]"
+    },
+    {
+      "file": "alt_text_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "=== \"function\" ? callGeminiVision : typeof window !== \"undefined\" && typeof window.callGeminiVision === \"function\" ? window.callGeminiVision : null;",
+      "class": "fine",
+      "reason": "The resolved function is passed through _atVisionUsable() on the next line, which is the real gate (window.__alloAiUsable); this line only picks which function to test. [2026-11-16]"
     },
     {
       "file": "applied_challenge_module.js",
@@ -696,20 +710,6 @@
       "snippet": "if (typeof callGemini !== 'function' || feedbackPending(key)) return null;",
       "class": "fine",
       "reason": "Prop fn from the DbqView host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 487]"
-    },
-    {
-      "file": "view_image_module.js",
-      "rule": "typeof-ai-gate",
-      "snippet": "const vision = typeof window.callGeminiVision === 'function' ? window.callGeminiVision : null;",
-      "class": "fine",
-      "reason": "Inside the isTeacherMode alt-text editor block (teacher-only). [2026-11-04 line 434]"
-    },
-    {
-      "file": "view_image_module.js",
-      "rule": "typeof-ai-gate",
-      "snippet": "onRegenerate: A && typeof window.callGeminiVision === 'function' ? regenerate : undefined",
-      "class": "fine",
-      "reason": "Inside the isTeacherMode alt-text editor block (teacher-only). [2026-11-04 line 516]"
     },
     {
       "file": "view_misc_modals_module.js",

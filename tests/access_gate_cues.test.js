@@ -4,7 +4,9 @@
 // from base|lane AlloFlowANTI.txt in a vm, and evaluates the REAL cue
 // expressions and the REAL help-tip effect against the resulting state.
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { readFileSync } from 'node:fs';
+// Host files are read through the helper so handlers moved to host_handlers_source.jsx
+// (wave 6, 2026-11-16) are found where they used to be.
+import { readFileSync } from './helpers/host_source.js';
 import vm from 'node:vm';
 
 const ROOT = process.cwd().replace(/\\/g, '/');

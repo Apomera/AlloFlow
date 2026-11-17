@@ -1,6 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import fs from 'node:fs';
-const host=fs.readFileSync('AlloFlowANTI.txt','utf8').replace(/\r\n/g,'\n');
+// The host is read through the helper so handleSubmitOrganizerReflection, moved to
+// host_handlers_source.jsx in wave 6 (2026-11-16), is found where it used to be.
+import { readFileSync as readHostFile } from './helpers/host_source.js';
+const host=readHostFile('AlloFlowANTI.txt','utf8').replace(/\r\n/g,'\n');
 const a=host.indexOf('const handleSubmitOrganizerReflection ='),b=host.indexOf('  const renderOutlineContent = () =>',a);
 const compile=d=>new Function('deps','with(deps){'+host.slice(a,b)+';return handleSubmitOrganizerReflection;}')(d);
 const reflection={resourceId:'kwl-1',activityId:'organizer:kwl-1:reflection:1',revision:1,fields:[{id:'know',label:'Know',text:'My prior knowledge'},{id:'want',label:'Want',text:''},{id:'learned',label:'Learned',text:''}]};

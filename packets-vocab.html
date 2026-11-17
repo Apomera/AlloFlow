@@ -134,13 +134,13 @@
       <p class="kicker">Step 2 of 3</p>
       <h2 id="step-2-title" tabindex="-1">Check the questions</h2>
       <p class="sheet-intro">Each word has its right answer and 3 wrong answers. They are used as they are unless you change them. Change a meaning when your unit means another one, and swap a wrong answer that could also be right.</p>
-      <p class="hint" id="legend"><span class="v-mark">checked</span> This meaning was checked with AI help when the word list was prepared, not by a person. <span class="v-mark v-mark-not">not checked yet</span> Read these first.</p>
+      <p class="hint" id="legend"><span class="v-mark">AI-checked</span> This meaning was checked with AI help when the word list was prepared, not by a person. <span class="v-mark v-mark-not">not checked</span> No one has checked this meaning. Read these first.</p>
       <p id="rows-line" class="result-line" role="status"></p>
       <div id="rows" class="v-rows"></div>
       <div class="actions">
         <button type="button" class="btn" id="back-2">Back</button>
         <button type="button" class="btn btn-primary push" id="next-2">Next: make the file</button>
-        <p class="actions-note">Your changes are kept on this device for next time. A file of vocabulary questions is about 100 KB. Recordings and pictures add to that: step 3 says how much.</p>
+        <p class="actions-note">Your changes are kept on this device for next time. A file of vocabulary questions is about 180 KB. Recordings are on unless you turn them off and add much more (about 0.2 MB for ten words); pictures add a little. Step 3 says how much.</p>
         <p id="step-2-problem" class="actions-note" role="alert"></p>
       </div>
     </section>
@@ -148,6 +148,52 @@
     <section id="step-3" class="sheet" aria-labelledby="step-3-title" hidden>
       <p class="kicker">Step 3 of 3</p>
       <h2 id="step-3-title" tabindex="-1">Make the file</h2>
+
+      <!-- Step 3, top to bottom (2026-11-16, as on Make Word Sounds practice): the file (ready, try it, save it), then what can be changed, then the list of what is in it. -->
+      <div id="making" class="making" hidden>
+        <p id="making-line" class="making-line"></p>
+      </div>
+      <p id="making-said" class="sr-only" role="status"></p>
+
+      <div id="build-problem" class="note note-problem" hidden>
+        <p id="build-problem-text"></p>
+        <p><button type="button" class="btn btn-small" id="fix-rows">Check the questions</button></p>
+      </div>
+
+      <div id="summary" class="summary" hidden>
+        <h3>The file is ready</h3>
+        <p id="summary-facts" class="summary-facts"></p>
+        <p id="size-warn" class="note" hidden></p>
+        <p id="left-note" class="note" hidden><span id="left-note-text"></span> <a href="#summary-list">See which, and why</a></p>
+      </div>
+
+      <div class="field block" id="title-field">
+        <label for="f-title">Title</label>
+        <span class="hint" id="title-hint">The student sees it at the top of the file. The results file's name starts with it. Leave it empty for a title made from the words.</span>
+        <input type="text" id="f-title" maxlength="80" autocomplete="off" aria-describedby="title-hint">
+      </div>
+
+      <div class="actions actions-file">
+        <button type="button" class="btn" id="back-3">Back</button>
+        <a class="btn" id="open-present-export" href="packets-present-export.html#from-vocab" target="_blank" rel="noopener">Present or print word cards <span class="sr-only">(opens in a new tab)</span></a>
+        <a class="btn push" id="try" href="packets-try.html" target="_blank" rel="noopener" hidden>Try it <span class="sr-only">(opens in a new tab)</span></a>
+        <button type="button" class="btn btn-primary" id="save" hidden>Save the file</button>
+      </div>
+
+      <div id="after-save" class="next" tabindex="-1" hidden>
+        <h3>Saved. What to do next</h3>
+        <ol>
+          <li>Send the file to your students the way you send any file: your learning platform, a shared drive or a USB drive. From Google Drive or Google Classroom, a student downloads the file first: the preview there does not run it.</li>
+          <li>Each student opens it in a browser, finishes it and presses the main button at the end, <strong id="csv-label">Save results as a spreadsheet file (CSV)</strong>. They hand that file back to you.</li>
+          <li>Add the results up on <a href="packets-results.html">Add up results</a>, or open them in a spreadsheet. If your school uses AlloFlow, its Class Analytics reads these results files too.</li>
+        </ol>
+        <p class="after-phone">If the file does not open on a device (a phone, a tablet, or a school computer that will not open downloaded files), a student opens it on <a href="packets-open.html">Open a practice file or check</a>: <span data-open-address>apomera.github.io/AlloFlow/packets-open.html</span>.</p>
+        <p id="after-code" hidden>The answers screen inside the file opens with your teacher code. This page has not kept the code.</p>
+        <details class="why" id="learner-tip">
+          <summary>Fill in a student's code name for them</summary>
+          <p>When the file is on a website or a shared link, add <code>#learner=CodeName</code> to the end of the link, for example <code>#learner=BlueHeron7</code>. It stays on the student's device.</p>
+        </details>
+      </div>
 
       <fieldset class="block">
         <legend>Kinds of questions</legend>
@@ -205,11 +251,6 @@
         </div>
       </div>
 
-      <div class="field block">
-        <label for="f-title">Title</label>
-        <span class="hint" id="title-hint">The student sees it at the top of the file. The results file's name starts with it. Leave it empty for a title made from the words.</span>
-        <input type="text" id="f-title" maxlength="80" autocomplete="off" aria-describedby="title-hint">
-      </div>
 
       <details class="why code-box" id="code-name-box">
         <summary>Put a student's code name in the file</summary>
@@ -232,54 +273,24 @@
           <span class="hint" id="voices-hint">Many words have a recording made ahead of time, a machine voice, the same as in Word Sounds files. The file plays it for the word itself. The device voice reads the meanings and the questions. Recordings make the file bigger.</span>
           <span class="hint" id="voices-line" role="status"></span>
         </div>
+        <div class="block" id="repeat-block">
+          <label class="radio"><input type="checkbox" id="f-repeat-missed" aria-describedby="repeat-missed-hint"> <span>At the end, go over the missed questions once more</span></label>
+          <span class="hint" id="repeat-missed-hint">Practice only. Each question the student missed on the first try comes back once, after the others. The results still show how the first time went.</span>
+        </div>
       </details>
 
-      <div id="making" class="making" hidden>
-        <p id="making-line" class="making-line"></p>
-      </div>
-      <p id="making-said" class="sr-only" role="status"></p>
-
-      <div id="build-problem" class="note note-problem" hidden>
-        <p id="build-problem-text"></p>
-        <p><button type="button" class="btn btn-small" id="fix-rows">Check the questions</button></p>
-      </div>
-
-      <div id="summary" class="summary" hidden>
-        <h3>The file is ready</h3>
-        <p id="summary-facts" class="summary-facts"></p>
-        <p id="size-warn" class="note" hidden></p>
+      <div class="summary summary-list" id="summary-list">
+        <h3>What is in the file</h3>
         <dl id="summary-rows"></dl>
-      </div>
-
-      <div class="actions">
-        <button type="button" class="btn" id="back-3">Back</button>
-        <a class="btn" id="open-present-export" href="packets-present-export.html#from-vocab">Present or print word cards</a>
-        <a class="btn push" id="try" href="packets-try.html" target="_blank" rel="noopener" hidden>Try it <span class="sr-only">(opens in a new tab)</span></a>
-        <button type="button" class="btn btn-primary" id="save" hidden>Save the file</button>
-      </div>
-
-      <div id="after-save" class="next" tabindex="-1" hidden>
-        <h3>Saved. What to do next</h3>
-        <ol>
-          <li>Send the file to your students the way you send any file: your learning platform, a shared drive or a USB drive. From Google Drive or Google Classroom, a student downloads the file first: the preview there does not run it.</li>
-          <li>Each student opens it in a browser, finishes it and presses the main button at the end, <strong id="csv-label">Save results as a spreadsheet file (CSV)</strong>. They hand that file back to you.</li>
-          <li>Add the results up on <a href="packets-results.html">Add up results</a>, or open them in a spreadsheet. In AlloFlow: Class Analytics, Add take-home results.</li>
-        </ol>
-        <p class="after-phone">On a phone or tablet, a student opens the file on <a href="packets-open.html">Open a practice file or check</a>: apomera.github.io/AlloFlow/packets-open.html.</p>
-        <p id="after-code" hidden>The answers screen inside the file opens with your teacher code. This page has not kept the code.</p>
-        <details class="why" id="learner-tip">
-          <summary>Fill in a student's code name for them</summary>
-          <p>When the file is on a website or a shared link, add <code>#learner=CodeName</code> to the end of the link, for example <code>#learner=BlueHeron7</code>. It stays on the student's device.</p>
-        </details>
       </div>
 
       <details class="batch" id="batch">
         <summary>Make one for each student</summary>
         <div class="batch-body">
-          <p class="hint">One file for each student, with the student's code name filled in. They come in one .zip file. Each file is the same as the one above, made with that code name.</p>
+          <p class="hint">One file for each student, with the student's code name filled in. They come in one .zip file. Each file is the same as the one above, made with that code name. In Google Classroom, where one assignment gives every student the same file, the single file above is simpler: each student types a code name at the start.</p>
           <div class="field">
             <label for="f-batch-names">Code names, one on each line</label>
-            <span class="hint" id="batch-names-hint">Use code names, not real names. At most 40 at a time.</span>
+            <span class="hint" id="batch-names-hint">Use code names or first names only, never full names. At most 40 at a time.</span>
             <textarea id="f-batch-names" rows="6" maxlength="2400" spellcheck="false" autocapitalize="none" autocomplete="off" aria-describedby="batch-names-hint batch-said"></textarea>
           </div>
           <p id="batch-said" class="result-sub" role="status"></p>

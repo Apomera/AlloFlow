@@ -1416,6 +1416,10 @@ const PLUGIN_FILES = [
     'sd_turbo_loader.js',
     'word_sounds_phonemes_en.js',
     'word_sounds_pronunciations.js',
+    // The reader's English syllable table, loaded on demand by the syllable
+    // editor. Unlisted, it was not on the approved delivery list and the
+    // loader refused it (tests/plugin_loader_files_are_approved.test.js).
+    'syllable_table_en.js',
     'packet_check_builder.js',
     // AlloHaven Arcade modes are lazy-loaded with pluginCdnBase. Keep local
     // desktop builds self-contained so live classroom activities do not depend

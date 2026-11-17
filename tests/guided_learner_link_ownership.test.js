@@ -1,7 +1,9 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest';
 import { createRequire } from 'node:module';
-import { readFileSync } from 'node:fs';
+// Host files are read through the helper so handlers moved to host_handlers_source.jsx
+// (wave 6, 2026-11-16) are found where they used to be.
+import { readFileSync } from './helpers/host_source.js';
 import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
 

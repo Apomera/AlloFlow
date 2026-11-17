@@ -248,7 +248,8 @@ describe('the time on the items in the results (activeMs, active_s=)', () => {
     expect(json.durationMs).toBeGreaterThanOrEqual(0);
     const csv = await saved(f, '[data-save-csv]');
     const row = csv.split('\r\n').find((l) => l.startsWith('"#summary"'));
-    expect(row.endsWith('","title=Ten words","active_s=' + Math.round(sum / 1000) + '"')).toBe(true);
+    // 2026-11-17: then accuracy_of_attempted_pct, the last cell.
+    expect(row).toMatch(new RegExp('","title=Ten words","active_s=' + Math.round(sum / 1000) + '","accuracy_of_attempted_pct=[0-9]*"$'));
     expect(row).toContain('"accuracy_pct=');
     // The teacher's side keeps it.
     expect(TH.parseResult(JSON.stringify(json)).result.activeMs).toBe(sum);
@@ -257,7 +258,8 @@ describe('the time on the items in the results (activeMs, active_s=)', () => {
     const older = { kind: 'alloflow-take-home-result', schemaVersion: 3, sessionId: 's-1', packet: { id: 'p', version: '1', form: '', mode: 'practice' }, lessonId: 'p', revision: '1', lessonTitle: 'Short a',
       learner: 'A', items: [{ n: 1, itemId: 'i1', activity: 'isolation', word: 'cat', target: 'k', responses: ['k'], attempts: 1, firstTry: true, correct: true, done: true, ms: 1200, supports: {} }], durationMs: 5000 };
     const row = TH.resultsCsv(older).text({ method: 'fnv1a', value: 'x' }).split('\r\n').find((l) => l.startsWith('"#summary"'));
-    expect(row).toBe('"#summary","s-1","items_given=1","attempted=1","correct=1","first_try=1","accuracy_pct=100","title=Short a"');
+    // 2026-11-17: accuracy_of_attempted_pct is appended to every row.
+    expect(row).toBe('"#summary","s-1","items_given=1","attempted=1","correct=1","first_try=1","accuracy_pct=100","title=Short a","accuracy_of_attempted_pct=100"');
     expect('activeMs' in TH.parseResult(JSON.stringify(older)).result).toBe(false);
     // The value is not covered by the integrity value (a trailer row), so adding it changes nothing there.
     expect(TH.resultsCsv({ ...older, activeMs: 1200 }).basis).toBe(TH.resultsCsv(older).basis);

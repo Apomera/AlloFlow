@@ -448,6 +448,12 @@ function siParseNumericInput(rawVal) {
     var u = String(rem || '').trim();
     if (!u) return '';
     if (/^[0-9.,/+\-]/.test(u)) return null;
+    // Text after the number is its unit, unless it is a second number or a
+    // hedge ("3 or 4", "3 to 5", "3 and up") or a letter written straight on
+    // ("3x", an algebra term). Those are not one number: left for the teacher.
+    if (/\d/.test(u)) return null;
+    if (/^(?:or|to|and|through|thru|till|until|between|plus|minus|times)\b/i.test(u)) return null;
+    if (/^[xyzn]$/i.test(String(rem || ''))) return null;
     return u.slice(0, 80);
   };
   var mixedMatch = s.match(/^([+-]?(?:\d{1,3}(?:,\d{3})+|\d+))\s+(\d+)\s*\/\s*(\d+)(.*)$/);
@@ -489,13 +495,19 @@ function siParseNumericInput(rawVal) {
   return { num: NaN, inlineUnit: '' };
 }
 
-function siExportedQuizAutoGrades(payload, history) {
+function siAutoGradesFromKeys(payload, history, useStudentCopy) {
   var p = payload && typeof payload === 'object' ? payload : {};
   var responses = p.responses && typeof p.responses === 'object' && !Array.isArray(p.responses) ? p.responses : {};
   var manifest = siResponseManifestMap(p);
   var quizMap = Object.create(null);
   var resourceMap = Object.create(null);
   var defaultTypeMap = Object.create(null);
+  // A pack names an activity's answers by the activity's id, and by its type
+  // ("quiz", "math") only when the activity has no id. So an answer saved under
+  // a type name can only belong to an activity with no id, and only when there
+  // is exactly one such activity of that type. Resolving it to the first quiz
+  // in the project scored one quiz's answers against another quiz's key.
+  var idlessByType = Object.create(null);
   function registerQuizzes(arr) {
     (Array.isArray(arr) ? arr : []).forEach(function (item) {
       if (!item || typeof item !== 'object') return;
@@ -506,22 +518,27 @@ function siExportedQuizAutoGrades(payload, history) {
       if (item.type === 'quiz' && idKey != null && !quizMap[idKey] && item.data && Array.isArray(item.data.questions)) {
         quizMap[idKey] = item;
       }
-      if (item.type === 'quiz' && !quizMap.quiz && item.data && Array.isArray(item.data.questions)) {
-        quizMap.quiz = item;
-      }
       if (idKey != null && !resourceMap[idKey] && item.data != null) {
         resourceMap[idKey] = item;
       }
       var typeKey = item.type ? String(item.type) : '';
-      if (typeKey && typeKey !== '__proto__' && typeKey !== 'constructor' && typeKey !== 'prototype' && item.data != null && !defaultTypeMap[typeKey]) {
-        defaultTypeMap[typeKey] = item;
+      if (idKey == null && typeKey && typeKey !== '__proto__' && typeKey !== 'constructor' && typeKey !== 'prototype' && item.data != null) {
+        (idlessByType[typeKey] = idlessByType[typeKey] || []).push(item);
       }
     });
+  }
+  function settleTypeNamedDefaults() {
+    Object.keys(idlessByType).forEach(function (typeKey) {
+      if (idlessByType[typeKey].length === 1) defaultTypeMap[typeKey] = idlessByType[typeKey][0];
+    });
+    var onlyQuiz = defaultTypeMap.quiz;
+    if (!quizMap.quiz && onlyQuiz && onlyQuiz.data && Array.isArray(onlyQuiz.data.questions)) quizMap.quiz = onlyQuiz;
   }
   // Authoritative teacher history registers first so untrusted student payload content
   // cannot overwrite quiz answer keys or resource definitions.
   registerQuizzes(history);
-  registerQuizzes(p.content);
+  if (useStudentCopy) registerQuizzes(p.content);
+  settleTypeNamedDefaults();
   var SI_SHORT_TYPE_IDS = { ac: 'anchor-chart', sf: 'sentence-frames', nt: 'note-taking', quiz: 'quiz', math: 'math' };
   function findTypedResource(resId, expectedType) {
     var direct = resourceMap[resId];
@@ -557,15 +574,25 @@ function siExportedQuizAutoGrades(payload, history) {
     if (exact) return s;
     return s.toLowerCase().replace(/\s+/g, ' ').replace(/^[.,!?;:'"()]+|[.,!?;:'"()]+$/g, '').trim();
   }
+  // Resolves an ANSWER KEY value to an option index, in the same order the pack
+  // generator uses (doc_pipeline _resolveCorrectIdx): a real number is an index;
+  // a string is option text first, then a letter, and only last a digit index.
+  // A key of '2' among options 1,2,3,4 therefore means the option "2".
   function resolveListAnswerIdx(list, target) {
     if (!Array.isArray(list) || !list.length) return -1;
-    if (Number.isInteger(target) && target >= 0 && target < list.length) return target;
+    if (typeof target === 'number') return (Number.isInteger(target) && target >= 0 && target < list.length) ? target : -1;
     if (target == null) return -1;
-    var st = String(target).trim();
-    if (/^\d+$/.test(st)) {
-      var n = Number(st);
-      if (n >= 0 && n < list.length) return n;
+    if (typeof target === 'boolean') {
+      var boolText = target ? 'true' : 'false';
+      return list.findIndex(function (opt) { return String(opt == null ? '' : opt).trim().toLowerCase() === boolText; });
     }
+    var st = String(target).trim();
+    if (!st) return -1;
+    var exactIdx = list.findIndex(function (opt) { return String(opt == null ? '' : opt).trim() === st; });
+    if (exactIdx >= 0) return exactIdx;
+    var lowerTarget = st.toLowerCase();
+    var lowerIdx = list.findIndex(function (opt) { return String(opt == null ? '' : opt).trim().toLowerCase() === lowerTarget; });
+    if (lowerIdx >= 0) return lowerIdx;
     var normTarget = normFillText(st, false);
     if (normTarget) {
       var textMatchIdx = list.findIndex(function (opt) { return normFillText(opt, false) === normTarget; });
@@ -574,6 +601,10 @@ function siExportedQuizAutoGrades(payload, history) {
     if (/^[A-Za-z]$/.test(st) && list.length <= 26) {
       var letterIdx = st.toUpperCase().charCodeAt(0) - 65;
       if (letterIdx >= 0 && letterIdx < list.length) return letterIdx;
+    }
+    if (/^\d+$/.test(st)) {
+      var n = Number(st);
+      if (n >= 0 && n < list.length) return n;
     }
     return -1;
   }
@@ -593,7 +624,7 @@ function siExportedQuizAutoGrades(payload, history) {
       feedback: ok
         ? ('Auto-scored against ' + partName + ' key (correct).')
         : ('Auto-scored against ' + partName + ' key (expected ' + String.fromCharCode(65 + expectedIdx) + ').'),
-      origin: 'teacher-edit'
+      origin: 'answer-key'
     };
   }
   function normMathAnswer(val) {
@@ -615,7 +646,7 @@ function siExportedQuizAutoGrades(payload, history) {
           score: snapReport.percent,
           status: snapReport.percent === 100 ? 'correct' : (snapReport.percent >= 40 ? 'partially-correct' : 'incorrect'),
           feedback: 'Auto-scored assessment snapshot (' + snapReport.points + ' / ' + snapReport.possible + ').',
-          origin: 'teacher-edit'
+          origin: 'answer-key'
         };
       }
       return;
@@ -646,7 +677,7 @@ function siExportedQuizAutoGrades(payload, history) {
         feedback: csOk
           ? ('Auto-scored against concept sort key (' + expectedCatLabel + ').')
           : ('Auto-scored against concept sort key (expected ' + expectedCatLabel + ').'),
-        origin: 'teacher-edit'
+        origin: 'answer-key'
       };
       return;
     }
@@ -776,7 +807,7 @@ function siExportedQuizAutoGrades(payload, history) {
         feedback: clozeOk
           ? ('Auto-scored against cloze key (' + expectedCloze.text + ').')
           : ('Auto-scored against cloze key (expected ' + expectedCloze.text + ').'),
-        origin: 'teacher-edit'
+        origin: 'answer-key'
       };
       return;
     }
@@ -791,13 +822,8 @@ function siExportedQuizAutoGrades(payload, history) {
       };
       if (!isVennResource(vennItem)) {
         if (vennResId === 'venn' || vennResId === 'outline') {
-          vennItem = isVennResource(defaultTypeMap['venn']) ? defaultTypeMap['venn'] : null;
-          if (!vennItem) {
-            var resIds = Object.keys(resourceMap);
-            for (var vi = 0; vi < resIds.length; vi++) {
-              if (isVennResource(resourceMap[resIds[vi]])) { vennItem = resourceMap[resIds[vi]]; break; }
-            }
-          }
+          var idlessVenns = (idlessByType['venn'] || []).concat(idlessByType['outline'] || []).filter(isVennResource);
+          vennItem = idlessVenns.length === 1 ? idlessVenns[0] : null;
         } else {
           vennItem = null;
         }
@@ -820,7 +846,7 @@ function siExportedQuizAutoGrades(payload, history) {
         feedback: vennOk
           ? ('Auto-scored against Venn key (' + (zoneLabelMap[expectedZone] || expectedZone) + ').')
           : ('Auto-scored against Venn key (expected ' + (zoneLabelMap[expectedZone] || expectedZone) + ').'),
-        origin: 'teacher-edit'
+        origin: 'answer-key'
       };
       return;
     }
@@ -839,7 +865,7 @@ function siExportedQuizAutoGrades(payload, history) {
           if (candSid === gwSid) { gwItem = candGw; break; }
         }
       }
-      if (!gwItem && defaultTypeMap['glossary'] && siExtractGlossaryPairs(defaultTypeMap['glossary']).length > 0) {
+      if (!gwItem && gwSid === 'glossary' && defaultTypeMap['glossary'] && siExtractGlossaryPairs(defaultTypeMap['glossary']).length > 0) {
         gwItem = defaultTypeMap['glossary'];
       }
       var gwPairs = gwItem ? siExtractGlossaryPairs(gwItem) : [];
@@ -878,7 +904,7 @@ function siExportedQuizAutoGrades(payload, history) {
         feedback: gwOk
           ? ('Auto-scored against glossary matching key (' + expectedLetterGw + ').')
           : ('Auto-scored against glossary matching key (expected ' + expectedLetterGw + ').'),
-        origin: 'teacher-edit'
+        origin: 'answer-key'
       };
       return;
     }
@@ -909,7 +935,7 @@ function siExportedQuizAutoGrades(payload, history) {
         feedback: dateOk
           ? ('Auto-scored against timeline date key (' + expectedDate + ').')
           : ('Auto-scored against timeline date key (expected ' + expectedDate + ').'),
-        origin: 'teacher-edit'
+        origin: 'answer-key'
       };
       return;
     }
@@ -936,7 +962,7 @@ function siExportedQuizAutoGrades(payload, history) {
         score: tlScore,
         status: tlStatus,
         feedback: 'Auto-scored against timeline sequence (' + exactPositions + ' of ' + canonicalIds.length + ' positions exact).',
-        origin: 'teacher-edit'
+        origin: 'answer-key'
       };
       return;
     }
@@ -967,7 +993,7 @@ function siExportedQuizAutoGrades(payload, history) {
         feedback: mathOk
           ? ('Auto-scored against math answer key (' + keyAnsStr + ').')
           : ('Auto-scored against math answer key (expected ' + keyAnsStr + ').'),
-        origin: 'teacher-edit'
+        origin: 'answer-key'
       };
       return;
     }
@@ -987,7 +1013,7 @@ function siExportedQuizAutoGrades(payload, history) {
         feedback: gnOk
           ? ('Auto-scored against guided-notes key (' + gnExpected + ').')
           : ('Auto-scored against guided-notes key (expected ' + gnExpected + ').'),
-        origin: 'teacher-edit'
+        origin: 'answer-key'
       };
       return;
     }
@@ -1018,7 +1044,7 @@ function siExportedQuizAutoGrades(payload, history) {
         feedback: acOk
           ? ('Auto-scored against anchor chart key (' + acExpected + ').')
           : ('Auto-scored against anchor chart key (expected ' + acExpected + ').'),
-        origin: 'teacher-edit'
+        origin: 'answer-key'
       };
       return;
     }
@@ -1034,13 +1060,18 @@ function siExportedQuizAutoGrades(payload, history) {
     var q = quiz && quiz.data && Array.isArray(quiz.data.questions) ? quiz.data.questions[qIdx] : null;
     if (!q || typeof q !== 'object') return;
     if (part === 'mcq') {
-      var opts = Array.isArray(q.options) ? q.options : [];
+      // Same option list and key order as the pack generator, so the inbox agrees with
+      // the student's own "Check my answers" and with the printed teacher key.
+      var mcqIsTf = /^(?:true[-_]?false|truefalse|tf)$/i.test(String(q.type || '').trim());
+      var opts = Array.isArray(q.options) && q.options.length ? q.options : (mcqIsTf ? ['True', 'False'] : []);
       var resolveMcqKey = function (cand) {
-        if (cand == null || typeof cand === 'boolean') return -1;
-        return resolveListAnswerIdx(opts, cand);
+        if (cand == null) return -1;
+        var keyIdx = resolveListAnswerIdx(opts, cand);
+        if (keyIdx < 0 && typeof cand === 'boolean' && mcqIsTf && opts.length === 2) return cand ? 0 : 1;
+        return keyIdx;
       };
-      var correctIdx = resolveMcqKey(q.correct);
-      if (correctIdx < 0) correctIdx = resolveMcqKey(q.correctIndex);
+      var correctIdx = resolveMcqKey(q.correctIndex);
+      if (correctIdx < 0) correctIdx = resolveMcqKey(q.correct);
       if (correctIdx < 0) correctIdx = resolveMcqKey(q.correctAnswer);
       if (correctIdx < 0) correctIdx = resolveMcqKey(q.answer);
       if (correctIdx < 0) correctIdx = resolveMcqKey(q.correctOption);
@@ -1087,7 +1118,9 @@ function siExportedQuizAutoGrades(payload, history) {
         }
         return -1;
       };
-      var expectedSet = Array.from(new Set(rawCorr.map(toOptIdx).filter(function (n) { return n >= 0 && n < optsM.length; })));
+      // The key is option text (or a real index); the student's saved value is always an
+      // index. Resolve each with its own rule: toOptIdx read a key of '2' as index 2.
+      var expectedSet = Array.from(new Set(rawCorr.map(function (entry) { return resolveListAnswerIdx(optsM, entry); }).filter(function (n) { return n >= 0 && n < optsM.length; })));
       if (!expectedSet.length) return;
       var parsed = null;
       if (/^\s*\[/.test(raw)) { try { parsed = JSON.parse(raw); } catch (e) { parsed = null; } }
@@ -1100,7 +1133,7 @@ function siExportedQuizAutoGrades(payload, history) {
         score: scoreM,
         status: exactMulti ? 'correct' : (allSelectedCorrect ? 'partially-correct' : 'incorrect'),
         feedback: exactMulti ? 'Auto-scored against quiz key (all correct selections matched).' : (allSelectedCorrect ? 'Auto-scored against quiz key (partially correct).' : 'Auto-scored against quiz key (selection mismatch).'),
-        origin: 'teacher-edit'
+        origin: 'answer-key'
       };
       return;
     }
@@ -1119,7 +1152,7 @@ function siExportedQuizAutoGrades(payload, history) {
         score: fillOk ? 100 : 0,
         status: fillOk ? 'correct' : 'incorrect',
         feedback: fillOk ? 'Auto-scored against quiz key (correct).' : ('Auto-scored against quiz key (expected ' + accepted[0].trim() + ').'),
-        origin: 'teacher-edit'
+        origin: 'answer-key'
       };
       return;
     }
@@ -1132,7 +1165,7 @@ function siExportedQuizAutoGrades(payload, history) {
         score: unitOk ? 100 : 0,
         status: unitOk ? 'correct' : 'incorrect',
         feedback: unitOk ? 'Auto-scored against unit key (correct).' : ('Auto-scored against unit key (expected ' + unitList[0].trim() + ').'),
-        origin: 'teacher-edit'
+        origin: 'answer-key'
       };
       return;
     }
@@ -1150,13 +1183,18 @@ function siExportedQuizAutoGrades(payload, history) {
       var effectiveUnit = pairedUnit || parsedNum.inlineUnit;
       var normUnitVal = function (u) { return normFillText(u, false).replace(/\./g, '').replace(/\s+/g, ''); };
       var unitWrong = numOk && expectedUnits.length > 0 && effectiveUnit !== '' && !expectedUnits.some(function (u) { return normUnitVal(u) === normUnitVal(effectiveUnit); });
+      // A required unit left blank costs the unit's half, as a wrong unit does
+      // (and as the live grader does); the pack's own check marks it wrong.
+      var unitMissing = numOk && expectedUnits.length > 0 && effectiveUnit === '' && q.requireUnit === true;
       out[key] = {
-        score: numOk ? (unitWrong ? 50 : 100) : 0,
-        status: numOk ? (unitWrong ? 'partially-correct' : 'correct') : 'incorrect',
-        feedback: unitWrong
+        score: numOk ? (unitWrong || unitMissing ? 50 : 100) : 0,
+        status: numOk ? (unitWrong || unitMissing ? 'partially-correct' : 'correct') : 'incorrect',
+        feedback: unitMissing
+          ? ('Value matches numeric key, but the required unit (' + expectedUnits[0].trim() + ') is missing.')
+          : unitWrong
           ? ('Value matches numeric key, but expected unit ' + expectedUnits[0].trim() + '.')
           : (numOk ? 'Auto-scored against numeric key (within tolerance).' : ('Auto-scored against numeric key (expected ' + targetNum + ').')),
-        origin: 'teacher-edit'
+        origin: 'answer-key'
       };
       return;
     }
@@ -1174,7 +1212,7 @@ function siExportedQuizAutoGrades(payload, history) {
         score: matchOk ? 100 : 0,
         status: matchOk ? 'correct' : 'incorrect',
         feedback: matchOk ? 'Auto-scored against matching key (correct).' : ('Auto-scored against matching key (expected ' + expectedLetter + ').'),
-        origin: 'teacher-edit'
+        origin: 'answer-key'
       };
       return;
     }
@@ -1191,7 +1229,7 @@ function siExportedQuizAutoGrades(payload, history) {
         score: orderOk ? 100 : 0,
         status: orderOk ? 'correct' : 'incorrect',
         feedback: orderOk ? 'Auto-scored against ordering key (correct).' : ('Auto-scored against ordering key (expected position ' + expectedPos + ').'),
-        origin: 'teacher-edit'
+        origin: 'answer-key'
       };
       return;
     }
@@ -1256,7 +1294,7 @@ function siExportedQuizAutoGrades(payload, history) {
           feedback: svOk
             ? 'Auto-scored against sequence-sense verdict key (correct).'
             : ('Auto-scored against sequence-sense verdict key (expected ' + expectedVerdict + ').'),
-          origin: 'teacher-edit'
+          origin: 'answer-key'
         };
         return;
       }
@@ -1271,7 +1309,7 @@ function siExportedQuizAutoGrades(payload, history) {
           feedback: siOk
             ? 'Auto-scored against sequence-sense misplaced-item key (correct).'
             : ('Auto-scored against sequence-sense misplaced-item key (expected #' + ssMisplaced.map(function (p) { return p + 1; }).join(' or #') + ').'),
-          origin: 'teacher-edit'
+          origin: 'answer-key'
         };
         return;
       }
@@ -1292,7 +1330,7 @@ function siExportedQuizAutoGrades(payload, history) {
           feedback: fullSeq
             ? 'Auto-scored against sequence-sense order key (correct).'
             : ('Auto-scored against sequence-sense order key (expected ' + canonNums.join(', ') + ').'),
-          origin: 'teacher-edit'
+          origin: 'answer-key'
         };
         return;
       }
@@ -1305,6 +1343,33 @@ function siExportedQuizAutoGrades(payload, history) {
         if (ssPGrade) out[key] = ssPGrade;
       }
     }
+  });
+  return out;
+}
+
+// An automatic score is not a score the teacher typed, so it carries its own
+// origin. It is checked against the teacher's copy in the open project, and
+// only that. The copy inside the student's file can be out of date or altered,
+// so it is used only when the teacher asks for it, and the score is marked.
+var SI_ANSWER_KEY_ORIGIN = 'answer-key';
+var SI_STUDENT_FILE_KEY_ORIGIN = 'answer-key-student-file';
+function siIsAnswerKeyOrigin(origin) {
+  return origin === SI_ANSWER_KEY_ORIGIN || origin === SI_STUDENT_FILE_KEY_ORIGIN;
+}
+function siExportedQuizAutoGrades(payload, history) {
+  return siAutoGradesFromKeys(payload, history, false);
+}
+// The scores only the student's own copy could give: what the teacher is
+// offered, never applied without being asked for.
+function siStudentCopyOnlyGrades(payload, history) {
+  var out = Object.create(null);
+  var content = payload && typeof payload === 'object' ? payload.content : null;
+  if (!Array.isArray(content) || !content.length) return out;
+  var fromProject = siAutoGradesFromKeys(payload, history, false);
+  var withStudentCopy = siAutoGradesFromKeys(payload, history, true);
+  Object.keys(withStudentCopy).forEach(function (key) {
+    if (fromProject[key]) return;
+    out[key] = Object.assign({}, withStudentCopy[key], { origin: SI_STUDENT_FILE_KEY_ORIGIN, keySource: 'student-file' });
   });
   return out;
 }
@@ -3052,7 +3117,7 @@ function siSavedReviewState(value) {
 
 function siGradeOrigin(value) {
   var origin = String(value == null ? '' : value).trim().toLowerCase();
-  return origin === 'ai' || origin === 'teacher-anchor' || origin === 'teacher-edit' ? origin : 'legacy';
+  return origin === 'ai' || origin === 'teacher-anchor' || origin === 'teacher-edit' || siIsAnswerKeyOrigin(origin) ? origin : 'legacy';
 }
 
 function siGradeReviewSignature(rowGrades) {
@@ -4980,7 +5045,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
       const grade = item.grade;
       if (!grade || grade.status === 'error' || typeof grade.score !== 'number'
           || !Number.isFinite(grade.score) || grade.score < 0 || grade.score > 100) return false;
-      return !item.entry.requiresManualReview || grade.origin === 'teacher-edit' || grade.origin === 'teacher-anchor';
+      return !item.entry.requiresManualReview || grade.origin === 'teacher-edit' || grade.origin === 'teacher-anchor' || siIsAnswerKeyOrigin(grade.origin);
     }).map(item => item.grade);
     return {
       total: entries.length,
@@ -5097,7 +5162,30 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
       delete next[idx];
       return next;
     });
-    addToast && addToast(tr('Auto-scored {n} objective quiz response(s).', { n: added }), 'success');
+    const notChecked = Object.keys(siStudentCopyOnlyGrades(row.payload, history)).filter(k => !existingRow[k]).length;
+    addToast && addToast(tr('Auto-scored {n} objective quiz response(s).', { n: added })
+      + (notChecked ? ' ' + tr('{m} more could not be checked, because this project has no copy of that activity.', { m: notChecked }) : ''),
+      'success');
+  };
+  // Only when the teacher asks: score what the project cannot, with the copy
+  // of the activity inside the student's own file.
+  const scoreRowWithStudentCopy = (idx) => {
+    const row = queue[idx];
+    if (!row || !row.payload) return;
+    const offered = siStudentCopyOnlyGrades(row.payload, history);
+    const existingRow = grades[idx] || {};
+    const toApply = {};
+    Object.keys(offered).forEach((k) => { if (!existingRow[k]) toApply[k] = offered[k]; });
+    const added = Object.keys(toApply).length;
+    if (!added) return;
+    setGrades(previous => ({ ...previous, [idx]: { ...(previous[idx] || {}), ...toApply } }));
+    setReviewedRows(previous => {
+      if (!previous[idx]) return previous;
+      const next = { ...previous };
+      delete next[idx];
+      return next;
+    });
+    addToast && addToast(tr('Scored {n} response(s) with the answer key inside the student\'s file. That copy can be out of date or changed, so check those scores.', { n: added }), 'warn');
   };
   const autoScoreAllObjective = () => {
     const nextByRow = {};
@@ -6746,7 +6834,8 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                               ),
                               item.grade && /*#__PURE__*/React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 4, fontSize: '0.76rem' } },
                                 /*#__PURE__*/React.createElement('span', { style: { padding: '2px 8px', borderRadius: 999, background: sc.bg, color: sc.color, fontWeight: 700 } }, (typeof item.grade.score === 'number' ? item.grade.score : '–') + '/100'),
-                                item.grade.feedback && /*#__PURE__*/React.createElement('span', { style: { color: '#475569' } }, item.grade.feedback)
+                                item.grade.feedback && /*#__PURE__*/React.createElement('span', { style: { color: '#475569' } }, item.grade.feedback),
+                                item.grade.keySource === 'student-file' && /*#__PURE__*/React.createElement('span', { 'data-si-key-source': 'student-file', style: { color: '#7c2d12', fontWeight: 700 } }, tr('Checked with the answer key inside the student\'s file. This project has no copy of the activity.'))
                               )
                             ),
                             /*#__PURE__*/React.createElement('div', { style: { display: 'flex', gap: 6, flexShrink: 0, alignItems: 'center' } },
@@ -6879,6 +6968,20 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                               style: { padding: '4px 10px', background: '#eef2ff', color: '#3730a3', border: '1px solid #a5b4fc', borderRadius: 6, fontWeight: 700, fontSize: '0.74rem', cursor: 'pointer' }
                             }, tr('⚡ Auto-score objective items'))
                           ),
+                          (() => {
+                            const rowGradesNow = grades[idx] || {};
+                            const notChecked = Object.keys(siStudentCopyOnlyGrades(row.payload, history)).filter(k => !rowGradesNow[k]).length;
+                            if (!notChecked) return null;
+                            return /*#__PURE__*/React.createElement('div', { 'data-si-student-copy-offer': notChecked, role: 'note', style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginBottom: 8, padding: '8px 10px', background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 8, color: '#7c2d12', fontSize: '0.8rem' } },
+                              /*#__PURE__*/React.createElement('span', { style: { flex: '1 1 260px' } }, tr('{n} answer(s) here could not be checked, because this project has no copy of that activity. Open the project it came from to check them against your own answer key, or score them by hand.', { n: notChecked })),
+                              /*#__PURE__*/React.createElement('button', {
+                                type: 'button',
+                                title: tr('Uses the answer key stored inside this student\'s file. That copy can be out of date or changed. Each score is marked so you can tell.'),
+                                onClick: () => scoreRowWithStudentCopy(idx),
+                                style: { padding: '4px 10px', background: 'white', color: '#7c2d12', border: '1px solid #f59e0b', borderRadius: 6, fontWeight: 700, fontSize: '0.74rem', cursor: 'pointer' }
+                              }, tr('Score with the copy in the student\'s file'))
+                            );
+                          })(),
                           row.payload.takeHome && siTakeHomeResult(row.payload.takeHome),
                           /* Applied Challenge Studio export: the response keys carry
                              "<resourceId>:applied:<field>", so the host can rebuild a
@@ -6952,7 +7055,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                                         onClick: () => openManualScoreForm(idx, entry),
                                         title: entry.requiresManualReview ? tr('Score this response yourself. It is not sent to the free-response AI grader.') : tr('Manually override or enter a teacher score for this response.'),
                                         style: { display: 'inline-flex', alignItems: 'center', padding: '3px 9px', borderRadius: 999, background: '#e0f2fe', color: '#075985', border: '1px solid #7dd3fc', fontWeight: 700, fontSize: '0.72rem', flexShrink: 0, whiteSpace: 'nowrap', cursor: 'pointer' }
-                                      }, g && (g.origin === 'teacher-edit' || g.origin === 'teacher-anchor') ? tr('Edit score') : (entry.requiresManualReview ? tr('Score manually') : tr('Score'))),
+                                      }, g && (g.origin === 'teacher-edit' || g.origin === 'teacher-anchor' || siIsAnswerKeyOrigin(g.origin)) ? tr('Edit score') : (entry.requiresManualReview ? tr('Score manually') : tr('Score'))),
                                       !entry.requiresManualReview && !entry.isSelfCheck && entry.answered && (isAnchored
                                         ? /*#__PURE__*/React.createElement(React.Fragment, null,
                                             /*#__PURE__*/React.createElement('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 999, background: '#fde68a', color: '#92400e', fontWeight: 700, fontSize: '0.72rem', flexShrink: 0 } },
@@ -6976,7 +7079,8 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                                   ),
                                   g && /*#__PURE__*/React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 4, fontSize: '0.78rem' } },
                                     /*#__PURE__*/React.createElement('span', { style: { display: 'inline-block', padding: '2px 8px', borderRadius: 999, background: sc.bg, color: sc.color, fontWeight: 700 } }, (typeof g.score === 'number' ? g.score : '–') + '/100'),
-                                    /*#__PURE__*/React.createElement('span', { style: { color: '#475569', fontStyle: 'italic' } }, g.feedback || '')
+                                    /*#__PURE__*/React.createElement('span', { style: { color: '#475569', fontStyle: 'italic' } }, g.feedback || ''),
+                                    g.keySource === 'student-file' && /*#__PURE__*/React.createElement('span', { 'data-si-key-source': 'student-file', style: { color: '#7c2d12', fontWeight: 700 } }, tr('Checked with the answer key inside the student\'s file. This project has no copy of the activity.'))
                                   )
                                 );
                               }),

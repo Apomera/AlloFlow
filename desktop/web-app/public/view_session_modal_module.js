@@ -399,7 +399,7 @@ function SessionModal({
     while (cursor && cursor.parentElement) {
       const parent = cursor.parentElement;
       Array.from(parent.children).forEach(function(sibling) {
-        if (!sibling || sibling === cursor || seenSiblings.has(sibling) || !sibling.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName)) return;
+        if (!sibling || sibling === cursor || seenSiblings.has(sibling) || !sibling.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName) || typeof sibling.matches === "function" && sibling.matches('[aria-live], [role="status"], [role="alert"], [data-toast-region]')) return;
         seenSiblings.add(sibling);
         const hadInert = sibling.hasAttribute("inert");
         const prevInert = sibling.inert;
@@ -504,10 +504,6 @@ function SessionModal({
           } catch (_) {
           }
         } else {
-          try {
-            sibling.inert = Boolean(prevInert);
-          } catch (_) {
-          }
         }
         if (ariaHidden == null) {
           try {
@@ -516,12 +512,19 @@ function SessionModal({
           }
         } else {
           try {
-            sibling.setAttribute("aria-hidden", ariaHidden);
+            if (ariaHidden !== "true") sibling.setAttribute("aria-hidden", ariaHidden);
           } catch (_) {
           }
         }
       });
-      const wasTopTrap = isTopTrap();
+      let wasTopTrap = true;
+      for (let i = trapStack.length - 1; i >= 0 && trapStack[i] !== trap; i--) {
+        const other = trapStack[i] && trapStack[i].root;
+        if (!other || !(other === dialog || typeof other.contains === "function" && (other.contains(dialog) || dialog.contains(other)))) {
+          wasTopTrap = false;
+          break;
+        }
+      }
       const trapIndex = trapStack.indexOf(trap);
       if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
       if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus !== document.documentElement && previousFocus.isConnected && typeof previousFocus.focus === "function") previousFocus.focus();

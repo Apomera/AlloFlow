@@ -12615,6 +12615,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
               debugLog(`Phoneme fallback: "${text}" -> "${match}"`);
               return loadAndPlay(window.__ALLO_PHONEME_AUDIO_BANK[match]);
             }
+            // pii-safe: a phoneme from the fixed sound inventory, not anything a person typed
             warnLog(`No bank audio for English phoneme "${text}" - skipping (no TTS for phonemes)`);
             if (playImmediately && !playbackStale()) setIsPlayingAudio(false);
             return { ok: false, status: "unavailable" };
@@ -12706,7 +12707,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
               }
             } catch (e) {
               ttsInflight.current.delete(text);
-              warnLog("TTS attempt 1 failed for word:", text, e?.message);
+              warnLog("TTS attempt 1 failed for a word", "(" + String(text || "").length + " characters)", e?.message);
               // Retry once after a delay instead of falling back to browser TTS
               try {
                 if (playImmediately && playbackStale()) return { ok: false, status: 'cancelled' };
@@ -12724,7 +12725,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                   return loadAndPlay(retryUrl);
                 }
               } catch (retryErr) {
-                warnLog("TTS retry also failed for:", text, retryErr?.message);
+                warnLog("TTS retry also failed for a word", "(" + String(text || "").length + " characters)", retryErr?.message);
               }
             }
           }
@@ -12735,7 +12736,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
             try {
               onDeviceUrl = await callTTS(text, voiceForTts, 1, { language: wordSoundsLanguage || "English", maxRetries: 0, word: true });
             } catch (e) {
-              warnLog("On-device voice failed for word:", text, e?.message);
+              warnLog("On-device voice failed for a word", "(" + String(text || "").length + " characters)", e?.message);
             }
             if (playbackStale()) return { ok: false, status: 'cancelled' };
             if (onDeviceUrl) {
@@ -12755,7 +12756,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           if (playImmediately && !playbackStale()) {
             if (!isPhoneme) {
               // A word we could not voice at all (TTS exhausted / unavailable).
-              warnLog("⚠️ All Gemini TTS attempts exhausted for word:", text, "- skipping audio (no browser TTS fallback)");
+              warnLog("⚠️ All Gemini TTS attempts exhausted for a word", "(" + String(text || "").length + " characters)", "- skipping audio (no browser TTS fallback)");
               notifyAudioUnavailable();
             } else if (
               typeof window.__ALLO_PHONEME_AUDIO_BANK === "undefined" ||
@@ -17432,7 +17433,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               }
             }
           }
-          warnLog("Audio prefetch exhausted retries for", text, lastErr && lastErr.message);
+          warnLog("Audio prefetch exhausted retries for a word", "(" + String(text || "").length + " characters)", lastErr && lastErr.message);
           return false;
         };
         const prefetchEntries = wordsNeedingAudio.map((w) => {

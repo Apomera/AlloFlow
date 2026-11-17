@@ -26,7 +26,7 @@
  * Apps Script cannot answer). GET on the /exec URL shows a human status line.
  */
 
-var VERSION = 29;
+var VERSION = 30;
 // Apps Script allows 30 simultaneous runs per owner and a run waiting on the
 // script lock still counts, so live writes give up quickly and answer "busy"
 // (the app retries with backoff) instead of queueing for seconds.

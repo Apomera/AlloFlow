@@ -92,7 +92,7 @@ function VideoLibraryOverlay({ onClose, t }) {
     while (cursor && cursor.parentElement) {
       const parent = cursor.parentElement;
       Array.from(parent.children).forEach((sibling) => {
-        if (!sibling || sibling === cursor || seenSiblings.has(sibling) || !sibling.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName)) return;
+        if (!sibling || sibling === cursor || seenSiblings.has(sibling) || !sibling.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName) || (typeof sibling.matches === 'function' && sibling.matches('[aria-live], [role="status"], [role="alert"], [data-toast-region]'))) return;
         seenSiblings.add(sibling);
         isolated.push({
           sibling,
@@ -181,10 +181,10 @@ function VideoLibraryOverlay({ onClose, t }) {
           try { sibling.inert = false; } catch (_) {}
           try { sibling.removeAttribute('inert'); } catch (_) {}
         } else {
-          try { sibling.inert = Boolean(prevInert); } catch (_) {}
+          /* already inert when this dialog opened: leave it as it is now */
         }
         if (ariaHidden == null) { try { sibling.removeAttribute('aria-hidden'); } catch (_) {} }
-        else { try { sibling.setAttribute('aria-hidden', ariaHidden); } catch (_) {} }
+        else { try { if (ariaHidden !== 'true') sibling.setAttribute('aria-hidden', ariaHidden); } catch (_) {} }
       });
       const wasTopTrap = !trapStack || trapStack[trapStack.length - 1] === trap;
       if (trapStack) {

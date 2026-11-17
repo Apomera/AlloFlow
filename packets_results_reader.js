@@ -310,13 +310,17 @@
     var activity = activityId(raw.activity);
     var responses = (Array.isArray(raw.responses) ? raw.responses : []).slice(0, 8).map(function (r) { return text(r, 40); }).filter(Boolean);
     var tries = Math.max(0, Math.min(99, Math.floor(Number(raw.tries)) || 0));
-    var correct = raw.correct === true;
+    var flag = idOf(raw.flag, 40);
+    // 2026-11-17: a check's item set aside at a pause ("paused", done in the JSON) or left when the time ran out ("time_up", which may
+    // now keep what was typed) is not an answer: never attempted, never right, as the check's own score counts it.
+    var setAside = flag === 'paused' || flag === 'time_up';
+    var correct = !setAside && raw.correct === true;
     return { n: whole(raw.n, 9999) || 0, itemId: text(raw.itemId, 80), activity: activity, activityTitle: text(raw.activityTitle, 60),
       word: text(raw.word, 40), target: text(raw.target, 40), responses: responses, correct: correct, firstTry: correct && raw.firstTry === true, tries: tries,
       // Letter Trace and unscored items are practice: counted, never graded.
       practice: raw.scored === false || activity === 'letter_tracing',
-      attempted: raw.done === true || tries > 0 || responses.length > 0 || correct,
-      timeMs: whole(raw.timeMs, 86400000) || 0, supports: text(raw.supports, 200), flag: idOf(raw.flag, 40),
+      attempted: !setAside && (raw.done === true || tries > 0 || responses.length > 0 || correct),
+      timeMs: whole(raw.timeMs, 86400000) || 0, supports: text(raw.supports, 200), flag: flag,
       digitsCorrect: whole(raw.digitsCorrect), digitsPossible: whole(raw.digitsPossible) };
   }
   // The score as the file states it. It is not covered by the file's check value; the answers are,
@@ -345,6 +349,9 @@
       // Untimed (an accommodation): the JSON says untimed: true, the CSV "timing=untimed".
       untimed: sc.untimed === true || yes(sc.untimed) || text(sc.timing, 20).toLowerCase() === 'untimed', usualTimeLimitS: number(sc.usualTimeLimitS) };
     if (tools.length) out.tools = tools;
+    // 2026-11-17: a timed check that was paused says how long and how often (only then).
+    var pauses = whole(sc.pauses, 9999);
+    if (pauses) { out.pausedS = Math.max(0, Math.min(864000, number(sc.pausedS) || 0)); out.pauses = pauses; }
     return out;
   }
   // "key=value" cells of a trailer row.
@@ -362,7 +369,8 @@
     return cleanScore({ measure: kv.measure, score: kv.score, scoreUnit: kv.score_unit, digitsCorrect: kv.digits_correct, digitsPossible: kv.digits_possible,
       itemsCorrect: kv.items_correct, itemsAttempted: kv.items_attempted, timeLimitS: kv.time_limit_s, elapsedS: kv.elapsed_s, hiddenS: kv.hidden_s,
       completion: kv.completion, prorated: kv.prorated, scoringVersion: kv.scoring_version, formVersion: kv.form_version, attempt: kv.attempt,
-      flags: String(kv.flags || '').split(';'), tools: kv.tools_used ? String(kv.tools_used).split(';') : [], timing: kv.timing, usualTimeLimitS: kv.usual_time_limit_s });
+      flags: String(kv.flags || '').split(';'), tools: kv.tools_used ? String(kv.tools_used).split(';') : [], timing: kv.timing, usualTimeLimitS: kv.usual_time_limit_s,
+      pausedS: kv.paused_s, pauses: kv.pauses });
   }
 
   // ---------------------------------------------------------------------------
@@ -621,6 +629,7 @@
         noScore: noScore, recounted: recounted, scoringVersion: st ? st.scoringVersion : null, formVersion: st ? st.formVersion : '', attempt: st ? st.attempt : s.attempt || 1,
         flags: st ? st.flags.slice() : [] };
       if (st && Array.isArray(st.tools) && st.tools.length) s.score.tools = st.tools.slice();
+      if (st && st.pauses) { s.score.pausedS = st.pausedS; s.score.pauses = st.pauses; }
       s.score.flags.forEach(function (flag) { if (flags.indexOf(flag) < 0) flags.push(flag); });
       // Untimed (an accommodation): a fixed form with no time limit, said by the file or not. It is never put with
       // timed results: it has its own series (seriesKey), so its own middle and goal.
@@ -742,7 +751,34 @@
       savedLocal: text(state.savedLocal, 40), sessions: (state.sessions || []).slice(0, MAX_SESSIONS),
       merges: (state.merges || []).map(function (row) { return { from: text(row.from, 80), into: text(row.into, 80) }; }),
       apart: (state.apart || []).map(function (row) { return [text(row[0], 80), text(row[1], 80)]; }),
-      goals: (state.goals || []).map(function (row) { return { learner: text(row.learner, 80), measure: scalar(row.measure).slice(0, 200), value: number(row.value) }; }) };
+      goals: (state.goals || []).map(function (row) { return { learner: text(row.learner, 80), measure: scalar(row.measure).slice(0, 200), value: number(row.value) }; }),
+      // 2026-11-17: the goal dates and the paper scores typed on the page. A page made before reads the file without them.
+      goalDates: cleanGoalDates(state.goalDates, false), paper: cleanPaper(state.paper, false) };
+  }
+  // 2026-11-17: a day as YYYY-MM-DD, a real one, or ''.
+  function dayText(value) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(scalar(value));
+    if (!m) return '';
+    var d = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])));
+    return d.getUTCFullYear() === Number(m[1]) && d.getUTCMonth() === Number(m[2]) - 1 && d.getUTCDate() === Number(m[3]) && Number(m[1]) >= 2000 && Number(m[1]) <= 2100 ? m[0] : '';
+  }
+  // Goal dates: [{ learner, measure, date }]. keyed: the learner is read again as a label key (from a file).
+  function cleanGoalDates(list, keyed) {
+    return (Array.isArray(list) ? list : []).slice(0, MAX_SESSIONS).map(function (row) {
+      if (!row || typeof row !== 'object') return null;
+      var learner = keyed ? labelKey(text(row.learner, 80)) : text(row.learner, 80);
+      return { learner: learner, measure: scalar(row.measure).slice(0, 200), date: dayText(row.date) };
+    }).filter(function (row) { return row && row.measure && row.date; });
+  }
+  // Paper scores: [{ learner, measure, name, date, value, note }]. Kept apart from the results files' scores everywhere.
+  function cleanPaper(list, keyed) {
+    return (Array.isArray(list) ? list : []).slice(0, MAX_SESSIONS).map(function (row) {
+      if (!row || typeof row !== 'object') return null;
+      var learner = keyed ? labelKey(text(row.learner, 80)) : text(row.learner, 80);
+      var value = number(row.value);
+      return { learner: learner, measure: scalar(row.measure).slice(0, 200), name: text(row.name, 80), date: dayText(row.date),
+        value: value === null || value < 0 || value > 1000000 ? null : value, note: text(row.note, 200) };
+    }).filter(function (row) { return row && row.learner && row.measure && row.name && row.date && row.value !== null; });
   }
   // Every value is read again as untrusted text, and every count is made again from the answers.
   function readBundle(data) {
@@ -761,7 +797,8 @@
         .filter(function (row) { return row && row.from && row.into && row.from !== row.into; }),
       apart: list(data.apart).map(function (row) { return Array.isArray(row) ? [key(row[0]), key(row[1])] : null; }).filter(function (row) { return row && row[0] && row[1]; }),
       goals: list(data.goals).map(function (row) { return row && typeof row === 'object' ? { learner: key(row.learner), measure: scalar(row.measure).slice(0, 200), value: number(row.value) } : null; })
-        .filter(function (row) { return row && row.measure && row.value !== null && row.value >= 0 && row.value <= 1000000; }) };
+        .filter(function (row) { return row && row.measure && row.value !== null && row.value >= 0 && row.value <= 1000000; }),
+      goalDates: cleanGoalDates(data.goalDates, true), paper: cleanPaper(data.paper, true) };
   }
 
   // ---------------------------------------------------------------------------
@@ -977,6 +1014,7 @@
     read: read, refuse: refuse, parseCsv: parseCsv, readCsv: readCsv, readJson: readJson, finish: finish, fnv1a: fnv1a, sha256: sha256, stamp: stamp, sheetStamp: sheetStamp, csvCell: csvCell,
     labelKey: labelKey, looksAlike: looksAlike, pairKey: pairKey, middle: middle, addUp: addUp, learnerSeries: learnerSeries, wrongAnswers: wrongAnswers,
     summaryCsv: summaryCsv, makeBundle: makeBundle, readBundle: readBundle, cleanSession: cleanSession,
+    dayText: dayText, cleanGoalDates: cleanGoalDates, cleanPaper: cleanPaper,
   };
   if (root) root.AlloPacketResults = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

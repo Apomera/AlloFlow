@@ -170,7 +170,7 @@ describe('1. the group in two tables', () => {
       expect(table.querySelector('tbody tr').firstElementChild.tagName).toBe('TH');
     }
     // Every row of a check shows its score: "8" and its form.
-    expect(page.table(checks).map((row) => row[3])).toEqual(Array(6).fill('8 / form C'));
+    expect(page.table(checks).map((row) => row[3])).toEqual(Array(6).fill('8 / version C'));
   });
 
   it('holds the name column in view, and shows a cue only on a table wider than its box', async () => {
@@ -260,9 +260,9 @@ describe('3. "latest" is the latest result with a score, in the table and in the
     page.$('show-results').click();
     const rows = page.table(page.tables()[0]);
     const cell = (name) => rows.find((row) => row[0] === name)[3];
-    expect(cell('BlueHeron7')).toBe('11 / form A / Later, Nov 24: no score (stopped early)');
-    expect(cell('SilverBear1')).toBe('No score / form A / stopped early');
-    expect(cell('AmberLynx9')).toBe('13 / form A');
+    expect(cell('BlueHeron7')).toBe('11 / version A / Later, Nov 24: no score (stopped early)');
+    expect(cell('SilverBear1')).toBe('No score / version A / stopped early');
+    expect(cell('AmberLynx9')).toBe('13 / version A');
     // The middle of the group counts the same results: one for each student, the scored one.
     const values = ['AmberLynx9', 'BlueHeron7', 'CopperElk4', 'GoldFinch5', 'GrayOwl4'].map((name) => Number(cell(name).split(' / ')[0]));
     const middle = page.$('middles').querySelector('.middle');
@@ -283,7 +283,7 @@ describe('3. "latest" is the latest result with a score, in the table and in the
     await page.drop([page.file(csvOf(check({ sid: 'u-1', untimed: true, elapsedS: 300, done: 8 })), 'u.csv')]);
     page.$('show-results').click();
     expect(model.checks.map((c) => c.label)).toEqual(['Math Fluency (grade 2), untimed']);
-    expect(page.table(page.tables()[0])[0][3]).toBe('No score / form A / no clock: 8 of 8 right');
+    expect(page.table(page.tables()[0])[0][3]).toBe('No score / version A / no clock: 8 of 8 right');
   });
 });
 
@@ -415,7 +415,8 @@ describe('7. smaller fixes', () => {
   });
   it('the top link names the makers and leads to all of them', () => {
     const link = new JSDOM(read('packets-results.html')).window.document.querySelector('.top-link');
-    expect([link.textContent, link.getAttribute('href')]).toEqual(['Make Word Sounds, math or vocabulary files', 'packets.html']);
+    // 2026-11-17: "Make a file", since the list of kinds left makers out; it still leads to all of them.
+    expect([link.textContent, link.getAttribute('href')]).toEqual(['Make a file', 'packets.html']);
   });
   it('Class Analytics names its files with the local date, not the UTC one', () => {
     const named = analytics.split('\n').filter((line) => /\.download = /.test(line));

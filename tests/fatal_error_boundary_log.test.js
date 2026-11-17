@@ -13,8 +13,9 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { sliceBetween } from './helpers/anchored_slice.js';
 
-const ANTI = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+const ANTI =readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
 
 // Isolate the class so a match elsewhere in a 44k-line file cannot make a test pass by accident.
 const boundary = (() => {
@@ -23,6 +24,9 @@ const boundary = (() => {
   const next = ANTI.indexOf('\n// ── KokoroOfferModal', start);
   return ANTI.slice(start, next > -1 ? next : start + 20000);
 })();
+
+// The crash screen's "Clear cached data" code: the keep-list and the wipe function it calls.
+const wipeCode = sliceBetween(ANTI, 'var ALLO_WIPE_KEEP_RE', 'class AlloFlowErrorBoundary', { file: 'AlloFlowANTI.txt', label: 'crash-screen wipe' });
 
 describe('fatal error boundary', () => {
   it('offers a way to save the error log', () => {
@@ -55,8 +59,11 @@ describe('fatal error boundary', () => {
 
   // The regression that motivated all of this.
   it('does not clear storage as the primary action, and confirms before doing it at all', () => {
-    const clearIdx = boundary.indexOf('localStorage.clear()');
+    // Since 2026-11-16 the wipe is one function above the class (it keeps clinical records
+    // and the legal hold; tests/pass5_zero_ux_security.test.js runs it). The screen calls it.
+    const clearIdx = boundary.indexOf('_alloWipeCachedDeviceData()');
     const downloadIdx = boundary.indexOf('Download error log');
+    expect(wipeCode, 'the wipe function clears local storage').toContain('localStorage.clear()');
     expect(clearIdx, 'clear-data path missing entirely').toBeGreaterThan(-1);
     expect(downloadIdx, 'download must come before the destructive option').toBeLessThan(clearIdx);
     expect(boundary).toMatch(/window\.confirm\(/);
@@ -68,8 +75,12 @@ describe('fatal error boundary', () => {
     // The record is the reason the user is on this screen; clearing it with everything else
     // would throw away the one thing worth keeping.
     expect(boundary).toMatch(/alloflow_last_crash/);
-    const wipe = boundary.slice(boundary.indexOf('localStorage.clear()') - 400, boundary.indexOf('localStorage.clear()') + 400);
-    expect(wipe).toMatch(/keep/);
+    // The keep-list is applied around the clear: read first, clear, then written back.
+    expect(wipeCode).toMatch(/ALLO_WIPE_KEEP_RE = \/\^\(\?:alloflow_last_crash\|/);
+    const clearAt = wipeCode.indexOf('localStorage.clear()');
+    expect(wipeCode.indexOf('ALLO_WIPE_KEEP_RE.test(k)')).toBeGreaterThan(-1);
+    expect(wipeCode.indexOf('ALLO_WIPE_KEEP_RE.test(k)')).toBeLessThan(clearAt);
+    expect(wipeCode.indexOf('localStorage.setItem(kept[j][0], kept[j][1])')).toBeGreaterThan(clearAt);
   });
 
   it('persists the crash before any button is pressed', () => {

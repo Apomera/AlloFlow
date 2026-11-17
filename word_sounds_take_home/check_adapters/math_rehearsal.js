@@ -132,6 +132,8 @@ module.exports = {
           phase = 'type';
           set('');
           draw();
+          // The answer is covered again: the feedback line that showed it is cleared too.
+          if (typeof ctx.feedback === 'function') ctx.feedback('');
           focusPad();
           ctx.announce(L.math_rehearsal_again);
         } else {

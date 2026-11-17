@@ -314,6 +314,27 @@
     return '';
   }
   function headOf(bank, word) { try { return bank && typeof bank.head === 'function' ? bank.head(word) || null : null; } catch (_) { return null; } }
+  // True when base is what the regular endings of key give (cats: cat, stories: story, hopped: hop). These are the
+  // rules of head() in packets_vocab_bank_en.js; anything else the bank finds comes from its table of irregular forms.
+  function regularFormOf(key, base) {
+    var k = keyOf(key), c = [];
+    if (/ies$/.test(k)) c.push(k.slice(0, -3) + 'y');
+    if (/(s|x|z|ch|sh|o)es$/.test(k)) c.push(k.slice(0, -2));
+    if (/[^s]s$/.test(k)) c.push(k.slice(0, -1));
+    if (/ied$/.test(k)) c.push(k.slice(0, -3) + 'y');
+    if (/ed$/.test(k)) { c.push(k.slice(0, -2), k.slice(0, -1)); if (/([bdgklmnprt])\1ed$/.test(k)) c.push(k.slice(0, -3)); }
+    if (/ing$/.test(k)) { c.push(k.slice(0, -3), k.slice(0, -3) + 'e'); if (/([bdgklmnprt])\1ing$/.test(k)) c.push(k.slice(0, -4)); }
+    return c.indexOf(keyOf(base)) >= 0;
+  }
+  // The word a typed NAME would have been read as, or ''. A first capital on a word the bank knows only as an
+  // irregular form of another word is taken as a name: "Maria" is in that table as a form of "mare" and the file
+  // asked students for "A female horse" (found 2026-11-16). "Cats" and "Habitats" still find cat and habitat.
+  function nameReadAs(bank, word) {
+    var first = text(word).charAt(0);
+    if (!first || first === first.toLowerCase()) return '';
+    var head = headOf(bank, word);
+    return head && keyOf(head) !== keyOf(word) && !regularFormOf(word, head) ? keyOf(head) : '';
+  }
   // A first capital stays a first capital: "Habitats" for a list typed "Habitat".
   function withCase(out, like) { var c = text(like).charAt(0); return c && c !== c.toLowerCase() ? out.charAt(0).toUpperCase() + out.slice(1) : out; }
   // What the bank says about a word, for writing it in a form: { base, pos, def } of the sense id given or of its first
@@ -448,9 +469,11 @@
     list = list.filter(function (w) { var k = keyOf(w); if (seen[k]) return false; seen[k] = true; return true; }).slice(0, MAX_WORDS);
     var rows = list.map(function (word) {
       var key = keyOf(word), mine = isObject(wordEdits[key]) ? wordEdits[key] : {};
-      var senses = sensesOf(bank, word);
+      var asName = nameReadAs(bank, word);
+      var senses = asName ? [] : sensesOf(bank, word);
       var sense = senses.filter(function (s) { return s.id === mine.sense; })[0] || senses[0] || null;
       var row = { word: word, key: key, inBank: senses.length > 0, senses: senses, sense: sense, own: !sense, base: '' };
+      if (asName) row.asName = asName;
       if (sense) {
         var changed = isObject(senseEdits[sense.id]) ? senseEdits[sense.id] : {};
         row.senseId = sense.id;
@@ -940,7 +963,10 @@
       credits.push('Recordings of ' + media.recorded.join(', ') + ': made ahead of time with Kokoro-82M text-to-speech (voice af_heart), a machine voice. They passed automatic checks; no person has listened to each one.');
       labels.about_never = 'It never uses the microphone or the camera. It has no cookies and runs no AI. Read aloud plays a recording made ahead of time for some words. For the rest it uses the voice that is built into this device, and only a voice that runs on the device.';
     }
-    var html = loader.buildHtml(JSON.parse(JSON.stringify(lesson)), { core: check ? undefined : EXACT, teacherCode: check ? code || null : undefined, labels: labels, attributions: credits });
+    var sent = JSON.parse(JSON.stringify(lesson));
+    // Practice: the missed questions once more at the end (o.repeatMissed, 2026-11-17). Never in a check.
+    if (!check && o.repeatMissed === true) sent.repeatMissed = true;
+    var html = loader.buildHtml(sent, { core: check ? undefined : EXACT, teacherCode: check ? code || null : undefined, labels: labels, attributions: credits });
     var read = lesson.blocks.some(function (b) { return b.items.some(function (it) { return it.read === true; }); });
     // The kinds in the page's order (the file may ask them in another: see lessonFromVocab).
     var made = lesson.blocks.map(function (b) { return typeOf(b.activity).id; });

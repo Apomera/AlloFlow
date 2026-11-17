@@ -9,64 +9,75 @@
   var LESSON_SCHEMA = 'alloflow-take-home-lesson/v2';
   var PLAYER = 'alloflow-word-sounds-take-home/2';
 
+  // Stroop ink colors (2026-11-17). Each is at least 3:1 against a white surface (#ffffff) and a light gray one
+  // (#f3f4f6), by the WCAG relative-luminance formula:
+  //   red  #ef4444  3.76 on white, 3.42 on gray (kept)
+  //   blue #3b82f6  3.68 on white, 3.34 on gray (kept)
+  //   green #15803d 5.02 on white, 4.56 on gray (was #22c55e: 2.28 and 2.07)
+  //   gold #a16207  4.92 on white, 4.47 on gray (was #facc15: 1.53 and 1.39)
+  // The color items carry no shape badge any more. The old badge was tied one-to-one to the ink
+  // (red circle, blue triangle, green square, gold star), so a child could answer by the shape and skip
+  // the color. A badge only on matching items would tell the child which items match, so none has one.
+  var INK = { red: '#ef4444', blue: '#3b82f6', green: '#15803d', gold: '#a16207' };
+
   var MODES = [
     {
       id: 'confusable_letters',
-      title: 'Confusable letters (b / d / p / q)',
+      title: 'Letters that look alike (b, d, p, q)',
       category: 'letter',
       items: ['b', 'd', 'p', 'q', 'm', 'n', 'u', 'i', 'j', 'l'],
     },
     {
       id: 'letters_lower',
-      title: 'Lowercase letters (a-z)',
+      title: 'Lowercase letters (a to z)',
       category: 'letter',
       items: 'a b c d e f g h i j k l m n o p q r s t u v w x y z'.split(' '),
     },
     {
       id: 'letters_upper',
-      title: 'Uppercase letters (A-Z)',
+      title: 'Uppercase letters (A to Z)',
       category: 'letter',
       items: 'A B C D E F G H I J K L M N O P Q R S T U V W X Y Z'.split(' '),
     },
     {
       id: 'letter_sounds',
-      title: 'Letter and digraph sounds',
+      title: 'Letter sounds (a, b, sh, ch, th)',
       category: 'sound',
       items: 'a b c d e f g h i k l m n o p r s t u sh ch th'.split(' '),
     },
     {
       id: 'bigrams_rimes',
-      title: 'Letter teams and rimes',
+      title: 'Letter teams and word endings (sh, st, at, ing)',
       category: 'sound',
       items: ['th', 'sh', 'ch', 'wh', 'ck', 'st', 'tr', 'at', 'an', 'ing'],
     },
     {
       id: 'vowel_teams_r',
-      title: 'Vowel teams and r-controlled vowels',
+      title: 'Vowel teams and vowels with r (ee, oa, ar, air)',
       category: 'sound',
       items: ['ar', 'or', 'er', 'ir', 'ur', 'ee', 'oa', 'ay', 'ow', 'oy', 'oo', 'aw', 'air', 'ear'],
     },
     {
       id: 'sight_words',
-      title: 'High-frequency sight words',
+      title: 'Common sight words (all, are, come)',
       category: 'word',
       items: ['all', 'are', 'away', 'been', 'both', 'busy', 'buy', 'call', 'cold', 'come', 'does', 'done', 'down', 'also'],
     },
     {
       id: 'sight_words_g1',
-      title: 'Grade 1 sight words (after, again, every, from)',
+      title: 'Grade 1 sight words (after, again, every)',
       category: 'word',
       items: ['after', 'again', 'ask', 'could', 'every', 'fly', 'from', 'give', 'going', 'had', 'has', 'her', 'him', 'his'],
     },
     {
       id: 'sight_words_g2_3',
-      title: 'Grades 2-3 sight words (always, because, together)',
+      title: 'Grades 2 and 3 sight words (always, because)',
       category: 'word',
       items: ['always', 'around', 'because', 'before', 'best', 'both', 'carry', 'clean', 'laugh', 'light', 'myself', 'never', 'only', 'together'],
     },
     {
       id: 'multisyllable_words',
-      title: 'Multisyllabic decoding words (planet, habitat, volcano)',
+      title: 'Longer words to sound out (planet, volcano)',
       category: 'word',
       items: ['planet', 'magnet', 'rabbit', 'basket', 'sunset', 'picnic', 'napkin', 'velvet', 'habitat', 'volcano', 'continent', 'predator'],
     },
@@ -78,19 +89,19 @@
     },
     {
       id: 'digits_single',
-      title: 'Single digits (0-9)',
+      title: 'Numbers 0 to 9',
       category: 'number',
       items: '0 1 2 3 4 5 6 7 8 9'.split(' '),
     },
     {
       id: 'digits_teen_decade',
-      title: 'Teens and decades (12 / 21, 13 / 30)',
+      title: 'Teens and tens (13 and 30)',
       category: 'number',
       items: ['12', '21', '13', '30', '14', '40', '15', '50', '16', '60', '17', '70', '18', '80', '19', '90'],
     },
     {
       id: 'math_make_10',
-      title: 'Make-10 partners (6 + ? = 10)',
+      title: 'Make 10 (6 + ? = 10)',
       category: 'number',
       items: [
         { word: '9 + ? = 10', answer: '1', category: 'number' },
@@ -107,7 +118,7 @@
     },
     {
       id: 'math_doubles',
-      title: 'Doubles and near-doubles (6 + 6, 6 + 7)',
+      title: 'Doubles and near doubles (6 + 6, 6 + 7)',
       category: 'number',
       items: [
         { word: '2 + 2', answer: '4', category: 'number' },
@@ -126,7 +137,7 @@
     },
     {
       id: 'math_mult_2_5_10',
-      title: 'Foundational 2s, 5s, and 10s (5 x 4, 10 x 6)',
+      title: 'Times 2, 5 and 10 (5 x 4, 10 x 6)',
       category: 'number',
       items: [
         { word: '2 x 3', answer: '6', category: 'number' },
@@ -145,7 +156,7 @@
     },
     {
       id: 'math_squares',
-      title: 'Multiplication squares (2 x 2 through 10 x 10)',
+      title: 'Square facts (2 x 2 to 10 x 10)',
       category: 'number',
       items: [
         { word: '2 x 2', answer: '4', category: 'number' },
@@ -161,7 +172,7 @@
     },
     {
       id: 'subitize_dots',
-      title: 'Subitizing dots (1-9)',
+      title: 'Quick dot counting (1 to 9)',
       category: 'number',
       items: [1, 2, 3, 4, 5, 6, 7, 8, 9].map(function (n) {
         return { word: String(n) + ' dots', answer: String(n), dots: n };
@@ -169,40 +180,40 @@
     },
     {
       id: 'ras_switch',
-      title: 'Alternating letters and numbers (RAS)',
+      title: 'Quick naming: letters and numbers in turn',
       category: 'mixed',
       alternating: true,
       items: ['a', '3', 'b', '7', 'd', '4', 'p', '9', 'q', '2', 'm', '6', 'n', '8', 's', '5'],
     },
     {
       id: 'ras_triple',
-      title: '3-Way Alternating letters, numbers, and colors (RAS)',
+      title: 'Quick naming: letters, numbers and colors in turn',
       category: 'mixed',
       alternating: 'triple',
       items: [
         { word: 'b', answer: 'b', category: 'letter' },
         { word: '3', answer: '3', category: 'number' },
-        { word: 'RED', answer: 'red', category: 'color_stroop', congruent: true, stroopInk: '#ef4444', stroopShape: '●', promptRule: 'Name ink color & shape' },
+        { word: 'RED', answer: 'red', category: 'color_stroop', congruent: true, stroopInk: INK.red, promptRule: 'Name the ink color' },
         { word: 'd', answer: 'd', category: 'letter' },
         { word: '7', answer: '7', category: 'number' },
-        { word: 'BLUE', answer: 'blue', category: 'color_stroop', congruent: true, stroopInk: '#3b82f6', stroopShape: '▲', promptRule: 'Name ink color & shape' },
+        { word: 'BLUE', answer: 'blue', category: 'color_stroop', congruent: true, stroopInk: INK.blue, promptRule: 'Name the ink color' },
         { word: 'p', answer: 'p', category: 'letter' },
         { word: '4', answer: '4', category: 'number' },
-        { word: 'GREEN', answer: 'green', category: 'color_stroop', congruent: true, stroopInk: '#22c55e', stroopShape: '■', promptRule: 'Name ink color & shape' },
+        { word: 'GREEN', answer: 'green', category: 'color_stroop', congruent: true, stroopInk: INK.green, promptRule: 'Name the ink color' },
         { word: 'q', answer: 'q', category: 'letter' },
         { word: '9', answer: '9', category: 'number' },
-        { word: 'GOLD', answer: 'gold', category: 'color_stroop', congruent: true, stroopInk: '#facc15', stroopShape: '★', promptRule: 'Name ink color & shape' },
+        { word: 'GOLD', answer: 'gold', category: 'color_stroop', congruent: true, stroopInk: INK.gold, promptRule: 'Name the ink color' },
         { word: 'm', answer: 'm', category: 'letter' },
         { word: '6', answer: '6', category: 'number' },
-        { word: 'BLUE', answer: 'red', category: 'color_stroop', congruent: false, stroopInk: '#ef4444', stroopShape: '●', promptRule: 'Name ink color & shape' },
+        { word: 'BLUE', answer: 'red', category: 'color_stroop', congruent: false, stroopInk: INK.red, promptRule: 'Name the ink color' },
         { word: 'n', answer: 'n', category: 'letter' },
         { word: '8', answer: '8', category: 'number' },
-        { word: 'RED', answer: 'blue', category: 'color_stroop', congruent: false, stroopInk: '#3b82f6', stroopShape: '▲', promptRule: 'Name ink color & shape' },
+        { word: 'RED', answer: 'blue', category: 'color_stroop', congruent: false, stroopInk: INK.blue, promptRule: 'Name the ink color' },
       ],
     },
     {
       id: 'flanker_letters',
-      title: 'Flanker crowd letters (focus middle in d b p q)',
+      title: 'Middle letter (flanker): b, d, p, q',
       category: 'flanker',
       items: [
         { word: 'bbbbb', answer: 'b', congruent: true, flankerCenter: 2, promptRule: 'Middle letter only' },
@@ -216,7 +227,7 @@
         { word: 'nnnnn', answer: 'n', congruent: true, flankerCenter: 2, promptRule: 'Middle letter only' },
         { word: 'uunuu', answer: 'n', congruent: false, flankerCenter: 2, promptRule: 'Middle letter only' },
         { word: 'uuuuu', answer: 'u', congruent: true, flankerCenter: 2, promptRule: 'Middle letter only' },
-        { word: 'nnuun', answer: 'u', congruent: false, flankerCenter: 2, promptRule: 'Middle letter only' },
+        { word: 'nnunn', answer: 'u', congruent: false, flankerCenter: 2, promptRule: 'Middle letter only' },
         { word: 'mmmmm', answer: 'm', congruent: true, flankerCenter: 2, promptRule: 'Middle letter only' },
         { word: 'wwmww', answer: 'm', congruent: false, flankerCenter: 2, promptRule: 'Middle letter only' },
         { word: 'wwwww', answer: 'w', congruent: true, flankerCenter: 2, promptRule: 'Middle letter only' },
@@ -225,7 +236,7 @@
     },
     {
       id: 'quantity_stroop',
-      title: 'Quantity Stroop (count dots, ignore numeral)',
+      title: 'Count the dots, not the number',
       category: 'quantity_stroop',
       items: [
         { word: '2', answer: '2', dots: 2, congruent: true, promptRule: 'Count dots, ignore digit' },
@@ -244,7 +255,7 @@
     },
     {
       id: 'number_size_stroop',
-      title: 'Number-Size Stroop (greater value vs. size)',
+      title: 'Bigger number, not bigger print',
       category: 'size_stroop',
       items: [
         { word: '2 | 8', answer: '8', congruent: true, sizePair: { left: '2', right: '8', leftScale: 0.68, rightScale: 1.45, pick: 'value' }, promptRule: 'Pick greater number value' },
@@ -263,30 +274,30 @@
     },
     {
       id: 'color_word_stroop',
-      title: 'Color-Shape Stroop (name ink color & shape badge)',
+      title: 'Color or word (Stroop): name the ink color',
       category: 'color_stroop',
       items: [
-        { word: 'RED', answer: 'red', congruent: true, stroopInk: '#ef4444', stroopShape: '●', promptRule: 'Name ink color & shape' },
-        { word: 'BLUE', answer: 'blue', congruent: true, stroopInk: '#3b82f6', stroopShape: '▲', promptRule: 'Name ink color & shape' },
-        { word: 'GREEN', answer: 'green', congruent: true, stroopInk: '#22c55e', stroopShape: '■', promptRule: 'Name ink color & shape' },
-        { word: 'GOLD', answer: 'gold', congruent: true, stroopInk: '#facc15', stroopShape: '★', promptRule: 'Name ink color & shape' },
-        { word: 'BLUE', answer: 'red', congruent: false, stroopInk: '#ef4444', stroopShape: '●', promptRule: 'Name ink color & shape' },
-        { word: 'GREEN', answer: 'red', congruent: false, stroopInk: '#ef4444', stroopShape: '●', promptRule: 'Name ink color & shape' },
-        { word: 'GOLD', answer: 'red', congruent: false, stroopInk: '#ef4444', stroopShape: '●', promptRule: 'Name ink color & shape' },
-        { word: 'RED', answer: 'blue', congruent: false, stroopInk: '#3b82f6', stroopShape: '▲', promptRule: 'Name ink color & shape' },
-        { word: 'GREEN', answer: 'blue', congruent: false, stroopInk: '#3b82f6', stroopShape: '▲', promptRule: 'Name ink color & shape' },
-        { word: 'GOLD', answer: 'blue', congruent: false, stroopInk: '#3b82f6', stroopShape: '▲', promptRule: 'Name ink color & shape' },
-        { word: 'RED', answer: 'green', congruent: false, stroopInk: '#22c55e', stroopShape: '■', promptRule: 'Name ink color & shape' },
-        { word: 'BLUE', answer: 'green', congruent: false, stroopInk: '#22c55e', stroopShape: '■', promptRule: 'Name ink color & shape' },
-        { word: 'GOLD', answer: 'green', congruent: false, stroopInk: '#22c55e', stroopShape: '■', promptRule: 'Name ink color & shape' },
-        { word: 'RED', answer: 'gold', congruent: false, stroopInk: '#facc15', stroopShape: '★', promptRule: 'Name ink color & shape' },
-        { word: 'BLUE', answer: 'gold', congruent: false, stroopInk: '#facc15', stroopShape: '★', promptRule: 'Name ink color & shape' },
-        { word: 'GREEN', answer: 'gold', congruent: false, stroopInk: '#facc15', stroopShape: '★', promptRule: 'Name ink color & shape' },
+        { word: 'RED', answer: 'red', congruent: true, stroopInk: INK.red, promptRule: 'Name the ink color' },
+        { word: 'BLUE', answer: 'blue', congruent: true, stroopInk: INK.blue, promptRule: 'Name the ink color' },
+        { word: 'GREEN', answer: 'green', congruent: true, stroopInk: INK.green, promptRule: 'Name the ink color' },
+        { word: 'GOLD', answer: 'gold', congruent: true, stroopInk: INK.gold, promptRule: 'Name the ink color' },
+        { word: 'BLUE', answer: 'red', congruent: false, stroopInk: INK.red, promptRule: 'Name the ink color' },
+        { word: 'GREEN', answer: 'red', congruent: false, stroopInk: INK.red, promptRule: 'Name the ink color' },
+        { word: 'GOLD', answer: 'red', congruent: false, stroopInk: INK.red, promptRule: 'Name the ink color' },
+        { word: 'RED', answer: 'blue', congruent: false, stroopInk: INK.blue, promptRule: 'Name the ink color' },
+        { word: 'GREEN', answer: 'blue', congruent: false, stroopInk: INK.blue, promptRule: 'Name the ink color' },
+        { word: 'GOLD', answer: 'blue', congruent: false, stroopInk: INK.blue, promptRule: 'Name the ink color' },
+        { word: 'RED', answer: 'green', congruent: false, stroopInk: INK.green, promptRule: 'Name the ink color' },
+        { word: 'BLUE', answer: 'green', congruent: false, stroopInk: INK.green, promptRule: 'Name the ink color' },
+        { word: 'GOLD', answer: 'green', congruent: false, stroopInk: INK.green, promptRule: 'Name the ink color' },
+        { word: 'RED', answer: 'gold', congruent: false, stroopInk: INK.gold, promptRule: 'Name the ink color' },
+        { word: 'BLUE', answer: 'gold', congruent: false, stroopInk: INK.gold, promptRule: 'Name the ink color' },
+        { word: 'GREEN', answer: 'gold', congruent: false, stroopInk: INK.gold, promptRule: 'Name the ink color' },
       ],
     },
     {
       id: 'custom',
-      title: 'Own symbol list',
+      title: 'My own list',
       category: 'letter',
       items: ['b', 'd', 'p', 'q', '12', '21'],
     },
@@ -630,11 +641,18 @@
 
     var isCheck = plan.packetMode === 'check';
     if (!isCheck && Object.keys(audio).length > 0) {
-      var voiceCredit = text(o.voiceCredit).trim() || 'Machine-made recordings: Kokoro-82M text-to-speech (voice af_heart)';
-      if (voiceCredit && !seenCredits[voiceCredit]) {
-        seenCredits[voiceCredit] = true;
-        attributions.push(voiceCredit);
-      }
+      // 2026-11-17: letter, sound and sight-word clips come from audio_bank/ (made ahead of time with Google Gemini),
+      // other word clips from word_audio_shards/ (Kokoro). Both are named, as the Word Sounds builder does.
+      var voiceCredits = text(o.voiceCredit).trim() ? [text(o.voiceCredit).trim()] : [
+        'Machine-made recordings: Kokoro-82M text-to-speech (voice af_heart)',
+        'Machine-made recordings: Google Gemini text-to-speech, made ahead of time',
+      ];
+      voiceCredits.forEach(function (voiceCredit) {
+        if (!seenCredits[voiceCredit]) {
+          seenCredits[voiceCredit] = true;
+          attributions.push(voiceCredit);
+        }
+      });
     }
     var items = plan.cards.map(function (card, i) {
       var raw = {
@@ -670,7 +688,7 @@
     var cleanTitle = text(o.title).replace(/\s+/g, ' ').trim().slice(0, 120);
     var defaultTitle = isCheck
       ? ('Symbol naming check: ' + plan.modeTitle + (o.untimed === true ? ' (untimed)' : ''))
-      : ('Symbol Runner: ' + plan.modeTitle + (plan.control === 'lockon' ? ' (lock-on)' : ''));
+      : ('Symbol Runner: ' + plan.modeTitle + (plan.control === 'lockon' ? ' (aim first)' : ''));
     var title = cleanTitle || defaultTitle.slice(0, 120);
     var untimed = isCheck && o.untimed === true;
     var limit = Number(o.timeLimitS) > 0 ? Math.min(600, Math.round(Number(o.timeLimitS))) : 60;

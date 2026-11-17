@@ -286,7 +286,7 @@
         { display: 'nnnnn', answer: 'n', category: 'flanker', congruent: true, flankerCenter: 2, promptRule: 'Middle letter only' },
         { display: 'uunuu', answer: 'n', category: 'flanker', congruent: false, flankerCenter: 2, promptRule: 'Middle letter only' },
         { display: 'uuuuu', answer: 'u', category: 'flanker', congruent: true, flankerCenter: 2, promptRule: 'Middle letter only' },
-        { display: 'nnuun', answer: 'u', category: 'flanker', congruent: false, flankerCenter: 2, promptRule: 'Middle letter only' },
+        { display: 'nnunn', answer: 'u', category: 'flanker', congruent: false, flankerCenter: 2, promptRule: 'Middle letter only' },
         { display: 'mmmmm', answer: 'm', category: 'flanker', congruent: true, flankerCenter: 2, promptRule: 'Middle letter only' },
         { display: 'wwmww', answer: 'm', category: 'flanker', congruent: false, flankerCenter: 2, promptRule: 'Middle letter only' },
         { display: 'wwwww', answer: 'w', category: 'flanker', congruent: true, flankerCenter: 2, promptRule: 'Middle letter only' },

@@ -19,6 +19,24 @@
   // for what the data is and is not.
   var DEFAULT_MIN_ZIPF = 3.8;
   var DEFAULT_MIN_BOOKS = 20;
+  // The wider levels (2026-11-16), for older students, enrichment and spelling practice. They are NOT grade levels: no
+  // curriculum document is behind them, only how widely a word is used in the children's books. A word is in a wider
+  // level when it is not familiar (the rule above), is on the list of words read and kept for this (row.wider), and
+  //   'challenging': is in at least WIDER_MIN_BOOKS of the 400 books;   'advanced': is in fewer, or in none.
+  var WIDER_LEVELS = ['challenging', 'advanced'];
+  var WIDER_MIN_BOOKS = 10;
+  // How long a practice word may be. The picker keeps to GRADE_MAX_LETTERS at a grade level (and with no level), as it
+  // always has; at a wider level, and for a word a teacher types, the limit is MAX_LETTERS (2026-11-16: 10 until then,
+  // which kept "photosynthesis" and 3,200 other read-and-kept words out). Each activity's screen was checked on a
+  // phone with words of 11 to 15 letters before the limit moved (C:\tmp\overnight_1116\advanced\long_words_probe.cjs).
+  var GRADE_MAX_LETTERS = 10;
+  var MAX_LETTERS = 15;
+  // A word that can be a practice TARGET: letters only, 2 to MAX_LETTERS letters, with a vowel. (The app's own rule,
+  // isUnusableAsPhonicsWord below, still says 10: it is a copy of the app's and filters the pools of wrong answers.)
+  function unusableTarget(word) {
+    var v = String(word == null ? '' : word).trim();
+    return !/^[a-zA-Z]+$/.test(v) || v.length < 2 || v.length > MAX_LETTERS || !/[aeiouy]/i.test(v);
+  }
   // The older rule (place in the reading-library frequency list, built from old books). It applies
   // only when the word list carries no child-book column, or when the caller passes maxRank.
   var DEFAULT_MAX_RANK = 4000;
@@ -376,10 +394,12 @@
 
   // Choices (2026-11-13, the maker's "Choices": easy, medium or all). Below Hard the app shows fewer choices, with the
   // core's own functions: Find Sounds asks the first sound (Easy) or the first or last (Medium)
-  // (isolationPositions) and shows 3 or 4 sounds; Blend Sounds and Rhyme Time show 3 or 4 words (choiceLimit +
-  // trimChoices, as trimSoundChoices in word_sounds_module.js: the answer stays, far choices first, Medium keeps one
-  // near one); Sound Counting shows the count with two either side (Easy) or 1-8 (Medium) (countingChoices). All
-  // (and no level) leaves every board as built. Seeded by the version and the word, so a file is the same each time.
+  // (isolationPositions) and shows 3 or 4 sounds; Rhyme Time shows 3 or 4 words (choiceLimit + trimChoices, as
+  // trimSoundChoices in word_sounds_module.js: the answer stays, far choices first, Medium keeps one near one);
+  // Blend Sounds shows 3 words at Easy and every word (6) at Medium (the owner, 2026-11-16: only Easy trims it; the
+  // app still shows 4 at Medium); Sound Counting shows the count with two either side (Easy) or 1-8 (Medium)
+  // (countingChoices). All (and no level) leaves every board as built. Seeded by the version and the word, so a file
+  // is the same each time.
   var CHOICE_LEVELS = ['easy', 'medium', 'all'];
   function fewerChoices(boards, level, word, phonemes, core, seed) {
     var trim = function (options, answer, same, closeness) {
@@ -410,6 +430,7 @@
       iso.options = trim(iso.options, iso.correctSound, same, core.soundCloseness);
     }
     ['blending', 'rhyming'].forEach(function (id) {
+      if (id === 'blending' && level !== 'easy') return;
       var board = boards[id];
       if (board && Array.isArray(board.options) && board.answer && board.options.indexOf(board.answer) >= 0) board.options = trim(board.options, board.answer, undefined, core.wordCloseness);
     });
@@ -1041,7 +1062,7 @@
 
   var SOURCE_NAMES = { recorded: 'recorded', kokoro: 'Kokoro bank', spoken: 'spoken now', teacher: 'teacher recording' };
   // teacherWords: the teacher's own recordings of practice words (opts.own, checked). They come first.
-  function createAudio(banks, speak, toWav, allowUnconverted, teacherWords) {
+  function createAudio(banks, speak, toWav, allowUnconverted, teacherWords, toMp3) {
     var b = banks || {}, gap = b.gapFill || {};
     var layers = {
       words: [[teacherWords || {}, 'teacher'], [b.words || {}, 'recorded'], [wordsOf(b.kokoroWords), 'kokoro']],
@@ -1079,6 +1100,13 @@
           else out.status = typeof toWav === 'function' ? 'convert_failed' : 'needs_converter';
           return out;
         });
+      }).then(function (out) {
+        // 2026-11-17: a WAV made smaller as MP3 when the page gives an encoder (about 8 to 10 times smaller). Else the WAV.
+        if (out.status !== 'ready' || typeof toMp3 !== 'function' || !/^data:audio\/(?:wav|x-wav|wave)[;,]/i.test(out.uri)) return out;
+        return Promise.resolve().then(function () { return toMp3(out.uri, { category: category, key: key }); }).then(function (mp3) {
+          if (typeof mp3 === 'string' && /^data:audio\/mpeg;base64,/i.test(mp3)) { out.uri = mp3; out.format = 'audio/mpeg (from ' + out.format + ')'; }
+          return out;
+        }, function () { return out; });
       }).then(function (out) { found[id] = out; return out; });
     };
     return { hasClip: hasClip, resolve: resolve, found: found };
@@ -1145,7 +1173,8 @@
   // A student's code name, as a file may carry it: letters (any language), digits, spaces, . _ and -, at most 40.
   // Nothing else, so "Look inside a file" never reads a code name as code.
   function codeName(value) {
-    return (typeof value === 'string' ? value : '').normalize('NFC').replace(/[^\p{L}\p{M}\p{N} ._-]+/gu, '').replace(/\s+/g, ' ').trim().slice(0, 40).trim();
+    var t = typeof value === 'string' ? value : '';
+    try { return t.normalize('NFC').replace(/[^\p{L}\p{M}\p{N} ._-]+/gu, '').replace(/\s+/g, ' ').trim().slice(0, 40).trim(); } catch (_) { return t.replace(/[^A-Za-z0-9 ._-]+/g, '').trim().slice(0, 40); }
   }
   // The file with a code name in its manifest (key "learner"), which the file fills in when it opens. Only the
   // data block changes; the script and its hash do not. buildPacket ends with exactly this, so a file made for
@@ -1198,7 +1227,7 @@
     asked.forEach(function (word) {
       if (words.indexOf(word) >= 0) return;
       if (blocked(word)) return except(word, null, 'this word is on the blocklist');
-      if (probeLogic.isUnusableAsPhonicsWord(word)) return except(word, null, 'not a usable practice word (letters only, 2 to 10 letters, with a vowel)');
+      if (unusableTarget(word)) return except(word, null, 'not a usable practice word (letters only, 2 to ' + MAX_LETTERS + ' letters, with a vowel)');
       if (!soundCore.dictionarySounds(word)) return except(word, null, 'not in the sound dictionary');
       if (words.length >= limit) return except(word, null, 'over the length asked for (' + limit + ' words)');
       words.push(word);
@@ -1206,7 +1235,7 @@
     // The teacher's recordings of the practice words, and of no other word.
     var teacherClips = {};
     words.forEach(function (word) { if (own(mine.byWord, word) && mine.byWord[word].clip) teacherClips[core.packAudioKey(word)] = mine.byWord[word].clip; });
-    var audio = createAudio(opts.banks, opts.speak, opts.toWav, !!opts.allowUnconverted, teacherClips);
+    var audio = createAudio(opts.banks, opts.speak, opts.toWav, !!opts.allowUnconverted, teacherClips, opts.toMp3);
     // Answer choices come from the app's own word lists. Blocked and soft words leave that pool, and so
     // do words nobody can say aloud here (no clip in the banks handed in, and no speak), so a choice is
     // never silent. A caller that loads clips on demand loads them for the practice words before it
@@ -1465,6 +1494,8 @@
       }
       // noFile: everything but the file itself (trialBuild asks only which questions there would be).
       if (!lesson || opts.noFile === true) return { html: '', lesson: lesson, manifest: manifest, exceptions: exceptions, sha256: '' };
+      // The missed questions once more at the end, as practice (opts.repeatMissed, 2026-11-17).
+      if (opts.repeatMissed === true) lesson.repeatMissed = true;
       var html = loader.buildHtml(lesson, { core: core, attributions: attributions });
       var extra = { attributions: attributions, notices: notices,
         // choices: the maker's Choices, so "Open a file I made" can read it back (packets_reopen.js).
@@ -1628,6 +1659,8 @@
     var minBooks = typeof c.minBooks === 'number' && c.minBooks >= 0 ? c.minBooks : DEFAULT_MIN_BOOKS;
     var maxRank = c.maxRank > 0 ? c.maxRank : hasChildBooks ? 0 : DEFAULT_MAX_RANK;
     var requireClip = c.requireClip !== false;
+    var level = WIDER_LEVELS.indexOf(c.level) >= 0 ? c.level : '';
+    if (c.level && !level) throw new Error('Unknown level: ' + c.level + ' (use ' + WIDER_LEVELS.join(', ') + ')');
     var stageTable = ctx.stages || wordlist.stages || defaultStageTable();
     var stage = c.stage ? stageOf(c.stage, stageTable) : null;
     if (c.stage && !stageTable) throw new Error('pickWords needs the stage table (wordlist.stages or context.stages) to use a stage');
@@ -1649,9 +1682,11 @@
     };
     // usedOnlyWhenTyped: the blocklist file's [soft] words. The picker never returns one, whatever is asked.
     var reasons = { fitsTheCriteria: 0, blocked: 0, soundsLikeABlockedWord: 0, oneDroppedSoundFromABlockedWord: 0, usedOnlyWhenTyped: 0, britishSpellingOrWord: 0, notFamiliarEnough: 0, noRecording: 0, excluded: 0 };
-    var pool = [], commonness = {};
+    // Counted only when a wider level is asked for, so the answer for a grade level is what it always was.
+    if (level) { reasons.inTheGradeLevels = 0; reasons.notReadForTheWiderLevels = 0; reasons.inTheOtherWiderLevel = 0; }
+    var pool = [], commonness = {}, soundCount = {};
     wordlist.rows().forEach(function (row) {
-      if (!/^[a-z]{2,10}$/.test(row.word) || !/[aeiouy]/.test(row.word)) return;
+      if (!/^[a-z]+$/.test(row.word) || row.word.length < 2 || row.word.length > (level ? MAX_LETTERS : GRADE_MAX_LETTERS) || !/[aeiouy]/.test(row.word)) return;
       if (c.sounds > 0 && row.sounds !== c.sounds) return;
       if (shape && row.shape !== shape) return;
       if (syllables && row.shape.split('V').length - 1 !== syllables) return;
@@ -1678,10 +1713,17 @@
       if (c.avoidDroppedSound && row.dropBlocked) { reasons.oneDroppedSoundFromABlockedWord++; return; }
       if (row.soft) { reasons.usedOnlyWhenTyped++; return; }
       if (row.british && !allowBritish) { reasons.britishSpellingOrWord++; return; }
-      if (!row.known && !(row.zipf >= minZipf && row.books >= minBooks) && !(maxRank > 0 && row.rank > 0 && row.rank <= maxRank)) { reasons.notFamiliarEnough++; return; }
+      var familiar = row.known || (row.zipf >= minZipf && row.books >= minBooks) || (maxRank > 0 && row.rank > 0 && row.rank <= maxRank);
+      if (!level) { if (!familiar) { reasons.notFamiliarEnough++; return; } }
+      else {
+        if (familiar) { reasons.inTheGradeLevels++; return; }
+        if (!row.wider) { reasons.notReadForTheWiderLevels++; return; }
+        if ((level === 'challenging') !== (row.books >= WIDER_MIN_BOOKS)) { reasons.inTheOtherWiderLevel++; return; }
+      }
       if (requireClip && !row.hasClip) { reasons.noRecording++; return; }
       if (exclude[row.word]) { reasons.excluded++; return; }
       pool.push(row.word);
+      soundCount[row.word] = row.sounds;
       // How common the word is: its Zipf in the children's books (CYP-LEX), else its reading-library rank.
       commonness[row.word] = hasChildBooks ? Number(row.zipf) || 0 : row.rank > 0 ? -row.rank : -1e9;
     });
@@ -1692,7 +1734,8 @@
     // each word is (A to Z among equals), then each run of COMMON_BAND words is mixed by the seed, so versions A, B and C
     // differ while a file starts with the words children meet most ("had, red, cat" before "rig, rot"). mix: 'any' mixes
     // the whole pool, as before.
-    var band = c.mix === 'any' ? order.length : COMMON_BAND;
+    // A wider level is mixed whole: most of its words are in few books or none, so "most common first" would be A to Z.
+    var band = c.mix === 'any' || level ? order.length : COMMON_BAND;
     if (band < order.length) order.sort(function (a, b) { return commonness[b] - commonness[a] || (a < b ? -1 : a > b ? 1 : 0); });
     for (var from = 0; from < order.length; from += band) {
       var to = Math.min(order.length, from + band);
@@ -1700,6 +1743,21 @@
         var j = from + Math.floor(random() * (i - from + 1));
         var swap = order[i]; order[i] = order[j]; order[j] = swap;
       }
+    }
+    // spread: 'sounds' (the maker's mix for Sound Counting, 2026-11-16): the words are dealt out by their number of sounds,
+    // fewest first, one of each number in turn, in the order made above within each number. Ten words that were all
+    // two or three sounds long become a mix (2, 3, 4, 5, 2, 3 ...), as far as the pool has them.
+    if (c.spread === 'sounds') {
+      var bySounds = {}, numbers = [], dealt = [];
+      order.forEach(function (word) { var n = soundCount[word]; if (!bySounds[n]) { bySounds[n] = []; numbers.push(n); } bySounds[n].push(word); });
+      numbers.sort(function (a, b) { return a - b; });
+      // Words of 2 to 6 sounds first: a one-sound word ("or") and an eight-sound word ("themselves") are poor counting
+      // words. They follow, dealt the same way, so a small pool still gives every word it has.
+      [numbers.filter(function (n) { return n >= 2 && n <= 6; }), numbers.filter(function (n) { return n < 2 || n > 6; })].forEach(function (set) {
+        var size = set.reduce(function (sum, n) { return sum + bySounds[n].length; }, 0), start = dealt.length;
+        for (var round = 0; dealt.length - start < size; round++) set.forEach(function (n) { if (round < bySounds[n].length) dealt.push(bySounds[n][round]); });
+      });
+      order = dealt;
     }
     var used = { count: count, sounds: c.sounds || null, shape: shape || null, targetSound: target || null, spellingPattern: spelling || null,
       position: target || spelling ? position : null, stage: stage ? stage.id : null, syllables: syllables || null,
@@ -1710,6 +1768,9 @@
       used.stageLabel = stage.label; used.framework = stage.framework; used.stageVerified = stage.verified; used.stageBasis = stage.basis;
       used.stageNote = stage.note;
     }
+    // mix: 'any' (the maker's "Pick different words", 2026-11-16) is named only when asked for, so every other pick reads as before.
+    if (c.mix === 'any') used.mix = 'any';
+    if (c.spread === 'sounds') used.spread = 'sounds';
     return { words: order.slice(0, count), pool: pool.length, reasons: reasons, criteria: used };
   }
 
@@ -1757,7 +1818,7 @@
     CHOICE_LEVELS: CHOICE_LEVELS.slice(),
     trialBuild: trialBuild,
     DEFAULT_MAX_RANK: DEFAULT_MAX_RANK, DEFAULT_MIN_ZIPF: DEFAULT_MIN_ZIPF, DEFAULT_MIN_BOOKS: DEFAULT_MIN_BOOKS, CMUDICT_NOTICE: CMUDICT_NOTICE,
-    buildPacket: buildPacket, pickWords: pickWords, stageList: stageList, pcmToWavUri: pcmToWavUri,
+    buildPacket: buildPacket, pickWords: pickWords, MAX_LETTERS: MAX_LETTERS, GRADE_MAX_LETTERS: GRADE_MAX_LETTERS, WIDER_LEVELS: WIDER_LEVELS.slice(), stageList: stageList, pcmToWavUri: pcmToWavUri,
     // A student's code name in a file (the file fills it in when it opens).
     codeName: codeName, withCodeName: withCodeName,
     // Pictures: the credit and notice a file with pictures carries, and the test every symbol must pass.

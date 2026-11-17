@@ -31,8 +31,9 @@ describe('XP modal accessibility', () => {
     expect(source).toContain('<HistoryIcon size={12} aria-hidden="true"/>');
     expect(source).toContain('<ul className=');
     expect(source).toContain('aria-labelledby="xp-history-title"');
-    expect(source).toContain('tabIndex={pointHistory.length > 0 ? 0 : undefined}');
-    expect(source).toContain('<li key={entry.id}');
+    // The list variable was renamed (pointHistory -> historyEntries); the rule is the same.
+    expect(source).toContain('tabIndex={historyEntries.length > 0 ? 0 : undefined}');
+    expect(source).toContain('<li key={entry.id ?? idx}');
     expect(source).not.toContain('<h4');
   });
 

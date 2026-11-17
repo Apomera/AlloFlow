@@ -1,0 +1,7 @@
+/* The read-along page (packets-read-along.html). The rows are the computer-voice page's (packets-voice.css). No address, no font, no image. */
+.ra-rows { padding: 0; counter-reset: ra; }
+.ra-rows .voice-row { align-items: flex-start; }
+.ra-text { flex: 1 1 100%; color: var(--ink); font-size: 1.0625rem; line-height: 1.5; overflow-wrap: anywhere; }
+.ra-text::before { counter-increment: ra; content: counter(ra) ". "; color: var(--muted); font-variant-numeric: tabular-nums; }
+.ra-rows .voice-state { flex: 1 1 10rem; align-self: center; }
+.ra-para { margin-top: 0.6rem; }

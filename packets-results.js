@@ -23,6 +23,8 @@
     time_up_away: 'the time ran out while the page was hidden or closed, so there is no score',
     two_tabs: 'the check was open in two tabs or windows while it ran',
     attempt_unknown: 'that browser could not keep the count of tries, so the try number may be wrong',
+    // 2026-11-17: a timed check can be paused ("Stop the check", then "Keep going"). The clock stops; the problem on screen is not counted.
+    paused: 'paused; the problem on screen at each pause was set aside and not counted',
     stopped_early: 'stopped early, so there is no score',
     no_time_limit: 'no time limit, so there is no score per minute',
     too_fast: 'finished in under 20 seconds, so there is no score',
@@ -42,7 +44,7 @@
   var QUIET = { finished_early: true, no_check_value: true, untimed: true, untimed_no_rate: true };
   var TOOL_NAMES = { textLarger: 'larger text', textLargest: 'largest text', contrastHigh: 'high contrast',
     contrastSoft: 'soft contrast', colorsDark: 'dark colors', colorsOcean: 'ocean colors', colorsSunny: 'sunny colors',
-    colorsForest: 'forest colors', spacingWide: 'wider spacing', readingFocus: 'reading focus line',
+    colorsForest: 'forest colors', spacingWide: 'wider spacing', lettersLexend: 'Lexend letters', lettersAtkinson: 'Atkinson letters', lettersBook: 'book letters', lettersRounded: 'rounded letters', readingFocus: 'reading focus line',
     magnifier: 'magnifier', readChoices: 'read choices aloud' };
 
   var reader = window.AlloPacketResults;
@@ -79,10 +81,24 @@
   var busy = false;
   var chartCount = 0;
   var redraws = [];
+  // 2026-11-17: "To pick up here next week, save all of this as one file." Shown once in a visit, after a goal, a goal date or a
+  // paper score is typed or more files are added, and never again in that visit: 'none', then 'shown', then 'done'.
+  var nudge = 'none';
+  function offerSave() {
+    if (nudge !== 'none' || state.sample) return;
+    nudge = 'shown';
+    show('save-nudge', state.screen === 'results');
+  }
+  function endNudge() {
+    if (nudge === 'shown') nudge = 'done';
+    show('save-nudge', false);
+  }
 
   function fresh() {
     return { screen: 'empty', sessions: [], byId: Object.create(null), notResults: [], duplicates: [], leftOut: 0, merges: Object.create(null), apart: Object.create(null),
       asked: Object.create(null), goals: Object.create(null), sample: false, view: 'group', learner: '',
+      // 2026-11-17: a goal's date (the same keys as goals) and the paper scores typed on this page.
+      goalDates: Object.create(null), paper: [],
       // Each table of the group sorts on its own (2026-11-13: checks and practice are two tables).
       sort: { checks: { by: 'learner', down: false }, practice: { by: 'learner', down: false } }, keep: false };
   }
@@ -140,12 +156,14 @@
     no_time_limit: 'no time limit', untimed_no_rate: 'no clock', time_up_away: 'time ran out while away' };
   function noScoreShort(code) { return own(NO_SCORE_SHORT, code) ? NO_SCORE_SHORT[code] : 'no score'; }
   // A check's form as a teacher reads it: a letter, or nothing for a teacher's own set ("custom" in the file).
+  // On screen it is called a version, the makers' word (2026-11-16); the results file keeps its column name "form".
   function formText(form) { return form && form !== 'custom' ? form : ''; }
   function valueText(value, percent) { return value === null || value === undefined ? 'No score' : value + (percent ? '%' : ''); }
   function sentence(text) { return text ? text.charAt(0).toUpperCase() + text.slice(1) : ''; }
   function notesOf(s) {
     var out = s.flags.map(function (flag) {
       if (flag === 'left_the_page' && s.score && s.score.hiddenS >= 1) return NOTES.left_the_page + ' (' + count(Math.round(s.score.hiddenS), 'second') + ' away in all)';
+      if (flag === 'paused' && s.score && s.score.pausedS >= 1) return NOTES.paused + ' (' + count(Math.round(s.score.pausedS), 'second') + ' paused in all)';
       return own(NOTES, flag) ? NOTES[flag] : flag.replace(/_/g, ' ');
     });
     if (s.score && Array.isArray(s.score.tools) && s.score.tools.length) {
@@ -207,6 +225,18 @@
     bundle.merges.forEach(function (row) { if (!(row.from in state.merges)) state.merges[row.from] = row.into; });
     bundle.apart.forEach(function (row) { state.apart[reader.pairKey(row[0], row[1])] = true; });
     bundle.goals.forEach(function (row) { var key = row.learner + '\n' + row.measure; if (!(key in state.goals)) state.goals[key] = row.value; });
+    // 2026-11-17: goal dates and paper scores, kept the way goals are. A paper score already on the page is not added twice.
+    (bundle.goalDates || []).forEach(function (row) { var key = row.learner + '\n' + row.measure; if (!(key in state.goalDates)) state.goalDates[key] = row.date; });
+    (bundle.paper || []).forEach(function (row) {
+      var same = state.paper.some(function (p) { return p.learner === row.learner && p.measure === row.measure && p.date === row.date && p.value === row.value && p.note === row.note; });
+      if (!same) addPaper(row);
+    });
+  }
+  var paperCount = 0;
+  function addPaper(row) {
+    var entry = { id: 'paper-' + (++paperCount), learner: row.learner, measure: row.measure, name: row.name, date: row.date, value: row.value, note: row.note || '' };
+    state.paper.push(entry);
+    return entry;
   }
   function absorb(result, drop) {
     drop.read++;
@@ -216,10 +246,12 @@
   }
   function startDrop() {
     if (state.sample) { var keep = state.keep; state = fresh(); state.keep = keep; }
-    return { read: 0, look: 0, changed: Object.create(null) };
+    return { read: 0, look: 0, changed: Object.create(null), had: state.sessions.length };
   }
   function finishDrop(drop) {
     changed();
+    // 2026-11-17: more files added to results already on the page: offer, once, to save it all for next week.
+    if (drop.had > 0 && state.sessions.length > drop.had) offerSave();
     var pairs = model.suggestions.filter(function (row) { return !state.asked[row.pair]; });
     pairs.forEach(function (row) { state.asked[row.pair] = true; });
     var look = drop.look + pairs.length;
@@ -270,7 +302,9 @@
     return reader.makeBundle({ sessions: state.sessions, savedLocal: nowLocal(),
       merges: Object.keys(state.merges).map(function (from) { return { from: from, into: state.merges[from] }; }),
       apart: Object.keys(state.apart).map(function (pair) { return pair.split('\n'); }),
-      goals: Object.keys(state.goals).map(function (key) { var at = key.indexOf('\n'); return { learner: key.slice(0, at), measure: key.slice(at + 1), value: state.goals[key] }; }) });
+      goals: Object.keys(state.goals).map(function (key) { var at = key.indexOf('\n'); return { learner: key.slice(0, at), measure: key.slice(at + 1), value: state.goals[key] }; }),
+      goalDates: Object.keys(state.goalDates).map(function (key) { var at = key.indexOf('\n'); return { learner: key.slice(0, at), measure: key.slice(at + 1), date: state.goalDates[key] }; }),
+      paper: state.paper.map(function (p) { return { learner: p.learner, measure: p.measure, name: p.name, date: p.date, value: p.value, note: p.note }; }) });
   }
   function forgetStored() { try { storage().removeItem(STORE_KEY); } catch (_) { /* nothing was kept */ } }
   function persist() {
@@ -392,6 +426,7 @@
     show('open-check', look > 0 || Object.keys(state.merges).length > 0);
     setText('open-check', 'Check what was read' + (look ? ' (' + look + ')' : ''));
     show('sample-note', state.sample);
+    show('save-nudge', nudge === 'shown' && !state.sample);
     show('start-over-ask', false);
     if (!learnerNamed(state.learner)) state.learner = model.learners.length ? model.learners[0].key : '';
     var pick = $('pick-learner');
@@ -437,7 +472,7 @@
     var row = el('div', 'middles');
     model.middles.forEach(function (mid) {
       var card = el('div', 'middle');
-      add(card, el('p', 'middle-name', mid.label + (formText(mid.form) ? ', form ' + mid.form : '')), el('p', 'middle-label', 'Middle of this group (n = ' + mid.n + ')'),
+      add(card, el('p', 'middle-name', mid.label + (formText(mid.form) ? ', version ' + mid.form : '')), el('p', 'middle-label', 'Middle of this group (n = ' + mid.n + ')'),
         add(el('p', 'middle-value'), el('span', 'middle-number', String(mid.median)), doc.createTextNode(' ' + unitFor(mid.median, mid.unitName))),
         el('p', 'middle-range', (mid.q1 !== null ? 'Middle half: ' + mid.q1 + ' to ' + mid.q3 + '. ' : '') + 'Lowest ' + mid.min + ', highest ' + mid.max + '.'));
       row.appendChild(card);
@@ -449,11 +484,31 @@
   // note when a later result has no score. With no scored result yet, the latest one and why it has none.
   function checkCell(cell) {
     if (!cell) return null;
-    var parts = [valueText(cell.value, false), formText(cell.form) ? 'form ' + cell.form : ''];
+    var parts = [valueText(cell.value, false), formText(cell.form) ? 'version ' + cell.form : ''];
     if (cell.value === null && cell.noScore) parts.push(cell.noScore === 'untimed_no_rate' ? 'no clock: ' + cell.correct + ' of ' + cell.attempted + ' right' : noScoreShort(cell.noScore));
     if (cell.after) parts.push('Later, ' + showDate(cell.after.date, true) + ': no score (' + noScoreShort(cell.after.noScore) + ')');
     return parts;
   }
+  // 2026-11-17: a practice cell is the latest result for that skill from ANY file, so it says which file: its title, and its
+  // version when it has one. Files are told apart by their packet id and version (the title when an old file has no id).
+  function fileOfCell(cell) {
+    var s = cell && state.byId[cell.sessionId];
+    if (!s) return null;
+    var label = (s.title || s.packetId || 'a file') + (formText(s.form) ? ', version ' + s.form : '');
+    return { key: (s.packetId || s.title) + '\t' + s.form, label: label };
+  }
+  // The practice columns whose students' latest results come from more than one file.
+  function mixedStrands() {
+    return model.strands.filter(function (strand) {
+      var seen = Object.create(null), n = 0;
+      model.learners.forEach(function (learner) {
+        var from = fileOfCell(learner.strands[strand[0]]);
+        if (from && !seen[from.key]) { seen[from.key] = true; n++; }
+      });
+      return n > 1;
+    }).map(function (strand) { return strand[1]; });
+  }
+  function listWords(words) { return words.length < 2 ? words.join('') : words.slice(0, -1).join(', ') + ' and ' + words[words.length - 1]; }
   // The columns of the group's two tables (2026-11-13; one table of 2524 px before): checks first, then practice.
   // Each starts with the student's name; the first one shown also has the number of results and the last date.
   function groupColumns() {
@@ -468,7 +523,8 @@
           var cell = row.strands[strand[0]];
           if (!cell) return null;
           var nk = cell.newFacts;
-          return [cell.value + '%', cell.firstTry + ' of ' + cell.graded].concat(nk && nk.items ? ['new facts ' + nk.firstTry + ' of ' + nk.items] : []);
+          var from = fileOfCell(cell);
+          return [cell.value + '%', cell.firstTry + ' of ' + cell.graded].concat(nk && nk.items ? ['new facts ' + nk.firstTry + ' of ' + nk.items] : [], from ? ['from ' + from.label] : []);
         } };
     });
     var checks = model.checks.map(function (series) {
@@ -479,7 +535,7 @@
       { id: 'checks', title: 'Checks: latest score', columns: checks,
         hint: 'Each check shows the latest result with a score, the one the middle of the group counts. A later result with no score is noted under it.' },
       { id: 'practice', title: 'Practice: latest first-try percent', columns: practice,
-        hint: 'Practice shows the share of answers that were right on the first try, in the latest result that has that skill.' },
+        hint: 'Practice shows the share of answers that were right on the first try, in the latest result that has that skill, from any file. Each cell names the file it came from.' },
     ].filter(function (table) { return table.columns.length; });
     tables.forEach(function (table, i) { table.columns = (i ? base.slice(0, 1) : base).concat(table.columns); });
     return tables;
@@ -537,20 +593,18 @@
     return flags;
   }
 
+  // 2026-11-17: a maker opens in a new tab, so this page and what is on it stay (it was the same tab, and the results were gone
+  // unless "Keep these results" was on). The words "opens in a new tab" are part of the link's name, and a line under the links says it too.
+  var NEW_TAB = ' (opens in a new tab)';
   function navButton(label, target) {
-    var btn = el('button', 'btn btn-small', label);
-    btn.type = 'button';
-    btn.setAttribute('data-href', target);
-    btn.addEventListener('click', function () {
-      var link = doc.createElement('a');
-      link.href = target;
-      link.hidden = true;
-      doc.body.appendChild(link);
-      link.click();
-      doc.body.removeChild(link);
-    });
-    return btn;
+    var link = el('a', 'btn btn-small nav-new-tab', label);
+    link.href = target;
+    link.target = '_blank';
+    link.rel = 'noopener';
+    add(link, el('span', 'sr-only', NEW_TAB));
+    return link;
   }
+  function newTabHint() { return el('p', 'hint new-tab-hint no-print', 'These buttons open the maker in a new tab. This page stays open as it is.'); }
 
   function drawGroupMissed() {
     var viewGroup = $('view-group');
@@ -575,7 +629,7 @@
 
     function ensureEntry(uid, display, kind) {
       if (!byKey[uid]) {
-        byKey[uid] = { uid: uid, display: display, kind: kind, students: 0, misses: 0, wrongCounts: Object.create(null) };
+        byKey[uid] = { uid: uid, display: display, kind: kind, students: 0, misses: 0, wrongCounts: Object.create(null), names: [] };
         list.push(byKey[uid]);
       }
       return byKey[uid];
@@ -587,6 +641,7 @@
       if (!learnerSeen[uid]) {
         learnerSeen[uid] = true;
         entry.students += 1;
+        entry.names.push(learnerNow);
       }
       var targetLower = String(it.target || it.word || display || '').trim().toLowerCase();
       var responses = Array.isArray(it.responses) ? it.responses : [];
@@ -601,8 +656,10 @@
       });
     }
 
+    var learnerNow = '';
     model.learners.forEach(function (learner) {
       var learnerSeen = Object.create(null);
+      learnerNow = learner.label;
       (learner.sessions || []).forEach(function (s) {
         (s.items || []).forEach(function (it) {
           if (it.practice || !it.attempted) return;
@@ -665,11 +722,21 @@
     }
 
     host.hidden = false;
+    // 2026-11-17: the students' code names under each count, so a teacher can form a small group. More than 6: in a closed fold.
+    function namesOf(entry) {
+      var names = entry.names.slice().sort(function (a, b) { return a.toLowerCase() < b.toLowerCase() ? -1 : a.toLowerCase() > b.toLowerCase() ? 1 : 0; });
+      if (names.length <= 6) return el('span', 'cell-sub missed-names', names.join(', '));
+      var fold = el('details', 'missed-fold');
+      add(fold, el('summary', '', 'Show the ' + names.length + ' names'), el('span', 'cell-sub missed-names', names.join(', ')));
+      return fold;
+    }
     add(host, el('h4', 'group-sub', 'Most missed across the group'));
     add(host, plainTable('Most missed across the group', ['Item', 'Students', 'Misses', 'Common wrong answer'],
       list.slice(0, 10).map(function (entry) {
-        return [entry.display, entry.students + ' of ' + model.learners.length, String(entry.misses), topWrongText(entry)];
+        return [entry.display, [entry.students + ' of ' + model.learners.length, namesOf(entry)], String(entry.misses), topWrongText(entry)];
       }), 'narrow'));
+    add(host, el('p', 'hint', 'Under each count are the students who missed it, by the names in their files. Use them to form a small group.'));
+    var navStart = host.childNodes.length;
 
     var srList = list.filter(function (e) { return e.kind === 'sr'; }).slice(0, 6).map(function (e) { return e.display; });
     var vocabList = list.filter(function (e) { return e.kind === 'vocab'; }).slice(0, 12).map(function (e) { return e.display; });
@@ -700,7 +767,8 @@
         groupKnown.push(mathEverMastered[k].text);
       });
       var mathGroupHref = 'packets-math-practice.html#rehearse=' + encodeURIComponent(mathList.join(',')) + (groupKnown.length >= 3 ? '&known=' + encodeURIComponent(groupKnown.join(',')) : '');
-      var mathGroupRow = add(el('p', 'actions no-print'), navButton('Practice group missed facts in Math Facts', mathGroupHref));
+      // 2026-11-17: the maker's own name ("Make math fact practice"), not "Math Facts".
+      var mathGroupRow = add(el('p', 'actions no-print'), navButton('Practice group missed facts in Math fact practice', mathGroupHref));
       var gMental = mentalMathFlags(mathList);
       if (gMental.make10) add(mathGroupRow, navButton('Practice group make-10 partners in Symbol Runner', 'packets-symbol-runner.html#mode=math_make_10'));
       if (gMental.doubles) add(mathGroupRow, navButton('Practice group doubles facts in Symbol Runner', 'packets-symbol-runner.html#mode=math_doubles'));
@@ -714,6 +782,7 @@
       if (hasMn) add(numGroupRow, navButton('Practice group teen and decade numbers in Symbol Runner', 'packets-symbol-runner.html#mode=digits_teen_decade'));
       add(host, numGroupRow);
     }
+    if (host.childNodes.length > navStart) add(host, newTabHint());
   }
 
   function drawGroup() {
@@ -721,6 +790,8 @@
     var host = $('group-table');
     host.textContent = '';
     var tables = groupColumns();
+    // Results in which nothing is scored (a read-along, Letter Trace alone): say so; an empty space reads as a fault.
+    if (!tables.length) add(host, el('p', 'group-none', 'Nothing in these results is scored: they are practice that is never scored, such as a read-along. Choose One student to see what each student did.'));
     tables.forEach(function (spec, n) {
       var sort = state.sort[spec.id];
       var title = el('h4', 'group-sub', spec.title);
@@ -769,7 +840,10 @@
       });
       var scroll = scrollBox();
       scroll.setAttribute('aria-labelledby', title.id);
-      add(host, title, add(scroll, add(table, add(el('thead'), headRow), body)),
+      // 2026-11-17: one plain sentence when a practice column puts results from different files side by side.
+      var mixed = spec.id === 'practice' ? mixedStrands() : [];
+      var warn = mixed.length ? el('p', 'note mixed-files', 'In ' + listWords(mixed) + ', the students\' latest results come from different files, so compare them with care.') : null;
+      add(host, title, warn, add(scroll, add(table, add(el('thead'), headRow), body)),
         el('p', 'hint', spec.hint + (n === tables.length - 1 ? ' Choose a name to see that student over time.' : '')));
     });
     drawGroupMissed();
@@ -789,14 +863,23 @@
   }
   // A small line chart, built with DOM calls. The same numbers are in the table beside or under it.
   // It is drawn at the width of the box it sits in, so its text is the size it says it is.
-  function drawChart(series, goal, width) {
+  // 2026-11-17: extra = { aim, paper }. aim (aimOf): a line from the first score to the goal on the goal date. paper: the paper
+  // scores of this check, drawn as squares labeled "paper" and never joined to the line of screen scores.
+  function drawChart(series, goal, width, extra) {
+    extra = extra || {};
     var points = series.points.filter(function (p) { return p.value !== null && p.date; });
-    if (series.dates < 2) return null;
+    var paper = (extra.paper || []).filter(function (p) { return p.value !== null && p.date; });
+    var aim = extra.aim && !extra.aim.bad ? extra.aim : null;
+    var dated = Object.create(null), dates = 0;
+    points.concat(paper).forEach(function (p) { if (!dated[p.date]) { dated[p.date] = true; dates++; } });
+    if (dates < 2) return null;
     var W = Math.max(280, Math.min(720, Math.round(width) || 680)), H = W < 420 ? 220 : 250;
     var left = 40, right = 34, top = 26, bottom = 46, inset = 16;
     var days = points.map(function (p) { return dayNumber(p.date); });
-    var d0 = Math.min.apply(null, days), d1 = Math.max.apply(null, days);
-    var most = Math.max.apply(null, points.map(function (p) { return p.value; }).concat(goal === null ? [] : [goal]));
+    var paperDays = paper.map(function (p) { return dayNumber(p.date); });
+    var allDays = days.concat(paperDays, aim ? [dayNumber(aim.date)] : []);
+    var d0 = Math.min.apply(null, allDays), d1 = Math.max.apply(null, allDays);
+    var most = Math.max.apply(null, points.concat(paper).map(function (p) { return p.value; }).concat(goal === null ? [] : [goal]));
     var scale = series.percent ? { step: 25, top: 100 } : niceTop(most);
     var x = function (day) { return Math.round((left + inset + (W - left - right - inset * 2) * (day - d0) / (d1 - d0)) * 10) / 10; };
     var y = function (value) { return Math.round((top + (H - top - bottom) * (1 - value / scale.top)) * 10) / 10; };
@@ -804,32 +887,39 @@
     var unit = series.percent ? '%' : '';
     var firstPoint = points[0], lastPoint = points[points.length - 1];
     var chart = svg('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-labelledby': id + '-title ' + id + '-desc', focusable: 'false', 'class': 'chart-svg' });
-    var title = svg('title', { id: id + '-title' }, series.name + ': ' + series.unitName + ' over time');
-    var desc = svg('desc', { id: id + '-desc' }, count(points.length, 'result') + ' from ' + dateRange(firstPoint.date, lastPoint.date) + '. First ' + firstPoint.value + unit + ', latest ' + lastPoint.value + unit + '.'
-      + (goal === null ? '' : ' ' + GOAL_NOTE + ': ' + goal + unit + '.') + ' The same numbers are in the table below.');
+    var title = svg('title', { id: id + '-title' }, series.name + ': ' + (series.unitName || 'scores') + ' over time');
+    var said = (points.length ? count(points.length, 'result') + ' from ' + dateRange(firstPoint.date, lastPoint.date) + '. First ' + firstPoint.value + unit + ', latest ' + lastPoint.value + unit + '.' : '')
+      + (paper.length ? (points.length ? ' ' : '') + count(paper.length, 'paper score') + ', drawn as squares: ' + paper.map(function (p) { return p.value + unit + ' on ' + showDate(p.date); }).join(', ') + '.' : '')
+      + (goal === null ? '' : ' ' + GOAL_NOTE + ': ' + goal + unit + '.')
+      + (aim ? ' Aim line from ' + aim.from.value + unit + ' on ' + showDate(aim.from.date) + ' to ' + aim.goal + unit + ' on ' + showDate(aim.date) + '.' : '')
+      + ' The same numbers are in the table below.';
+    var desc = svg('desc', { id: id + '-desc' }, said.replace(/^ /, ''));
     add(chart, title, desc);
     for (var level = 0; level <= scale.top + 0.0001; level += scale.step) {
       add(chart, svg('line', { x1: left, x2: W - right, y1: y(level), y2: y(level), 'class': level === 0 ? 'chart-axis' : 'chart-grid' }),
         svg('text', { x: left - 6, y: y(level) + 4, 'text-anchor': 'end', 'class': 'chart-scale' }, level + unit));
     }
+    // The dates under the chart: of the results, the paper scores and the goal date, in order.
+    var labelDates = Object.keys(dated).concat(aim && !dated[aim.date] ? [aim.date] : []).sort();
     var lastLabel = -100;
-    var seen = Object.create(null);
-    points.forEach(function (p, i) {
-      if (seen[p.date]) return;
-      seen[p.date] = true;
-      var px = x(days[i]), end = x(d1);
-      if (days[i] !== d1 && (px - lastLabel < 58 || end - px < 58)) return;
+    labelDates.forEach(function (date) {
+      var day = dayNumber(date), px = x(day), end = x(d1);
+      if (day !== d1 && (px - lastLabel < 58 || end - px < 58)) return;
       lastLabel = px;
       add(chart, svg('line', { x1: px, x2: px, y1: H - bottom, y2: H - bottom + 5, 'class': 'chart-axis' }),
-        svg('text', { x: px, y: H - bottom + 19, 'text-anchor': 'middle', 'class': 'chart-scale' }, showDate(p.date, true)));
+        svg('text', { x: px, y: H - bottom + 19, 'text-anchor': 'middle', 'class': 'chart-scale' }, showDate(date, true)));
     });
-    var years = firstPoint.date.slice(0, 4) === lastPoint.date.slice(0, 4) ? firstPoint.date.slice(0, 4) : firstPoint.date.slice(0, 4) + ' to ' + lastPoint.date.slice(0, 4);
-    add(chart, svg('text', { x: left, y: H - 6, 'text-anchor': 'start', 'class': 'chart-scale' }, years));
+    var y0 = labelDates[0].slice(0, 4), y1 = labelDates[labelDates.length - 1].slice(0, 4);
+    add(chart, svg('text', { x: left, y: H - 6, 'text-anchor': 'start', 'class': 'chart-scale' }, y0 === y1 ? y0 : y0 + ' to ' + y1));
     if (goal !== null) {
       add(chart, svg('line', { x1: left, x2: W - right, y1: y(goal), y2: y(goal), 'class': 'chart-goal', 'stroke-dasharray': '7 5' }),
         svg('text', { x: (left + W - right) / 2, y: y(goal) - 6, 'text-anchor': 'middle', 'class': 'chart-goal-label' }, 'Goal ' + goal + unit));
     }
-    add(chart, svg('polyline', { points: points.map(function (p, i) { return x(days[i]) + ',' + y(p.value); }).join(' '), 'class': 'chart-line', fill: 'none' }));
+    if (aim) {
+      add(chart, svg('line', { x1: x(dayNumber(aim.from.date)), y1: y(aim.from.value), x2: x(dayNumber(aim.date)), y2: y(aim.goal), 'class': 'chart-aim' }),
+        svg('circle', { cx: x(dayNumber(aim.date)), cy: y(aim.goal), r: 5, 'class': 'chart-aim-end', fill: 'none', 'data-date': aim.date, 'data-value': aim.goal }));
+    }
+    if (points.length) add(chart, svg('polyline', { points: points.map(function (p, i) { return x(days[i]) + ',' + y(p.value); }).join(' '), 'class': 'chart-line', fill: 'none' }));
     var values = points.map(function (p) { return p.value; });
     var low = values.indexOf(Math.min.apply(null, values)), high = values.indexOf(Math.max.apply(null, values));
     var ring = false;
@@ -841,9 +931,18 @@
         add(chart, svg('text', { x: px, y: py < top + 16 ? py + 20 : py - 11, 'text-anchor': 'middle', 'class': 'chart-value' }, p.value + unit));
       }
     });
+    // A paper score: a square, its value above it and the word "paper" under it.
+    paper.forEach(function (p, i) {
+      var px = x(paperDays[i]), py = y(p.value);
+      add(chart, svg('rect', { x: px - 5, y: py - 5, width: 10, height: 10, 'class': 'chart-paper', 'data-date': p.date, 'data-value': p.value }),
+        svg('text', { x: px, y: py < top + 16 ? py + 20 : py - 11, 'text-anchor': 'middle', 'class': 'chart-value' }, p.value + unit),
+        svg('text', { x: px, y: py + 19 > H - bottom ? py - 24 : py + 19, 'text-anchor': 'middle', 'class': 'chart-paper-label' }, 'paper'));
+    });
     var figure = el('figure', 'chart');
-    return add(figure, chart, el('figcaption', 'chart-key', 'Each dot is one result.' + (ring ? ' A ring around a dot means that result has a note in the table.' : '')
-      + (goal === null ? '' : ' Dashed line: ' + GOAL_NOTE.charAt(0).toLowerCase() + GOAL_NOTE.slice(1) + '.')));
+    return add(figure, chart, el('figcaption', 'chart-key', (points.length ? 'Each dot is one result.' : '') + (ring ? ' A ring around a dot means that result has a note in the table.' : '')
+      + (paper.length ? (points.length ? ' ' : '') + 'Each square labeled "paper" is a paper score. Paper scores are not joined to the line.' : '')
+      + (goal === null ? '' : ' Dashed line: ' + GOAL_NOTE.charAt(0).toLowerCase() + GOAL_NOTE.slice(1) + '.')
+      + (aim ? ' Thin line: the aim line, from the first score to the goal on the goal date.' : '')));
   }
   function plainTable(caption, heads, rows, size) {
     // 2026-11-13: on a phone, "Every result" and a measure's table read as one card per row (packets-results.css,
@@ -863,7 +962,8 @@
       cells.forEach(function (text, i) {
         var lines = Array.isArray(text) ? text : [text];
         var cell = role(el(i ? 'td' : 'th', '', lines[0]), i ? 'cell' : 'rowheader');
-        lines.slice(1).forEach(function (line) { add(cell, el('span', 'cell-sub', line)); });
+        // A line can also be a node built here (2026-11-17: the names under a count, in a fold).
+        lines.slice(1).forEach(function (line) { add(cell, line && line.nodeType ? line : el('span', 'cell-sub', line)); });
         if (!i) cell.scope = 'row';
         else if (cards) cell.setAttribute('data-label', heads[i]);
         row.appendChild(cell);
@@ -874,6 +974,80 @@
     scroll.setAttribute('aria-label', caption);
     return add(scroll, add(table, add(role(el('thead'), 'rowgroup'), headRow), body));
   }
+  // ---------------------------------------------------------------------------
+  // 2026-11-17: progress over time. A goal date gives an aim line; from 6 scores, growth per week; paper scores apart.
+  // ---------------------------------------------------------------------------
+  var MIN_GROWTH = 6;
+  // A number with its sign, to one decimal place: "+1.2", "-0.5", "0".
+  function signed(n) { var r = Math.round(n * 10) / 10; if (r === 0) return '0'; return (r > 0 ? '+' : '') + r; }
+  // A score in its unit: "80%", "24 digits correct per minute", or the number alone when the unit is not known (a paper-only check).
+  function amountText(value, series) {
+    if (series.percent) return value + '%';
+    return series.unitName ? value + ' ' + unitFor(value, series.unitName) : String(value);
+  }
+  // Growth per week in the score's own unit: "+1.2 digits correct per minute", "+3.1 percentage points".
+  function perWeekText(slope, series) {
+    var r = Math.round(slope * 10) / 10;
+    if (series.percent) return signed(slope) + ' percentage ' + (Math.abs(r) === 1 ? 'point' : 'points');
+    return signed(slope) + (series.unitName ? ' ' + unitFor(Math.abs(r), series.unitName) : '');
+  }
+  // The scores a line can be worked out from: each with a value and a date, in date order.
+  function scoresOf(points) {
+    return points.filter(function (p) { return p.value !== null && p.value !== undefined && p.date; })
+      .slice().sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+  }
+  // Growth per week: the slope of the least-squares line through the scores, with time in weeks. Only from 6 scores on,
+  // and only when they are on more than one date.
+  function growthPerWeek(points) {
+    var list = scoresOf(points);
+    if (list.length < MIN_GROWTH) return { n: list.length, slope: null };
+    var xs = list.map(function (p) { return dayNumber(p.date) / 7; }), ys = list.map(function (p) { return p.value; });
+    var n = list.length, mx = 0, my = 0, sxx = 0, sxy = 0, i;
+    for (i = 0; i < n; i++) { mx += xs[i] / n; my += ys[i] / n; }
+    for (i = 0; i < n; i++) { sxx += (xs[i] - mx) * (xs[i] - mx); sxy += (xs[i] - mx) * (ys[i] - my); }
+    return { n: n, slope: sxx > 0 ? sxy / sxx : null };
+  }
+  // The aim line: from the first score to the goal on the goal date. bad: 'no_start' (no score yet) or 'before' (the date is not after it).
+  function aimOf(points, goal, goalDate) {
+    if (goal === null || !goalDate) return null;
+    var first = scoresOf(points)[0];
+    if (!first) return { bad: 'no_start' };
+    var weeks = (dayNumber(goalDate) - dayNumber(first.date)) / 7;
+    if (!(weeks > 0)) return { bad: 'before', from: first };
+    return { from: first, date: goalDate, goal: goal, perWeek: (goal - first.value) / weeks };
+  }
+  function aimText(aim, series) {
+    if (!aim) return '';
+    if (aim.bad === 'no_start') return 'There is no score yet to start an aim line from.';
+    if (aim.bad === 'before') return 'The goal date is not after the first score (' + showDate(aim.from.date) + '), so no aim line is drawn.';
+    return 'Aim line: from ' + amountText(aim.from.value, series) + ' on ' + showDate(aim.from.date) + ' (the first score) to the goal of ' + amountText(aim.goal, series) + ' on '
+      + showDate(aim.date) + '. To get there: ' + perWeekText(aim.perWeek, series) + ' a week.';
+  }
+  // The paper scores typed for this learner and this check, in date order.
+  function paperFor(learner, series) {
+    return state.paper.filter(function (p) { return p.learner === learner.key && p.measure === series.key; })
+      .sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+  }
+  // A measure's table: each result from the files, then each paper score (its own row, labeled paper), then the goal and the
+  // growth per week when there are any. The same numbers as the chart, in words.
+  function measureTable(series, paper, goal, goalDate, aim, growth) {
+    var check = series.kind === 'check';
+    var rows = series.points.map(function (p) {
+      var details = sentence((check ? (formText(p.form) ? 'version ' + p.form + ', ' : '') + (p.attempt ? 'try ' + p.attempt + '. ' : '') : '') + sentence(p.detail)) + '.';
+      var more = check ? [] : newFactsLines(p.newFacts);
+      return [showDate(p.date), valueText(p.value, series.percent), more.length ? [details].concat(more) : details, sentence(notesOf(p.session).join('; '))];
+    });
+    paper.forEach(function (p) {
+      rows.push([showDate(p.date) + ', paper', valueText(p.value, series.percent), 'Paper score, typed on this page. Never averaged with the scores in the files.' + (p.note ? ' Note: ' + p.note : ''), '']);
+    });
+    if (goal !== null) {
+      rows.push(['Goal' + (goalDate ? ', ' + showDate(goalDate) : ''), valueText(goal, series.percent), aim ? [GOAL_NOTE + '.', aimText(aim, series)] : GOAL_NOTE + '.', '']);
+    }
+    if (growth && growth.slope !== null) {
+      rows.push(['Growth per week (6 or more scores)', perWeekText(growth.slope, series), 'A straight line fitted through ' + count(growth.n, series.kind === 'paper' ? 'paper score' : 'score') + '.', 'A rough guide only']);
+    }
+    return plainTable(series.name + ': each result', ['Date', series.unitName ? sentence(series.unitName) : 'Score', 'Details', 'Notes'], rows, 'measure');
+  }
   function drawMeasure(learner, series, n) {
     var card = el('section', 'measure');
     var title = el('h4', '', series.name);
@@ -881,20 +1055,47 @@
     card.setAttribute('aria-labelledby', title.id);
     var scored = series.points.filter(function (p) { return p.value !== null; });
     var latest = scored[scored.length - 1];
-    add(card, add(el('div', 'measure-head'), title, el('p', 'measure-unit', sentence(series.unitName))),
-      el('p', 'measure-latest', latest ? 'Latest: ' + valueText(latest.value, series.percent) + ', ' + showDate(latest.date) + '.' : 'No score yet.'));
+    var paper = paperFor(learner, series);
+    var lastPaper = paper[paper.length - 1];
+    // A check typed only on paper has no line of its own scores: its paper scores are its points (and still say "paper").
+    var scoresHere = series.kind === 'paper' ? paper : series.points;
+    add(card, add(el('div', 'measure-head'), title, el('p', 'measure-unit', series.kind === 'paper' ? 'Paper scores' : sentence(series.unitName))),
+      el('p', 'measure-latest', latest ? 'Latest: ' + valueText(latest.value, series.percent) + ', ' + showDate(latest.date) + '.' : series.kind === 'paper' ? 'Paper scores only. No results file has this check.' : 'No score yet.'),
+      lastPaper ? el('p', 'measure-paper', 'Latest paper score: ' + amountText(lastPaper.value, series) + ', ' + showDate(lastPaper.date) + '. Paper scores are kept apart from the scores in the files.') : null);
     var mid = series.formKey ? model.middles.filter(function (row) { return row.key === series.formKey; })[0] : null;
-    if (mid) add(card, el('p', 'measure-middle', 'Middle of this group on ' + (formText(mid.form) ? 'form ' + mid.form : 'this set') + ' (n = ' + mid.n + '): ' + mid.median + '. ' + (mid.q1 !== null ? 'Middle half: ' + mid.q1 + ' to ' + mid.q3 + '.' : 'Lowest ' + mid.min + ', highest ' + mid.max + '.')));
+    if (mid) add(card, el('p', 'measure-middle', 'Middle of this group on ' + (formText(mid.form) ? 'version ' + mid.form : 'this set') + ' (n = ' + mid.n + '): ' + mid.median + '. ' + (mid.q1 !== null ? 'Middle half: ' + mid.q1 + ' to ' + mid.q3 + '.' : 'Lowest ' + mid.min + ', highest ' + mid.max + '.')));
     var goalKey = learner.key + '\n' + series.key;
     var holder = el('div', 'measure-chart');
     var goalLine = el('p', 'goal-line');
+    var aimLine = el('p', 'aim-line');
+    var growthLine = el('p', 'growth-line');
+    var caution = el('p', 'hint growth-caution');
+    var tableBox = null;
+    var goalNow = function () { return goalKey in state.goals ? state.goals[goalKey] : null; };
+    var dateNow = function () { return goalKey in state.goalDates ? state.goalDates[goalKey] : ''; };
     var redraw = function () {
-      var goal = goalKey in state.goals ? state.goals[goalKey] : null;
+      var goal = goalNow(), goalDate = dateNow();
+      var aim = aimOf(scoresHere, goal, goalDate);
+      var growth = growthPerWeek(scoresHere);
       var width = holder.clientWidth;
       holder.textContent = '';
-      add(holder, drawChart(series, goal, width) || el('p', 'hint', 'A chart is drawn when there are results from two dates.'));
-      goalLine.textContent = goal === null ? '' : GOAL_NOTE + ': ' + goal + (series.percent ? '%' : ' ' + unitFor(goal, series.unitName)) + '.';
+      add(holder, drawChart(series, goal, width, { aim: aim, paper: paper }) || el('p', 'hint', 'A chart is drawn when there are results from two dates.'));
+      goalLine.textContent = goal === null ? '' : GOAL_NOTE + ': ' + amountText(goal, series) + (goalDate ? ', by ' + showDate(goalDate) : '') + '.';
       goalLine.hidden = goal === null;
+      aimLine.textContent = aimText(aim, series);
+      aimLine.hidden = !aim;
+      if (growth.slope !== null) {
+        growthLine.textContent = 'Growth per week (6 or more scores): ' + perWeekText(growth.slope, series) + '.';
+        caution.textContent = 'A rough guide only: it is a straight line through these ' + count(growth.n, 'score') + ', and a few unusual days can change it a lot.';
+      } else {
+        growthLine.textContent = growth.n >= 2 ? 'Growth per week is shown from 6 scores on (' + growth.n + ' so far).' : '';
+        caution.textContent = '';
+      }
+      growthLine.hidden = !growthLine.textContent;
+      caution.hidden = !caution.textContent;
+      var next = measureTable(series, paper, goal, goalDate, aim, growth);
+      if (tableBox && tableBox.parentNode) tableBox.parentNode.replaceChild(next, tableBox);
+      tableBox = next;
     };
     redraws.push(redraw);
     var most = series.percent ? 100 : 100000;
@@ -920,15 +1121,137 @@
       if (value === null) delete state.goals[goalKey]; else state.goals[goalKey] = value;
       persist();
       redraw();
+      if (value !== null) offerSave();
     });
-    var check = series.kind === 'check';
-    var table = plainTable(series.name + ': each result', ['Date', sentence(series.unitName), 'Details', 'Notes'], series.points.map(function (p) {
-      var details = sentence((check ? (formText(p.form) ? 'form ' + p.form + ', ' : '') + (p.attempt ? 'try ' + p.attempt + '. ' : '') : '') + sentence(p.detail)) + '.';
-      var more = check ? [] : newFactsLines(p.newFacts);
-      return [showDate(p.date), valueText(p.value, series.percent), more.length ? [details].concat(more) : details, sentence(notesOf(p.session).join('; '))];
-    }), 'measure');
+    // The goal date (2026-11-17): with a goal, it draws the aim line. A date field; typed as year-month-day where there is no picker.
+    var dateField = el('div', 'goal goal-when no-print');
+    var dateLabel = add(el('label'), doc.createTextNode('Goal date'), el('span', 'sr-only', ' for ' + series.name), doc.createTextNode(' (optional)'));
+    var dateInput = el('input', 'goal-input goal-date');
+    dateInput.type = 'date';
+    dateInput.id = 'goal-date-' + n;
+    dateInput.setAttribute('data-goal-date', series.key);
+    dateInput.setAttribute('aria-describedby', 'goal-date-' + n + '-hint');
+    dateInput.value = dateNow();
+    dateLabel.htmlFor = dateInput.id;
+    var dateHint = el('span', 'hint', 'With a goal and a goal date, an aim line is drawn from the first score to the goal.');
+    dateHint.id = 'goal-date-' + n + '-hint';
+    var onDate = function () {
+      var typed = String(dateInput.value || '').trim();
+      var day = reader.dayText(typed);
+      var bad = typed !== '' && !day;
+      if (bad) dateInput.setAttribute('aria-invalid', 'true'); else dateInput.removeAttribute('aria-invalid');
+      if (bad || (day || '') === dateNow()) return;
+      if (!day) delete state.goalDates[goalKey]; else state.goalDates[goalKey] = day;
+      persist();
+      redraw();
+      if (day) offerSave();
+    };
+    dateInput.addEventListener('input', onDate);
+    dateInput.addEventListener('change', onDate);
+    tableBox = measureTable(series, paper, goalNow(), dateNow(), aimOf(scoresHere, goalNow(), dateNow()), growthPerWeek(scoresHere));
     // The chart and its goal on one side, the same numbers as a table on the other (under it on a narrow screen).
-    return add(card, add(el('div', 'measure-body'), add(el('div', 'measure-side'), holder, add(field, label, input, hint), goalLine), table));
+    return add(card, add(el('div', 'measure-body'), add(el('div', 'measure-side'), holder, add(field, label, input, hint), add(dateField, dateLabel, dateInput, dateHint),
+      goalLine, aimLine, growthLine, caution), tableBox));
+  }
+  // "Add a paper score" (2026-11-17): the check maker prints a paper version; its scores are typed here. Each is kept apart
+  // from the scores in the files (its own row, its own mark on the chart) and saved the way goals are.
+  function cleanTyped(value, max) { return String(value == null ? '' : value).replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max); }
+  function drawPaperForm(learner, seriesList) {
+    var box = el('section', 'paper-add no-print');
+    var title = el('h4', 'learner-sub', 'Add a paper score');
+    title.id = 'paper-title';
+    box.setAttribute('aria-labelledby', title.id);
+    add(box, title, el('p', 'hint', 'For a check given on paper, such as the printed version the check maker makes. A paper score is kept apart from the scores in the files: it has its own row in the table and its own mark on the chart, labeled "paper", and it is never averaged with them.'));
+    var checksHere = seriesList.filter(function (s) { return s.kind === 'check' || s.kind === 'paper'; });
+    var field = function (labelText, input, id) {
+      input.id = id;
+      var lab = el('label', '', labelText);
+      lab.htmlFor = id;
+      return add(el('div', 'field paper-field'), lab, input);
+    };
+    var date = el('input', 'paper-input');
+    date.type = 'date';
+    date.value = today();
+    var pick = el('select', 'paper-input');
+    checksHere.forEach(function (s) { var option = el('option', '', s.name); option.value = s.key; pick.appendChild(option); });
+    var other = el('option', '', 'Another check (type its name)');
+    other.value = '';
+    pick.appendChild(other);
+    var name = el('input', 'paper-input');
+    name.type = 'text';
+    name.setAttribute('autocomplete', 'off');
+    name.maxLength = 80;
+    var score = el('input', 'paper-input paper-score');
+    score.type = 'text';
+    score.setAttribute('inputmode', 'decimal');
+    score.setAttribute('autocomplete', 'off');
+    var note = el('input', 'paper-input');
+    note.type = 'text';
+    note.setAttribute('autocomplete', 'off');
+    note.maxLength = 200;
+    var pickField = checksHere.length ? field('Check', pick, 'paper-check') : null;
+    var nameField = field('Name of the check', name, 'paper-name');
+    nameField.hidden = checksHere.length > 0;
+    pick.addEventListener('change', function () { nameField.hidden = pick.value !== ''; });
+    var go = button('btn btn-primary paper-go', 'Add the paper score');
+    go.id = 'paper-go';
+    var said = el('p', 'paper-said');
+    said.id = 'paper-said';
+    said.setAttribute('role', 'status');
+    var fields = [date, name, score, note];
+    fields.forEach(function (input) { input.addEventListener('keydown', function (event) { if (event.key === 'Enter') { event.preventDefault(); go.click(); } }); });
+    go.addEventListener('click', function () {
+      fields.forEach(function (input) { input.removeAttribute('aria-invalid'); });
+      var day = reader.dayText(String(date.value || '').trim());
+      var key = checksHere.length ? pick.value : '';
+      var typedName = cleanTyped(name.value, 80);
+      var raw = String(score.value || '').trim().replace(',', '.');
+      var value = /^\d+(\.\d+)?$/.test(raw) ? Number(raw) : null;
+      var problem = !day ? [date, 'Type the date of the paper check, as year-month-day (for example ' + today() + ').']
+        : !key && !typedName ? [name, 'Type the name of the check.']
+        : value === null || value > 100000 ? [score, 'Type the score as a number, such as 12.'] : null;
+      if (problem) {
+        problem[0].setAttribute('aria-invalid', 'true');
+        said.textContent = problem[1];
+        problem[0].focus();
+        return;
+      }
+      var target = key ? checksHere.filter(function (s) { return s.key === key; })[0] : null;
+      // A typed name that is one of this student's checks goes with that check.
+      if (!target) target = checksHere.filter(function (s) { return s.name.toLowerCase() === typedName.toLowerCase(); })[0] || null;
+      var entry = addPaper({ learner: learner.key, measure: target ? target.key : 'paper\t' + typedName.toLowerCase(), name: target ? target.name : typedName, date: day, value: value, note: cleanTyped(note.value, 200) });
+      persist();
+      offerSave();
+      drawLearner();
+      var done = 'Added a paper score of ' + entry.value + ' on ' + showDate(entry.date) + ' for ' + entry.name + '.';
+      setText('paper-said', done);
+      say(done);
+      var again = $('paper-go');
+      if (again) again.focus();
+    });
+    add(box, add(el('div', 'paper-form'), field('Date', date, 'paper-date'), pickField, nameField, field('Score', score, 'paper-score'), field('Note (optional)', note, 'paper-note')),
+      add(el('p', 'actions'), go), said);
+    var mine = state.paper.filter(function (p) { return p.learner === learner.key; }).sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+    if (mine.length) {
+      var list = el('ul', 'paper-list');
+      mine.forEach(function (p) {
+        var line = showDate(p.date) + ': ' + p.value + ', ' + p.name + (p.note ? ' (' + p.note + ')' : '') + '.';
+        var remove = button('btn btn-small', 'Remove');
+        remove.setAttribute('aria-label', 'Remove the paper score ' + line);
+        remove.addEventListener('click', function () {
+          state.paper = state.paper.filter(function (q) { return q.id !== p.id; });
+          persist();
+          drawLearner();
+          setText('paper-said', 'Removed the paper score ' + line);
+          say('Removed the paper score ' + line);
+          var again = $('paper-go');
+          if (again) again.focus();
+        });
+        list.appendChild(add(el('li'), el('span', '', line), remove));
+      });
+      add(box, el('p', 'paper-list-title', 'Paper scores typed for this student'), list);
+    }
+    return box;
   }
   function drawLearner() {
     var body = $('learner-body');
@@ -940,10 +1263,20 @@
     if (learner.labels.length > 1) add(body, el('p', 'hint', 'Written in the files as: ' + learner.labels.join(', ') + '.'));
     var measures = el('div', 'measures');
     redraws = [];
-    reader.learnerSeries(learner, model).forEach(function (series, i) { measures.appendChild(drawMeasure(learner, series, i + 1)); });
+    var seriesList = reader.learnerSeries(learner, model);
+    // 2026-11-17: a check that has only paper scores (typed under a name no results file has) gets a card of its own.
+    var have = Object.create(null);
+    seriesList.forEach(function (series) { have[series.key] = true; });
+    state.paper.forEach(function (p) {
+      if (p.learner !== learner.key || have[p.measure]) return;
+      have[p.measure] = true;
+      seriesList.push({ key: p.measure, kind: 'paper', name: p.name, unitName: '', percent: false, points: [], dates: 0, formKey: '' });
+    });
+    seriesList.forEach(function (series, i) { measures.appendChild(drawMeasure(learner, series, i + 1)); });
     add(body, measures);
     // The cards are on the page now, so each chart can be drawn at the width it has.
     redraws.forEach(function (redraw) { redraw(); });
+    add(body, drawPaperForm(learner, seriesList));
     var wrong = reader.wrongAnswers(learner.sessions, 8);
     if (wrong.length) {
       add(body, el('h4', 'learner-sub', 'Most frequent wrong answers in practice'),
@@ -1028,7 +1361,7 @@
     }
     if (mathMissed.length) {
       var mathTarget = 'packets-math-practice.html#rehearse=' + encodeURIComponent(mathMissed.join(',')) + (mathKnown.length >= 3 ? '&known=' + encodeURIComponent(mathKnown.join(',')) : '');
-      var mathLearnerRow = add(el('p', 'actions no-print'), navButton('Practice missed facts in Math Facts', mathTarget));
+      var mathLearnerRow = add(el('p', 'actions no-print'), navButton('Practice missed facts in Math fact practice', mathTarget));
       var lMental = mentalMathFlags(mathMissed);
       if (lMental.make10) add(mathLearnerRow, navButton('Practice make-10 partners in Symbol Runner', 'packets-symbol-runner.html#mode=math_make_10'));
       if (lMental.doubles) add(mathLearnerRow, navButton('Practice doubles facts in Symbol Runner', 'packets-symbol-runner.html#mode=math_doubles'));
@@ -1042,10 +1375,11 @@
       if (mnMissedCount) add(numRow, navButton('Practice teen and decade numbers in Symbol Runner', 'packets-symbol-runner.html#mode=digits_teen_decade'));
       add(body, numRow);
     }
+    if (body.querySelector('.nav-new-tab')) add(body, newTabHint());
     add(body, el('h4', 'learner-sub', 'Every result, in date order'),
       plainTable('Every result for ' + learner.label + ', in date order', ['Date', 'What', 'Result', 'Answered', 'Time taken', 'Notes'], learner.sessions.map(function (s) {
         var probe = s.mode === 'probe';
-        var what = probe ? s.measureName + (formText(s.form) ? ', form ' + s.form : '') + (s.attempt ? ', try ' + s.attempt : '') : 'Practice: ' + s.title;
+        var what = probe ? s.measureName + (formText(s.form) ? ', version ' + s.form : '') + (s.attempt ? ', try ' + s.attempt : '') : 'Practice: ' + s.title;
         var result = probe ? (s.value === null ? 'No score' : s.value + ' ' + unitFor(s.value, s.unitName)) : s.summary.firstTryPct === null ? 'Not scored' : s.summary.firstTryPct + '% on the first try';
         var more = probe ? [] : newFactsLines(s.newFacts);
         // Practice that is never scored (Letter Trace alone): how much was done, not "0 of 0".
@@ -1080,7 +1414,11 @@
   }
   function saveBundle() {
     var name = (state.sample ? 'sample-' : '') + 'results-all__' + today() + '.json';
-    if (saveFile(name, JSON.stringify(bundleNow()), 'application/json')) setText('take-said', 'Saved ' + name + '. Drop it on this page later to open where you left off.');
+    if (saveFile(name, JSON.stringify(bundleNow()), 'application/json')) {
+      setText('take-said', 'Saved ' + name + '. Drop it on this page later to open where you left off.');
+      return name;
+    }
+    return '';
   }
   function printView(view) {
     if (!model || !model.learners.length) return;
@@ -1092,6 +1430,7 @@
     forgetStored();
     state = fresh();
     model = null;
+    endNudge();
     $('files').value = '';
     go('empty', false);
     drawKeep('');
@@ -1150,7 +1489,15 @@
     $('print-group').addEventListener('click', function () { printView('group'); });
     $('print-learner').addEventListener('click', function () { printView('learner'); });
     $('save-csv').addEventListener('click', saveSummary);
-    $('save-bundle').addEventListener('click', saveBundle);
+    $('save-bundle').addEventListener('click', function () { if (saveBundle()) endNudge(); });
+    // The same action from the quiet line near the top. The line goes once the file is saved, and the page says so there.
+    $('save-nudge-go').addEventListener('click', function () {
+      var name = saveBundle();
+      if (!name) return;
+      endNudge();
+      say('Saved ' + name + '. Drop it on this page later to open where you left off.');
+      $('results-title').focus();
+    });
     $('keep').addEventListener('change', function () {
       state.keep = $('keep').checked;
       if (state.keep) persist(); else forgetStored();

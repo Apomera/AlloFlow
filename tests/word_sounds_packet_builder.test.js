@@ -832,7 +832,7 @@ describe('(l) two kinds of unsuitable word: never used, and never offered but us
     expect(readFileSync('data/word_sounds_blocklist_en.txt', 'utf8')).toMatch(/A section marked \[soft\]: a borderline word/);
     expect(wordlistTool.FLAGS.soft).toBe(256);
     expect(wordlist.FLAGS.soft).toBe(256);
-    expect(Object.values(wordlistTool.FLAGS).sort((a, b) => a - b)).toEqual([1, 2, 4, 8, 16, 32, 64, 128, 256]);
+    expect(Object.values(wordlistTool.FLAGS).sort((a, b) => a - b)).toEqual([1, 2, 4, 8, 16, 32, 64, 128, 256, 512]);
     for (const word of SOFT) {
       expect(wordlist.get(word), word).toMatchObject({ soft: true, blocked: false, nearBlocked: false });
       expect(wordlist.isBlocked(word), word).toBe(false);
@@ -866,7 +866,7 @@ describe('(l) two kinds of unsuitable word: never used, and never offered but us
     expect(built.counts.nearBlocked).toBe(wordlist.rows().filter((row) => row.nearBlocked).length);
     expect(built.counts.blocked).toBe(wordlist.rows().filter((row) => row.blocked).length);
     const plain = wordlistTool.build({ shards: false });
-    expect(wordlistTool.summary(plain, wordlistTool.render(plain))).toMatch(/; soft list \(never offered, usable when typed\) 69 entries in 1 sections \(69 in the dictionary\); British list /);
+    expect(wordlistTool.summary(plain, wordlistTool.render(plain))).toMatch(/; soft list \(never offered, usable when typed\) 69 entries in 1 sections \(69 in the dictionary\); wider levels \d+ entries \(\d+ in the dictionary\); British list /);
     expect(wordlistTool.summary(built, wordlistTool.render(built))).toContain('soft list (never offered, usable when typed) 71 entries in 2 sections (70 in the dictionary, outside it and so without effect: zzzq); ');
     // --no-shards: the list as it is with no word store, whatever the store holds.
     expect(plain.counts.shards).toBe(0);

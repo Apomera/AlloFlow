@@ -572,8 +572,24 @@ def check_numbers_in_chunks(text, fact_chunks, tolerance=1, ignore_below=10):
 
 # Captures patterns like "4 weeks later", "3 months after", "2 weeks earlier"
 # adjacent to two dates within ~60 chars.
+#
+# A date must carry its year. Two numbers with no year ("ages 8-12", "3/4
+# trials", "grades 9-12") were read as dates, and a flagged interval blocks
+# export. Written-out months ("September 2, 2026") and ISO dates are read too;
+# before, only 9/2/2026 was.
+_MONTHS = {"jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6,
+           "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12}
+_MONTH_WORD = (
+    r"(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|June?|July?"
+    r"|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)"
+)
 DATE_PAT = re.compile(
-    r"\b(\d{1,2})[/-](\d{1,2})(?:[/-](\d{2,4}))?\b"
+    r"\b(?:"
+    r"(?P<iy>\d{4})-(?P<im>\d{1,2})-(?P<id>\d{1,2})"
+    r"|(?P<a>\d{1,2})[/-](?P<b>\d{1,2})[/-](?P<c>\d{2,4})"
+    r"|(?P<mw>" + _MONTH_WORD + r")\.?\s+(?P<md>\d{1,2})(?:st|nd|rd|th)?,?\s+(?P<my>\d{4})"
+    r"|(?P<dd>\d{1,2})(?:st|nd|rd|th)?\s+(?P<dw>" + _MONTH_WORD + r")\.?,?\s+(?P<dy>\d{4})"
+    r")\b"
 )
 DURATION_PAT = re.compile(
     r"\b(\d{1,2})\s*(day|week|month|year)s?\b", re.I
@@ -581,8 +597,18 @@ DURATION_PAT = re.compile(
 
 
 def _parse_date(m):
-    a, b, c = m.group(1), m.group(2), m.group(3)
-    year = int(c) if c else datetime.utcnow().year
+    g = m.groupdict()
+    try:
+        if g.get("iy"):
+            return datetime(int(g["iy"]), int(g["im"]), int(g["id"]))
+        if g.get("mw"):
+            return datetime(int(g["my"]), _MONTHS[g["mw"][:3].lower()], int(g["md"]))
+        if g.get("dw"):
+            return datetime(int(g["dy"]), _MONTHS[g["dw"][:3].lower()], int(g["dd"]))
+    except ValueError:
+        return None
+    a, b, c = g["a"], g["b"], g["c"]
+    year = int(c)
     if year < 100:
         year += 2000
     try:
@@ -601,7 +627,10 @@ def check_date_arithmetic(text):
     dates = [(m, _parse_date(m)) for m in DATE_PAT.finditer(text_str)]
     dates = [(m, d) for m, d in dates if d is not None]
     for i, (m1, d1) in enumerate(dates):
-        for m2, d2 in dates[i + 1:]:
+        # Only a date and the NEXT date: with three dates close together the
+        # first was also paired with the third, using the interval that
+        # belongs to the first two, and a correct report was flagged.
+        for m2, d2 in dates[i + 1:i + 2]:
             # Only consider date pairs within 200 chars of each other
             if m2.start() - m1.end() > 200:
                 break
@@ -942,9 +971,13 @@ def audit(report_sections_json, fact_chunks_json, score_entries_json,
     for section_name, section_text in (sections.items() if isinstance(sections, dict) else []):
         if not isinstance(section_text, str) or not section_text:
             continue
+        # Labels and percentiles are checked by the app's own score verifier,
+        # which knows each test's ranges (WJ IV, KABC-II, BASC-3, CELF-5 ...).
+        # check_classification_mismatch and check_ss_percentile_consistency use
+        # one fixed set and read T-scores as standard scores, so they blocked
+        # export on correct reports and caught nothing the verifier missed
+        # (2026-11-16; tests/fixtures/report_writer_python_parity.json).
         for check in (
-            check_classification_mismatch,
-            check_ss_percentile_consistency,
             check_date_arithmetic,
         ):
             try:
@@ -1509,13 +1542,17 @@ function verifyFormJs(form, poemText, targetWord = null) {
     });
   }
   const expectedSyl = spec.syllablesPerLine;
+  const shared = _sharedSyllables();
   const lineEntries = rawLines.map((text, idx) => {
     const words = text.match(/[a-zA-Z']+/g) || [];
-    const syl = words.reduce((acc, w) => acc + _heuristicSyllablesJs(w), 0);
     let exp = null;
     if (Array.isArray(expectedSyl)) exp = expectedSyl[idx] != null ? expectedSyl[idx] : null;
     else if (Number.isFinite(expectedSyl) && expectedSyl > 0) exp = expectedSyl;
-    const match = exp == null ? true : syl === exp;
+    // PoetTree's counter reads the CMU-based word table; the rule below is
+    // only what is left when PoetTree is not on the page.
+    const info = shared ? shared.line(text, exp) : null;
+    const syl = info ? info.count : words.reduce((acc, w) => acc + _heuristicSyllablesJs(w), 0);
+    const match = info ? info.match : (exp == null ? true : syl === exp);
     if (!match) {
       findings.push({
         severity: 'medium',
@@ -1528,7 +1565,7 @@ function verifyFormJs(form, poemText, targetWord = null) {
       syllables_actual: syl,
       syllables_expected: exp,
       syllables_match: match,
-      unknown_words: words,
+      unknown_words: info ? info.unknown : words,
       stress_pattern: null,
       rhyme_class: _rhymeClassJs(lastWord),
     };
@@ -1570,8 +1607,46 @@ function verifyFormJs(form, poemText, targetWord = null) {
     overall_match: findings.length === 0,
     findings,
     lines: lineEntries,
-    source: 'js-heuristic',
+    source: shared ? 'word-table' : 'js-heuristic',
   };
+}
+
+// PoetTree owns the syllable counter (CMU-based word table, estimate only for
+// a word the table lacks). The Python path has had no dictionary since the
+// runtime `pronouncing` install was removed, so its counts are replaced too.
+function _sharedSyllables() {
+  const shared = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.PoetTreeSyllables;
+  return shared && typeof shared.line === 'function' ? shared : null;
+}
+
+async function _loadSyllableTable() {
+  const shared = _sharedSyllables();
+  if (!shared || typeof shared.load !== 'function') return false;
+  try { return !!(await shared.load()); } catch (_) { return false; }
+}
+
+function _applySharedSyllables(result) {
+  const shared = _sharedSyllables();
+  if (!shared || !result || result.error || !Array.isArray(result.lines)) return result;
+  result.lines.forEach((ln, idx) => {
+    const exp = Number.isFinite(ln.syllables_expected) && ln.syllables_expected > 0 ? ln.syllables_expected : null;
+    const info = shared.line(ln.text, exp);
+    if (ln.line_num == null) ln.line_num = idx + 1;
+    ln.syllables_actual = info.count;
+    ln.syllables_match = info.match;
+    ln.unknown_words = info.unknown;
+    ln.method = info.estimated ? 'word-table+estimate' : 'word-table';
+  });
+  const kept = (Array.isArray(result.findings) ? result.findings : []).filter(f => f && f.kind !== 'syllables');
+  const syllableFindings = result.lines.filter(ln => !ln.syllables_match).map(ln => ({
+    severity: 'medium',
+    kind: 'syllables',
+    line_num: ln.line_num,
+    message: `Line ${ln.line_num}: ${ln.syllables_actual} syllables, expected ${ln.syllables_expected}. "${String(ln.text || '').slice(0, 60)}"`,
+  }));
+  result.findings = kept.filter(f => f.kind === 'line_count').concat(syllableFindings, kept.filter(f => f.kind !== 'line_count'));
+  result.overall_match = result.findings.length === 0;
+  return result;
 }
 
 function _loadPyodideScript() {
@@ -1663,11 +1738,16 @@ const PyodideRuntime = {
       'import report_checks; ' +
       'report_checks.audit(_rw_sections_json, _rw_chunks_json, _rw_scores_json)'
     );
-    try { return JSON.parse(result); }
-    catch (e) {
-      console.error('[PyodideRuntime] audit() returned non-JSON:', typeof result);
-      return [];
+    // An unreadable answer is a check that did not happen, not a clean pass:
+    // the caller reports "did not run" on a throw.
+    let findings;
+    try { findings = JSON.parse(result); }
+    catch (e) { findings = null; }
+    if (!Array.isArray(findings)) {
+      console.error('[PyodideRuntime] audit() returned no findings list:', typeof result);
+      throw new Error('The report check returned no readable result.');
     }
+    return findings;
   },
 
   /** Start pronouncing-package install in background. Returns the promise so
@@ -1704,6 +1784,7 @@ const PyodideRuntime = {
    *                                   poetry_checks.verify_form for shape.
    */
   async runPoetryCheck({ form, poemText, targetWord = null, offlineOnly = false } = {}) {
+    await _loadSyllableTable();
     if (offlineOnly || !_canLoadExternalPyodide()) {
       return verifyFormJs(form, poemText, targetWord);
     }
@@ -1720,7 +1801,7 @@ const PyodideRuntime = {
       'import poetry_checks; ' +
       'poetry_checks.verify_form(_pc_form_json, _pc_poem_text, _pc_target_word)'
     );
-    try { return JSON.parse(result); }
+    try { return _applySharedSyllables(JSON.parse(result)); }
     catch (e) {
       console.error('[PyodideRuntime] runPoetryCheck returned non-JSON:', typeof result);
       return verifyFormJs(form, poemText, targetWord);

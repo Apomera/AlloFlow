@@ -565,7 +565,9 @@
       items.push({ word: word });
     });
     if (!items.length) return null;
-    return { title: 'Word Sounds packet words', words: items };
+    // The title the teacher gave the file (the maker saves it with the words); until 2026-11-16 it was dropped here.
+    var makerTitle = typeof saved.title === 'string' ? saved.title.trim().slice(0, 80) : '';
+    return { title: makerTitle || 'Word Sounds packet words', words: items };
   }
 
   function applyWordSoundsMakerWords(opts) {
@@ -602,39 +604,6 @@
     });
   }
 
-  function escHtml(text) {
-    return String(text == null ? '' : text)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
-  }
-
-  function safeDataImg(src) {
-    var raw = src && typeof src === 'object' ? (src.src || src.dataUri || '') : src;
-    var s = String(raw || '').trim();
-    return /^data:image\//i.test(s) ? s : '';
-  }
-
-  function phonemeBoxesOf(it) {
-    var list = Array.isArray(it && it.phonemes) && it.phonemes.length
-      ? it.phonemes
-      : (typeof (it && it.word) === 'string' ? it.word.trim().split('') : []);
-    return list.map(function (p) {
-      if (typeof p === 'string') return p.trim();
-      if (p && typeof p === 'object') return String(p.label || p.grapheme || p.soundKey || p.phoneme || p.sound || p.text || '').trim();
-      return '';
-    }).filter(Boolean);
-  }
-
-  function blankedExample(example, word) {
-    var ex = String(example || '').trim();
-    var w = String(word || '').trim();
-    if (!ex || !w) return ex;
-    var escaped = w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    return ex.replace(new RegExp('\\b' + escaped + '\\b', 'gi'), '_______');
-  }
-
   function activePack(packArg) {
     var live = controller && typeof controller.getPack === 'function' ? controller.getPack() : null;
     if (!packArg) return live || lastPack || { title: 'Word Cards', words: [] };
@@ -650,541 +619,77 @@
     var pack = activePack(packArg);
     var title = String(pack.title || 'Word Flashcards');
     var items = packItemsOf(pack);
-    if (root.AlloWordPracticeMedia && typeof root.AlloWordPracticeMedia.buildFlashcardsHtml === 'function') {
-      return root.AlloWordPracticeMedia.buildFlashcardsHtml(
-        { title: title, language: pack.language || 'en', items: items, words: items, options: pack.options || {} },
-        pack.options || {}
-      );
-    }
-    var rows = items.map(function (it) {
-      var boxes = phonemeBoxesOf(it).map(function (b) {
-        return '<span class="elkonin-box">' + escHtml(b) + '</span>';
-      }).join('');
-      var imgSrc = safeDataImg(it.image || it.picture);
-      var picHtml = imgSrc ? '<img class="card-pic" src="' + escHtml(imgSrc) + '" alt="' + escHtml(it.imageAlt || it.word) + '">' : '';
-      var defHtml = it.definition ? '<p class="def"><strong>Meaning:</strong> ' + escHtml(it.definition) + '</p>' : '';
-      var blanked = blankedExample(it.example, it.word);
-      var exHtml = blanked ? '<p class="ex"><strong>Sentence:</strong> ' + escHtml(blanked) + '</p>' : '';
-      return '<article class="fc-row">'
-        + '<div class="fc-side fc-front"><div class="side-tag">Front</div><div class="word">' + escHtml(it.word) + '</div><div class="elkonin">' + boxes + '</div></div>'
-        + '<div class="fc-side fc-back"><div class="side-tag">Back</div>' + picHtml + '<div class="back-text">' + defHtml + exHtml + '</div></div>'
-        + '</article>';
-    }).join('\n');
-    return [
-      '<!doctype html>',
-      '<html lang="en">',
-      '<head>',
-      '<meta charset="utf-8">',
-      '<meta name="viewport" content="width=device-width,initial-scale=1">',
-      '<title>' + escHtml(title) + ' — 2-Sided Flashcards</title>',
-      '<style>',
-      'body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;margin:20px;max-width:980px}',
-      'h1{font-size:20px;margin:0 0 6px}',
-      '.directions{font-size:13px;color:#334155;margin:0 0 14px}',
-      '.fc-row{display:grid;grid-template-columns:1fr 1fr;gap:0;border:2px solid #0f172a;margin-bottom:14px;page-break-inside:avoid;break-inside:avoid}',
-      '.fc-side{padding:14px;min-height:140px;box-sizing:border-box}',
-      '.fc-front{border-right:2px dashed #475569;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}',
-      '.fc-back{display:flex;gap:12px;align-items:center}',
-      '.side-tag{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#64748b;margin-bottom:6px}',
-      '.word{font-size:28px;font-weight:800;margin-bottom:10px}',
-      '.elkonin{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}',
-      '.elkonin-box{border:2px solid #334155;min-width:28px;height:30px;padding:0 6px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;border-radius:4px}',
-      '.card-pic{width:76px;height:76px;object-fit:contain;border:1px solid #cbd5e1;border-radius:6px;background:#fff;flex-shrink:0}',
-      '.back-text p{margin:0 0 6px;font-size:14px;line-height:1.4}',
-      '@media print{body{margin:10mm} .noprint{display:none}}',
-      '</style>',
-      '</head>',
-      '<body>',
-      '<h1>' + escHtml(title) + ' — Cut-and-Fold Flashcards</h1>',
-      '<p class="directions">Cut across each card row, fold along the dashed line, and tape or glue the front and back together.</p>',
-      rows,
-      '</body>',
-      '</html>',
-    ].join('\n');
+    // One builder for the app and for Packets: word_practice_media.js, loaded by this page.
+    return root.AlloWordPracticeMedia.buildFlashcardsHtml(
+      { title: title, language: pack.language || 'en', items: items, words: items, options: pack.options || {} },
+      pack.options || {}
+    );
   }
 
   function buildFrayerHtml(packArg) {
     var pack = activePack(packArg);
     var title = String(pack.title || 'Frayer Study Sheets');
     var items = packItemsOf(pack);
-    if (root.AlloWordPracticeMedia && typeof root.AlloWordPracticeMedia.buildFrayerHtml === 'function') {
-      return root.AlloWordPracticeMedia.buildFrayerHtml(
-        { title: title, language: pack.language || 'en', items: items, words: items, options: pack.options || {} },
-        pack.options || {}
-      );
-    }
-    var cards = items.map(function (it) {
-      var boxes = phonemeBoxesOf(it).map(function (b) {
-        return '<span class="elkonin-box">' + escHtml(b) + '</span>';
-      }).join('');
-      var imgSrc = safeDataImg(it.image || it.picture);
-      var picBlock = imgSrc
-        ? '<img class="card-pic" src="' + escHtml(imgSrc) + '" alt="' + escHtml(it.imageAlt || it.word) + '">'
-        : '<div class="sketch-space">Draw a quick sketch here</div>';
-      return '<section class="frayer-card">'
-        + '<header class="frayer-head"><h2 class="frayer-word">' + escHtml(it.word) + '</h2><div class="elkonin">' + boxes + '</div></header>'
-        + '<div class="frayer-grid">'
-        + '<div class="frayer-box"><h3>Meaning</h3><p>' + escHtml(it.definition || 'Write a meaning in your own words.') + '</p></div>'
-        + '<div class="frayer-box"><h3>Picture or sketch</h3>' + picBlock + '</div>'
-        + '<div class="frayer-box"><h3>Example sentence</h3><p>' + escHtml(it.example || '') + '</p></div>'
-        + '<div class="frayer-box"><h3>Write your own sentence</h3><div class="write-lines"><div></div><div></div></div></div>'
-        + '</div></section>';
-    }).join('\n');
-    return [
-      '<!doctype html>',
-      '<html lang="en">',
-      '<head>',
-      '<meta charset="utf-8">',
-      '<meta name="viewport" content="width=device-width,initial-scale=1">',
-      '<title>' + escHtml(title) + ' — Frayer Study Sheets</title>',
-      '<style>',
-      'body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;margin:20px;max-width:960px}',
-      'h1{font-size:20px;margin:0 0 12px}',
-      '.frayer-card{border:2px solid #0f172a;border-radius:8px;padding:12px;margin-bottom:18px;page-break-inside:avoid;break-inside:avoid}',
-      '.frayer-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;border-bottom:2px solid #0f172a;padding-bottom:8px;margin-bottom:10px}',
-      '.frayer-word{margin:0;font-size:24px;font-weight:800}',
-      '.elkonin{display:flex;flex-wrap:wrap;gap:6px}',
-      '.elkonin-box{border:2px solid #334155;min-width:26px;height:28px;padding:0 5px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;border-radius:4px}',
-      '.frayer-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}',
-      '.frayer-box{border:1px solid #475569;border-radius:6px;padding:10px;min-height:96px}',
-      '.frayer-box h3{margin:0 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:#334155}',
-      '.frayer-box p{margin:0;font-size:14px;line-height:1.4}',
-      '.card-pic{max-width:86px;max-height:86px;object-fit:contain;display:block}',
-      '.sketch-space{height:64px;border:1px dashed #94a3b8;border-radius:4px;display:grid;place-items:center;font-size:12px;color:#64748b}',
-      '.write-lines div{border-bottom:1px solid #94a3b8;height:26px}',
-      '@media print{body{margin:10mm} .frayer-card{page-break-inside:avoid;break-inside:avoid}}',
-      '</style>',
-      '</head>',
-      '<body>',
-      '<h1>' + escHtml(title) + ' — Frayer Study Sheets</h1>',
-      cards,
-      '</body>',
-      '</html>',
-    ].join('\n');
-  }
-
-  function sortingOrder(count, salt) {
-    var out = [];
-    for (var i = 0; i < count; i++) out.push(i);
-    if (count < 2) return out;
-    var seed = (salt >>> 0) || 1;
-    for (var j = count - 1; j > 0; j--) {
-      seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
-      var k = seed % (j + 1);
-      var tmp = out[j];
-      out[j] = out[k];
-      out[k] = tmp;
-    }
-    if (out[0] === 0 && count > 1) {
-      var swap = out[0];
-      out[0] = out[1];
-      out[1] = swap;
-    }
-    return out;
+    // One builder for the app and for Packets: word_practice_media.js, loaded by this page.
+    return root.AlloWordPracticeMedia.buildFrayerHtml(
+      { title: title, language: pack.language || 'en', items: items, words: items, options: pack.options || {} },
+      pack.options || {}
+    );
   }
 
   function buildSortingCardsHtml(packArg) {
     var pack = activePack(packArg);
     var title = String(pack.title || 'Word Sorting Cards');
     var items = packItemsOf(pack);
-    if (root.AlloWordPracticeMedia && typeof root.AlloWordPracticeMedia.buildSortingCardsHtml === 'function') {
-      return root.AlloWordPracticeMedia.buildSortingCardsHtml(
-        { title: title, language: pack.language || 'en', items: items, words: items, options: pack.options || {} },
-        pack.options || {}
-      );
-    }
-    var wordTiles = items.map(function (it) {
-      var boxes = phonemeBoxesOf(it).map(function (b) {
-        return '<span class="elkonin-box">' + escHtml(b) + '</span>';
-      }).join('');
-      return '<article class="sort-tile sort-word">'
-        + '<div class="tile-tag">Word</div>'
-        + '<div class="sort-word-text">' + escHtml(it.word) + '</div>'
-        + '<div class="elkonin">' + boxes + '</div>'
-        + '</article>';
-    }).join('\n');
-    var meaningTiles = sortingOrder(items.length, 37).map(function (idx) {
-      var it = items[idx];
-      var defBlank = blankedExample(it.definition, it.word);
-      var exBlank = blankedExample(it.example, it.word);
-      var defHtml = defBlank ? '<p class="sort-def"><strong>Meaning:</strong> ' + escHtml(defBlank) + '</p>' : '';
-      var exHtml = exBlank ? '<p class="sort-ex"><strong>Sentence:</strong> ' + escHtml(exBlank) + '</p>' : '';
-      return '<article class="sort-tile sort-meaning"><div class="tile-tag">Meaning</div>' + defHtml + exHtml + '</article>';
-    }).join('\n');
-    var picTiles = [];
-    sortingOrder(items.length, 91).forEach(function (idx) {
-      var it = items[idx];
-      var imgSrc = safeDataImg(it.image || it.picture);
-      if (!imgSrc) return;
-      picTiles.push('<article class="sort-tile sort-picture"><div class="tile-tag">Picture</div><img class="sort-pic" src="' + escHtml(imgSrc) + '" alt="Sorting picture card"></article>');
-    });
-    var picSection = picTiles.length
-      ? '<section class="sort-group"><h2>Picture cards (unlabeled)</h2><div class="sort-grid">' + picTiles.join('\n') + '</div></section>'
-      : '';
-    var keyRows = items.map(function (it, idx) {
-      var imgSrc = safeDataImg(it.image || it.picture);
-      var credit = (it.picture && (it.picture.credit || it.picture.attribution)) || it.imageCredit || it.credit || '';
-      var picText = imgSrc ? ('Yes' + (credit ? ' (' + escHtml(credit) + ')' : '')) : 'None attached';
-      return '<tr><td>' + (idx + 1) + '</td><td><strong>' + escHtml(it.word) + '</strong></td><td>' + escHtml(it.definition || '') + (it.example ? '<br><em>' + escHtml(it.example) + '</em>' : '') + '</td><td>' + picText + '</td></tr>';
-    }).join('\n');
-    return [
-      '<!doctype html>',
-      '<html lang="en">',
-      '<head>',
-      '<meta charset="utf-8">',
-      '<meta name="viewport" content="width=device-width,initial-scale=1">',
-      '<title>' + escHtml(title) + ' — Cut-Out Sorting Cards</title>',
-      '<style>',
-      'body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;margin:20px;max-width:980px}',
-      'h1{font-size:20px;margin:0 0 6px}h2{font-size:15px;margin:14px 0 8px;color:#1e293b}',
-      '.directions{font-size:13px;color:#334155;margin:0 0 12px}',
-      '.sort-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}',
-      '.sort-tile{border:2px dashed #334155;border-radius:8px;padding:12px;min-height:92px;box-sizing:border-box;page-break-inside:avoid;break-inside:avoid}',
-      '.tile-tag{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#64748b;margin-bottom:6px}',
-      '.sort-word{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}',
-      '.sort-word-text{font-size:24px;font-weight:800;margin-bottom:8px}',
-      '.elkonin{display:flex;flex-wrap:wrap;gap:5px;justify-content:center}',
-      '.elkonin-box{border:2px solid #334155;min-width:24px;height:26px;padding:0 5px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;border-radius:4px}',
-      '.sort-meaning p{margin:0 0 6px;font-size:13px;line-height:1.4}',
-      '.sort-picture{display:flex;flex-direction:column;align-items:center;justify-content:center}',
-      '.sort-pic{width:92px;height:92px;object-fit:contain;display:block}',
-      '.teacher-key{margin-top:24px;padding-top:14px;border-top:2px solid #0f172a;page-break-before:always;break-before:page}',
-      '.key-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}',
-      '.key-table th,.key-table td{border:1px solid #cbd5e1;padding:6px 8px;text-align:left;vertical-align:top}',
-      '.key-table th{background:#f1f5f9}',
-      '@media print{body{margin:10mm} .sort-tile{page-break-inside:avoid;break-inside:avoid} .teacher-key{page-break-before:always;break-before:page}}',
-      '</style>',
-      '</head>',
-      '<body>',
-      '<h1>' + escHtml(title) + ' — Cut-Out Sorting Cards</h1>',
-      '<p class="directions">Cut along the dashed lines and mix the piles. Match each word card with its meaning card' + (picTiles.length ? ' and picture card' : '') + '.</p>',
-      '<section class="sort-group"><h2>Word cards</h2><div class="sort-grid">' + wordTiles + '</div></section>',
-      '<section class="sort-group"><h2>Meaning cards (target word blanked)</h2><div class="sort-grid">' + meaningTiles + '</div></section>',
-      picSection,
-      '<section class="teacher-key"><h2>Teacher Answer &amp; Attribution Key</h2><table class="key-table"><thead><tr><th>#</th><th>Word</th><th>Meaning &amp; Example</th><th>Picture</th></tr></thead><tbody>' + keyRows + '</tbody></table></section>',
-      '</body>',
-      '</html>',
-    ].join('\n');
+    // One builder for the app and for Packets: word_practice_media.js, loaded by this page.
+    return root.AlloWordPracticeMedia.buildSortingCardsHtml(
+      { title: title, language: pack.language || 'en', items: items, words: items, options: pack.options || {} },
+      pack.options || {}
+    );
   }
 
   function buildWorksheetHtml(packArg) {
     var pack = activePack(packArg);
     var title = String(pack.title || 'Vocabulary Study Worksheet');
     var items = packItemsOf(pack);
-    if (root.AlloWordPracticeMedia && typeof root.AlloWordPracticeMedia.buildWorksheetHtml === 'function') {
-      return root.AlloWordPracticeMedia.buildWorksheetHtml(
-        { title: title, language: pack.language || 'en', items: items, words: items, options: pack.options || {} },
-        pack.options || {}
-      );
-    }
-    var bankChips = sortingOrder(items.length, 53).map(function (idx) {
-      var it = items[idx];
-      var boxes = phonemeBoxesOf(it).map(function (b) {
-        return '<span class="elkonin-box">' + escHtml(b) + '</span>';
-      }).join('');
-      return '<span class="bank-chip"><span class="bank-word">' + escHtml(it.word) + '</span>' + (boxes ? '<span class="elkonin">' + boxes + '</span>' : '') + '</span>';
-    }).join('\n');
-    var matchOrder = sortingOrder(items.length, 79);
-    var matchRows = matchOrder.map(function (idx, pos) {
-      var it = items[idx];
-      var defBlank = blankedExample(it.definition, it.word);
-      var imgSrc = safeDataImg(it.image || it.picture);
-      var picHtml = imgSrc ? '<img class="ws-pic" src="' + escHtml(imgSrc) + '" alt="Worksheet clue picture">' : '';
-      return '<li class="ws-match-item"><span class="ws-num">' + (pos + 1) + '.</span><span class="ws-blank">______________</span><span class="ws-def">' + escHtml(defBlank || it.boxes || '') + '</span>' + picHtml + '</li>';
-    }).join('\n');
-    var clozeOrder = sortingOrder(items.length, 107);
-    var clozeRows = clozeOrder.map(function (idx, pos) {
-      var it = items[idx];
-      var exBlank = blankedExample(it.example, it.word);
-      var text = exBlank ? escHtml(exBlank) : 'Write a sentence using one word from the Word Bank: ______________________________';
-      return '<li class="ws-cloze-item"><span class="ws-num">' + (pos + 1) + '.</span><span>' + text + '</span></li>';
-    }).join('\n');
-    var matchKeyRows = matchOrder.map(function (idx, pos) {
-      var it = items[idx];
-      var imgSrc = safeDataImg(it.image || it.picture);
-      var credit = (it.picture && (it.picture.credit || it.picture.attribution)) || it.imageCredit || it.credit || '';
-      return '<tr><td>' + (pos + 1) + '</td><td><strong>' + escHtml(it.word) + '</strong></td><td>' + escHtml(it.definition || '') + '</td><td>' + (imgSrc ? (credit ? escHtml(credit) : 'Included') : 'None') + '</td></tr>';
-    }).join('\n');
-    var clozeKeyRows = clozeOrder.map(function (idx, pos) {
-      var it = items[idx];
-      return '<li><strong>' + (pos + 1) + '. ' + escHtml(it.word) + '</strong>' + (it.example ? ' — ' + escHtml(it.example) : ' — (Student sentence)') + '</li>';
-    }).join('\n');
-    return [
-      '<!doctype html>',
-      '<html lang="en">',
-      '<head>',
-      '<meta charset="utf-8">',
-      '<meta name="viewport" content="width=device-width,initial-scale=1">',
-      '<title>' + escHtml(title) + ' — Cloze and Matching Worksheet</title>',
-      '<style>',
-      'body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;margin:20px;max-width:960px}',
-      'h1{font-size:20px;margin:0 0 8px}h2{font-size:15px;margin:16px 0 8px;color:#1e293b}',
-      '.ws-meta{display:flex;flex-wrap:wrap;gap:20px;font-size:14px;border-bottom:2px solid #0f172a;padding-bottom:8px;margin-bottom:12px}',
-      '.ws-word-bank{border:2px solid #334155;border-radius:8px;padding:10px 12px;background:#f8fafc;margin-bottom:14px}',
-      '.bank-list{display:flex;flex-wrap:wrap;gap:8px}.bank-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid #475569;border-radius:6px;padding:4px 8px;background:#fff}',
-      '.bank-word{font-weight:700;font-size:15px}.elkonin{display:inline-flex;gap:3px}',
-      '.elkonin-box{border:1px solid #64748b;min-width:16px;height:18px;padding:0 3px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border-radius:3px}',
-      '.ws-matching ol,.ws-cloze ol{margin:0;padding-left:0;list-style:none}',
-      '.ws-match-item,.ws-cloze-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #e2e8f0;font-size:14px;line-height:1.45;page-break-inside:avoid;break-inside:avoid}',
-      '.ws-num{font-weight:700;min-width:22px}.ws-blank{font-weight:700;color:#334155;white-space:nowrap}.ws-def{flex:1}',
-      '.ws-pic{width:54px;height:54px;object-fit:contain;border:1px solid #cbd5e1;border-radius:4px;background:#fff;flex-shrink:0}',
-      '.teacher-key{margin-top:24px;padding-top:14px;border-top:2px solid #0f172a;page-break-before:always;break-before:page}',
-      '.key-table{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0 12px}',
-      '.key-table th,.key-table td{border:1px solid #cbd5e1;padding:6px 8px;text-align:left;vertical-align:top}.key-table th{background:#f1f5f9}',
-      '@media print{body{margin:10mm} .ws-match-item,.ws-cloze-item{page-break-inside:avoid;break-inside:avoid} .teacher-key{page-break-before:always;break-before:page}}',
-      '</style>',
-      '</head>',
-      '<body>',
-      '<h1>' + escHtml(title) + ' — Cloze and Matching Worksheet</h1>',
-      '<div class="ws-meta"><span>Name: ______________________________</span><span>Date: ________________</span></div>',
-      '<section class="ws-word-bank"><h2>Word Bank</h2><div class="bank-list">' + bankChips + '</div></section>',
-      '<section class="ws-matching"><h2>Part 1 — Match Each Meaning and Picture</h2><ol>' + matchRows + '</ol></section>',
-      '<section class="ws-cloze"><h2>Part 2 — Fill in the Blank Sentences</h2><ol>' + clozeRows + '</ol></section>',
-      '<section class="teacher-key"><h2>Teacher Answer &amp; Attribution Key</h2><table class="key-table"><thead><tr><th>#</th><th>Word</th><th>Meaning</th><th>Picture</th></tr></thead><tbody>' + matchKeyRows + '</tbody></table><h3>Part 2 Answers</h3><ol>' + clozeKeyRows + '</ol></section>',
-      '</body>',
-      '</html>',
-    ].join('\n');
+    // One builder for the app and for Packets: word_practice_media.js, loaded by this page.
+    return root.AlloWordPracticeMedia.buildWorksheetHtml(
+      { title: title, language: pack.language || 'en', items: items, words: items, options: pack.options || {} },
+      pack.options || {}
+    );
   }
 
   function buildBingoHtml(packArg) {
     var pack = activePack(packArg);
     var title = String(pack.title || 'Vocabulary Classroom Bingo');
     var items = packItemsOf(pack);
-    if (root.AlloWordPracticeMedia && typeof root.AlloWordPracticeMedia.buildBingoHtml === 'function') {
-      return root.AlloWordPracticeMedia.buildBingoHtml(
-        { title: title, language: pack.language || 'en', items: items, words: items, options: pack.options || {} },
-        pack.options || {}
-      );
-    }
-    var boardCount = 6;
-    var gridSize = items.length >= 16 ? 4 : 3;
-    var cellCount = gridSize * gridSize;
-    var hasFree = gridSize === 3;
-    var needed = hasFree ? cellCount - 1 : cellCount;
-    var boardsHtml = [];
-    for (var b = 0; b < boardCount; b++) {
-      var pool = [];
-      if (items.length > 0) {
-        var pass = 0;
-        while (pool.length < needed) {
-          sortingOrder(items.length, 37 + b * 97 + pass * 131).forEach(function (idx) { pool.push(items[idx]); });
-          pass++;
-        }
-      }
-      var cursor = 0;
-      var rows = [];
-      for (var r = 0; r < gridSize; r++) {
-        var cells = [];
-        for (var c = 0; c < gridSize; c++) {
-          var pos = r * gridSize + c;
-          if (hasFree && pos === 4) {
-            cells.push('<td class="bingo-cell bingo-free"><div class="bingo-word">FREE</div><div class="bingo-sub">Center space</div></td>');
-            continue;
-          }
-          var it = pool[cursor++];
-          if (!it) {
-            cells.push('<td class="bingo-cell"><div class="bingo-word">____</div></td>');
-            continue;
-          }
-          var imgSrc = safeDataImg(it.image || it.picture);
-          var picHtml = imgSrc ? '<img class="bingo-pic" src="' + escHtml(imgSrc) + '" alt="Bingo picture cue">' : '';
-          cells.push('<td class="bingo-cell"><div class="bingo-word">' + escHtml(it.word) + '</div>' + picHtml + '</td>');
-        }
-        rows.push('<tr>' + cells.join('') + '</tr>');
-      }
-      boardsHtml.push(
-        '<section class="bingo-board" data-board="' + (b + 1) + '">'
-        + '<h2>' + escHtml(title) + ' — Board ' + (b + 1) + '</h2>'
-        + '<table class="bingo-grid" data-grid-size="' + gridSize + '"><tbody>' + rows.join('') + '</tbody></table>'
-        + '</section>'
-      );
-    }
-    var callerRows = sortingOrder(items.length, 211).map(function (idx, pos) {
-      var it = items[idx];
-      var defBlank = blankedExample(it.definition, it.word);
-      var exBlank = blankedExample(it.example, it.word);
-      var parts = [];
-      if (defBlank) parts.push(escHtml(defBlank));
-      if (exBlank) parts.push('<em>' + escHtml(exBlank) + '</em>');
-      if (!parts.length) parts.push('Sound pattern: ' + escHtml(phonemeBoxesOf(it).join(' / ')));
-      var imgSrc = safeDataImg(it.image || it.picture);
-      var credit = (it.picture && (it.picture.credit || it.picture.attribution)) || it.imageCredit || it.credit || '';
-      var picInfo = imgSrc ? ('Yes' + (credit ? ' (' + escHtml(credit) + ')' : '')) : 'None';
-      return '<tr><td>' + (pos + 1) + '</td><td><strong>' + escHtml(it.word) + '</strong></td><td>' + parts.join('<br>') + '</td><td>' + picInfo + '</td></tr>';
-    }).join('\n');
-    return [
-      '<!doctype html>',
-      '<html lang="en">',
-      '<head>',
-      '<meta charset="utf-8">',
-      '<meta name="viewport" content="width=device-width,initial-scale=1">',
-      '<title>' + escHtml(title) + ' — Classroom Bingo Boards</title>',
-      '<style>',
-      'body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;margin:20px;max-width:1020px}',
-      'h1{font-size:20px;margin:0 0 6px}h2{font-size:15px;margin:0 0 8px;color:#1e293b}',
-      '.directions{font-size:13px;color:#334155;margin:0 0 14px}',
-      '.bingo-boards{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:14px}',
-      '.bingo-board{border:2px solid #0f172a;border-radius:8px;padding:10px;background:#fff;page-break-inside:avoid;break-inside:avoid}',
-      '.bingo-grid{width:100%;border-collapse:collapse;table-layout:fixed}',
-      '.bingo-cell{border:2px solid #334155;height:86px;padding:6px;text-align:center;vertical-align:middle}',
-      '.bingo-free{background:#f1f5f9}',
-      '.bingo-word{font-size:15px;font-weight:800;line-height:1.2;word-break:break-word}',
-      '.bingo-sub{font-size:11px;color:#475569;margin-top:3px}',
-      '.bingo-pic{width:38px;height:38px;object-fit:contain;display:block;margin:4px auto 0}',
-      '.teacher-key{margin-top:24px;padding-top:14px;border-top:2px solid #0f172a;page-break-before:always;break-before:page}',
-      '.key-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}',
-      '.key-table th,.key-table td{border:1px solid #cbd5e1;padding:6px 8px;text-align:left;vertical-align:top}.key-table th{background:#f1f5f9}',
-      '@media print{body{margin:10mm} .noprint{display:none} .bingo-board{page-break-inside:avoid;break-inside:avoid} .teacher-key{page-break-before:always;break-before:page}}',
-      '</style>',
-      '</head>',
-      '<body>',
-      '<h1>' + escHtml(title) + ' — Classroom Bingo Boards</h1>',
-      '<p class="directions">Print one board per student or pair. Call the meaning or fill-in-the-blank clue from the Teacher Caller Sheet on the last page.</p>',
-      '<div class="bingo-boards">' + boardsHtml.join('\n') + '</div>',
-      '<section class="teacher-key"><h2>Teacher Caller Clues &amp; Attribution Key</h2><table class="key-table"><thead><tr><th>Call #</th><th>Target Word</th><th>Caller Clue (target word blanked)</th><th>Picture</th></tr></thead><tbody>' + callerRows + '</tbody></table></section>',
-      '</body>',
-      '</html>',
-    ].join('\n');
+    // One builder for the app and for Packets: word_practice_media.js, loaded by this page.
+    return root.AlloWordPracticeMedia.buildBingoHtml(
+      { title: title, language: pack.language || 'en', items: items, words: items, options: pack.options || {} },
+      pack.options || {}
+    );
   }
 
   function buildLoopGameHtml(packArg) {
     var pack = activePack(packArg);
     var title = String(pack.title || 'I Have, Who Has Loop Cards');
     var items = packItemsOf(pack);
-    if (root.AlloWordPracticeMedia && typeof root.AlloWordPracticeMedia.buildLoopGameHtml === 'function') {
-      return root.AlloWordPracticeMedia.buildLoopGameHtml(
-        { title: title, language: pack.language || 'en', items: items, words: items, options: pack.options || {} },
-        pack.options || {}
-      );
-    }
-    var chain = sortingOrder(items.length, 313).map(function (idx) { return items[idx]; });
-    var cardsHtml = chain.length
-      ? chain.map(function (cur, i) {
-          var next = chain[(i + 1) % chain.length];
-          var boxes = phonemeBoxesOf(cur).map(function (b) { return '<span class="elkonin-box">' + escHtml(b) + '</span>'; }).join('');
-          var imgSrc = safeDataImg(cur.image || cur.picture);
-          var picHtml = imgSrc ? '<img class="loop-pic" src="' + escHtml(imgSrc) + '" alt="I have picture cue">' : '';
-          var nextDef = blankedExample(next.definition, next.word);
-          var nextEx = blankedExample(next.example, next.word);
-          var whoClue = nextDef || nextEx || ('the word with sound boxes: ' + phonemeBoxesOf(next).join(' / '));
-          var roleTag = i === 0 ? 'Card 1 — Start Card' : (i === chain.length - 1 && chain.length > 1 ? ('Card ' + (i + 1) + ' — Loops to Card 1') : ('Card ' + (i + 1)));
-          return '<article class="loop-card" data-step="' + (i + 1) + '">'
-            + '<div class="loop-tag">' + escHtml(roleTag) + '</div>'
-            + '<div class="loop-have"><div class="loop-label">I have</div><div class="loop-word">' + escHtml(cur.word) + '</div>'
-            + (boxes ? '<div class="elkonin">' + boxes + '</div>' : '')
-            + picHtml + '</div>'
-            + '<div class="loop-who"><div class="loop-label">Who has...</div><p class="loop-clue">' + escHtml(whoClue) + '</p></div>'
-            + '</article>';
-        }).join('\n')
-      : '<article class="loop-card"><div class="loop-have"><div class="loop-label">Add words</div><p class="loop-clue">Add at least two words before printing loop cards.</p></div></article>';
-    var keyRows = chain.map(function (cur, i) {
-      var next = chain[(i + 1) % chain.length];
-      var nextDef = blankedExample(next.definition, next.word);
-      var nextEx = blankedExample(next.example, next.word);
-      var whoClue = nextDef || nextEx || ('Sound boxes: ' + phonemeBoxesOf(next).join(' / '));
-      var imgSrc = safeDataImg(cur.image || cur.picture);
-      var credit = (cur.picture && (cur.picture.credit || cur.picture.attribution)) || cur.imageCredit || cur.credit || '';
-      var picInfo = imgSrc ? ('Yes' + (credit ? ' (' + escHtml(credit) + ')' : '')) : 'None';
-      return '<tr><td>' + (i + 1) + '</td><td><strong>' + escHtml(cur.word) + '</strong></td><td>' + escHtml(whoClue) + '</td><td><strong>' + escHtml(next.word) + '</strong></td><td>' + picInfo + '</td></tr>';
-    }).join('\n');
-    return [
-      '<!doctype html>',
-      '<html lang="en">',
-      '<head>',
-      '<meta charset="utf-8">',
-      '<meta name="viewport" content="width=device-width,initial-scale=1">',
-      '<title>' + escHtml(title) + ' — I Have, Who Has Cards</title>',
-      '<style>',
-      'body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;margin:20px;max-width:980px}',
-      'h1{font-size:20px;margin:0 0 6px}h2{font-size:15px;margin:0 0 8px;color:#1e293b}',
-      '.directions{font-size:13px;color:#334155;margin:0 0 14px}',
-      '.loop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}',
-      '.loop-card{border:2px dashed #334155;border-radius:10px;padding:12px;background:#fff;display:flex;flex-direction:column;justify-content:space-between;min-height:190px;page-break-inside:avoid;break-inside:avoid}',
-      '.loop-tag{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#475569;margin-bottom:6px}',
-      '.loop-have{border-bottom:2px solid #cbd5e1;padding-bottom:10px;margin-bottom:10px;text-align:center}',
-      '.loop-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#334155;margin-bottom:4px}',
-      '.loop-word{font-size:24px;font-weight:800;margin-bottom:6px}',
-      '.elkonin{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-bottom:6px}',
-      '.elkonin-box{border:1px solid #334155;min-width:20px;height:22px;padding:0 4px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;border-radius:4px}',
-      '.loop-pic{width:54px;height:54px;object-fit:contain;display:block;margin:4px auto 0}',
-      '.loop-who{text-align:left}.loop-clue{margin:0;font-size:13px;line-height:1.4}',
-      '.teacher-key{margin-top:24px;padding-top:14px;border-top:2px solid #0f172a;page-break-before:always;break-before:page}',
-      '.key-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}',
-      '.key-table th,.key-table td{border:1px solid #cbd5e1;padding:6px 8px;text-align:left;vertical-align:top}.key-table th{background:#f1f5f9}',
-      '@media print{body{margin:10mm} .noprint{display:none} .loop-card{page-break-inside:avoid;break-inside:avoid} .teacher-key{page-break-before:always;break-before:page}}',
-      '</style>',
-      '</head>',
-      '<body>',
-      '<h1>' + escHtml(title) + ' — I Have, Who Has Cards</h1>',
-      '<p class="directions">Cut along the dashed borders and deal one or more cards to each student. Card 1 reads "Who has..." to start the closed chain back to Card 1.</p>',
-      '<div class="loop-grid">' + cardsHtml + '</div>',
-      '<section class="teacher-key"><h2>Teacher Chain Sequence &amp; Attribution Key</h2><table class="key-table"><thead><tr><th>Step #</th><th>Student Says "I have..."</th><th>Student Reads "Who has..." Clue</th><th>Next Card Answer</th><th>Picture</th></tr></thead><tbody>' + keyRows + '</tbody></table></section>',
-      '</body>',
-      '</html>',
-    ].join('\n');
+    // One builder for the app and for Packets: word_practice_media.js, loaded by this page.
+    return root.AlloWordPracticeMedia.buildLoopGameHtml(
+      { title: title, language: pack.language || 'en', items: items, words: items, options: pack.options || {} },
+      pack.options || {}
+    );
   }
 
   function buildWordWallHtml(packArg) {
     var pack = activePack(packArg);
     var title = String(pack.title || 'Classroom Word Wall Cards');
     var items = packItemsOf(pack);
-    if (root.AlloWordPracticeMedia && typeof root.AlloWordPracticeMedia.buildWordWallHtml === 'function') {
-      return root.AlloWordPracticeMedia.buildWordWallHtml(
-        { title: title, language: pack.language || 'en', items: items, words: items, options: pack.options || {} },
-        pack.options || {}
-      );
-    }
-    var cleanBang = function (s) { return escHtml(String(s == null ? '' : s).replace(/!/g, '.')); };
-    var cards = items.map(function (it, idx) {
-      var boxes = phonemeBoxesOf(it).map(function (b) { return '<span class="elkonin-box">' + cleanBang(b) + '</span>'; }).join('');
-      var imgSrc = safeDataImg(it.image || it.picture);
-      var picHtml = imgSrc ? '<img class="wall-pic" src="' + escHtml(imgSrc) + '" alt="' + cleanBang(it.word) + '">' : '';
-      var defText = it.definition || 'Meaning to discuss in class.';
-      var exHtml = it.example ? '<p class="wall-ex"><em>' + cleanBang(it.example) + '</em></p>' : '';
-      return '<article class="wall-card" data-card="' + (idx + 1) + '">'
-        + '<div class="wall-top"><div class="wall-word">' + cleanBang(it.word) + '</div>'
-        + (boxes ? '<div class="elkonin">' + boxes + '</div>' : '') + '</div>'
-        + '<div class="wall-body">' + picHtml
-        + '<div class="wall-text"><p class="wall-def">' + cleanBang(defText) + '</p>' + exHtml + '</div></div>'
-        + '</article>';
-    }).join('\n');
-    var keyRows = items.map(function (it, idx) {
-      var imgSrc = safeDataImg(it.image || it.picture);
-      var credit = (it.picture && (it.picture.credit || it.picture.attribution)) || it.imageCredit || it.credit || '';
-      var picInfo = imgSrc ? ('Yes' + (credit ? ' (' + cleanBang(credit) + ')' : '')) : 'None';
-      return '<tr><td>' + (idx + 1) + '</td><td><strong>' + cleanBang(it.word) + '</strong></td><td>' + cleanBang(phonemeBoxesOf(it).join(' / ')) + '</td><td>' + cleanBang(it.definition || '') + '</td><td>' + picInfo + '</td></tr>';
-    }).join('\n');
-    return [
-      '<!doctype html>',
-      '<html lang="en">',
-      '<head>',
-      '<meta charset="utf-8">',
-      '<meta name="viewport" content="width=device-width,initial-scale=1">',
-      '<title>' + cleanBang(title) + ' — Classroom Word Wall Cards</title>',
-      '<style>',
-      'body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;margin:20px;max-width:980px}',
-      '.wall-list{display:grid;grid-template-columns:1fr;gap:14px}',
-      '.wall-card{border:2px solid #0f172a;border-radius:10px;padding:14px 16px;background:#fff;page-break-inside:avoid;break-inside:avoid}',
-      '.wall-top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;border-bottom:2px solid #cbd5e1;padding-bottom:10px;margin-bottom:10px}',
-      '.wall-word{font-size:40px;font-weight:900;line-height:1.1}',
-      '.elkonin{display:flex;flex-wrap:wrap;gap:5px}',
-      '.elkonin-box{border:2px solid #334155;min-width:26px;height:28px;padding:0 6px;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;border-radius:5px}',
-      '.wall-body{display:flex;gap:14px;align-items:flex-start}',
-      '.wall-pic{width:88px;height:88px;object-fit:contain;border:1px solid #cbd5e1;border-radius:8px;flex-shrink:0}',
-      '.wall-text{flex:1}.wall-def{margin:0 0 6px;font-size:15px}.wall-ex{margin:0;font-size:13px;color:#334155}',
-      '.teacher-key{margin-top:24px;padding-top:14px;border-top:2px solid #0f172a;page-break-before:always;break-before:page}',
-      '.key-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}',
-      '.key-table th,.key-table td{border:1px solid #cbd5e1;padding:6px 8px;text-align:left}.key-table th{background:#f1f5f9}',
-      '@media print{body{margin:10mm} .noprint{display:none} .wall-card{page-break-inside:avoid;break-inside:avoid} .teacher-key{page-break-before:always;break-before:page}}',
-      '</style>',
-      '</head>',
-      '<body>',
-      '<h1>' + cleanBang(title) + ' — Classroom Word Wall Cards</h1>',
-      '<div class="wall-list">' + cards + '</div>',
-      '<section class="teacher-key"><h2>Teacher Unit Word Wall Reference &amp; Attribution Key</h2><table class="key-table"><thead><tr><th>#</th><th>Word</th><th>Sound Boxes</th><th>Meaning</th><th>Picture</th></tr></thead><tbody>' + keyRows + '</tbody></table></section>',
-      '</body>',
-      '</html>',
-    ].join('\n');
+    // One builder for the app and for Packets: word_practice_media.js, loaded by this page.
+    return root.AlloWordPracticeMedia.buildWordWallHtml(
+      { title: title, language: pack.language || 'en', items: items, words: items, options: pack.options || {} },
+      pack.options || {}
+    );
   }
 
   function openInSymbolRunner(packArg) {
@@ -1246,6 +751,13 @@
     }
 
     var startWords = enrichItems(initialTitle, initialWords);
+    // The annotation tools are the app's own suite, bundled once in word_practice_annotation_assets.js. The app has
+    // the suite already; this page starts it from that bundle (run(), no eval: the page's policy allows only its own
+    // scripts), so Annotate is on the presenter here as it is in the app and in the saved offline file.
+    var annoAssets = root.AlloWordPracticeAnnotationAssets;
+    if (!(root.AlloModules && root.AlloModules.AnnotationSuite) && annoAssets && typeof annoAssets.run === 'function') {
+      try { annoAssets.run(); } catch (annoError) { /* the presenter works without Annotate */ }
+    }
     controller = wp.mount(host, {
       title: initialTitle,
       language: 'en',

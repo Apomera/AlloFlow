@@ -131,7 +131,17 @@ function _alloParseDocDirectionsMarkdown(text) {
 // All functions receive their dependencies as parameters.
 
 var warnLog = window.warnLog || function() { console.warn.apply(console, arguments); };
-var processMathHTML = window.processMathHTML || function(t) { return t; };
+// Math formatting. The app never sets window.processMathHTML, so this used to
+// fall back to returning the text unchanged: math in an exported pack was
+// neither formatted nor escaped. Resolved per call, from the app's text helpers
+// (loaded at startup); the last resort escapes and does not format.
+var processMathHTML = function(t) {
+  var helpers = window.AlloModules && window.AlloModules.TextPipelineHelpers;
+  var format = typeof window.processMathHTML === 'function' ? window.processMathHTML
+    : (helpers && typeof helpers.processMathHTML === 'function' ? helpers.processMathHTML : null);
+  if (format) return format(t);
+  return String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+};
 
 // ── Scoring helpers (credibility fixes C + D, 2026-06-20) ───────────────────
 // C (count-aware): weight a violation's deduction by HOW MANY instances occur (the per-issue
@@ -53122,7 +53132,7 @@ function projectStudentGuideData(data, mode) {
               + 'html[data-alloflow-theme="hc"] .applied-challenge-export .ace-panel,html[data-alloflow-theme="hc"] .applied-challenge-export .ace-card,html[data-alloflow-theme="hc"] .applied-challenge-export .ace-phase{border-width:2px;}'
               + '</style>';
           return '\n              <div class="section applied-challenge-export" id="' + esc(itemId) + '">' + aceStyle
-              + '<h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid #c2410c;">&#127919; ' + title + ' <span style="font-size:max(12px, 0.65em);font-weight:normal;margin-left:8px;">' + (isTeacher ? '(' + esc(L.studio) + ')' : '') + '</span></h2>'
+              + '<h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid #c2410c;">&#127919; ' + esc(title) + ' <span style="font-size:max(12px, 0.65em);font-weight:normal;margin-left:8px;">' + (isTeacher ? '(' + esc(L.studio) + ')' : '') + '</span></h2>'
               + (chips ? '<div class="ace-chips">' + chips + '</div>' : '')
               + (m.visual?.image && m.visual?.alt ? '<figure><img src="' + esc(m.visual.image) + '" alt="' + esc(m.visual.alt) + '" style="max-width:100%;max-height:360px;object-fit:contain"><figcaption>' + esc(m.visual.purpose) + '</figcaption></figure>' : '')
               + (m.instructions ? '<p class="ace-p">' + esc(m.instructions) + '</p>' : '')

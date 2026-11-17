@@ -52,6 +52,7 @@
 .awp-picture-toolbar{display:flex;flex-wrap:wrap;gap:.5rem;margin:.5rem 0}
 .awp-picture-list{display:grid;gap:.5rem;max-height:18rem;overflow:auto;overscroll-behavior:contain;margin-top:.5rem}
 .awp-picture-row{display:grid;grid-template-columns:56px minmax(0,1fr);gap:.625rem;align-items:start;padding:.5rem;border:1px solid #d5deeb;border-radius:8px;background:#f8fafc}
+.awp-text-edit{display:grid;gap:.5rem;margin-top:.5rem;min-width:0}.awp-text-edit label{display:grid;gap:.25rem;font-weight:600}.awp .awp-text-edit textarea{inline-size:100%;min-block-size:3.5rem;font:inherit;padding:.5rem;border:1px solid #64748b;border-radius:8px;background:white;color:#14213d}
 .awp-picture-thumb{width:56px;height:56px;object-fit:contain;border:1px solid #cbd5e1;border-radius:6px;background:#fff}
 .awp-picture-empty{width:56px;height:56px;display:flex;align-items:center;justify-content:center;border:1px dashed #94a3b8;border-radius:6px;font-size:.75rem;color:#45536a;text-align:center;background:#fff;padding:.125rem}
 .awp-picture-meta{min-width:0;display:grid;gap:.375rem}
@@ -1215,7 +1216,7 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
     make('p', tx('word_practice.words_note', 'Up to 200 words or short phrases. Existing meanings, activities and recordings stay with words you keep.'), left, 'awp-note');
     const meaningChoices = make('fieldset', null, left, 'awp-meaning-choices'); meaningChoices.hidden = true;
     const pictureDetails = make('details', null, left, 'awp-picture-manager');
-    make('summary', tx('word_practice.pictures_manage', 'Card pictures (import or switch)'), pictureDetails);
+    make('summary', tx('word_practice.cards_manage', 'Card pictures and meanings (edit)'), pictureDetails);
     const pictureToolbar = make('div', null, pictureDetails, 'awp-picture-toolbar');
     const autoFillPicturesBtn = make('button', tx('word_practice.auto_fill_pictures', 'Auto-fill missing pictures'), pictureToolbar); autoFillPicturesBtn.type = 'button'; autoFillPicturesBtn.dataset.awpAutoFillPictures = 'true';
     const batchImportBtn = make('button', tx('word_practice.import_matching_images', 'Import images…'), pictureToolbar); batchImportBtn.type = 'button';
@@ -1613,6 +1614,15 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
       }
       return hits;
     }
+    // The teacher's own meaning and example sentence for one word (2026-11-16). The catalogue is updated too, so the
+    // edit stays when the word list is read again; resolveEntry (a prepared word bank) only fills words it has not seen.
+    let activeTextRowId = '';
+    function applyWordText(entryId, definition, example) {
+      const updateItem = entry => entry ? { ...entry, definition: core.text(definition, 1000), example: core.text(example, 1000), textEdited: true } : entry;
+      if (catalogue.has(entryId)) catalogue.set(entryId, updateItem(catalogue.get(entryId)));
+      pack = core.normalizeInput({ ...pack, words: pack.items.map(item => item.id === entryId ? updateItem(item) : item), options: options() });
+      remember(pack); lastPictureKey = ''; previewContentKey = ''; updateCoverage();
+    }
     function applyWordPicture(entryId, src, alt, attribution) {
       const safe = core.safePicture(src);
       if (!safe) throw new Error(tx('word_practice.picture_invalid', 'That image could not be added. Choose a PNG, JPEG, GIF, WebP, or SVG image.'));
@@ -1661,7 +1671,7 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
     }
     function renderPictureManager(current) {
       pictureDetails.hidden = !current.items.length;
-      const key = JSON.stringify([activeSymbolRowId, current.items.map(item => [item.id, item.word, item.picture ? [item.picture.src.length, item.picture.alt, item.picture.credit] : null])]);
+      const key = JSON.stringify([activeSymbolRowId, activeTextRowId, current.items.map(item => [item.id, item.word, item.definition, item.example, item.picture ? [item.picture.src.length, item.picture.alt, item.picture.credit] : null])]);
       if (key === lastPictureKey) return;
       lastPictureKey = key;
       pictureList.replaceChildren();
@@ -1698,6 +1708,34 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
             const nextAlt = core.text(altInput.value, 1000) || item.word;
             applyWordPicture(item.id, item.picture.src, nextAlt, item.imageAttribution || item.picture.credit);
           });
+        }
+        const textBtn = make('button', tx('word_practice.edit_meaning', 'Edit meaning…'), rowBtns); textBtn.type = 'button';
+        textBtn.dataset.editText = item.id;
+        textBtn.setAttribute('aria-expanded', String(activeTextRowId === item.id));
+        textBtn.setAttribute('aria-label', tx('word_practice.edit_meaning_for', 'Edit the meaning and sentence for {word}', { word: item.word }));
+        textBtn.onclick = () => { activeTextRowId = activeTextRowId === item.id ? '' : item.id; lastPictureKey = ''; renderPictureManager(pack); const again = pictureList.querySelector('[data-edit-text="' + item.id + '"]'); if (activeTextRowId) pictureList.querySelector('.awp-text-edit textarea')?.focus(); else again?.focus(); };
+        if (activeTextRowId === item.id) {
+          const editor = make('div', null, meta, 'awp-text-edit');
+          const fieldFor = (labelText, value, name) => {
+            const label = make('label', null, editor);
+            make('span', labelText, label);
+            const area = make('textarea', null, label); area.rows = 2; area.maxLength = 1000; area.value = value || ''; area.dataset.editField = name;
+            setLanguage(area, core.fieldLanguage(item, name === 'definition' ? 'definition' : 'example', current.language));
+            return area;
+          };
+          const meaningArea = fieldFor(tx('word_practice.meaning_label', 'Meaning'), item.definition, 'definition');
+          const sentenceArea = fieldFor(tx('word_practice.sentence_label', 'Example sentence'), item.example, 'example');
+          const editRow = make('div', null, editor, 'awp-row');
+          const saveText = make('button', tx('word_practice.save_meaning', 'Save'), editRow, 'awp-primary'); saveText.type = 'button'; saveText.dataset.editSave = item.id;
+          saveText.onclick = () => {
+            applyWordText(item.id, meaningArea.value, sentenceArea.value);
+            activeTextRowId = ''; lastPictureKey = ''; renderPictureManager(pack);
+            status.textContent = tx('word_practice.meaning_updated', 'Meaning updated for {word}. It is used on the cards, the offline file and the printed sheets.', { word: item.word });
+            pictureList.querySelector('[data-edit-text="' + item.id + '"]')?.focus();
+          };
+          const closeText = make('button', tx('word_practice.close', 'Close'), editRow); closeText.type = 'button';
+          closeText.onclick = () => { activeTextRowId = ''; lastPictureKey = ''; renderPictureManager(pack); pictureList.querySelector('[data-edit-text="' + item.id + '"]')?.focus(); };
+          [meaningArea, sentenceArea].forEach(area => area.addEventListener('change', event => event.stopPropagation()));
         }
         if (symbolsAvailable && activeSymbolRowId === item.id) {
           const picker = make('div', null, meta, 'awp-symbol-picker');

@@ -18856,7 +18856,7 @@ Return ONLY JSON:
               blocked.forEach(({ el, hadInert, ariaHidden }) => {
                 if (!hadInert) el.removeAttribute("inert");
                 if (ariaHidden == null) el.removeAttribute("aria-hidden");
-                else el.setAttribute("aria-hidden", ariaHidden);
+                else if (ariaHidden !== "true") el.setAttribute("aria-hidden", ariaHidden);
               });
               try {
                 if (opener && opener.isConnected && typeof opener.focus === "function") opener.focus();

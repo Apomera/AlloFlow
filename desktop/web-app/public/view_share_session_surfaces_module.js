@@ -546,11 +546,12 @@ function ClassMailboxSetupView(props) {
     onClick: connectMailbox,
     disabled: mbBusy,
     className: "w-full flex items-center justify-center gap-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg p-2.5 transition-all disabled:opacity-60"
-  }, connectLabel)), mbConfig && Number(mbConfig.v) > 0 && Number(mbConfig.v) < 29 && /*#__PURE__*/React.createElement("div", {
-    className: "mb-3 bg-amber-50 border-2 border-amber-200 rounded-xl p-3"
+  }, connectLabel)), mbConfig && Number(mbConfig.v) > 0 && Number(mbConfig.v) < 30 && /*#__PURE__*/React.createElement("div", {
+    className: "mb-3 bg-amber-50 border-2 border-amber-200 rounded-xl p-3",
+    "data-mailbox-update-notice": mbConfig.v
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xs font-bold text-amber-800 mb-2"
-  }, t('mailbox.your_mailbox_script_is_v') || 'Your mailbox script is v', mbConfig.v, ". ", Number(mbConfig.v) < 28 ? tx('mailbox.owner_update_v28', 'Update to v28 to require owner-verified setup and prevent public first-caller enrollment. Existing tokens, Drive files and classroom data are preserved. Keep the same deployment URL:') : tx('mailbox.update_v29_pickup', 'Update to v29 so the Submission Inbox can collect student submissions from the mailbox, with no Drive downloads. Existing tokens, Drive files and classroom data are preserved. Keep the same deployment URL:')), /*#__PURE__*/React.createElement("ol", {
+  }, t('mailbox.your_mailbox_script_is_v') || 'Your mailbox script is v', mbConfig.v, ". ", Number(mbConfig.v) < 28 ? tx('mailbox.owner_update_v28', 'Update to v28 to require owner-verified setup and prevent public first-caller enrollment. Existing tokens, Drive files and classroom data are preserved. Keep the same deployment URL:') : Number(mbConfig.v) < 29 ? tx('mailbox.update_v29_pickup', 'Update to v29 so the Submission Inbox can collect student submissions from the mailbox, with no Drive downloads. Existing tokens, Drive files and classroom data are preserved. Keep the same deployment URL:') : tx('mailbox.update_v30_fixes', 'Update to v30 for security and privacy fixes: stricter sign-in checks, sign-up and availability polls erased on their delete date, and a page reader that refuses private network addresses. Existing tokens, Drive files and classroom data are preserved. Keep the same deployment URL:')), /*#__PURE__*/React.createElement("ol", {
     className: "list-decimal list-inside text-xs text-amber-900 space-y-1"
   }, /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("button", {
     type: "button",

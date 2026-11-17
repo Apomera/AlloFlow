@@ -9,7 +9,7 @@
      The file runs in a sandboxed frame: it cannot read anything this site keeps in the browser.
      connect-src blob: lets the page read the built file from the maker tab; frame-src blob: lets it show it.
      Nothing on this page can reach the network. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src data: blob:; connect-src blob:; frame-src blob:; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src data: blob:; font-src data:; connect-src blob:; frame-src blob:; form-action 'none'; base-uri 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="robots" content="noindex">
 <title>Try the file</title>

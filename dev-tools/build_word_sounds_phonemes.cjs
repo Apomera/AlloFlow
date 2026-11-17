@@ -47,7 +47,48 @@ const SUPPLEMENT_ARPABET = {
   subduction: [['S', 'AH0', 'B', 'D', 'AH1', 'K', 'SH', 'AH0', 'N']],
   transpiration: [['T', 'R', 'AE2', 'N', 'S', 'P', 'ER0', 'EY1', 'SH', 'AH0', 'N']],
   vacuole: [['V', 'AE1', 'K', 'Y', 'UW0', 'OW2', 'L']],
+  // 2026-11-16: 19 words of the app's own lists (word family presets, compounds) that CMUdict does not have. Each already
+  // has a recording in word_audio_kokoro_bank.json and could not be used, for want of its sounds. Written by hand from the
+  // CMUdict entries of their parts (bath + mat, tree + house); splotch as blotch, thingamajig from the common pronunciation.
+  bathmat: [['B', 'AE1', 'TH', 'M', 'AE2', 'T']],
+  bookbag: [['B', 'UH1', 'K', 'B', 'AE2', 'G']],
+  cornflake: [['K', 'AO1', 'R', 'N', 'F', 'L', 'EY2', 'K']],
+  fishtail: [['F', 'IH1', 'SH', 'T', 'EY2', 'L']],
+  gumdrop: [['G', 'AH1', 'M', 'D', 'R', 'AA2', 'P']],
+  handprint: [['HH', 'AE1', 'N', 'D', 'P', 'R', 'IH2', 'N', 'T']],
+  litterbug: [['L', 'IH1', 'T', 'ER0', 'B', 'AH2', 'G']],
+  lovebug: [['L', 'AH1', 'V', 'B', 'AH2', 'G']],
+  lunchbox: [['L', 'AH1', 'N', 'CH', 'B', 'AA2', 'K', 'S']],
+  pigtail: [['P', 'IH1', 'G', 'T', 'EY2', 'L']],
+  sandpit: [['S', 'AE1', 'N', 'D', 'P', 'IH2', 'T']],
+  seahorse: [['S', 'IY1', 'HH', 'AO2', 'R', 'S']],
+  shutterbug: [['SH', 'AH1', 'T', 'ER0', 'B', 'AH2', 'G']],
+  splotch: [['S', 'P', 'L', 'AA1', 'CH']],
+  taillight: [['T', 'EY1', 'L', 'L', 'AY2', 'T']],
+  teardrop: [['T', 'IH1', 'R', 'D', 'R', 'AA2', 'P']],
+  thingamajig: [['TH', 'IH1', 'NG', 'AH0', 'M', 'AH0', 'JH', 'IH2', 'G']],
+  treehouse: [['T', 'R', 'IY1', 'HH', 'AW2', 'S']],
+  whiteboard: [['W', 'AY1', 'T', 'B', 'AO2', 'R', 'D']],
+  // 2026-11-16: 12 of the ASKED_WORDS below that CMUdict does not have, written by hand in its notation.
+  addend: [['AE1', 'D', 'EH2', 'N', 'D']],
+  antonym: [['AE1', 'N', 'T', 'AH0', 'N', 'IH2', 'M']],
+  autotroph: [['AO1', 'T', 'AH0', 'T', 'R', 'OW2', 'F']],
+  bicameral: [['B', 'AY0', 'K', 'AE1', 'M', 'ER0', 'AH0', 'L']],
+  emoji: [['IH0', 'M', 'OW1', 'JH', 'IY0']],
+  homograph: [['HH', 'AA1', 'M', 'AH0', 'G', 'R', 'AE2', 'F']],
+  hoodie: [['HH', 'UH1', 'D', 'IY0']],
+  hypotenuse: [['HH', 'AY0', 'P', 'AA1', 'T', 'AH0', 'N', 'UW2', 'S']],
+  rhombus: [['R', 'AA1', 'M', 'B', 'AH0', 'S']],
+  scalene: [['S', 'K', 'EY1', 'L', 'IY2', 'N']],
+  smoothie: [['S', 'M', 'UW1', 'DH', 'IY0']],
+  trapezoid: [['T', 'R', 'AE1', 'P', 'AH0', 'Z', 'OY2', 'D']],
 };
+// Words the owner asked for on 2026-11-16 that no other list brings in: everyday words of young children (found
+// missing in a spot check of 96 such words) and school terms the vocabulary list teaches. A teacher can then type them
+// in the Word Sounds maker. They are not marked as familiar, so the picker does not offer them at a grade level.
+const ASKED_WORDS = ('bumblebee bunny burrito chipmunk crayon crayons eraser hamburger hamster hoodie ketchup koala ninja panda raccoon '
+  + 'scooter selfie smoothie sneakers superhero taco tacos trampoline zombie emoji '
+  + 'addend antonym autotroph bicameral homograph hypotenuse rhombus scalene trapezoid').split(' ');
 // Non-word abbreviations, initialisms, and romanization fragments with 0 CYP-LEX books.
 const PRUNE_ABBREVS = new Set(
   'abd acc ala ane ast aug bae bt cac cea cit clo cyr dac dae dak dea duc eda ede edu ems fda feb ftp gib gil har hep hou hoy hr http hui hur hwa ise kao kew kos kuo kut lai lak lal lan leh lev lew lin lun mau mt mun nes nez nov nur oct oop ott pao pei php pia ppm qu ren roi rpm ru sgt sui sus sze tai tet tod tre tso tsu und ur vy wei wy'.split(' ')
@@ -111,6 +152,7 @@ function appWordLists(core) {
     rimeFamilies: flat(grab('RIME_FAMILIES')),
     compounds: [...core.compoundWords(), ...core.compoundPartWords(), ...core.syllableCountWords()],
     recordedBank: Object.keys(bank.words || {}),
+    asked: ASKED_WORDS,
     coreWords: [...(core.edgeWords || core.knownWords), ...(new Function('return ' + filler[1]))()],
   };
 }

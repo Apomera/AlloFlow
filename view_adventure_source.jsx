@@ -606,8 +606,9 @@ function AdventureFluencyPractice(props) {
     evts.forEach(function (ev) { window.addEventListener(ev, onAiChange); });
     return function () { evts.forEach(function (ev) { window.removeEventListener(ev, onAiChange); }); };
   }, []);
-  var _fluencyAiFn = (typeof window !== 'undefined' && (window.callGeminiAudio || window.callGemini)) || props.callGemini || (fluency && fluency.analyzeFluencyWithGemini);
-  var cloudAudioReady = _aiUsable('audio', _fluencyAiFn);
+  // Gate on the host's audio function itself, as the Fluency module does. Any other
+  // function standing in for it would let a blocked audio path look usable.
+  var cloudAudioReady = _aiUsable('audio', typeof window !== 'undefined' ? window.callGeminiAudio : null);
   var _savedState = React.useState(false);
   var saved = _savedState[0];
   var setSaved = _savedState[1];

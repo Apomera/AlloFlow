@@ -67,14 +67,14 @@
     if (stopSession && previewSession) { try { previewSession.stop(); } catch (_) {} previewSession = null; }
   }
 
-  function defaults() { return { words: '', types: ['meaning', 'word'], mode: 'practice', title: '', readAloud: true, voices: true, diagrams: false, codeName: '' }; }
+  function defaults() { return { words: '', types: ['meaning', 'word'], mode: 'practice', title: '', readAloud: true, voices: true, diagrams: false, repeatMissed: false, codeName: '' }; }
 
   // ---------------------------------------------------------------------------
   // What this page keeps, in this browser only
   // ---------------------------------------------------------------------------
   function remember() {
     try {
-      window.localStorage.setItem(STORE_KEY, JSON.stringify({ v: 1, words: state.words, types: state.types, mode: state.mode, title: state.title, readAloud: state.readAloud, voices: state.voices, diagrams: !!state.diagrams }));
+      window.localStorage.setItem(STORE_KEY, JSON.stringify({ v: 1, words: state.words, types: state.types, mode: state.mode, title: state.title, readAloud: state.readAloud, voices: state.voices, diagrams: !!state.diagrams, repeatMissed: !!state.repeatMissed }));
     } catch (_) { /* a browser that cannot keep them still works */ }
   }
   function recall() {
@@ -88,6 +88,7 @@
     if (typeof saved.readAloud === 'boolean') fresh.readAloud = saved.readAloud;
     if (typeof saved.voices === 'boolean') fresh.voices = saved.voices;
     if (typeof saved.diagrams === 'boolean') fresh.diagrams = saved.diagrams;
+    if (saved.repeatMissed === true) fresh.repeatMissed = true;
     return fresh;
   }
   function freshEdits() { return { v: 1, words: {}, senses: {} }; }
@@ -135,7 +136,8 @@
       var item = el('li', row.inBank ? 'is-ok' : '');
       item.appendChild(el('span', 'w', row.word));
       var line = bankState === 'loading' ? 'Looking it up.' : row.inBank
-        ? (row.senses.length === 1 ? 'Found: 1 meaning.' : 'Found: ' + row.senses.length + ' meanings. The usual school meaning is used first.')
+        ? (row.base ? 'Found as a form of ' + row.base + ': ' : 'Found: ') + (row.senses.length === 1 ? '1 meaning.' : row.senses.length + ' meanings. The usual school meaning is used first.')
+        : row.asName ? 'Taken as a name, so no meaning was looked up. ' + (row.def ? 'You typed a meaning for it.' : 'You can type what it means in step 2.') + ' For the meaning of ' + row.asName + ', type ' + row.word.toLowerCase() + ' without the capital letter.'
         : row.def ? 'Not in the word list. You typed a meaning for it.' : 'Not in the word list. You can type what it means in step 2.';
       item.appendChild(el('span', 's', line));
       host.appendChild(item);
@@ -230,7 +232,7 @@
     }, 'Change the answers for ' + row.word);
     change.setAttribute('aria-expanded', open ? 'true' : 'false');
     add(head, el('h3', '', row.word), row.pos ? el('span', 'v-pos', row.pos) : null,
-      row.own ? el('span', 'v-mark v-mark-not', row.net ? (row.net.changed ? 'from the internet, changed by you' : 'from the internet, not checked') : 'not in the word list') : row.checked ? el('span', 'v-mark', 'checked') : el('span', 'v-mark v-mark-not', 'not checked yet'),
+      row.own ? el('span', 'v-mark v-mark-not', row.net ? (row.net.changed ? 'from the internet, changed by you' : 'from the internet, not checked') : 'not in the word list') : row.checked ? el('span', 'v-mark', 'AI-checked') : el('span', 'v-mark v-mark-not', 'not checked'),
       row.edited && !row.own ? el('span', 'v-pos', 'you changed it') : null, change);
     box.appendChild(head);
     // "cats" is looked up as "cat": the meaning is for that word, and the student sees the word as typed. 2026-11-13.
@@ -551,12 +553,26 @@
       if (step === 3) { drawPictureRows(); makeSoon(30); }
     });
   }
+  var blankLeftOpen = false;
   function drawBlankRows() {
     var on = state.types.indexOf('blank') >= 0;
     show('blank-panel', on);
     var host = $('blank-rows');
     host.textContent = '';
     if (!on) return;
+    // Words that cannot be asked this way go in a fold under the others (2026-11-16): their reasons ("needs 3 other
+    // verbs from your list") were mixed in with the sentences to check. The fold keeps Edit, so a sentence can be fixed.
+    var left = rows.filter(function (row) { return !row.def || !!row.blank.why; });
+    var fold = null, foldBody = null;
+    if (left.length) {
+      fold = el('details', 'why v-left');
+      fold.id = 'blank-left';
+      fold.open = blankLeftOpen || left.length === rows.length || left.some(function (row) { return isEditing(row, 'example', 0); });
+      fold.appendChild(el('summary', '', left.length === rows.length ? 'None of your words can be asked this way yet. See why.'
+        : capital(count(left.length, 'word')) + (left.length === 1 ? ' is' : ' are') + ' left out of Fill the blank. See why.'));
+      fold.addEventListener('toggle', function () { blankLeftOpen = fold.open; });
+      foldBody = fold.appendChild(el('div', 'v-rows'));
+    }
     rows.forEach(function (row) {
       var box = el('div', 'v-row');
       box.setAttribute('data-blank-row', row.key);
@@ -594,8 +610,9 @@
         });
         box.appendChild(list);
       }
-      host.appendChild(box);
+      (left.indexOf(row) >= 0 ? foldBody : host).appendChild(box);
     });
+    if (fold) host.appendChild(fold);
     settleFocus();
   }
   function syncMode() {
@@ -614,6 +631,7 @@
     syncMode();
     if ($('f-title').value !== state.title) $('f-title').value = state.title;
     $('f-read').checked = state.readAloud;
+    if ($('f-repeat-missed')) { $('f-repeat-missed').checked = !!state.repeatMissed; $('f-repeat-missed').disabled = state.mode === 'check'; }
     if ($('f-voices')) { $('f-voices').checked = state.voices; $('f-voices').disabled = !state.readAloud; }
   }
   function clearBuilt() {
@@ -647,7 +665,7 @@
       voices: state.voices, clips: clips || null, pictures: pictureState === 'ready' ? symbols : null, diagrams: !!state.diagrams, matcher: matcher, art: art };
     if (Object.keys(previewOmit).length) vocabOpts.omitItems = previewOmit;
     var lesson = builder.lessonFromVocab(vocabOpts);
-    return builder.buildVocabPacket({ lesson: lesson, loader: loader, rows: rows, bank: bankState === 'ready' ? bank : null, teacherCode: state.mode === 'check' ? codeNow() : '', learner: learner || '', voices: state.voices, diagrams: !!state.diagrams });
+    return builder.buildVocabPacket({ lesson: lesson, loader: loader, rows: rows, bank: bankState === 'ready' ? bank : null, teacherCode: state.mode === 'check' ? codeNow() : '', learner: learner || '', voices: state.voices, diagrams: !!state.diagrams, repeatMissed: state.mode !== 'check' && !!state.repeatMissed });
   }
   function isPictureType(id) { return id === 'picture' || id === 'picword'; }
   function make() {
@@ -855,6 +873,9 @@
     setText('summary-facts', capital(count(total, 'question')) + '. ' + (state.mode === 'check' ? 'A check.' : 'Practice.') + ' ' + fileSize(built.bytes) + '.');
     setText('size-warn', built.bytes >= LARGE_FILE_BYTES ? LARGE_FILE_SAID : '');
     show('size-warn', built.bytes >= LARGE_FILE_BYTES);
+    // The list of what is in the file sits under the choices (2026-11-16), so questions left out are said here too, by the Save button.
+    setText('left-note-text', left.length ? capital(count(left.length, 'question')) + (left.length === 1 ? ' was' : ' were') + ' left out.' : '');
+    show('left-note', left.length > 0);
     show('summary', true);
     if (fileUrl) {
       $('try').setAttribute('href', TRY_PAGE + '#' + fileUrl);
@@ -1097,6 +1118,7 @@
       radio.addEventListener('change', function () { if (!radio.checked) return; state.mode = radio.value; remember(); syncMode(); makeSoon(30); });
     });
     $('f-title').addEventListener('input', function () { state.title = this.value.slice(0, 80); remember(); makeSoon(400); });
+    if ($('f-repeat-missed')) $('f-repeat-missed').addEventListener('change', function () { state.repeatMissed = this.checked; remember(); makeSoon(30); });
     $('f-read').addEventListener('change', function () { state.readAloud = this.checked; remember(); if ($('f-voices')) $('f-voices').disabled = !state.readAloud; makeSoon(30); });
     if ($('f-voices')) $('f-voices').addEventListener('change', function () { state.voices = this.checked; remember(); makeSoon(30); });
     if ($('f-diagrams')) $('f-diagrams').addEventListener('change', function () {

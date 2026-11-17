@@ -11,7 +11,10 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 vi.setConfig({ testTimeout: 30000 }); // full hub renders are heavy under a loaded machine
-import { readFileSync, existsSync } from 'node:fs';
+import { existsSync } from 'node:fs';
+// Host files are read through the helper so handlers moved to host_handlers_source.jsx
+// (wave 6, 2026-11-16) are found where they used to be.
+import { readFileSync } from './helpers/host_source.js';
 import { resolve, join } from 'node:path';
 import { createRequire } from 'node:module';
 import { sliceBetween } from './helpers/anchored_slice.js';

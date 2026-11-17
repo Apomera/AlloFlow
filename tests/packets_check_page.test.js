@@ -336,7 +336,7 @@ describe('the page as files', () => {
     expect(tip.querySelector('summary').textContent).toBe("Fill in a student's code name for them");
     expect([...doc.querySelectorAll('#after-save ol a')].map((a) => [a.textContent, a.getAttribute('href')])).toEqual([['Add up results', 'packets-results.html']]);
     expect(squash(doc.getElementById('after-save').querySelector('ol').textContent)).toContain('presses the main button at the end, Save results as a spreadsheet file (CSV).');
-    expect(squash(doc.getElementById('after-save').querySelector('ol').textContent)).toContain('In AlloFlow: Class Analytics, Add take-home results.');
+    expect(squash(doc.getElementById('after-save').querySelector('ol').textContent)).toContain('If your school uses AlloFlow, its Class Analytics reads these results files too.'); // 2026-11-17: plain for a Packets-only teacher
   });
 
   it('the sizes and the count of files it states are the real ones', () => {
@@ -351,9 +351,10 @@ describe('the page as files', () => {
     // Re-pinned 2026-11-12 from about 0.5 MB: the loader carries Hear all and the two picture activities of vocabulary files.
     // Re-pinned 2026-11-13 (release b) from about 0.6 MB: the engine carries two-tab, time-up-away and failed-sound handling.
     // Re-pinned 2026-11-14 (T1/makers2) from about 0.7 MB: packets_verify_core.js, packets_reopen.js, packets_handoff.js and packets_zip.js added (~0.86 MB total).
-    expect(doc.getElementById('loading').textContent).toContain('Getting the problem sets, about 0.9 MB.');
-    expect(megabytes).toBeGreaterThan(0.8);
-    expect(megabytes).toBeLessThan(0.95);
+    // Re-pinned 2026-11-16: every file carries the two reading fonts of Reading tools > Letters (Lexend, Atkinson Hyperlegible; +42.5 KB). The scripts are about 0.96 MB ("about 1 MB").
+    expect(doc.getElementById('loading').textContent).toContain('Getting the problem sets, about 1 MB.');
+    expect(megabytes).toBeGreaterThan(0.9);
+    expect(megabytes).toBeLessThan(1.05);
     // "About 110 KB": every ready check, and a list of the teacher's own, with and without a teacher code.
     // Re-pinned 2026-11-12 from about 90 KB: every file now carries the reading tools (about 17 KB in a check).
     // Re-pinned 2026-11-12 from about 110 KB: every file carries Hear all and the reading tool "Read the choices" (hearAllIn),
@@ -361,13 +362,14 @@ describe('the page as files', () => {
     // Re-pinned 2026-11-13 from about 120 KB (129.9 KB at most before this pass): the timed check pauses at "Stop?" (the
     // Word Sounds helper's), and the math and vocabulary fixes (one line and grouped numbers, the minus sign, remainders;
     // tests/packets_math_vocab_fixes_2026_11_13b.test.js). About 130.3 KB at most now.
-    expect(doc.getElementById('size-note').textContent).toBe('A check file has no sound, so there is nothing to download. About 140 KB.');
+    expect(doc.getElementById('size-note').textContent).toBe('A check file has no sound, so there is nothing to download. About 195 KB.');
     const sizes = READY.flatMap((id) => formsOf(id).map(({ grade, form }) => Buffer.byteLength(direct(id, grade, form).html, 'utf8')));
     sizes.push(Buffer.byteLength(direct('math_computation', '5', 'A', { teacherCode: 'tulip-47' }).html, 'utf8'));
     sizes.push(Buffer.byteLength(PC.buildCheckPacket({ lesson: PC.lessonFromMathProblems({ problems: PC.parseProblems('7+8') }), loader: TH }).html, 'utf8'));
     expect(sizes).toHaveLength(6 + 9 + 18 + 2);
     // Re-centered 2026-11-13 (release b) on 140,000 with the page note: the engine grew about 7 KB.
-    for (const bytes of sizes) expect(Math.abs(bytes - 140000), bytes + ' bytes').toBeLessThan(10000);
+    // Re-pinned 2026-11-16 from 140000: every file carries the two reading fonts (+42.5 KB); the page says "About 190 KB".
+    for (const bytes of sizes) expect(Math.abs(bytes - 195000), bytes + ' bytes').toBeLessThan(10000); // 2026-11-17: the review fixes
   });
 });
 
@@ -640,7 +642,8 @@ describe('a ready check, from the choice to a file that runs', () => {
       expect(page.files[page.files.length - 1].type).toBe('text/html');
       // Re-pinned 2026-11-12 from 110000, with the page note ("About 120 KB", above): Hear all, and the Untimed and keyboard fixes of the player.
       // Re-pinned 2026-11-13 from 120000, with the page note ("About 130 KB", above).
-      expect(Math.abs(bytes - 140000)).toBeLessThan(10000);
+      // Re-pinned 2026-11-16: every file carries the two reading fonts of Reading tools > Letters (Lexend, Atkinson Hyperlegible; +42.5 KB).
+      expect(Math.abs(bytes - 195000)).toBeLessThan(10000); // 2026-11-17: the review fixes, about +7 KB
       const size = Math.round(bytes / 1000) + ' KB';
       const time = minutes(data.timeLimit).replace(/^./, (c) => c.toUpperCase());
       // What there is to answer has the check's own word: "questions" for Quantity Discrimination, "problems" for the others.
@@ -1238,7 +1241,9 @@ describe('the paper copy', () => {
     // The learner's lines and the caution are fixed words; the rest is filled from the lesson.
     expect(squash(paper.querySelector('.paper-who').textContent)).toBe('Name or code name Date');
     // The caution says who would compare the two, and what to do until then (2026-11-12).
-    expect(paper.querySelector('.paper-caution').textContent).toBe('Scores on paper and on screen may differ. The AlloFlow team has not yet compared them. Until it has, keep paper scores and screen scores apart.');
+    // 2026-11-17 (review 2.2): and the checks are not the published measures that share their names.
+    expect(paper.querySelector('.paper-caution').textContent).toBe('Scores on paper and on screen may differ. The AlloFlow team has not yet compared them. Until it has, keep paper scores and screen scores apart. These checks share names with well-known published measures, but they are not those measures, and their scores are not on the same scale. Compare a student with their own earlier results, gathered the same way.');
+    expect(parse(PAGE).getElementById('norms-note').textContent).toBe('These checks share names with well-known published measures, but they are not those measures, and their scores are not on the same scale. Compare a student with their own earlier results, gathered the same way.');
     expect(paper.querySelector('.paper-keep').textContent).toBe('For the teacher. Keep this page away from the student.');
     // 2026-11-14 (T1/makers2): paper copy uses "Practice. These do not count." and step 3 now holds title, code name and batch .zip inputs.
     expect([...paper.querySelectorAll('h3')].map((node) => node.textContent)).toEqual(['Practice. These do not count.', 'Start when your teacher says.', 'How to give it', 'How to score it: the same way the file does', 'Answers']);

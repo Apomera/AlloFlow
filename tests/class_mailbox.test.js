@@ -5,6 +5,7 @@
 // helpers. Pins guard the no-Firebase invariant of the student entries.
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
+import { readFileSync as readHostWithHandlers } from './helpers/host_source.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomBytes } from 'node:crypto';
@@ -97,7 +98,7 @@ describe('Code.gs protocol (real source, mocked Google services)', () => {
     it('runs the full live-session lifecycle with separated teacher and participant capabilities', () => {
         const { call } = makeGsSandbox();
         const K = 'k_secret_k_secret_20';
-        expect(call({ a: 'hello' }).v).toBe(29);
+        expect(call({ a: 'hello' }).v).toBe(30);
         const claim = call.setupOwner();
         expect(claim.ok).toBe(true);
         expect(claim.admin.length).toBeGreaterThanOrEqual(32);
@@ -748,7 +749,9 @@ describe('ANTI wiring pins', () => {
         expect(shareSessionSurfacesSource).toContain('What is stored, where, and for how long?');
         expect(shareSessionSurfacesSource).toContain('How do student saving and submissions work in each mode?');
         expect(shareSessionSurfacesSource).toContain('complete portfolio is not retained as a permanent Firebase record');
-        expect(anti).toContain("a: 'putsubmission'");
+        // The upload call sits in a handler moved to host_handlers_source.jsx (wave 6, 2026-11-16);
+        // the helper reads the host with moved handlers put back in place.
+        expect(readHostWithHandlers(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8')).toContain("a: 'putsubmission'");
         expect(anti).toContain('setMbHostedAssignment({ url: entry.u');
         expect(hostHandlersSource).toContain('Mailbox submission upload failed; downloading a backup instead');
     });

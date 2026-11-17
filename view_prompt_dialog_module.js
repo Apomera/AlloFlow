@@ -34,7 +34,7 @@ function _promptIsolateSiblings(dialog) {
   while (node && body && node.parentElement) {
     const parent = node.parentElement;
     Array.from(parent.children).forEach((child) => {
-      if (!child || child === node || seen.has(child) || !child.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(child.tagName)) return;
+      if (!child || child === node || seen.has(child) || !child.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(child.tagName) || typeof child.matches === "function" && child.matches('[aria-live], [role="status"], [role="alert"], [data-toast-region]')) return;
       seen.add(child);
       const hadInert = child.hasAttribute("inert");
       const prevInert = child.inert;
@@ -69,10 +69,6 @@ function _promptIsolateSiblings(dialog) {
         } catch (_) {
         }
       } else {
-        try {
-          el.inert = Boolean(prevInert);
-        } catch (_) {
-        }
       }
       if (ariaHidden == null) {
         try {
@@ -81,7 +77,7 @@ function _promptIsolateSiblings(dialog) {
         }
       } else {
         try {
-          el.setAttribute("aria-hidden", ariaHidden);
+          if (ariaHidden !== "true") el.setAttribute("aria-hidden", ariaHidden);
         } catch (_) {
         }
       }

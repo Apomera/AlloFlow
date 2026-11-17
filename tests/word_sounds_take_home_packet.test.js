@@ -121,9 +121,9 @@ describe('the spreadsheet table (pure function, shared by the file and the app)'
     // Practice (Letter Trace) is in the table, never scored.
     expect([at(rows[3], 'scored'), at(rows[3], 'correct'), at(rows[3], 'activity_title')]).toEqual(['0', '0', 'Letter Trace']);
     // The summary row ends with the title the learner saw, commas and quotes and all.
-    expect(rows[4]).toEqual(['#summary', 's-1', 'items_given=2', 'attempted=2', 'correct=1', 'first_try=0', 'accuracy_pct=50', 'title=Short a, "set 1"']);
+    expect(rows[4]).toEqual(['#summary', 's-1', 'items_given=2', 'attempted=2', 'correct=1', 'first_try=0', 'accuracy_pct=50', 'title=Short a, "set 1"', 'accuracy_of_attempted_pct=50']);
     expect(rows[5]).toEqual(['#integrity', 'fnv1a', '0badf00d', 'detects accidental edits, not deliberate ones']);
-    expect(table.summary).toEqual({ itemsGiven: 2, attempted: 2, correct: 1, firstTry: 0, accuracyPct: 50,
+    expect(table.summary).toEqual({ itemsGiven: 2, attempted: 2, correct: 1, firstTry: 0, accuracyPct: 50, accuracyOfAttemptedPct: 50,
       byActivity: [{ activity: 'isolation', items: 2, correct: 1, firstTry: 0 }, { activity: 'letter_tracing', items: 0, correct: 0, firstTry: 0 }] });
     expect(table.stem).toBe('Short-a-set-1__Ana-Li__2026-11-12');
     expect(TH.resultsCsv({ lessonTitle: '', items: [] }).stem).toBe('packet__results');
@@ -136,8 +136,9 @@ describe('the spreadsheet table (pure function, shared by the file and the app)'
     expect(summaryRow('T'.repeat(300))[7]).toBe('title=' + 'T'.repeat(120));
     expect(summaryRow('  Short a,\n set = 2  ')[7]).toBe('title=Short a, set = 2');
     expect(summaryRow('=SUM(A1)')[7]).toBe('title==SUM(A1)');
-    expect(summaryRow('')).toEqual(['#summary', 's-1', 'items_given=2', 'attempted=2', 'correct=1', 'first_try=0', 'accuracy_pct=50']);
-    expect(summaryRow(undefined)).toHaveLength(7);
+    // 2026-11-17: accuracy_of_attempted_pct is appended to every summary row.
+    expect(summaryRow('')).toEqual(['#summary', 's-1', 'items_given=2', 'attempted=2', 'correct=1', 'first_try=0', 'accuracy_pct=50', 'accuracy_of_attempted_pct=50']);
+    expect(summaryRow(undefined)).toHaveLength(8);
     // The same answers under another title, or under none, give the same text to hash: a file saved before the title was added keeps its value.
     expect(table.basis).not.toContain('Short a');
     expect(TH.resultsCsv({ ...sample(), lessonTitle: 'Another title' }).basis).toBe(table.basis);
@@ -222,7 +223,9 @@ describe('a played session', () => {
     expect([t.d.querySelector('h1').textContent, file.lessonTitle]).toEqual(['Short a', 'Short a']);
     // 2026-11-13: then the time on the items in seconds (activeMs, the items' ms added up).
     expect(file.activeMs).toBe(file.items.reduce((n, it) => n + it.ms, 0));
-    expect(rows[3]).toEqual(['#summary', file.sessionId, 'items_given=2', 'attempted=2', 'correct=2', 'first_try=2', 'accuracy_pct=100', 'title=Short a', 'active_s=' + Math.round(file.activeMs / 1000)]);
+    expect(rows[3]).toEqual(['#summary', file.sessionId, 'items_given=2', 'attempted=2', 'correct=2', 'first_try=2', 'accuracy_pct=100', 'title=Short a', 'active_s=' + Math.round(file.activeMs / 1000), 'accuracy_of_attempted_pct=100']);
+    // 2026-11-17: the file records nothing about the device or the browser (the IT guide promises it).
+    expect(file).not.toHaveProperty('device');
     expect(rows[4]).toEqual(['#integrity', file.integrity.method, file.integrity.value, 'detects accidental edits, not deliberate ones']);
     // The value covers exactly the item rows as they sit in the file, after the id line.
     const itemLines = blob.body.slice(1).split('\r\n').slice(1, 3);
@@ -242,7 +245,9 @@ describe('a played session', () => {
     expect(before.items[1]).toMatchObject({ attempts: 1, done: false });
     const b = open({ html, storage: a.storageDump() });
     b.clock.t = 50;
-    expect(b.d.getElementById('learner-name').value).toBe('Ana');
+    // 2026-11-17 (review D10): the field is left for whoever is at the device; Continue says whose answers it keeps.
+    expect(b.d.getElementById('learner-name').value).toBe('');
+    expect(b.d.querySelector('[data-continue-name]').textContent).toBe('Answers so far by: Ana.');
     b.button('Continue where I left off').click();
     b.clock.t += 200;
     b.pick(1);
@@ -392,7 +397,8 @@ describe('the learner label', () => {
     const html = build();
     const a = open({ html });
     a.start('Ana');
-    expect(open({ html, storage: a.storageDump() }).d.getElementById('learner-name').value).toBe('Ana');
+    // 2026-11-17 (review D10): a name kept on the device no longer fills the field (a shared device); a given name still does.
+    expect(open({ html, storage: a.storageDump() }).d.getElementById('learner-name').value).toBe('');
     expect(open({ html, storage: a.storageDump(), hash: '#learner=Ben' }).d.getElementById('learner-name').value).toBe('Ben');
   });
   it('keeps each code name its own progress, so students sharing a device never resume each other', () => {

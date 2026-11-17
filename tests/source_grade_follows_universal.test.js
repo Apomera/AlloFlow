@@ -7,6 +7,7 @@
 
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import fs from 'node:fs';
+import { readFileSync as readHostWithHandlers } from './helpers/host_source.js';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 
@@ -138,7 +139,10 @@ describe('host wiring', () => {
   });
 
   it('keeps the grade when a new workspace starts', () => {
-    expect(/clearCanvasWorkspaceState\(\);\s*setGradeLevel\(gradeLevel\); setSourceLevel\(sourceLevel\);/.test(anti)).toBe(true);
+    // startFreshCanvasWorkspace moved to host_handlers_source.jsx (wave 6, 2026-11-16); the
+    // helper reads the host with moved handlers put back in place.
+    const hostWithHandlers = readHostWithHandlers(resolve('AlloFlowANTI.txt'), 'utf8');
+    expect(/clearCanvasWorkspaceState\(\);\s*setGradeLevel\(gradeLevel\); setSourceLevel\(sourceLevel\);/.test(hostWithHandlers)).toBe(true);
   });
 });
 

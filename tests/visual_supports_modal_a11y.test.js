@@ -8,7 +8,10 @@ describe('visual supports modal accessibility', () => {
     expect(source).toContain('role="dialog" aria-modal="true" aria-labelledby="visual-supports-title"');
     expect(source).toContain("if (event.key === 'Escape')");
     expect(source).toContain("if (event.key !== 'Tab') return");
-    expect(source).toContain("if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus()");
+    // The focus-return line gained guards (still on top, opener still in the page).
+    // Its behaviour is exercised in tests/modal_focus_return_under_host_trap.test.js.
+    expect(source).toContain("if (typeof previousFocus.focus === 'function') previousFocus.focus()");
+    expect(source).toContain('previousFocus.isConnected');
   });
 
   it('implements the keyboard-operable ARIA tabs pattern', () => {

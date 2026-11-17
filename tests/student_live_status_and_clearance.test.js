@@ -9,7 +9,9 @@
 // Source pins, the way the other header tests are written (mounting HeaderBar
 // needs ~100 host props).
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+// Host files are read through the helper so handlers moved to host_handlers_source.jsx
+// (wave 6, 2026-11-16) are found where they used to be.
+import { readFileSync } from './helpers/host_source.js';
 import { resolve } from 'node:path';
 
 const read = (file) => readFileSync(resolve(process.cwd(), file), 'utf8');

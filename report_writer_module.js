@@ -2331,12 +2331,147 @@ const evaluateExportGate = (s) => {
     if (!st.psycheckIsCurrent) reasons.push('psycheck-stale');
     if ((st.psycheckBlockingCount || 0) > 0) reasons.push('psycheck-findings');
     if ((st.unsourcedCount || 0) > 0 && !st.unsourcedAcknowledged) reasons.push('unsourced-unacknowledged');
+    // The audit's second, non-AI check did not run on this device: the
+    // clinician must say they have seen that before attesting.
+    if (st.secondCheckSkipped && !st.secondCheckSkipAcknowledged) reasons.push('second-check-unacknowledged');
     if ((st.placeholderCount || 0) > 0) reasons.push('placeholders');
     const canAttest = reasons.length === 0;
     if (!st.clinicianAttested) reasons.push('not-attested');
     return { ready: reasons.length === 0, canAttest: canAttest, reasons: reasons };
 };
 if (typeof window !== 'undefined') window.AlloReportWriterTesting = Object.assign(window.AlloReportWriterTesting || {}, { evaluateExportGate: evaluateExportGate });
+
+// A blocking finding from the non-AI checks (Python or in-app) can be set aside
+// by the clinician with a typed reason. Those checks are pattern matches that
+// give the same answer on every run, so a wrong one could otherwise only be
+// cleared by changing correct text. A contradiction found by the AI passes
+// cannot be set aside.
+const RW_SET_ASIDE_MIN_REASON = 10;
+const rwIsBlockingFinding = (r) => !!r && (r.status === 'contradicts' || (r.status === 'discrepancy' && r.confidence === 'needs-review'));
+const rwCanSetAside = (r) => rwIsBlockingFinding(r) && (r.auditSource === 'python' || r.auditSource === 'in-app');
+const rwFindingKey = (r) => JSON.stringify([r.auditSource || '', r.section || '', r.claim || '', r.explanation || '']);
+if (typeof window !== 'undefined') window.AlloReportWriterTesting = Object.assign(window.AlloReportWriterTesting || {}, { canSetAside: rwCanSetAside });
+
+// In-app copies of two checks from the Python audit (report_checks.py:
+// check_date_arithmetic and check_citations). The Python runtime cannot load
+// in the desktop app or offline, so without these a stated interval that does
+// not match its dates, or a cited source no verified fact mentions, went
+// unchecked there. They run only when the Python check did not. The rules and
+// wording match the Python so a finding reads the same either way; a test
+// holds the two to the same answers.
+const rwAuditDayNumber = (year, month, day) => {
+    if (!(year >= 1 && year <= 9999) || !(month >= 1 && month <= 12) || day < 1) return null;
+    const leap = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+    if (day > [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month - 1]) return null;
+    const y = month <= 2 ? year - 1 : year;
+    const era = Math.floor(y / 400);
+    const yoe = y - era * 400;
+    const doy = Math.floor((153 * (month + (month > 2 ? -3 : 9)) + 2) / 5) + day - 1;
+    return era * 146097 + yoe * 365 + Math.floor(yoe / 4) - Math.floor(yoe / 100) + doy;
+};
+// A date must carry its year. Two numbers with no year ("ages 8-12", "3/4
+// trials") were read as dates, and a flagged interval blocks export. Written-out
+// months ("September 2, 2026") and ISO dates are read too. Same rule as the Python.
+const RW_AUDIT_MONTHS = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 };
+const RW_AUDIT_MONTH_WORD = '(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|June?|July?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)';
+const RW_AUDIT_DATE_SOURCE = '\\b(?:'
+    + '(?<iy>\\d{4})-(?<im>\\d{1,2})-(?<id>\\d{1,2})'
+    + '|(?<a>\\d{1,2})[/-](?<b>\\d{1,2})[/-](?<c>\\d{2,4})'
+    + '|(?<mw>' + RW_AUDIT_MONTH_WORD + ')\\.?\\s+(?<md>\\d{1,2})(?:st|nd|rd|th)?,?\\s+(?<my>\\d{4})'
+    + '|(?<dd>\\d{1,2})(?:st|nd|rd|th)?\\s+(?<dw>' + RW_AUDIT_MONTH_WORD + ')\\.?,?\\s+(?<dy>\\d{4})'
+    + ')\\b';
+const rwAuditParseDate = (match) => {
+    const g = match.groups || {};
+    const pad = (n, width) => String(n).padStart(width, '0');
+    const made = (year, month, day) => {
+        const number = rwAuditDayNumber(year, month, day);
+        return number === null ? null : { number, iso: `${pad(year, 4)}-${pad(month, 2)}-${pad(day, 2)}` };
+    };
+    if (g.iy) return made(parseInt(g.iy, 10), parseInt(g.im, 10), parseInt(g.id, 10));
+    if (g.mw) return made(parseInt(g.my, 10), RW_AUDIT_MONTHS[g.mw.slice(0, 3).toLowerCase()], parseInt(g.md, 10));
+    if (g.dw) return made(parseInt(g.dy, 10), RW_AUDIT_MONTHS[g.dw.slice(0, 3).toLowerCase()], parseInt(g.dd, 10));
+    let year = parseInt(g.c, 10);
+    if (year < 100) year += 2000;
+    const a = parseInt(g.a, 10);
+    const b = parseInt(g.b, 10);
+    // Month/day first; day/month when that is not a real date.
+    return made(year, a, b) || made(year, b, a);
+};
+const rwCheckDateArithmetic = (text) => {
+    const source = String(text || '');
+    const dates = [];
+    const dateRe = new RegExp(RW_AUDIT_DATE_SOURCE, 'g');
+    for (let m = dateRe.exec(source); m; m = dateRe.exec(source)) {
+        const parsed = rwAuditParseDate(m);
+        if (parsed) dates.push({ start: m.index, end: m.index + m[0].length, number: parsed.number, iso: parsed.iso });
+    }
+    const findings = [];
+    const unitDays = { day: 1, week: 7, month: 30, year: 365 };
+    for (let i = 0; i < dates.length; i++) {
+        // A date is compared with the next date only (see the Python).
+        for (let j = i + 1; j < dates.length && j < i + 2; j++) {
+            // Only date pairs within 200 characters of each other.
+            if (dates[j].start - dates[i].end > 200) break;
+            const stated = source.slice(dates[i].end, dates[j].start).match(/\b(\d{1,2})\s*(day|week|month|year)s?\b/i);
+            if (!stated) continue;
+            const n = parseInt(stated[1], 10);
+            const unit = stated[2].toLowerCase();
+            const claimedDays = n * unitDays[unit];
+            const actualDays = Math.abs(dates[j].number - dates[i].number);
+            // 10% tolerance, minimum 3 days.
+            if (Math.abs(claimedDays - actualDays) > Math.max(3, claimedDays * 0.1)) {
+                const interval = `${n} ${unit}${n !== 1 ? 's' : ''}`;
+                findings.push({
+                    source: 'in-app', severity: 'medium', section: null,
+                    claim: `${dates[i].iso} → ${dates[j].iso} (${interval})`,
+                    finding: `Stated as '${interval}' (${claimedDays} days) but actual span is ${actualDays} days.`,
+                    status: 'contradicts', fix_hint: 'Verify the dates and the stated interval.'
+                });
+            }
+        }
+    }
+    return findings;
+};
+// factChunks: [{ text }] or strings. Only clearly named sources are looked at.
+const rwCheckCitations = (text, factChunks) => {
+    const blob = (Array.isArray(factChunks) ? factChunks : [])
+        .map(chunk => (chunk && typeof chunk === 'object' ? String(chunk.text == null ? '' : chunk.text) : String(chunk)))
+        .join(' ').toLowerCase();
+    const blobKey = blob.replace(/[- ]/g, '');
+    const generic = ['student', 'teacher', 'parent', 'clinician', 'examiner', 'report'];
+    const citeRe = /\b(?:per|according to|based on|the)\s+(?:the\s+)?([A-Z][A-Za-z0-9\-]+(?:\s+[A-Z][A-Za-z0-9\-]+){0,3})\s+(?:report|results?|interview|observations?|assessment|battery|score|data|protocol|findings?|profile)/g;
+    const seen = new Set();
+    const findings = [];
+    const source = String(text || '');
+    for (let m = citeRe.exec(source); m; m = citeRe.exec(source)) {
+        const cited = m[1].trim();
+        const lower = cited.toLowerCase();
+        if (seen.has(lower)) continue;
+        seen.add(lower);
+        if (cited.length < 4 || generic.indexOf(lower) >= 0) continue;
+        if (blobKey.indexOf(lower.replace(/[- ]/g, '')) >= 0) continue;
+        // A compound name counts when its first word is there (BASC for BASC-3).
+        const firstToken = cited.split(/[\s-]/)[0].toLowerCase();
+        if (firstToken.length >= 4 && blob.indexOf(firstToken) >= 0) continue;
+        findings.push({
+            source: 'in-app', severity: 'medium', section: null,
+            claim: `Cited: '${cited}'`,
+            finding: `The report cites '${cited}' but this source does not appear in any uploaded fact chunk. Possible fabricated reference.`,
+            status: 'unsourced', fix_hint: 'Verify the source document was uploaded, or remove the citation.'
+        });
+    }
+    return findings;
+};
+const rwInAppAudit = (sections, factChunks) => {
+    const findings = [];
+    Object.entries(sections && typeof sections === 'object' ? sections : {}).forEach(([name, text]) => {
+        if (typeof text !== 'string' || !text) return;
+        rwCheckDateArithmetic(text).concat(rwCheckCitations(text, factChunks))
+            .forEach(finding => findings.push({ ...finding, section: name }));
+    });
+    return findings;
+};
+if (typeof window !== 'undefined') window.AlloReportWriterTesting = Object.assign(window.AlloReportWriterTesting || {}, { checkDateArithmetic: rwCheckDateArithmetic, checkCitations: rwCheckCitations, inAppAudit: rwInAppAudit });
 
 // Identifier redaction lives in identifier_redaction_module.js so Report Writer
 // and Dynamic Assessment share ONE implementation. A copied scrubber is how
@@ -3315,6 +3450,12 @@ if (typeof window !== 'undefined') window.AlloReportWriterTesting = Object.assig
         const [reportPeople, setReportPeople] = useState([]);
         const [checking, setChecking] = useState(false);
         const [auditStatus, setAuditStatus] = useState('not_run');
+        // Whether the audit's second, non-AI check ran: 'not_run' | 'ran' | 'skipped'.
+        const [pythonCheck, setPythonCheck] = useState('not_run');
+        const [pythonSkipAcknowledged, setPythonSkipAcknowledged] = useState(false);
+        // Findings the clinician set aside, by finding key -> reason; and the one being typed.
+        const [setAsideReasons, setSetAsideReasons] = useState({});
+        const [setAsideDraft, setSetAsideDraft] = useState(null);
         const [auditedFingerprint, setAuditedFingerprint] = useState(null);
         const [persistLocally, setPersistLocally] = useState(() => {
             const preference = safeGetItem(PERSIST_PREF_KEY);
@@ -3598,7 +3739,9 @@ if (typeof window !== 'undefined') window.AlloReportWriterTesting = Object.assig
         useEffect(() => {
             if (clinicianAttested && auditedFingerprint !== reportFingerprint) setClinicianAttested(false);
             if (unsourcedAcknowledged && auditedFingerprint !== reportFingerprint) setUnsourcedAcknowledged(false);
-        }, [reportFingerprint, auditedFingerprint, clinicianAttested, unsourcedAcknowledged]);
+            if (pythonSkipAcknowledged && auditedFingerprint !== reportFingerprint) setPythonSkipAcknowledged(false);
+            if (Object.keys(setAsideReasons).length > 0 && auditedFingerprint !== reportFingerprint) { setSetAsideReasons({}); setSetAsideDraft(null); }
+        }, [reportFingerprint, auditedFingerprint, clinicianAttested, unsourcedAcknowledged, pythonSkipAcknowledged, setAsideReasons]);
         const buildReportSnapshot = useCallback(() => ({
             schemaVersion: RW_SCHEMA_VERSION,
             reportTitle,
@@ -5625,6 +5768,14 @@ Return ONLY JSON:
             }
             setChecking(true);
             setAuditStatus('running');
+            setPythonCheck('not_run');
+            setPythonSkipAcknowledged(false);
+            setSetAsideReasons({});
+            setSetAsideDraft(null);
+            // The non-AI check loads on demand and only Generate used to ask for
+            // it, so a report that was imported or reopened never had it.
+            const pythonBlockedHere = typeof window !== 'undefined' && (window._isDesktopBundledApp === true || window.__alloStudentAiDisabled === true || window.__alloStudentView === true);
+            if (!pythonBlockedHere) { try { window.__alloLazyPyodide && window.__alloLazyPyodide(); } catch (_) {} }
             const run = beginAiRun('sections');
             setAuditedFingerprint(null);
             setClinicianAttested(false);
@@ -5794,17 +5945,54 @@ Return ONLY valid JSON:
                 }
 
                 const finalResults = audited.results.slice();
+                // A check that did not run is reported as not run, never as passed.
+                let pythonRan = false;
+                // The checks compare the report with the verified facts as text.
+                // The chunks were sent without any, so every cited source looked
+                // absent and was flagged as a possible fabrication.
+                const auditChunks = verifiedChunks.map(c => ({ ...c, text: [c.source, c.field, c.type === 'score' ? rwScoreFactText(c) : c.value].filter(part => part != null && part !== '').join(' ') }));
                 try {
-                    const py = window.AlloModules?.PyodideRuntime;
+                    let py = window.AlloModules?.PyodideRuntime;
+                    if (!py && !pythonBlockedHere && typeof window.__alloLazyPyodide === 'function') {
+                        for (let i = 0; i < 100 && !py && !run.signal.aborted; i++) {
+                            await new Promise(resolve => setTimeout(resolve, 100));
+                            py = window.AlloModules?.PyodideRuntime;
+                        }
+                    }
+                    if (run.signal.aborted) throw rwStoppedError();
                     if (py && typeof py.runAudit === 'function') {
-                        const pyFindings = await py.runAudit({ reportSections: workingSections, factChunks: verifiedChunks, scoreEntries });
-                        (Array.isArray(pyFindings) ? pyFindings : []).forEach(finding => finalResults.push({
+                        // The runtime's first load is a large download with no
+                        // limit of its own; Stop and a time limit both end the wait.
+                        let timer = null;
+                        let onStop = null;
+                        const gaveUp = new Promise((_, reject) => {
+                            timer = setTimeout(() => reject(new Error('The non-AI check took too long to load.')), 90000);
+                            onStop = () => reject(rwStoppedError());
+                            run.signal.addEventListener('abort', onStop, { once: true });
+                        });
+                        let pyFindings;
+                        try { pyFindings = await Promise.race([py.runAudit({ reportSections: workingSections, factChunks: auditChunks, scoreEntries }), gaveUp]); }
+                        finally { clearTimeout(timer); run.signal.removeEventListener('abort', onStop); }
+                        if (!Array.isArray(pyFindings)) throw new Error('The non-AI check returned no result.');
+                        pyFindings.forEach(finding => finalResults.push({
                             claim: finding.claim || '', status: finding.status || 'info', chunkId: null,
                             explanation: finding.finding || '', confidence: finding.severity === 'high' ? 'needs-review' : 'medium',
                             auditSource: 'python', section: finding.section || null, fixHint: finding.fix_hint || null
                         }));
+                        pythonRan = true;
                     }
-                } catch (pyErr) { warnLog('[ReportWriter] Deterministic audit skipped:', pyErr && pyErr.message); }
+                } catch (pyErr) {
+                    if (rwIsStopped(pyErr)) throw pyErr;
+                    warnLog('[ReportWriter] Deterministic audit skipped:', pyErr && pyErr.message);
+                }
+                // Without the Python check, its date and citation checks run here.
+                if (!pythonRan) {
+                    rwInAppAudit(workingSections, auditChunks).forEach(finding => finalResults.push({
+                        claim: finding.claim || '', status: finding.status || 'info', chunkId: null,
+                        explanation: finding.finding || '', confidence: finding.severity === 'high' ? 'needs-review' : 'medium',
+                        auditSource: 'in-app', section: finding.section || null, fixHint: finding.fix_hint || null
+                    }));
+                }
 
                 const blocking = finalResults.filter(result => result.status === 'contradicts' || (result.status === 'discrepancy' && result.confidence === 'needs-review'));
                 if (changedWhileAuditing()) return;
@@ -5815,13 +6003,17 @@ Return ONLY valid JSON:
                 }
                 setAccuracyResults(finalResults);
                 setAuditStatus(blocking.length > 0 ? 'blocked' : 'passed');
+                setPythonCheck(pythonRan ? 'ran' : 'skipped');
                 setAuditedFingerprint(fingerprintForSections(workingSections));
                 setGenProgress('');
                 if (addToast) addToast(
                     blocking.length > 0
                         ? rwFmt(__alloT('report_writer.toast_accuracy_audit_completed_with_blocking_issue', 'Accuracy audit completed with {count} blocking issue(s). Formal export remains locked.'), { count: blocking.length })
-                        : rwFmt(__alloT('report_writer.toast_accuracy_audit_completed_across_full_report', 'Accuracy audit completed across {units} full-report unit(s); no blocking contradictions remain.'), { units: audited.units }),
-                    blocking.length > 0 ? 'info' : 'success'
+                            + (pythonRan ? '' : ' ' + __alloT('report_writer.toast_python_check_not_run', 'The separate non-AI check did not run; its date and citation checks were run in the app instead.'))
+                        : pythonRan
+                            ? rwFmt(__alloT('report_writer.toast_accuracy_audit_completed_across_full_report', 'Accuracy audit completed across {units} full-report unit(s); no blocking contradictions remain.'), { units: audited.units })
+                            : rwFmt(__alloT('report_writer.toast_accuracy_audit_ai_passes_only', 'Accuracy audit: no blocking contradictions across {units} full-report unit(s). The separate non-AI check did not run; its date and citation checks were run in the app instead, and percentiles and score labels were not checked a second time.'), { units: audited.units }),
+                    blocking.length > 0 || !pythonRan ? 'info' : 'success'
                 );
             } catch (err) {
                 setAuditedFingerprint(null);
@@ -5894,7 +6086,12 @@ Return ONLY valid JSON:
         };
 
         // ── Step 6: Export ──
-        const blockingAccuracyFindings = accuracyResults.filter(result => result.status === 'contradicts' || (result.status === 'discrepancy' && result.confidence === 'needs-review'));
+        const isSetAside = (result) => rwCanSetAside(result) && !!setAsideReasons[rwFindingKey(result)];
+        const blockingAccuracyFindings = accuracyResults.filter(result => rwIsBlockingFinding(result) && !isSetAside(result));
+        const setAsideCount = accuracyResults.filter(isSetAside).length;
+        // 'blocked' was decided when the audit ran; with every blocking finding
+        // set aside, the audit no longer blocks.
+        const auditVerdict = auditStatus === 'blocked' && blockingAccuracyFindings.length === 0 && setAsideCount > 0 ? 'passed' : auditStatus;
         // An `unsourced` claim is a statement the auditor could NOT tie to any
         // verified fact. It is not a contradiction, so it never blocked export —
         // a clinician could attest and sign a report containing assertions with
@@ -5904,6 +6101,34 @@ Return ONLY valid JSON:
         // SEPARATE, explicit acknowledgement before attestation is available.
         const unsourcedFindings = accuracyResults.filter(result => result.status === 'unsourced');
         const auditIsCurrent = auditedFingerprint !== null && auditedFingerprint === reportFingerprint;
+        const setAsideControls = (finding) => {
+            if (!auditIsCurrent || !rwCanSetAside(finding)) return null;
+            const key = rwFindingKey(finding);
+            const reason = setAsideReasons[key];
+            if (reason) {
+                return h('div', { 'data-rw-set-aside-note': 'true', className: 'mt-1 rounded border border-slate-300 bg-white px-2 py-1 text-slate-700' },
+                    rwFmt(__alloT('report_writer.set_aside_note', 'Set aside by the clinician: {reason}'), { reason }), ' ',
+                    h('button', { type: 'button', 'data-rw-set-aside': 'undo', className: 'underline text-violet-700',
+                        onClick: () => setSetAsideReasons(prev => { const next = { ...prev }; delete next[key]; return next; })
+                    }, __alloT('report_writer.set_aside_undo', 'Undo')));
+            }
+            if (setAsideDraft && setAsideDraft.key === key) {
+                const ready = setAsideDraft.reason.trim().length >= RW_SET_ASIDE_MIN_REASON;
+                return h('div', { className: 'mt-1 space-y-1' },
+                    h('label', { htmlFor: 'rw-set-aside-reason', className: 'block text-slate-700' }, __alloT('report_writer.set_aside_reason_label', 'Why does this finding not apply here? Your reason is kept with the audit summary.')),
+                    h('textarea', { id: 'rw-set-aside-reason', 'data-rw-set-aside-reason': 'true', rows: 2, value: setAsideDraft.reason,
+                        onChange: (e) => setSetAsideDraft({ key, reason: e.target.value }),
+                        className: 'w-full rounded border border-slate-400 px-2 py-1 text-[11px]' }),
+                    h('div', { className: 'flex gap-2' },
+                        h('button', { type: 'button', 'data-rw-set-aside': 'confirm', disabled: !ready, className: 'px-2 py-1 rounded bg-violet-600 text-white disabled:opacity-50',
+                            onClick: () => { setSetAsideReasons(prev => ({ ...prev, [key]: setAsideDraft.reason.trim() })); setSetAsideDraft(null); }
+                        }, __alloT('report_writer.set_aside_confirm', 'Set aside')),
+                        h('button', { type: 'button', className: 'px-2 py-1 rounded bg-slate-100 text-slate-700', onClick: () => setSetAsideDraft(null) }, __alloT('report_writer.set_aside_cancel', 'Cancel'))));
+            }
+            return h('button', { type: 'button', 'data-rw-set-aside': 'open', className: 'block mt-1 underline text-violet-700',
+                onClick: () => setSetAsideDraft({ key, reason: '' })
+            }, __alloT('report_writer.set_aside_open', 'Not right for this report? Set it aside, with a reason'));
+        };
         const psycheckBlockingCount = Array.isArray(discrepancyReport?.discrepancies) ? discrepancyReport.discrepancies.length : 0;
         const psycheckIsCurrent = scoreEntries.length === 0 || psycheckFingerprint === reportFingerprint;
         const exportSections = Object.fromEntries(rwOrderedSections(reportSections, blueprint));
@@ -5912,13 +6137,15 @@ Return ONLY valid JSON:
         const _exportGate = evaluateExportGate({
             placeholderCount: leftovers.length,
             hasSections: Object.keys(reportSections).length > 0,
-            auditStatus: auditStatus,
+            auditStatus: auditVerdict,
             auditIsCurrent: auditIsCurrent,
             blockingCount: blockingAccuracyFindings.length,
             psycheckIsCurrent: psycheckIsCurrent,
             psycheckBlockingCount: psycheckBlockingCount,
             unsourcedCount: unsourcedFindings.length,
             unsourcedAcknowledged: unsourcedAcknowledged,
+            secondCheckSkipped: auditIsCurrent && pythonCheck === 'skipped',
+            secondCheckSkipAcknowledged: pythonSkipAcknowledged,
             clinicianAttested: clinicianAttested
         });
         const formalExportReady = _exportGate.ready;
@@ -5943,10 +6170,11 @@ Return ONLY valid JSON:
             if (Object.keys(reportSections).length === 0) message += ' ' + __alloT('report_writer.export_locked_generate', 'Generate the report first.');
             else if (!auditIsCurrent || auditStatus === 'not_run') message += ' ' + __alloT('report_writer.export_locked_audit', 'Run the full accuracy audit on the current report.');
             else if (auditStatus === 'inconclusive' || auditStatus === 'failed') message += ' ' + __alloT('report_writer.export_locked_audit_incomplete', 'The audit must complete successfully.');
-            else if (blockingAccuracyFindings.length > 0 || auditStatus === 'blocked') message += ' ' + __alloT('report_writer.export_locked_blocking', 'Resolve blocking contradictions or discrepancies and rerun the audit.');
+            else if (blockingAccuracyFindings.length > 0 || auditVerdict === 'blocked') message += ' ' + __alloT('report_writer.export_locked_blocking', 'Resolve blocking contradictions or discrepancies and rerun the audit.');
             else if (!psycheckIsCurrent) message += ' ' + __alloT('report_writer.export_locked_psycheck', 'Run the inline deterministic score verifier on the current report.');
             else if (psycheckBlockingCount > 0) message += ' ' + __alloT('report_writer.export_locked_psycheck_findings', 'Resolve deterministic score discrepancies and rerun verification.');
             else if (unsourcedFindings.length > 0 && !unsourcedAcknowledged) message += ' ' + rwFmt(__alloT('report_writer.export_locked_unsourced', 'Acknowledge the {count} unsourced claim(s) flagged by the audit.'), { count: unsourcedFindings.length });
+            else if (auditIsCurrent && pythonCheck === 'skipped' && !pythonSkipAcknowledged) message += ' ' + __alloT('report_writer.export_locked_second_check', 'Tick the box in Export & Save to confirm you have seen that the second check did not run.');
             else if (leftovers.length > 0) message += ' ' + __alloT('report_writer.export_locked_placeholders', 'Replace the placeholders listed in Export & Save.');
             else if (!clinicianAttested) message += ' ' + __alloT('report_writer.export_locked_attest', 'Complete the clinician attestation.');
             if (addToast) addToast(message, 'error');
@@ -6053,6 +6281,7 @@ Return ONLY valid JSON:
             const symbol = s => s === 'verified' ? 'OK' : s === 'contradicts' ? 'X ' : s === 'unsourced' ? '? ' : s === 'discrepancy' ? '! ' : '- ';
             const groupOrder = [
                 ['python',                   'Python deterministic checks'],
+                ['in-app',                   'In-app checks (dates and cited sources)'],
                 ['dual-pass-disagree',       'LLM dual-pass DISAGREEMENT (review carefully)'],
                 ['dual-pass-minor-disagree', 'LLM dual-pass minor disagreement'],
                 ['dual-pass-agree',          'LLM dual-pass (both passes agreed)'],
@@ -6086,11 +6315,16 @@ Return ONLY valid JSON:
                 lines.push(`Generated: ${new Date().toLocaleString()}`);
                 lines.push('');
             }
+            if (pythonCheck === 'skipped') {
+                lines.push('Non-AI (Python) checks: NOT RUN. Its date and citation checks were run in the app instead.');
+                lines.push('');
+            }
             lines.push(`Total findings: ${totals.total}`);
             lines.push(`  OK Verified:    ${totals.verified}`);
             lines.push(`  X  Contradicts: ${totals.contradicts}`);
             lines.push(`  ?  Unsourced:   ${totals.unsourced}`);
             if (totals.discrepancy) lines.push(`  !  Discrepancy:  ${totals.discrepancy}`);
+            if (setAsideCount) lines.push(`  Set aside by clinician: ${setAsideCount}`);
             lines.push('');
             for (const [key, label] of groupOrder) {
                 const arr = buckets.get(key);
@@ -6102,6 +6336,7 @@ Return ONLY valid JSON:
                     lines.push(`  ${symbol(f.status)} ${sec}${f.claim || '(no claim text)'}`);
                     if (f.explanation) lines.push(`       -> ${f.explanation}`);
                     if (f.fixHint) lines.push(`       fix: ${f.fixHint}`);
+                    if (isSetAside(f)) lines.push('       SET ASIDE BY CLINICIAN: ' + setAsideReasons[rwFindingKey(f)]);
                 }
             }
             if (orphans.length) {
@@ -6218,6 +6453,16 @@ Return ONLY valid JSON:
             if (!stepFocusReadyRef.current) { stepFocusReadyRef.current = true; return; }
             const heading = panelRootRef.current && panelRootRef.current.querySelector('[data-rw-step-heading]');
             if (heading && typeof heading.focus === 'function') heading.focus();
+            // Keep the current step visible in the scrolling step bar.
+            const current = panelRootRef.current && panelRootRef.current.querySelector('nav button[aria-current="step"]');
+            const bar = current && current.closest('nav');
+            if (bar && typeof current.getBoundingClientRect === 'function') {
+                // Sideways only, so the page does not jump while the heading takes focus.
+                const barBox = bar.getBoundingClientRect();
+                const stepBox = current.getBoundingClientRect();
+                if (stepBox.left < barBox.left) bar.scrollLeft -= (barBox.left - stepBox.left);
+                else if (stepBox.right > barBox.right) bar.scrollLeft += (stepBox.right - barBox.right);
+            }
         }, [currentStep]);
 
         // ── Render ──
@@ -6379,7 +6624,10 @@ Return ONLY valid JSON:
                             'aria-current': currentStep === s.num ? 'step' : undefined,
                             'aria-disabled': blocked ? 'true' : undefined,
                             title: blocked || undefined,
-                            className: `flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all whitespace-nowrap ${currentStep === s.num ? 'bg-violet-600 text-white shadow-md' : s.num < currentStep ? 'bg-violet-100 text-violet-700' : 'bg-white text-slate-600 border border-slate-400'}${blocked ? ' opacity-60 cursor-not-allowed' : ''}`,
+                            // flex-shrink-0: this module's own 24px minimum-size rule lets a button
+                            // shrink below its label, so the ten steps squeezed, their labels overlapped
+                            // and a click on one step landed on its neighbour. The bar scrolls instead.
+                            className: `flex flex-shrink-0 items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all whitespace-nowrap ${currentStep === s.num ? 'bg-violet-600 text-white shadow-md' : s.num < currentStep ? 'bg-violet-100 text-violet-700' : 'bg-white text-slate-600 border border-slate-400'}${blocked ? ' opacity-60 cursor-not-allowed' : ''}`,
                             onClick: () => {
                                 if (blocked) { rwAnnounce(blocked); return; }
                                 setCurrentStep(s.num); if (s.num === 5 && factChunks.length === 0) extractFactChunks();
@@ -7502,6 +7750,9 @@ Return ONLY valid JSON:
                     accuracyResults.length > 0 && !auditIsCurrent && h('div', { className: 'rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-[11px] text-amber-800', role: 'status' },
                         __alloT('report_writer.these_findings_belong_to_an_earlier', 'These findings belong to an earlier report state. Rerun the full audit before relying on or copying them.')
                     ),
+                    auditIsCurrent && pythonCheck === 'skipped' && h('div', { 'data-rw-python-check': 'skipped', className: 'rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-[11px] text-amber-800', role: 'status' },
+                        __alloT('report_writer.python_check_not_run_notice', 'The separate non-AI check did not run. It needs a download that is not available in the desktop app or offline. Its date and citation checks were run in the app instead; percentiles and score labels were not checked a second time.')
+                    ),
                     // Summary bar
                     accuracyResults.length > 0 && h('div', { className: 'flex items-center gap-4 bg-slate-50 rounded-lg p-3' },
                         h('div', { className: 'text-center' },
@@ -7549,6 +7800,7 @@ Return ONLY valid JSON:
                                         const src = r.auditSource || '';
                                         const chip = (label, cls, title) => h('span', { title, className: 'inline-block mt-0.5 ms-1 text-[11px] px-1.5 py-0.5 rounded-full ' + cls }, label);
                                         if (src === 'python')                   return chip('🐍 Python',      'bg-fuchsia-100 text-fuchsia-700', 'Deterministic check — score classification, math, or fact-chunk lookup');
+                                        if (src === 'in-app')                   return chip('📅 In-app check', 'bg-fuchsia-100 text-fuchsia-700', 'Not AI: a date interval or cited source checked in the app');
                                         if (src === 'self-healed')              return chip('✨ Self-healed', 'bg-emerald-100 text-emerald-700', 'Was flagged as a contradiction; fixed by an automated regeneration pass');
                                         if (src === 'dual-pass-agree')          return chip('🤝 Dual-Pass',   'bg-indigo-100 text-indigo-700',   'Both LLM audit passes (Claim Verifier + Contradiction Hunter) agreed');
                                         if (src === 'dual-pass-disagree')       return chip('⚠️ LLM Conflict', 'bg-rose-100 text-rose-700', 'The two LLM audit passes disagreed — review carefully');
@@ -7557,7 +7809,8 @@ Return ONLY valid JSON:
                                         if (src === 'pass-b-only')              return chip('🔍 Pass B',      'bg-slate-100 text-slate-600',     'Seen only by the Contradiction Hunter pass');
                                         if (src === 'post-fix-verification')    return chip('🔁 Re-checked',  'bg-sky-100 text-sky-700',         'Re-verified after self-heal regeneration');
                                         return null;
-                                    })()
+                                    })(),
+                                    setAsideControls(r)
                                 )
                             )
                         )
@@ -7581,8 +7834,8 @@ Return ONLY valid JSON:
                     h('div', { className: 'bg-white rounded overflow-x-auto p-1', dangerouslySetInnerHTML: { __html: _rwTrendSvg(rtiTrendSeries) } })
                 ) : null,
                 // Accuracy summary
-                h('div', { className: `rounded-lg p-3 border ${formalExportReady ? 'bg-green-50 border-green-200' : auditStatus === 'blocked' || auditStatus === 'failed' ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-200'}`, role: 'status', 'aria-live': 'polite' },
-                    h('p', { className: `text-xs font-medium ${formalExportReady ? 'text-green-700' : auditStatus === 'blocked' || auditStatus === 'failed' ? 'text-red-700' : 'text-amber-800'}` },
+                h('div', { className: `rounded-lg p-3 border ${formalExportReady ? 'bg-green-50 border-green-200' : auditVerdict === 'blocked' || auditStatus === 'failed' ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-200'}`, role: 'status', 'aria-live': 'polite' },
+                    h('p', { className: `text-xs font-medium ${formalExportReady ? 'text-green-700' : auditVerdict === 'blocked' || auditStatus === 'failed' ? 'text-red-700' : 'text-amber-800'}` },
                         formalExportReady
                             ? ('✅ ' + __alloT('report_writer.current_report_audited_blocking_findings_resolve', 'Current report audited, blocking findings resolved, and clinician attestation complete.'))
                             : !auditIsCurrent
@@ -7591,14 +7844,18 @@ Return ONLY valid JSON:
                                     ? ('⚠️ ' + __alloT('report_writer.run_the_inline_deterministic_score_verifier', 'Run the inline deterministic score verifier on the current report before attesting.'))
                                     : psycheckBlockingCount > 0
                                         ? ('⚠️ ' + rwFmt(__alloT('report_writer.deterministic_score_discrepancy_ies_remain_corre', '{psycheckBlockingCount} deterministic score discrepancy(ies) remain. Correct the report and verify again.'), { psycheckBlockingCount }))
-                                        : auditStatus === 'blocked'
+                                        : auditVerdict === 'blocked'
                                     ? ('⚠️ ' + rwFmt(__alloT('report_writer.blocking_finding_s_remain_resolve_them', '{count} blocking finding(s) remain. Resolve them and rerun the audit.'), { count: blockingAccuracyFindings.length }))
                                     : auditStatus === 'inconclusive' || auditStatus === 'failed'
                                         ? ('⚠️ ' + __alloT('report_writer.the_audit_did_not_complete_successfully', 'The audit did not complete successfully. Formal copy and print are locked.'))
                                         : leftovers.length > 0
                                             ? ('⚠️ ' + rwFmt(__alloT('report_writer.placeholders_block', '{count} placeholder(s) are still in the report. Replace them below before attesting.'), { count: leftovers.length }))
-                                            : ('⚠️ ' + __alloT('report_writer.accuracy_audit_passed_complete_the_clinician', 'Accuracy audit passed. Complete the clinician attestation to unlock formal copy and print.'))
-                    )
+                                            : pythonCheck === 'skipped'
+                                                ? ('⚠️ ' + __alloT('report_writer.ai_audit_passed_complete_the_clinician', 'The AI passes of the accuracy audit found nothing blocking. Complete the clinician attestation to unlock formal copy and print.'))
+                                                : ('⚠️ ' + __alloT('report_writer.accuracy_audit_passed_complete_the_clinician', 'Accuracy audit passed. Complete the clinician attestation to unlock formal copy and print.'))
+                    ),
+                    auditIsCurrent && setAsideCount > 0 && h('p', { 'data-rw-set-aside-count': setAsideCount, className: 'text-[11px] text-amber-800 mt-1' },
+                        rwFmt(__alloT('report_writer.set_aside_count', '{count} non-AI finding(s) set aside by the clinician, each with a reason.'), { count: setAsideCount }))
                 ),
                 // Placeholders left by redaction or generation, with the fixes that are safe.
                 leftovers.length > 0 && h('div', { className: 'rounded-lg border border-amber-300 bg-amber-50 p-3 text-[11px] text-amber-900 space-y-1', role: 'region', 'aria-labelledby': 'rw-placeholders-title' },
@@ -7652,6 +7909,26 @@ Return ONLY valid JSON:
                         h('span', { className: 'text-[11px] text-slate-700 leading-relaxed' },
                             h('strong', { id: 'rw-unsourced-help' }, (__alloT('report_writer.unsourced_claims_reviewed', 'Unsourced claims reviewed:') + ' ')),
                             __alloT('report_writer.i_have_read_each_statement_listed', 'I have read each statement listed above and confirm it is either clinically appropriate as written or has been corrected.')
+                        )
+                    )
+                ),
+                // The audit's second, non-AI check did not run here: the clinician
+                // says they have seen that before the attestation is offered.
+                auditIsCurrent && pythonCheck === 'skipped' && h('div', {
+                    'data-rw-python-check': 'skipped',
+                    className: `rounded-lg p-3 border ${pythonSkipAcknowledged ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-300'}`
+                },
+                    h('label', { className: 'flex items-start gap-2 cursor-pointer' },
+                        h('input', {
+                            type: 'checkbox', checked: pythonSkipAcknowledged,
+                            'data-rw-second-check-ack': 'true',
+                            'aria-describedby': 'rw-second-check-help',
+                            onChange: (e) => setPythonSkipAcknowledged(e.target.checked),
+                            className: 'mt-0.5 rounded border-slate-300'
+                        }),
+                        h('span', { className: 'text-[11px] text-slate-700 leading-relaxed' },
+                            h('strong', { id: 'rw-second-check-help' }, (__alloT('report_writer.second_check_not_run_label', 'Second check not run:') + ' ')),
+                            __alloT('report_writer.second_check_not_run_ack', 'I understand that the separate non-AI check did not run on this device. Its date and citation checks were run in the app instead; percentiles and score labels were not checked a second time.')
                         )
                     )
                 ),
@@ -7752,10 +8029,12 @@ Return ONLY valid JSON:
                             });
                         } }, __alloT('report_writer.clear_stored_clinical_data', 'Clear stored clinical data'))
                     ),
-                    h('div', { className: 'flex items-center gap-2' },
-                        h('input', { type: 'text', className: 'flex-1 text-[11px] border rounded-lg px-2 py-1', placeholder: __alloT('report_writer.placeholder_report_name_optional', 'Report name (optional)...'), 'aria-label': __alloT('report_writer.aria_report_name', 'Report name'), value: saveReportName, onChange: e => setSaveReportName(e.target.value) }),
-                        h('button', { className: 'px-3 py-1 bg-violet-600 text-white text-[11px] font-medium rounded-lg hover:bg-violet-700 transition-colors whitespace-nowrap', onClick: saveReportToGallery }, ('💾 ' + __alloT('report_writer.save_report', 'Save Report'))),
-                        h('button', { 'aria-label': __alloT('report_writer.aria_start_a_new_report', 'Start a new report'), className: 'px-3 py-1 bg-red-100 text-red-700 text-[11px] font-medium rounded-lg hover:bg-red-200 transition-colors whitespace-nowrap', onClick: () => {
+                    // Wraps on a narrow screen: with the name box taking the rest of the row,
+                    // the two buttons were squeezed under their labels on a phone.
+                    h('div', { className: 'flex flex-wrap items-center gap-2' },
+                        h('input', { type: 'text', className: 'flex-1 min-w-[10rem] text-[11px] border rounded-lg px-2 py-1', placeholder: __alloT('report_writer.placeholder_report_name_optional', 'Report name (optional)...'), 'aria-label': __alloT('report_writer.aria_report_name', 'Report name'), value: saveReportName, onChange: e => setSaveReportName(e.target.value) }),
+                        h('button', { className: 'flex-shrink-0 px-3 py-1 bg-violet-600 text-white text-[11px] font-medium rounded-lg hover:bg-violet-700 transition-colors whitespace-nowrap', onClick: saveReportToGallery }, ('💾 ' + __alloT('report_writer.save_report', 'Save Report'))),
+                        h('button', { 'aria-label': __alloT('report_writer.aria_start_a_new_report', 'Start a new report'), className: 'flex-shrink-0 px-3 py-1 bg-red-100 text-red-700 text-[11px] font-medium rounded-lg hover:bg-red-200 transition-colors whitespace-nowrap', onClick: () => {
                             setConfirmationRequest({
                                 title: __alloT('report_writer.confirm_new_report_title', 'Start a new report?'),
                                 message: __alloT('report_writer.confirm_new_report_message', 'All unsaved case-specific data in the current session will be cleared. This action cannot be undone.'),

@@ -58,7 +58,8 @@ describe('pack export fixes from the sections review', () => {
     expect(field.classList.contains('alloflow-print-mirrored')).toBe(false);
     const css = [...doc.querySelectorAll('style')].map((node) => node.textContent).join('\n');
     expect(css).toMatch(/\.quiz-check-btn, \.quiz-reset-btn \{ display: none !important; \}/);
-    expect(css).toMatch(/textarea\.alloflow-print-mirrored \{ display: none !important; \}/);
+    // The rule now hides mirrored inputs and selects too, not only textareas.
+    expect(css).toMatch(/textarea\.alloflow-print-mirrored, input\.alloflow-print-mirrored, select\.alloflow-print-mirrored \{ display: none !important; \}/);
     win.close();
   });
 

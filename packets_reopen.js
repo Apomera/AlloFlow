@@ -32,10 +32,12 @@
     math: { href: 'packets-math-practice.html', name: 'Make math fact practice' },
     vocab: { href: 'packets-vocab.html', name: 'Make vocabulary practice' },
     symbol: { href: 'packets-symbol-runner.html', name: 'Make Symbol Runner practice' },
+    read: { href: 'packets-read-along.html', name: 'Make a read-along' },
     results: { href: 'packets-results.html', name: 'Add up results' },
     verify: { href: 'packets-verify.html', name: 'Look inside a file' },
   };
   var WORD = /^[a-z]{2,24}$/;
+  var READ_ALONG = 'This is a read-along. Make a read-along makes it. It cannot open a saved file yet: to change this one, make it again there.';
   var isObject = function (value) { return !!value && typeof value === 'object' && !Array.isArray(value); };
   var own = function (object, key) { return Object.prototype.hasOwnProperty.call(object, key); };
   var list = function (value) { return Array.isArray(value) ? value : []; };
@@ -143,6 +145,7 @@
     // Vocabulary practice and vocabulary checks (packet_vocab_builder.js) are made, and opened again, on their own page.
     if (blocks.length && blocks.every(function (block) { return /^vocab_/.test(block.activity); })) return no('vocab', 'This is vocabulary ' + (packet.mode === 'check' || lesson.mode === 'probe' ? 'check' : 'practice') + '. Make vocabulary practice makes it, and can open it again.', PAGES.vocab);
     if (blocks.length && blocks.every(function (block) { return block.activity === 'symbol_runner'; })) return no('symbol', 'This is Symbol Runner ' + (packet.mode === 'check' || lesson.mode === 'probe' ? 'check' : 'practice') + '. Make Symbol Runner practice makes it, and can open it again.', PAGES.symbol);
+    if (blocks.length && blocks.every(function (block) { return block.activity === 'read_along'; })) return no('read', READ_ALONG, PAGES.read);
     if (packet.mode === 'check' || packet.mode === 'probe' || lesson.mode === 'probe') {
       out.teacherCode = isObject(lesson.check) && isObject(lesson.check.lock);
       return no('check', 'This is a math check. Make a math check makes it.' + (out.teacherCode ? ' A teacher code cannot be read back from a file: set the teacher code again there.' : ''), PAGES.check);
@@ -185,6 +188,8 @@
     var level = isObject(m.builder) ? m.builder.choices : null;
     out.choices = level === 'easy' || level === 'medium' || level === 'all' ? level : 'all';
     out.directionsOnce = !!(lesson && lesson.instructionsOnce === true) || !!(isObject(m.builder) && m.builder.directionsOnce === true);
+    // 2026-11-17: the missed questions once more at the end.
+    out.repeatMissed = !!(lesson && lesson.repeatMissed === true);
     if (typeof m.learner === 'string') out.learner = typeof e.codeName === 'function' ? e.codeName(m.learner) : m.learner.slice(0, 40);
 
     // The teacher's own sounds, recordings and pictures, for the words the manifest names.
@@ -253,6 +258,7 @@
     var check = packet.mode === 'check' || packet.mode === 'probe' || lesson.mode === 'probe';
     var kind = blocks.length && blocks.every(function (block) { return /^vocab_/.test(block.activity); }) ? 'vocab'
       : blocks.length && blocks.every(function (block) { return block.activity === 'symbol_runner'; }) ? 'symbol'
+      : blocks.length && blocks.every(function (block) { return block.activity === 'read_along'; }) ? 'read'
       : check ? 'check' : blocks.length && blocks.every(function (block) { return /^math_/.test(block.activity); }) ? 'math' : 'words';
     return { parts: parts, lesson: lesson, manifest: m, blocks: blocks, kind: kind };
   }
@@ -260,7 +266,7 @@
     var said = { vocab: 'This is vocabulary practice or a vocabulary check. Make vocabulary practice makes it, and can open it again.',
       symbol: 'This is Symbol Runner practice or a Symbol Runner check. Make Symbol Runner practice makes it, and can open it again.',
       check: 'This is a math check. Make a math check makes it, and can open it again.', math: 'This is math fact practice. Make math fact practice makes it, and can open it again.',
-      words: 'This is Word Sounds practice. Make Word Sounds practice makes it, and can open it again.' };
+      words: 'This is Word Sounds practice. Make Word Sounds practice makes it, and can open it again.', read: READ_ALONG };
     out.kind = kind; out.why = said[kind] || 'This file was not made on this page.'; out.page = PAGES[kind] || null;
     return out;
   }

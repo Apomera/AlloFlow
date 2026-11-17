@@ -1,4 +1,7 @@
-import { readFileSync } from 'node:fs';
+// Host files are read through the helper so handlers moved to host_handlers_source.jsx
+// (wave 6, 2026-11-16) are found where they used to be.
+import { readFileSync } from './helpers/host_source.js';
+import { readFileSync as rawReadFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
@@ -29,7 +32,8 @@ describe('read-aloud artifact host integration', () => {
     expect(helper).toContain("defaultVoice: options.defaultVoice || selectedVoice || 'Kore'");
     expect(helper).not.toMatch(/Puck/i);
     expect(host).toContain('handleSavePersonaChat: handleSavePrivatePersonaSession');
-    expect(host).toContain('_alloHostHandlers().handleSavePrivatePersonaSession(...__a)');
+    // The shim itself is pinned in the host as written (the helper shows moved bodies instead).
+    expect(rawReadFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8')).toContain('_alloHostHandlers().handleSavePrivatePersonaSession(...__a)');
     // Persona saving moved to the extracted handler; the host supplies the
     // shared audio preparer through its live dependency object.
     const handlers = read('host_handlers_source.jsx');

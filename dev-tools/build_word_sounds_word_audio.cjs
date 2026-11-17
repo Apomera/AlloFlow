@@ -888,6 +888,12 @@ function withTimeout(promise, ms, what) {
 }
 const HUGGING_FACE = host => host === 'huggingface.co' || host.endsWith('.huggingface.co') || host === 'hf.co' || host.endsWith('.hf.co');
 
+// Where the tool's page and the engine files are served. NOT "/app/": runtime_graph_host.js takes a loopback page
+// under /app/ for the desktop app, and runtime_graph_delivery_policy.js (since 2026-11-15) lets the desktop app fetch
+// nothing from another site, so the voice model could not be downloaded ("Desktop cross-origin runtime fetch is
+// disabled"). Here the page is an ordinary web page: the same engine files, from this server, checked against
+// engine_runtime_integrity.json as before; only the model comes from Hugging Face, as it always did.
+const PAGE_PATH = '/voice-tool/';
 function createEngine(options) {
   const root = options.root || ROOT, work = options.work, browserName = options.browser || DEFAULT_BROWSER, port = options.port || DEFAULT_PORT;
   const log = options.log || (() => {});
@@ -896,8 +902,8 @@ function createEngine(options) {
   const profileName = 'wswa-profile-' + browserName;
   const profile = path.join(work, profileName), cacheDir = path.join(work, 'model-cache');
   const manifest = JSON.parse(fs.readFileSync(path.join(root, 'engine_runtime_integrity.json'), 'utf8'));
-  const served = new Map([['/app/kokoro_tts_loader.js', 'kokoro_tts_loader.js'], ['/app/runtime_graph_delivery_policy.js', 'runtime_graph_delivery_policy.js'], ['/app/runtime_graph_host.js', 'runtime_graph_host.js']]);
-  for (const id of manifest.graphs.kokoro.assets) served.set('/app/' + manifest.assets[id].path, manifest.assets[id].path);
+  const served = new Map([[PAGE_PATH + 'kokoro_tts_loader.js', 'kokoro_tts_loader.js'], [PAGE_PATH + 'runtime_graph_delivery_policy.js', 'runtime_graph_delivery_policy.js'], [PAGE_PATH + 'runtime_graph_host.js', 'runtime_graph_host.js']]);
+  for (const id of manifest.graphs.kokoro.assets) served.set(PAGE_PATH + manifest.assets[id].path, manifest.assets[id].path);
   const lanes = Math.max(1, Math.min(4, options.lanes || 1));
   // q8 + wasm goes through the app's loader, as it always has; any other precision or device through directWorkerMain.
   const dtype = options.dtype || DEFAULT_DTYPE, device = options.device || DEFAULT_DEVICE;
@@ -908,7 +914,7 @@ function createEngine(options) {
   const cacheFile = url => path.join(cacheDir, crypto.createHash('sha256').update(url).digest('hex'));
   function handle(req, res) {
     const url = new URL(req.url, origin);
-    if (url.pathname === '/app/' && req.method === 'GET') {
+    if (url.pathname === PAGE_PATH && req.method === 'GET') {
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
       res.end('<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Word Sounds word audio build</title></head><body>Local speech generation</body></html>');
       return;
@@ -996,9 +1002,9 @@ function createEngine(options) {
           const text = message.text();
           if (/Kokoro TTS\]|Verified runtime/i.test(text) && text !== lastConsole) { lastConsole = text; if (options.verbose || /fail|error|stall|retry|Repairing/i.test(text)) log('  ' + text.slice(0, 220)); }
         });
-        await page.goto(origin + '/app/');
-        await page.addScriptTag({ url: '/app/runtime_graph_delivery_policy.js' });
-        await page.addScriptTag({ url: '/app/runtime_graph_host.js' });
+        await page.goto(origin + PAGE_PATH);
+        await page.addScriptTag({ url: PAGE_PATH + 'runtime_graph_delivery_policy.js' });
+        await page.addScriptTag({ url: PAGE_PATH + 'runtime_graph_host.js' });
         if (direct) {
           await page.evaluate(async ({ graphs, source }) => {
             window._alloInstallRuntimeGraphHost(graphs, window);
@@ -1026,7 +1032,7 @@ function createEngine(options) {
             },
           } };
         }, manifest);
-        await page.addScriptTag({ url: '/app/kokoro_tts_loader.js' });
+        await page.addScriptTag({ url: PAGE_PATH + 'kokoro_tts_loader.js' });
         // First use downloads 88 MB; the loader has its own stall watchdog and one retry.
         await withTimeout(page.evaluate(() => window._kokoroTTS.init()), 20 * 60000, 'Loading the voice model');
         pages.push(page);

@@ -7,7 +7,9 @@
 //   npx vitest run tests/passage_path_baseline.test.js -u
 // and review the diff under tests/__baselines__/passage_path/ like any code change.
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import { readFileSync } from 'node:fs';
+// Host files are read through the helper so handlers moved to host_handlers_source.jsx
+// (wave 6, 2026-11-16) are found where they used to be.
+import { readFileSync } from './helpers/host_source.js';
 import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
 

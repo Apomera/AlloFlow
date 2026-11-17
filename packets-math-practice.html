@@ -181,7 +181,7 @@
       <div class="actions">
         <button type="button" class="btn" id="back-2">Back</button>
         <button type="button" class="btn btn-primary push" id="next-2">Next: make the file</button>
-        <p class="actions-note" id="size-note">A practice file of math facts has no sound, so there is nothing to download. About 95 KB.</p>
+        <p class="actions-note" id="size-note">A practice file of math facts has no sound, so there is nothing to download. About 150 KB.</p>
         <p id="step-2-problem" class="actions-note" role="alert"></p>
       </div>
     </section>
@@ -190,22 +190,7 @@
       <p class="kicker">Step 3 of 3</p>
       <h2 id="step-3-title" tabindex="-1">Make the file</h2>
 
-      <div class="field block">
-        <label for="f-title">Title</label>
-        <span class="hint" id="title-hint">The student sees it at the top of the file. The results file's name starts with it.</span>
-        <input type="text" id="f-title" maxlength="80" autocomplete="off" aria-describedby="title-hint">
-      </div>
-
-      <details class="why code-box" id="code-name-box">
-        <summary>Put a student's code name in the file</summary>
-        <div class="field">
-          <label for="f-code-name">Student's code name</label>
-          <span class="hint" id="code-name-hint">Use a code name, not the student's real name. The file opens with it filled in. Leave it empty and each student types their own.</span>
-          <input type="text" id="f-code-name" maxlength="40" autocomplete="off" spellcheck="false" autocapitalize="none" aria-describedby="code-name-hint code-name-said">
-          <span class="hint" id="code-name-said" role="status"></span>
-        </div>
-      </details>
-
+      <!-- Step 3, top to bottom (2026-11-16, as on Make Word Sounds practice): the file (ready, try it, save it), then what can be changed, then the list of what is in it. -->
       <div id="making" class="making" hidden>
         <p id="making-line" class="making-line"></p>
       </div>
@@ -222,10 +207,15 @@
       <div id="summary" class="summary" hidden>
         <h3>The file is ready</h3>
         <p id="summary-facts" class="summary-facts"></p>
-        <dl id="summary-rows"></dl>
       </div>
 
-      <div class="actions">
+      <div class="field block" id="title-field">
+        <label for="f-title">Title</label>
+        <span class="hint" id="title-hint">The student sees it at the top of the file. The results file's name starts with it.</span>
+        <input type="text" id="f-title" maxlength="80" autocomplete="off" aria-describedby="title-hint">
+      </div>
+
+      <div class="actions actions-file">
         <button type="button" class="btn" id="back-3">Back</button>
         <a class="btn push" id="try" href="packets-try.html" target="_blank" rel="noopener" hidden>Try it <span class="sr-only">(opens in a new tab)</span></a>
         <button type="button" class="btn btn-primary" id="save" hidden>Save the file</button>
@@ -238,20 +228,36 @@
           <li>Each student opens it in a browser, practices and presses the main button at the end, <strong id="csv-label">Save results as a spreadsheet file (CSV)</strong>. They hand that file back to you.</li>
           <li>Add the results up on <a href="packets-results.html">Add up results</a>, or open them in a spreadsheet. They show how practice went, card by card: right on the first try, right after help, or shown.</li>
         </ol>
-        <p class="after-phone">On a phone or tablet, a student opens the file on <a href="packets-open.html">Open a practice file or check</a>: apomera.github.io/AlloFlow/packets-open.html.</p>
+        <p class="after-phone">If the file does not open on a device (a phone, a tablet, or a school computer that will not open downloaded files), a student opens it on <a href="packets-open.html">Open a practice file or check</a>: <span data-open-address>apomera.github.io/AlloFlow/packets-open.html</span>.</p>
         <details class="why" id="learner-tip">
           <summary>Fill in a student's code name for them</summary>
           <p>When the file is on a website or a shared link, add <code>#learner=CodeName</code> to the end of the link, for example <code>#learner=BlueHeron7</code>. It stays on the student's device.</p>
         </details>
       </div>
 
+
+      <details class="why code-box" id="code-name-box">
+        <summary>Put a student's code name in the file</summary>
+        <div class="field">
+          <label for="f-code-name">Student's code name</label>
+          <span class="hint" id="code-name-hint">Use a code name, not the student's real name. The file opens with it filled in. Leave it empty and each student types their own.</span>
+          <input type="text" id="f-code-name" maxlength="40" autocomplete="off" spellcheck="false" autocapitalize="none" aria-describedby="code-name-hint code-name-said">
+          <span class="hint" id="code-name-said" role="status"></span>
+        </div>
+      </details>
+
+      <div class="summary summary-list" id="summary-list">
+        <h3>What is in the file</h3>
+        <dl id="summary-rows"></dl>
+      </div>
+
       <details class="batch" id="batch">
         <summary>Make one for each student</summary>
         <div class="batch-body">
-          <p class="hint">One file for each student, with the student's code name filled in. They come in one .zip file. Each file is the same as the one above, made with that code name.</p>
+          <p class="hint">One file for each student, with the student's code name filled in. They come in one .zip file. Each file is the same as the one above, made with that code name. In Google Classroom, where one assignment gives every student the same file, the single file above is simpler: each student types a code name at the start.</p>
           <div class="field">
             <label for="f-batch-names">Code names, one on each line</label>
-            <span class="hint" id="batch-names-hint">Use code names, not real names. At most 40 at a time.</span>
+            <span class="hint" id="batch-names-hint">Use code names or first names only, never full names. At most 40 at a time.</span>
             <textarea id="f-batch-names" rows="6" maxlength="2400" spellcheck="false" autocapitalize="none" autocomplete="off" aria-describedby="batch-names-hint batch-said"></textarea>
           </div>
           <p id="batch-said" class="result-sub" role="status"></p>

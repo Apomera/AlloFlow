@@ -447,6 +447,11 @@
 
   function start() {
     var input = $('word');
+    // Back to the page the teacher came from: Present and export says so with #from=present (2026-11-17); else the maker.
+    if (/[#&]from=present(?:&|$)/.test(String(root.location && root.location.hash || ''))) {
+      var back = $('back-link');
+      if (back) { back.setAttribute('href', 'packets-present-export.html'); back.textContent = 'Back to Present and export'; }
+    }
     state.word = wordFromAddress();
     input.value = state.word;
     input.addEventListener('input', function () { takeWord(input.value); });

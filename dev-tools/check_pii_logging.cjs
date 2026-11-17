@@ -22,7 +22,7 @@
 // line above. dev-tools/pii_logging_baseline.json holds sites in files other
 // sessions were editing when the gate landed; each must be fixed, not grown.
 //
-// Usage: node dev-tools/check_pii_logging.cjs [--quiet] [--selftest] [--list-json]
+// Usage: node dev-tools/check_pii_logging.cjs [--quiet] [--selftest] [--list-json] [--list-files]
 
 'use strict';
 const fs = require('fs');
@@ -118,20 +118,16 @@ function shippedFiles() {
   const out = execFileSync('git', ['ls-files', '--', '*_source.jsx', 'AlloFlowANTI.txt', 'stem_lab/stem_tool_*.js', 'sel_hub/*.js', 'error_reporter_module.js', '*_module.js', 'apps_script/**/*.gs', '_build_*.js'], { cwd: ROOT, maxBuffer: 1 << 28 });
   const skip = /^(?:app|desktop|reports|artifacts|tmp|tests|dev-tools|_archive)\//;
   const all = out.toString().split('\n').filter((f) => f && !skip.test(f));
-  const sources = new Set(all.filter((f) => !f.includes('/') && f.endsWith('_source.jsx')));
-  let buildText = '';
-  for (const b of all) {
-    if (b.startsWith('_build_')) {
-      try { buildText += fs.readFileSync(path.join(ROOT, b), 'utf8') + '\n'; } catch (_) {}
-    }
-  }
+  const sources = new Set(all.filter((f) => f.endsWith('_source.jsx')));
   const files = [];
   for (const f of all) {
     if (f.startsWith('_build_')) continue;
     if (f.endsWith('_module.js') && f !== 'error_reporter_module.js') {
-      if (f.includes('/')) continue;
-      const base = f.replace(/_module\.js$/, '');
-      if (sources.has(base + '_source.jsx') || buildText.includes(f)) continue;
+      // Skip a module only when its own source is scanned. Skipping every module a
+      // build script names, or every one in a folder, dropped modules built from
+      // other inputs (Escape Room, Word Sounds, Reading Library) and the SEL hub.
+      const slash = f.lastIndexOf('/');
+      if (sources.has(f.slice(0, slash + 1) + f.slice(slash + 1).replace(/_module\.js$/, '_source.jsx'))) continue;
     }
     files.push(f);
   }
@@ -165,6 +161,7 @@ function selftest() {
 }
 
 if (args.includes('--selftest')) selftest();
+if (args.includes('--list-files')) { console.log(JSON.stringify(shippedFiles())); process.exit(0); }
 
 let baseline = {};
 try { baseline = JSON.parse(fs.readFileSync(BASELINE_FILE, 'utf8')).accepted || {}; } catch (_) {}

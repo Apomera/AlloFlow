@@ -14,7 +14,8 @@ describe('Hints modal accessibility', () => {
   it('manages initial focus, containment, Escape, and focus return', () => {
     expect(source).toContain('(getFocusable()[0] || dialog).focus()');
     expect(source).toContain('window.__alloFocusTrapStack');
-    expect(source).toContain('if (!isTopTrap()) return');
+    // The top-trap test is now one of several conditions on the same line.
+    expect(source).toContain('|| !isTopTrap()) return');
     expect(source).toContain("document.addEventListener('keydown', onKeyDown)");
     expect(source).toContain("element.closest('[hidden], [inert], [aria-hidden=\"true\"]')");
     expect(source).toContain("if (event.key === 'Escape')");

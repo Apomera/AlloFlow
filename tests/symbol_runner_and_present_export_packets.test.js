@@ -1,3 +1,4 @@
+// 2026-11-17 (review D5): the results page's practice buttons are links that open a new tab (a.nav-new-tab, href).
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import fs from 'node:fs';
@@ -156,7 +157,7 @@ describe('2. Standalone packets-present-export page', () => {
     expect(doc.querySelectorAll('#product-name')).toHaveLength(1);
     expect(doc.getElementById('product-name').textContent).toBe('AlloFlow Packets');
     expect(doc.querySelector('meta[http-equiv="Content-Security-Policy"]').getAttribute('content')).toContain("default-src 'none'");
-    expect(doc.getElementById('pe-find-online').getAttribute('href')).toBe('packets-pictures.html');
+    expect(doc.getElementById('pe-find-online').getAttribute('href')).toBe('packets-pictures.html#from=present'); // 2026-11-17: Find a picture comes back here
     const visibleText = doc.body.textContent;
     expect(visibleText).not.toContain('!');
     expect([...doc.querySelectorAll('button')].every((b) => b.getAttribute('type') === 'button')).toBe(true);
@@ -710,7 +711,8 @@ describe('9. Timed 1-minute Symbol Naming Check lifecycle, reopen, results reade
     expect(mdDoc.querySelector('input[name="sr-view"]:checked').value).toBe('grid');
     expect(mdDoc.querySelector('input[name="sr-packet-mode"]:checked').value).toBe('check');
     expect(mdDoc.getElementById('sr-title').value).toBe('Stroop Naming Check');
-    expect(mdDoc.getElementById('sr-learners').value).toBe('RedFox4');
+    // 2026-11-17: the maker's single code name has its own field (sr-code-name); sr-learners is now the "Make one for each student" list.
+    expect(mdDoc.getElementById('sr-code-name').value).toBe('RedFox4');
     expect(mdDoc.getElementById('sr-teacher-code').value).toBe('');
 
     // Play the 1-minute check through practice samples + scored items in JSDOM
@@ -1215,15 +1217,15 @@ describe('14. Wave 3: Symbol Runner bimodal audio anchors, confusion pairs, Resu
     learnerRadio.checked = true;
     learnerRadio.dispatchEvent(new rw.Event('change', { bubbles: true }));
 
-    const rehearseAnchor = [...rd.querySelectorAll('#learner-body button[data-href]')].find((b) => /packets-symbol-runner\.html#rehearse=/i.test(b.getAttribute('data-href') || ''));
+    const rehearseAnchor = [...rd.querySelectorAll('#learner-body a.nav-new-tab')].find((b) => /packets-symbol-runner\.html#rehearse=/i.test(b.getAttribute('href') || ''));
     expect(rehearseAnchor).toBeTruthy();
-    expect(rehearseAnchor.textContent).toBe('Practice missed symbols in Symbol Runner');
-    expect(decodeURIComponent(rehearseAnchor.getAttribute('data-href').split('#rehearse=')[1])).toBe('b,d');
+    expect(rehearseAnchor.textContent).toBe('Practice missed symbols in Symbol Runner (opens in a new tab)');
+    expect(decodeURIComponent(rehearseAnchor.getAttribute('href').split('#rehearse=')[1])).toBe('b,d');
 
     // Open packets-symbol-runner.html directly with that hash.
     const srDom = trackDom(new JSDOM(read('packets-symbol-runner.html'), {
       runScripts: 'outside-only',
-      url: 'https://packets.example/' + rehearseAnchor.getAttribute('data-href'),
+      url: 'https://packets.example/' + rehearseAnchor.getAttribute('href'),
     }));
     const sw = srDom.window;
     const sd = sw.document;
@@ -1514,7 +1516,7 @@ describe('18. Wave 4: Closed RTI loop from packets-results -> packets-vocab, pac
     learnerRadio.checked = true;
     learnerRadio.dispatchEvent(new rw.Event('change', { bubbles: true }));
 
-    const links = [...rd.querySelectorAll('#learner-body button[data-href]')].map((b) => ({ text: b.textContent, href: b.getAttribute('data-href') }));
+    const links = [...rd.querySelectorAll('#learner-body a.nav-new-tab')].map((b) => ({ text: b.textContent.replace(' (opens in a new tab)', ''), href: b.getAttribute('href') }));
     const vocabRehearse = links.find((l) => /packets-vocab\.html#rehearse=/.test(l.href));
     const vocabPresent = links.find((l) => /packets-present-export\.html#words=/.test(l.href));
     const wsRehearse = links.find((l) => /packets-make\.html#rehearse=/.test(l.href));
@@ -1618,11 +1620,11 @@ describe('19. Wave 5: Closed RTI loop from packets-results -> packets-math-pract
     learnerRadio.checked = true;
     learnerRadio.dispatchEvent(new rw.Event('change', { bubbles: true }));
 
-    expect(rd.querySelectorAll('main a')).toHaveLength(0);
-    const links = [...rd.querySelectorAll('#learner-body button[data-href]')].map((b) => ({ text: b.textContent, href: b.getAttribute('data-href') }));
+    expect(rd.querySelectorAll('main a:not(.nav-new-tab)')).toHaveLength(0); // 2026-11-17: only the new-tab practice links
+    const links = [...rd.querySelectorAll('#learner-body a.nav-new-tab')].map((b) => ({ text: b.textContent.replace(' (opens in a new tab)', ''), href: b.getAttribute('href') }));
     const mathBtn = links.find((l) => /packets-math-practice\.html#rehearse=/.test(l.href));
     expect(mathBtn).toBeTruthy();
-    expect(mathBtn.text).toBe('Practice missed facts in Math Facts');
+    expect(mathBtn.text).toBe('Practice missed facts in Math fact practice');
     const [rehearsePart, knownPart] = mathBtn.href.split('#rehearse=')[1].split('&known=');
     expect(decodeURIComponent(rehearsePart)).toContain('7 ' + X + ' 8');
     expect(decodeURIComponent(rehearsePart)).toContain('6 ' + X + ' 9');
@@ -1753,8 +1755,11 @@ describe('20. Wave 5: Symbol Runner .zip batch export, preview handoff, and lett
     for (const s of d.querySelectorAll('script[src]')) w.eval(read(s.getAttribute('src')));
 
     // Batch export with 2 code names -> PK zip archive
+    // 2026-11-17: "Make one for each student" is its own fold, as on the other makers: Make the files, then Save the .zip file.
     d.getElementById('sr-learners').value = 'BlueHeron7\nRedFox4';
-    d.getElementById('sr-save-html').click();
+    d.getElementById('sr-batch-make').click();
+    expect(d.getElementById('sr-batch-save').hidden).toBe(false);
+    d.getElementById('sr-batch-save').click();
     const zipClick = clickedLinks.find((c) => c.download && c.download.endsWith('-files.zip'));
     expect(zipClick).toBeTruthy();
     expect(zipClick.blob.type).toBe('application/zip');
@@ -1939,9 +1944,9 @@ describe('23. Wave 6: Class-wide Group RTI summary and 1-click small-group re-te
     expect(gm.textContent).toContain('3 of 3');
     expect(gm.textContent).toContain('d (2)');
     expect(gm.textContent).toContain('7 ' + X + ' 8');
-    expect(rd.querySelectorAll('main a')).toHaveLength(0);
+    expect(rd.querySelectorAll('main a:not(.nav-new-tab)')).toHaveLength(0); // 2026-11-17: only the new-tab practice links
 
-    const hrefs = [...gm.querySelectorAll('button[data-href]')].map((b) => b.getAttribute('data-href'));
+    const hrefs = [...gm.querySelectorAll('a.nav-new-tab')].map((b) => b.getAttribute('href'));
     const vocabHref = hrefs.find((h) => /^packets-vocab\.html#rehearse=/.test(h));
     const peHref = hrefs.find((h) => /^packets-present-export\.html#words=/.test(h));
     const srHref = hrefs.find((h) => /^packets-symbol-runner\.html#rehearse=/.test(h));
@@ -2385,14 +2390,14 @@ describe('29. Wave 7: Early-numeracy quantity_discrimination & missing_number ->
 
     expect(rd.querySelectorAll('#group-table table.data-group-table').length).toBeLessThanOrEqual(2);
     expect(rd.getElementById('group-table').textContent).not.toContain('Most missed across the group');
-    const groupButtons = [...rd.querySelectorAll('#group-missed button[data-href]')].map((b) => ({ text: b.textContent, href: b.getAttribute('data-href') }));
+    const groupButtons = [...rd.querySelectorAll('#group-missed a.nav-new-tab')].map((b) => ({ text: b.textContent.replace(' (opens in a new tab)', ''), href: b.getAttribute('href') }));
     expect(groupButtons.some((b) => b.text === 'Practice group number comparison in Symbol Runner' && b.href === 'packets-symbol-runner.html#mode=number_size_stroop')).toBe(true);
     expect(groupButtons.some((b) => b.text === 'Practice group teen and decade numbers in Symbol Runner' && b.href === 'packets-symbol-runner.html#mode=digits_teen_decade')).toBe(true);
 
     const learnerRadio = rd.querySelector('input[name="view"][value="learner"]');
     learnerRadio.checked = true;
     learnerRadio.dispatchEvent(new rw.Event('change', { bubbles: true }));
-    const learnerButtons = [...rd.querySelectorAll('#learner-body button[data-href]')].map((b) => ({ text: b.textContent, href: b.getAttribute('data-href') }));
+    const learnerButtons = [...rd.querySelectorAll('#learner-body a.nav-new-tab')].map((b) => ({ text: b.textContent.replace(' (opens in a new tab)', ''), href: b.getAttribute('href') }));
     expect(learnerButtons.some((b) => b.text === 'Practice number comparison in Symbol Runner' && b.href === 'packets-symbol-runner.html#mode=number_size_stroop')).toBe(true);
     expect(learnerButtons.some((b) => b.text === 'Practice teen and decade numbers in Symbol Runner' && b.href === 'packets-symbol-runner.html#mode=digits_teen_decade')).toBe(true);
 
@@ -2724,15 +2729,15 @@ describe('33. Wave 8: Present & Export -> #symbols= bridge and Results Make-10 /
     for (let i = 0; i < 80 && !/\bread[,.]/.test(rd.getElementById('said').textContent); i++) await new Promise((r) => setTimeout(r, 15));
     rd.getElementById('show-results').click();
 
-    expect([...rd.querySelectorAll('#group-table [data-href]')].filter((b) => /packets-symbol-runner\.html/.test(b.getAttribute('data-href') || ''))).toHaveLength(0);
-    const grpBtns = [...rd.querySelectorAll('#group-missed button[data-href]')].map((b) => ({ text: b.textContent, href: b.getAttribute('data-href') }));
+    expect([...rd.querySelectorAll('#group-table a.nav-new-tab')].filter((b) => /packets-symbol-runner\.html/.test(b.getAttribute('href') || ''))).toHaveLength(0);
+    const grpBtns = [...rd.querySelectorAll('#group-missed a.nav-new-tab')].map((b) => ({ text: b.textContent.replace(' (opens in a new tab)', ''), href: b.getAttribute('href') }));
     expect(grpBtns.some((b) => b.href === 'packets-symbol-runner.html#mode=math_make_10')).toBe(true);
     expect(grpBtns.some((b) => b.href === 'packets-symbol-runner.html#mode=math_doubles')).toBe(true);
 
     const lrnRadio = rd.querySelector('input[name="view"][value="learner"]');
     lrnRadio.checked = true;
     lrnRadio.dispatchEvent(new rw.Event('change', { bubbles: true }));
-    const lrnBtns = [...rd.querySelectorAll('#learner-body button[data-href]')].map((b) => ({ text: b.textContent, href: b.getAttribute('data-href') }));
+    const lrnBtns = [...rd.querySelectorAll('#learner-body a.nav-new-tab')].map((b) => ({ text: b.textContent.replace(' (opens in a new tab)', ''), href: b.getAttribute('href') }));
     expect(lrnBtns.some((b) => b.href === 'packets-symbol-runner.html#mode=math_make_10')).toBe(true);
     expect(lrnBtns.some((b) => b.href === 'packets-symbol-runner.html#mode=math_doubles')).toBe(true);
   });
@@ -3024,15 +3029,15 @@ describe('37. Wave 9: Symbol Runner -> Present & Export bridge and Results Multi
     for (let i = 0; i < 80 && !/\bread[,.]/.test(rd.getElementById('said').textContent); i++) await new Promise((r) => setTimeout(r, 15));
     rd.getElementById('show-results').click();
 
-    expect([...rd.querySelectorAll('#group-table [data-href]')].filter((b) => /packets-symbol-runner\.html/.test(b.getAttribute('data-href') || ''))).toHaveLength(0);
-    const grpBtns = [...rd.querySelectorAll('#group-missed button[data-href]')].map((b) => b.getAttribute('data-href'));
+    expect([...rd.querySelectorAll('#group-table a.nav-new-tab')].filter((b) => /packets-symbol-runner\.html/.test(b.getAttribute('href') || ''))).toHaveLength(0);
+    const grpBtns = [...rd.querySelectorAll('#group-missed a.nav-new-tab')].map((b) => b.getAttribute('href'));
     expect(grpBtns).toContain('packets-symbol-runner.html#mode=math_mult_2_5_10');
     expect(grpBtns).toContain('packets-symbol-runner.html#mode=math_squares');
 
     const lrnRadio = rd.querySelector('input[name="view"][value="learner"]');
     lrnRadio.checked = true;
     lrnRadio.dispatchEvent(new rw.Event('change', { bubbles: true }));
-    const lrnBtns = [...rd.querySelectorAll('#learner-body button[data-href]')].map((b) => b.getAttribute('data-href'));
+    const lrnBtns = [...rd.querySelectorAll('#learner-body a.nav-new-tab')].map((b) => b.getAttribute('href'));
     expect(lrnBtns).toContain('packets-symbol-runner.html#mode=math_mult_2_5_10');
     expect(lrnBtns).toContain('packets-symbol-runner.html#mode=math_squares');
   });

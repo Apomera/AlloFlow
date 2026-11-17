@@ -16,7 +16,9 @@ describe('Study Timer modal accessibility', () => {
     expect(source).toContain('(getFocusable()[0] || dialog).focus()');
     expect(source).toContain("if (event.key === 'Escape')");
     expect(source).toContain("if (event.key !== 'Tab') return");
-    expect(source).toContain("if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus()");
+    // The focus-return line gained guards (still on top, opener still in the page).
+    // Its behaviour is exercised in tests/modal_focus_return_under_host_trap.test.js.
+    expect(source).toContain("previousFocus.isConnected && typeof previousFocus.focus === 'function') previousFocus.focus()");
   });
 
   it('exposes remaining time and completion progress programmatically', () => {

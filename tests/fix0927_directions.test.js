@@ -3,7 +3,9 @@
 // student's choice kept with goal progress and reported, and translated choice-board defaults.
 // DIRECTIONS_FIX_ROOT points every product read at saved copies (mutation checks).
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { readFileSync } from 'node:fs';
+// Host files are read through the helper so handlers moved to host_handlers_source.jsx
+// (wave 6, 2026-11-16) are found where they used to be.
+import { readFileSync } from './helpers/host_source.js';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import vm from 'node:vm';

@@ -128,6 +128,29 @@ function TeacherAiSetupNotice({ t, className }) {
   var N = typeof window.AlloAiSetupNotice === "function" ? window.AlloAiSetupNotice : null;
   return N && _teacherAiDoor(t)?.disabled ? /* @__PURE__ */ React.createElement("div", { className }, /* @__PURE__ */ React.createElement(N, { t })) : null;
 }
+function _tdEscapeHtml(value) {
+  return String(value == null ? "" : value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+function _tdSafeReportHtml(html) {
+  var text = String(html == null ? "" : html);
+  if (typeof window !== "undefined" && typeof window.sanitizeHtml === "function") return window.sanitizeHtml(text);
+  try {
+    var doc2 = new DOMParser().parseFromString("<!DOCTYPE html><body>" + text, "text/html");
+    doc2.body.querySelectorAll("script,iframe,object,embed,form,base,meta,link,frame,frameset,template,svg,math,style").forEach(function(node) {
+      node.remove();
+    });
+    doc2.body.querySelectorAll("*").forEach(function(el) {
+      Array.from(el.attributes).forEach(function(attr) {
+        var name = attr.name.toLowerCase();
+        var value = String(attr.value || "").replace(/[\x00-\x20]+/g, "").toLowerCase();
+        if (name.indexOf("on") === 0 || name === "srcdoc" || /^(?:href|src|action|formaction|xlink:href|poster|data)$/.test(name) && /^(?:javascript|vbscript|data:text\/html)/.test(value)) el.removeAttribute(attr.name);
+      });
+    });
+    return doc2.body.innerHTML;
+  } catch (_) {
+    return _tdEscapeHtml(text);
+  }
+}
 function alloTeacherStableId(prefix) {
   var value = "";
   try {
@@ -6481,7 +6504,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
       return `
               <div style="margin-bottom:40px; ${sidx > 0 ? "page-break-before:always;" : ""}">
                   <h2 style="font-size:18px; font-weight:bold; color:#4f46e5; border-bottom:2px solid #c7d2fe; padding-bottom:6px; margin-bottom:16px;">
-                      ${student.studentNickname || "Anonymous"} \u2014 Notebook (${notebookEntries.length} ${notebookEntries.length === 1 ? "entry" : "entries"})${commentCount > 0 ? ` <span style="font-size:11px; font-weight:normal; color:#92400e;">\xB7 ${commentCount} teacher note${commentCount === 1 ? "" : "s"}</span>` : ""}
+                      ${_tdEscapeHtml(student.studentNickname || "Anonymous")} \u2014 Notebook (${notebookEntries.length} ${notebookEntries.length === 1 ? "entry" : "entries"})${commentCount > 0 ? ` <span style="font-size:11px; font-weight:normal; color:#92400e;">\xB7 ${commentCount} teacher note${commentCount === 1 ? "" : "s"}</span>` : ""}
                   </h2>
                   ${entriesHtml || '<p style="color:#64748b; font-style:italic;">No notebook entries.</p>'}
               </div>
@@ -6498,7 +6521,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
     container.style.position = "absolute";
     container.style.left = "-9999px";
     container.style.top = "0";
-    container.innerHTML = reportHtml;
+    container.innerHTML = _tdSafeReportHtml(reportHtml);
     document.body.appendChild(container);
     try {
       await doc2.html(container, {
@@ -6558,7 +6581,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
     const doc2 = new jsPDF();
     const sections = results.map((r, i) => `
           <div style="margin-bottom:30px; padding:15px; background:#fffbeb; border-left:4px solid #f59e0b; ${i > 0 && i % 3 === 0 ? "page-break-before:always;" : ""}">
-              <div style="font-size:13px; font-weight:bold; color:#92400e; margin-bottom:6px;">\u{1F4E8} ${r.name}</div>
+              <div style="font-size:13px; font-weight:bold; color:#92400e; margin-bottom:6px;">\u{1F4E8} ${_tdEscapeHtml(r.name)}</div>
               <div style="font-size:11px; color:#1e293b; line-height:1.5;">${(r.feedback || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br/>")}</div>
           </div>
       `).join("");
@@ -6573,7 +6596,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
     container.style.position = "absolute";
     container.style.left = "-9999px";
     container.style.top = "0";
-    container.innerHTML = reportHtml;
+    container.innerHTML = _tdSafeReportHtml(reportHtml);
     document.body.appendChild(container);
     try {
       await doc2.html(container, {
@@ -6803,7 +6826,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
       const sNotebookFeedback = sNotes.reduce((sum, e) => sum + (e.data && e.data.feedbackCount || 0), 0);
       return `
                 <div style="margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 4px; ${idx > 0 ? "page-break-before: auto;" : ""}">
-                    <h3 style="font-size: 13px; font-weight: bold; margin-bottom: 8px; color: #333;">Student ${idx + 1}: ${student.studentNickname}</h3>
+                    <h3 style="font-size: 13px; font-weight: bold; margin-bottom: 8px; color: #333;">Student ${idx + 1}: ${_tdEscapeHtml(student.studentNickname)}</h3>
                     <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 10px;">
                         <tr style="border-bottom: 1px solid #eee;">
                             <td style="padding: 4px 6px; color: #666; width: 40%;">${t("research.sessions_completed")}</td>
@@ -6869,7 +6892,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
     container.style.position = "absolute";
     container.style.left = "-9999px";
     container.style.top = "0";
-    container.innerHTML = reportHtml;
+    container.innerHTML = _tdSafeReportHtml(reportHtml);
     document.body.appendChild(container);
     try {
       await doc2.html(container, {
@@ -6948,7 +6971,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
     container.style.left = "-9999px";
     container.style.top = "0";
     container.style.width = "595px";
-    container.innerHTML = reportHtml;
+    container.innerHTML = _tdSafeReportHtml(reportHtml);
     document.body.appendChild(container);
     try {
       await doc2.html(container, {
@@ -7286,7 +7309,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
       {
         className: "prose prose-sm max-w-none text-slate-700 leading-relaxed",
         dangerouslySetInnerHTML: {
-          __html: generateResourceHTML ? typeof window !== "undefined" && typeof window.sanitizeHtml === "function" ? window.sanitizeHtml(generateResourceHTML(item, true, selectedStudent.responses || {})) : generateResourceHTML(item, true, selectedStudent.responses || {}) : "<p>Error: Renderer not available.</p>"
+          __html: generateResourceHTML ? _tdSafeReportHtml(generateResourceHTML(item, true, selectedStudent.responses || {})) : "<p>Error: Renderer not available.</p>"
         }
       }
     )), /* @__PURE__ */ React.createElement(

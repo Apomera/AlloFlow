@@ -840,27 +840,121 @@
     }
   ];
 
-  // ── Syllable counter (heuristic, no dictionary) ──
-  // Reasonably accurate for English. Counts vowel groups, adjusts for silent-e and common suffixes.
-  function countSyllables(word) {
-    if (!word) return 0;
-    var w = String(word).toLowerCase().trim().replace(/[^a-z']/g, '');
-    if (w.length === 0) return 0;
-    if (w.length <= 3) return 1;
-    // Strip silent e
-    w = w.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '');
-    // Strip trailing y as separate syllable trigger (cherry → 2)
-    w = w.replace(/^y/, '');
-    var matches = w.match(/[aeiouy]{1,2}/g);
-    return matches ? matches.length : 1;
+  // ── Syllable counts ──
+  // Counts come from the app's CMU-based word table (word_sounds_pronunciations.js,
+  // loaded on demand). A word said more than one way (fire, every) keeps every
+  // count, so a line passes when any standard reading fits. Only a word the
+  // table lacks is estimated by rule, and the caller is told which.
+  var SYL_SILENT_MID = /[aeiouy][^aeiouy]e(?:ly|ment|ness|less|ful|thing|times?|where|body|fore)$/;
+  var SYL_APART = /i[aou]|eo(?![up])|[aeiou]ing|yi|[aeiou]y[ao]|oe(?=[mt])|eu(?=m|s$)|creat(?!u)|ie(?=t(?!e))|ience|[^tc]ient|[aeiouy][^aeiouy]+ea$|uo|[^qg]ua(?!r)/g;
+  var SYL_TOGETHER = /[tcs]ia[ln]|[tcsxg]io[nu]|tience/g;
+  // The estimate for a word the table lacks. Measured against the table on the
+  // 40,000 most common words: 94% right (the rule it replaced: 85%).
+  function estimateSyllables(word) {
+    var w = String(word || '').toLowerCase().replace(/[^a-z]/g, '');
+    if (!w) return 0;
+    if (w.length <= 2) return 1;
+    var n = (w.match(/[aeiouy]+/g) || []).length;
+    // A silent e: before a common ending (some-thing), at the end (make), and
+    // in -ed / -es (jumped, makes) but not wanted, horses, table, hundred.
+    if (SYL_SILENT_MID.test(w)) n--;
+    if (/[^aeiouy]e$/.test(w) && !/[^aeiouy]le$/.test(w)) n--;
+    else if (/[^aeiouytd]ed$/.test(w) && !/[^aeiouylr][rl]ed$/.test(w)) n--;
+    else if (/[^aeiouysxzcg]es$/.test(w) && !/[^aeiouy]les$/.test(w)) n--;
+    // Two vowels written together but said apart (li-on, po-em, be-ing) ...
+    n += (w.match(SYL_APART) || []).length;
+    // ... except the endings said as one sound (na-tion, so-cial, re-gion).
+    n -= (w.match(SYL_TOGETHER) || []).length;
+    if (/thm$|[^aeiouy]sm$/.test(w)) n++;
+    return Math.max(1, n);
   }
-
+  function syllableTable() {
+    var data = window.AlloModules && window.AlloModules.WordSoundsPronunciations;
+    return data && typeof data.lookup === 'function' ? data : null;
+  }
+  // { counts: every standard count, smallest first; known: false when estimated }
+  function syllableOptions(word) {
+    var w = String(word || '').normalize('NFD').replace(/\p{M}+/gu, '').toLowerCase()
+      .replace(/[‘’]/g, "'").replace(/[^a-z']/g, '').replace(/^'+|'+$/g, '');
+    if (!w) return { counts: [], known: true };
+    var table = syllableTable();
+    var patterns = table ? table.lookup(w) : null;
+    if (patterns && patterns.length) {
+      var seen = {};
+      var counts = [];
+      for (var i = 0; i < patterns.length; i++) {
+        var len = patterns[i].length;
+        if (len > 0 && !seen[len]) { seen[len] = true; counts.push(len); }
+      }
+      if (counts.length) return { counts: counts.sort(function (a, b) { return a - b; }), known: true, primary: patterns[0].length };
+    }
+    return { counts: [estimateSyllables(w)], known: false };
+  }
+  function lineWords(line) {
+    return String(line || '').normalize('NFD').replace(/\p{M}+/gu, '').match(/[A-Za-z]+(?:['‘’][A-Za-z]+)*/g) || [];
+  }
+  // expected: the form's target for this line, or null. With a target, count is
+  // the target when some reading reaches it, else the nearest reachable total.
+  function lineSyllables(line, expected) {
+    var words = lineWords(line);
+    var totals = [0];
+    var usual = 0;
+    var unknown = [];
+    for (var i = 0; i < words.length; i++) {
+      var opt = syllableOptions(words[i]);
+      if (!opt.counts.length) continue;
+      if (!opt.known) unknown.push(words[i].toLowerCase());
+      usual += opt.primary || opt.counts[0];
+      var next = {};
+      for (var a = 0; a < totals.length; a++) for (var b = 0; b < opt.counts.length; b++) next[totals[a] + opt.counts[b]] = true;
+      totals = Object.keys(next).map(Number);
+    }
+    var hasTarget = typeof expected === 'number' && expected > 0;
+    var match = !hasTarget || totals.indexOf(expected) >= 0;
+    var count = usual;
+    if (hasTarget) {
+      count = totals[0];
+      for (var k = 1; k < totals.length; k++) if (Math.abs(totals[k] - expected) < Math.abs(count - expected)) count = totals[k];
+    }
+    return { count: count, match: match, estimated: unknown.length > 0, unknown: unknown };
+  }
+  // Asks the host for the word table once. Resolves true when it is usable.
+  var syllableTablePending = null;
+  function loadSyllableTable() {
+    if (syllableTable()) return Promise.resolve(true);
+    if (typeof window.__alloLoadPlugin !== 'function') return Promise.resolve(false);
+    if (!syllableTablePending) {
+      syllableTablePending = Promise.resolve()
+        .then(function () { return window.__alloLoadPlugin('word_sounds_pronunciations.js'); })
+        .then(function () { return !!syllableTable(); }, function () { return false; })
+        .then(function (ready) { syllableTablePending = null; return ready; });
+    }
+    return syllableTablePending;
+  }
+  // "Verify" needs the verifier module. Nothing else in PoetTree asked the host
+  // for it, so the button only worked if Report Writer had loaded it first.
+  function poetryVerifier() {
+    var py = window.AlloModules && window.AlloModules.PyodideRuntime;
+    return py && typeof py.runPoetryCheck === 'function' ? py : null;
+  }
+  function loadPoetryVerifier() {
+    if (poetryVerifier()) return Promise.resolve(poetryVerifier());
+    if (typeof window.__alloLazyPyodide !== 'function') return Promise.resolve(null);
+    try { window.__alloLazyPyodide(); } catch (_) { return Promise.resolve(null); }
+    return new Promise(function (resolve) {
+      var tries = 0;
+      var timer = setInterval(function () {
+        var py = poetryVerifier();
+        if (py || ++tries >= 100) { clearInterval(timer); resolve(py); }
+      }, 100);
+    });
+  }
+  function countSyllables(word) {
+    var opt = syllableOptions(word);
+    return opt.counts.length ? (opt.primary || opt.counts[0]) : 0;
+  }
   function countLineSyllables(line) {
-    if (!line) return 0;
-    var words = String(line).split(/\s+/).filter(Boolean);
-    var total = 0;
-    for (var i = 0; i < words.length; i++) total += countSyllables(words[i]);
-    return total;
+    return lineSyllables(line, null).count;
   }
 
   // ── Rhyme grouping (heuristic, last 2-3 phonemes) ──
@@ -995,6 +1089,16 @@
     // runs on-demand with a button click.
     var _cmuResult = useState(null); var cmuResult = _cmuResult[0]; var setCmuResult = _cmuResult[1];
     var _cmuLoading = useState(false); var cmuLoading = _cmuLoading[0]; var setCmuLoading = _cmuLoading[1];
+    // The word table behind the syllable counts is fetched once there is
+    // something to count; the counts redraw when it arrives.
+    var _sylTableTick = useState(0); var setSylTableTick = _sylTableTick[1];
+    var hasPoemText = !!poemText.trim();
+    useEffect(function () {
+      if (!hasPoemText || syllableTable()) return undefined;
+      var alive = true;
+      loadSyllableTable().then(function (ready) { if (ready && alive) setSylTableTick(function (n) { return n + 1; }); });
+      return function () { alive = false; };
+    }, [hasPoemText]);
 
     // Performance state
     var _ttsPlaying = useState(false); var ttsPlaying = _ttsPlaying[0]; var setTtsPlaying = _ttsPlaying[1];
@@ -2724,23 +2828,25 @@
       setChapbookSelectedIds([]);
     }, []);
     var verifyWithCMU = useCallback(async function () {
-      var py = window.AlloModules && window.AlloModules.PyodideRuntime;
-      if (!py || typeof py.runPoetryCheck !== 'function') {
-        if (addToast) addToast(tr('Python verifier not available — refresh and try again.'), 'error');
-        return;
-      }
       if (!form || !poemText.trim()) return;
       var request = beginAiRequest('cmu');
       setCmuLoading(true);
       setCmuResult(null);
       try {
-        var useOfflineCheck = !!(typeof window !== 'undefined' && (window._isDesktopBundledApp === true || window.__alloStudentAiDisabled === true || window.__alloOfflineOnly === true)) || (typeof navigator !== 'undefined' && navigator.onLine === false);
-        if (!useOfflineCheck && typeof py.warmupPoetry === 'function') await py.warmupPoetry();
+        // The verifier is a small file fetched on first use. The check then
+        // runs in the page with the same word table as the live check; the
+        // Python runtime (a 10 MB download) is never fetched for a poem.
+        var py = await loadPoetryVerifier();
+        if (!aiRequestIsCurrent('cmu', request)) return;
+        if (!py) {
+          if (addToast) addToast(tr('The verifier could not load. Check your connection and try again.'), 'error');
+          return;
+        }
         var result = await py.runPoetryCheck({
           form: form,
           poemText: poemText,
           signal: aiRequestSignal(request),
-          offlineOnly: useOfflineCheck,
+          offlineOnly: true,
           targetWord: (form.id === 'acrostic' && acrosticTarget.trim()) ? acrosticTarget.trim() : null,
         });
         if (!aiRequestIsCurrent('cmu', request)) return;
@@ -3316,6 +3422,7 @@
     // ── Render ──
     var lines = poemText.split('\n');
     var nonEmptyLines = lines.filter(function (l) { return l.trim().length > 0; });
+    var syllablesEstimated = nonEmptyLines.some(function (l) { return lineSyllables(l, null).estimated; });
     var rhymeGroups = detectRhymeScheme(nonEmptyLines);
     var structureSummary = formStructureSummary(form, nonEmptyLines, acrosticTarget);
     var draftWordCount = poemText.trim() ? poemText.trim().split(/\s+/).filter(Boolean).length : 0;
@@ -3929,20 +4036,23 @@
                   var poemLineIndex = 0;
                   return lines.map(function (line, li) {
                     if (!line.trim()) return e('div', { key: li, style: { color: '#475569', padding: '2px 0' } }, '— stanza break —');
-                    var sylCount = countLineSyllables(line);
                     var expected = form && form.syllablesPerLine && form.syllablesPerLine[poemLineIndex];
-                    var sylStatus = expected ? (sylCount === expected ? '✓' : '✗ ' + sylCount + '/' + expected) : sylCount + ' syl';
+                    var sylInfo = lineSyllables(line, expected || null);
+                    var sylCount = sylInfo.match && expected ? expected : sylInfo.count;
+                    // "~" marks a count that includes a word estimated by rule.
+                    var sylStatus = expected ? (sylInfo.match ? '✓' : '✗ ' + (sylInfo.estimated ? '~' : '') + sylCount + '/' + expected) : (sylInfo.estimated ? '~' : '') + sylCount + ' syl';
                     var rg = rhymeGroups[poemLineIndex];
                     poemLineIndex += 1;
                   return e('div', { key: li, style: { padding: '3px 0', display: 'flex', gap: '8px', alignItems: 'center' } },
                     e('span', { style: { color: '#475569', minWidth: '20px' } }, (li + 1) + '.'),
                     e('span', { style: { flex: 1, color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, line),
                     rg && e('span', { style: { color: TEAL, fontWeight: 700, minWidth: '14px' }, 'aria-label': 'rhymes as group ' + rg }, rg),
-                    e('span', { style: { color: expected && sylCount !== expected ? AMBER : '#475569', fontWeight: 700, minWidth: '60px', textAlign: 'right' } }, sylStatus)
+                    e('span', { 'data-pt-syllable-status': expected ? (sylInfo.match ? 'match' : 'miss') : 'count', style: { color: expected && !sylInfo.match ? AMBER : '#475569', fontWeight: 700, minWidth: '60px', textAlign: 'right' } }, sylStatus)
                   );
                 });
               })()
               ),
+              syllablesEstimated && e('p', { 'data-pt-syllable-note': 'estimated', style: { fontSize: '10px', color: '#475569', fontStyle: 'italic', margin: '6px 0 0' } }, tr('~ includes a word counted by estimate, because it is not in the word list.')),
               structureSummary && e('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: '8px', padding: '8px 10px', borderRadius: '8px', background: structureSummary.ok ? '#f0fdf4' : '#fffbeb', color: structureSummary.ok ? '#166534' : '#92400e', border: '1px solid ' + (structureSummary.ok ? '#86efac' : '#fde68a'), fontSize: '11px', fontWeight: 700 } }, (structureSummary.ok ? '✓ ' : 'Check: ') + structureSummary.detail),
               // Form-level summary
               form && e('div', { style: { marginTop: '8px', paddingTop: '8px', borderTop: '1px dashed #cbd5e1', fontSize: '11px', color: '#475569' } },
@@ -3972,16 +4082,16 @@
                 'aria-busy': meterLoading ? 'true' : 'false',
                 style: { padding: '8px 14px', background: poemText.trim() && !meterLoading ? '#0891b2' : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: poemText.trim() && !meterLoading ? 'pointer' : 'not-allowed' }
               }, meterLoading ? '⏳ Analyzing meter…' : '📏 Analyze meter'),
-              // Phase 5: CMU-dict verifier — runs Pyodide + pronouncing for authoritative
-              // syllable / rhyme / stress / structural-form checks. Hidden for the 'free'
+              // Verifier: line count, syllables (CMU-based word table) and the
+              // form's own rules, checked in the page. Hidden for the 'free'
               // form since there are no targets to verify against.
               form && form.id !== 'free' && e('button', {
                 onClick: verifyWithCMU,
                 disabled: !poemText.trim() || cmuLoading,
                 'aria-busy': cmuLoading ? 'true' : 'false',
-                title: 'Authoritative check using the CMU Pronouncing Dictionary (catches what the heuristic misses)',
+                title: 'Checks line count, syllables and the form\'s rules, with syllable counts from the CMU Pronouncing Dictionary',
                 style: { padding: '8px 14px', background: poemText.trim() && !cmuLoading ? '#a21caf' : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: poemText.trim() && !cmuLoading ? 'pointer' : 'not-allowed' }
-              }, cmuLoading ? '⏳ Verifying…' : '🐍 Verify with CMU'),
+              }, cmuLoading ? '⏳ Verifying…' : '📖 Verify with CMU'),
               onCallTTS && e('button', { onClick: function () { setActiveTab('perform'); },
                 style: { padding: '8px 14px', background: '#fff', color: TEAL_DARK, border: '1px solid ' + TEAL, borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
               }, '🎙️ Perform')
@@ -4960,4 +5070,6 @@
   // Expose to AlloFlow shell
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.PoetTree = PoetTree;
+  // The verifier (pyodide_runtime_module.js) counts with the same code.
+  window.AlloModules.PoetTreeSyllables = { options: syllableOptions, line: lineSyllables, estimate: estimateSyllables, load: loadSyllableTable };
 })();

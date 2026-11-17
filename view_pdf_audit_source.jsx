@@ -20157,7 +20157,7 @@ Return ONLY the plain-language summary.`, false));
                           if (createdStyle) { try { style.remove(); } catch (_) {} }
                           blocked.forEach(({ el, hadInert, ariaHidden }) => {
                             if (!hadInert) el.removeAttribute('inert');
-                            if (ariaHidden == null) el.removeAttribute('aria-hidden'); else el.setAttribute('aria-hidden', ariaHidden);
+                            if (ariaHidden == null) el.removeAttribute('aria-hidden'); else if (ariaHidden !== 'true') el.setAttribute('aria-hidden', ariaHidden);
                           });
                           try { if (opener && opener.isConnected && typeof opener.focus === 'function') opener.focus(); } catch (_) {}
                           resolve(accepted === true);

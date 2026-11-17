@@ -5,6 +5,7 @@ import { createRequire } from 'node:module';
 import crypto from 'node:crypto';
 import vm from 'node:vm';
 import { loadAlloModule } from './setup.js';
+import { sliceBetween } from './helpers/anchored_slice.js';
 
 const require = createRequire(import.meta.url);
 const ROOT = process.cwd();
@@ -124,7 +125,8 @@ describe('Pass-5 mirror, portable package, and delivery manifest integrity', () 
     const manifest = builder.readEmbeddedManifest(hostText);
     const { releaseId, ...body } = manifest;
 
-    expect(manifest.fallbackCommit).toBeNull();
+    // Null in a dev tree; every production build stamps the release commit (build.js).
+    expect(manifest.fallbackCommit === null || /^[0-9a-f]{40}$/.test(manifest.fallbackCommit)).toBe(true);
     expect(manifest.allowDesktopRemoteFallback).toBe(false);
     expect(releaseId).toBe(crypto.createHash('sha256').update(builder.canonical(body)).digest('hex'));
 
@@ -148,13 +150,114 @@ describe('Pass-5 F-57, F-60, F-63, F-64, F-66 core platform & rules safeguards',
     expect(rules).toContain('boardOpen()');
   });
 
-  it('preserves educator passcode and clinical/legal-hold records during ErrorBoundary cache wipe', () => {
+  // Runs the crash screen's real wipe code against stand-in storage. The earlier
+  // version of this test only looked for strings in the host file, and passed while
+  // the wipe deleted the clinical store and the legal-hold flag: its keep-list named
+  // keys no module uses.
+  it('keeps the educator passcode, clinical records and the legal hold through the ErrorBoundary cache wipe', async () => {
     const anti = read('AlloFlowANTI.txt');
-    expect(anti).toContain('alloflow_educator_access_code_v1');
-    expect(anti).toContain('alloflow_educator_access_backoff_v1');
-    expect(anti).toContain('alloflow_ai_secrets_locked_v1');
-    expect(anti).toContain('legalHold');
-    expect(anti).toContain('/psych|casebook|clinical|legal/i.test(db.name)');
+    const wipeCode = sliceBetween(anti, 'var ALLO_WIPE_KEEP_RE', 'class AlloFlowErrorBoundary', { file: 'AlloFlowANTI.txt', label: 'crash-screen wipe' });
+
+    // The names the wipe must respect come from the modules that own them.
+    const sensitive = read('sensitive_workspace_module.js');
+    const prefixBlock = sliceBetween(sensitive, 'var PREFIXES = {', 'var clone', { file: 'sensitive_workspace_module.js' });
+    const clinicalPrefixes = Array.from(prefixBlock.matchAll(/'([A-Za-z_]+_)'/g)).map((m) => m[1]);
+    expect(clinicalPrefixes.length).toBeGreaterThanOrEqual(6);
+    const deviceStore = read('allo_device_storage_module.js');
+    expect(deviceStore).toContain("var DIRECT_DB = 'allo_device_storage'");
+    expect(deviceStore).toContain("var DIRECT_STORE = 'kv'");
+    expect(deviceStore).toContain("localStorage.getItem('alloflow_retention_legal_hold_v1')");
+    expect(sensitive).toContain("namespace: 'protected_clinical_records'");
+
+    const local = new Map([
+      ['alloflow_last_crash', 'crash'],
+      ['alloflow_educator_access_code_v1', 'code'],
+      ['alloflow_educator_access_backoff_v1', 'backoff'],
+      ['alloflow_ai_secrets_locked_v1', '1'],
+      ['alloflow_retention_legal_hold_v1', '1'],
+      ['alloflow_corrupt_cache', '{broken'],
+      ['alloStudentProfiles', '[]'],
+    ]);
+    clinicalPrefixes.forEach((p) => local.set(p + 'record_1', 'clinical'));
+    const localStorage = {
+      get length() { return local.size; },
+      key: (i) => Array.from(local.keys())[i] ?? null,
+      getItem: (k) => (local.has(k) ? local.get(k) : null),
+      setItem: (k, v) => { local.set(k, String(v)); },
+      clear: () => local.clear(),
+    };
+
+    const databases = new Map([
+      ['allo_device_storage', new Map([
+        ['protected_clinical_records store_v1', { k: 'protected_clinical_records store_v1', ns: 'protected_clinical_records', value: 'ENCRYPTED' }],
+        ['progress student_1', { k: 'progress student_1', ns: 'progress', value: 'x' }],
+        ['cache thing', { k: 'cache thing', ns: 'cache', value: 'y' }],
+      ])],
+      ['allo_adventure_images', new Map([['a', { k: 'a' }]])],
+      ['clinical_looking_name', new Map([['b', { k: 'b' }]])],
+    ]);
+    const later = (fn) => setTimeout(fn, 0);
+    const indexedDB = {
+      databases: () => Promise.resolve(Array.from(databases.keys()).map((name) => ({ name }))),
+      deleteDatabase(name) {
+        const req = {};
+        later(() => { databases.delete(name); if (req.onsuccess) req.onsuccess(); });
+        return req;
+      },
+      open(name) {
+        const req = {};
+        later(() => {
+          const rows = databases.get(name);
+          req.result = {
+            objectStoreNames: { contains: (store) => store === 'kv' },
+            close() {},
+            transaction() {
+              const tx = {};
+              tx.objectStore = () => ({
+                openCursor() {
+                  const cur = {};
+                  const keys = Array.from(rows.keys());
+                  let at = 0;
+                  const step = () => later(() => {
+                    if (at >= keys.length) { cur.result = null; cur.onsuccess(); later(() => tx.oncomplete && tx.oncomplete()); return; }
+                    const key = keys[at];
+                    cur.result = { value: rows.get(key), delete: () => rows.delete(key), continue: () => { at += 1; step(); } };
+                    cur.onsuccess();
+                  });
+                  step();
+                  return cur;
+                },
+              });
+              return tx;
+            },
+          };
+          req.onsuccess();
+        });
+        return req;
+      },
+    };
+
+    const sandbox = { localStorage, indexedDB, Promise, setTimeout };
+    vm.runInNewContext(wipeCode + '\nthis.wipe = _alloWipeCachedDeviceData; this.keepRe = ALLO_WIPE_KEEP_RE;', sandbox);
+    await sandbox.wipe();
+
+    // Local storage: access code, legal hold and every clinical prefix survive; the rest is gone.
+    for (const k of ['alloflow_last_crash', 'alloflow_educator_access_code_v1', 'alloflow_educator_access_backoff_v1', 'alloflow_ai_secrets_locked_v1']) expect(local.has(k), k).toBe(true);
+    expect(local.get('alloflow_retention_legal_hold_v1')).toBe('1');
+    clinicalPrefixes.forEach((p) => expect(local.get(p + 'record_1'), p).toBe('clinical'));
+    expect(local.has('alloflow_corrupt_cache')).toBe(false);
+    expect(local.has('alloStudentProfiles')).toBe(false);
+
+    // Device store: only the protected clinical namespace is left; other databases are deleted.
+    expect(Array.from(databases.keys())).toEqual(['allo_device_storage']);
+    expect(Array.from(databases.get('allo_device_storage').keys())).toEqual(['protected_clinical_records store_v1']);
+    expect(databases.get('allo_device_storage').get('protected_clinical_records store_v1').value).toBe('ENCRYPTED');
+
+    // The crash screen calls this function and waits for it before reloading.
+    const boundary = sliceBetween(anti, 'class AlloFlowErrorBoundary', 'function SdTurboOfferModal', { file: 'AlloFlowANTI.txt', label: 'crash screen' });
+    expect(boundary).toContain('_alloWipeCachedDeviceData()');
+    expect(boundary).not.toContain('localStorage.clear()');
+    expect(boundary).not.toContain('indexedDB.deleteDatabase');
   });
 
   it('strips per-learner accuracy breakdowns in Concept Quest snapshots and enforces managed AI policy headers in SafetyChecker', () => {

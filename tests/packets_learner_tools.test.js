@@ -101,7 +101,7 @@ function open(html, { storage = null } = {}) {
 }
 
 describe('every file carries the reading tools', () => {
-  it('practice, running text, a check and math facts: the same tools, "Check a file" finds nothing to look at, and the tools add under 16.5 KB', () => {
+  it('practice, running text, a check and math facts: the same tools, "Check a file" finds nothing to look at, and the tools add under 18.5 KB', () => {
     for (const [name, html] of Object.entries(FILES)) {
       expect(html, name).toContain('\ntools:function takeHomeTools(o) {\n');
       const r = verify.verifyPacket(html);
@@ -121,7 +121,11 @@ describe('every file carries the reading tools', () => {
     const words = JSON.stringify(Object.fromEntries(Object.entries(TH.DEFAULT_LABELS).filter(([k]) => /^tools_/.test(k))));
     const bytes = Buffer.byteLength(fn) + Buffer.byteLength(style) + Buffer.byteLength(words);
     // Re-pinned 2026-11-12 (look pass) from 15000: the four new colors, their dots and their words (+1.4 KB; 14.4 KB before).
-    expect(bytes).toBeLessThan(16500);
+    // Re-pinned 2026-11-16 from 16500: Letters, the app reader's font choice (+1.1 KB: the group, its two rules, its words,
+    // and the measure that hides Rounded where the device has no such font).
+    // The same day, +0.3 KB: the reading focus follows the sentence a read-along is reading aloud.
+    // And +0.2 KB: Lexend and Atkinson in the Letters group (the fonts themselves are not counted here: 42.5 KB, in FONT_CSS).
+    expect(bytes).toBeLessThan(18500);
     // The copy in the file is the loader's own function, without its indentation.
     expect(fn.slice('\ntools:'.length, -1)).toBe(TH._tools.toString().replace(/\n +/g, '\n'));
   });
@@ -163,6 +167,10 @@ describe('the button and the panel', () => {
       // Sunny, Forest), in the same one group, each with a dot of its color.
       ['colors', 'Colors', ['Usual=true', 'High contrast=false', 'Soft=false', 'Dark=false', 'Ocean=false', 'Sunny=false', 'Forest=false']],
       ['spacing', 'Spacing', ['Normal=true', 'Wider=false']],
+      // 2026-11-16, deliberately: Letters, the font choice of the app's reader, with the device's own fonts
+      // (tests/packets_read_along_2026_11_16.test.js).
+      // The same day: the app reader's two reading fonts, inside every file (data/vendor/fonts/source.json).
+      ['font', 'Letters', ['Usual=true', 'Lexend=false', 'Atkinson=false', 'Book=false', 'Rounded=false']],
       ['focus', 'Reading focus', ['Off=true', 'On=false']],
       ['lens', 'Magnifier', ['Off=true', 'On=false']],
       // 2026-11-12, deliberately: "Read the choices when a question opens" (hearAllIn; tests/packets_hear_all.test.js). Off by
@@ -172,10 +180,10 @@ describe('the button and the panel', () => {
       // shown in practice packets with spoken directions and hidden in checks/facts without them.
       ['directions', 'Spoken directions', ['Every question=true', 'First question only=false']],
     ]);
-    expect(groups[5].hidden).toBe(false);
     expect(groups[6].hidden).toBe(false);
+    expect(groups[7].hidden).toBe(false);
     // No running text on the start screen: the reading focus is not offered.
-    expect(groups[3].hidden).toBe(true);
+    expect(groups[4].hidden).toBe(true);
     for (const noDir of [FILES.check, FILES.facts]) {
       const nt = open(noDir);
       nt.q('[data-tools-open]').click();

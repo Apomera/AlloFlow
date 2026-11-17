@@ -47,6 +47,8 @@ yoghurt
 mum mums mam quid fortnight shilling shillings pence tuppence sixpence farthing guinea guineas
 lorry lorries nappy nappies pram prams telly petrol bloke blokes loo maths daft sledge
 cheerio wellies motorway aubergine courgette pushchair dustbin ladybird settee
+# 2026-11-16: became common enough to offer when the children's-book counts were re-made for the whole dictionary.
+crisps
 
 ## words (added after reading the picker's output, 2026-11-11)
 gran larder matron prefect

@@ -34,7 +34,7 @@ function KokoroOfferModal({ setShowKokoroOfferModal, setSelectedVoice, addToast 
     }
     if (branch && branch.parentElement === document.body) {
       Array.from(document.body.children).forEach(function(sibling) {
-        if (sibling === branch || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName)) return;
+        if (sibling === branch || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName) || typeof sibling.matches === "function" && sibling.matches('[aria-live], [role="status"], [role="alert"], [data-toast-region]')) return;
         isolatedSiblings.push({
           el: sibling,
           hadInert: sibling.hasAttribute("inert"),
@@ -46,8 +46,12 @@ function KokoroOfferModal({ setShowKokoroOfferModal, setSelectedVoice, addToast 
         sibling.setAttribute("aria-hidden", "true");
       });
     }
-    const prevBodyOverflow = document.body ? document.body.style.overflow : "";
-    if (document.body) document.body.style.overflow = "hidden";
+    const alloScrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: "" });
+    const alloScrollLocked = !!document.body;
+    if (alloScrollLocked && ++alloScrollLock.count === 1) {
+      alloScrollLock.prev = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+    }
     const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
     const trap = { root: dialog };
     trapStack.push(trap);
@@ -102,16 +106,18 @@ function KokoroOfferModal({ setShowKokoroOfferModal, setSelectedVoice, addToast 
     document.addEventListener("keydown", onKeyDown);
     return function() {
       document.removeEventListener("keydown", onKeyDown);
-      if (document.body) document.body.style.overflow = prevBodyOverflow;
+      if (alloScrollLocked) {
+        alloScrollLock.count = Math.max(0, alloScrollLock.count - 1);
+        if (alloScrollLock.count === 0 && document.body) document.body.style.overflow = alloScrollLock.prev;
+      }
       isolatedSiblings.forEach(function(entry) {
         if (!entry.hadInert) {
           entry.el.inert = false;
           entry.el.removeAttribute("inert");
         } else {
-          entry.el.inert = entry.prevInert;
         }
         if (entry.prevAriaHidden === null) entry.el.removeAttribute("aria-hidden");
-        else entry.el.setAttribute("aria-hidden", entry.prevAriaHidden);
+        else if (entry.prevAriaHidden !== "true") entry.el.setAttribute("aria-hidden", entry.prevAriaHidden);
       });
       const wasTopTrap = isTopTrap();
       const trapIndex = trapStack.indexOf(trap);

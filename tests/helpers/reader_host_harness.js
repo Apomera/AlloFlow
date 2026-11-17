@@ -4,6 +4,7 @@
 // at scratch copies so a mutant never reaches the shared files.
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
+import { readHostSource } from './host_source.js';
 import { loadAlloModule } from '../setup.js';
 
 export const REPO = process.cwd();
@@ -27,8 +28,9 @@ export function boot() {
 }
 
 // Verbatim host blocks, found by anchors (line numbers move under other sessions).
+// Handlers moved to host_handlers_source.jsx are put back in place by readHostSource.
 export function antiBlocks() {
-  const src = readFileSync(process.env.ALLO_ANTI_CANDIDATE || REPO + '/AlloFlowANTI.txt', 'utf8');
+  const src = process.env.ALLO_ANTI_CANDIDATE ? readFileSync(process.env.ALLO_ANTI_CANDIDATE, 'utf8') : readHostSource('AlloFlowANTI.txt');
   const cut = (start, end) => {
     const s = src.indexOf(start), e = s < 0 ? -1 : src.indexOf(end, s);
     if (s < 0 || e < 0) throw new Error('ANTI anchor missing: ' + start);

@@ -2,7 +2,9 @@
 // results panel live in AlloFlowANTI.txt; this compiles exactly that text and runs it against
 // a fake AI. ALLO_ANTI_CANDIDATE points at a mutated copy for mutation checks.
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { readFileSync } from 'node:fs';
+// Host files are read through the helper so handlers moved to host_handlers_source.jsx
+// (wave 6, 2026-11-16) are found where they used to be.
+import { readFileSync } from './helpers/host_source.js';
 import { transformSync } from '@babel/core';
 import { React, ReactDOMClient, act } from './helpers/games_live_harness.js';
 import { sliceBetween, expectAnchorCount } from './helpers/anchored_slice.js';

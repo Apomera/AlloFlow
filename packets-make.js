@@ -54,6 +54,11 @@
   // The usual set in each strand, and what a first visit starts with.
   var USUAL = { syllables_rhyme: ['rhyming'], hearing_sounds: ['isolation', 'blending', 'segmentation'], letters_sounds: ['mapping'], spelling: ['missing_letter', 'spelling_bee'] };
   var FIRST_VISIT = USUAL.hearing_sounds;
+  // 2026-11-16 (owner): a first visit starts at a grade level, not at "Any grade level", so the first words are ones a
+  // beginning reader can read (can, get, bed) and not the most common words of all (what, right, could). It is the first
+  // row of the default table: three-sound words, one letter for each sound, short vowels. Choices kept from an earlier
+  // visit still win (see recall), "Any grade level" among them.
+  var FIRST_STAGE = 'K early';
   // Which activities the builder can make but this page holds back is worked out when the page opens, from
   // the word list's recording flags (see heldBackBy). The rule: the builder makes a trial build of the first
   // TRIAL_WORDS words this page lists when nothing is changed (three-sound words, version A), knowing only which
@@ -68,6 +73,9 @@
   // Choices: how many answers a board shows (word_sounds_packet_builder.js, opts.choices), and the activities it changes.
   var CHOICE_LEVELS = ['easy', 'medium', 'all'];
   var CHOICE_ACTIVITIES = ['isolation', 'blending', 'rhyming', 'counting'];
+  // The words for each, on the top line of a "More options" box.
+  var CHOICE_NAMES = { easy: 'Easy', medium: 'Medium', all: 'All' };
+  var TRACE_NAMES = { both: 'capital, then lowercase', capital: 'capital only', lowercase: 'lowercase only' };
   // Sound label, then a word that has the sound (checked against the sound dictionary by the test).
   var SOUND_GROUPS = [
     ['Short vowels', [['a', 'cat'], ['e', 'bed'], ['i', 'pig'], ['o', 'dog'], ['u', 'sun']]],
@@ -79,9 +87,10 @@
     ['Two letters, one sound', [['sh', 'ship'], ['ch', 'chin'], ['th', 'thin'], ['dh', 'this'], ['ng', 'ring'], ['zh', 'vision']]],
   ];
   var SOUND_NAMES = { oo_short: 'short oo', dh: 'th (voiced)', schwa: 'schwa (uh)' };
+  var POSITION_NAMES = { first: 'first sound', middle: 'in the middle', last: 'last sound' };
   // Shape by sounds, then words of that shape (checked against the word list by the test).
   var SHAPES = [['CVC', 'cat, ship'], ['CCVC', 'frog, stop'], ['CVCC', 'lamp, fast'], ['CCVCC', 'stamp'], ['CV', 'go, she'], ['VC', 'at, in']];
-  var STAGE_HINT = 'A stage keeps to the letter patterns taught by then.';
+  var STAGE_HINT = 'A grade level keeps to the letter patterns taught by then.';
   // The kindergarten rows of the default (US, Common Core) stage table: neither has sh, ch or th (see #stage-k-note).
   var K_STAGES = ['K early', 'K late'];
   // The stages of a curriculum other than the default one (England's) wait behind "Other curricula" (#stage-other),
@@ -124,19 +133,26 @@
   var step = 1;
 
   function defaults() {
-    return { activities: FIRST_VISIT.slice(), mode: 'pick', sound: '', position: 'any', shape: 'CVC', stage: '', removed: [], own: '', version: 'A',
+    return { activities: FIRST_VISIT.slice(), mode: 'pick', sound: '', position: 'any', shape: '', stage: stageRow(FIRST_STAGE) ? FIRST_STAGE : '', removed: [], own: '', version: 'A',
       length: core && core.LESSON_LENGTHS[core.LESSON_LENGTH_DEFAULT] ? core.LESSON_LENGTH_DEFAULT : 'regular', title: '', titleEdited: false,
+      // order: the page picks the most common words that fit ('common'), or any words that fit ('random', "Pick different
+      // words"). shuffle: which random set, one more each press. Neither changes the build seed (the version's 1, 2 or 3).
+      order: 'common', shuffle: 0,
       // count: Custom's number of words. hand: the teacher chose the words in the list; chosen: those words, in the order checked.
       count: CUSTOM_WORDS, hand: false, chosen: [],
+      // spread: mix the picked words by their number of sounds (for Sound Counting). label: the teacher's label for the first
+      // group of words. groups: up to MAX_GROUPS more groups, each { label, stage, sound, shape, count }. 2026-11-16.
+      spread: false, label: GROUP_LABELS[0], groups: [],
       // learner: a student's code name for the file (step 3). It is not kept: the next file is often for someone else.
       learner: '',
       // tracing: Letter Trace traces the capital, then the lowercase ('both'), or one of them.
       tracing: 'both',
       // choices: fewer answers to choose from ('easy'), 'medium' (the default) or 'all', as Word Sounds does by level.
       choices: 'medium',
-      directionsOnce: false };
+      directionsOnce: false, repeatMissed: false };
   }
   function wordCount(value) { var n = Number(value); return n >= 1 && n <= MAX_WORDS && Math.floor(n) === n ? n : 0; }
+  function shuffleCount(value) { var n = Number(value); return n >= 1 && n < 1e6 && Math.floor(n) === n ? n : 1; }
 
   // ---------------------------------------------------------------------------
   // What this page keeps: the last choices, in this browser only
@@ -147,8 +163,14 @@
   function remember() {
     try {
       window.localStorage.setItem(STORE_KEY, JSON.stringify({ v: 1, activities: state.activities, mode: state.mode, sound: state.sound, position: state.position,
-        shape: state.shape, stage: state.stage, own: state.own, version: state.version, length: state.length, count: state.count, hand: state.hand, chosen: state.chosen, choices: state.choices, tracing: state.tracing, directionsOnce: !!state.directionsOnce, words: wordsForHandoff() }));
+        shape: state.shape, stage: state.stage, own: state.own, version: state.version, length: state.length, count: state.count, hand: state.hand, chosen: state.chosen, choices: state.choices, tracing: state.tracing, directionsOnce: !!state.directionsOnce, repeatMissed: !!state.repeatMissed,
+        order: state.order === 'random' ? 'random' : 'common', shuffle: state.order === 'random' ? state.shuffle : 0, title: titleForHandoff(), words: wordsForHandoff(),
+        spread: !!state.spread, label: state.label, groups: state.groups.map(function (g) { return { label: g.label, stage: g.stage, sound: g.sound, shape: g.shape, count: g.count }; }) }));
     } catch (_) { /* a browser that cannot keep them still works */ }
+  }
+  // The file's title, for "Present or export slides" (packets-present-export.js reads it with the words).
+  function titleForHandoff() {
+    try { return String(titleNow()).slice(0, 80); } catch (_) { return ''; }
   }
   function recall() {
     var fresh = defaults(), saved = null;
@@ -158,17 +180,24 @@
     if (saved.mode === 'own' || saved.mode === 'pick') fresh.mode = saved.mode;
     if (typeof saved.sound === 'string' && Array.prototype.some.call($('f-sound').options, function (option) { return option.value === saved.sound; })) fresh.sound = saved.sound;
     if (['any', 'first', 'middle', 'last'].indexOf(saved.position) >= 0) fresh.position = saved.position;
-    if (saved.shape === '' || SHAPES.some(function (row) { return row[0] === saved.shape; })) fresh.shape = saved.shape;
-    if (stageRow(saved.stage)) fresh.stage = saved.stage;
+    // Choices kept from an earlier visit win over what a first visit starts with: "Any grade level" stays "Any grade level",
+    // and a browser that kept its choices before 2026-11-16 keeps the pattern it started with then (CVC).
+    fresh.shape = saved.shape === '' || SHAPES.some(function (row) { return row[0] === saved.shape; }) ? saved.shape : 'CVC';
+    fresh.stage = stageRow(saved.stage) || levelRow(saved.stage) ? saved.stage : '';
+    if (saved.order === 'random') { fresh.order = 'random'; fresh.shuffle = shuffleCount(saved.shuffle); }
     if (typeof saved.own === 'string') fresh.own = saved.own.slice(0, 4000);
     if (SEEDS[saved.version]) fresh.version = saved.version;
     if (saved.length === 'custom' || (LENGTH_NAMES[saved.length] && core.LESSON_LENGTHS[saved.length])) fresh.length = saved.length;
     if (wordCount(saved.count)) fresh.count = wordCount(saved.count);
     if (saved.hand === true) fresh.hand = true;
+    if (saved.spread === true) fresh.spread = true;
+    if (GROUP_LABELS.indexOf(saved.label) >= 0) fresh.label = saved.label;
+    if (Array.isArray(saved.groups)) fresh.groups = saved.groups.slice(0, MAX_GROUPS).filter(function (g) { return g && typeof g === 'object'; }).map(cleanGroup);
     if (TRACE_CASES.indexOf(saved.tracing) >= 0) fresh.tracing = saved.tracing;
     if (CHOICE_LEVELS.indexOf(saved.choices) >= 0) fresh.choices = saved.choices;
     if (saved.directionsOnce === true) fresh.directionsOnce = true;
-    if (Array.isArray(saved.chosen)) fresh.chosen = saved.chosen.filter(function (word, i, all) { return typeof word === 'string' && /^[a-z]{2,10}$/.test(word) && all.indexOf(word) === i; }).slice(0, MAX_WORDS);
+    if (saved.repeatMissed === true) fresh.repeatMissed = true;
+    if (Array.isArray(saved.chosen)) fresh.chosen = saved.chosen.filter(function (word, i, all) { return typeof word === 'string' && /^[a-z]+$/.test(word) && word.length >= 2 && word.length <= maxLetters() && all.indexOf(word) === i; }).slice(0, MAX_WORDS);
     return fresh;
   }
 
@@ -180,25 +209,28 @@
     var host = $('strands');
     host.textContent = '';
     strands.forEach(function (strand) {
-      var group = el('div', 'strand');
-      group.setAttribute('role', 'group');
+      // One box for each group of activities (2026-11-16). It opens by itself when one of its activities is chosen
+      // (openStrands); its top line says how many are.
+      var group = el('details', 'strand');
       group.setAttribute('aria-labelledby', 'strand-' + strand.key);
-      var head = el('div', 'strand-head');
+      group.setAttribute('data-strand', strand.key);
+      var head = el('summary', 'strand-head');
       var title = el('h3', '', strand.name);
       title.id = 'strand-' + strand.key;
       head.appendChild(title);
+      head.appendChild(el('span', 'strand-count'));
+      group.appendChild(head);
       var usual = (USUAL[strand.key] || []).filter(function (id) { return strand.ids.indexOf(id) >= 0; });
       if (usual.length && usual.length < strand.ids.length) {
-        var button = el('button', 'btn btn-text btn-small', 'Choose the usual set');
+        var button = el('button', 'btn btn-text btn-small strand-usual', 'Choose the usual set');
         button.type = 'button';
         button.setAttribute('aria-label', 'Choose the usual set for ' + strand.name + ': ' + usual.map(core.activityEnglishName).join(', '));
         button.addEventListener('click', function () {
           state.activities = order.filter(function (id) { return strand.ids.indexOf(id) >= 0 ? usual.indexOf(id) >= 0 : state.activities.indexOf(id) >= 0; });
           activitiesChanged();
         });
-        head.appendChild(button);
+        group.appendChild(button);
       }
-      group.appendChild(head);
       var list = el('div', 'choices');
       strand.ids.forEach(function (id) {
         var label = el('label', 'choice');
@@ -233,17 +265,50 @@
       box.checked = state.activities.indexOf(box.value) >= 0;
       box.parentNode.classList.toggle('is-on', box.checked);
     });
-    show('trace-cases-field', state.activities.indexOf('letter_tracing') >= 0);
+    var tracing = state.activities.indexOf('letter_tracing') >= 0;
+    show('trace-cases-field', tracing);
     if ($('f-trace-cases')) $('f-trace-cases').value = state.tracing;
-    show('choice-level-field', state.activities.some(function (id) { return CHOICE_ACTIVITIES.indexOf(id) >= 0; }));
+    var leveled = state.activities.some(function (id) { return CHOICE_ACTIVITIES.indexOf(id) >= 0; });
+    show('choice-level-field', leveled);
     if ($('f-choices')) $('f-choices').value = state.choices;
+    // Each group's top line: how many of its activities are chosen.
+    Array.prototype.forEach.call($('strands').querySelectorAll('details.strand'), function (group) {
+      var on = group.querySelectorAll('input[type="checkbox"]:checked').length, node = group.querySelector('.strand-count');
+      if (node) node.textContent = on ? on + ' chosen' : 'none chosen';
+    });
+    // "More options" of step 1: shown when one of its two choices applies; its top line says what they are now.
+    var now = [];
+    if (leveled) now.push('Choices: ' + CHOICE_NAMES[state.choices]);
+    if (tracing) now.push('Letter Trace: ' + TRACE_NAMES[state.tracing]);
+    show('more-1', now.length > 0);
+    setText('more-1-now', now.join(', '));
+    openMore('more-1', (leveled && state.choices !== 'medium') || (tracing && state.tracing !== 'both'));
     var n = state.activities.length;
     setText('activity-count', n ? count(n, 'activity', 'activities') + ' chosen.' : 'No activity is chosen yet.');
     if (n) setText('step-1-problem', '');
+    drawQuick();
   }
   function activitiesChanged() {
     syncActivities();
     remember();
+  }
+  // A "More options" box opens by itself when something inside it is set. It is never closed for the teacher.
+  function openMore(id, set) { var box = $(id); if (box && set && !box.open) box.open = true; }
+  function closeMores() { ['more-1', 'more-2', 'more-3'].forEach(function (id) { if ($(id)) $(id).open = false; }); }
+  // The groups of step 1: open when one of their activities is chosen. With none chosen anywhere, all are open.
+  function openStrands() {
+    var any = state.activities.length > 0;
+    Array.prototype.forEach.call($('strands').querySelectorAll('details.strand'), function (group) {
+      group.open = !any || group.querySelectorAll('input[type="checkbox"]:checked').length > 0;
+    });
+  }
+  // The line under "Make it with the usual settings": what the file would be made with, as chosen now.
+  function drawQuick() {
+    if (!$('quick-line')) return;
+    var acts = order.filter(function (id) { return state.activities.indexOf(id) >= 0; }).map(core.activityLabel);
+    var words = state.mode === 'own' ? 'Your own words' : state.hand ? 'The words you chose' : (state.stage ? stageName(state.stage) : 'Any grade level') + ', ' + count(wordsFor(state.length), 'word');
+    setText('quick-line', acts.length ? 'Skips to step 3 and makes the file with what is chosen now: ' + listed(acts) + '. ' + words + '. You can still change anything.'
+      : 'Choose at least one activity first.');
   }
 
   // ---------------------------------------------------------------------------
@@ -263,13 +328,87 @@
   function criteria(change) {
     var now = { sound: state.sound, position: state.position, shape: state.shape, stage: state.stage };
     Object.keys(change || {}).forEach(function (key) { now[key] = change[key]; });
-    var asked = { count: pickTarget(), exclude: recordedOnly.concat(state.removed) };
+    // The words the teacher removed are NOT handed to the picker (see pick): a few more words are asked for instead.
+    var asked = { count: pickTarget() + state.removed.length, exclude: recordedOnly.slice() };
     if (now.sound) { asked.targetSound = now.sound; asked.position = now.position; }
     if (now.shape) asked.shape = now.shape;
-    if (now.stage) asked.stage = now.stage;
+    if (levelRow(now.stage)) asked.level = levelRow(now.stage).level;
+    else if (now.stage) asked.stage = now.stage;
+    // "Pick different words": any words that fit, not the most common first.
+    if (state.order === 'random') asked.mix = 'any';
+    // Mixed by number of sounds, when asked for and no one pattern is chosen (a pattern fixes the number of sounds).
+    if (state.spread && !now.shape) asked.spread = 'sounds';
     return asked;
   }
-  function pick(change) { return builder.pickWords(criteria(change), { wordlist: wordlist, core: core, dictionary: dictionary, seed: seed() }); }
+  // The seed of the pick: the version's, and with "Pick different words" which random set it is. The seed the file is
+  // BUILT with stays the version's (1, 2 or 3; see packetOptions), so "Open a file I made", the versions in turn for each
+  // student and the wrong answers work as they did.
+  function pickSeed() { return state.order === 'random' ? 'r' + shuffleCount(state.shuffle) + '|' + seed() : seed(); }
+  // Removing a word removes only that word: the picker's answer is the same as before the removal, and the removed
+  // words are taken out of it here, so every other word keeps its place and the next one in line fills the gap.
+  // (Until 2026-11-16 the removed words were left out inside the picker, whose seeded mix then changed other words.)
+  function pickFirst(change) {
+    var result = builder.pickWords(criteria(change), { wordlist: wordlist, core: core, dictionary: dictionary, seed: pickSeed() });
+    if (!state.removed.length) return result;
+    var gone = 0;
+    var words = result.words.filter(function (word) { var out = state.removed.indexOf(word) >= 0; if (out) gone += 1; return !out; }).slice(0, pickTarget());
+    return { words: words, pool: Math.max(0, result.pool - state.removed.length), reasons: result.reasons, criteria: result.criteria, removed: gone };
+  }
+
+  // ---------------------------------------------------------------------------
+  // More groups of words (2026-11-16): new words and review words in one file
+  // ---------------------------------------------------------------------------
+  // The first group is the choices of step 2. Each further group has its own grade level, sound and pattern, and a
+  // number of words. The file's length does not change: a group's words take places from the first group, which
+  // keeps at least one. The words are spread through the list, so a student meets them mixed. The label is for the
+  // teacher (the chips, the summary of step 3): it is not written anywhere a student sees.
+  function cleanGroup(g) {
+    var n = Math.floor(Number(g.count));
+    return { label: GROUP_LABELS.indexOf(g.label) >= 0 ? g.label : GROUP_LABELS[1], stage: stageRow(g.stage) || levelRow(g.stage) ? g.stage : '',
+      sound: typeof g.sound === 'string' && Array.prototype.some.call($('f-sound').options, function (option) { return option.value === g.sound; }) ? g.sound : '', shape: SHAPES.some(function (row) { return row[0] === g.shape; }) ? g.shape : '',
+      count: n >= 1 && n <= MAX_GROUP_WORDS ? n : 3 };
+  }
+  function groupsOn() { return state.mode === 'pick' && !state.hand && state.groups.length > 0; }
+  function pickGroup(group, taken, index) {
+    var asked = { count: MAX_GROUP_WORDS + state.removed.length + taken.length, exclude: recordedOnly.concat(taken) };
+    if (group.sound) { asked.targetSound = group.sound; asked.position = 'any'; }
+    if (group.shape) asked.shape = group.shape;
+    if (levelRow(group.stage)) asked.level = levelRow(group.stage).level; else if (group.stage) asked.stage = group.stage;
+    if (state.order === 'random') asked.mix = 'any';
+    if (state.spread && !group.shape) asked.spread = 'sounds';
+    var result = builder.pickWords(asked, { wordlist: wordlist, core: core, dictionary: dictionary, seed: pickSeed() + '|group' + (index + 1) });
+    return { pool: result.pool, words: result.words.filter(function (word) { return state.removed.indexOf(word) < 0; }) };
+  }
+  // Several lists as one, each spread evenly through it (6 and 4: the fourth, sixth ... places go to the second list).
+  function spreadThrough(lists) {
+    var all = [];
+    lists.forEach(function (list, li) { list.forEach(function (word, i) { all.push({ word: word, at: (i + 0.5) / list.length, list: li }); }); });
+    all.sort(function (a, b) { return a.at - b.at || a.list - b.list; });
+    return all.map(function (entry) { return entry.word; });
+  }
+  function pick(change) {
+    var main = pickFirst(change);
+    if (change || !groupsOn()) return main;
+    var total = wordsFor(state.length), room = total - 1, taken = [], labels = {}, parts = [];
+    state.groups.forEach(function (group, index) {
+      var got = pickGroup(group, taken, index), use = got.words.slice(0, Math.max(0, Math.min(group.count, room)));
+      room -= use.length;
+      use.forEach(function (word) { labels[word] = group.label; });
+      taken = taken.concat(use);
+      parts.push({ label: group.label, words: use, pool: got.pool, asked: group.count });
+    });
+    var rest = main.words.filter(function (word) { return taken.indexOf(word) < 0; });
+    var first = rest.slice(0, Math.max(1, total - taken.length));
+    first.forEach(function (word) { labels[word] = state.label; });
+    var file = spreadThrough([first].concat(parts.map(function (part) { return part.words; })));
+    return { words: file.concat(rest.slice(first.length)), pool: main.pool, reasons: main.reasons, criteria: main.criteria, removed: main.removed,
+      labels: labels, parts: [{ label: state.label, words: first, pool: main.pool, asked: first.length }].concat(parts), madeFor: total, firstCount: first.length };
+  }
+  // The pick is made for one length. When the length has changed since (step 3), it is made again before it is read.
+  function currentPick() {
+    if (picked && picked.madeFor != null && picked.madeFor !== wordsFor(state.length)) { try { picked = pick(); } catch (_) { /* the last pick stays */ } }
+    return picked;
+  }
 
   // The sounds that at least one word on offer has. The picker itself says which words are on offer.
   function soundsOnOffer() {
@@ -280,15 +419,45 @@
     });
     return have;
   }
+  // The sounds the words of ONE grade level have, or null for any grade level (then every sound on offer has words).
+  // Kept for each grade level until the words left out change (a recording added or removed in My words).
+  var soundsAtStage = {};
+  function soundsFor(stage) {
+    if (!stage) return null;
+    var key = stage + '|' + recordedOnly.length;
+    if (!soundsAtStage[key]) {
+      var have = {};
+      var ask = { count: 100000, exclude: recordedOnly };
+      if (levelRow(stage)) ask.level = levelRow(stage).level; else ask.stage = stage;
+      builder.pickWords(ask, { wordlist: wordlist, core: core, dictionary: dictionary, seed: 1 }).words.forEach(function (word) {
+        var taught = dictionary.lookup(word)[0];
+        if (taught) Array.prototype.forEach.call(taught, function (label) { have[label] = true; });
+      });
+      soundsAtStage[key] = have;
+    }
+    return soundsAtStage[key];
+  }
   // The stage rows come from the builder (its table names the document behind each row).
   function stageRow(id) {
     for (var i = 0; i < stageRows.length; i++) if (stageRows[i].id === id) return stageRows[i];
     return null;
   }
-  function stageName(id) { var row = stageRow(id); return String(row ? row.label : id).split(':')[0].trim(); }
+  // The wider levels (the builder's WIDER_LEVELS): two more choices in the Grade level list that are not grade levels.
+  // Kept in state.stage as 'wider:challenging' or 'wider:advanced'.
+  // The longest practice word: the builder's number (15 since 2026-11-16; a grade level's own words stay at 10 letters).
+  // Asked for when needed: the builder is set after this script's first lines have run.
+  function maxLetters() { return (builder && builder.MAX_LETTERS) || 10; }
+  var LEVELS = [
+    { id: 'wider:challenging', level: 'challenging', name: 'More challenging words', line: 'Past the grade levels: words found in at least 10 of the 400 children\'s books, but not among the most familiar. Chosen by how widely a word is used, not from a curriculum. Any letter pattern, up to 15 letters.' },
+    { id: 'wider:advanced', level: 'advanced', name: 'Advanced words', line: 'Rarer words: in fewer than 10 of the 400 children\'s books, or in none. For older students, enrichment and spelling practice. Chosen by how widely a word is used, not from a curriculum. Any letter pattern, up to 15 letters.' },
+  ];
+  var widerGroup = null;
+  function levelRow(id) { for (var i = 0; i < LEVELS.length; i++) if (LEVELS[i].id === id) return LEVELS[i]; return null; }
+  function stageName(id) { var wide = levelRow(id); if (wide) return wide.name; var row = stageRow(id); return String(row ? row.label : id).split(':')[0].trim(); }
   function stageDetail(id) { var row = stageRow(id); return row ? String(row.label).split(':').slice(1).join(':').trim() : ''; }
   // One short line for a stage, made from the builder's own row: a few of its example words and its limits.
   function stageLine(id) {
+    if (levelRow(id)) return levelRow(id).line;
     var row = stageRow(id);
     if (!row) return STAGE_HINT;
     var examples = [], parts = [], limits = [];
@@ -311,6 +480,156 @@
     if (!row) return '';
     return (detail ? detail.charAt(0).toUpperCase() + detail.slice(1) + '. ' : '') + (row.note || '');
   }
+  var GROUP_LABELS = ['New', 'Review', 'Challenge', 'Extra'], MAX_GROUPS = 2, MAX_GROUP_WORDS = 20;
+  // A word's number of sounds: the teacher's own, when they set them, else the dictionary's.
+  function soundsIn(word) {
+    var mine = typeof ownSoundsOf === 'function' ? ownSoundsOf(word) : null;
+    if (mine && mine.length) return mine.length;
+    var row = wordlist.get(word);
+    return row ? row.sounds : 0;
+  }
+  // What the words do not suit (2026-11-16). Sound Counting needs words with different numbers of sounds: with the
+  // most common words first, ten words were all 2 or 3 sounds long, and with a pattern chosen all the same.
+  function drawMixNotes() {
+    var host = $('mix-notes');
+    if (!host) return;
+    host.textContent = '';
+    if (state.mode !== 'pick') { show('mix-notes', false); return; }
+    var words = chipWords();
+    var counting = state.activities.indexOf('counting') >= 0 && words.length >= 3;
+    var numbers = [];
+    words.forEach(function (word) { var n = soundsIn(word); if (n && numbers.indexOf(n) < 0) numbers.push(n); });
+    numbers.sort(function (a, b) { return a - b; });
+    var picking = state.mode === 'pick' && !state.hand, name = core.activityLabel('counting');
+    // What the grade level has to offer with any pattern: the button is there only when it would change something.
+    var offer = picking ? poolSoundNumbers() : [], mixedNow = picking && state.spread && !state.shape;
+    if (counting && numbers.length && numbers.length <= 2) {
+      var note = el('p', 'note mix-note');
+      note.setAttribute('data-mix', 'counting');
+      note.appendChild(el('span', '', numbers.length === 1
+        ? name + ': every word here has ' + count(numbers[0], 'sound') + ', so the answer is always ' + numbers[0] + '.'
+        : name + ': these words have only ' + numbers[0] + ' or ' + numbers[1] + ' sounds, so there are only two answers.'));
+      if (picking && !mixedNow && offer.length > numbers.length) {
+        var fix = el('button', 'btn btn-small', state.shape ? 'Mix in words with other numbers of sounds (any pattern)' : 'Mix in words with other numbers of sounds');
+        fix.type = 'button';
+        fix.id = 'mix-fix';
+        fix.addEventListener('click', function () { state.spread = true; state.shape = ''; pickChanged(false); mixFocus = 'mix-undo'; });
+        note.appendChild(document.createTextNode(' '));
+        note.appendChild(fix);
+      } else if (picking) note.appendChild(el('span', 'mix-why', ' The words that fit these choices all have ' + (offer.length > 1 ? offer.slice(0, -1).join(', ') + ' or ' + offer[offer.length - 1] : (offer[0] || numbers[0])) + ' sounds. A later grade level, or no sound to practice, gives a wider mix.'));
+      else note.appendChild(el('span', 'mix-why', ' Add a few words with a different number of sounds.'));
+      host.appendChild(note);
+    }
+    if (picking && state.spread && !state.shape) {
+      var on = el('p', 'result-sub mix-on');
+      on.setAttribute('data-mix', 'spread');
+      on.appendChild(el('span', '', numbers.length > 1 ? 'The words are mixed by their number of sounds (' + numbers[0] + ' to ' + numbers[numbers.length - 1] + ').' : 'The words are mixed by their number of sounds.'));
+      var undo = el('button', 'btn btn-text btn-small', 'Stop mixing by number of sounds');
+      undo.type = 'button';
+      undo.id = 'mix-undo';
+      undo.addEventListener('click', function () { state.spread = false; pickChanged(false); mixFocus = 'mix-fix'; });
+      on.appendChild(document.createTextNode(' '));
+      on.appendChild(undo);
+      host.appendChild(on);
+    }
+    show('mix-notes', host.children.length > 0);
+    if (mixFocus) { var to = $(mixFocus) || $('pick-line'); mixFocus = ''; if (to && typeof to.focus === 'function') to.focus(); }
+  }
+  var mixFocus = '', groupFocus = '', mixPoolKey = null, mixPoolNumbers = [];
+  // The numbers of sounds (2 to 6) among ALL the words that fit the first group's choices with any pattern.
+  function poolSoundNumbers() {
+    var asked = criteria({ shape: '' });
+    delete asked.spread; delete asked.mix;
+    asked.count = 100000;
+    asked.exclude = recordedOnly.slice();
+    var key = JSON.stringify([asked.targetSound || '', asked.position || '', asked.stage || '', asked.level || '', recordedOnly.length]);
+    if (key !== mixPoolKey) {
+      var seen = {};
+      try { builder.pickWords(asked, { wordlist: wordlist, core: core, dictionary: dictionary, seed: 1 }).words.forEach(function (word) { var n = soundsIn(word); if (n >= 2 && n <= 6) seen[n] = true; }); } catch (_) { /* no words: no numbers */ }
+      mixPoolKey = key;
+      mixPoolNumbers = Object.keys(seen).map(Number).sort(function (a, b) { return a - b; });
+    }
+    return mixPoolNumbers;
+  }
+  // The further groups: one small set of fields each, made from the lists of step 2 so the choices are the same.
+  function drawGroups() {
+    var host = $('groups'), box = $('groups-box');
+    if (!host || !box) return;
+    show('groups-box', state.mode === 'pick' && !state.hand);
+    host.textContent = '';
+    var on = groupsOn();
+    // The teacher's labels in one line, with the first group's label to choose.
+    var line = $('pick-labels');
+    if (line) {
+      line.textContent = '';
+      show('pick-labels', on);
+      if (on && picked && picked.parts) {
+        line.appendChild(el('span', '', 'Labels only you see: ' + picked.parts.map(function (part) { return part.label + ' ' + part.words.length; }).join(', ') + '. Students see the words mixed, with no label.'));
+      }
+    }
+    if (on) host.appendChild(groupFields(-1));
+    state.groups.forEach(function (group, index) { host.appendChild(groupFields(index)); });
+    var add = $('group-add');
+    if (add) { add.disabled = state.groups.length >= MAX_GROUPS; add.textContent = state.groups.length ? 'Add a third group of words' : 'Add another group of words'; }
+    if (groupFocus) { var to = $(groupFocus) || add; groupFocus = ''; if (to && typeof to.focus === 'function') to.focus(); }
+  }
+  function groupFields(index) {
+    var first = index < 0, group = first ? null : state.groups[index], id = first ? 'g0' : 'g' + (index + 1);
+    var part = picked && picked.parts ? picked.parts[index + 1] : null;
+    var box = el('fieldset', 'group');
+    box.setAttribute('data-group-index', String(index + 1));
+    box.appendChild(el('legend', '', first ? 'First group: the choices above' : (index === 0 ? 'Second group' : 'Third group')));
+    var fields = el('div', 'group-fields');
+    var field = function (labelText, control) { var wrap = el('div', 'field'); var label = el('label', '', labelText); label.setAttribute('for', control.id); wrap.appendChild(label); wrap.appendChild(control); fields.appendChild(wrap); };
+    var select = function (name, source, value, onChange) {
+      var node = document.createElement('select');
+      node.id = id + '-' + name;
+      if (typeof source === 'string') { node.innerHTML = $(source).innerHTML; Array.prototype.forEach.call(node.options, function (o) { o.disabled = false; o.textContent = o.getAttribute('data-name') || o.textContent; }); }
+      else source.forEach(function (text) { var o = el('option', '', text); o.value = text; node.appendChild(o); });
+      node.value = value;
+      node.addEventListener('change', function () { onChange(node.value); groupFocus = node.id; pickChanged(true); });
+      return node;
+    };
+    field('Label (only you see it)', select('label', GROUP_LABELS, first ? state.label : group.label, function (v) { if (first) state.label = v; else group.label = v; }));
+    if (!first) {
+      field('Grade level', select('stage', 'f-stage', group.stage, function (v) { group.stage = v; }));
+      field('A sound to practice', select('sound', 'f-sound', group.sound, function (v) { group.sound = v; }));
+      field('Pattern', select('shape', 'f-shape', group.shape, function (v) { group.shape = v; }));
+      var number = document.createElement('input');
+      // A text box with the number keypad: it takes the page's field style (a number box was 33 px tall).
+      number.type = 'text'; number.id = id + '-count'; number.inputMode = 'numeric'; number.maxLength = 2; number.autocomplete = 'off'; number.setAttribute('pattern', '[0-9]*');
+      number.value = String(group.count);
+      number.addEventListener('change', function () { var n = Math.floor(Number(number.value)); group.count = n >= 1 ? Math.min(MAX_GROUP_WORDS, n) : 1; groupFocus = number.id; pickChanged(true); });
+      field('How many words', number);
+    }
+    box.appendChild(fields);
+    if (!first) {
+      var got = part ? part.words.length : 0;
+      var says = !part ? '' : part.pool === 0 ? 'No words fit these choices.'
+        : got < group.count ? (part.pool < group.count ? 'Only ' + count(part.pool, 'word fits', 'words fit') + '.' : 'The file has room for ' + count(got, 'word') + ' from this group. A longer file (step 3) has room for more.')
+          : count(got, 'word') + ' in the file: ' + part.words.join(', ') + '.';
+      var said = el('p', 'result-sub group-said', says);
+      said.id = id + '-said';
+      box.appendChild(said);
+      var remove = el('button', 'btn btn-text btn-small', 'Remove this group');
+      remove.type = 'button';
+      remove.id = id + '-remove';
+      remove.addEventListener('click', function () { state.groups.splice(index, 1); groupFocus = 'group-add'; pickChanged(true); });
+      box.appendChild(remove);
+    }
+    return box;
+  }
+  function addGroup() {
+    if (state.groups.length >= MAX_GROUPS) return;
+    // A new group starts as review: the grade level before the one chosen, when there is one.
+    var ids = stageRows.filter(function (row) { return !otherStage(row); }).map(function (row) { return row.id; }), at = ids.indexOf(state.stage);
+    var used = [state.label].concat(state.groups.map(function (g) { return g.label; }));
+    var label = GROUP_LABELS.filter(function (name) { return used.indexOf(name) < 0; })[0] || GROUP_LABELS[1];
+    // About a third of the file's words, 3 at most: in a 5-word file, 3 would leave the first group 2.
+    state.groups.push({ label: label, stage: at > 0 ? ids[at - 1] : state.stage, sound: '', shape: '', count: Math.max(1, Math.min(3, Math.round(wordsFor(state.length) / 3))) });
+    groupFocus = 'g' + state.groups.length + '-label';
+    pickChanged(true);
+  }
   function drawPickControls() {
     var sound = $('f-sound'), have = soundsOnOffer();
     SOUND_GROUPS.forEach(function (group) {
@@ -320,6 +639,7 @@
         if (!have[row[0]]) return;
         var option = el('option', '', soundName(row[0]) + ', as in ' + row[1]);
         option.value = row[0];
+        option.setAttribute('data-name', option.textContent);
         box.appendChild(option);
       });
       if (box.firstChild) sound.appendChild(box);
@@ -356,8 +676,15 @@
         group.rows.forEach(function (row) { otherStages.push(stageName(row.id).replace(/\s*\([^)]*\)$/, '')); });
       } else stage.appendChild(box);
     });
+    // After the grade levels, in a group of their own that says what they are.
+    var widerBox = doc.createElement('optgroup');
+    widerBox.label = 'Past the grade levels (by how rare a word is)';
+    widerBox.setAttribute('data-wider', '');
+    widerGroup = widerBox;
+    LEVELS.forEach(function (row) { var option = el('option', '', row.name); option.value = row.id; widerBox.appendChild(option); });
+    stage.appendChild(widerBox);
     show('stage-other', otherStageGroups.length > 0);
-    if (otherNames.length) setText('stage-other-line', 'Show ' + listed(otherNames) + ' in the Stage list: ' + listed(otherStages));
+    if (otherNames.length) setText('stage-other-line', 'Show ' + listed(otherNames) + ' in the Grade level list: ' + listed(otherStages));
     otherStagesOn = otherStageGroups.length > 0 && regionAsks();
   }
   function otherStage(row) { return !!row && row.isDefault === false; }
@@ -369,6 +696,16 @@
     return stageRows.some(function (row) { return otherStage(row) && regions.indexOf(STAGE_REGIONS[row.framework]) >= 0; });
   }
   function syncPickControls() {
+    // A sound the chosen grade level has no word for stays in the list, says why and cannot be chosen (2026-11-16:
+    // at Kindergarten, first part, half the sounds gave "No words fit these choices"). A sound already chosen stays
+    // chosen, with the reason beside it.
+    var haveSounds = soundsFor(state.stage);
+    Array.prototype.forEach.call($('f-sound').options, function (option) {
+      if (!option.value) return;
+      var none = !!haveSounds && !haveSounds[option.value];
+      option.disabled = none && option.value !== state.sound;
+      option.textContent = option.getAttribute('data-name') + (none ? ' (no words at this grade level)' : '');
+    });
     $('f-sound').value = state.sound;
     $('f-position').value = state.position;
     $('f-position').disabled = !state.sound;
@@ -378,6 +715,8 @@
       if (others && group.parentNode !== stage) stage.appendChild(group);
       if (!others && group.parentNode === stage) stage.removeChild(group);
     });
+    // The wider levels stay last, after another curriculum's grade levels when those are shown.
+    if (widerGroup) stage.appendChild(widerGroup);
     if ($('f-stage-other')) $('f-stage-other').checked = others;
     stage.value = state.stage;
     setText('stage-hint', stageLine(state.stage));
@@ -390,6 +729,21 @@
     stage.setAttribute('aria-describedby', ['stage-hint'].concat(kindergarten ? ['stage-k-note'] : [], spelling ? ['stage-spell-note'] : []).join(' '));
     setText('stage-why-text', stageWhy(state.stage));
     show('stage-why', !!stageWhy(state.stage));
+    drawMore2();
+  }
+  // "More options" of step 2: a sound, a pattern and other curricula while the page picks the words, and the version
+  // always. Its top line says what they are now; it opens by itself when one of them is set.
+  function drawMore2() {
+    var picking = state.mode === 'pick';
+    show('more-2-pick', picking);
+    var now = [];
+    if (picking) {
+      now.push(state.sound ? soundName(state.sound) + ' sound' + (state.position === 'any' ? '' : ', ' + POSITION_NAMES[state.position]) : 'any sound');
+      now.push(state.shape ? state.shape + ' pattern' : 'any pattern');
+    }
+    now.push('version ' + state.version);
+    setText('more-2-now', now.join(', '));
+    openMore('more-2', state.version !== 'A' || (picking && (!!state.sound || !!state.shape || otherStage(stageRow(state.stage)))));
   }
   function pickChanged(keepRemoved) {
     if (!keepRemoved) state.removed = [];
@@ -414,17 +768,18 @@
       show('pick-removed', false);
       return;
     }
-    var fit = picked.pool, listed = picked.words.length, wanted = pickTarget();
-    setText('pick-line', fit === 0 ? 'No words fit these choices.' : fit < wanted ? 'Only ' + count(fit, 'word fits', 'words fit') + '.' : count(fit, 'word fits', 'words fit') + '.');
-    var acts = count(state.activities.length || 1, 'activity', 'activities');
-    var custom = wanted > wordsFor('long');
-    setText('pick-sub', fit === 0 ? 'Loosen one choice to get words.' : fit < wanted ? (custom ? 'Your Custom file uses ' + count(wanted, 'word') : 'A Long file with your ' + acts + ' uses up to ' + count(wanted, 'word')) + '. You can go on with these, or get more by loosening one choice.'
-      : fit > listed ? 'The list has ' + listed + ' of them: enough for ' + (custom ? 'your Custom file of ' + count(wanted, 'word') : 'a Long file with your ' + acts) + '. Remove a word and another takes its place.'
-        : 'All of them are in the list.');
+    // need: the words this file uses. The picker still lists more (pickTarget), so removing one brings in the next.
+    // With more groups, the first group needs only the places the others leave it.
+    var fit = picked.pool, need = picked.parts ? picked.firstCount : wordsFor(state.length);
+    setText('pick-line', fit === 0 ? 'No words fit these choices.' : fit < need ? 'Only ' + count(fit, 'word fits', 'words fit') + '.' : count(fit, 'word fits', 'words fit') + '.');
+    setText('pick-sub', fit === 0 ? 'Loosen one choice to get words.'
+      : fit < need ? 'Your file uses up to ' + count(need, 'word') + '. You can go on with these, or get more by loosening one choice.'
+        : fit > need ? 'The file uses ' + count(need, 'word') + ', shown here. Remove a word and another takes its place.'
+          : 'All of them are in the file.');
     drawChips();
     // What also matched and why it is not offered: counted, never dropped silently.
     var reasons = picked.reasons, also = [];
-    var silent = reasons.noRecording + Math.max(0, reasons.excluded - state.removed.length);
+    var silent = reasons.noRecording + reasons.excluded;
     if (reasons.notFamiliarEnough) also.push(count(reasons.notFamiliarEnough, 'less common word'));
     if (silent) also.push(silent + ' with no recording yet');
     if (reasons.britishSpellingOrWord) also.push(count(reasons.britishSpellingOrWord, 'British spelling or word', 'British spellings or words'));
@@ -436,11 +791,59 @@
     if (state.mode === 'pick' && (state.hand ? handWords().length > 0 : fit > 0)) setText('step-2-problem', '');
     if (step === 2) soundsNote();
     drawWordList();
+    drawGroups();
+    drawMixNotes();
     remember();
-    if (fit < wanted && !state.hand) suggestLoosening(run, fit);
+    if (fit < need && !state.hand) suggestLoosening(run, fit);
   }
   // The row of chips: the picker's list, or, once the teacher chose words in the list, those words in the file's order.
-  function chipWords() { return state.hand ? handWords() : picked ? picked.words : []; }
+  // 2026-11-16: the picker's chips are exactly the words that go in the file (they used to show the whole list a Long
+  // file would use, so ten chips stood above a seven-word file). The rest of the list is one press away in the stepper.
+  function chipWords() { return state.hand ? handWords() : currentPick() ? picked.words.slice(0, wordsFor(state.length)) : []; }
+  // "How many words" is ONE field, moved by the page: beside the picked words in step 2, under Length in step 3. It shows
+  // the number the file uses now, whatever the length; typing in it or pressing - or + makes the length Custom.
+  function placeCount() {
+    var field = $('count-field'), home = $(step === 3 ? 'count-home-3' : 'count-home-2');
+    if (!field || !home) return;
+    if (field.parentNode !== home) home.appendChild(field);
+    show('count-field', !(state.mode === 'pick' && state.hand));
+    var box = $('f-count'), n = wordsFor(state.length);
+    if (box && doc.activeElement !== box) box.value = String(n);
+    if ($('count-less')) $('count-less').disabled = n <= 1;
+    if ($('count-more')) $('count-more').disabled = n >= MAX_WORDS;
+  }
+  // The bar beside the picked words: the stepper and "Pick different words", while the page picks the words.
+  function syncPickBar() {
+    show('pick-bar', state.mode === 'pick' && !state.hand);
+    show('pick-common', state.order === 'random');
+    placeCount();
+  }
+  function stepCount(delta) {
+    var n = Math.max(1, Math.min(MAX_WORDS, wordsFor(state.length) + delta));
+    $('f-count').value = String(n);
+    countTyped($('f-count'));
+    setText('count-said', count(n, 'word') + ' in the file.');
+  }
+  // "Pick different words": any words that fit the choices, a new set each press. The file is still built with the
+  // version's seed (see pickSeed), so reopening it and its wrong answers work as before.
+  function pickDifferent() {
+    state.shuffle = state.order === 'random' ? shuffleCount(state.shuffle) + 1 : 1;
+    state.order = 'random';
+    state.removed = [];
+    remember();
+    drawPick();
+    var words = chipWords();
+    setText('pick-said', words.length ? 'Different words: ' + words.slice(0, 8).join(', ') + (words.length > 8 ? ' and ' + (words.length - 8) + ' more' : '') + '.' : 'No words fit these choices.');
+  }
+  function pickCommon() {
+    state.order = 'common';
+    state.shuffle = 0;
+    state.removed = [];
+    remember();
+    drawPick();
+    setText('pick-said', 'The most common words that fit.');
+    if ($('pick-shuffle')) $('pick-shuffle').focus();
+  }
   function drawChips() {
     syncPending();
     var chips = $('pick-chips'), words = chipWords();
@@ -448,11 +851,18 @@
       setText('pick-sub', words.length ? 'You chose ' + count(words.length, 'word') + ' yourself. The file uses all of them, in this order.'
         : 'No words are chosen yet. Open Choose the words yourself to check some, or press Pick for me again there.');
     }
-    chips.setAttribute('aria-label', state.hand ? 'Your words, in the order of the file' : 'Words in the list');
+    chips.setAttribute('aria-label', state.hand ? 'Your words, in the order of the file' : 'Words in the file');
+    syncPickBar();
     chips.textContent = '';
     words.forEach(function (word) {
       var item = el('li', 'chip');
       item.appendChild(el('span', '', word));
+      // More than one group: each word says which group it is from (for the teacher: a file never shows it).
+      if (!state.hand && picked && picked.labels && picked.labels[word]) {
+        var tag = el('span', 'chip-tag', picked.labels[word]);
+        tag.setAttribute('data-group', picked.labels[word]);
+        item.appendChild(tag);
+      }
       // "Edit this word": one panel under the list, for one word at a time. Without the panel script, no button.
       if (wordPanel) {
         var edit = el('button', 'chip-edit', String.fromCharCode(0x270E));
@@ -492,8 +902,8 @@
   // When few words fit: try each choice set to "any", one at a time, and offer the ones that give more.
   function suggestLoosening(run, fit) {
     var tries = [];
-    if (state.stage) tries.push({ change: { stage: '' }, label: 'Any stage' });
-    if (state.shape) tries.push({ change: { shape: '' }, label: 'Any shape' });
+    if (state.stage) tries.push({ change: { stage: '' }, label: 'Any grade level' });
+    if (state.shape) tries.push({ change: { shape: '' }, label: 'Any pattern' });
     if (state.sound && state.position !== 'any') tries.push({ change: { position: 'any' }, label: 'The sound anywhere in the word' });
     if (state.sound) tries.push({ change: { sound: '', position: 'any' }, label: 'Any sound' });
     var host = $('pick-loosen');
@@ -548,7 +958,7 @@
   // edit: the word may be given its sounds, a recording or a picture ("Edit this word").
   function checkWord(word) {
     if (wordlist.isBlocked(word)) return { word: word, ok: false, says: 'Left out. It is on the list of words this tool does not use. That list is a first pass and can be too cautious.' };
-    if (!/^[a-z]+$/.test(word) || word.length < 2 || word.length > 10 || !/[aeiouy]/.test(word)) return { word: word, ok: false, says: 'Not used. A practice word is 2 to 10 letters, letters only, with a vowel.' };
+    if (!/^[a-z]+$/.test(word) || word.length < 2 || word.length > maxLetters() || !/[aeiouy]/.test(word)) return { word: word, ok: false, says: 'Not used. A practice word is 2 to ' + maxLetters() + ' letters, letters only, with a vowel.' };
     var entry = core.dictionarySounds(word), mineSounds = ownSoundsOf(word), mineClip = !!(mineOf(word) && mineOf(word).clip);
     var sounds = mineSounds || (entry ? entry.sounds : null);
     if (!sounds) return { word: word, ok: false, edit: true, says: NEEDS_SOUNDS_SAID };
@@ -612,7 +1022,7 @@
   function chosenWords() {
     if (state.mode === 'own') return ownRows.filter(function (row) { return row.ok; }).map(function (row) { return row.word; });
     if (state.hand) return handWords();
-    return picked ? picked.words.slice() : [];
+    return currentPick() ? picked.words.slice() : [];
   }
   // The words of the file: the teacher's own list whole, or the first words of the list for the length chosen.
   function fileWords() {
@@ -645,7 +1055,7 @@
   }
   function handWords() { return state.chosen.filter(usable).slice(0, MAX_WORDS); }
   // The words with a box checked: the teacher's, or until then the picker's words for the length chosen.
-  function listChecked() { return state.hand ? state.chosen.slice() : (picked ? picked.words.slice(0, wordsFor(state.length)) : []); }
+  function listChecked() { return state.hand ? state.chosen.slice() : (currentPick() ? picked.words.slice(0, wordsFor(state.length)) : []); }
   function startHand() {
     if (state.hand) return;
     state.hand = true;
@@ -655,7 +1065,7 @@
   // Every word the picker would offer now, A to Z (the picker's rules, not its count). Worked out again only when a choice changes.
   function poolWords() {
     var asked = criteria();
-    var key = JSON.stringify([asked.targetSound || '', asked.position || '', asked.shape || '', asked.stage || '']);
+    var key = JSON.stringify([asked.targetSound || '', asked.position || '', asked.shape || '', asked.stage || '', asked.level || '']);
     if (key !== listKey) {
       listKey = key;
       asked.count = 100000;
@@ -740,11 +1150,24 @@
     if (unusable.length) text += ' Not usable yet: ' + unusable.join(', ') + '. The note beside each says why.';
     setText('list-said', (listNote ? listNote + ' ' : '') + text);
   }
+  var listTop = [];
+  function topFirst(entries) {
+    if (!listTop.length) return entries;
+    var rank = {};
+    listTop.forEach(function (word, i) { rank[word] = i + 1; });
+    var top = entries.filter(function (entry) { return rank[entry.word]; }).sort(function (a, b) { return rank[a.word] - rank[b.word]; });
+    return top.concat(entries.filter(function (entry) { return !rank[entry.word]; }));
+  }
   function drawWordList() {
     var box = $('pick-list');
     if (!box || !state || !box.open || state.mode !== 'pick') return;
     syncPending();
-    var list = $('word-list'), shown = shownEntries(), checked = listChecked();
+    var checked = listChecked();
+    // The words of the file come first (2026-11-16: none of the seven chosen words was in the first 100 rows of an
+    // A to Z list). The top set is fixed while the teacher checks boxes, so a row never jumps away under the pointer;
+    // it is read again when the page picks, and when the box is opened.
+    if (!state.hand) listTop = checked.slice();
+    var list = $('word-list'), shown = topFirst(shownEntries());
     // The focus is put back on the same word's control after the redraw.
     var focused = doc.activeElement, inPanel = listPanel && focused && listPanel.panel.root.contains(focused);
     var focusWord = !inPanel && focused && list.contains(focused) ? (focused.value || focused.getAttribute('data-word')) : null, focusEdit = !!(focused && focused.classList && focused.classList.contains('wl-edit'));
@@ -838,7 +1261,7 @@
     if (button) button.focus();
   }
   function wireWordList() {
-    $('pick-list').addEventListener('toggle', function () { listLimit = LIST_PAGE; drawWordList(); });
+    $('pick-list').addEventListener('toggle', function () { listLimit = LIST_PAGE; if (this.open && state.hand) listTop = handWords(); drawWordList(); });
     $('word-list').addEventListener('change', function (event) { if (event.target && event.target.type === 'checkbox') listToggle(event.target); });
     $('f-find').addEventListener('input', function () { clearTimeout(listTimer); listTimer = setTimeout(function () { listLimit = LIST_PAGE; drawWordList(); }, 150); });
     $('f-only-pictures').addEventListener('change', function () { if (this.checked && picturesChoice === 'off') picturesChoice = ''; listLimit = LIST_PAGE; drawWordList(); });
@@ -870,6 +1293,7 @@
     });
     show('panel-pick', state.mode === 'pick');
     show('panel-own', state.mode === 'own');
+    show('pick-top', state.mode === 'pick');
   }
   function syncRadios(name, value) {
     Array.prototype.forEach.call(doc.querySelectorAll('input[name="' + name + '"]'), function (radio) {
@@ -995,6 +1419,38 @@
       }).then(function () { drawMyWords(); $('my-words-line').focus(); });
     });
     $('my-words-keep').addEventListener('click', function () { clearing = false; drawMyWords(); $('my-words-clear').focus(); });
+    // Save My words as a file, and put a saved one back (2026-11-17).
+    $('my-words-export').addEventListener('click', function () {
+      myWords.exportAll().then(function (data) {
+        if (!data.words.length) { setText('my-words-said', 'There are no words to save yet.'); return; }
+        var url = '';
+        try { url = URL.createObjectURL(new Blob([JSON.stringify(data)], { type: 'application/json' })); } catch (_) { url = ''; }
+        if (!url) { setText('my-words-said', 'This browser cannot save files from a page.'); return; }
+        var link = document.createElement('a');
+        link.href = url; link.download = 'my-words__' + new Date().toISOString().slice(0, 10) + '.json'; link.hidden = true;
+        document.body.appendChild(link); link.click(); document.body.removeChild(link);
+        setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 10000);
+        setText('my-words-said', 'Saved ' + count(data.words.length, 'word') + ' as a file.');
+      }, function () { setText('my-words-said', 'My words could not be read.'); });
+    });
+    $('my-words-import').addEventListener('click', function () { $('my-words-file').click(); });
+    $('my-words-file').addEventListener('change', function () {
+      var file = this.files && this.files[0];
+      this.value = '';
+      if (!file) return;
+      if (file.size > 60 * 1024 * 1024) { setText('my-words-said', 'This file is too large to be a My words file.'); return; }
+      var reader = new FileReader();
+      reader.onload = function () {
+        var data = null;
+        try { data = JSON.parse(String(reader.result || '')); } catch (_) { data = null; }
+        myWords.importAll(data).then(function (done) {
+          setText('my-words-said', 'Put back: ' + count(done.kept.length, 'word') + '.' + (done.refused.length ? ' Left out (they did not pass the checks): ' + done.refused.slice(0, 6).join(', ') + '.' : ''));
+          drawMyWords();
+        }, function (error) { setText('my-words-said', (error && error.message) || 'This file could not be read.'); });
+      };
+      reader.onerror = function () { setText('my-words-said', 'This browser could not read the file.'); };
+      reader.readAsText(file);
+    });
   }
 
   // The panels. A typed word's opens in its row; a picked word's opens under the list, one at a time.
@@ -1282,6 +1738,33 @@
     return made;
   }
 
+  // A recording as MP3 (2026-11-17): the app's own encoder (lame.min.js) through packets_audio_kit.js, both from this site.
+  // They start loading when the page opens (audioKit() from start) and a build uses them only once they have arrived: a
+  // build never waits on them. One channel, 48 kbps: a file's recordings are about 6 to 10 times smaller than as WAV. Until
+  // the encoder is here, or if it cannot be had, the builder keeps the WAV.
+  var MP3_KBPS = 48, mp3Ready = null, mp3Kit = null;
+  function audioKit() {
+    if (mp3Ready) return mp3Ready;
+    mp3Ready = new Promise(function (resolve) {
+      if (window.AlloPacketAudioKit) { resolve(window.AlloPacketAudioKit); return; }
+      var script = document.createElement('script');
+      script.src = 'packets_audio_kit.js';
+      script.onload = function () { resolve(window.AlloPacketAudioKit || null); };
+      script.onerror = function () { resolve(null); };
+      document.head.appendChild(script);
+    }).then(function (kit) { return kit ? kit.getMp3().then(function (ok) { mp3Kit = ok ? kit : null; return mp3Kit; }) : null; });
+    return mp3Ready;
+  }
+  // Each recording is made smaller once per visit: making the file again (a word removed, another version) reuses it.
+  var mp3s = typeof Map === 'function' ? new Map() : null;
+  function toMp3(uri) {
+    if (mp3s && mp3s.has(uri)) return mp3s.get(uri);
+    if (!mp3Kit) { audioKit(); return Promise.resolve(null); }
+    var made = Promise.resolve(mp3Kit.wavUriToMp3Uri(uri, MP3_KBPS));
+    if (mp3s) mp3s.set(uri, made);
+    return made;
+  }
+
   // Pictures: Mulberry Symbols (CC BY-SA 4.0), kept on this site. word_sounds_symbols_en.js, loaded with the
   // page, says which words have one. The drawings are in the files it names: the same files whatever words are
   // chosen, fetched only when a file is made with the box checked. A file made without them is the same file as before.
@@ -1386,7 +1869,7 @@
     var hand = state.mode === 'pick' && state.hand;
     show('length-hand', hand);
     show('length-radios', !hand);
-    show('count-field', !hand && state.length === 'custom');
+    placeCount();
     var questions = all * acts;
     setText('length-hand', hand ? 'You chose ' + count(all, 'word') + ' yourself, so the file has all of them: about ' + count(questions, 'question') + ', about ' + count(Math.ceil(questions / 2), 'minute')
       + '. To set a length instead, go back to step 2 and press Pick for me again.' : '');
@@ -1402,13 +1885,27 @@
     var custom = doc.querySelector('[data-length="custom"]'), want = wordsFor('custom');
     if (custom) custom.textContent = state.length !== 'custom' ? 'Choose the number of words, up to ' + MAX_WORDS + '.'
       : estimate(Math.min(all, want), acts) + (all < want ? ' You have ' + count(all, 'word') + '.' : '');
-    if (doc.activeElement !== $('f-count')) $('f-count').value = String(want);
     syncRadios('length', state.length);
+    drawMore3(hand, Math.min(all, wordsFor(state.length)));
     if (!state.titleEdited) $('f-title').value = autoTitle();
     else if (doc.activeElement !== $('f-title') && $('f-title').value !== titleNow()) $('f-title').value = state.title = titleNow();
     syncCodeName();
     var dirBox = $('f-directions-once');
     if (dirBox) { dirBox.checked = !!state.directionsOnce; dirBox.parentNode.classList.toggle('is-on', dirBox.checked); }
+    var againBox = $('f-repeat-missed');
+    if (againBox) { againBox.checked = !!state.repeatMissed; againBox.parentNode.classList.toggle('is-on', againBox.checked); }
+  }
+  // "More options" of step 3: the length, pictures, directions once and a code name. Its top line says what they are
+  // now; it opens by itself when one of them is not the usual.
+  function drawMore3(hand, words) {
+    if (!$('more-3-now')) return;
+    var now = [hand ? 'your ' + count(words, 'word') : LENGTH_NAMES[state.length] + ': ' + count(words, 'word')];
+    now.push($('f-pictures') && $('f-pictures').checked ? 'pictures' : 'no pictures');
+    if (state.directionsOnce) now.push('directions once');
+    if (state.repeatMissed) now.push('missed questions once more');
+    if (state.learner) now.push('a code name');
+    setText('more-3-now', now.join(', '));
+    openMore('more-3', (!hand && state.length !== 'regular') || !!state.directionsOnce || !!state.repeatMissed || !!state.learner);
   }
   // Step 3's code name: the field shows what was typed; the line under it, what the file will carry when that differs.
   function syncCodeName() {
@@ -1425,6 +1922,8 @@
     if (!/^\d+$/.test(raw) || n < 1) { setText('count-said', 'Type a whole number from 1 to ' + MAX_WORDS + '.'); return; }
     setText('count-said', n > MAX_WORDS ? MAX_WORDS + ' is the most, so the file uses ' + MAX_WORDS + ' words.' : '');
     state.count = Math.min(MAX_WORDS, n);
+    // The box shows the number the file uses: it does not go on showing 99 beside '40 is the most'.
+    if (n > MAX_WORDS) field.value = String(MAX_WORDS);
     state.length = 'custom';
     remember();
     lengthChanged(500);
@@ -1441,6 +1940,7 @@
     built = null;
     if (fileUrl) { try { URL.revokeObjectURL(fileUrl); } catch (_) {} fileUrl = ''; }
     show('summary', false);
+    show('summary-more', false);
     show('size-warn', false);
     show('try', false);
     show('save', false);
@@ -1485,12 +1985,13 @@
   // plan: { words, activities, seed, title, picked }.
   function packetOptions(plan, withWords, pictures, own, learner) {
     var options = { words: plan.words, activities: plan.activities, seed: plan.seed, title: plan.title, core: core, dictionary: dictionary, banks: withWords, loader: loader,
-      wordlist: wordlist, toWav: toWav, picked: plan.picked, pictures: pictures, symbols: pictures && symbols && symbols.ready() ? symbols : null };
+      wordlist: wordlist, toWav: toWav, toMp3: toMp3, picked: plan.picked, pictures: pictures, symbols: pictures && symbols && symbols.ready() ? symbols : null };
     if (own) options.own = own;
     if (learner) options.learnerLabel = learner;
     if (state.tracing !== 'both' && plan.activities.indexOf('letter_tracing') >= 0) options.tracingCases = state.tracing;
     options.choices = CHOICE_LEVELS.indexOf(state.choices) >= 0 ? state.choices : 'medium';
     if (state.directionsOnce) options.directionsOnce = true;
+    if (state.repeatMissed) options.repeatMissed = true;
     if (!plan.clean) {
       if (Object.keys(previewOmit).length) options.omitItems = previewOmit;
       if (Object.keys(previewSeeds).length) options.itemSeeds = previewSeeds;
@@ -1697,7 +2198,12 @@
     setText('summary-facts', count(total, 'question') + '. About ' + count(Math.ceil(total / 2), 'minute') + '. ' + fileSize(built.bytes) + '.');
     setText('size-warn', built.bytes >= LARGE_FILE_BYTES ? LARGE_FILE_SAID : '');
     show('size-warn', built.bytes >= LARGE_FILE_BYTES);
-    setText('sum-words', count(manifest.words.used.length, 'word') + ': ' + manifest.words.used.join(', ') + '.');
+    // With more than one group the words are listed under the teacher's labels (not in the file's order).
+    var usedNow = manifest.words.used, byLabel = groupsOn() && picked && picked.parts ? picked.parts.map(function (part) {
+      var here = part.words.filter(function (word) { return usedNow.indexOf(word) >= 0; });
+      return here.length ? part.label + ': ' + here.join(', ') : '';
+    }).filter(Boolean) : [];
+    setText('sum-words', count(usedNow.length, 'word') + ': ' + (byLabel.length > 1 ? byLabel.join('. ') : usedNow.join(', ')) + '.');
     drawList('sum-activities', manifest.activities.asked.map(function (id) {
       var n = manifest.items.byActivity[id] || 0;
       return core.activityLabel(id) + ': ' + (n ? count(n, 'question') : 'none (see Left out)') + '.';
@@ -1706,6 +2212,7 @@
     // With pictures, the line under the box now counts the words that show one in this file.
     if (manifest.pictures && (manifest.pictures.symbols || manifest.pictures.counts.teacher)) drawPictures(manifest.pictures.counts);
     show('summary', true);
+    show('summary-more', true);
     if (fileUrl) {
       $('try').setAttribute('href', TRY_PAGE + '#' + fileUrl);
       show('try', true);
@@ -1994,6 +2501,7 @@
     if (TRACE_CASES.indexOf(result.tracing) >= 0) fresh.tracing = result.tracing;
     if (CHOICE_LEVELS.indexOf(result.choices) >= 0) fresh.choices = result.choices;
     if (result.directionsOnce === true) fresh.directionsOnce = true;
+    if (result.repeatMissed === true) fresh.repeatMissed = true;
     state = fresh;
     picked = null;
     fromFile = result.own && typeof result.own === 'object' ? result.own : {};
@@ -2010,6 +2518,7 @@
     items.push(n ? count(n, 'word') + ': ' + result.words.join(', ') + '. They are in step 2, under Type my own words, in the order of the file.' : 'No word could be read from the file. Choose the words in step 2.');
     items.push('Version ' + state.version + '. Length: ' + (preset ? LENGTH_NAMES[preset] : 'Custom, ' + count(state.count, 'word')) + '. Pictures: ' + (result.pictures ? 'on' : 'off') + '.');
     if (state.directionsOnce) items.push('Spoken directions: first question only.');
+    if (state.repeatMissed) items.push('The missed questions once more at the end, as practice.');
     if (state.titleEdited) items.push('Title: ' + state.title + (/[.!?]$/.test(state.title) ? '' : '.'));
     if (state.learner) items.push('Student\'s code name: ' + state.learner + '. It is in step 3. Clear it there to make a file anyone can use.');
     var theirs = Object.keys(fromFile);
@@ -2120,7 +2629,7 @@
     });
     var name = productName();
     doc.title = (name ? name + ': ' : '') + 'Make Word Sounds practice, step ' + step + ' of 3';
-    if (step === 1) syncActivities();
+    if (step === 1) { syncActivities(); openStrands(); }
     if (step === 2) { drawWords(); soundsNote(); }
     if (step === 3) { drawLengths(); makeSoon(0); drawBatch(); }
     if (!quiet && !stayed) {
@@ -2149,6 +2658,7 @@
     $('f-position').addEventListener('change', function () { state.position = this.value; pickChanged(false); });
     $('f-shape').addEventListener('change', function () { state.shape = this.value; pickChanged(false); });
     $('f-stage').addEventListener('change', function () { state.stage = this.value; pickChanged(false); });
+    if ($('group-add')) $('group-add').addEventListener('click', addGroup);
     // "Other curricula": add or take away their stages. Taking them away while one is chosen goes back to "Any stage".
     $('f-stage-other').addEventListener('change', function () {
       otherStagesOn = this.checked;
@@ -2168,7 +2678,14 @@
       radio.addEventListener('change', function () { if (!radio.checked) return; state.length = radio.value; remember(); syncRadios('length', state.length); lengthChanged(0); });
     });
     $('f-count').addEventListener('input', function () { countTyped(this); });
-    $('f-count').addEventListener('blur', function () { if (wordCount(Number(this.value)) !== state.count) { this.value = String(wordsFor('custom')); } });
+    $('f-count').addEventListener('blur', function () { if (wordCount(Number(this.value)) !== wordsFor(state.length)) { this.value = String(wordsFor(state.length)); } });
+    if ($('count-less')) $('count-less').addEventListener('click', function () { stepCount(-1); });
+    if ($('count-more')) $('count-more').addEventListener('click', function () { stepCount(1); });
+    if ($('pick-shuffle')) $('pick-shuffle').addEventListener('click', pickDifferent);
+    if ($('pick-common')) $('pick-common').addEventListener('click', pickCommon);
+    // "Make it with the usual settings": straight to step 3 with what is chosen now. goTo sends the teacher back with
+    // the reason when there is no activity or no word yet.
+    if ($('quick-make')) $('quick-make').addEventListener('click', function () { goTo(3); });
     wireWordList();
     $('f-title').addEventListener('input', function () {
       state.title = this.value;
@@ -2182,15 +2699,16 @@
       makeSoon(700);
     });
     wireBatch();
-    $('f-pictures').addEventListener('change', function () { picturesChoice = this.checked ? 'on' : 'off'; picturesNote = ''; makeSoon(0); });
-    if ($('f-directions-once')) $('f-directions-once').addEventListener('change', function () { state.directionsOnce = this.checked; this.parentNode.classList.toggle('is-on', this.checked); remember(); makeSoon(0); });
+    $('f-pictures').addEventListener('change', function () { picturesChoice = this.checked ? 'on' : 'off'; picturesNote = ''; makeSoon(0); drawLengths(); });
+    if ($('f-repeat-missed')) $('f-repeat-missed').addEventListener('change', function () { state.repeatMissed = this.checked; this.parentNode.classList.toggle('is-on', this.checked); remember(); makeSoon(0); drawLengths(); });
+    if ($('f-directions-once')) $('f-directions-once').addEventListener('change', function () { state.directionsOnce = this.checked; this.parentNode.classList.toggle('is-on', this.checked); remember(); makeSoon(0); drawLengths(); });
     $('save').addEventListener('click', saveFile);
     if ($('open-present-export')) $('open-present-export').addEventListener('click', remember);
     // Print word cards (packets-print-cards.js): this file's words, title and picture choice, read when pressed.
     // The drawings come through loadPictures, so they are fetched once for both.
     var cards = window.AlloPacketPrintCards;
     if (cards && typeof cards.wire === 'function') cards.wire($('print-cards'), function () {
-      return { words: chosenWords(), title: titleNow(), pictures: !!$('f-pictures').checked, symbols: symbols, loadPictures: symbols ? loadPictures : null, own: ownFor };
+      return { words: fileWords(), title: titleNow(), pictures: !!$('f-pictures').checked, symbols: symbols, loadPictures: symbols ? loadPictures : null, own: ownFor };
     });
     $('forget').addEventListener('click', function () {
       try { window.localStorage.removeItem(STORE_KEY); } catch (_) {}
@@ -2211,6 +2729,8 @@
       listNote = '';
       addPending = {};
       setText('count-said', '');
+      setText('pick-said', '');
+      closeMores();
       // What came from an opened file, and the code names for each student, go too.
       fromFile = {};
       show('reopen-note', false);
@@ -2259,6 +2779,7 @@
   }
 
   function start() {
+    audioKit(); // the MP3 encoder starts loading now, so it is here by step 3 (a build never waits on it)
     var modules = window.AlloModules || {};
     dictionary = modules.WordSoundsPhonemes;
     wordlist = modules.WordSoundsWordlist;

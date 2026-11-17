@@ -99,6 +99,9 @@ code { font-family: var(--mono); font-size: 0.9em; overflow-wrap: anywhere; }
 .lead { margin-top: 1.5rem; max-width: 40rem; font-size: clamp(1.125rem, 1rem + 0.5vw, 1.3rem); line-height: 1.5; color: var(--text); }
 .facts { margin-top: 1rem; font-weight: 600; color: var(--ink); }
 .scope { margin-top: 0.4rem; color: var(--muted); }
+/* The front door, 2026-11-16: file sizes and the note on the voice page sit under the cards, so a maker is on the first screen. */
+.door-notes { margin: -1rem 0 clamp(2.5rem, 6vw, 4.5rem); max-width: 46rem; }
+.door-notes .facts { margin-top: 0; }
 
 .cards { display: grid; gap: 1rem; grid-template-columns: 1fr; margin-bottom: clamp(2.5rem, 6vw, 4.5rem); }
 .card { position: relative; display: flex; flex-direction: column; gap: 0.6rem; padding: 1.5rem; min-height: 12rem; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius); }
@@ -202,6 +205,8 @@ code { font-family: var(--mono); font-size: 0.9em; overflow-wrap: anywhere; }
 
 .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1rem; margin-top: 2rem; padding-top: 1.25rem; border-top: 1px solid var(--line); }
 .actions .push { margin-left: auto; }
+/* The row under "The file is ready" at the top of step 3: it belongs to the summary above it, so no rule between them. */
+.actions-file { margin-top: 1rem; padding-top: 0; border-top: 0; }
 .actions-note { flex-basis: 100%; font-size: 0.9375rem; color: var(--muted); }
 .count-line { font-weight: 600; color: var(--ink); }
 
@@ -265,6 +270,10 @@ code { font-family: var(--mono); font-size: 0.9em; overflow-wrap: anywhere; }
 .summary dt { font-size: 0.8125rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); padding-top: 0.75rem; border-top: 1px solid var(--line); }
 .summary dd { padding-bottom: 0.75rem; max-width: 40rem; }
 .summary dd li + li { margin-top: 0.35rem; }
+/* 2026-11-16: in the check, math practice and vocabulary makers the list of what is in the file sits under the choices,
+   after the summary and the Save button. It is shown only while the summary is. */
+#summary[hidden] ~ .summary-list { display: none; }
+.summary-list dl { margin-top: 0.75rem; }
 .next { margin-top: 1.75rem; padding: 1.25rem 1.5rem; border: 1px solid var(--line-strong); border-radius: var(--radius); }
 .next h3 { font-size: 1.15rem; }
 .next ol { margin-top: 0.6rem; counter-reset: n; }

@@ -613,7 +613,8 @@ describe('teacher preview mode (T4)', () => {
     const js = read('packets-try.js');
     const doc = new JSDOM(html).window.document;
     const csp = doc.querySelector('meta[http-equiv="Content-Security-Policy"]').getAttribute('content');
-    expect(csp).toBe("default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src data: blob:; connect-src blob:; frame-src blob:; form-action 'none'; base-uri 'none'");
+    // 2026-11-16: font-src data:, so the file in the frame keeps the reading fonts stored inside it.
+    expect(csp).toBe("default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src data: blob:; font-src data:; connect-src blob:; frame-src blob:; form-action 'none'; base-uri 'none'");
     expect(doc.querySelector('meta[name="referrer"]').getAttribute('content')).toBe('no-referrer');
     expect(doc.querySelector('meta[name="robots"]').getAttribute('content')).toBe('noindex');
     expect(doc.querySelectorAll('h1')).toHaveLength(1);

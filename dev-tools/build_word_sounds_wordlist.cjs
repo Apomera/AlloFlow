@@ -32,7 +32,11 @@ const CYPLEX_SOURCE = path.join(ROOT, 'data/vendor/cyplex/source.json');
 const CYPLEX_DATA = path.join(ROOT, 'data/vendor/cyplex/cyplex79_dictionary_words.tsv');
 // The words voiced by dev-tools/build_word_sounds_word_audio.cjs (word_audio_shards/): a third clip source.
 const SHARDS_INDEX = path.join(ROOT, 'word_audio_shards/index.json');
-const FLAGS = { recorded: 1, kokoro: 2, blocked: 4, nearBlocked: 8, known: 16, dropBlocked: 32, british: 64, shards: 128, soft: 256 };
+const FLAGS = { recorded: 1, kokoro: 2, blocked: 4, nearBlocked: 8, known: 16, dropBlocked: 32, british: 64, shards: 128, soft: 256, wider: 512 };
+// The wider levels of the picker ("More challenging", "Advanced"; 2026-11-16): the words that are not familiar enough
+// for the grade levels and were READ and kept for automatic picking. A word that is not on this list is never offered
+// at a wider level, so a word nobody has read cannot reach a student that way (a teacher can still type it).
+const WIDER = path.join(ROOT, 'data/word_sounds_wider_en.txt');
 const compare = (left, right) => left < right ? -1 : left > right ? 1 : 0;
 const clean = word => String(word || '').normalize('NFC').trim().toLowerCase();
 const json = file => JSON.parse(fs.readFileSync(path.join(ROOT, file), 'utf8').replace(/^﻿/, ''));
@@ -70,6 +74,8 @@ function readSections(file, label) {
 function readBlocklist(file = BLOCKLIST) { return readSections(file, 'Blocklist'); }
 // Spellings and words a US teacher would not expect (colour, mum): the picker leaves them out by default.
 function readBritish() { return readSections(BRITISH, 'British list'); }
+// The words kept for the wider levels. No file: no word is offered at a wider level.
+function readWider(file = WIDER) { return fs.existsSync(file) ? readSections(file, 'Wider list') : []; }
 
 // The words of the sound dictionary, in its own order.
 function dictionaryWords() {
@@ -189,6 +195,9 @@ function build(options = {}) {
   const inBoth = [...soft].filter(word => blocked.has(word)).sort(compare);
   if (inBoth.length) throw new Error('Blocklist: in a [soft] section and in another section too (keep one): ' + inBoth.join(' '));
   const british = new Set(readBritish().flatMap(section => section.words));
+  const wider = new Set(readWider(options.wider).flatMap(section => section.words));
+  const widerRefused = [...wider].filter(word => blocked.has(word) || soft.has(word)).sort(compare);
+  if (widerRefused.length) throw new Error('Wider list: also on the blocklist or its [soft] list (keep one): ' + widerRefused.join(' '));
   const familiarity = readFamiliarity();
   const stages = readStages();
   const sounds = word => phonemes.lookup(word)[0] || [];
@@ -196,7 +205,7 @@ function build(options = {}) {
   for (const section of sections) if (section.derive) for (const word of section.words) { const s = sounds(word); if (s.length) derive.add(s.join(' ')); }
   const shapes = [], shapeIndex = new Map();
   const rows = [];
-  const counts = { blocked: 0, nearBlocked: 0, dropBlocked: 0, soft: 0, recorded: 0, kokoro: 0, shards: 0, known: 0, ranked: 0, british: 0, childBook: 0 };
+  const counts = { blocked: 0, nearBlocked: 0, dropBlocked: 0, soft: 0, recorded: 0, kokoro: 0, shards: 0, known: 0, ranked: 0, british: 0, childBook: 0, wider: 0 };
   const nearExamples = [], dropExamples = [];
   for (const word of words.slice().sort(compare)) {
     const s = sounds(word);
@@ -215,6 +224,7 @@ function build(options = {}) {
       if (rank.has(word) && rank.get(word) <= 10000) dropExamples.push(word);
     }
     if (soft.has(word)) { flags |= FLAGS.soft; counts.soft++; }
+    if (wider.has(word)) { flags |= FLAGS.wider; counts.wider++; }
     const r = rank.get(word) || 0;
     if (r) counts.ranked++;
     const child = familiarity.map.get(word);
@@ -226,13 +236,13 @@ function build(options = {}) {
   // A soft word outside the sound dictionary does nothing (nobody can use the word at all): it is counted and named.
   const softOutside = [...soft].filter(word => !inDictionary.has(word)).sort(compare);
   return { rows, shapes, extraBlocked, counts, sections, nearExamples, dropExamples, total: words.length, blockedTotal: blocked.size, britishTotal: british.size,
-    softTotal: soft.size, softOutside,
+    softTotal: soft.size, softOutside, widerTotal: wider.size,
     dictionary: phonemes.source, familiarity: familiarity.source, stages, wordAudio: counts.shards ? shardStore.summary : null };
 }
 
 function render(built) {
   const child = built.familiarity;
-  const header = { version: 2, language: 'en', words: built.total, blocklistEntries: built.blockedTotal, softEntries: built.softTotal,
+  const header = { version: 2, language: 'en', words: built.total, blocklistEntries: built.blockedTotal, softEntries: built.softTotal, widerEntries: built.widerTotal,
     dictionary: { id: built.dictionary.id, commit: built.dictionary.commit, sha256: built.dictionary.sha256 },
     childBooks: { id: child.id, name: child.name, band: child.band, citation: child.citation, doi: child.doi, license: child.license, licenseUrl: child.licenseUrl,
       sha256: child.filtered.sha256, changes: child.filtered.changes },
@@ -271,11 +281,12 @@ var createWordSoundsWordlist = (function () {
           hasClip: !!(flags & (FLAGS.recorded | FLAGS.kokoro | FLAGS.shards)),
           blocked: !!(flags & FLAGS.blocked), nearBlocked: !!(flags & FLAGS.nearBlocked), dropBlocked: !!(flags & FLAGS.dropBlocked), known: !!(flags & FLAGS.known),
           // soft = a borderline word: never offered by a picker, never an invented answer choice, usable when a teacher types it.
-          british: !!(flags & FLAGS.british), soft: !!(flags & FLAGS.soft) });
+          // wider = read and kept for the picker's wider levels ("More challenging", "Advanced").
+          british: !!(flags & FLAGS.british), soft: !!(flags & FLAGS.soft), wider: !!(flags & FLAGS.wider) });
         index.set(row.word, row);
         return row;
       });
-      extraBlocked.forEach(function (word) { index.set(word, Object.freeze({ word: word, rank: 0, shape: '', sounds: 0, syllables: 0, zipf: 0, books: 0, recorded: false, kokoro: false, shards: false, hasClip: false, blocked: true, nearBlocked: false, dropBlocked: false, known: false, british: false, soft: false, notInDictionary: true })); });
+      extraBlocked.forEach(function (word) { index.set(word, Object.freeze({ word: word, rank: 0, shape: '', sounds: 0, syllables: 0, zipf: 0, books: 0, recorded: false, kokoro: false, shards: false, hasClip: false, blocked: true, nearBlocked: false, dropBlocked: false, known: false, british: false, soft: false, wider: false, notInDictionary: true })); });
       text = '';
       return list;
     }
@@ -333,11 +344,11 @@ function summary(built, output) {
   return `${built.total} words (${c.ranked} with a frequency rank, ${c.childBook} in the child-book list, ${c.known} on the app lists); clips: ${c.recorded} recorded, ${c.kokoro} Kokoro bank, ${c.shards} Kokoro shards; ` +
     `blocklist ${built.blockedTotal} entries in ${built.sections.filter(section => !section.soft).length} sections (${c.blocked} in the dictionary, ${built.extraBlocked.length} outside it), ${c.nearBlocked} more blocked as sound-alikes, ${c.dropBlocked} flagged as one dropped sound away; ` +
     `soft list (never offered, usable when typed) ${built.softTotal} entries in ${built.sections.filter(section => section.soft).length} sections (${c.soft} in the dictionary` + (built.softOutside.length ? `, outside it and so without effect: ${built.softOutside.join(' ')}` : '') + '); ' +
-    `British list ${built.britishTotal} entries (${c.british} in the dictionary); ${built.stages.frameworks.map(f => f.stages.length + ' stages ' + f.id).join(', ')}; ` +
+    `wider levels ${built.widerTotal} entries (${c.wider} in the dictionary); British list ${built.britishTotal} entries (${c.british} in the dictionary); ${built.stages.frameworks.map(f => f.stages.length + ' stages ' + f.id).join(', ')}; ` +
     `${Buffer.byteLength(output)} bytes (${zlib.gzipSync(output, { level: 9 }).length} gzip)`;
 }
 
-module.exports = { summary, OUTPUT, BLOCKLIST, BRITISH, STAGES, CYPLEX_SOURCE, CYPLEX_DATA, SHARDS_INDEX, FLAGS, readBlocklist, readBritish, readStages, readFamiliarity, readShardWords, readShardStore, build, render };
+module.exports = { summary, OUTPUT, BLOCKLIST, BRITISH, WIDER, readWider, STAGES, CYPLEX_SOURCE, CYPLEX_DATA, SHARDS_INDEX, FLAGS, readBlocklist, readBritish, readStages, readFamiliarity, readShardWords, readShardStore, build, render };
 if (require.main === module) {
   try { main(process.argv.slice(2)); } catch (error) { console.error(error.message); process.exitCode = 1; }
 }

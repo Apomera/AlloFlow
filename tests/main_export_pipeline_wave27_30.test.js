@@ -367,8 +367,13 @@ describe('Wave 27 · ExportHandlers, Narration & Slides Preview', () => {
     });
     const joined = items.map((i) => i.text).join('\n');
     expect(joined).toContain('Evidence A: Paragraph 2 notes lower external solute concentration');
-    expect(joined).toContain('Pair 1: Mitochondria — ATP synthesis');
-    expect(joined).toContain('Item 1: Prophase');
+    // Read-aloud lists prompts and choices apart, so hearing a pair does not give the match away.
+    expect(joined).toContain('Prompt 1: Mitochondria');
+    expect(joined).toContain('Match choice A: ATP synthesis');
+    expect(joined).not.toContain('Mitochondria — ATP synthesis');
+    // Sequence items are read in a fixed shuffled order, not the answer order.
+    expect(joined).toMatch(/Item [12]: Prophase/);
+    expect(joined).toMatch(/Item [12]: Metaphase/);
     expect(joined).toContain('Word bank: hypotonic, osmosis');
     expect(joined).toContain('Reflection 1: What evidence convinced you most?');
   });

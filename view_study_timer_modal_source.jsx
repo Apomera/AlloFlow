@@ -30,7 +30,7 @@ function StudyTimerModal(props) {
     const seenNodes = new Set();
     for (let branch = dialog; branch && branch !== document.body && branch.parentElement; branch = branch.parentElement) {
       Array.from(branch.parentElement.children).forEach((sibling) => {
-        if (sibling === branch || seenNodes.has(sibling) || /^(?:SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName)) return;
+        if (sibling === branch || seenNodes.has(sibling) || /^(?:SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName) || (typeof sibling.matches === 'function' && sibling.matches('[aria-live], [role="status"], [role="alert"], [data-toast-region]'))) return;
         seenNodes.add(sibling);
         backgroundState.push({
           node: sibling,
@@ -41,12 +41,13 @@ function StudyTimerModal(props) {
         sibling.setAttribute('aria-hidden', 'true');
       });
     }
-    const prevBodyOverflow = document.body ? document.body.style.overflow : '';
-    if (document.body) document.body.style.overflow = 'hidden';
+    // Shared scroll-lock counter: only the last dialog to close unlocks the page.
+    const alloScrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: '' });
+    const alloScrollLocked = !!document.body;
+    if (alloScrollLocked && ++alloScrollLock.count === 1) { alloScrollLock.prev = document.body.style.overflow; document.body.style.overflow = 'hidden'; }
     const trap = { root: dialog };
     const trapStack = typeof window !== 'undefined' ? (window.__alloFocusTrapStack = window.__alloFocusTrapStack || []) : null;
     if (trapStack) trapStack.push(trap);
-    const isTopTrap = () => !trapStack || trapStack[trapStack.length - 1] === trap;
     const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [href], summary, [tabindex]:not([tabindex="-1"])'))
       .filter((el) => {
         if (!el || el.hidden || el.getAttribute('aria-hidden') === 'true' || el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
@@ -73,14 +74,21 @@ function StudyTimerModal(props) {
     document.addEventListener('keydown', onKeyDown);
     return () => {
       document.removeEventListener('keydown', onKeyDown);
-      if (document.body) document.body.style.overflow = prevBodyOverflow;
+      if (alloScrollLocked) { alloScrollLock.count = Math.max(0, alloScrollLock.count - 1); if (alloScrollLock.count === 0 && document.body) document.body.style.overflow = alloScrollLock.prev; }
       backgroundState.forEach(({ node, hadInert, ariaHidden }) => {
         if (!node || !node.isConnected) return;
         if (!hadInert) node.removeAttribute('inert');
         if (ariaHidden == null) node.removeAttribute('aria-hidden');
-        else node.setAttribute('aria-hidden', ariaHidden);
+        else if (ariaHidden !== 'true') node.setAttribute('aria-hidden', ariaHidden);
       });
-      const wasTop = isTopTrap();
+      // The app shell also wraps this dialog in the host focus trap, and that
+      // entry sits above this one on the shared stack. It is this same dialog,
+      // not another one, so it must not stop focus going back to the opener.
+      let wasTop = true;
+      for (let i = trapStack ? trapStack.length - 1 : -1; i >= 0 && trapStack[i] !== trap; i--) {
+        const other = trapStack[i] && trapStack[i].root;
+        if (!other || !(other === dialog || (typeof other.contains === 'function' && (other.contains(dialog) || dialog.contains(other))))) { wasTop = false; break; }
+      }
       if (trapStack) {
         const idx = trapStack.lastIndexOf(trap);
         if (idx >= 0) trapStack.splice(idx, 1);

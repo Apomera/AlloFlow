@@ -9,9 +9,9 @@
     "keys": null
   },
   "totalIdentities": 20181,
-  "totalRecoverable": 0,
+  "totalRecoverable": 56,
   "totalApproved": 0,
-  "totalUnreviewed": 0,
+  "totalUnreviewed": 56,
   "totalAmbiguous": 0,
   "totalContextSkipped": 63,
   "totalWritten": 0,
@@ -31,43 +31,91 @@
       "ambiguousKeys": []
     },
     "amharic": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "በመሥራት ላይ...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "arabic": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "جارٍ العمل...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "bengali": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "কাজ চলছে...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "burmese": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "လုပ်ဆောင်နေသည်...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "chin_falam": {
@@ -91,213 +139,465 @@
       "ambiguousKeys": []
     },
     "chinese_simplified": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "处理中...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "chinese_traditional": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "處理中...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "dari": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "در حال کار...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "dutch": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "Bezig...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "esperanto": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "Laborante...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "farsi": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "در حال انجام...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "french": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "En cours...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "french_canadian": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "En cours...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "german": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "Wird bearbeitet...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "greek": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "Γίνεται επεξεργασία...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "gujarati": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "કામ ચાલુ છે...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "haitian_creole": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "Ap travay...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "hausa": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "Ana aiki...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "hebrew": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "עובד...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "hindi": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "काम हो रहा है...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "hmong": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "Tab tom ua...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "igbo": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "Ọ na-arụ ọrụ...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "indonesian": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "Sedang diproses...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "italian": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "Elaborazione...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "japanese": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "処理中...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "kannada": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "ಕೆಲಸ ನಡೆಯುತ್ತಿದೆ...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "karen": {
@@ -311,63 +611,135 @@
       "ambiguousKeys": []
     },
     "khmer": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "កំពុងដំណើរការ...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "kinyarwanda": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "Birakorwa...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "kirundi": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "Biriko birakorwa...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "korean": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "처리 중...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "lao": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "ກຳລັງດຳເນີນການ...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "latin": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "Labōrātur...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "lingala": {
@@ -391,23 +763,47 @@
       "ambiguousKeys": []
     },
     "malayalam": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "പ്രവർത്തിക്കുന്നു...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "marathi": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "काम सुरू आहे...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "marshallese": {
@@ -421,233 +817,509 @@
       "ambiguousKeys": []
     },
     "nepali": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "काम हुँदैछ...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "pashto": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "کار روان دی...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "polish": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "Trwa praca...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "portuguese_angola": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "A processar...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "portuguese_brazil": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "Processando...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "portuguese_portugal": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "A processar...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "punjabi": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "ਕੰਮ ਜਾਰੀ ਹੈ...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "romanian": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "Se lucrează...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "russian": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "Выполняется...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "somali": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "Waa la shaqaynayaa...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "spanish_castilian": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "Trabajando...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "spanish_latin_america": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "Trabajando...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "swahili": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "Inafanya kazi...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "tagalog": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "Ginagawa...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "tamil": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "செயல்படுகிறது...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "telugu": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "పని జరుగుతోంది...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "thai": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "กำลังทำงาน...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "tigrinya": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "ይሰርሕ ኣሎ...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "turkish": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "Çalışıyor...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "ukrainian": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "Виконується...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "urdu": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "کام جاری ہے...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "vietnamese": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "Đang xử lý...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     },
     "yoruba": {
-      "recoverable": 0,
+      "recoverable": 1,
       "ambiguous": 0,
       "contextSkipped": 1,
       "approved": 0,
-      "unreviewed": 0,
-      "recoverableKeys": [],
-      "recoverableEntries": [],
+      "unreviewed": 1,
+      "recoverableKeys": [
+        "cmd.working"
+      ],
+      "recoverableEntries": [
+        {
+          "key": "cmd.working",
+          "english": "Working...",
+          "value": "Ó ń ṣiṣẹ́...",
+          "sourceKeys": [
+            "syllable_prep.working"
+          ],
+          "approved": false
+        }
+      ],
       "ambiguousKeys": []
     }
   }

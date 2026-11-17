@@ -62,34 +62,27 @@
   X-Frame-Options: DENY
   Referrer-Policy: no-referrer
   Content-Security-Policy: frame-ancestors 'none'; object-src 'none'; base-uri 'self'
+# The Life Skills tool shows these six pages inside its own frame, from every origin
+# the app runs on (hosted site, Gemini Canvas, a district site, the desktop app), so they
+# must stay frameable. Static simulations: no account, no stored data.
 /life_skills_capstone/*
-  X-Frame-Options: DENY
   Referrer-Policy: no-referrer
-  Content-Security-Policy: frame-ancestors 'none'; object-src 'none'; base-uri 'self'
+  Content-Security-Policy: object-src 'none'; base-uri 'self'
 /life_skills_kitchen/*
-  X-Frame-Options: DENY
   Referrer-Policy: no-referrer
-  Content-Security-Policy: frame-ancestors 'none'; object-src 'none'; base-uri 'self'
+  Content-Security-Policy: object-src 'none'; base-uri 'self'
 /life_skills_laundry/*
-  X-Frame-Options: DENY
   Referrer-Policy: no-referrer
-  Content-Security-Policy: frame-ancestors 'none'; object-src 'none'; base-uri 'self'
-/life_skills_outing/*
-  X-Frame-Options: DENY
-  Referrer-Policy: no-referrer
-  Content-Security-Policy: frame-ancestors 'none'; object-src 'none'; base-uri 'self'
+  Content-Security-Policy: object-src 'none'; base-uri 'self'
 /life_skills_repair/*
-  X-Frame-Options: DENY
   Referrer-Policy: no-referrer
-  Content-Security-Policy: frame-ancestors 'none'; object-src 'none'; base-uri 'self'
+  Content-Security-Policy: object-src 'none'; base-uri 'self'
 /life_skills_safety/*
-  X-Frame-Options: DENY
   Referrer-Policy: no-referrer
-  Content-Security-Policy: frame-ancestors 'none'; object-src 'none'; base-uri 'self'
+  Content-Security-Policy: object-src 'none'; base-uri 'self'
 /life_skills_transit/*
-  X-Frame-Options: DENY
   Referrer-Policy: no-referrer
-  Content-Security-Policy: frame-ancestors 'none'; object-src 'none'; base-uri 'self'
+  Content-Security-Policy: object-src 'none'; base-uri 'self'
 #
 # The accessibility engines are vendored here so Gemini Canvas, whose CSP refuses the
 # third-party CDNs, can still load them from the origin it already trusts for every

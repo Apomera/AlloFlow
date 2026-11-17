@@ -15,7 +15,8 @@ describe('take-home player polish', () => {
   });
   it('the start screen hides its repeated title from sight only', () => {
     expect(LOADER).toContain("var h = el('h2', hideHeading ? { tabindex: '-1', class: 'sr', text: heading } : { tabindex: '-1', text: heading });");
-    expect(LOADER).toMatch(/el\('div', \{ class: 'row', style: 'margin-top:16px' \}, buttons\),\n {8}\]\),\n {6}\], true\);/);
+    // 2026-11-17: the start screen's row is followed by the Start over question (overBox).
+    expect(LOADER).toMatch(/el\('div', \{ class: 'row', style: 'margin-top:16px' \}, buttons\), overBox,\n {8}\]\),\n {6}\], true\);/);
   });
   it('single-button boxes and main questions match in the adapters and the loader', () => {
     for (const id of ['counting', 'missing_letter']) expect(adapter(id)).toContain("class: 'choice solo'");

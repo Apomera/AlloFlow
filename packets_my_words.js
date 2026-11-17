@@ -104,6 +104,7 @@
   var SCHEME = 'https:' + '/' + '/';
   var SVG_TYPE = 'image/svg+xml';
 
+  var EXPORT_KIND = 'alloflow-packets-my-words';
   function fail(code, message) { var error = new Error(message); error.code = code; return error; }
   function refuse(code, message) { return Promise.reject(fail(code, message)); }
   function own(object, key) { return Object.prototype.hasOwnProperty.call(object, key); }
@@ -589,7 +590,39 @@
             else write();
           };
         };
-      }).then(function (entry) { announce(key, entry ? 'put' : 'remove'); return entry; }, function (error) { throw storageError(error); });
+      }).then(function (entry) { announce(key, entry ? 'put' : 'remove'); if (entry) keepAsked(); return entry; }, function (error) { throw storageError(error); });
+    }
+    // Ask the browser, once, to keep this site's storage rather than clear it under pressure. It may say no.
+    var askedToKeep = false;
+    function keepAsked() {
+      if (askedToKeep) return;
+      askedToKeep = true;
+      try { var st = home.navigator && home.navigator.storage; if (st && typeof st.persist === 'function') st.persist().catch(function () {}); } catch (_) {}
+    }
+    // Every word as one object to save in a file: { kind, version, saved, words: [{ word, sounds, clip, picture }] }.
+    function exportAll() {
+      return list().then(function (rows) { return getMany(rows.map(function (row) { return row.word; })); }).then(function (found) {
+        var words = Object.keys(found || {}).sort().map(function (word) {
+          var e = found[word], out = { word: word };
+          ['sounds', 'clip', 'picture'].forEach(function (name) { if (e && e[name]) out[name] = e[name]; });
+          return out;
+        });
+        return { kind: EXPORT_KIND, version: 1, saved: new Date().toISOString(), words: words };
+      });
+    }
+    // A saved My words file, put back. Each part goes through put(), so it is cleaned by the same rules as anything typed
+    // or recorded here; what does not pass is left out and named. -> { kept: [words], refused: [words] }
+    function importAll(data) {
+      if (!isObject(data) || data.kind !== EXPORT_KIND || !Array.isArray(data.words)) return refuse('not_my_words', 'This is not a My words file.');
+      var kept = [], refused = [];
+      var step = function (i) {
+        if (i >= data.words.length || i >= LIMITS.words) return Promise.resolve({ kept: kept, refused: refused });
+        var row = data.words[i], patchIn = {};
+        if (!isObject(row)) { refused.push('?'); return step(i + 1); }
+        ['sounds', 'clip', 'picture'].forEach(function (name) { if (own(row, name) && row[name]) patchIn[name] = row[name]; });
+        return put(row.word, patchIn).then(function (entry) { if (entry) kept.push(entry.word); }, function () { refused.push(line(row.word, 40) || '?'); }).then(function () { return step(i + 1); });
+      };
+      return step(0);
     }
     function remove(word) {
       var key = normalizeWord(word);
@@ -625,7 +658,7 @@
       });
     }
 
-    return { available: available, get: get, getMany: getMany, put: put, remove: remove, list: list, clear: clear, usage: usage, onChange: onChange };
+    return { available: available, get: get, getMany: getMany, put: put, remove: remove, list: list, clear: clear, usage: usage, exportAll: exportAll, importAll: importAll, onChange: onChange };
   }
 
   var api = create(root);

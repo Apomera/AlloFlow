@@ -116,7 +116,8 @@ const jsonOf = (result, method = 'sha256') => {
 };
 const nameOf = (result, ext = 'csv') => loader.resultsCsv(result).stem + '.' + ext;
 // A CSV as it was saved before 2026-11-11: the summary row ends without its title cell. Everything else is the same bytes.
-const older = (csv) => { const out = csv.replace(/,"title=(?:[^"]|"")*"(?=\r\n)/, ''); expect(out).not.toBe(csv); return out; };
+// 2026-11-17: cells added after the title since then (accuracy_of_attempted_pct) are taken off with it.
+const older = (csv) => { const out = csv.replace(/,"title=(?:[^"]|"")*"(?:,"[^"\r\n]*")*(?=\r\n)/, ''); expect(out).not.toBe(csv); return out; };
 // The cells of a file as saved (every cell quoted, no cell in these fixtures holds the three characters ","), and a spreadsheet's re-save of them.
 const cellsOf = (csv) => csv.slice(1, -2).split('\r\n').map((line) => line.slice(1, -1).split('","').map((cell) => cell.replace(/""/g, '"')));
 const resave = (rows, separator, lineEnd = '\n') => rows.map((row) => row.map((cell) => (cell.includes(separator) || /["\r\n]/.test(cell) ? '"' + cell.replace(/"/g, '""') + '"' : cell)).join(separator)).join(lineEnd) + lineEnd;
@@ -169,7 +170,8 @@ describe('the reader: a practice results file', () => {
 
   it('shows the title the file carries; a file saved before the title was there shows its packet id and still checks out', async () => {
     const text = csvOf(practice());
-    expect(text).toContain('"accuracy_pct=80","title=Short vowels"\r\n"#integrity","sha256","');
+    // 2026-11-17: the summary row ends with accuracy_of_attempted_pct.
+    expect(text).toMatch(/"accuracy_pct=80","title=Short vowels","accuracy_of_attempted_pct=\d*"\r\n"#integrity","sha256","/);
     // The older file is the same bytes without that one cell, its check line included: it reads "ok" and is named by its packet id, as before.
     expect(older(text).split('\r\n')[7]).toBe(text.split('\r\n')[7]);
     const before = await one(older(text));
@@ -1220,8 +1222,9 @@ describe('the page: from files to results', () => {
     const heads = [...page.$('group-table').querySelectorAll('table')].map((table) => [...table.querySelectorAll('thead tr')].map((row) => [...row.children].map((cell) => cell.textContent)));
     expect(heads).toEqual([[['Student', 'Results', 'Last date', 'Math Fluency (grade 2)digits correct per minute']], [['Student', 'Hearing sounds', 'Spelling']]]);
     expect([...page.$('group-table').querySelectorAll('h4')].map((node) => node.textContent)).toEqual(['Checks: latest score', 'Practice: latest first-try percent']);
-    expect(page.rows()).toEqual([['BlueHeron7', '3', 'Nov 17, 2026', '8form A'], ['RedFox3', '3', 'Nov 17, 2026', '7form A']]);
-    expect(page.table(page.$('group-table').querySelectorAll('table')[1])).toEqual([['BlueHeron7', '75%3 of 4', '100%1 of 1'], ['RedFox3', '25%1 of 4', '0%0 of 1']]);
+    expect(page.rows()).toEqual([['BlueHeron7', '3', 'Nov 17, 2026', '8version A'], ['RedFox3', '3', 'Nov 17, 2026', '7version A']]);
+    // 2026-11-17: each practice cell names the file its latest result came from (the second file is named by its packet id).
+    expect(page.table(page.$('group-table').querySelectorAll('table')[1])).toEqual([['BlueHeron7', '75%3 of 4from ws-short-vowels', '100%1 of 1from ws-short-vowels'], ['RedFox3', '25%1 of 4from Short vowels', '0%0 of 1from Short vowels']]);
     // Two learners: nothing is said about the middle of a group.
     expect(page.$('middles').textContent).toBe('');
     expect(page.d.body.textContent).not.toContain('Middle of this group');
@@ -1292,7 +1295,7 @@ describe('the page: from files to results', () => {
     const math = page.measure('Math Fluency (grade 2)');
     expect(math.querySelector('svg')).toBeNull();
     expect(math.querySelector('.measure-chart').textContent).toBe('A chart is drawn when there are results from two dates.');
-    expect(page.table(math.querySelector('table'))).toEqual([['Nov 17, 2026', '8', 'Form A, try 1. 7 of 8 right.', 'Finished before the time was up, so the score is for the time used']]);
+    expect(page.table(math.querySelector('table'))).toEqual([['Nov 17, 2026', '8', 'Version A, try 1. 7 of 8 right.', 'Finished before the time was up, so the score is for the time used']]);
     // The most frequent wrong answers in practice, and every result in date order.
     const tables = [...page.$('learner-body').querySelectorAll(':scope > .table-scroll table')];
     expect([...page.$('learner-body').querySelectorAll(':scope > h4')].map((node) => node.textContent)).toEqual(['Most frequent wrong answers in practice', 'Every result, in date order']);
@@ -1302,15 +1305,15 @@ describe('the page: from files to results', () => {
       ['Nov 3, 2026', 'Practice: Short vowels', '60% on the first try', '5 of 5', '5 min', ''],
       ['Nov 10, 2026', 'Practice: ws-short-vowels', '80% on the first try', '5 of 5', '4 min', ''],
       // 2026-11-13 (results review): a check's time is its own clock (96 s used), not the time the file was open (108 s).
-      ['Nov 17, 2026', 'Math Fluency, form A, try 1', '8 digits correct per minute', '8 of 8', '1 min 36 s', 'Finished before the time was up, so the score is for the time used']]);
+      ['Nov 17, 2026', 'Math Fluency, version A, try 1', '8 digits correct per minute', '8 of 8', '1 min 36 s', 'Finished before the time was up, so the score is for the time used']]);
     // The other learner: the check has two dates, and the changed file carries its notes and a ring on its dot.
     page.learner('RedFox3');
     const fox = page.measure('Math Fluency (grade 2)');
     expect([...fox.querySelectorAll('.chart-point')].map((dot) => [dot.getAttribute('data-date'), dot.getAttribute('data-value')])).toEqual([['2026-11-10', '5'], ['2026-11-17', '7']]);
     expect(fox.querySelectorAll('.chart-ring')).toHaveLength(1);
     expect(fox.querySelector('figcaption').textContent).toBe('Each dot is one result. A ring around a dot means that result has a note in the table.');
-    expect(page.table(fox.querySelector('table'))).toEqual([['Nov 10, 2026', '5', 'Form A, try 1. 6 of 6 right.', ''],
-      ['Nov 17, 2026', '7', 'Form A, try 1. 8 of 8 right.', 'Left the page for more than 3 seconds (9 seconds away in all); this file was changed after it was saved']]);
+    expect(page.table(fox.querySelector('table'))).toEqual([['Nov 10, 2026', '5', 'Version A, try 1. 6 of 6 right.', ''],
+      ['Nov 17, 2026', '7', 'Version A, try 1. 8 of 8 right.', 'Left the page for more than 3 seconds (9 seconds away in all); this file was changed after it was saved']]);
     expect(page.measure('Hearing sounds').querySelector('svg')).toBeNull();
     // Every table has a caption and header cells with a scope, and sits in its own scrolling box.
     for (const table of page.d.querySelectorAll('#state-results table')) {
@@ -1419,15 +1422,15 @@ describe('the page: from files to results', () => {
     expect(page.$('sample-note').textContent).toBe('These are sample results. The code names and the scores are made up.');
     expect(page.$('results-line').textContent).toBe('8 results from 5 students. Oct 6 to Oct 27, 2026.');
     const card = page.$('middles').querySelector('.middle');
-    expect([...card.children].map((node) => node.textContent)).toEqual(['Math Fluency (grade 2), form A', 'Middle of this group (n = 5)', '9 digits correct per minute', 'Lowest 5, highest 16.']);
+    expect([...card.children].map((node) => node.textContent)).toEqual(['Math Fluency (grade 2), version A', 'Middle of this group (n = 5)', '9 digits correct per minute', 'Lowest 5, highest 16.']);
     expect(page.$('middles').querySelectorAll('.middle')).toHaveLength(1);
     expect(page.$('middles').querySelector('.honest').textContent).toBe(HONEST);
-    expect(page.rows().map((row) => [row[0], row[1], row[row.length - 1]])).toEqual([['BlueHeron7also written Blue Heron 7', '4', '10form B'], ['GoldFinch5', '1', '5form A'], ['GrayOwl4', '1', '9form A'],
-      ['GreenTurtle2', '1', '16form A'], ['RedFox3', '1', '12form A']]);
+    expect(page.rows().map((row) => [row[0], row[1], row[row.length - 1]])).toEqual([['BlueHeron7also written Blue Heron 7', '4', '10version B'], ['GoldFinch5', '1', '5version A'], ['GrayOwl4', '1', '9version A'],
+      ['GreenTurtle2', '1', '16version A'], ['RedFox3', '1', '12version A']]);
     // In the learner's own view the group's middle on that form stands beside the learner's score, as a description.
     page.view('learner');
     page.learner('GrayOwl4');
-    expect(page.measure('Math Fluency (grade 2)').querySelector('.measure-middle').textContent).toBe('Middle of this group on form A (n = 5): 9. Lowest 5, highest 16.');
+    expect(page.measure('Math Fluency (grade 2)').querySelector('.measure-middle').textContent).toBe('Middle of this group on version A (n = 5): 9. Lowest 5, highest 16.');
     expect(page.table(page.measure('Math Fluency (grade 2)').querySelector('table'))[0][3]).toBe('Left the page for more than 3 seconds (14 seconds away in all)');
     page.learner('BlueHeron7');
     expect(page.measure('Math Fluency (grade 2)').querySelectorAll('.chart-point')).toHaveLength(2);
@@ -1477,7 +1480,8 @@ describe('the page: math fact practice', () => {
     expect(head).toEqual([['Student', 'Results', 'Last date', 'Math facts']]);
     expect([...page.$('group-table').querySelectorAll('h4')].map((node) => node.textContent)).toEqual(['Practice: latest first-try percent']);
     const cell = page.$('group-table').querySelector('tbody td:last-child');
-    expect([...cell.children].map((node) => [node.className, node.textContent])).toEqual([['cell-value', '75%'], ['cell-sub', '9 of 12'], ['cell-sub', 'new facts 2 of 4']]);
+    // 2026-11-17: the last line names the file the result came from.
+    expect([...cell.children].map((node) => [node.className, node.textContent])).toEqual([['cell-value', '75%'], ['cell-sub', '9 of 12'], ['cell-sub', 'new facts 2 of 4'], ['cell-sub', 'from ' + rehearsal.lessonTitle]]);
     expect(page.$('middles').textContent).toBe('');
     page.view('learner');
     expect([...page.d.querySelectorAll('.measure h4')].map((node) => node.textContent)).toEqual(['Math facts']);
@@ -1682,7 +1686,9 @@ describe('the page: files that are not what they seem', () => {
     expect(page.downloads[0].body).toContain('"<img src=x onerror=alert(1)>","2026-11-03"');
     expect(page.downloads[0].body).toContain('"<b>bold</b>.csv"');
     // Nothing from a file became an element, and nothing was reached.
-    expect(page.d.querySelectorAll('main img, main script, main b, main iframe, main a').length).toBe(0);
+    // 2026-11-17: the page's own "Practice missed ..." links (a.nav-new-tab, made by the page to open a maker in a new tab) are the only links.
+    expect(page.d.querySelectorAll('main img, main script, main b, main iframe, main a:not(.nav-new-tab)').length).toBe(0);
+    for (const link of page.d.querySelectorAll('main a.nav-new-tab')) expect(link.getAttribute('href')).toMatch(/^packets-[a-z-]+\.html#[a-z]+=/);
     expect(page.d.querySelectorAll('script').length).toBe(3);
     expect(page.reached).toEqual([]);
     expect(({}).polluted).toBeUndefined();

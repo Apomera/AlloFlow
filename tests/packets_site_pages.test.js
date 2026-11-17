@@ -55,7 +55,7 @@ const CSP = {
   'packets-make.html': STRICT.replace("img-src 'self';", "img-src 'self' data:; media-src data:; connect-src 'self';"),
   // The preview shows a built practice file, which carries its script and styles inside itself. A browser hands
   // this page's rule down to the framed file, so inline script and style must be allowed here, and only here.
-  'packets-try.html': "default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src data: blob:; connect-src blob:; frame-src blob:; form-action 'none'; base-uri 'none'",
+  'packets-try.html': "default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src data: blob:; font-src data:; connect-src blob:; frame-src blob:; form-action 'none'; base-uri 'none'",
 };
 
 describe('the pages as files', () => {
@@ -309,7 +309,16 @@ describe('the pages as files', () => {
       ['Make Symbol Runner practice', [['Make Symbol Runner practice', 'packets-symbol-runner.html']]],
       ['Present and export word cards', [['Present and export word cards', 'packets-present-export.html']]],
       ['Add up results', [['Add up results', 'packets-results.html']]],
+      // 2026-11-16: the student's way in was a text link 3,215 px down a phone page.
+      ['Open a practice file or check', [['Open a practice file or check', 'packets-open.html']]],
       ['Check it yourself', [['Check it yourself', '#check']]]]);
+    expect(cards[6].text).toContain('For a student who was given a file');
+    expect(parse('packets-open.html').querySelector('h1').textContent).toBe('Open a practice file or check');
+    // 2026-11-16: the hero is the headline, one line and the scope; the sizes and the voice note sit under the cards, so a maker is on the first screen.
+    expect([...doc.querySelector('.hero .wrap').children].map((node) => node.tagName + '.' + node.className)).toEqual(['H1.', 'P.lead', 'P.scope']);
+    // 2026-11-17: then the About page (who makes it, how to report a problem).
+    expect([...doc.querySelector('.cards + .door-notes').children].map((node) => node.className)).toEqual(['facts', 'scope', 'scope']);
+    expect(doc.querySelector('.door-notes a[href="packets-about.html"]').textContent).toBe('About Packets');
     expect([parse('packets-make.html').querySelector('h1').textContent, parse('packets-math-practice.html').querySelector('h1').textContent, parse('packets-check.html').querySelector('h1').textContent])
       .toEqual(['Make Word Sounds practice', 'Make math fact practice', 'Make a math check']);
     expect(cards[0].text).toContain('Hearing sounds, letters and sounds, spelling, rhyme.');
@@ -327,7 +336,7 @@ describe('the pages as files', () => {
     // packets.css stretches that link over the whole card (.card a::after). The math card names its two makers: a plain heading, then
     // one link for each with its own line, not stretched (.card .card-links). The three that make a file are filled; the two for what
     // comes after are outlined.
-    expect([...doc.querySelectorAll('.cards > *')].map((node) => node.className)).toEqual(['card card-main', 'card card-main card-pair', 'card card-main', 'card card-main', 'card card-main', 'card card-go', 'card card-go']);
+    expect([...doc.querySelectorAll('.cards > *')].map((node) => node.className)).toEqual(['card card-main', 'card card-main card-pair', 'card card-main', 'card card-main', 'card card-main', 'card card-go', 'card card-go', 'card card-go']);
     for (const card of doc.querySelectorAll('.card')) {
       const pair = card.classList.contains('card-pair');
       expect([...card.children].map((node) => node.tagName + (node.className ? '.' + node.className : ''))).toEqual(pair ? ['H2', 'UL.card-links', 'P.card-foot'] : ['H2', 'P', 'P.card-foot']);
@@ -343,10 +352,10 @@ describe('the pages as files', () => {
     expect(css.match(/\.cards \{/g)).toHaveLength(2);
     expect(css).not.toContain('1.15fr');
     const today = Object.fromEntries([...doc.querySelectorAll('#today h3')].map((heading) => [heading.textContent, heading.nextElementSibling.textContent]));
-    expect(today).toEqual({ 'Available today': 'Word Sounds practice, math fact practice, math checks, vocabulary practice, Symbol Runner practice and word card export, with a results file for each student.', 'Being built': 'More words with recordings. Checks for reading skills.' });
+    expect(today).toEqual({ 'Available today': 'Word Sounds practice, math fact practice, math checks, vocabulary practice, Symbol Runner practice and word card export, with a results file for each student. Read-alongs of your own passage.', 'Being built': 'More words with recordings. More checks for reading skills.' });
     // Every builder is named where the builders are listed, and each one exists.
     const verify = doc.querySelector('.verify').textContent;
-    for (const file of ['word_sounds_packet_builder.js', 'packet_math_practice_builder.js', 'packet_check_builder.js', 'packet_vocab_builder.js', 'packet_symbol_runner_builder.js', 'word_sounds_take_home_loader.js']) {
+    for (const file of ['word_sounds_packet_builder.js', 'packet_math_practice_builder.js', 'packet_check_builder.js', 'packet_vocab_builder.js', 'packet_symbol_runner_builder.js', 'packet_read_along_builder.js', 'word_sounds_take_home_loader.js']) {
       expect(verify, file).toContain(file);
       expect(existsSync(file), file).toBe(true);
     }
@@ -402,7 +411,7 @@ describe('the pages as files', () => {
     expect(csp(parse('packets-make.html'))).not.toMatch(/https?:/);
     expect(parse('packets-make.html').querySelector('details.proof').textContent).not.toContain('Nothing you choose leaves your device');
     // What changed: most sound files are the same for everyone; the small ones are asked for by need, and the server can see which.
-    expect(bullets[3]).toBe('The page loads files from this site only. At step 3 it gets the sound files, also from this site. Most are the same files whatever you choose. '
+    expect(bullets[3]).toBe('The page loads files from this site only, including the part that makes recordings smaller (MP3). At step 3 it gets the sound files, also from this site. Most are the same files whatever you choose. '
       + 'Some words have their sounds in small files of about ' + perFile + ' words each, and the page gets only the ones your words need.');
     expect(bullets[4]).toBe('Like any website, the server that sends these files can see that your browser asked for them. That includes which of the small sound files were asked for, but not which words. It receives nothing else.');
     for (const file of PAGES) expect(read(file), file).not.toMatch(/the same files whatever (?:you choose|is chosen)\)?\.? ?(?:<\/li>|\))/);
@@ -488,6 +497,7 @@ const lessonOf = (html) => JSON.parse(/var lesson=(.*);\nvar labels=/.exec(html)
 // options.sources: other text for a script the page names (a word list that flags words of a pretend word store).
 // options.store: the files of that store, by the address the page asks for. page.gone holds addresses that answer 404.
 // The page opens when its trial build is done (see TRIAL_WORDS in packets-make.js): the promise waits for that.
+const EARLIER_CHOICES = { v: 1, mode: 'pick', shape: 'CVC', stage: '' };
 async function openMaker(options = {}) {
   const dom = new JSDOM(read('packets-make.html'), { runScripts: 'outside-only', pretendToBeVisual: true, url: 'https://packets.test/site/packets-make.html' });
   const w = dom.window, d = w.document;
@@ -507,6 +517,11 @@ async function openMaker(options = {}) {
   w.URL.revokeObjectURL = () => {};
   w.HTMLAnchorElement.prototype.click = function () { page.downloads.push({ name: this.getAttribute('download'), href: this.getAttribute('href') }); };
   w.HTMLElement.prototype.scrollIntoView = function () {};
+  // Most tests below were written against the first-visit word choices of 2026-11-13: the CVC pattern at any grade
+  // level. Since 2026-11-16 a true first visit starts at a grade level with any pattern instead (see "a first visit
+  // starts at a grade level"). So the helper opens the page as a returning browser that kept the earlier choices,
+  // which the page honours, unless a test asks for a true first visit or sets the store itself in options.before.
+  if (!options.firstVisit) w.localStorage.setItem('alloflow-packets-maker/1', JSON.stringify(EARLIER_CHOICES));
   if (options.before) options.before(w);
   // The page's own scripts, in the order the page names them: what the page does not load, the test does not have.
   for (const script of d.querySelectorAll('script[src]')) w.eval((options.sources && options.sources[script.getAttribute('src')]) || read(script.getAttribute('src')));
@@ -515,6 +530,8 @@ async function openMaker(options = {}) {
   page.set = (id, value) => { const node = page.$(id); node.value = value; node.dispatchEvent(new w.Event(node.tagName === 'SELECT' ? 'change' : 'input', { bubbles: true })); };
   page.choose = (name, value) => { const radio = d.querySelector('input[name="' + name + '"][value="' + value + '"]'); radio.checked = true; radio.dispatchEvent(new w.Event('change', { bubbles: true })); };
   page.chips = () => [...page.$('pick-chips').querySelectorAll('li span')].map((node) => node.textContent);
+  // 2026-11-16: the chips are the words of the FILE, the first of the picker's list. fileCount is how many that is.
+  page.fileCount = () => Number(page.$('f-count').value);
   page.until = async (test, what) => {
     for (let i = 0; i < 3000; i++) { if (test()) return; await new Promise((resolve) => setTimeout(resolve, 20)); }
     throw new Error('Timed out waiting for ' + what);
@@ -603,6 +620,209 @@ describe('the maker, run with the real builder', () => {
     page.dom.window.close();
   });
 
+  it('a sound the chosen grade level has no word for cannot be chosen, and says why (2026-11-16)', async () => {
+    const page = await openMaker();
+    const recordedOnly = wordlist.rows().filter((row) => row.hasClip && !row.kokoro && !row.shards).map((row) => row.word);
+    const options = () => [...page.$('f-sound').querySelectorAll('optgroup option')];
+    const NOTE = ' (no words at this grade level)';
+    // The grade levels; the two wider levels after them are not grade levels (they have a test of their own).
+    const stages = [...page.$('f-stage').querySelectorAll('option')].map((option) => option.value).filter((id) => id && !/^wider:/.test(id));
+    expect(stages.length).toBeGreaterThan(3);
+    let closed = 0;
+    for (const stage of stages) {
+      page.set('f-sound', '');
+      page.set('f-stage', stage);
+      for (const option of options()) {
+        // Worked out again here, by asking the picker for this sound at this grade level.
+        const pool = builder.pickWords({ targetSound: option.value, stage, exclude: recordedOnly }, { wordlist, core, dictionary, seed: 1 }).pool;
+        expect(option.disabled, stage + ' ' + option.value + ' (' + pool + ' words)').toBe(pool === 0);
+        expect(option.textContent.endsWith(NOTE), stage + ' ' + option.value).toBe(pool === 0);
+        expect(option.textContent.replace(NOTE, ''), stage + ' ' + option.value).toBe(option.getAttribute('data-name'));
+        if (pool === 0) closed += 1;
+      }
+    }
+    // The reason for the change: the first kindergarten stage has words for only some of the sounds.
+    expect(closed).toBeGreaterThan(10);
+    // Any grade level: every sound can be chosen again, with its plain name.
+    page.set('f-stage', '');
+    expect(options().some((option) => option.disabled || option.textContent.endsWith(NOTE))).toBe(false);
+    // A sound chosen before the grade level stays chosen and can be seen, with the reason beside it.
+    page.set('f-stage', stages[0]);
+    const none = options().find((option) => option.disabled);
+    page.set('f-stage', '');
+    page.set('f-sound', none.value);
+    page.set('f-stage', stages[0]);
+    const kept = options().find((option) => option.value === none.value);
+    expect(page.$('f-sound').value).toBe(none.value);
+    expect(kept.disabled).toBe(false);
+    expect(kept.textContent.endsWith(NOTE)).toBe(true);
+    page.dom.window.close();
+  });
+
+  it('Sound Counting: says when every word has the same number of sounds, and one press mixes the lengths (2026-11-16)', async () => {
+    const page = await openMaker();
+    const recordedOnly = wordlist.rows().filter((row) => row.hasClip && !row.kokoro && !row.shards).map((row) => row.word);
+    const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    const soundsOf = (words) => [...new Set(words.map((word) => wordlist.get(word).sounds))].sort((a, b) => a - b);
+    // Without Sound Counting among the activities: no note.
+    page.$('next-1').click();
+    await wait(60);
+    expect(page.$('mix-notes').hidden).toBe(true);
+    // With it, and the pattern "three sounds" (what this page was opened with): every word has 3 sounds.
+    page.$('back-2').click();
+    const counting = page.d.querySelector('.strand input[value="counting"]');
+    if (!counting.checked) counting.click();
+    page.$('next-1').click();
+    await wait(60);
+    expect(page.$('f-shape').value).toBe('CVC');
+    expect(soundsOf(page.chips())).toEqual([3]);
+    const note = page.d.querySelector('#mix-notes [data-mix="counting"]');
+    expect(page.$('mix-notes').hidden).toBe(false);
+    expect(note.querySelector('span').textContent).toBe('Sound Counting: every word here has 3 sounds, so the answer is always 3.');
+    expect(page.$('mix-fix').textContent).toBe('Mix in words with other numbers of sounds (any pattern)');
+    // One press: the pattern is cleared and the words are dealt out by their number of sounds, 2 to 6 first.
+    page.$('mix-fix').click();
+    await wait(60);
+    expect(page.$('f-shape').value).toBe('');
+    const mixed = page.chips();
+    expect(soundsOf(mixed).length).toBeGreaterThanOrEqual(4);
+    expect(Math.min(...soundsOf(mixed))).toBeGreaterThanOrEqual(2);
+    expect(Math.max(...soundsOf(mixed))).toBeLessThanOrEqual(6);
+    expect(mixed).toEqual(builder.pickWords({ count: mixed.length, spread: 'sounds', exclude: recordedOnly }, { wordlist, core, dictionary, seed: 1 }).words);
+    expect(page.d.querySelector('#mix-notes [data-mix="counting"]')).toBeNull();
+    expect(page.d.querySelector('#mix-notes [data-mix="spread"] span').textContent).toMatch(/^The words are mixed by their number of sounds \(2 to [4-6]\)\.$/);
+    expect(JSON.parse(page.dom.window.localStorage.getItem('alloflow-packets-maker/1')).spread).toBe(true);
+    // And back: the most common words again, which have only 2 or 3 sounds, and the page says so.
+    page.$('mix-undo').click();
+    await wait(60);
+    expect(soundsOf(page.chips())).toEqual([2, 3]);
+    expect(page.d.querySelector('#mix-notes [data-mix="counting"] span').textContent).toBe('Sound Counting: these words have only 2 or 3 sounds, so there are only two answers.');
+    expect(page.$('mix-fix').textContent).toBe('Mix in words with other numbers of sounds');
+    // A grade level whose words all have 2 or 3 sounds: no button (it would change nothing), and the page says why.
+    page.set('f-stage', 'K early');
+    await wait(60);
+    const kWords = builder.pickWords({ count: 100000, stage: 'K early', exclude: recordedOnly }, { wordlist, core, dictionary, seed: 1 }).words;
+    expect(soundsOf(kWords)).toEqual([2, 3]);
+    expect(page.$('mix-fix')).toBeNull();
+    expect(page.d.querySelector('#mix-notes [data-mix="counting"]').textContent).toBe('Sound Counting: these words have only 2 or 3 sounds, so there are only two answers.'
+      + ' The words that fit these choices all have 2 or 3 sounds. A later grade level, or no sound to practice, gives a wider mix.');
+    page.dom.window.close();
+  });
+
+  it('a second group of words: its own choices, a label only the teacher sees, the same file length (2026-11-16)', async () => {
+    const page = await openMaker();
+    const recordedOnly = wordlist.rows().filter((row) => row.hasClip && !row.kokoro && !row.shards).map((row) => row.word);
+    const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    const tags = () => [...page.d.querySelectorAll('#pick-chips li.chip')].map((li) => [li.querySelector('span').textContent, (li.querySelector('.chip-tag') || {}).textContent || '']);
+    page.$('next-1').click();
+    page.set('f-shape', '');
+    page.set('f-stage', 'G1 late');
+    await wait(60);
+    const before = page.chips(), total = page.fileCount();
+    expect(before.length).toBe(total);
+    expect(tags().every(([, tag]) => tag === '')).toBe(true);
+    expect(page.$('pick-labels').hidden).toBe(true);
+    // Add a group: it starts as Review at the grade level before, with about a third of the file's words (3 at most).
+    const k = Math.max(1, Math.min(3, Math.round(total / 3)));
+    page.$('group-add').click();
+    await wait(60);
+    const second = page.d.querySelector('.group[data-group-index="1"]');
+    expect(second.querySelector('legend').textContent).toBe('Second group');
+    expect([page.$('g1-label').value, page.$('g1-stage').value, page.$('g1-sound').value, page.$('g1-shape').value, page.$('g1-count').value]).toEqual(['Review', 'G1 early', '', '', String(k)]);
+    expect(page.$('g0-label').value).toBe('New');
+    // The file is as long as before: k places went to the second group, and every word says which group it is from.
+    const now = tags();
+    expect(now.length).toBe(total);
+    const review = now.filter(([, tag]) => tag === 'Review').map(([word]) => word), fresh = now.filter(([, tag]) => tag === 'New').map(([word]) => word);
+    expect([fresh.length, review.length]).toEqual([total - k, k]);
+    expect(new Set(now.map(([word]) => word)).size).toBe(total);
+    // The second group's words are the picker's for its own choices; the first group's are the first of the list as before.
+    expect(review).toEqual(builder.pickWords({ count: k, stage: 'G1 early', exclude: recordedOnly }, { wordlist, core, dictionary, seed: '1|group1' }).words);
+    expect(fresh).toEqual(before.filter((word) => !review.includes(word)).slice(0, total - k));
+    // Mixed through the list, not at its end.
+    expect(now.slice(-k).every(([, tag]) => tag === 'Review')).toBe(k === 1 ? now[now.length - 1][1] === 'Review' : false);
+    expect(page.$('pick-labels').textContent).toBe('Labels only you see: New ' + (total - k) + ', Review ' + k + '. Students see the words mixed, with no label.');
+    expect(page.$('g1-said').textContent).toBe((k === 1 ? '1 word' : k + ' words') + ' in the file: ' + review.join(', ') + '.');
+    // A sound for the second group only.
+    page.set('g1-sound', 'sh');
+    await wait(60);
+    const withSh = tags().filter(([, tag]) => tag === 'Review').map(([word]) => word);
+    expect(withSh.length).toBe(k);
+    for (const word of withSh) expect([...dictionary.lookup(word)[0]], word).toContain('sh');
+    for (const [word, tag] of tags()) if (tag === 'New') expect(before, word).toContain(word);
+    // More than the file has room for: the first group keeps one word, and the page says why.
+    page.$('g1-count').value = '20';
+    page.$('g1-count').dispatchEvent(new page.dom.window.Event('change', { bubbles: true }));
+    await wait(60);
+    expect(tags().filter(([, tag]) => tag === 'New').length).toBe(1);
+    expect(tags().length).toBe(total);
+    expect(page.$('g1-said').textContent).toBe('The file has room for ' + (total - 1) + ' words from this group. A longer file (step 3) has room for more.');
+    // Kept for next time, with the label.
+    const kept = JSON.parse(page.dom.window.localStorage.getItem('alloflow-packets-maker/1'));
+    expect(kept.groups).toEqual([{ label: 'Review', stage: 'G1 early', sound: 'sh', shape: '', count: 20 }]);
+    expect(kept.label).toBe('New');
+    // At most three groups in all; removing a group gives the list back as it was.
+    page.$('group-add').click();
+    await wait(60);
+    expect(page.$('group-add').disabled).toBe(true);
+    expect(page.d.querySelectorAll('.group')).toHaveLength(3);
+    page.$('g2-remove').click();
+    await wait(60);
+    page.$('g1-remove').click();
+    await wait(60);
+    expect(page.d.querySelectorAll('.group')).toHaveLength(0);
+    expect(page.chips()).toEqual(before);
+    expect(tags().every(([, tag]) => tag === '')).toBe(true);
+    page.dom.window.close();
+  });
+
+  it('the two wider levels pick from the words read and kept, say what they are, and are kept for next time (2026-11-16)', async () => {
+    const page = await openMaker();
+    const recordedOnly = wordlist.rows().filter((row) => row.hasClip && !row.kokoro && !row.shards).map((row) => row.word);
+    const familiar = (row) => row.known || (row.zipf >= 3.8 && row.books >= 20);
+    // The maker draws its words a moment after a choice changes (20 ms).
+    const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    page.$('next-1').click();
+    for (const [id, level, name, inBooks] of [['wider:challenging', 'challenging', 'More challenging words', (row) => row.books >= 10], ['wider:advanced', 'advanced', 'Advanced words', (row) => row.books < 10]]) {
+      page.set('f-stage', id);
+      page.set('f-shape', '');
+      await wait(60);
+      expect(page.$('f-stage').value).toBe(id);
+      expect(page.$('f-stage').selectedOptions[0].textContent).toBe(name);
+      expect(page.$('f-stage').selectedOptions[0].parentNode.label).toBe('Past the grade levels (by how rare a word is)');
+      // The line under the list says where the words come from, and that no curriculum is behind them.
+      expect(page.$('stage-hint').textContent).toContain('Chosen by how widely a word is used, not from a curriculum.');
+      expect(page.$('stage-hint').textContent).toContain(level === 'challenging' ? 'at least 10 of the 400 children\'s books' : 'fewer than 10 of the 400 children\'s books');
+      const chips = page.chips();
+      expect(chips.length).toBe(page.fileCount());
+      // The same words the builder gives for this level and version, and each one read, kept, unfamiliar and recorded.
+      const direct = builder.pickWords({ count: chips.length, level, exclude: recordedOnly }, { wordlist, core, dictionary, seed: 1 });
+      expect(chips).toEqual(direct.words);
+      for (const word of chips) {
+        const row = wordlist.get(word);
+        expect(row.wider && !familiar(row) && row.hasClip && !row.blocked && !row.soft, word).toBe(true);
+        expect(inBooks(row), word).toBe(true);
+      }
+      // A sound narrows it, and sounds with no word at this level are closed.
+      const open = [...page.$('f-sound').querySelectorAll('optgroup option')].filter((option) => !option.disabled);
+      expect(open.length).toBeGreaterThan(30);
+      page.set('f-sound', 'sh');
+      await wait(60);
+      expect(page.chips().length).toBeGreaterThan(0);
+      for (const word of page.chips()) expect([...dictionary.lookup(word)[0]], word).toContain('sh');
+      page.set('f-sound', '');
+      await wait(60);
+    }
+    // Kept in the browser, and read back on the next visit.
+    expect(JSON.parse(page.dom.window.localStorage.getItem('alloflow-packets-maker/1')).stage).toBe('wider:advanced');
+    // Back to a grade level: the familiar words again.
+    page.set('f-stage', 'G2');
+    await wait(60);
+    expect(page.chips().length).toBeGreaterThan(0);
+    for (const word of page.chips()) expect(familiar(wordlist.get(word)), word).toBe(true);
+    page.dom.window.close();
+  });
+
   it('the sounds and shapes it offers are real: each example word has the sound or the shape', async () => {
     const page = await openMaker();
     const sounds = [...page.$('f-sound').querySelectorAll('optgroup option')];
@@ -628,18 +848,19 @@ describe('the maker, run with the real builder', () => {
     // behind "Other curricula", closed, and join the list when that box is checked. (jsdom's language is en-US.)
     const usual = stages.filter((row) => row.isDefault !== false), others = stages.filter((row) => row.isDefault === false);
     expect(others.map((row) => row.id)).toEqual(['Reception', 'Year 1', 'Year 2']);
-    expect([...page.$('f-stage').querySelectorAll('option')].map((option) => option.value)).toEqual(['', ...usual.map((row) => row.id)]);
-    expect([...page.$('f-stage').querySelectorAll('optgroup')].map((group) => group.label)).toEqual([...new Set(usual.map((row) => row.frameworkLabel))]);
+    expect([...page.$('f-stage').querySelectorAll('option')].map((option) => option.value)).toEqual(['', ...usual.map((row) => row.id), 'wider:challenging', 'wider:advanced']);
+    // 2026-11-16: after the grade levels, two wider levels in a group that says they are not grade levels.
+    expect([...page.$('f-stage').querySelectorAll('optgroup')].map((group) => group.label)).toEqual([...new Set(usual.map((row) => row.frameworkLabel)), 'Past the grade levels (by how rare a word is)']);
     page.$('next-1').click();
     const other = page.$('stage-other');
     expect(page.seen('stage-other') && !other.open).toBe(true);
     expect(other.querySelector('summary').textContent).toBe('Other curricula');
-    expect(other.querySelector('label').textContent.trim()).toBe('Show England (National Curriculum) in the Stage list: Reception, Year 1 and Year 2');
+    expect(other.querySelector('label').textContent.trim()).toBe('Show England (National Curriculum) in the Grade level list: Reception, Year 1 and Year 2');
     expect(page.$('f-stage-other').checked).toBe(false);
     page.$('f-stage-other').click();
-    expect([...page.$('f-stage').querySelectorAll('option')].map((option) => option.value)).toEqual(['', ...stages.map((row) => row.id)]);
-    expect([...page.$('f-stage').querySelectorAll('optgroup')].map((group) => group.label)).toEqual([...new Set(stages.map((row) => row.frameworkLabel))]);
-    expect(page.$('stage-hint').textContent).toBe('A stage keeps to the letter patterns taught by then.');
+    expect([...page.$('f-stage').querySelectorAll('option')].map((option) => option.value)).toEqual(['', ...stages.map((row) => row.id), 'wider:challenging', 'wider:advanced']);
+    expect([...page.$('f-stage').querySelectorAll('optgroup')].map((group) => group.label)).toEqual([...new Set(stages.map((row) => row.frameworkLabel)), 'Past the grade levels (by how rare a word is)']);
+    expect(page.$('stage-hint').textContent).toBe('A grade level keeps to the letter patterns taught by then.');
     expect(page.seen('stage-why')).toBe(false);
     for (const row of stages) {
       page.set('f-stage', row.id);
@@ -650,7 +871,7 @@ describe('the maker, run with the real builder', () => {
       expect(line.includes('Not yet checked against a source.'), row.id).toBe(row.verified === false);
       for (const word of (/^New here: ([a-z, ]+)\./.exec(line) || ['', ''])[1].split(', ').filter(Boolean)) expect(row.label, row.id).toContain(word);
       expect(page.seen('stage-why') && !page.$('stage-why').open, row.id).toBe(true);
-      expect(page.$('stage-why').querySelector('summary').textContent, row.id).toBe('Why this stage has these words');
+      expect(page.$('stage-why').querySelector('summary').textContent, row.id).toBe('Why this grade level has these words');
       expect(page.$('stage-why-text').textContent, row.id).toContain(row.note);
       expect(page.$('f-stage').selectedOptions[0].textContent, row.id).toBe(row.label.split(':')[0]);
     }
@@ -678,7 +899,8 @@ describe('the maker, run with the real builder', () => {
     page.set('f-position', 'first');
     page.set('f-shape', 'CVC');
     await page.until(() => page.$('pick-line').textContent === direct.pool + ' words fit.', 'the sh words');
-    expect(page.chips()).toEqual(direct.words);
+    expect(page.fileCount()).toBeGreaterThan(0);
+    expect(page.chips()).toEqual(direct.words.slice(0, page.fileCount()));
     for (const word of page.chips()) {
       expect(wordlist.get(word), word).toMatchObject({ blocked: false, nearBlocked: false, soft: false, hasClip: true, shape: 'CVC' });
       expect(wordlist.get(word).kokoro || wordlist.get(word).shards, word).toBe(true);
@@ -695,18 +917,24 @@ describe('the maker, run with the real builder', () => {
     expect(direct.reasons.britishSpellingOrWord || 0).toBe(0);
     // Another version is another mix of the same kind of words.
     page.choose('version', 'B');
-    await page.until(() => page.chips().join() !== direct.words.join(), 'version B');
-    expect(page.chips()).toEqual(builder.pickWords({ count: 10, targetSound: 'sh', position: 'first', shape: 'CVC', exclude: recordedOnly }, { wordlist, core, dictionary, seed: 2 }).words);
+    const fileOf = (words) => words.slice(0, page.fileCount());
+    await page.until(() => page.chips().join() !== fileOf(direct.words).join(), 'version B');
+    expect(page.chips()).toEqual(fileOf(builder.pickWords({ count: 10, targetSound: 'sh', position: 'first', shape: 'CVC', exclude: recordedOnly }, { wordlist, core, dictionary, seed: 2 }).words));
     page.choose('version', 'A');
-    await page.until(() => page.chips().join() === direct.words.join(), 'version A again');
+    await page.until(() => page.chips().join() === fileOf(direct.words).join(), 'version A again');
     // A removed word is replaced by the next one, and can be put back.
+    const beforeRemoval = page.chips();
     const gone = page.chips()[0];
     page.d.querySelector('button[aria-label="Remove ' + gone + '"]').click();
-    expect(page.chips()).toHaveLength(10);
+    expect(page.chips()).toHaveLength(page.fileCount());
     expect(page.chips()).not.toContain(gone);
+    // 2026-11-16: ONLY that word goes. Every other word keeps its place and the next word in line takes the free one
+    // (removing one word used to change others too, because the picker drew its mix again).
+    expect(page.chips().slice(0, -1)).toEqual(beforeRemoval.slice(1));
+    expect(page.chips().at(-1)).toBe(direct.words[page.fileCount()]);
     expect(page.$('pick-removed-text').textContent).toBe('You removed: ' + gone + '.');
     page.$('pick-restore').click();
-    expect(page.chips()).toEqual(direct.words);
+    expect(page.chips()).toEqual(fileOf(direct.words));
     // Each chip has two buttons: "Edit this word" (closed) and Remove.
     for (const chip of page.$('pick-chips').children) {
       const word = chip.querySelector('span').textContent;
@@ -716,14 +944,17 @@ describe('the maker, run with the real builder', () => {
 
     // Few words fit: the page says so plainly and offers the one change that gives more.
     const fewAt = (stage) => builder.pickWords({ count: 10, targetSound: 'sh', position: 'first', shape: 'CVC', stage, exclude: recordedOnly }, { wordlist, core, dictionary, seed: 1 });
-    const tight = builder.stageList().map((row) => row.id).find((id) => fewAt(id).pool >= 5 && fewAt(id).pool < 10);
-    expect(tight, 'a stage at which 5 to 9 sh words fit').toBeTruthy();
+    // "Few" is fewer than the file uses (2026-11-16: it was fewer than a Long file's list).
+    const tight = builder.stageList().map((row) => row.id).find((id) => fewAt(id).pool >= 2 && fewAt(id).pool < page.fileCount());
+    expect(tight, 'a grade level at which fewer sh words fit than the file uses').toBeTruthy();
+    // It may be a grade level of another curriculum (England's Reception): those are in the list once "Other curricula" is on.
+    if (![...page.$('f-stage').options].some((option) => option.value === tight)) page.$('f-stage-other').click();
     page.set('f-stage', tight);
     await page.until(() => page.$('pick-line').textContent === 'Only ' + fewAt(tight).pool + ' words fit.' && page.$('pick-loosen').querySelector('button'), 'the few-words line');
     const few = page.chips();
     expect(few).toEqual(fewAt(tight).words);
     expect(page.$('pick-sub').textContent).toMatch(/get more by loosening one choice/);
-    await page.until(() => [...page.$('pick-loosen').querySelectorAll('button')].some((button) => button.textContent === 'Any stage: ' + direct.pool + ' words fit'), 'the loosening offers');
+    await page.until(() => [...page.$('pick-loosen').querySelectorAll('button')].some((button) => button.textContent === 'Any grade level: ' + direct.pool + ' words fit'), 'the loosening offers');
     for (const button of page.$('pick-loosen').querySelectorAll('button')) expect(Number(/: (\d+) words? fit/.exec(button.textContent)[1])).toBeGreaterThan(few.length);
 
     // Step 3: nothing was fetched before now; the five sound files are fetched, by relative address, and nothing else.
@@ -814,7 +1045,7 @@ describe('the maker, run with the real builder', () => {
     const box = page.$('f-pictures');
     // (The other box of step 3, "Give students versions A, B and C in turn", is folded inside "Make one for each student".)
     // 2026-11-15: "Say the directions once per activity" (#f-directions-once) sits right beside #f-pictures in step 3.
-    expect([...page.$('step-3').querySelectorAll('input[type="checkbox"]')].filter((node) => !node.closest('#batch'))).toEqual([box, page.$('f-directions-once')]);
+    expect([...page.$('step-3').querySelectorAll('input[type="checkbox"]')].filter((node) => !node.closest('#batch'))).toEqual([box, page.$('f-directions-once'), page.$('f-repeat-missed')]); // 2026-11-17: and the once-more choice
     expect(box.closest('label').textContent.trim()).toBe('Include pictures');
     expect(box.getAttribute('aria-describedby')).toBe('pictures-line');
     expect(box.checked && !box.disabled).toBe(true);
@@ -943,7 +1174,8 @@ describe('the maker, run with the real builder', () => {
     const edits = Object.fromEntries([...page.$('own-list').children].map((row) => [row.querySelector('.w').textContent, row.querySelector('.e button')?.getAttribute('aria-expanded') ?? null]));
     expect(edits).toEqual({ cat: 'false', gun: null, din: 'false', blorp: 'false', bail: 'false', x1: null, map: 'false' });
     expect(page.d.querySelectorAll('#own-list .wp')).toHaveLength(0);
-    expect(rows.x1).toEqual({ ok: false, text: 'Not used. A practice word is 2 to 10 letters, letters only, with a vowel.' });
+    // 2026-11-16: 15 letters (10 until then), so that long words can be typed for spelling practice.
+    expect(rows.x1).toEqual({ ok: false, text: 'Not used. A practice word is 2 to 15 letters, letters only, with a vowel.' });
     expect(page.$('own-line').textContent).toBe('2 of 7 words can be used.');
     page.$('next-2').click();
     expect(page.$('f-title').value).toBe('Word Sounds: my words, version A');
@@ -1039,8 +1271,14 @@ describe('the maker, run with the real builder', () => {
       // 2026-11-13: and which letters Letter Trace traces (capital, then lowercase, by default), and (later that day) how
       // many choices a board shows (Choices: Medium by default; tests/packets_ws_fixes_2026_11_13b.test.js).
       // 2026-11-15: spoken directions (#f-directions-once) and the resolved word list for Present & Export (#from-word-sounds).
-      count: 10, hand: false, chosen: [], choices: 'medium', tracing: 'both', directionsOnce: false,
-      words: ['him', 'what', 'like', 'got', 'this', 'right', 'his'] });
+      count: 10, hand: false, chosen: [], choices: 'medium', tracing: 'both', directionsOnce: false, repeatMissed: false,
+      // 2026-11-16: whether the page picks the most common words or a random set ("Pick different words"), which
+      // set, and the file's title for Present or export slides.
+      order: 'common', shuffle: 0, title: expect.any(String),
+      words: expect.any(Array),
+      // 2026-11-16 (later): the mix by number of sounds, the teacher's label for the first group, and the further groups.
+      spread: false, label: 'New', groups: [] });
+    expect(kept.words.length).toBe(7);
     expect(page.w.localStorage.length).toBe(1);
     expect(page.d.cookie).toBe('');
     expect(page.$('about-page').open).toBe(false);
@@ -1213,7 +1451,8 @@ describe('the maker and the word store', () => {
     await page.until(() => page.$('pick-line').textContent === (direct.pool < 30 ? 'Only ' + direct.pool + ' words fit.' : direct.pool + ' words fit.'), 'the words for the sound');
     // One activity: a Long file uses up to 30 words, so the list is longer than ten.
     const listed = builder.pickWords({ count: 30, targetSound: dictionary.lookup(chosen)[0][0], position: 'first', shape: 'CVC', exclude: recordedOnly }, { wordlist: flagged, core, dictionary, seed: 1 }).words;
-    expect(page.chips()).toEqual(listed);
+    expect(page.fileCount()).toBeGreaterThan(0);
+    expect(page.chips()).toEqual(listed.slice(0, page.fileCount()));
     expect(listed.slice(0, 10)).toEqual(direct.words);
     const needed = listed.filter((word) => STORE_WORDS.includes(word));
     expect(needed.length).toBeGreaterThanOrEqual(inStore.length);
@@ -1327,7 +1566,7 @@ describe('the maker and the word store', () => {
 // ---------------------------------------------------------------------------
 describe('the maker: borderline words and the kindergarten line', () => {
   const TYPED_ONLY = 'Not offered by the picker. Used because you typed it.';
-  const K_LINE = "Common Core places sh, ch and th in grade 1. Choose 'Any stage' to use them earlier.";
+  const K_LINE = "Common Core places sh, ch and th in grade 1. Choose 'Any grade level' to use them earlier.";
 
   it('a borderline word is never in the picker\'s list and is counted there; typed by the teacher it is used, and the page says why', async () => {
     const soft = wordlist.rows().filter((row) => row.soft).map((row) => row.word);
@@ -1340,7 +1579,7 @@ describe('the maker: borderline words and the kindergarten line', () => {
     const recordedOnly = wordlist.rows().filter((row) => row.hasClip && !row.kokoro && !row.shards).map((row) => row.word);
     const direct = builder.pickWords({ count: 10, shape: 'CVC', exclude: recordedOnly }, { wordlist, core, dictionary, seed: 1 });
     await page.until(() => page.$('pick-line').textContent === direct.pool + ' words fit.', 'the first list');
-    expect(page.chips()).toEqual(direct.words);
+    expect(page.chips()).toEqual(direct.words.slice(0, page.fileCount()));
     const typedOnly = direct.reasons.usedOnlyWhenTyped;
     expect(typedOnly).toBeGreaterThan(5);
     expect(typedOnly).toBe(wordlist.rows().filter((row) => row.soft && row.shape === 'CVC' && !row.nearBlocked).length);
@@ -1387,8 +1626,8 @@ describe('the maker: borderline words and the kindergarten line', () => {
     // Near the stage choice: right under the stage's own line, in the same field. The option it names is the page's own.
     expect(note.previousElementSibling.id).toBe('stage-hint');
     expect(note.closest('.field').querySelector('select').id).toBe('f-stage');
-    expect(doc.querySelector('#f-stage option[value=""]').textContent).toBe('Any stage');
-    expect(read('packets-make.js')).toContain("label: 'Any stage'");
+    expect(doc.querySelector('#f-stage option[value=""]').textContent).toBe('Any grade level');
+    expect(read('packets-make.js')).toContain("label: 'Any grade level'");
     expect(read('packets-make.html').split(K_LINE)).toHaveLength(2);
     // The two kindergarten rows of the default (US, Common Core) table.
     const stages = builder.stageList();
@@ -1423,7 +1662,7 @@ describe('the maker: borderline words and the kindergarten line', () => {
   });
 
   it('step 2 keeps fewer choices on screen: England\'s stages, the counts and the code-name tip wait behind closed boxes', async () => {
-    const SPELL = 'For spelling, choose a stage: your students then spell only patterns they have been taught.';
+    const SPELL = 'For spelling, choose a grade level: your students then spell only patterns they have been taught.';
     const page = await openMaker();
     // Spelling with "Any stage": one short line suggests a stage, and it goes when a stage is chosen.
     const spelling = [...page.d.querySelectorAll('.strand input')].find((box) => core.activityStrand(box.value) === 'spelling');
@@ -1515,7 +1754,8 @@ describe('the maker: choose the words yourself, and any number of words', () => 
     await page.until(() => page.chips().length > 0, 'the default words');
     // The quick path is the same as before: the picker's ten words, and one closed box under them.
     const direct = pickedFor({ count: 10, shape: 'CVC' });
-    expect(page.chips()).toEqual(direct.words);
+    expect(page.fileCount()).toBe(7);
+    expect(page.chips()).toEqual(direct.words.slice(0, 7));
     const box = page.$('pick-list');
     expect(box.tagName).toBe('DETAILS');
     expect(box.open).toBe(false);
@@ -1526,13 +1766,17 @@ describe('the maker: choose the words yourself, and any number of words', () => 
     const pool = pickedFor({ count: 100000, shape: 'CVC' }).words.slice().sort();
     expect(pool.length).toBe(direct.pool);
     expect(pool.length).toBeGreaterThan(200);
-    expect(listRows(page).map((row) => row.word)).toEqual(pool.slice(0, 100));
+    // 2026-11-16: the words of the file come first, checked, then the rest A to Z (none of the chosen words used to be
+    // in the first 100 rows).
+    const fileFirst = direct.words.slice(0, 7);
+    const ordered = [...fileFirst, ...pool.filter((word) => !fileFirst.includes(word))];
+    expect(listRows(page).map((row) => row.word)).toEqual(ordered.slice(0, 100));
     expect(page.seen('list-more-row')).toBe(true);
     expect(page.$('list-more-said').textContent).toBe('Showing 100 of ' + pool.length + '.');
     expect(page.$('word-list').getAttribute('aria-label')).toBe('Words to choose from: ' + pool.length + ' words');
     page.$('list-more').click();
-    expect(listRows(page).map((row) => row.word)).toEqual(pool.slice(0, 200));
-    expect(page.d.activeElement.value).toBe(pool[100]);
+    expect(listRows(page).map((row) => row.word)).toEqual(ordered.slice(0, 200));
+    expect(page.d.activeElement.value).toBe(ordered[100]);
     // Until a box changes, the boxes show the picker's words for the length chosen (Regular: 7 words with three activities).
     const regular = direct.words.slice(0, 7);
     expect(page.$('list-said').textContent).toBe('Chosen for you: the 7 words a Regular file uses. Check or uncheck a word to choose the words yourself.');
@@ -1552,14 +1796,17 @@ describe('the maker: choose the words yourself, and any number of words', () => 
     page.set('f-find', '');
     page.$('f-only-pictures').click();
     await page.until(() => listRows(page).length > 0 && listRows(page).every((row) => PICTURE_INDEX.has(row.word)), 'only words with a picture');
-    const withPicture = pool.filter((word) => PICTURE_INDEX.has(word));
+    const withPicture = ordered.filter((word) => PICTURE_INDEX.has(word));
     expect(listRows(page).map((row) => row.word)).toEqual(withPicture.slice(0, 100));
     expect(page.$('word-list').getAttribute('aria-label')).toBe('Words to choose from: ' + withPicture.length + ' of ' + pool.length + ' shown');
     page.$('f-only-pictures').click();
     // A filter above changes the list to the words that fit it.
     page.set('f-sound', 'sh');
     await page.until(() => listRows(page).length && listRows(page).every((row) => Array.from(dictionary.lookup(row.word)[0]).includes('sh')), 'the sh words');
-    expect(listRows(page).map((row) => row.word)).toEqual(pickedFor({ count: 100000, shape: 'CVC', targetSound: 'sh', position: 'any' }).words.slice().sort().slice(0, 100));
+    // The file's words first here too, then the rest A to Z.
+    const shPicked = pickedFor({ count: 100000, shape: 'CVC', targetSound: 'sh', position: 'any' }).words;
+    const shFirst = shPicked.slice(0, page.fileCount());
+    expect(listRows(page).map((row) => row.word)).toEqual([...shFirst, ...shPicked.slice().sort().filter((word) => !shFirst.includes(word))].slice(0, 100));
     expect(page.$('word-list').querySelectorAll('button')).toHaveLength(0);
     page.dom.window.close();
   });
@@ -1661,7 +1908,7 @@ describe('the maker: choose the words yourself, and any number of words', () => 
     again.$('back-3').click();
     openList(again);
     again.$('list-again').click();
-    expect(again.chips()).toEqual(pickedFor({ count: 10, shape: 'CVC' }).words);
+    expect(again.chips()).toEqual(pickedFor({ count: 10, shape: 'CVC' }).words.slice(0, 7));
     expect(again.$('list-said').textContent).toBe('The page picks the words again. Chosen for you: the 7 words a Regular file uses. Check or uncheck a word to choose the words yourself.');
     again.$('next-2').click();
     expect(again.seen('length-radios') && !again.seen('length-hand')).toBe(true);
@@ -1675,9 +1922,12 @@ describe('the maker: choose the words yourself, and any number of words', () => 
     await page.until(() => page.chips().length > 0, 'the default words');
     page.$('next-2').click();
     await ready(page);
-    // Four lengths: the three presets and Custom. Custom's field shows only when it is chosen.
+    // Four lengths: the three presets and Custom. Since 2026-11-16 "How many words" is always shown (it sits in
+    // step 3 while step 3 is open) with the number the file uses now; typing in it makes the length Custom.
     expect([...page.d.querySelectorAll('input[name="length"]')].map((radio) => radio.value)).toEqual(['short', 'regular', 'long', 'custom']);
-    expect(page.seen('count-field')).toBe(false);
+    expect(page.$('count-home-3').contains(page.$('count-field'))).toBe(true);
+    expect(page.$('count-field').hidden).toBe(false);
+    expect(page.$('f-count').value).toBe(String(lessonOf(page.built()).blocks[0].items.length));
     expect(page.d.querySelector('[data-length="custom"]').textContent).toBe('Choose the number of words, up to 40.');
     expect(page.$('count-hint').textContent).toBe('From 1 to 40. A file has at most 40 questions in each activity, one for each word.');
     expect(page.$('f-count').getAttribute('min')).toBe('1');
@@ -1704,6 +1954,8 @@ describe('the maker: choose the words yourself, and any number of words', () => 
     // Above 40: said, never silent; the file has 40.
     page.set('f-count', '55');
     expect(page.$('count-said').textContent).toBe('40 is the most, so the file uses 40 words.');
+    // 2026-11-16: and the box itself shows 40, not the number typed.
+    expect(page.$('f-count').value).toBe('40');
     expect(page.d.querySelector('[data-length="custom"]').textContent).toBe('40 words, about 80 questions, about 40 minutes.');
     await page.until(() => page.seen('summary') && words(page.built()).length === 40, 'the 40-word file');
     expect(words(page.built())).toEqual(forCount(40));
@@ -1784,8 +2036,12 @@ describe('the maker: choose the words yourself, and any number of words', () => 
   // 2026-11-14 (T1): Stage first in Step 2, Include pictures auto-on only when most words have a picture (or Only words with a picture), and >= 10 MB size warning.
   it('places Stage first in step 2, auto-enables Include pictures only when most words have pictures, and warns on >= 10 MB files', async () => {
     const makerDoc = parse('packets-make.html');
-    const step2Selects = [...makerDoc.querySelectorAll('#panel-pick .fields select')].map((s) => s.id);
+    // 2026-11-16: Grade level is the one choice on show; the sound, where it is and the pattern wait under More options.
+    const step2Selects = [...makerDoc.querySelectorAll('#step-2 .fields select')].map((s) => s.id);
     expect(step2Selects).toEqual(['f-stage', 'f-sound', 'f-position', 'f-shape']);
+    expect(makerDoc.getElementById('f-stage').closest('details')).toBeNull();
+    expect(makerDoc.querySelector('label[for="f-stage"]').textContent).toBe('Grade level');
+    for (const id of ['f-sound', 'f-position', 'f-shape']) expect(makerDoc.getElementById(id).closest('details').id, id).toBe('more-2');
     expect(makerDoc.querySelector('header .top-link').textContent).toBe('Add up results');
     expect(makerDoc.querySelector('header .top-link').getAttribute('href')).toBe('packets-results.html');
 
@@ -1904,4 +2160,162 @@ describe('the two small scripts', () => {
     expect(said).toContain('The file a student gets');
     expect(said).not.toMatch(/practice|math|check|learner/i);
   });
+});
+
+// 2026-11-16: a shorter maker. The same three steps and every choice, with a one-press path, a word count beside the
+// picked words, random picks, and the rarely used choices behind one "More options" box in each step.
+describe('the maker: quick make, the word count, Pick different words and More options (2026-11-16)', () => {
+  it('a first visit starts at a grade level; the earlier choices of a returning browser are kept as they were', async () => {
+    const first = await openMaker({ firstVisit: true });
+    first.$('next-1').click();
+    await first.until(() => first.chips().length > 0, 'the first words');
+    expect(first.$('f-stage').value).toBe('K early');
+    expect(first.$('f-shape').value).toBe('');
+    expect(first.$('f-stage').closest('details')).toBeNull();
+    expect(first.chips()).toEqual(pickedFor({ count: 30, stage: 'K early' }).words.slice(0, first.fileCount()));
+    // Beginning-reader words, not the most common words of all.
+    for (const word of first.chips()) expect(dictionary.lookup(word)[0].length, word).toBeLessThanOrEqual(3);
+    // A returning browser (what openMaker stands in for by default): CVC at any grade level, and the box that holds
+    // the pattern opens by itself because a pattern is set.
+    const back = await openMaker();
+    back.$('next-1').click();
+    await back.until(() => back.chips().length > 0, 'the earlier words');
+    expect([back.$('f-stage').value, back.$('f-shape').value]).toEqual(['', 'CVC']);
+    expect(back.$('more-2').open).toBe(true);
+    expect(back.$('more-2-now').textContent).toBe('any sound, CVC pattern, version A');
+  }, 120000);
+
+  it('Make it with the usual settings goes from step 1 to a built file, and the chips are the words of that file', async () => {
+    const page = await openMaker({ firstVisit: true });
+    expect(page.$('quick-line').textContent).toMatch(/^Skips to step 3 and makes the file with what is chosen now: /);
+    page.$('quick-make').click();
+    expect(page.seen('step-3')).toBe(true);
+    await ready(page);
+    expect(page.seen('summary')).toBe(true);
+    const fileWords = lessonOf(page.built()).blocks[0].items.map((item) => item.word);
+    expect(fileWords.length).toBeGreaterThan(0);
+    // Save comes before the title and the other choices; the words of the file are listed.
+    // 2026-11-17 (review 2.3): the title comes just before Try it and Save, so a teacher who saves at once sees it.
+    expect(page.$('save').compareDocumentPosition(page.$('f-title')) & page.w.Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy();
+    expect(page.seen('sum-words')).toBe(true);
+    page.$('back-3').click();
+    await page.until(() => page.chips().length > 0, 'the words again');
+    expect(page.chips()).toEqual(fileWords);
+    expect(page.$('pick-chips').getAttribute('aria-label')).toBe('Words in the file');
+    // With no activity chosen it stays on step 1 and says why.
+    page.$('back-2').click();
+    for (const box of page.d.querySelectorAll('#strands input[type="checkbox"]:checked')) box.click();
+    page.$('quick-make').click();
+    expect(page.seen('step-1')).toBe(true);
+    expect(page.$('step-1-problem').textContent).toBe('Choose at least one activity to go on.');
+  }, 120000);
+
+  it('How many words sits beside the picked words: - and + and a typed number change the file, and make the length Custom', async () => {
+    const page = await openMaker();
+    page.$('next-1').click();
+    await page.until(() => page.chips().length > 0, 'the words');
+    const list = pickedFor({ count: 40, shape: 'CVC' }).words;
+    expect(page.$('count-home-2').contains(page.$('f-count'))).toBe(true);
+    expect(page.seen('f-count')).toBe(true);
+    expect(page.$('f-count').closest('details')).toBeNull();
+    expect(page.fileCount()).toBe(7);
+    page.$('count-more').click();
+    page.$('count-more').click();
+    await page.until(() => page.chips().length === 9, 'nine words');
+    expect(page.chips()).toEqual(list.slice(0, 9));
+    expect(page.$('count-said').textContent).toBe('9 words in the file.');
+    page.$('count-less').click();
+    await page.until(() => page.chips().length === 8, 'eight words');
+    page.set('f-count', '12');
+    await page.until(() => page.chips().length === 12, 'twelve words');
+    expect(page.chips()).toEqual(list.slice(0, 12));
+    expect(JSON.parse(page.w.localStorage.getItem('alloflow-packets-maker/1'))).toMatchObject({ length: 'custom', count: 12 });
+    // The ends of the range: the buttons stop there.
+    page.set('f-count', '1');
+    await page.until(() => page.chips().length === 1, 'one word');
+    expect(page.$('count-less').disabled).toBe(true);
+    page.set('f-count', '40');
+    await page.until(() => page.chips().length === 40, 'forty words');
+    expect(page.$('count-more').disabled).toBe(true);
+    // In step 3 the same field sits under Length, and the box that holds it has opened for the Custom length.
+    page.set('f-count', '12');
+    await page.until(() => page.chips().length === 12, 'twelve words again');
+    page.$('next-2').click();
+    await ready(page);
+    expect(page.$('count-home-3').contains(page.$('f-count'))).toBe(true);
+    expect(page.$('more-3').open).toBe(true);
+    expect(page.$('more-3-now').textContent).toMatch(/^Custom: 12 words, /);
+    expect(lessonOf(page.built()).blocks[0].items.map((item) => item.word)).toEqual(list.slice(0, 12));
+  }, 120000);
+
+  it('Pick different words: any words that fit, a new set each press, built into the file; the build seed stays the one of the version', async () => {
+    const page = await openMaker();
+    page.$('next-1').click();
+    await page.until(() => page.chips().length > 0, 'the words');
+    const common = page.chips();
+    expect(page.seen('pick-shuffle')).toBe(true);
+    expect(page.seen('pick-common')).toBe(false);
+    page.$('pick-shuffle').click();
+    const first = page.chips();
+    // The builder's own "any words that fit" pick, with the seed the page says it uses.
+    expect(first).toEqual(pickedFor({ count: 30, shape: 'CVC', mix: 'any' }, 'r1|1').words.slice(0, 7));
+    expect(first).not.toEqual(common);
+    expect(page.$('pick-said').textContent).toBe('Different words: ' + first.join(', ') + '.');
+    expect(page.seen('pick-common')).toBe(true);
+    page.$('pick-shuffle').click();
+    const second = page.chips();
+    expect(second).toEqual(pickedFor({ count: 30, shape: 'CVC', mix: 'any' }, 'r2|1').words.slice(0, 7));
+    expect(second).not.toEqual(first);
+    // Every random word still fits the teacher's choices and can be used.
+    for (const word of second) expect(wordlist.get(word), word).toMatchObject({ blocked: false, nearBlocked: false, soft: false, hasClip: true, shape: 'CVC' });
+    expect(JSON.parse(page.w.localStorage.getItem('alloflow-packets-maker/1'))).toMatchObject({ order: 'random', shuffle: 2 });
+    page.$('next-2').click();
+    await ready(page);
+    const html = page.built();
+    expect(lessonOf(html).blocks[0].items.map((item) => item.word)).toEqual(second);
+    // The file is built with the version's seed, so reopening it and its wrong answers work as before.
+    expect(manifestOf(html).builder.seed).toBe(1);
+    // Back to the most common words.
+    page.$('back-3').click();
+    await page.until(() => page.chips().length > 0, 'the words again');
+    expect(page.chips()).toEqual(second);
+    page.$('pick-common').click();
+    expect(page.chips()).toEqual(common);
+    expect(page.seen('pick-common')).toBe(false);
+    expect(JSON.parse(page.w.localStorage.getItem('alloflow-packets-maker/1'))).toMatchObject({ order: 'common', shuffle: 0 });
+  }, 120000);
+
+  it('every choice is still on the page: one More options box in each step holds the rarely used ones and says what is set', async () => {
+    const doc = parse('packets-make.html');
+    const inside = (id) => [...doc.querySelectorAll('#' + id + ' input, #' + id + ' select, #' + id + ' textarea')].map((node) => node.id || node.name + '=' + node.value);
+    expect(inside('more-1')).toEqual(['f-trace-cases', 'f-choices']);
+    expect(inside('more-2')).toEqual(['f-sound', 'f-position', 'f-shape', 'f-stage-other', 'version=A', 'version=B', 'version=C']);
+    expect(inside('more-3')).toEqual(['length=short', 'length=regular', 'length=long', 'length=custom', 'f-pictures', 'f-directions-once', 'f-repeat-missed', 'f-code-name']); // 2026-11-17
+    for (const id of ['more-1', 'more-2', 'more-3']) {
+      const box = doc.getElementById(id);
+      expect(box.tagName, id).toBe('DETAILS');
+      expect(box.hasAttribute('open'), id).toBe(false);
+      expect(box.querySelector('summary .more-name').textContent, id).toBe('More options');
+      expect(box.querySelector('summary .more-now').id, id).toBe(id + '-now');
+    }
+    // What stays on show: the activities, the grade level or the typed words, the count and the words, the title, save.
+    for (const id of ['quick-make', 'next-1', 'f-stage', 'f-own', 'pick-shuffle', 'pick-chips', 'pick-list', 'f-title', 'save', 'try', 'print-cards', 'open-present-export', 'batch'])
+      expect(doc.getElementById(id).closest('details.more'), id).toBeNull();
+    const page = await openMaker();
+    // Step 1: the groups are boxes, open where an activity is chosen; the line says how many.
+    const groups = [...page.d.querySelectorAll('#strands details.strand')];
+    expect(groups.length).toBeGreaterThanOrEqual(3);
+    for (const group of groups) {
+      const on = group.querySelectorAll('input[type="checkbox"]:checked').length;
+      expect(group.open, group.getAttribute('data-strand')).toBe(on > 0);
+      expect(group.querySelector('.strand-count').textContent).toBe(on ? on + ' chosen' : 'none chosen');
+    }
+    expect(page.$('more-1-now').textContent).toBe('Choices: Medium');
+    expect(page.$('more-1').open).toBe(false);
+    page.set('f-choices', 'easy');
+    page.$('next-1').click();
+    page.$('back-2').click();
+    expect(page.$('more-1-now').textContent).toBe('Choices: Easy');
+    expect(page.$('more-1').open).toBe(true);
+  }, 120000);
 });

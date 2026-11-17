@@ -271,12 +271,15 @@ describe('the files and the hook in the maker', () => {
     expect(button.hidden).toBe(true);
     expect(button.textContent).toBe('Print word cards');
     expect(button.closest('#step-3')).not.toBeNull();
-    expect(button.previousElementSibling.id).toBe('back-3');
+    // 2026-11-16: it sits under "Paper and screen", beside Present or export slides (it was beside Back).
+    expect(button.closest('#paper')).not.toBeNull();
+    expect(button.nextElementSibling.id).toBe('open-present-export');
     const scripts = [...doc.querySelectorAll('script')].map((script) => script.getAttribute('src'));
     expect(scripts.indexOf('packets-print-cards.js')).toBe(scripts.indexOf('packets-make.js') - 1);
     expect([...doc.querySelectorAll('link[rel="stylesheet"]')].map((link) => link.getAttribute('href'))).toContain('packets-print-cards.css');
     const make = read('packets-make.js');
     expect(make).toContain("cards.wire($('print-cards'), function () {");
-    expect(make).toContain('return { words: chosenWords(), title: titleNow(), pictures: !!$(\'f-pictures\').checked, symbols: symbols, loadPictures: symbols ? loadPictures : null, own: ownFor };');
+    // The words of the FILE (fileWords): it used to hand over the whole picked list, ten cards for a seven-word file.
+    expect(make).toContain('return { words: fileWords(), title: titleNow(), pictures: !!$(\'f-pictures\').checked, symbols: symbols, loadPictures: symbols ? loadPictures : null, own: ownFor };');
   });
 });

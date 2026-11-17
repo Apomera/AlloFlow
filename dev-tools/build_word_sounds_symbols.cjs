@@ -183,6 +183,8 @@ const FORM_HELD = {
   saw: 'also a saw (the tool)', bit: 'also "a bit" (a little)', felt: 'also felt (the cloth)', left: 'also left (the side)', lay: 'also the past of "to lie"',
   fell: 'also a hill (British)', stole: 'also a stole (a scarf)', lost: 'also a feeling (lost)', hunted: 'the drawing may show a weapon',
   hunting: 'the drawing shows a spear', fought: 'a fight', stuck: 'also a feeling (stuck)',
+  // 2026-11-16: the drawing is "zoom in" (a magnifying glass over a computer); in children's books the word means moving fast.
+  zoomed: 'the drawing shows zooming in on a screen, not moving fast', zooming: 'the drawing shows zooming in on a screen, not moving fast',
   drinking: 'the drawing shows a glass of an amber drink: check it does not look like beer', drank: 'the drawing shows a glass of an amber drink: check it does not look like beer',
 };
 // -er and -est forms that are not "more" or "most" of the word (offer, inner, a dryer).

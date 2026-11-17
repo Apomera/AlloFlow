@@ -1424,7 +1424,7 @@ function InfoModal({
     while (cursor && body && cursor.parentElement) {
       const parent = cursor.parentElement;
       Array.from(parent.children).forEach((sibling) => {
-        if (!sibling || sibling === cursor || seenSiblings.has(sibling) || !sibling.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName)) return;
+        if (!sibling || sibling === cursor || seenSiblings.has(sibling) || !sibling.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName) || typeof sibling.matches === "function" && sibling.matches('[aria-live], [role="status"], [role="alert"], [data-toast-region]')) return;
         seenSiblings.add(sibling);
         const hadInert = sibling.hasAttribute("inert");
         const prevInert = sibling.inert;
@@ -1515,10 +1515,6 @@ function InfoModal({
           } catch (_) {
           }
         } else {
-          try {
-            sibling.inert = Boolean(prevInert);
-          } catch (_) {
-          }
         }
         if (ariaHidden == null) {
           try {
@@ -1527,12 +1523,19 @@ function InfoModal({
           }
         } else {
           try {
-            sibling.setAttribute("aria-hidden", ariaHidden);
+            if (ariaHidden !== "true") sibling.setAttribute("aria-hidden", ariaHidden);
           } catch (_) {
           }
         }
       });
-      const wasTopTrap = !trapStack || trapStack[trapStack.length - 1] === trap;
+      let wasTopTrap = true;
+      for (let i = trapStack ? trapStack.length - 1 : -1; i >= 0 && trapStack[i] !== trap; i--) {
+        const other = trapStack[i] && trapStack[i].root;
+        if (!other || !(other === dialog || typeof other.contains === "function" && (other.contains(dialog) || dialog.contains(other)))) {
+          wasTopTrap = false;
+          break;
+        }
+      }
       if (trapStack) {
         const idx = trapStack.lastIndexOf(trap);
         if (idx >= 0) trapStack.splice(idx, 1);

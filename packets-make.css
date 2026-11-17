@@ -33,3 +33,58 @@
 
 /* 2026-11-13 (teacher-journey L12): on a phone the "Open a file I made" hint keeps its first sentence, so step 1 starts higher. */
 @media (max-width: 40rem) { .reopen-more { display: none; } }
+
+/* 2026-11-16: a shorter maker. "Make it with the usual settings" in step 1; one "More options" box in each step
+   (its top line says what is set); the activity groups are boxes that open; the word count and "Pick different
+   words" sit beside the picked words. Every choice is still on the page. */
+.quick { margin-top: 1rem; padding: 0.85rem 1rem; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--accent-soft); }
+.quick .btn { margin: 0; }
+.quick .hint { display: block; margin-top: 0.4rem; }
+
+.more { margin-top: 1.25rem; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); }
+.more > summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.15rem 0.75rem; min-height: 3rem; padding: 0.6rem 1rem; cursor: pointer; }
+.more > summary:hover .more-name { color: var(--accent-dark); }
+.more-name { font-weight: 600; color: var(--accent); }
+.more-now { color: var(--muted); font-size: 0.9375rem; }
+.more-body { padding: 0 1rem 1rem; }
+.more-body > .block:first-child, .more-body > .field:first-child { margin-top: 0.25rem; }
+
+details.strand { margin-top: 0.75rem; border: 1px solid var(--line); border-radius: 8px; }
+details.strand > summary.strand-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0.15rem 1rem; min-height: 3rem; padding: 0.6rem 1rem; border-bottom: 0; cursor: pointer; }
+details.strand[open] > summary.strand-head { border-bottom: 1px solid var(--line); }
+details.strand > :not(summary) { margin-left: 1rem; margin-right: 1rem; }
+details.strand > :last-child { margin-bottom: 0.75rem; }
+.strand-count { color: var(--muted); font-size: 0.9375rem; font-weight: 400; }
+.strand-usual { margin-top: 0.5rem; padding-left: 0; }
+
+.pick-bar { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 0.75rem 2rem; margin: 0.75rem 0; }
+.pick-bar .field { margin: 0; }
+.pick-again { flex: 1 1 16rem; }
+.pick-again .row { margin: 0; }
+.pick-again .hint { display: block; margin-top: 0.3rem; }
+.stepper { display: flex; align-items: center; gap: 0.4rem; margin-top: 0.25rem; }
+.stepper input { width: 4.5rem; text-align: center; }
+.stepper-btn { min-width: 2.75rem; min-height: 2.75rem; margin: 0; font-size: 1.125rem; line-height: 1; }
+.count-home:empty { display: none; }
+.count-home .count-field { max-width: 22rem; }
+
+.paper { margin-top: 1.5rem; }
+.paper h3 { font-size: 1rem; }
+.paper-row { margin-top: 0.5rem; }
+.summary-more { margin-top: 1rem; }
+
+/* 2026-11-16: more groups of words, with a label only the teacher sees, and the note on what the words do not suit. */
+.chip-tag { margin-left: 0.4rem; padding: 0.05rem 0.45rem; border: 1px solid var(--line-strong); border-radius: 999px; font-size: 0.75rem; font-weight: 700; color: var(--muted); background: var(--surface); }
+.pick-labels { margin-top: 0.5rem; }
+.mix-notes { margin-top: 0.75rem; display: grid; gap: 0.5rem; }
+.mix-note { margin: 0; }
+.mix-on { margin: 0; }
+.groups-box { margin-top: 1rem; }
+.groups { display: grid; gap: 0.75rem; }
+.group { margin: 0; padding: 0.75rem 1rem 1rem; border: 1px solid var(--line-strong); border-radius: var(--radius); }
+.group legend { padding: 0 0.4rem; font-weight: 700; }
+.group-fields { display: grid; gap: 0.75rem; grid-template-columns: 1fr; }
+.group-fields .field { margin: 0; }
+.group-said { margin: 0.6rem 0 0.3rem; overflow-wrap: anywhere; }
+.groups-row { margin-top: 0.75rem; align-items: center; }
+@media (min-width: 44rem) { .group-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

@@ -322,7 +322,8 @@ describe('Wave 31 · ExportHandlers Summarizer & Slides Preview', () => {
     expect(studentHtml).toContain('Match choices:');
     expect(studentHtml).toContain('1. Step Three');
     expect(studentHtml).toContain('Candidate partners:');
-    expect(studentHtml).toContain('Gas exchange | Digestion');
+    // A student deck lists the partner choices in a fixed shuffled order, so either order is right.
+    expect(studentHtml).toMatch(/Candidate partners:<\/strong> (?:Gas exchange \| Digestion|Digestion \| Gas exchange)</);
     expect(studentHtml).toContain('Word Bank:');
     expect(studentHtml).toContain('solute, solvent');
     expect(studentHtml).toContain('Numeric response (m/s)');
@@ -401,7 +402,12 @@ describe('Wave 32 · H5P Parity, PPTX Memory-Aid Gating & Google Forms Delivery'
     const contentJson = JSON.parse(h5pSetup.zipFiles.get('content/content.json') || '{}');
     expect(Array.isArray(contentJson.questions)).toBe(true);
     expect(contentJson.questions.length).toBe(outlineCompat.valid);
-    expect(JSON.stringify(contentJson)).toContain('Carbon dioxide; Water');
+    // Model notes are teacher material (same rule as essay samples, wave 64): this
+    // student copy has the answer key off, so they stay out; with Teacher Key on they go in.
+    expect(JSON.stringify(contentJson)).not.toContain('Carbon dioxide; Water');
+    const keyedSetup = setupExporter({ generatedContent: outlineItem, history: [outlineItem], exportConfig: { includeTeacherKey: true } });
+    expect(await keyedSetup.exporter.handleExportH5P({ generatedContent: outlineItem })).toBe(true);
+    expect(keyedSetup.zipFiles.get('content/content.json')).toContain('Carbon dioxide; Water');
 
     expect(h5pCompat({
       id: 'nt-qa',
@@ -849,8 +855,8 @@ describe('Wave 33 · NotebookLM Markdown & Builder/Audit ePub Packaging', () => 
     expect(pkg.files['OEBPS/content.opf']).toContain('page-progression-direction="rtl"');
     expect(pkg.files['OEBPS/content.xhtml']).toMatch(/<html\b[^>]*\bdir="rtl"/i);
     expect(pkg.files['OEBPS/nav.xhtml']).toContain('dir="rtl"');
-    expect(pkg.files['OEBPS/nav.xhtml']).toContain('<title lang="en">Navigation</title>');
-    expect(pkg.files['OEBPS/nav.xhtml']).toContain('<h1 lang="en">Table of Contents</h1>');
+    expect(pkg.files['OEBPS/nav.xhtml']).toMatch(/<title lang="en"(?: dir="ltr")?>Navigation<\/title>/);
+    expect(pkg.files['OEBPS/nav.xhtml']).toMatch(/<h1 lang="en"(?: dir="ltr")?>Table of Contents<\/h1>/);
   });
 });
 

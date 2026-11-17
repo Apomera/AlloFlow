@@ -27,6 +27,7 @@
   }
   // The store's index (about 100 KB): which word is in which file.
   function store() {
+    if (!gettingKit) startKit(); // the MP3 encoder starts loading with the recordings index
     if (index) return Promise.resolve(index);
     if (!loadingIndex) {
       loadingIndex = getJson(INDEX).then(function (data) {
@@ -85,7 +86,14 @@
         if (!loader || typeof loader.portableAudio !== 'function') throw new Error('the part that converts recordings is missing');
         tell('Getting the recordings ready: ' + names.length + ' words.');
         return loader.portableAudio(todo, { AudioContext: DecodeContext }).then(function () {
-          names.forEach(function (w) { if (/^data:audio\/(?:wav|x-wav|wave)[;,]/i.test(todo.audio[w])) wavs[w] = todo.audio[w]; });
+          return smaller();
+        }).then(function (kit) {
+          // As MP3 when the encoder is here (about 8 to 10 times smaller than WAV), else the WAV.
+          names.forEach(function (w) {
+            if (!/^data:audio\/(?:wav|x-wav|wave)[;,]/i.test(todo.audio[w])) return;
+            var mp3 = kit ? kit.wavUriToMp3Uri(todo.audio[w], 48) : null;
+            wavs[w] = mp3 || todo.audio[w];
+          });
         });
       }).then(function () {
         var out = {};
@@ -93,6 +101,25 @@
         return out;
       });
     });
+  }
+  // The shared sound helpers and the app's MP3 encoder (packets_audio_kit.js, lame.min.js), from this site, once. null when they cannot be had.
+  // Loading starts the first time recordings are asked for; it never holds them up: until the encoder is here, WAV.
+  var gettingKit = null, readyKit = null;
+  function smaller() {
+    if (!gettingKit) startKit();
+    return Promise.resolve(readyKit);
+  }
+  function startKit() {
+    gettingKit = new Promise(function (resolve) {
+      if (root.AlloPacketAudioKit) { resolve(root.AlloPacketAudioKit); return; }
+      var doc = root.document, script = doc && doc.createElement ? doc.createElement('script') : null;
+      if (!script) { resolve(null); return; }
+      script.src = 'packets_audio_kit.js';
+      script.onload = function () { resolve(root.AlloPacketAudioKit || null); };
+      script.onerror = function () { resolve(null); };
+      doc.head.appendChild(script);
+    }).then(function (kit) { return kit ? kit.getMp3().then(function (ok) { readyKit = ok ? kit : null; return readyKit; }, function () { return null; }) : null; });
+    return gettingKit;
   }
   // The picture set's drawings, all of its data files, once.
   var loadingPictures = null;

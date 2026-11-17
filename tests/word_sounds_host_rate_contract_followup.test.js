@@ -1,5 +1,7 @@
 import {describe,expect,it} from 'vitest';
-import {readFileSync} from 'node:fs';
+// Host files are read through the helper so handlers moved to host_handlers_source.jsx
+// (wave 6, 2026-11-16) are found where they used to be.
+import { readFileSync } from './helpers/host_source.js';
 const read=file=>readFileSync(file,'utf8').replace(/\r\n/g,'\n');
 const between=(source,start,end)=>{const a=source.indexOf(start),b=source.indexOf(end,a+start.length);if(a<0||b<a)throw Error('Missing production boundary '+start);return source.slice(a,b);};
 const sources=['AlloFlowANTI.txt','desktop/web-app/src/App.jsx','desktop/web-app/src/AlloFlowANTI.txt'];

@@ -40,7 +40,7 @@ function GlobalLevelUpModal({
     }
     if (branch && branch.parentElement === document.body) {
       Array.from(document.body.children).forEach((sibling) => {
-        if (sibling === branch || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName)) return;
+        if (sibling === branch || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName) || typeof sibling.matches === "function" && sibling.matches('[aria-live], [role="status"], [role="alert"], [data-toast-region]')) return;
         isolatedSiblings.push({
           el: sibling,
           hadInert: sibling.hasAttribute("inert"),
@@ -52,8 +52,12 @@ function GlobalLevelUpModal({
         sibling.setAttribute("aria-hidden", "true");
       });
     }
-    const prevBodyOverflow = document.body ? document.body.style.overflow : "";
-    if (document.body) document.body.style.overflow = "hidden";
+    const alloScrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: "" });
+    const alloScrollLocked = !!document.body;
+    if (alloScrollLocked && ++alloScrollLock.count === 1) {
+      alloScrollLock.prev = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+    }
     const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
     const trap = { root: dialog };
     trapStack.push(trap);
@@ -104,16 +108,18 @@ function GlobalLevelUpModal({
     document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
-      if (document.body) document.body.style.overflow = prevBodyOverflow;
+      if (alloScrollLocked) {
+        alloScrollLock.count = Math.max(0, alloScrollLock.count - 1);
+        if (alloScrollLock.count === 0 && document.body) document.body.style.overflow = alloScrollLock.prev;
+      }
       isolatedSiblings.forEach(({ el, hadInert, prevInert, prevAriaHidden }) => {
         if (!hadInert) {
           el.inert = false;
           el.removeAttribute("inert");
         } else {
-          el.inert = prevInert;
         }
         if (prevAriaHidden === null) el.removeAttribute("aria-hidden");
-        else el.setAttribute("aria-hidden", prevAriaHidden);
+        else if (prevAriaHidden !== "true") el.setAttribute("aria-hidden", prevAriaHidden);
       });
       const wasTopTrap = isTopTrap();
       const trapIndex = trapStack.indexOf(trap);

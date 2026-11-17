@@ -1,0 +1,264 @@
+[
+ {
+  "id": "wisc5-correct",
+  "kind": "correct",
+  "error": null,
+  "scores": [
+   {
+    "assessment": "WISC-V",
+    "subtest": "Full Scale IQ",
+    "score": 97,
+    "scoreType": "standard",
+    "classification": "Average",
+    "percentile": 42,
+    "ciLow": 92,
+    "ciHigh": 102,
+    "ciLevel": 95
+   },
+   {
+    "assessment": "WISC-V",
+    "subtest": "Verbal Comprehension",
+    "score": 76,
+    "scoreType": "standard",
+    "classification": "Very Low",
+    "percentile": 5
+   },
+   {
+    "assessment": "WISC-V",
+    "subtest": "Fluid Reasoning",
+    "score": 124,
+    "scoreType": "standard",
+    "classification": "Very High",
+    "percentile": 95
+   }
+  ],
+  "text": "On the WISC-V, the Full Scale IQ was 97 (standard score; Average; 42nd percentile; 95% CI 92-102). The Verbal Comprehension was 76 (Very Low), at the 5th percentile. The Fluid Reasoning of 124 (Very High) fell at the 95th percentile."
+ },
+ {
+  "id": "wjiv-correct",
+  "kind": "correct",
+  "error": null,
+  "scores": [
+   {
+    "assessment": "WJ-IV ACH",
+    "subtest": "Broad Reading",
+    "score": 110,
+    "scoreType": "standard",
+    "classification": "Average",
+    "percentile": 75
+   },
+   {
+    "assessment": "WJ-IV ACH",
+    "subtest": "Broad Math",
+    "score": 74,
+    "scoreType": "standard",
+    "classification": "Low",
+    "percentile": 4
+   },
+   {
+    "assessment": "WJ-IV ACH",
+    "subtest": "Broad Written Language",
+    "score": 66,
+    "scoreType": "standard",
+    "classification": "Very Low",
+    "percentile": 1
+   }
+  ],
+  "text": "On the WJ-IV ACH, Broad Reading was 110 (standard score; Average; 75th percentile). Broad Math was 74 (Low), at the 4th percentile. Broad Written Language was 66 (Very Low), at the 1st percentile."
+ },
+ {
+  "id": "kabc2-correct",
+  "kind": "correct",
+  "error": null,
+  "scores": [
+   {
+    "assessment": "KABC-II",
+    "subtest": "Fluid-Crystallized Index",
+    "score": 87,
+    "scoreType": "standard",
+    "classification": "Average",
+    "percentile": 19
+   },
+   {
+    "assessment": "KABC-II",
+    "subtest": "Sequential",
+    "score": 78,
+    "scoreType": "standard",
+    "classification": "Below Average",
+    "percentile": 7
+   }
+  ],
+  "text": "On the KABC-II, the Fluid-Crystallized Index was 87 (Average), at the 19th percentile. The Sequential scale was 78 (Below Average), at the 7th percentile."
+ },
+ {
+  "id": "basc3-correct",
+  "kind": "correct",
+  "error": null,
+  "scores": [
+   {
+    "assessment": "BASC-3 (Parent)",
+    "subtest": "Hyperactivity",
+    "score": 62,
+    "scoreType": "T-score",
+    "classification": "At-Risk",
+    "percentile": 88
+   },
+   {
+    "assessment": "BASC-3 (Parent)",
+    "subtest": "Attention Problems",
+    "score": 72,
+    "scoreType": "T-score",
+    "classification": "Clinically Significant",
+    "percentile": 97
+   },
+   {
+    "assessment": "BASC-3 (Parent)",
+    "subtest": "Anxiety",
+    "score": 48,
+    "scoreType": "T-score",
+    "classification": "Average",
+    "percentile": 45
+   }
+  ],
+  "text": "On the BASC-3 (Parent), Hyperactivity was a T-score of 62 (At-Risk; 88th percentile). Attention Problems was 72 (T-score; Clinically Significant; 97th percentile). Anxiety was a T-score of 48 (Average), at the 45th percentile."
+ },
+ {
+  "id": "celf5-correct",
+  "kind": "correct",
+  "error": null,
+  "scores": [
+   {
+    "assessment": "CELF-5",
+    "subtest": "Core Language",
+    "score": 86,
+    "scoreType": "standard",
+    "classification": "Average",
+    "percentile": 18
+   },
+   {
+    "assessment": "CELF-5",
+    "subtest": "Receptive Language",
+    "score": 80,
+    "scoreType": "standard",
+    "classification": "Below Average",
+    "percentile": 9
+   }
+  ],
+  "text": "On the CELF-5, the Core Language score was 86 (Average), at the 18th percentile. Receptive Language was 80 (Below Average), at the 9th percentile."
+ },
+ {
+  "id": "vineland3-correct",
+  "kind": "correct",
+  "error": null,
+  "scores": [
+   {
+    "assessment": "Vineland-3",
+    "subtest": "Adaptive Behavior Composite",
+    "score": 92,
+    "scoreType": "standard",
+    "classification": "Adequate",
+    "percentile": 30
+   },
+   {
+    "assessment": "Vineland-3",
+    "subtest": "Socialization",
+    "score": 75,
+    "scoreType": "standard",
+    "classification": "Moderately Low",
+    "percentile": 5
+   }
+  ],
+  "text": "On the Vineland-3, the Adaptive Behavior Composite was 92 (Adequate), at the 30th percentile. Socialization was 75 (Moderately Low), at the 5th percentile."
+ },
+ {
+  "id": "mixed-prose-correct",
+  "kind": "correct",
+  "error": null,
+  "scores": [
+   {
+    "assessment": "WISC-V",
+    "subtest": "Full Scale IQ",
+    "score": 97,
+    "scoreType": "standard",
+    "classification": "Average",
+    "percentile": 42
+   },
+   {
+    "assessment": "WISC-V",
+    "subtest": "Working Memory",
+    "score": 85,
+    "scoreType": "standard",
+    "classification": "Low Average",
+    "percentile": 16,
+    "ciLow": 79,
+    "ciHigh": 93,
+    "ciLevel": 95
+   }
+  ],
+  "text": "Student A attends a class of 24 students and passed 80 percent of weekly probes. The Full Scale IQ was 97 (Average). Working Memory was 85 (Low Average; 16th percentile; 95% CI 79-93). In a group of 105 peers, she ranked near the middle."
+ },
+ {
+  "id": "wisc5-wrong-label",
+  "kind": "planted",
+  "error": "88 called Average (WISC-V: Low Average)",
+  "scores": [
+   {
+    "assessment": "WISC-V",
+    "subtest": "Full Scale IQ",
+    "score": 88,
+    "scoreType": "standard",
+    "classification": "Low Average",
+    "percentile": 21
+   }
+  ],
+  "text": "On the WISC-V, the Full Scale IQ was 88 (Average), at the 21st percentile."
+ },
+ {
+  "id": "wisc5-wrong-percentile",
+  "kind": "planted",
+  "error": "110 placed at the 95th percentile (actually 75th)",
+  "scores": [
+   {
+    "assessment": "WISC-V",
+    "subtest": "Full Scale IQ",
+    "score": 110,
+    "scoreType": "standard",
+    "classification": "High Average",
+    "percentile": 75
+   }
+  ],
+  "text": "On the WISC-V, the Full Scale IQ was 110 (High Average), at the 95th percentile."
+ },
+ {
+  "id": "basc3-wrong-label",
+  "kind": "planted",
+  "error": "T 72 called Average (BASC-3: Clinically Significant)",
+  "scores": [
+   {
+    "assessment": "BASC-3 (Parent)",
+    "subtest": "Hyperactivity",
+    "score": 72,
+    "scoreType": "T-score",
+    "classification": "Clinically Significant",
+    "percentile": 97
+   }
+  ],
+  "text": "On the BASC-3 (Parent), Hyperactivity was a T-score of 72 (Average)."
+ },
+ {
+  "id": "wisc5-wrong-score",
+  "kind": "planted",
+  "error": "Full Scale IQ given as 103 (actual 97)",
+  "scores": [
+   {
+    "assessment": "WISC-V",
+    "subtest": "Full Scale IQ",
+    "score": 97,
+    "scoreType": "standard",
+    "classification": "Average",
+    "percentile": 42
+   }
+  ],
+  "text": "On the WISC-V, the Full Scale IQ was a standard score of 103 (Average)."
+ }
+]

@@ -227,7 +227,8 @@ module.exports = {
             badgeChildren.push(ctx.el('span', { text: item.word }));
             children.push(ctx.el('span', {
               'data-sr-symbol': item.word,
-              style: 'font-size:1.7rem;font-weight:900;line-height:1.1;margin:4px 0;color:' + item.stroopInk,
+              // A fixed white card in every theme (and with forced colors), so the ink is seen as it was made.
+              style: 'display:inline-block;font-size:1.7rem;font-weight:900;line-height:1.1;margin:4px 0;padding:6px 14px;border-radius:10px;border:2px solid #6b7280;background:#ffffff;forced-color-adjust:none;color:' + item.stroopInk,
             }, badgeChildren));
           } else if (item.flankerCenter >= 0) {
             var chars = item.word.split('');
@@ -384,7 +385,8 @@ module.exports = {
             : isAimed
               ? 'var(--warn)'
               : 'var(--muted)';
-        btn.style.background = isTarget && lockedOn ? 'var(--ok-bg)' : isAimed ? 'var(--warn-bg)' : 'var(--bg)';
+        // A color item's lanes are not tinted: a green lane behind a color task is itself a color.
+        btn.style.background = isTarget && lockedOn && !item.stroopInk ? 'var(--ok-bg)' : isAimed && !item.stroopInk ? 'var(--warn-bg)' : 'var(--bg)';
         btn.style.transform = isAimed ? 'scale(1.03)' : 'scale(1)';
       }
 

@@ -1,0 +1,26 @@
+{
+  "purpose": "The two reading fonts a student can choose under Reading tools > Letters in every Packets file. dev-tools/build_take_home_fonts.cjs puts them inside word_sounds_take_home_loader.js, which puts them inside each file it makes. A file loads nothing, so a font must travel inside it.",
+  "subset": "latin, regular weight (400) only: bold is drawn by the browser from the regular letters. Letters outside the subset fall back to the device's own fonts.",
+  "fonts": [
+    {
+      "family": "Lexend",
+      "file": "lexend/lexend-latin-400-normal.woff2",
+      "sha256": "0601e0a909219a542cdd581e3f8f1ff8fb208978cbc9bca1c90df02fd8062bb1",
+      "copyright": "Copyright 2019 The Lexend Project Authors (https://github.com/googlefonts/lexend)",
+      "license": "SIL Open Font License 1.1",
+      "licenseFile": "lexend/OFL.txt",
+      "from": "npm @fontsource/lexend@5.3.0, files/lexend-latin-400-normal.woff2",
+      "fetched": "2026-11-16"
+    },
+    {
+      "family": "Atkinson Hyperlegible",
+      "file": "atkinson-hyperlegible/atkinson-hyperlegible-latin-400-normal.woff2",
+      "sha256": "d64ba838ef5472bba248620ec4fd8b5aa7cf0db2908e0bb230600caf279ba7bc",
+      "copyright": "Copyright 2020 Braille Institute of America, Inc.",
+      "license": "SIL Open Font License 1.1",
+      "licenseFile": "atkinson-hyperlegible/OFL.txt",
+      "from": "npm @fontsource/atkinson-hyperlegible@5.3.0, files/atkinson-hyperlegible-latin-400-normal.woff2",
+      "fetched": "2026-11-16"
+    }
+  ]
+}

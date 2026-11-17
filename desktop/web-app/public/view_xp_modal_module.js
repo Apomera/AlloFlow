@@ -46,7 +46,7 @@ function XPModal({
     }
     if (branch && branch.parentElement === document.body) {
       Array.from(document.body.children).forEach((sibling) => {
-        if (sibling === branch || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName)) return;
+        if (sibling === branch || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName) || typeof sibling.matches === "function" && sibling.matches('[aria-live], [role="status"], [role="alert"], [data-toast-region]')) return;
         isolatedSiblings.push({
           el: sibling,
           hadInert: sibling.hasAttribute("inert"),
@@ -58,8 +58,12 @@ function XPModal({
         sibling.setAttribute("aria-hidden", "true");
       });
     }
-    const prevBodyOverflow = document.body ? document.body.style.overflow : "";
-    if (document.body) document.body.style.overflow = "hidden";
+    const alloScrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: "" });
+    const alloScrollLocked = !!document.body;
+    if (alloScrollLocked && ++alloScrollLock.count === 1) {
+      alloScrollLock.prev = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+    }
     const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
     const trap = { root: dialog };
     trapStack.push(trap);
@@ -110,18 +114,27 @@ function XPModal({
     document.addEventListener("keydown", onKeyDown);
     return () => {
       document.removeEventListener("keydown", onKeyDown);
-      if (document.body) document.body.style.overflow = prevBodyOverflow;
+      if (alloScrollLocked) {
+        alloScrollLock.count = Math.max(0, alloScrollLock.count - 1);
+        if (alloScrollLock.count === 0 && document.body) document.body.style.overflow = alloScrollLock.prev;
+      }
       isolatedSiblings.forEach(({ el, hadInert, prevInert, prevAriaHidden }) => {
         if (!hadInert) {
           el.inert = false;
           el.removeAttribute("inert");
         } else {
-          el.inert = prevInert;
         }
         if (prevAriaHidden === null) el.removeAttribute("aria-hidden");
-        else el.setAttribute("aria-hidden", prevAriaHidden);
+        else if (prevAriaHidden !== "true") el.setAttribute("aria-hidden", prevAriaHidden);
       });
-      const wasTopTrap = isTopTrap();
+      let wasTopTrap = true;
+      for (let i = trapStack.length - 1; i >= 0 && trapStack[i] !== trap; i--) {
+        const other = trapStack[i] && trapStack[i].root;
+        if (!other || !(other === dialog || typeof other.contains === "function" && (other.contains(dialog) || dialog.contains(other)))) {
+          wasTopTrap = false;
+          break;
+        }
+      }
       const trapIndex = trapStack.indexOf(trap);
       if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
       if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus !== document.documentElement && previousFocus.isConnected && typeof previousFocus.focus === "function") previousFocus.focus();

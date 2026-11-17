@@ -38,6 +38,8 @@ const look = (n) => 'This file needs a person to look: ' + (n === 1 ? '1 thing w
 const [EXPECTED, UNEXPECTED, LOOK] = ['expected in this kind of file', 'not expected', 'needs a person to look'];
 const PARTS = ['What this file says about itself', 'What its code can reach', 'What it keeps on the device', 'What it saves', 'Things a person should look at', 'For IT staff'];
 const REPOSITORY = 'https://github.com/Apomera/AlloFlow';
+// 2026-11-17: the IT guide also links the file format document, on the same site.
+const FORMATS = 'https://github.com/Apomera/AlloFlow/blob/main/docs/packets-file-formats.md';
 // British spellings and usages that must not reach a US reader (the list the other Packets page tests use).
 const BRITISH = /practis|standardis|licence|colour|\bmarking\b|\bmarked\b|\btick(?:ed|s)?\b|USB stick|\bwhilst\b|\bmaths\b|favour|behaviour|\bcentre\b/i;
 // Words that would turn a description into a promise.
@@ -151,7 +153,7 @@ describe('the checks: a practice file', () => {
     const r = verify.verifyPacket(F.practice);
     expect(r.policy.found && r.policy.count).toBe(1);
     expect(r.policy.text).toBe(cspOf(F.practice));
-    expect(r.policy.directives.map((row) => row.name)).toEqual(['default-src', 'script-src', 'style-src', 'media-src', 'img-src', 'form-action', 'base-uri', 'object-src', 'frame-src', 'worker-src', 'manifest-src', 'connect-src']);
+    expect(r.policy.directives.map((row) => row.name)).toEqual(['default-src', 'script-src', 'style-src', 'media-src', 'img-src', 'font-src', 'form-action', 'base-uri', 'object-src', 'frame-src', 'worker-src', 'manifest-src', 'connect-src']);
     const facts = Object.fromEntries(r.policy.facts.map((row) => [row.id, row]));
     expect(Object.keys(facts)).toEqual(['connect', 'scripts', 'styles', 'pictures', 'sounds', 'fonts', 'frames', 'plugins', 'workers', 'pinned', 'forms', 'base']);
     expect(r.policy.facts.every((row) => row.open === false)).toBe(true);
@@ -159,8 +161,8 @@ describe('the checks: a practice file', () => {
     expect(facts.scripts.answer).toBe('No. Only a script inside the file can run, and only while it matches the hash in the policy.');
     expect([facts.pictures.answer, facts.pictures.basis]).toEqual(['No. Only pictures stored inside the file.', 'img-src data:']);
     expect([facts.sounds.answer, facts.sounds.basis]).toEqual(['No. Only sounds stored inside the file.', 'media-src data: blob:']);
-    // Fonts are named nowhere in the policy: the line a browser falls back to is the one shown.
-    expect([facts.fonts.answer, facts.fonts.basis]).toEqual(['No.', "default-src 'none'"]);
+    // 2026-11-16: every file carries the two reading fonts of Reading tools > Letters (Lexend, Atkinson Hyperlegible; +42.5 KB). The policy allows fonts from inside the file only.
+    expect([facts.fonts.answer, facts.fonts.basis]).toEqual(['No. Only what is inside the file.', 'font-src data:']);
     expect(facts.pinned.answer).toBe('Yes. The browser runs the script only while it matches sha256-' + r.script.base64 + '.');
     expect([facts.forms.answer, facts.base.answer]).toEqual(['No. The policy blocks forms.', 'No. The policy blocks base changes.']);
   });
@@ -788,13 +790,13 @@ describe('the pages as files', () => {
     expect(checksText).not.toMatch(/new\s+XMLHttpRequest|new\s+WebSocket|new\s+EventSource|\.sendBeacon\s*\(|\b(?:localStorage|sessionStorage)\s*\.\s*\w|\.\s*cookie\s*=|\brequire\s*\(|^\s*import\s/m);
     expect(checksText).not.toMatch(/createElement|appendChild|querySelector|getElementById|DOMParser|\.textContent|\.innerHTML\s*=/);
     expect([...new Set(checksText.match(/\broot\.\w+/g))].sort()).toEqual(['root.AlloPacketVerify', 'root.TextDecoder', 'root.TextEncoder']);
-    const allowed = { [GUIDE]: [REPOSITORY], [CORE]: ['https://script.google.com', 'https://script.googleusercontent.com'] };
+    const allowed = { [GUIDE]: [REPOSITORY, FORMATS], [CORE]: ['https://script.google.com', 'https://script.googleusercontent.com'] };
     for (const file of WRITTEN) expect(addresses(read(file)), file).toEqual(allowed[file] || []);
     // The one link out is the public source code, the address packets.html and index.html already link.
     expect(read('packets.html')).toContain('href="' + REPOSITORY + '" rel="noopener noreferrer"');
     const link = parse(GUIDE).querySelector('a[href^="http"]');
     expect([link.getAttribute('href'), link.getAttribute('rel'), link.textContent]).toEqual([REPOSITORY, 'noopener noreferrer', 'AlloFlow on GitHub']);
-    expect(parse(GUIDE).querySelectorAll('a[href^="http"]').length).toBe(1);
+    expect([...parse(GUIDE).querySelectorAll('a[href^="http"]')].map((a) => a.getAttribute('href'))).toEqual([REPOSITORY, FORMATS]);
     expect(read(PAGE) + read(GUIDE)).not.toMatch(/shared\.css|site\.js|lucide|fonts\.g|unpkg|promo/i);
   });
 
@@ -821,7 +823,7 @@ describe('the pages as files', () => {
       const loaded = [];
       for (const node of doc.querySelectorAll('[href], [src]')) {
         const address = node.getAttribute('href') || node.getAttribute('src');
-        if (address === REPOSITORY) continue;
+        if (address === REPOSITORY || address === FORMATS) continue;
         expect(address, file).toMatch(/^(?:#[\w-]+|\.\/|[\w.-]+(?:\/[\w.-]+)*(?:#[\w-]+)?)$/);
         if (address.startsWith('#')) expect(doc.getElementById(address.slice(1)), address).toBeTruthy();
         else expect(existsSync(address === './' ? 'index.html' : address.replace(/#.*$/, '')), address).toBe(true);
@@ -863,7 +865,10 @@ describe('the pages as files', () => {
   });
 
   it('say "AI" only to say that none runs here', () => {
-    const allowed = { [PAGE]: ['This page runs without AI.', 'This page runs without AI.', 'Runs without AI.'], [GUIDE]: ['This page runs without AI.', 'Runs without AI.'] };
+    const allowed = { [PAGE]: ['This page runs without AI.', 'This page runs without AI.', 'Runs without AI.'], [GUIDE]: ['This page runs without AI.',
+      // 2026-11-16, deliberately: the guide names the TWO pages that use AI (packets-voice.html and packets-read-along.html; tests/packets_voice_page_2026_11_16.test.js, tests/packets_read_along_2026_11_16.test.js).
+      'Two more pages, Make recordings with a computer voice (packets-voice.html) and Make a read-along (packets-read-along.html), are the only pages of this site that use AI: after the teacher presses Get the voice, the page downloads a voice (Kokoro, about 88 MB) from Hugging Face (huggingface.co) and runs it on the device.',
+      'Runs without AI.'] };
     const sentences = (text) => text.replace(/\s+/g, ' ').trim().split(/(?<=[.!?])\s+/).filter((sentence) => /\bAI\b/.test(sentence));
     const BLOCK = 'title, h1, h2, h3, p, li, span, legend, label, button, option, td, th';
     for (const file of [PAGE, GUIDE]) {
@@ -1130,13 +1135,21 @@ describe('the guide for school IT', () => {
       + 'It sends them the word searched for and asks them for the pictures it shows. '
       // 2026-11-12, deliberately: the vocabulary lookup page (packets-vocab-lookup.html, tests/packets_vocab_pictures.test.js).
       + 'One more page, Look up a word online (packets-vocab-lookup.html), can send one word that is not in the vocabulary word list to the Free Dictionary API (api.dictionaryapi.dev), after the teacher allows it and presses Look it up. '
+      // 2026-11-16, deliberately: the computer-voice page (packets-voice.html, tests/packets_voice_page_2026_11_16.test.js).
+      + 'Two more pages, Make recordings with a computer voice (packets-voice.html) and Make a read-along (packets-read-along.html), are the only pages of this site that use AI: after the teacher presses Get the voice, the page downloads a voice (Kokoro, about 88 MB) from Hugging Face (huggingface.co) and runs it on the device. '
+      + 'They send no words: Hugging Face sees only that the browser asked for the voice. '
+      + 'A read-along file that a teacher saves holds recordings and plays them: it runs no voice and reaches no site. '
       + 'Every other page of this site reaches only this site. '
       // 2026-11-13 (teacher-journey pass): the device voice of a vocabulary file is only ever one that runs on the device.
       + 'A vocabulary file reads aloud only with a voice that runs on the device: it does not use a voice that sends the text to a speech service.');
     expect(read('word_sounds_take_home_loader.js')).toContain('localService === true');
     const reaches = (page) => (parse(page).querySelector('meta[http-equiv="Content-Security-Policy"]')?.getAttribute('content') || '').match(/https?:\/\/[^\s;]+/g) || [];
     // 2026-11-12: Open a practice file allows the class mailbox for the file it runs (and says so in the mailbox row); the page sends nothing.
-    for (const page of pages.filter((name) => name !== 'packets-pictures.html' && name !== 'packets-open.html' && name !== 'packets-vocab-lookup.html')) expect(reaches(page), page).toEqual([]);
+    for (const page of pages.filter((name) => name !== 'packets-pictures.html' && name !== 'packets-open.html' && name !== 'packets-vocab-lookup.html' && name !== 'packets-voice.html' && name !== 'packets-read-along.html')) expect(reaches(page), page).toEqual([]);
+    // 2026-11-16: the computer-voice page reaches Hugging Face, for the voice it names, and nothing else.
+    expect(reaches('packets-voice.html')).toEqual(['https://huggingface.co', 'https://*.huggingface.co', 'https://*.hf.co']);
+    // 2026-11-16: Make a read-along uses the same voice, so it reaches the same place and nothing else.
+    expect(reaches('packets-read-along.html')).toEqual(['https://huggingface.co', 'https://*.huggingface.co', 'https://*.hf.co']);
     // 2026-11-12: Look up a word online reaches the one dictionary it names, and not even this site.
     expect(reaches('packets-vocab-lookup.html')).toEqual(['https://api.dictionaryapi.dev']);
     expect(reaches('packets-open.html')).toEqual(['https://script.google.com', 'https://script.googleusercontent.com']);
@@ -1159,7 +1172,8 @@ describe('the guide for school IT', () => {
     expect(limits[2]).toBe('A packet is for practice and for checking progress. It cannot keep its answers secret: they travel inside the file so that it can score with no internet.');
     // The previews: the same three, said the same way as the front door, and marked as reported.
     expect(limits[4]).toBe('The previews in Google Drive, Google Classroom and the iPad Files app do not run the file: the file shows a note that asks the student to download it and open it in a browser. '
-      + "An iPad may need the file served from a web address, such as the school's learning platform. Reported, not yet tested by us.");
+      // 2026-11-17: the answer is the Open page now, on any device.
+      + 'Reported, not yet tested by us. A student can open the file on Open a practice file or check (packets-open.html) instead, which works on any device, phones and tablets included.');
     const front = [...parse('packets.html').querySelectorAll('#check li')].map((li) => li.textContent).find((line) => line.startsWith('Run inside a file preview.'));
     expect(front).toContain('The previews in Google Drive, Google Classroom and the iPad Files app do not run the file.');
     expect(front.endsWith('Reported, not yet tested by us.')).toBe(true);

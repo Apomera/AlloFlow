@@ -58,7 +58,9 @@ describe('in a file: the reading tools come right after the screen heading', () 
       // The panel opens right under the button and keeps its place when the screen changes.
       d.querySelector('[data-tools-open]').click();
       expect(d.getElementById('lt-panel').hidden).toBe(false);
-      expect(stops(d)[1].getAttribute('data-tool')).toBe('size-0');
+      // 2026-11-16: a Close at the top of the panel comes first (on a phone the panel is over 1,200 px tall), then the tools.
+      expect(stops(d)[1].hasAttribute('data-tools-close-top')).toBe(true);
+      expect(stops(d)[2].getAttribute('data-tool')).toBe('size-0');
     });
   }
 });

@@ -35,7 +35,18 @@
   var MAX_ITEMS = 40;
   // Where a phone or tablet runs a saved file: shown with the note for previews that do not run it, in a file in
   // English (another language: labels.open_here, '' for none).
-  var OPEN_HERE = 'Phone or tablet? Open this file at apomera.github.io/AlloFlow/packets-open.html';
+  var OPEN_HERE = 'Phone or tablet? Open this file at {address}';
+  // The Open page of the site this file is made on (a Packets page served over http or https), else the usual one.
+  function openAddress() {
+    try {
+      var at = typeof location !== 'undefined' ? location : null;
+      // Not a test or local address (.test is reserved for testing; localhost and 127.0.0.1 are this computer).
+      var local = /(?:^|\.)(?:test|localhost)$|^127\.|^\[?::1\]?$/.test(String(at && at.hostname || ''));
+      if (at && !local && /^https?:$/.test(at.protocol) && /\/packets[\w.-]*\.html$/.test(at.pathname)) return at.host + at.pathname.replace(/[^/]*$/, '') + 'packets-open.html';
+    } catch (_) {}
+    return 'apomera.github.io/AlloFlow/packets-open.html';
+  }
+
 
   // Words the learner sees. Activity adapters add their own under their id
   // prefix (e.g. isolation_question). Translated through
@@ -47,7 +58,10 @@
     learner_label: 'Your code name or first name',
     start: 'Start',
     continue: 'Continue where I left off',
+    continue_whose: 'Answers so far by: {name}.',
     start_over: 'Start over',
+    start_over_confirm: 'Starting over erases the answers so far.',
+    keep_going: 'Keep my answers',
     item_of: '{activity}: {n} of {total}',
     hear_word: 'Hear the word',
     hear_question: 'Hear the question',
@@ -64,8 +78,12 @@
     done_summary: 'Right on the first try: {first} of {total}.',
     done_activity: '{first} of {total}',
     done_retry: 'Right after trying again: {retry}.',
+    done_last_step: 'Last step: save your work for your teacher.',
     // 2026-11-13: practice that is not scored (Letter Trace), counted on the end screen.
     done_practice: 'Practice, not scored: {done} of {total} done.',
+    // 2026-11-17: the missed questions, once more at the end (lesson.repeatMissed).
+    again_of: 'Once more: {n} of {total}',
+    done_again: 'Went over once more: {n}.',
     // 2026-11-13: a sound whose label is not its letters, as shown with letters on (ctx.sound); others print /a/.
     sound_name_oo_short: 'short oo (book)',
     sound_name_dh: 'th (this)',
@@ -103,7 +121,7 @@
     about_never: 'It never uses the microphone or the camera. It has no cookies and runs no AI.',
     about_check: 'Each saved file has a check value. It shows when a file was changed by accident. It cannot stop someone who changes a file on purpose.',
     about_rules: 'The safety rules this file gives the browser: {csp}',
-    about_licence: 'License: {licence}. Anyone may read, share and change the code.',
+    about_licence: 'License: {licence}. Anyone may read, share and change the code. The license: {licenceUrl}. The code: {source}.',
     about_credits: 'Made with: {list}',
     // Shown only when the file is opened somewhere that does not run it (a Drive or Files preview).
     no_script: 'If the practice does not start, download this file and open it in Chrome, Edge or Safari.',
@@ -126,6 +144,11 @@
     tools_colors_6: 'Forest',
     tools_spacing: 'Spacing',
     tools_spacing_1: 'Wider',
+    tools_font: 'Letters',
+    tools_font_1: 'Lexend',
+    tools_font_2: 'Atkinson',
+    tools_font_3: 'Book',
+    tools_font_4: 'Rounded',
     tools_focus: 'Reading focus',
     tools_focus_hint: 'Tap a line, or use the up and down arrow keys on the text.',
     tools_lens: 'Magnifier',
@@ -172,6 +195,7 @@
     check_ready_timed: 'You have {time}. Do as many as you can.',
     check_ready_untimed: 'There is no clock. Take your time.',
     check_ready_one_try: 'You get one try for each one. You cannot go back.',
+    check_ready_adult: 'For a young student: a grown-up reads this page aloud before the student presses Begin.',
     check_begin: 'Start',
     check_item_of: 'Question {n} of {total}',
     check_time_left: 'Time left: {time}',
@@ -189,7 +213,7 @@
     // 2026-11-13: shown in a timed check while "Stop?" is on screen: the clock is paused, the question hidden.
     check_paused: 'The clock is stopped while you decide.',
     check_done_title: 'You finished. Thank you.',
-    check_done_count: 'You answered {done} of {total}.',
+    check_done_count: 'You answered {done}.',
     check_done_time: 'Time: {time}.',
     check_again: 'Start over',
     check_again_confirm: 'Do you want to start this check again? It will be saved as a new try. Save your work first.',
@@ -224,7 +248,7 @@
     check_review_no_limit: 'none',
     check_review_hidden: 'Time with the page hidden or closed: {hidden} s.',
     check_review_prorated: 'All items were finished before the time limit, so the rate is prorated over the time used.',
-    check_review_attempt: 'Attempt {n} for this learner label on this device.',
+    check_review_attempt: 'Attempt {n} for this name or code name on this device.',
     check_review_flags: 'Flags: {flags}.',
     check_flag_left_the_page: 'left the page for more than 3 seconds',
     check_flag_clock_changed: 'the device clock was set back',
@@ -235,7 +259,13 @@
     check_flag_time_up_away: 'the time ran out while the page was hidden or closed',
     check_reason_time_up_away: 'the time ran out while the page was hidden or closed, so the student did not have the whole time',
     check_flag_attempt_unknown: 'this browser could not keep the count of tries, so the attempt number may be wrong',
-    check_review_note: 'All times come from the clock of the learner device.',
+    check_flag_paused: 'the check was paused; the problem on screen at each pause was set aside and not counted',
+    check_review_paused: 'Time paused: {paused} s, {times}. The problem on screen at each pause was set aside and not counted.',
+    check_review_paused_once: '1 pause',
+    check_review_paused_many: '{n} pauses',
+    check_r_paused: 'set aside (paused)',
+    check_r_time_up_typed: 'time ran out (had typed {typed}, not counted)',
+    check_review_note: 'All times come from the clock of the device the student used.',
     check_col_n: 'No.',
     check_col_prompt: 'Item',
     check_col_response: 'Response',
@@ -358,17 +388,21 @@
         it.correct ? 1 : 0, it.firstTry ? 1 : 0, Number(it.attempts) || 0, Math.max(0, Math.round(Number(it.ms) || 0)), supports, text(it.flag)]
         .concat(probe ? [count(it.digitsCorrect), count(it.digitsPossible)] : []);
     });
-    summary.accuracyPct = summary.itemsGiven ? Math.round(summary.correct / summary.itemsGiven * 100) : 0;
+    // Empty when nothing is scored (a read-along, Letter Trace alone): 0 would read as a result.
+    summary.accuracyPct = summary.itemsGiven ? Math.round(summary.correct / summary.itemsGiven * 100) : '';
+    summary.accuracyOfAttemptedPct = summary.attempted ? Math.round(summary.correct / summary.attempted * 100) : '';
     var line = function (cells) { return cells.map(cell).join(','); };
     var lines = rows.map(line);
     var notName = /[^a-z0-9]+/gi;
     try { notName = new RegExp('[^\\p{L}\\p{M}\\p{N}]+', 'gu'); } catch (_) {}
-    var safe = function (v) { return text(v).replace(notName, '-').replace(/^-+|-+$/g, '').slice(0, 40); };
+    // The title may take 60 characters (40 until 2026-11-16: the automatic titles end in the version letter, and
+    // versions A, B and C of one file saved their results under the same name).
+    var safe = function (v, max) { return text(v).replace(notName, '-').replace(/^-+|-+$/g, '').slice(0, max || 40).replace(/-+$/, ''); };
     // The file name carries the FINISH date, on the learner's clock.
     var day = /^\d{4}-\d{2}-\d{2}/.exec(text(r.finishedLocal) || text(r.startedLocal));
     return {
       header: header, rows: rows, lines: lines, summary: summary,
-      stem: [safe(r.lessonTitle) || 'packet', safe(learner) || 'results'].concat(day ? [day[0]] : []).join('__'),
+      stem: [safe(r.lessonTitle, 60) || 'packet', safe(learner) || 'results'].concat(day ? [day[0]] : []).join('__'),
       basis: [text(packet.id), text(packet.version), text(packet.form), session].join('|') + '\n' + lines.join('\n'),
       text: function (integrity) {
         var g = integrity || {};
@@ -384,6 +418,8 @@
         if (title) tail[0].push('title=' + title);
         // Then the time on the items, s (activeMs; files saved from 2026-11-13). duration_s spans days when a file is resumed.
         if (r.activeMs != null && r.activeMs !== '' && isFinite(Number(r.activeMs))) tail[0].push('active_s=' + Math.max(0, Math.round(Number(r.activeMs) / 1000)));
+        // 2026-11-17: right / attempted (accuracy_pct stays right / items given).
+        tail[0].push('accuracy_of_attempted_pct=' + summary.accuracyOfAttemptedPct);
         if (sc) tail.splice(1, 0, ['#score', session, kv('measure', sc.measure), kv('score', sc.score), kv('score_unit', sc.scoreUnit), kv('digits_correct', sc.digitsCorrect),
           kv('digits_possible', sc.digitsPossible), kv('items_correct', sc.itemsCorrect), kv('items_attempted', sc.itemsAttempted), kv('time_limit_s', sc.timeLimitS),
           kv('elapsed_s', sc.elapsedS), kv('hidden_s', sc.hiddenS), kv('completion', sc.completion), kv('prorated', !!sc.prorated), kv('scoring_version', sc.scoringVersion),
@@ -391,7 +427,9 @@
           // The reading tools on during a scored item.
           kv('tools_used', Array.isArray(sc.tools) ? sc.tools.map(text).join(';') : '')]
           // Untimed (an accommodation): two more cells, only then.
-          .concat(sc.untimed ? [kv('timing', 'untimed'), kv('usual_time_limit_s', sc.usualTimeLimitS)] : []));
+          .concat(sc.untimed ? [kv('timing', 'untimed'), kv('usual_time_limit_s', sc.usualTimeLimitS)] : [])
+          // Paused: two more cells, only then.
+          .concat(sc.pauses ? [kv('paused_s', sc.pausedS), kv('pauses', sc.pauses)] : []));
         return String.fromCharCode(0xFEFF) + [header].concat(rows, tail).map(line).join('\r\n') + '\r\n';
       },
       tsv: function () {
@@ -3405,7 +3443,10 @@
           var isVowel = function (ch) { return 'aeiou'.indexOf(ch.toLowerCase()) >= 0; };
           var vowelsShown = letters.every(function (ch, i) { return !isVowel(ch) || current[i] === ch.toLowerCase(); });
           var filled = letters.map(function (ch, i) { return fixed(ch) || isVowel(ch) || current[i] === ch.toLowerCase() ? ch : '_'; });
-          if (vowelsShown) { var nextBlank = filled.indexOf('_'); if (nextBlank >= 0) filled[nextBlank] = letters[nextBlank]; }
+          var blanks = function () { return filled.filter(function (ch) { return ch === '_'; }).length; };
+          // A hint never fills in the last letter: the student always writes at least one letter of the word.
+          if (vowelsShown) { var nextBlank = filled.indexOf('_'); if (nextBlank >= 0 && blanks() > 1) filled[nextBlank] = letters[nextBlank]; }
+          else if (!blanks()) { for (var k = letters.length - 1; k >= 0; k--) { if (!fixed(letters[k]) && isVowel(letters[k]) && current[k] !== letters[k].toLowerCase()) { filled[k] = '_'; break; } } }
           edit(filled.join(''), vowelsShown ? 'spelling_more_letters' : 'spelling_vowels');
         } }, text: L.spelling_bee_hint_vowels });
         var checkBtn = ctx.el('button', { type: 'button', class: 'primary', on: { click: submit }, text: L.spelling_bee_check });
@@ -4435,6 +4476,8 @@
               phase = 'type';
               set('');
               draw();
+              // The answer is covered again: the feedback line that showed it is cleared too.
+              if (typeof ctx.feedback === 'function') ctx.feedback('');
               focusPad();
               ctx.announce(L.math_ccc_again);
             } else {
@@ -4723,6 +4766,8 @@
               phase = 'type';
               set('');
               draw();
+              // The answer is covered again: the feedback line that showed it is cleared too.
+              if (typeof ctx.feedback === 'function') ctx.feedback('');
               focusPad();
               ctx.announce(L.math_rehearsal_again);
             } else {
@@ -4903,6 +4948,153 @@
         var chosen = String(response == null ? '' : response);
         return { correct: chosen !== '' && chosen === String(answer), digitsCorrect: null, digitsPossible: null };
       },
+    };
+    return module.exports;
+  })();
+  CHECK_ADAPTERS["read_along"] = (function () {
+    var module = { exports: {} };
+    // Practice adapter: a passage read aloud, one sentence at a time (read_along). Made by
+    // packet_read_along_builder.js on "Make a read-along". Listening practice, never scored: the student
+    // presses "I have read this page" and the item is recorded as practice "read".
+    // One item is one page of the passage: its sentences, each with a recording that was made ahead of
+    // time on the teacher's device. This file makes no speech: it only plays those recordings.
+    // "Read to me" reads the page from the top (or from the sentence last pressed), marking the sentence
+    // being read, the way Read the Story reads its story back. Pressing a sentence reads that sentence.
+    // A line may carry syl: the same words with a middle dot at each syllable break, worked out when the file
+    // was made (the app's on-device syllable table). "Syllables" shows the words that way; a screen reader is
+    // still given the plain words. Slower and Syllables stay as chosen from page to page.
+    // Supports counted: readThroughs (Read to me), lineReplays (a sentence pressed), and once for a page on
+    // which they were used, slower and syllables.
+    module.exports = {
+      id: 'read_along',
+      title: 'Read along',
+      labels: {
+        read_along_intro: 'Listen and follow the words. Press a sentence to hear it again.',
+        read_along_text: 'The words to read',
+        read_along_page: 'Page {n} of {total}',
+        read_along_play: 'Read to me',
+        read_along_stop: 'Stop',
+        read_along_slower: 'Slower',
+        read_along_syllables: 'Syllables',
+        read_along_done: 'I have read this page',
+        read_along_done_said: 'Good reading.',
+      },
+      // p: { lines: [{ text, audio: clip id or '', syl: the text with a dot at each syllable break, para: true when a new paragraph starts here }], heading, page, pages, lang }
+      // A clip id names a recording in lesson.audio. A line with no clip is shown and skipped by "Read to me".
+      prepare: function (p) {
+        p = p || {};
+        var line = function (v, max) { return typeof v === 'string' ? v.replace(/\s+/g, ' ').trim().slice(0, max) : ''; };
+        var clip = function (v) { return typeof v === 'string' && /^[A-Za-z0-9_-]{1,40}$/.test(v) ? v : ''; };
+        if (!Array.isArray(p.lines) || !p.lines.length || p.lines.length > 60) return { missing: ['lines'] };
+        var DOT = String.fromCharCode(183);
+        var lines = p.lines.map(function (row) {
+          var out = { text: line(row && row.text, 600), audio: clip(row && row.audio) }, syl = line(row && row.syl, 900);
+          // Kept only when it is the text itself with dots added: the words a student reads are never changed.
+          if (syl && syl !== out.text && syl.split(DOT).join('') === out.text) out.syl = syl;
+          if (row && row.para === true) out.para = true;
+          return out;
+        });
+        if (lines.some(function (row) { return !row.text; })) return { missing: ['text for every line'] };
+        if (!lines.some(function (row) { return row.audio; })) return { missing: ['a recording'] };
+        var lang = /^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})?$/.test(String(p.lang || '')) ? String(p.lang) : 'en';
+        var page = Math.floor(Number(p.page)) || 1, pages = Math.floor(Number(p.pages)) || 1;
+        var item = { lines: lines, lang: lang, page: Math.max(1, page), pages: Math.max(1, pages), word: lines[0].text.slice(0, 60), target: 'read' };
+        if (line(p.heading, 120)) item.heading = line(p.heading, 120);
+        return { item: item };
+      },
+      render: function (item, ctx) {
+        var L = ctx.L, nodes = [], run = 0, playing = false, from = 0, counted = {};
+        // What the student chose on an earlier page (this file, until it is closed): two marks on the page's top element.
+        var top = ctx.root.ownerDocument.documentElement, keep = { slow: top.getAttribute('data-read-along-slow') === '1', syl: top.getAttribute('data-read-along-syl') === '1' };
+        var remember = function (name, on) { if (on) top.setAttribute('data-read-along-' + name, '1'); else top.removeAttribute('data-read-along-' + name); };
+        var slow = !!keep.slow, hasSyl = item.lines.some(function (row) { return !!row.syl; }), showSyl = hasSyl && !!keep.syl;
+        var use = function (name) { if (!counted[name]) { counted[name] = true; ctx.support(name); } };
+        var press = function (button, on) { button.setAttribute('aria-pressed', String(on)); button.style.background = on ? 'var(--accent)' : ''; button.style.color = on ? 'var(--accent-ink)' : ''; };
+        if (item.heading) ctx.root.appendChild(ctx.el('p', { class: 'letters', style: 'margin:0 0 4px', text: item.heading }));
+        if (item.pages > 1) ctx.root.appendChild(ctx.el('p', { class: 'muted', style: 'margin:0 0 8px', 'data-read-along-page': '', text: ctx.fmt(L.read_along_page, { n: item.page, total: item.pages }) }));
+        var mark = function (index) {
+          nodes.forEach(function (n, i) {
+            var on = i === index;
+            n.style.background = on ? 'var(--ok-bg)' : 'none';
+            n.style.boxShadow = on ? '0 0 0 2px var(--ok)' : 'none';
+            // Above the dimming of the reading focus (Reading tools), which follows this sentence.
+            n.style.position = on ? 'relative' : '';
+            n.style.zIndex = on ? '1' : '';
+            if (on) n.setAttribute('aria-current', 'true'); else n.removeAttribute('aria-current');
+          });
+          if (index >= 0 && nodes[index] && typeof nodes[index].scrollIntoView === 'function') { try { nodes[index].scrollIntoView({ block: 'nearest' }); } catch (_) {} }
+        };
+        var playButton = ctx.el('button', { type: 'button', class: 'primary', 'data-read-along-play': '', text: L.read_along_play });
+        var slowButton = ctx.el('button', { type: 'button', 'data-read-along-slower': '', text: L.read_along_slower });
+        var sylButton = hasSyl ? ctx.el('button', { type: 'button', 'data-read-along-syllables': '', text: L.read_along_syllables }) : null;
+        press(slowButton, slow);
+        if (sylButton) press(sylButton, showSyl);
+        // The words as they are, or in syllables. A screen reader is given the plain words either way.
+        var paint = function () {
+          nodes.forEach(function (n, i) {
+            var row = item.lines[i];
+            if (showSyl && row.syl) { n.textContent = row.syl; n.setAttribute('aria-label', row.text); }
+            else { n.textContent = row.text; n.removeAttribute('aria-label'); }
+          });
+        };
+        var setPlaying = function (on) { playing = on; playButton.textContent = on ? L.read_along_stop : L.read_along_play; };
+        var rate = function () { return slow ? 0.8 : 1; };
+        var halt = function () { run++; ctx.stop(); mark(-1); setPlaying(false); };
+        // The page from line i to its end: each line marked while its recording plays. A newer run, or leaving
+        // the screen (which stops the clip), ends this one.
+        var readFrom = function (i) {
+          var mine = ++run;
+          setPlaying(true);
+          if (slow) use('slower');
+          var step = function (at) {
+            if (mine !== run) return;
+            while (at < item.lines.length && !item.lines[at].audio) at++;
+            if (at >= item.lines.length) { mark(-1); setPlaying(false); from = 0; return; }
+            mark(at);
+            ctx.play(item.lines[at].audio, rate()).then(function (ok) { if (mine !== run) return; if (ok === false) { mark(-1); setPlaying(false); return; } step(at + 1); });
+          };
+          step(i);
+        };
+        playButton.addEventListener('click', function () {
+          if (playing) { halt(); return; }
+          ctx.support('readThroughs');
+          readFrom(from);
+        });
+        slowButton.addEventListener('click', function () { slow = !slow; remember('slow', slow); press(slowButton, slow); });
+        if (sylButton) sylButton.addEventListener('click', function () { showSyl = !showSyl; remember('syl', showSyl); press(sylButton, showSyl); if (showSyl) use('syllables'); paint(); });
+        ctx.root.appendChild(ctx.el('div', { class: 'row', style: 'margin:8px 0' }, sylButton ? [playButton, slowButton, sylButton] : [playButton, slowButton]));
+        // data-read: running text, where the shell's reading focus can go.
+        var box = ctx.el('div', { role: 'group', 'aria-label': L.read_along_text, lang: item.lang, 'data-read': '', 'data-read-along-text': '',
+          style: 'font-size:1.5rem;line-height:1.9;border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin:12px 0;overflow-wrap:anywhere' });
+        item.lines.forEach(function (row, i) {
+          if (row.para && i > 0) box.appendChild(ctx.el('span', { style: 'display:block;height:.7em', 'aria-hidden': 'true' }));
+          // A sentence is a button that looks like text: pressing it reads that sentence, and "Read to me" then goes on from it.
+          var node = ctx.el('button', { type: 'button', 'data-read-along-line': String(i + 1), text: row.text,
+            style: 'display:inline;font:inherit;color:inherit;background:none;border:0;border-radius:6px;padding:2px 3px;margin:0;min-height:0;min-width:0;text-align:start;cursor:pointer;-webkit-box-decoration-break:clone;box-decoration-break:clone' });
+          if (!row.audio) node.setAttribute('aria-disabled', 'true');
+          node.addEventListener('click', function () {
+            if (!row.audio) return;
+            var mine = ++run;
+            setPlaying(false);
+            from = i;
+            ctx.support('lineReplays');
+            if (slow) use('slower');
+            mark(i);
+            ctx.play(row.audio, rate()).then(function () { if (mine === run) mark(-1); });
+          });
+          nodes.push(node);
+          box.appendChild(node);
+          box.appendChild(ctx.root.ownerDocument.createTextNode(' '));
+        });
+        ctx.root.appendChild(box);
+        if (showSyl) { paint(); use('syllables'); }
+        var done = ctx.el('button', { type: 'button', 'data-read-along-done': '', text: L.read_along_done });
+        done.addEventListener('click', function () { halt(); done.setAttribute('aria-disabled', 'true'); ctx.practice('read', L.read_along_done_said); });
+        ctx.root.appendChild(ctx.el('div', { class: 'row' }, [done]));
+        return { reveal: function () { halt(); done.setAttribute('aria-disabled', 'true'); } };
+      },
+      // Listening practice: no answer is right or wrong, so nothing is ever scored.
+      score: function () { return { correct: false, digitsCorrect: null, digitsPossible: null }; },
     };
     return module.exports;
   })();
@@ -5137,7 +5329,8 @@
                 badgeChildren.push(ctx.el('span', { text: item.word }));
                 children.push(ctx.el('span', {
                   'data-sr-symbol': item.word,
-                  style: 'font-size:1.7rem;font-weight:900;line-height:1.1;margin:4px 0;color:' + item.stroopInk,
+                  // A fixed white card in every theme (and with forced colors), so the ink is seen as it was made.
+                  style: 'display:inline-block;font-size:1.7rem;font-weight:900;line-height:1.1;margin:4px 0;padding:6px 14px;border-radius:10px;border:2px solid #6b7280;background:#ffffff;forced-color-adjust:none;color:' + item.stroopInk,
                 }, badgeChildren));
               } else if (item.flankerCenter >= 0) {
                 var chars = item.word.split('');
@@ -5294,7 +5487,8 @@
                 : isAimed
                   ? 'var(--warn)'
                   : 'var(--muted)';
-            btn.style.background = isTarget && lockedOn ? 'var(--ok-bg)' : isAimed ? 'var(--warn-bg)' : 'var(--bg)';
+            // A color item's lanes are not tinted: a green lane behind a color task is itself a color.
+            btn.style.background = isTarget && lockedOn && !item.stroopInk ? 'var(--ok-bg)' : isAimed && !item.stroopInk ? 'var(--warn-bg)' : 'var(--bg)';
             btn.style.transform = isAimed ? 'scale(1.03)' : 'scale(1)';
           }
 
@@ -6439,6 +6633,11 @@
     return str(value).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; });
   }
 
+  // BEGIN GENERATED FONTS (dev-tools/build_take_home_fonts.cjs)
+  // The reading fonts of Reading tools > Letters, inside every file (data/vendor/fonts/source.json).
+  var FONT_CSS = "@font-face{font-family:\"Lexend\";font-style:normal;font-weight:400;font-display:swap;src:url(data:font/woff2;base64,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) format(\"woff2\")}\n@font-face{font-family:\"Atkinson Hyperlegible\";font-style:normal;font-weight:400;font-display:swap;src:url(data:font/woff2;base64,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) format(\"woff2\")}";
+  var FONT_CREDIT = "Fonts: Lexend (2019 The Lexend Project Authors) and Atkinson Hyperlegible (2020 Braille Institute of America, Inc.), SIL Open Font License 1.1.";
+  // END GENERATED FONTS
   var CSS = [
     // 2026-11-12 look pass: --soft tints the helper buttons; every theme below sets it too.
     ':root{--bg:#f1f4fc;--card:#fff;--ink:#1d2433;--muted:#4a5468;--accent:#3d3aa8;--accent-ink:#fff;--ok:#1d6b3a;--ok-bg:#e3f4e9;--warn:#8a4b00;--warn-bg:#fff1dc;--line:#c9cede;--focus:#b54700;--soft:#eeeefb}',
@@ -6480,6 +6679,13 @@
     '@media (forced-colors:active){[data-hearing]{outline-color:Highlight}[data-hearing]::before{forced-color-adjust:none;background:Highlight;color:HighlightText}}.hear-now{min-height:1.5em;margin:0}[data-tool-group=choices] .lt-l,[data-tool-group=colors] .lt-l,[data-tool-group=directions] .lt-l{flex-basis:100%}[data-hear-row]{margin:12px 0}',
     // Phones: a choice's two buttons side by side (half the scrolling), and the next-step button across the card.
     '@media (max-width:480px){.choice:not([style]){flex-direction:row;align-items:stretch}.choice:not([style])>button{flex:1 1 0;min-width:0}[data-next],[data-practice-next]{width:100%}}',
+    // Phones, 2026-11-16 (measured at 390 and 360 px wide: the card started 290 px down, and 2 to 6 of Blend Sounds' six
+    // choices and a check's Next key were off the screen). While a screen shows its own heading ([data-step], set by
+    // screen()), the file's title is one small line and the Reading tools button sits beside the heading. Four or
+    // more sound choices go two across, Listen above the choice. Lists that set their own columns are left alone.
+    '@media (max-width:480px){main{padding-top:12px}[data-step] h1{font-size:1rem;margin:0 0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}[data-step] #app>h2:first-child{display:flex;align-items:center;min-height:48px;margin:0 0 8px;padding-inline-end:64px}}',
+    '@media (max-width:480px){[data-step] .lt-bar{margin:-56px 0 8px}}',
+    '@media (max-width:480px){.choices:not([style]):has(>.choice:nth-child(4)){grid-template-columns:1fr 1fr;gap:10px}.choices:not([style]):has(>.choice:nth-child(4))>.choice:not([style]){flex-direction:column;padding:8px}.choices:not([style]):has(>.choice:nth-child(4))>.choice>button{flex:none;padding-inline:8px;overflow-wrap:anywhere}}',
     // Reading tools (takeHomeTools): attributes on <html> set the size, the colors (the variables above) and the spacing.
     '[data-lt-size="1"]{font-size:125%}[data-lt-size="2"]{font-size:150%}[data-lt-size] body{font-size:1.125rem}[data-lt-size] button,[data-lt-size] .letters{overflow-wrap:anywhere}',
     '[data-lt-colors="1"]{--bg:#000;--card:#000;--ink:#fff;--muted:#fff;--accent:#ffeb3b;--accent-ink:#000;--ok:#7dff8f;--ok-bg:#000;--warn:#ffeb3b;--warn-bg:#000;--line:#fff;--focus:#00e5ff;--soft:#000}[data-lt-colors="1"] .card,[data-lt-colors="1"] .status{border:3px solid}',
@@ -6493,7 +6699,10 @@
     '[data-tool^=colors-]::before{content:"";display:inline-block;width:.8em;height:.8em;margin-inline-end:.4em;border-radius:50%;border:1px solid var(--ink);vertical-align:-.1em;background:linear-gradient(90deg,#fff 50%,#3d3aa8 50%)}[data-tool=colors-1]::before{background:linear-gradient(90deg,#000 50%,#ffeb3b 50%)}',
     '[data-tool=colors-2]::before{background:#e8d6a8}[data-tool=colors-3]::before{background:#1f2535}[data-tool=colors-4]::before{background:#0b5c86}[data-tool=colors-5]::before{background:#f6b400}[data-tool=colors-6]::before{background:#1f5f55}',
     '[data-lt-spacing] main *{line-height:1.5!important;letter-spacing:.12em!important;word-spacing:.16em!important}[data-lt-spacing] main p{margin-bottom:2em!important}',
-    '.lt-bar{display:flex;justify-content:flex-end;margin:0 0 8px}.lt-panel{clear:both}.lt-h,.lt-l{font-weight:700;margin:0;min-width:7em}@media (max-width:480px){.lt-g .lt-l{flex-basis:100%}}',
+    // Letters: the device's own fonts. Buttons and fields take the page's font (font:inherit).
+    '[data-lt-font="1"] body,[data-tool=font-1]{font-family:Lexend,system-ui,sans-serif}[data-lt-font="2"] body,[data-tool=font-2]{font-family:"Atkinson Hyperlegible",system-ui,sans-serif}',
+    '[data-lt-font="3"] body,[data-tool=font-3]{font-family:Georgia,"Times New Roman",Times,serif}[data-lt-font="4"] body,[data-tool=font-4]{font-family:"Comic Sans MS","Comic Sans","Chalkboard SE","Comic Neue","Comic Relief",system-ui,sans-serif}',
+    '.lt-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 0 8px}.lt-bar{display:flex;justify-content:flex-end;margin:0 0 8px}.lt-panel{clear:both}.lt-h,.lt-l{font-weight:700;margin:0;min-width:7em}@media (max-width:480px){.lt-g .lt-l{flex-basis:100%}}',
     '.lt-g{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}.lt-g p{flex-basis:100%;margin:0}.lt-panel [aria-pressed=true]{background:var(--accent);color:var(--accent-ink)}',
     '.lt-read{position:relative}.lt-shade,.lt-line{position:absolute;left:0;right:0;pointer-events:none}.lt-shade{top:0;bottom:0}.lt-line{outline:3px solid var(--accent);border-radius:6px}',
     '.lt-lens{position:fixed;z-index:1;width:180px;height:180px;border:3px solid;border-radius:50%;overflow:hidden;pointer-events:none;background:var(--bg);box-shadow:0 4px 16px #0006}.lt-lens>main{position:absolute;left:0;top:0;margin:0;max-width:none;transform-origin:0 0}',
@@ -6513,8 +6722,8 @@
   // ---------------------------------------------------------------------------
   function takeHomeTools(o) {
     var doc = o.doc, win = o.win, L = o.L, el = o.el, page = o.page, html = doc.documentElement;
-    var NAMES = { size: ['', 'textLarger', 'textLargest'], colors: ['', 'contrastHigh', 'contrastSoft', 'colorsDark', 'colorsOcean', 'colorsSunny', 'colorsForest'], spacing: ['', 'spacingWide'], focus: ['', 'readingFocus'], lens: ['', 'magnifier'], choices: ['', 'readChoices'], directions: ['', ''] };
-    var KEYS = Object.keys(NAMES), p = {}, groups = {}, rec = null, text = null, at = 0, painted = '';
+    var NAMES = { size: ['', 'textLarger', 'textLargest'], colors: ['', 'contrastHigh', 'contrastSoft', 'colorsDark', 'colorsOcean', 'colorsSunny', 'colorsForest'], spacing: ['', 'spacingWide'], font: ['', 'lettersLexend', 'lettersAtkinson', 'lettersBook', 'lettersRounded'], focus: ['', 'readingFocus'], lens: ['', 'magnifier'], choices: ['', 'readChoices'], directions: ['', ''] };
+    var KEYS = Object.keys(NAMES), p = {}, groups = {}, rec = null, text = null, at = 0, painted = '', read = null;
     var def = function (k) { return k === 'directions' && o.directionsOnce ? 1 : 0; };
     var clean = function (raw) {
       KEYS.forEach(function (k) {
@@ -6533,10 +6742,12 @@
       on: { click: function () { showPanel(panel.hidden); } } }, ['Aa', el('span', { class: 'sr', text: ' ' + L.tools_button })]);
     var panel = el('section', { id: 'lt-panel', class: 'card lt-panel', 'aria-labelledby': 'lt-title', hidden: true, 'data-tools': '',
       on: { keydown: function (e) { if (/^Esc/.test(e.key)) { e.preventDefault(); back(); } } } }, [
-      el('p', { id: 'lt-title', class: 'lt-h', text: L.tools_button }),
+      el('div', { class: 'lt-top' }, [el('p', { id: 'lt-title', class: 'lt-h', text: L.tools_button }),
+        el('button', { type: 'button', 'data-tools-close-top': '', on: { click: back }, text: L.tools_close })]),
       group('size', L.tools_size, [L.tools_normal, L.tools_size_1, L.tools_size_2]),
       group('colors', L.tools_colors, [L.tools_colors_0, L.tools_colors_1, L.tools_colors_2, L.tools_colors_3, L.tools_colors_4, L.tools_colors_5, L.tools_colors_6]),
       group('spacing', L.tools_spacing, [L.tools_normal, L.tools_spacing_1]),
+      group('font', L.tools_font, [L.tools_colors_0, L.tools_font_1, L.tools_font_2, L.tools_font_3, L.tools_font_4]),
       group('focus', L.tools_focus, [L.tools_off, L.tools_on], L.tools_focus_hint),
       group('lens', L.tools_lens, [L.tools_off, L.tools_on], L.tools_lens_hint),
       group('choices', L.tools_choices, [L.tools_off, L.tools_on], L.tools_choices_hint),
@@ -6625,19 +6836,22 @@
         text.classList.add('lt-read'); text.appendChild(shade); text.appendChild(line);
         if (!text.hasAttribute('tabindex')) { text.setAttribute('tabindex', '0'); text.setAttribute('data-lt-tab', ''); }
       }
-      if (on) paint();
+      // The band follows the part being read aloud (a read-along's sentence). The student can still move it.
+      var now = on ? text.querySelector('[aria-current=true]') : null, box = now !== read && now && now.getClientRects ? now.getClientRects()[0] : null;
+      read = now;
+      if (box) nearest(box.top + box.height / 2); else if (on) paint();
     };
     var mark = function () {
       if (!rec) return;
       var s = rec.supports = rec.supports && typeof rec.supports === 'object' ? rec.supports : {}, changed = false, forced = false;
       try { forced = win.matchMedia('(forced-colors: active)').matches; } catch (_) {}
-      [NAMES.size[p.size], forced ? '' : NAMES.colors[p.colors], NAMES.spacing[p.spacing], text ? NAMES.focus[p.focus] : '', NAMES.lens[p.lens], o.choices ? NAMES.choices[p.choices] : ''].forEach(function (n) {
+      [NAMES.size[p.size], forced ? '' : NAMES.colors[p.colors], NAMES.spacing[p.spacing], NAMES.font[p.font], text ? NAMES.focus[p.focus] : '', NAMES.lens[p.lens], o.choices ? NAMES.choices[p.choices] : ''].forEach(function (n) {
         if (n && !s[n]) { s[n] = 1; changed = true; }
       });
       if (changed) o.save();
     };
     var apply = function () {
-      ['size', 'colors', 'spacing'].forEach(function (k) { if (p[k]) html.setAttribute('data-lt-' + k, p[k]); else html.removeAttribute('data-lt-' + k); });
+      ['size', 'colors', 'spacing', 'font'].forEach(function (k) { if (p[k]) html.setAttribute('data-lt-' + k, p[k]); else html.removeAttribute('data-lt-' + k); });
       KEYS.forEach(function (k) { groups[k].buttons.forEach(function (b, v) { b.setAttribute('aria-pressed', String(v === p[k])); }); });
       grip.hidden = lens.hidden = !p.lens;
       copy = drag = null;
@@ -6685,6 +6899,20 @@
     groups.choices.box.hidden = !o.choices;
     groups.directions.box.hidden = !o.directions;
     clean(o.prefs);
+    // Letters use the device's own fonts (a file loads nothing). Rounded is offered only where the device has such
+    // a font: a wide word is measured with and without it.
+    var rounded = false;
+    try {
+      var probe = el('span', { style: 'position:absolute;visibility:hidden;white-space:nowrap;font-size:72px', text: 'mmmmmmmmmmlli' });
+      doc.body.appendChild(probe);
+      probe.style.fontFamily = 'monospace';
+      var plain = probe.offsetWidth;
+      probe.style.fontFamily = '"Comic Sans MS","Comic Sans","Chalkboard SE","Comic Neue","Comic Relief",monospace';
+      rounded = probe.offsetWidth !== plain;
+      doc.body.removeChild(probe);
+    } catch (_) {}
+    groups.font.buttons[4].hidden = !rounded;
+    if (!rounded && p.font === 4) p.font = 0;
     apply();
     return {
       item: function (r) { rec = r && !r.done ? r : null; scan(); mark(); },
@@ -6750,6 +6978,12 @@
     var namePrompted = false;
     var items = [];
     lesson.blocks.forEach(function (block) { block.items.forEach(function (item, i) { items.push({ activity: block.activity, item: item, n: i + 1, total: block.items.length }); }); });
+    // The missed questions once more (lesson.repeatMissed, practice files only): appended after the others, by their places.
+    var baseCount = items.length, repeatMissed = lesson.repeatMissed === true && lesson.mode !== 'probe';
+    var addAgain = function (list) {
+      if (items.length !== baseCount) return;
+      list.forEach(function (at, k) { var e = items[at]; items.push({ activity: e.activity, item: Object.assign({}, e.item, { id: String(e.item.id) + '-again' }), n: k + 1, total: list.length, again: true }); });
+    };
     var fmt = function (template, params) {
       return String(template || '').replace(/\{(\w+)\}/g, function (m, k) { return params && params[k] != null ? params[k] : m; });
     };
@@ -6765,6 +6999,7 @@
       return node;
     };
     var fresh = function () {
+      if (typeof baseCount === 'number' && items.length > baseCount) items.length = baseCount;
       return { name: '', index: 0, startedAt: null, finishedAt: null, savedFile: null, sent: null,
         items: items.map(function (e) { return { itemId: e.item.id, activity: e.activity, responses: [], attempts: 0, firstTry: false, correct: false, done: false, supports: {} }; }) };
     };
@@ -6814,6 +7049,8 @@
     };
     var load = function () {
       var parsed = stored();
+      if (parsed && repeatMissed && Array.isArray(parsed.again) && parsed.again.every(function (n) { return n === Math.floor(n) && n >= 0 && n < baseCount; })
+        && Array.isArray(parsed.items) && parsed.items.length === baseCount + parsed.again.length) addAgain(parsed.again);
       return parsed && Array.isArray(parsed.items) && parsed.items.length === items.length ? parsed : null;
     };
     var storePrefs = function () {
@@ -6865,6 +7102,9 @@
     var soundFailed = function (bad) {
       if (!bad) { if (soundNote && soundNote.parentNode) soundNote.parentNode.removeChild(soundNote); soundNote = null; return; }
       announce(L.audio_missing);
+      // Counted on the item on screen, so the teacher can tell an answer given without hearing the sound.
+      var heard = state && Array.isArray(state.items) ? state.items[state.index] : null;
+      if (heard && !heard.done) { heard.supports = heard.supports && typeof heard.supports === 'object' ? heard.supports : {}; heard.supports.soundFailed = (Number(heard.supports.soundFailed) || 0) + 1; save(); }
       if (soundNote && main.contains(soundNote)) return;
       soundNote = el('p', { class: 'status warn', 'data-sound-failed': '', text: L.sound_failed });
       var card = main.querySelector('.card'), line = card && card.querySelector('[data-feedback]');
@@ -7026,6 +7266,8 @@
       main.textContent = '';
       // hideHeading: the page title already shows it; screen readers still hear it.
       var h = el('h2', hideHeading ? { tabindex: '-1', class: 'sr', text: heading } : { tabindex: '-1', text: heading });
+      // For the phone layout (CSS [data-step]): this screen shows its own heading, so the file's title can be small.
+      try { if (hideHeading) doc.body.removeAttribute('data-step'); else doc.body.setAttribute('data-step', ''); } catch (_) {}
       main.appendChild(h);
       if (tools && tools.dock) tools.dock(h);
       nodes.forEach(function (n) { if (n) main.appendChild(n); });
@@ -7111,8 +7353,9 @@
         L.about_never,
         L.about_check,
         fmt(L.about_rules, { csp: m.csp || '' }),
-        fmt(L.about_licence, { licence: m.licence || '' }),
+        fmt(L.about_licence, { licence: m.licence || '', licenceUrl: m.licenceUrl || 'gnu.org/licenses/agpl-3.0.html', source: m.source || 'github.com/Apomera/AlloFlow' }),
         m.attributions && m.attributions.length ? fmt(L.about_credits, { list: m.attributions.join('; ') }) : '',
+        typeof m.fonts === 'string' ? m.fonts : '',
       ];
       if (check) texts = check.about(texts);
       var panel = el('div', { class: 'card about', id: 'about-panel', hidden: true, 'data-about': '' }, [
@@ -7132,6 +7375,9 @@
       var given = givenName;
       var nameInput = el('input', { id: 'learner-name', type: 'text', autocomplete: 'off', maxlength: '60' });
       var resumable = prior && prior.index > 0 && !prior.finishedAt;
+      // A finished run is still here: it can be seen (and saved) again. Unsaved results are never erased without asking.
+      var finished = !!(prior && prior.finishedAt && Array.isArray(prior.items) && prior.items.length);
+      var unsaved = finished ? !(prior.sent || prior.savedFile) : resumable;
       // No name: ask once (per opening of the file), gently; a name stays optional.
       var promptKeep = false;
       var promptText = el('p', { id: 'name-prompt-text', tabindex: '-1', style: 'margin:0 0 8px', text: L.name_prompt });
@@ -7159,23 +7405,47 @@
         save();
         if (check) check.begin(prior); else renderItem();
       };
-      var buttons = [el('button', { class: 'primary', type: 'button', on: { click: function () { begin(false); } }, text: resumable ? L.start_over : L.start })];
-      if (resumable) buttons.unshift(el('button', { class: 'primary', type: 'button', on: { click: function () { begin(true); } }, text: L.continue }));
+      // Start over asks first when it would erase answers that were not saved: an in-page panel, as on the finish screen.
+      var overText = el('p', { id: 'start-over-text', tabindex: '-1', style: 'margin:0 0 8px', text: finished ? L.practice_again_confirm : L.start_over_confirm });
+      var overKeep = el('button', { type: 'button', class: 'primary', 'data-start-over-keep': '', on: { click: function () { overBox.hidden = true; (buttons[0] || nameInput).focus(); } }, text: finished ? L.keep_results : L.keep_going });
+      var overBox = el('div', { class: 'status warn', role: 'group', 'aria-labelledby': 'start-over-text', hidden: true, 'data-start-over-confirm': '',
+        on: { keydown: function (e) { if (e.key === 'Escape' || e.key === 'Esc') { e.preventDefault(); overKeep.click(); } } } }, [
+        overText, el('div', { class: 'row' }, [overKeep, el('button', { type: 'button', 'data-start-over-yes': '', on: { click: function () { begin(false); } }, text: L.start_over })])]);
+      var buttons = [];
+      if (finished) buttons.push(el('button', { class: 'primary', type: 'button', 'data-see-results': '', on: { click: function () { state = load() || prior; renderFinish(); } }, text: L.finish }));
+      else if (resumable) buttons.push(el('button', { class: 'primary', type: 'button', 'data-continue': '', on: { click: function () { begin(true); } }, text: L.continue }));
+      buttons.push(finished || resumable
+        ? el('button', { type: 'button', 'data-start-over': '', on: { click: function () { if (!unsaved) { begin(false); return; } overBox.hidden = false; overText.focus(); } }, text: L.start_over })
+        : el('button', { class: 'primary', type: 'button', on: { click: function () { begin(false); } }, text: L.start }));
+      // The name a teacher gave (a #learner= link, or the file made for one student) fills the field. The last name used on
+      // this device does not: on a shared device it belongs to another child. Continue keeps it for the answers it continues.
       if (given) nameInput.value = given;
-      else if (prior && prior.name) nameInput.value = prior.name;
       var info = about();
       buttons.push(info.button);
       screen(lesson.title, [
         el('div', { class: 'card' }, [
           el('p', { text: L.intro }),
+          // Whose answers Continue goes on with (the name field is left for the student now at the device).
+          resumable && prior.name ? el('p', { class: 'muted', 'data-continue-name': '', text: fmt(L.continue_whose, { name: prior.name }) }) : null,
           el('label', { for: 'learner-name', text: L.learner_label }), nameInput, namePrompt,
-          el('div', { class: 'row', style: 'margin-top:16px' }, buttons),
+          el('div', { class: 'row', style: 'margin-top:16px' }, buttons), overBox,
         ]),
       ], true);
       main.appendChild(info.panel);
     };
 
     var renderItem = function () {
+      // At the end of the first time through: the questions missed on the first try, once more, as practice.
+      if (state.index >= items.length && repeatMissed && !state.again) {
+        var missed = [];
+        for (var m = 0; m < baseCount; m++) { var r0 = state.items[m]; if (r0 && r0.done && !r0.practice && !r0.firstTry && items[m].activity !== 'letter_tracing' && items[m].activity !== 'read_along') missed.push(m); }
+        state.again = missed;
+        if (missed.length) {
+          addAgain(missed);
+          missed.forEach(function (at) { state.items.push({ itemId: String(items[at].item.id) + '-again', activity: items[at].activity, responses: [], attempts: 0, firstTry: false, correct: false, done: false, supports: {}, practice: 'practice' }); });
+        }
+        save();
+      }
       if (state.index >= items.length) { renderFinish(); return; }
       var entry = items[state.index];
       var prevEntry = state.index > 0 ? items[state.index - 1] : null;
@@ -7186,6 +7456,9 @@
       var feedback = statusLine('', '');
       feedback.setAttribute('data-feedback', '');
       var area = el('div', {});
+      // A real tap within a quarter second of a new question is the tail of a double tap on the last screen, not an answer.
+      var shownAt = Date.now();
+      area.addEventListener('click', function (e) { if (e.isTrusted && Date.now() - shownAt < 250 && e.target && e.target.closest && e.target.closest('button')) { e.stopPropagation(); e.preventDefault(); } }, true);
       var handle = null;
       var nextButton = el('button', { class: 'primary', type: 'button', hidden: true, 'data-next': '', on: { click: function () { state.index++; save(); renderItem(); } },
         text: state.index === items.length - 1 ? L.finish : L.next });
@@ -7215,21 +7488,27 @@
         support: function (name) { rec.supports[name] = (rec.supports[name] || 0) + 1; save(); },
         isDone: function () { return rec.done; },
         attempts: function () { return rec.attempts; },
-        // Practice that is never scored (Letter Trace): 'traced' or 'skipped'.
+        // Practice that is never scored: 'traced' or 'skipped' (Letter Trace), 'read' (a page of a read-along).
         practice: function (status, text) {
           if (rec.done) return;
+          var kind = status === 'skipped' ? 'skipped' : status === 'read' ? 'read' : 'traced';
           rec.attempts++;
-          rec.responses.push(status === 'skipped' ? 'skipped' : 'traced');
-          rec.practice = status === 'skipped' ? 'skipped' : 'traced';
+          rec.responses.push(kind);
+          rec.practice = kind;
           feedback.className = 'status ok'; feedback.textContent = text || '';
           finishPractice();
         },
         // Grade one response. Returns 'correct', 'retry' (try again) or 'missed'
         // (attempts used up). The shell handles feedback, sounds and Next.
+        // An activity may clear (or replace) the feedback line, for example when a shown answer is covered again.
+        feedback: function (text) { if (rec.done) return; feedback.className = 'status'; feedback.removeAttribute('data-missed'); feedback.textContent = text ? String(text) : ''; },
         answer: function (response, isCorrect, options) {
           if (rec.done) return rec.correct ? 'correct' : 'missed';
           var o = options || {};
           var max = Number(item.maxAttempts) > 0 ? Number(item.maxAttempts) : 2;
+          // Two choices and no set number of tries: one try, since a second try could not miss.
+          var offered = Array.isArray(item.choices) ? item.choices.length : Array.isArray(item.options) ? item.options.length : 0;
+          if (!(Number(item.maxAttempts) > 0) && offered === 2) max = 1;
           rec.attempts++;
           rec.responses.push(typeof response === 'string' ? response.slice(0, 80) : JSON.stringify(response).slice(0, 200));
           if (isCorrect) {
@@ -7256,7 +7535,7 @@
         },
       };
       // Where the student is in the whole file, when it has more than one activity.
-      screen(fmt(L.item_of, { activity: activityTitle(entry.activity), n: entry.n, total: entry.total }), [
+      screen(entry.again ? fmt(L.again_of, { n: entry.n, total: entry.total }) : fmt(L.item_of, { activity: activityTitle(entry.activity), n: entry.n, total: entry.total }), [
         entry.total < items.length ? el('p', { class: 'muted', 'data-progress': '', style: 'margin:0', text: fmt(L.progress_all, { n: state.index + 1, total: items.length }) }) : null,
         el('div', { class: 'progress', 'aria-hidden': 'true' }, [el('span', { style: 'width:' + Math.round(100 * (state.index + 1) / items.length) + '%' })]),
         el('div', { class: 'card' }, [area, feedback, nextButton]),
@@ -7307,7 +7586,7 @@
           var r = state.items[i];
           return { n: i + 1, itemId: e.item.id, activity: e.activity, word: e.item.word, target: e.item.target != null ? e.item.target : null,
             responses: r.responses.slice(), attempts: r.attempts, firstTry: r.firstTry, correct: r.correct, done: r.done, ms: r.ms || 0,
-            supports: r.supports, practice: r.practice || null, flag: r.flag || '' };
+            supports: r.supports, practice: r.practice || null, flag: r.flag || '', typed: r.typed || undefined };
         }),
       };
       if (check) check.result(out);
@@ -7456,14 +7735,18 @@
         return t ? el('li', {}, [el('b', { text: activityTitle(b.activity) }), el('span', { text: fmt(L.done_activity || '{first} of {total}', { first: f, total: t }) })])
           : pt ? el('li', {}, [el('b', { text: activityTitle(b.activity) }), el('span', { text: fmt(L.done_practice, { done: pd, total: pt }) })]) : null;
       }).filter(Boolean);
-      var practiceTotal = state.items.filter(function (r, i) { return r.practice || (items[i] && items[i].activity === 'letter_tracing'); }).length;
+      var practiceTotal = state.items.filter(function (r, i) { return !(items[i] && items[i].again) && (r.practice || (items[i] && items[i].activity === 'letter_tracing')); }).length;
+      var againDone = state.items.filter(function (r, i) { return items[i] && items[i].again && r.done; }).length;
       screen(L.done_title, [
         el('div', { class: 'card' }, [
           el('div', { class: 'hero' }, [el('span', { class: 'done-star', 'aria-hidden': 'true' }),
             // A file of practice only (Letter Trace) says how much was done, not "0 of 0".
             el('p', { class: 'letters', text: s.items || !practiceTotal ? fmt(L.done_summary, { first: s.firstTry, total: s.items }) : fmt(L.done_practice, { done: s.practised, total: practiceTotal }) }),
-            s.afterRetry ? el('p', { text: fmt(L.done_retry, { retry: s.afterRetry }) }) : null]),
+            s.afterRetry ? el('p', { text: fmt(L.done_retry, { retry: s.afterRetry }) }) : null,
+            againDone ? el('p', { 'data-done-again': '', text: fmt(L.done_again, { n: againDone }) }) : null]),
           tally.length > 1 ? el('ul', { class: 'tally' }, tally) : null,
+          // Until it is saved or sent: the one thing left to do, in plain words.
+          !(state.sent || state.savedFile) ? el('p', { class: 'letters', 'data-last-step': '', text: L.done_last_step }) : null,
           el('div', { class: 'row' }, [sendButton, csvButton, againButton, info.button]),
           more,
           confirmBox,
@@ -7479,7 +7762,7 @@
       prefs: (stored() || {}).tools, store: function () { storePrefs(); }, save: function () { save(); },
       // Read the choices: in a file whose choices are read by the device voice, or whose opening does not play its sound choices.
       choices: lesson.blocks.some(function (b) { return /^(isolation|segmentation|mapping)$/.test(b.activity) || b.items.some(function (it) { return it.read === true; }); }),
-      directions: lesson.mode !== 'probe' && lesson.blocks.some(function (b) { return !/^(math_|vocab_|manipulation$|sound_sort$|word_families$)/.test(b.activity); }),
+      directions: lesson.mode !== 'probe' && lesson.blocks.some(function (b) { return !/^(math_|vocab_|read_along$|manipulation$|sound_sort$|word_families$)/.test(b.activity); }),
       directionsOnce: !!lesson.instructionsOnce }) : null;
     // A check (lesson.mode 'probe') brings its own flow in kit.check; a practice file has none.
     var check = kit.check ? kit.check({ doc: doc, win: win, lesson: lesson, L: L, kit: kit, items: items, renders: renders, matches: matches, el: el, fmt: fmt, announce: announce,
@@ -7579,6 +7862,9 @@
     '.prompt{font-size:2.6rem;font-weight:700;text-align:center;margin:8px 0 16px;overflow-wrap:anywhere}.blank{display:inline-block;min-width:1.6em;border-bottom:4px solid var(--accent);color:var(--accent)}',
     '.answer{display:block;margin:0 auto;text-align:center;font-size:2rem;font-weight:700;max-width:220px}',
     '.pad{display:grid;grid-template-columns:repeat(3,minmax(64px,96px));gap:10px;justify-content:center;margin:16px auto 0}.pad button{min-height:56px;font-size:1.5rem;font-weight:700;padding:6px}.pad .wide{grid-column:1/-1}',
+    // A short phone screen (2026-11-16, measured at 360 x 640: the Next key of a Missing Number check was 48 px below the
+    // screen): the keys are 48 px tall, still a full touch target, and the spaces are a little smaller.
+    '@media (max-width:480px) and (max-height:700px){.prompt{font-size:2.2rem;margin:4px 0 10px}.answer{font-size:1.6rem;padding:4px 12px}.pad{gap:8px;margin-top:10px}.pad button{min-height:48px}.timer{margin-bottom:8px}[data-step] .card{margin-top:8px}}',
     '.pair{display:flex;gap:24px;justify-content:center;flex-wrap:wrap;list-style:none;padding:0;margin:16px 0}.pair button{min-width:132px;min-height:132px;font-size:3rem;font-weight:700;border-width:4px}.pair button.right{border-color:var(--ok);background:var(--ok-bg)}',
     '.scroll{overflow-x:auto}.review{width:100%;border-collapse:collapse;font-size:.95rem}.review th,.review td{border:1px solid var(--line);padding:6px 8px;text-align:start}.review td:nth-child(2),.review td:nth-child(5){white-space:nowrap}',
   ].join('\n');
@@ -7683,6 +7969,8 @@
       itemsCorrect: itemsCorrect, itemsAttempted: itemsAttempted, timeLimitS: limit, elapsedS: tenth(elapsed * 1000), hiddenS: tenth(t.hiddenMs), completion: away ? 'time_up_away' : completion,
       prorated: prorated, noScoreReason: why, scoringVersion: Number(m.scoringVersion) || 1, formVersion: m.formVersion == null ? '' : m.formVersion,
       attempt: Math.max(1, Math.floor(Number(t.attempt)) || 1), flags: (Array.isArray(t.flags) ? t.flags : []).map(String) };
+    // Paused (Stop the check, then Keep going): the time and the count, only when it happened.
+    if (Number(t.pauses) > 0) { out.pausedS = tenth(t.pausedMs); out.pauses = Math.floor(Number(t.pauses)); }
     // Untimed (an accommodation): said in the score, with the form's usual limit, so no reader takes it for a timed result.
     if (m.untimed === true && limit === null) { out.untimed = true; out.usualTimeLimitS = Number(m.usualTimeLimitS) > 0 ? Number(m.usualTimeLimitS) : null; }
     return out;
@@ -7722,7 +8010,7 @@
     meta.salt = sha256('alloflow-check-salt|' + content + '|' + (meta.lock ? meta.lock.hash : '')).hex.slice(0, 32);
     meta.minus = minus;
     copy.blocks.forEach(function (block) {
-      block.items.forEach(function (item) { item.key = codec.scramble(str(item.answer), meta.salt, item.id); delete item.answer; });
+      block.items.forEach(function (item) { item.key = codec.scramble(str(item.answer), meta.salt, item.id); delete item.answer; delete item.target; });
     });
     return copy;
   }
@@ -7780,7 +8068,7 @@
     // The reading tools' names in the supports (takeHomeTools), with the label words the teacher sees.
     var TOOLS = { textLarger: ['tools_size', 'tools_size_1'], textLargest: ['tools_size', 'tools_size_2'], contrastHigh: ['tools_colors', 'tools_colors_1'],
       contrastSoft: ['tools_colors', 'tools_colors_2'], colorsDark: ['tools_colors', 'tools_colors_3'], colorsOcean: ['tools_colors', 'tools_colors_4'], colorsSunny: ['tools_colors', 'tools_colors_5'],
-      colorsForest: ['tools_colors', 'tools_colors_6'], spacingWide: ['tools_spacing', 'tools_spacing_1'], readingFocus: ['tools_focus'], magnifier: ['tools_lens'] };
+      colorsForest: ['tools_colors', 'tools_colors_6'], spacingWide: ['tools_spacing', 'tools_spacing_1'], lettersLexend: ['tools_font', 'tools_font_1'], lettersAtkinson: ['tools_font', 'tools_font_2'], lettersBook: ['tools_font', 'tools_font_3'], lettersRounded: ['tools_font', 'tools_font_4'], readingFocus: ['tools_focus'], readChoices: ['tools_choices'], magnifier: ['tools_lens'] };
     var answerOf = function (item) { return kit.codec.unscramble(item.key, meta.salt, item.id); };
     var markOf = function (entry, answer, response) {
       var scorer = kit.scorers && kit.scorers[entry.activity];
@@ -7980,6 +8268,7 @@
           how ? el('p', { class: 'letters', text: how }) : null,
           el('p', { text: limitMs ? fmt(L.check_ready_timed, { time: timeWords(limitMs / 1000) }) : L.check_ready_untimed }),
           el('p', { text: L.check_ready_one_try }),
+          first && /^(quantity_discrimination|missing_number)$/.test(first.activity) ? el('p', { class: 'muted', 'data-check-adult': '', text: L.check_ready_adult }) : null,
           el('div', { class: 'row' }, [el('button', { class: 'primary', type: 'button', 'data-check-begin': '', on: { click: startRun }, text: L.check_begin })]),
         ]),
       ]);
@@ -7999,7 +8288,7 @@
       var s = S(), c = C();
       if (c.phase === 'run' || c.phase === 'done') return;
       var t = nowMs();
-      c.phase = 'run'; c.t0 = t; c.deadline = limitMs ? t + limitMs : null; c.seen = t; c.hiddenMs = 0; c.hiddenFrom = null; c.pausedMs = 0; c.pausedFrom = null;
+      c.phase = 'run'; c.t0 = t; c.deadline = limitMs ? t + limitMs : null; c.seen = t; c.hiddenMs = 0; c.hiddenFrom = null; c.pausedMs = 0; c.pausedFrom = null; c.pauses = 0;
       // Tries are counted for each learner label on this device. The label is
       // kept as a hash, so no earlier name stays behind after Start over.
       var who = 't' + kit.hash(String(s.name || '').replace(/^\s+|\s+$/g, '').toLowerCase());
@@ -8058,7 +8347,19 @@
         api.clockHold(on); card.hidden = on; api.save();
         if (!on) tick();
       };
-      var keep = function () { stopBox.hidden = true; pause(false); stopButton.focus(); };
+      // Keep going: the problem that was on screen during the pause is set aside (not counted) and the next one comes.
+      var keep = function () {
+        stopBox.hidden = true; pause(false);
+        var s2 = S(), cur = current, c3 = C();
+        // Counted as a pause only now, when the student goes on.
+        if (c3.phase === 'run') { c3.pauses = (Number(c3.pauses) || 0) + 1; c3.flags.paused = 1; }
+        if (cur && !cur.rec.done && C().phase === 'run') {
+          // Not done and no answer: every reader then counts it as not attempted.
+          cur.rec.attempts = 0; cur.rec.flag = 'paused';
+          api.clockStop(); current = null; s2.index++; api.save(); runItem(); return;
+        }
+        stopButton.focus();
+      };
       var stopButton = el('button', { type: 'button', 'data-stop': '', on: { click: function () { pause(true); stopBox.hidden = false; stopText.focus(); } }, text: L.check_stop });
       var stopBox = el('div', { class: 'status warn', role: 'group', 'aria-labelledby': 'check-stop-text', hidden: true, 'data-stop-confirm': '',
         on: { keydown: function (e) { if (/^Esc/.test(e.key)) { e.preventDefault(); keep(); } } } }, [
@@ -8079,7 +8380,12 @@
       if (c.phase !== 'run') return;
       if (away) c.flags.time_up_away = 1;
       var rec = s.items[s.index];
-      if (rec && !rec.done) rec.flag = 'time_up';
+      if (rec && !rec.done) {
+        rec.flag = 'time_up';
+        // What was on the number pad is kept in its own field, not counted (no answer, not done).
+        var typed = current && current.rec === rec && current.pad ? String(current.pad.value() || '') : '';
+        if (/[0-9]/.test(typed)) rec.typed = typed.slice(0, 20);
+      }
       finishRun('time');
     };
     var finishRun = function (completion) {
@@ -8171,7 +8477,7 @@
         });
         out.score = kit.score({ measure: meta.measure, scoreUnit: meta.scoreUnit, timeLimitS: lesson.timeLimitS, scoringVersion: meta.scoringVersion, formVersion: meta.formVersion,
           untimed: meta.untimed === true, usualTimeLimitS: meta.usualTimeLimitS }, rows,
-          { elapsedMs: c.t0 ? (c.end || nowMs()) - c.t0 - (c.pausedMs || 0) : 0, hiddenMs: c.hiddenMs, completion: c.completion, attempt: c.attempt, flags: Object.keys(c.flags).sort() });
+          { elapsedMs: c.t0 ? (c.end || nowMs()) - c.t0 - (c.pausedMs || 0) : 0, hiddenMs: c.hiddenMs, pausedMs: c.pausedMs, pauses: c.pauses, completion: c.completion, attempt: c.attempt, flags: Object.keys(c.flags).sort() });
         // The reading tools that were on during a scored item, in the panel's order.
         out.score.tools = Object.keys(TOOLS).filter(function (name) {
           return out.items.some(function (it, i) { return !items[i].item.practice && it.supports && it.supports[name]; });
@@ -8198,6 +8504,7 @@
             r.digitsPossible != null ? fmt(L.check_review_digits, { correct: r.digitsCorrect, possible: r.digitsPossible }) : '',
             fmt(L.check_review_time, { elapsed: r.elapsedS, limit: r.timeLimitS ? fmt(L.check_review_limit, { seconds: r.timeLimitS }) : L.check_review_no_limit }),
             fmt(L.check_review_hidden, { hidden: r.hiddenS }),
+            r.pauses ? fmt(L.check_review_paused, { paused: r.pausedS, times: r.pauses === 1 ? L.check_review_paused_once : fmt(L.check_review_paused_many, { n: r.pauses }) }) : '',
             r.prorated ? L.check_review_prorated : '',
             r.untimed ? fmt(L.check_review_untimed, { seconds: r.usualTimeLimitS || '' }) : '',
             fmt(L.check_review_attempt, { n: r.attempt }),
@@ -8207,7 +8514,8 @@
             lock ? '' : L.check_review_no_code,
           ];
           var body = !lock ? [] : f.items.map(function (it) {
-            var result = it.practice ? L.check_r_practice : it.flag === 'skipped' ? L.check_r_skipped : it.flag === 'time_up' ? L.check_r_time_up
+            var result = it.practice ? L.check_r_practice : it.flag === 'skipped' ? L.check_r_skipped : it.flag === 'paused' ? L.check_r_paused
+              : it.flag === 'time_up' ? (it.typed ? fmt(L.check_r_time_up_typed, { typed: it.typed }) : L.check_r_time_up)
               : !it.attempts ? L.check_r_not_reached : it.correct ? L.check_r_right : L.check_r_wrong;
             return el('tr', {}, [cell(it.n), cell(it.word), cell((it.responses || []).join(' | ')), cell(result), cell(it.target), cell(Math.round((Number(it.ms) || 0) / 100) / 10)]);
           });
@@ -8264,7 +8572,7 @@
             el('button', { type: 'button', class: 'primary', 'data-check-again-no': '', on: { click: function () { againBox.hidden = true; again.focus(); } }, text: L.check_again_no }),
             el('button', { type: 'button', 'data-check-again-yes': '', on: { click: function () {
               var next = api.fresh();
-              next.name = s.name; next.tries = s.tries;
+              next.name = ''; next.tries = s.tries;
               api.state(next); api.save(); api.renderStart();
             } }, text: L.check_again_yes }),
           ]),
@@ -8327,7 +8635,7 @@
       + ';\nvar renders=' + renders + ';\nvar kit={csv:' + packetCsv.toString() + ',\nhash:' + hashText.toString() + ',\ntools:' + takeHomeTools.toString().replace(/\n +/g, '\n') + ',\nmailbox:' + (mailbox ? takeHomeMailbox.toString() : 'null')
       + '};\n' + checkParts + pictureParts + '(' + takeHomeShell.toString() + ')(document,window,lesson,labels,matches,renders,kit);\n})();\n').replace(/\r\n?/g, '\n');
     var digest = sha256(script);
-    var csp = "default-src 'none'; script-src " + (digest ? "'sha256-" + digest.base64 + "'" : "'unsafe-inline'") + "; style-src 'unsafe-inline'; media-src data: blob:; img-src data:"
+    var csp = "default-src 'none'; script-src " + (digest ? "'sha256-" + digest.base64 + "'" : "'unsafe-inline'") + "; style-src 'unsafe-inline'; media-src data: blob:; img-src data:" + (FONT_CSS ? '; font-src data:' : '')
       + "; form-action 'none'; base-uri 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; manifest-src 'none'; connect-src " + connect;
     // What a reviewer (or a parent, behind "About this file") can check.
     var stem = packetCsv({ lessonTitle: lesson.title, learner: 'LEARNER' }).stem + '__DATE';
@@ -8344,7 +8652,7 @@
       network: mailbox ? { sendsTo: 'script.google.com', what: 'the results, to the class mailbox of the teacher', when: 'only when the learner presses Send' } : 'none',
       never: (mailbox ? [] : ['internet connection']).concat(['microphone', 'camera', 'cookies', 'AI']),
       integrity: 'Each saved file carries a check value (SHA-256, or FNV-1a where the browser cannot make SHA-256). It detects accidental edits, not deliberate ones.',
-      csp: csp, scriptSha256: digest ? digest.hex : '', licence: 'AGPL-3.0', attributions: Array.isArray(opts.attributions) ? opts.attributions.map(str) : [],
+      csp: csp, scriptSha256: digest ? digest.hex : '', licence: 'AGPL-3.0', licenceUrl: 'gnu.org/licenses/agpl-3.0.html', source: 'github.com/Apomera/AlloFlow', attributions: Array.isArray(opts.attributions) ? opts.attributions.map(str) : [], fonts: FONT_CREDIT || undefined,
     };
     if (probe) {
       var all = lesson.blocks.reduce(function (list, b) { return list.concat(b.items); }, []);
@@ -8358,12 +8666,12 @@
     }
     // dir comes from the app (labels.dir) so Arabic, Farsi, Urdu, Hebrew... files read right to left.
     var dir = labels.dir === 'rtl' || labels.dir === 'ltr' ? ' dir="' + labels.dir + '"' : '';
-    var openHere = typeof labels.open_here === 'string' ? labels.open_here : /^en(?:-|$)/i.test(String(labels.lang || 'en')) ? OPEN_HERE : '';
+    var openHere = typeof labels.open_here === 'string' ? labels.open_here : /^en(?:-|$)/i.test(String(labels.lang || 'en')) ? OPEN_HERE.replace('{address}', openAddress()) : '';
     return '<!doctype html><html lang="' + escapeHtml(labels.lang || 'en') + '"' + dir + '><head><meta charset="utf-8">'
       + '<meta name="viewport" content="width=device-width,initial-scale=1">'
       + '<meta http-equiv="Content-Security-Policy" content="' + csp + '">'
       + '<meta name="generator" content="' + PLAYER + '">'
-      + '<title>' + escapeHtml(lesson.title) + '</title><style>' + CSS + (probe ? '\n' + CHECK_CSS : '') + '</style></head>'
+      + '<title>' + escapeHtml(lesson.title) + '</title><style>' + (FONT_CSS ? FONT_CSS + '\n' : '') + CSS + (probe ? '\n' + CHECK_CSS : '') + '</style></head>'
       // #app holds a plain note for previews that do not run the file (Drive, Classroom, iPad Files);
       // the player replaces it as soon as it starts.
       + '<body><main><h1>' + escapeHtml(lesson.title) + '</h1><div id="app"><p data-no-script>' + escapeHtml(labels.no_script) + '</p>' + (openHere ? '<p data-no-script data-open-here>' + escapeHtml(openHere) + '</p>' : '') + '</div><p id="live" class="sr" aria-live="polite"></p></main>'
@@ -8396,11 +8704,14 @@
     // A check (packet.mode "check", or "probe" in a file saved before 2026-11-12): its items also carry digits, and the file a score block.
     var probe = !!data.packet && typeof data.packet === 'object' && (data.packet.mode === 'check' || data.packet.mode === 'probe');
     var whole = function (v) { return v == null || v === '' || !Number.isFinite(Number(v)) ? null : Math.max(0, Math.min(1000000, Math.round(Number(v)))); };
-    var items = data.items.slice(0, 200).map(function (it) {
+    // Up to 600 items, as the Packets results page and Class Analytics read (a Word Sounds file can have 13 x 40).
+    var cut = data.items.length > 600;
+    var items = data.items.slice(0, 600).map(function (it) {
       return { ms: Math.max(0, Math.min(86400000, Math.round(Number(it && it.ms) || 0))), flag: str(it && it.flag).slice(0, 40), activity: str((it && it.activity) || (data.schemaVersion === 1 ? 'isolation' : '')).slice(0, 40), word: str(it && it.word).slice(0, 60),
         target: str(it && it.target).slice(0, 40), attempts: Math.max(0, Math.min(9, Number(it && it.attempts) || 0)),
         firstTry: !!(it && it.firstTry), correct: !!(it && it.correct), done: !!(it && it.done),
-        practice: it && (it.practice === 'traced' || it.practice === 'skipped' || it.practice === 'practice') ? it.practice : null,
+        practice: it && (it.practice === 'traced' || it.practice === 'skipped' || it.practice === 'practice' || it.practice === 'read') ? it.practice : null,
+        typed: it && /^-?[0-9]{1,20}$/.test(String(it.typed || '')) ? String(it.typed) : undefined,
         responses: Array.isArray(it && it.responses) ? it.responses.slice(0, 6).map(function (r) { return str(r).slice(0, 80); }) : [],
         // Supports used (replays, hints): counts only, a bounded set of names.
         supports: (function (s) {
@@ -8430,7 +8741,7 @@
       titles[id] = str(given || (ADAPTERS[id] && ADAPTERS[id].title) || (id === 'isolation' ? 'Find Sounds' : id)).slice(0, 60);
     });
     var result = { activityTitles: titles, lessonId: str(data.lessonId).slice(0, 120), revision: str(data.revision).slice(0, 40), lessonTitle: str(data.lessonTitle).slice(0, 120),
-      learnerName: str(data.learnerName || data.learner).slice(0, 60), finishedAt: str(data.finishedAt).slice(0, 40), items: items, summary: summary, byActivity: byActivity,
+      learnerName: str(data.learnerName || data.learner).slice(0, 60), finishedAt: str(data.finishedAt).slice(0, 40), items: items, itemsCut: cut, summary: summary, byActivity: byActivity,
       integrity: integrity, sessionId: str(data.sessionId).slice(0, 80), startedLocal: str(data.startedLocal).slice(0, 40), finishedLocal: str(data.finishedLocal).slice(0, 40),
       durationMs: Math.max(0, Math.round(Number(data.durationMs) || 0)) };
     // Time on the items (files saved from 2026-11-13).
@@ -8445,6 +8756,7 @@
       // value; the items are, and the counts can be made again from them.
       result.score = { measure: str(sc.measure).slice(0, 40), score: num(sc.score), scoreUnit: str(sc.scoreUnit).slice(0, 40), digitsCorrect: whole(sc.digitsCorrect), digitsPossible: whole(sc.digitsPossible),
         itemsCorrect: whole(sc.itemsCorrect) || 0, itemsAttempted: whole(sc.itemsAttempted) || 0, timeLimitS: num(sc.timeLimitS), elapsedS: num(sc.elapsedS) || 0, hiddenS: num(sc.hiddenS) || 0,
+        pausedS: num(sc.pausedS) || 0, pauses: whole(sc.pauses) || 0,
         // time_up_away (2026-11-13): the time ran out while the page was hidden or closed; no score.
         completion: /^(time|ended_early|complete|time_up_away)$/.test(str(sc.completion)) ? sc.completion : '', prorated: sc.prorated === true,
         noScoreReason: str(sc.noScoreReason).slice(0, 40), scoringVersion: whole(sc.scoringVersion),

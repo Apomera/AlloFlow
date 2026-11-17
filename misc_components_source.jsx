@@ -1829,7 +1829,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                 </div>
                                             </div>
                                         <div hidden={!reviewsActivity('blending')} data-ws-review-part="blending">
-                                            <label className="text-xs font-bold text-violet-800 uppercase tracking-wider mb-2 block">{t('word_sounds.blend_options')}</label>
+                                            <label className="text-xs font-bold text-violet-700 uppercase tracking-wider mb-2 block">{t('word_sounds.blend_options')}</label>
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                     <span className="flex items-center justify-between gap-2 px-3 py-1.5 font-bold bg-green-100 text-green-800 rounded-lg border-2 border-green-300">
                                                         <span className="min-w-0 break-words">{word.targetWord || word.word}</span>
@@ -1937,7 +1937,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                         })()}
                                         <div hidden={!reviewsActivity('manipulation')} data-ws-review-part="manipulation">
                                             <div className="flex items-center justify-between mb-2">
-                                                <label className="text-xs font-bold text-amber-900 uppercase tracking-wider block">{t('word_sounds.sound_swap_label') || 'Sound Swap (Manipulation Activity)'}</label>
+                                                <label className="text-xs font-bold text-amber-700 uppercase tracking-wider block">{t('word_sounds.sound_swap_label') || 'Sound Swap (Manipulation Activity)'}</label>
                                                 {word.manipulationTask?.type && (
                                                     <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300">
                                                         {word.manipulationTask.type}

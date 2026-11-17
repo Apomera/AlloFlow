@@ -56,7 +56,7 @@ describe('(b) one file for each student', () => {
     expect(box.closest('section').id).toBe('step-3');
     expect(box.hasAttribute('open')).toBe(false);
     expect(box.querySelector('summary').textContent).toBe('Make one for each student');
-    expect(doc.getElementById('batch-names-hint').textContent).toBe('Use code names, not real names. At most 40 at a time.');
+    expect(doc.getElementById('batch-names-hint').textContent).toBe('Use code names or first names only, never full names. At most 40 at a time.'); // 2026-11-17: one name rule everywhere
     expect(doc.getElementById('batch-more').hasAttribute('open')).toBe(false);
     expect(doc.getElementById('batch-more').contains(doc.getElementById('f-batch-rotate'))).toBe(true);
     // Not a second main button: each step keeps one.

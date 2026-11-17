@@ -340,19 +340,45 @@ function VisualSupportsModal(props) {
     const dialog = dialogRef.current;
     if (!dialog) return undefined;
     const previousFocus = document.activeElement;
+    const backgroundState = [];
+    const seenNodes = new Set();
+    for (let branch = dialog; branch && branch !== document.body && branch.parentElement; branch = branch.parentElement) {
+      Array.from(branch.parentElement.children).forEach(function (sibling) {
+        if (sibling === branch || seenNodes.has(sibling) || /^(?:SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName) || (typeof sibling.matches === 'function' && sibling.matches('[aria-live], [role="status"], [role="alert"], [data-toast-region]'))) return;
+        seenNodes.add(sibling);
+        backgroundState.push({
+          node: sibling,
+          hadInert: sibling.hasAttribute('inert'),
+          ariaHidden: sibling.getAttribute('aria-hidden'),
+        });
+        sibling.setAttribute('inert', '');
+        sibling.setAttribute('aria-hidden', 'true');
+      });
+    }
+    // Shared scroll-lock counter: only the last dialog to close unlocks the page.
+    const alloScrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: '' });
+    const alloScrollLocked = !!document.body;
+    if (alloScrollLocked && ++alloScrollLock.count === 1) { alloScrollLock.prev = document.body.style.overflow; document.body.style.overflow = 'hidden'; }
     const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
     const trap = { root: dialog };
     trapStack.push(trap);
     const isTopTrap = function () { return trapStack[trapStack.length - 1] === trap; };
     const getFocusable = function () {
-      return Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+      return Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])')).filter(function (element) {
+        if (element.hidden || element.getAttribute('aria-hidden') === 'true' || element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+        const closedDetails = element.closest('details:not([open])');
+        if (closedDetails && !(element.tagName === 'SUMMARY' && element.parentElement === closedDetails)) return false;
+        const style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(element) : null;
+        return !style || (style.display !== 'none' && style.visibility !== 'hidden');
+      });
     };
     const first = getFocusable()[0];
     (first || dialog).focus();
     const onKeyDown = function (event) {
-      if (!isTopTrap()) return;
+      if (!dialog.isConnected || event.isComposing || event.keyCode === 229 || !isTopTrap()) return;
       if (event.key === 'Escape') {
         event.preventDefault();
+        event.stopPropagation();
         setShowVisualSupports(false);
         return;
       }
@@ -361,18 +387,32 @@ function VisualSupportsModal(props) {
       if (focusable.length === 0) { event.preventDefault(); dialog.focus(); return; }
       const firstItem = focusable[0];
       const lastItem = focusable[focusable.length - 1];
-      if (!dialog.contains(document.activeElement)) { event.preventDefault(); (event.shiftKey ? lastItem : firstItem).focus(); }
+      if (!dialog.contains(document.activeElement) || document.activeElement === dialog) { event.preventDefault(); (event.shiftKey ? lastItem : firstItem).focus(); }
       else if (event.shiftKey && document.activeElement === firstItem) { event.preventDefault(); lastItem.focus(); }
       else if (!event.shiftKey && document.activeElement === lastItem) { event.preventDefault(); firstItem.focus(); }
     };
     document.addEventListener('keydown', onKeyDown);
     return function () {
       document.removeEventListener('keydown', onKeyDown);
-      const wasTopTrap = isTopTrap();
+      if (alloScrollLocked) { alloScrollLock.count = Math.max(0, alloScrollLock.count - 1); if (alloScrollLock.count === 0 && document.body) document.body.style.overflow = alloScrollLock.prev; }
+      backgroundState.forEach(function ({ node, hadInert, ariaHidden }) {
+        if (!node || !node.isConnected) return;
+        if (!hadInert) node.removeAttribute('inert');
+        if (ariaHidden == null) node.removeAttribute('aria-hidden');
+        else if (ariaHidden !== 'true') node.setAttribute('aria-hidden', ariaHidden);
+      });
+      // The app shell also wraps this dialog in the host focus trap, and that
+      // entry sits above this one on the shared stack. It is this same dialog,
+      // not another one, so it must not stop focus going back to the opener.
+      let wasTopTrap = true;
+      for (let i = trapStack.length - 1; i >= 0 && trapStack[i] !== trap; i--) {
+        const other = trapStack[i] && trapStack[i].root;
+        if (!other || !(other === dialog || (typeof other.contains === 'function' && (other.contains(dialog) || dialog.contains(other))))) { wasTopTrap = false; break; }
+      }
       const trapIndex = trapStack.indexOf(trap);
       if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
-      if (wasTopTrap && (!previousFocus || previousFocus.isConnected !== false)) {
-        if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus();
+      if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus.isConnected) {
+        if (typeof previousFocus.focus === 'function') previousFocus.focus();
       }
     };
   }, [setShowVisualSupports]);

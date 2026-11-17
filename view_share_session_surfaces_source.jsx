@@ -318,11 +318,13 @@ function ClassMailboxSetupView(props) {
             {/* The connect self-test reports VERSION. Redeploying the current
                 script requires owner setup and preserves existing classroom
                 credentials at the same deployment URL. */}
-            {mbConfig && Number(mbConfig.v) > 0 && Number(mbConfig.v) < 29 && (
-              <div className="mb-3 bg-amber-50 border-2 border-amber-200 rounded-xl p-3">
+            {mbConfig && Number(mbConfig.v) > 0 && Number(mbConfig.v) < 30 && (
+              <div className="mb-3 bg-amber-50 border-2 border-amber-200 rounded-xl p-3" data-mailbox-update-notice={mbConfig.v}>
                 <p className="text-xs font-bold text-amber-800 mb-2">{t('mailbox.your_mailbox_script_is_v') || 'Your mailbox script is v'}{mbConfig.v}. {Number(mbConfig.v) < 28
                   ? tx('mailbox.owner_update_v28', 'Update to v28 to require owner-verified setup and prevent public first-caller enrollment. Existing tokens, Drive files and classroom data are preserved. Keep the same deployment URL:')
-                  : tx('mailbox.update_v29_pickup', 'Update to v29 so the Submission Inbox can collect student submissions from the mailbox, with no Drive downloads. Existing tokens, Drive files and classroom data are preserved. Keep the same deployment URL:')}</p>
+                  : Number(mbConfig.v) < 29
+                    ? tx('mailbox.update_v29_pickup', 'Update to v29 so the Submission Inbox can collect student submissions from the mailbox, with no Drive downloads. Existing tokens, Drive files and classroom data are preserved. Keep the same deployment URL:')
+                    : tx('mailbox.update_v30_fixes', 'Update to v30 for security and privacy fixes: stricter sign-in checks, sign-up and availability polls erased on their delete date, and a page reader that refuses private network addresses. Existing tokens, Drive files and classroom data are preserved. Keep the same deployment URL:')}</p>
                 <ol className="list-decimal list-inside text-xs text-amber-900 space-y-1">
                   <li><button type="button" onClick={copyMailboxScriptSource} disabled={mailboxScriptState.status !== 'ready'} aria-busy={mailboxScriptState.status === 'loading'} className="font-bold underline underline-offset-2 disabled:cursor-wait disabled:text-amber-700">{mailboxScriptState.status === 'loading' ? 'Preparing the updated script…' : mailboxScriptState.status === 'error' ? 'Updated script unavailable' : 'Copy the updated script'}</button>{mailboxScriptState.status === 'error' && <> (<button type="button" onClick={retryMailboxScriptSource} className="font-bold underline underline-offset-2">{t('mailbox.retry_loading') || 'retry loading'}</button>)</>} {t('mailbox.and_paste_it_over_the_old') || 'and paste it over the old code in your Apps Script project (script.google.com → your AlloFlow Class Mailbox).'}</li>
                   {Number(mbConfig.v) < 28 && <li>{tx('mailbox.owner_update_setup','Update appsscript.json using the manifest below, then run setupMailboxOwner in the editor as the deploying owner. Reuse the existing admin token from Script properties.')} <button type="button" onClick={() => copyToClipboard(ownerManifest)} className="font-bold underline underline-offset-2">{tx('mailbox.copy_owner_manifest', 'copy manifest')}</button></li>}

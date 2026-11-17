@@ -73,6 +73,12 @@ describe('O2 Choices: Easy, Medium, All', () => {
         const whole = blockOf(all, id), cut = blockOf(made, id);
         expect(cut, id).toBeTruthy();
         expect(cut.items.length, id).toBe(whole.items.length);
+        // 2026-11-16 (owner): Blend Sounds keeps every word at Medium (6, where the app shows 4); only Easy trims it.
+        if (id === 'blending' && level === 'medium') {
+          expect(cut.items.map(texts)).toEqual(whole.items.map(texts));
+          expect(cut.items.every((item) => texts(item).length === 6)).toBe(true);
+          continue;
+        }
         cut.items.forEach((item) => {
           const choices = texts(item);
           expect(choices.length, level + ' ' + id + ' ' + item.word).toBeLessThanOrEqual(limit);
@@ -83,13 +89,15 @@ describe('O2 Choices: Easy, Medium, All', () => {
         // Fewer than as built: the whole board has more choices than the limit for some word.
         expect(whole.items.some((item) => texts(item).length > limit), id).toBe(true);
       }
-      // Blend Sounds is exactly the core's trimChoices of the whole board (word closeness, as the app's trimSoundChoices).
+      // Blend Sounds at Easy is exactly the core's trimChoices of the whole board (word closeness, as the app's trimSoundChoices).
+      // At Medium it is the whole board (2026-11-16); the core's own limit is unchanged (the app uses it).
       const blendAll = blockOf(all, 'blending').items, blendCut = blockOf(made, 'blending').items;
       blendAll.forEach((item, i) => {
         const options = texts(item);
-        const want = core.trimChoices({ options, answer: item.target, count: core.choiceLimit(level, options.length), difficulty: level, closeness: core.wordCloseness });
+        const want = level === 'easy' ? core.trimChoices({ options, answer: item.target, count: core.choiceLimit(level, options.length), difficulty: level, closeness: core.wordCloseness }) : options;
         expect(texts(blendCut[i]), item.word).toEqual(want);
       });
+      expect(core.choiceLimit('medium', 6)).toBe(4);
       // Find Sounds: Easy asks the first sound, Medium the first or the last (isolationPositions).
       blockOf(made, 'isolation').items.forEach((item) => {
         const sounds = dictionary.labels ? core.dictionarySounds(item.word).sounds.map((s) => core.phonemeLabel(s, true)) : [];
@@ -130,15 +138,18 @@ describe('O2 Choices: Easy, Medium, All', () => {
     expect(html).toMatch(/<select id="f-choices"[^>]*>\s*<option value="easy">Easy: fewer choices<\/option>\s*<option value="medium">Medium<\/option>\s*<option value="all">All<\/option>/);
     expect(html).toContain('id="choice-level-field" hidden');
     // One short line under the field (a phone shows it whole); what each level does is folded away.
-    // 2026-11-14 (T1): renamed "Word Sounds" reference to "the AlloFlow app" so first-time teachers know what it refers to.
-    expect(html).toContain('<span class="hint" id="choice-level-hint">How many answers to choose from. Medium matches the AlloFlow app.</span>');
-    expect(html).toMatch(/<details class="why" id="choice-level-why">\s*<summary>What each level does<\/summary>\s*<ul>\s*<li>Easy: 3 choices[^<]*<\/li>\s*<li>Medium: 4 choices[^<]*<\/li>\s*<li>All: every choice[^<]*<\/li>/);
+    // 2026-11-16: "Medium matches the AlloFlow app." is gone: Blend Sounds now shows 6 at Medium, the app shows 4.
+    expect(html).toContain('<span class="hint" id="choice-level-hint">How many answers to choose from.</span>');
+    expect(html).not.toContain('Medium matches');
+    expect(html).toMatch(/<details class="why" id="choice-level-why">\s*<summary>What each level does<\/summary>\s*<ul>\s*<li>Easy: 3 choices[^<]*<\/li>\s*<li>Medium: 4 choices in Find Sounds and Rhyme Time, 6 in Blend Sounds;[^<]*<\/li>\s*<li>All: every choice[^<]*<\/li>/);
     const js = readFileSync('packets-make.js', 'utf8');
     expect(js).toContain("var CHOICE_ACTIVITIES = ['isolation', 'blending', 'rhyming', 'counting'];");
-    expect(js).toContain("choices: 'medium' };");
-    expect(js).toContain("show('choice-level-field', state.activities.some(function (id) { return CHOICE_ACTIVITIES.indexOf(id) >= 0; }));");
+    expect(js).toContain("choices: 'medium',");
+    expect(js).toContain("var leveled = state.activities.some(function (id) { return CHOICE_ACTIVITIES.indexOf(id) >= 0; });");
+    expect(js).toContain("show('choice-level-field', leveled);");
     expect(js).toContain("options.choices = CHOICE_LEVELS.indexOf(state.choices) >= 0 ? state.choices : 'medium';");
-    expect(js).toContain('choices: state.choices, tracing: state.tracing }));');
+    // The kept choices: more fields follow these two now (directions once, the pick order, the title, the words).
+    expect(js).toContain('choices: state.choices, tracing: state.tracing, ');
     expect(js).toContain('if (CHOICE_LEVELS.indexOf(result.choices) >= 0) fresh.choices = result.choices;');
     expect(builder.CHOICE_LEVELS).toEqual(['easy', 'medium', 'all']);
   });
@@ -529,18 +540,22 @@ describe('L5 a check\'s "Stop?" pauses the clock', () => {
     // Escape is Keep going.
     t.q('[data-stop-confirm]').dispatchEvent(new t.w.KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
     expect(t.seen(t.q('[data-stop-confirm]'))).toBe(false);
+    // 2026-11-17 (review D6): the problem seen before the pause is set aside, not counted; the next one comes.
+    expect(t.heading()).toBe('Question 2 of 4');
     expect(t.seen(t.q('[data-pad-input]'))).toBe(true);
     expect(t.left()).toBe('Time left: 0:55');
     t.tick(5000);
     expect(t.left()).toBe('Time left: 0:50');
     expect(t.state().check.pausedMs).toBe(70000);
-    answers.forEach((a) => { t.tick(1000); t.type(a); });
+    answers.slice(1).forEach((a) => { t.tick(1000); t.type(a); });
     const file = t.json();
-    // 5 + 5 + 4 x 1 seconds on the check; the 70 s of "Stop?" are not in it.
-    expect(file.score.elapsedS).toBe(14);
+    // 5 + 5 + 3 x 1 seconds on the check; the 70 s of "Stop?" are not in it, and are reported apart.
+    expect(file.score.elapsedS).toBe(13);
     expect(file.score.completion).toBe('complete');
-    expect(file.score.flags).toEqual([]);
-    expect(file.items[0].ms).toBe(11000);
+    expect(file.score.flags).toEqual(['paused']);
+    expect([file.score.pausedS, file.score.pauses]).toEqual([70, 1]);
+    expect(file.items[0]).toMatchObject({ flag: 'paused', attempts: 0, ms: 5000 });
+    expect(file.score.itemsAttempted).toBe(3);
   });
 
   it('Yes, stop while open: ended early, and the open question is not time on the check', () => {
@@ -562,7 +577,8 @@ describe('L5 a check\'s "Stop?" pauses the clock', () => {
     expect(t.seen(t.q('[data-pad-input]'))).toBe(false);
     t.tick(10000);
     t.button('Keep going').click();
-    answers.forEach((a) => { t.tick(1000); t.type(a); });
-    expect(t.json().score.elapsedS).toBe(6);
+    // 2026-11-17: the first problem was set aside at the pause.
+    answers.slice(1).forEach((a) => { t.tick(1000); t.type(a); });
+    expect(t.json().score.elapsedS).toBe(5);
   });
 });

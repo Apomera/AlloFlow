@@ -1688,6 +1688,9 @@ const createExport = deps => {
     } = live;
     const effH5pCfg = options && options.exportConfig || exportConfig || {};
     const isAssessmentH5p = Boolean(options && options.assessmentMode === true || effH5pCfg.assessmentMode === true);
+    // Model answers for open responses (essay samples, model notes) are teacher
+    // material: they go in only when Teacher Key is on. Choice questions keep
+    // their own "Show solution" outside a check.
     const explicitH5pKey = options && options.includeTeacherKey !== undefined ? Boolean(options.includeTeacherKey) : options && options.includeAnswerKey !== undefined ? Boolean(options.includeAnswerKey) : effH5pCfg.includeTeacherKey !== undefined ? Boolean(effH5pCfg.includeTeacherKey) : effH5pCfg.includeAnswerKey !== undefined ? Boolean(effH5pCfg.includeAnswerKey) : null;
     const allowH5pSolutions = !isAssessmentH5p;
     const allowH5pSampleKey = allowH5pSolutions && explicitH5pKey !== false;
@@ -3234,7 +3237,10 @@ const createExport = deps => {
     const slideAudience = isAssessmentSlides || options.audience === 'student' || exportConfig?.audience === 'student' || exportConfig?.builderViewFilter === 'student' || explicitSlideTeacherKey === false ? 'student' : 'teacher';
     const showSlideAnswerKey = slideAudience !== 'student' && !isAssessmentSlides && explicitSlideTeacherKey !== false;
     const _teacherOnlySlides = new Set(['alignment-report', 'lesson-plan', 'udl-advice', 'analysis', 'gemini-bridge']);
-    const history = _readingSourcePairsForExport(_rawHistory).filter(it => !_slideToggleOff(it) && (showSlideAnswerKey || !_teacherOnlySlides.has(it?.type)));
+    const _slideCandidates = _readingSourcePairsForExport(_rawHistory).filter(it => !_slideToggleOff(it));
+    const history = _slideCandidates.filter(it => showSlideAnswerKey || !_teacherOnlySlides.has(it?.type));
+    // Named in a notice after the export so a student deck never drops them silently.
+    const _teacherOnlyLeftOut = isAssessmentSlides ? [] : _slideCandidates.filter(it => !showSlideAnswerKey && _teacherOnlySlides.has(it?.type));
     if (Object.prototype.hasOwnProperty.call(options, 'liveHtml')) {
       try {
         if (typeof options.liveHtml !== 'string' || !options.liveHtml.trim()) throw new Error('The editable preview is not ready.');
@@ -5772,7 +5778,8 @@ const createExport = deps => {
               back: ''
             };
             const front = clip(fc.front || fc.term || fc.question || fc.word || '', 240);
-            const back = showSlideAnswerKey ? clip(fc.back || fc.def || fc.definition || fc.answer || fc.meaning || '', 340) : '';
+            // The back of a card is its content, not an answer key: only a check hides it.
+            const back = isAssessmentSlides ? '' : clip(fc.back || fc.def || fc.definition || fc.answer || fc.meaning || '', 340);
             return front || back ? {
               front,
               back
@@ -5872,20 +5879,41 @@ const createExport = deps => {
         } else if (type === 'lesson-plan' && showSlideAnswerKey && item.data && typeof item.data === 'object') {
           const lp = item.data;
           const runs = [];
+          // The app's own lesson plan writes essentialQuestion, objectives[],
+          // materialsNeeded[] and hook..closure; the other names are older shapes.
+          if (lp.essentialQuestion) {
+            runs.push(heading('Essential question'));
+            runs.push(body(clip(lp.essentialQuestion, 300), 13));
+          }
           if (lp.objective || lp.learningObjective) {
             runs.push(heading('Objective'));
             runs.push(body(clip(lp.objective || lp.learningObjective, 450), 13));
+          }
+          const objs = listOf(lp.objectives, 5);
+          if (objs.length) {
+            runs.push(heading('Objectives'));
+            objs.forEach(o => runs.push(bullet(clip(o, 220))));
           }
           const stds = listOf(lp.standards || lp.alignedStandards, 5);
           if (stds.length) {
             runs.push(heading('Standards'));
             stds.forEach(s => runs.push(bullet(s)));
           }
-          const mats = listOf(lp.materials, 6);
+          const mats = listOf(lp.materials || lp.materialsNeeded, 6);
           if (mats.length) {
             runs.push(heading('Materials'));
             mats.forEach(m => runs.push(bullet(m)));
           }
+          // The teaching sequence goes on its own slide so neither one shrinks to fit.
+          const seq = [];
+          [['hook', 'Hook'], ['directInstruction', 'Direct instruction'], ['guidedPractice', 'Guided practice'], ['independentPractice', 'Independent practice'], ['closure', 'Closure']].forEach(([field, label]) => {
+            const val = typeof lp[field] === 'string' ? clip(lp[field], 260) : '';
+            if (val) {
+              seq.push(heading(label));
+              seq.push(bullet(val));
+            }
+          });
+          const closureOnSeq = seq.length > 0 && typeof lp.closure === 'string' && !!lp.closure.trim();
           const steps = Array.isArray(lp.stages) ? lp.stages : Array.isArray(lp.phases) ? lp.phases : Array.isArray(lp.steps) ? lp.steps : Array.isArray(lp.activities) ? lp.activities : [];
           steps.slice(0, 8).forEach((st, si) => {
             const sTitle = typeof st === 'string' ? '' : clip(st && (st.phase || st.stage || st.title || st.label || `Phase ${si + 1}`), 120);
@@ -5893,11 +5921,12 @@ const createExport = deps => {
             if (sTitle) runs.push(heading(sTitle));
             if (sBody) runs.push(bullet(sBody));
           });
-          if (lp.assessment || lp.closure) {
-            runs.push(heading('Assessment / Closure'));
-            runs.push(body(clip(lp.assessment || lp.closure, 400), 13));
+          const lpWrapUp = lp.assessment || (closureOnSeq ? '' : lp.closure);
+          if (lpWrapUp) {
+            runs.push(heading(lp.assessment ? 'Assessment' : 'Closure'));
+            runs.push(body(clip(lpWrapUp, 400), 13));
           }
-          if (!runs.length) {
+          if (!runs.length && !seq.length) {
             const lines = _summarizeResource ? _summarizeResource(item, {
               maxChars: 2400,
               hideAnswers: !showSlideAnswerKey,
@@ -5909,7 +5938,8 @@ const createExport = deps => {
             }
             addTextSlides(itemTitle, lines.join('\n'));
           } else {
-            addRichSlide(itemTitle, runs, runs.map(r => r.text).join('\n'));
+            if (runs.length) addRichSlide(itemTitle, runs, runs.map(r => r.text).join('\n'));
+            if (seq.length) addRichSlide(itemTitle + (runs.length ? ' · Sequence' : ''), seq, seq.map(r => r.text).join('\n'));
           }
         } else if (type === 'alignment-report' && showSlideAnswerKey && item.data && typeof item.data === 'object') {
           const ar = item.data;
@@ -5981,6 +6011,15 @@ const createExport = deps => {
         });
         if (typeof message !== 'string' || !message || message === 'export_status.ppt_skipped') message = '{count} resource(s) have no slide format and were left out of the deck: {titles}. Use the HTML export for them.';
         addToast(message.replace('{count}', String(skipped.length)).replace('{titles}', titles), "info");
+      }
+      if (_teacherOnlyLeftOut.length) {
+        const leftTitles = _teacherOnlyLeftOut.slice(0, 6).map(it => String(it?.title || getDefaultTitle(it?.type) || it?.type || '').trim()).filter(Boolean).join(', ') + (_teacherOnlyLeftOut.length > 6 ? ', …' : '');
+        let leftMessage = t('export_status.ppt_teacher_only_left_out', {
+          count: _teacherOnlyLeftOut.length,
+          titles: leftTitles
+        });
+        if (typeof leftMessage !== 'string' || !leftMessage || leftMessage === 'export_status.ppt_teacher_only_left_out') leftMessage = 'This is a student deck, so {count} teacher resource(s) were left out: {titles}. Turn on Teacher Key to include them.';
+        addToast(leftMessage.replace('{count}', String(_teacherOnlyLeftOut.length)).replace('{titles}', leftTitles), "info");
       }
       return true;
     } catch (e) {

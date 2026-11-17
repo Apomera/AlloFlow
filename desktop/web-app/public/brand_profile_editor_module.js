@@ -189,7 +189,7 @@ function BrandProfileEditor(props) {
     while (cursor && cursor.parentElement) {
       const parent = cursor.parentElement;
       Array.from(parent.children).forEach(function (sibling) {
-        if (!sibling || sibling === cursor || seenSiblings.has(sibling) || !sibling.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName)) return;
+        if (!sibling || sibling === cursor || seenSiblings.has(sibling) || !sibling.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName) || typeof sibling.matches === 'function' && sibling.matches('[aria-live], [role="status"], [role="alert"], [data-toast-region]')) return;
         seenSiblings.add(sibling);
         isolated.push({
           sibling: sibling,
@@ -284,9 +284,7 @@ function BrandProfileEditor(props) {
             sibling.removeAttribute('inert');
           } catch (_) {}
         } else {
-          try {
-            sibling.inert = Boolean(entry.prevInert);
-          } catch (_) {}
+          /* already inert when this dialog opened: leave it as it is now */
         }
         if (entry.ariaHidden == null) {
           try {
@@ -294,7 +292,7 @@ function BrandProfileEditor(props) {
           } catch (_) {}
         } else {
           try {
-            sibling.setAttribute('aria-hidden', entry.ariaHidden);
+            if (entry.ariaHidden !== 'true') sibling.setAttribute('aria-hidden', entry.ariaHidden);
           } catch (_) {}
         }
       });

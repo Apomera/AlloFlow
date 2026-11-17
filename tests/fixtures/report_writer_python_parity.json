@@ -1,0 +1,516 @@
+{
+ "generatedBy": "dev-tools/build_report_writer_parity_fixture.py",
+ "chunks": [
+  {
+   "text": "WISC-V Full Scale IQ 97 (standard score; Average)"
+  },
+  {
+   "text": "BASC-3 (Parent) Hyperactivity 68 (T-score)"
+  },
+  {
+   "text": "Referral Reason: Referred by the classroom teacher in March."
+  },
+  "Woodcock-Johnson IV Broad Reading 88"
+ ],
+ "cases": [
+  {
+   "text": "For ages 8-12 the program ran 2 weeks; grades 9-12 followed, with 3/4 trials correct after 6 weeks and scores of 4-5.",
+   "dates": [],
+   "citations": []
+  },
+  {
+   "text": "Seen on 9/2 and again 4 weeks later on 9/20.",
+   "dates": [],
+   "citations": []
+  },
+  {
+   "text": "Testing began on September 2, 2026 and ended 4 weeks later on September 20, 2026.",
+   "dates": [
+    {
+     "claim": "2026-09-02 → 2026-09-20 (4 weeks)",
+     "finding": "Stated as '4 weeks' (28 days) but actual span is 18 days.",
+     "status": "contradicts",
+     "severity": "medium",
+     "fix_hint": "Verify the dates and the stated interval."
+    }
+   ],
+   "citations": []
+  },
+  {
+   "text": "Testing began on September 2, 2026 and ended 4 weeks later on Sept. 30, 2026.",
+   "dates": [],
+   "citations": []
+  },
+  {
+   "text": "Referred 2 March 2026; evaluated 3 months later on 14th December 2026.",
+   "dates": [
+    {
+     "claim": "2026-03-02 → 2026-12-14 (3 months)",
+     "finding": "Stated as '3 months' (90 days) but actual span is 287 days.",
+     "status": "contradicts",
+     "severity": "medium",
+     "fix_hint": "Verify the dates and the stated interval."
+    }
+   ],
+   "citations": []
+  },
+  {
+   "text": "Intake was 2026-01-05 and the review came 1 year later on 2027-01-04.",
+   "dates": [],
+   "citations": []
+  },
+  {
+   "text": "Intake was 2026-01-05 and the review came 2 months later on 2026-09-05.",
+   "dates": [
+    {
+     "claim": "2026-01-05 → 2026-09-05 (2 months)",
+     "finding": "Stated as '2 months' (60 days) but actual span is 243 days.",
+     "status": "contradicts",
+     "severity": "medium",
+     "fix_hint": "Verify the dates and the stated interval."
+    }
+   ],
+   "citations": []
+  },
+  {
+   "text": "First seen Jan 5, 2026, then 10 days later on 1/15/2026, then 2 weeks later on 2026-03-01.",
+   "dates": [
+    {
+     "claim": "2026-01-15 → 2026-03-01 (2 weeks)",
+     "finding": "Stated as '2 weeks' (14 days) but actual span is 45 days.",
+     "status": "contradicts",
+     "severity": "medium",
+     "fix_hint": "Verify the dates and the stated interval."
+    }
+   ],
+   "citations": []
+  },
+  {
+   "text": "The student may 5, 2026 times out of 10 respond; in may 2026 we met 2 weeks later than May 2026.",
+   "dates": [],
+   "citations": []
+  },
+  {
+   "text": "Seen February 30, 2026 and 1 week later on March 9, 2026; also 2026-13-01 and 1 day later 2026-12-02.",
+   "dates": [
+    {
+     "claim": "2026-03-09 → 2026-12-02 (1 day)",
+     "finding": "Stated as '1 day' (1 days) but actual span is 268 days.",
+     "status": "contradicts",
+     "severity": "medium",
+     "fix_hint": "Verify the dates and the stated interval."
+    }
+   ],
+   "citations": []
+  },
+  {
+   "text": "Testing began on 9/2/2026 and ended 4 weeks later on 9/20/2026.",
+   "dates": [
+    {
+     "claim": "2026-09-02 → 2026-09-20 (4 weeks)",
+     "finding": "Stated as '4 weeks' (28 days) but actual span is 18 days.",
+     "status": "contradicts",
+     "severity": "medium",
+     "fix_hint": "Verify the dates and the stated interval."
+    }
+   ],
+   "citations": []
+  },
+  {
+   "text": "Testing began on 9/2/2026 and ended 4 weeks later on 9/30/2026.",
+   "dates": [],
+   "citations": []
+  },
+  {
+   "text": "The first session was 1/5/26; the second came 1 day later, on 1/6/26, and the last 2 months later on 3/9/26.",
+   "dates": [],
+   "citations": []
+  },
+  {
+   "text": "Seen on 13/2/2026 and again 3 weeks later on 6/3/2026.",
+   "dates": [
+    {
+     "claim": "2026-02-13 → 2026-06-03 (3 weeks)",
+     "finding": "Stated as '3 weeks' (21 days) but actual span is 110 days.",
+     "status": "contradicts",
+     "severity": "medium",
+     "fix_hint": "Verify the dates and the stated interval."
+    }
+   ],
+   "citations": []
+  },
+  {
+   "text": "Observed 2-14-2025, then 1 year later on 2-14-2026, then 10 days later on 4-1-2026.",
+   "dates": [
+    {
+     "claim": "2026-02-14 → 2026-04-01 (10 days)",
+     "finding": "Stated as '10 days' (10 days) but actual span is 46 days.",
+     "status": "contradicts",
+     "severity": "medium",
+     "fix_hint": "Verify the dates and the stated interval."
+    }
+   ],
+   "citations": []
+  },
+  {
+   "text": "On 2/30/2026 nothing happened. On 12/1/2025 intake; 6 months later, 6/2/2026, review.",
+   "dates": [],
+   "citations": []
+  },
+  {
+   "text": "A score of 85-115 is average. Sessions ran 3/1/2026 to 3/8/2026, 1 week apart.",
+   "dates": [],
+   "citations": []
+  },
+  {
+   "text": "Evaluated 10/1/2026. filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler Then 2 weeks later on 12/25/2026.",
+   "dates": [],
+   "citations": []
+  },
+  {
+   "text": "Per the WISC-V results, reasoning was average. According to the Zorblax Battery findings, attention was weak.",
+   "dates": [],
+   "citations": [
+    {
+     "claim": "Cited: 'Zorblax Battery'",
+     "finding": "The report cites 'Zorblax Battery' but this source does not appear in any uploaded fact chunk. Possible fabricated reference.",
+     "status": "unsourced",
+     "severity": "medium",
+     "fix_hint": "Verify the source document was uploaded, or remove the citation."
+    }
+   ]
+  },
+  {
+   "text": "Based on the BASC-3 report and the Woodcock Johnson IV assessment, as well as the Teacher interview.",
+   "dates": [],
+   "citations": []
+  },
+  {
+   "text": "According to the Vineland Adaptive Behavior Scales profile and per the Conners 4 data, plus the BASC results.",
+   "dates": [],
+   "citations": [
+    {
+     "claim": "Cited: 'Vineland Adaptive Behavior Scales'",
+     "finding": "The report cites 'Vineland Adaptive Behavior Scales' but this source does not appear in any uploaded fact chunk. Possible fabricated reference.",
+     "status": "unsourced",
+     "severity": "medium",
+     "fix_hint": "Verify the source document was uploaded, or remove the citation."
+    }
+   ]
+  },
+  {
+   "text": "the Parent report, the ABC data, per the Zorblax Battery results and again the Zorblax Battery findings.",
+   "dates": [],
+   "citations": [
+    {
+     "claim": "Cited: 'Zorblax Battery'",
+     "finding": "The report cites 'Zorblax Battery' but this source does not appear in any uploaded fact chunk. Possible fabricated reference.",
+     "status": "unsourced",
+     "severity": "medium",
+     "fix_hint": "Verify the source document was uploaded, or remove the citation."
+    }
+   ]
+  },
+  {
+   "text": "According to the Wide Range Achievement Test score, and based on the Woodcock-Johnson protocol.",
+   "dates": [],
+   "citations": [
+    {
+     "claim": "Cited: 'Wide Range Achievement Test'",
+     "finding": "The report cites 'Wide Range Achievement Test' but this source does not appear in any uploaded fact chunk. Possible fabricated reference.",
+     "status": "unsourced",
+     "severity": "medium",
+     "fix_hint": "Verify the source document was uploaded, or remove the citation."
+    }
+   ]
+  },
+  {
+   "text": "Nothing to see here: no dates, no sources.",
+   "dates": [],
+   "citations": []
+  }
+ ],
+ "reports": [
+  {
+   "id": "wisc5-correct",
+   "kind": "correct",
+   "error": null,
+   "scores": [
+    {
+     "assessment": "WISC-V",
+     "subtest": "Full Scale IQ",
+     "score": 97,
+     "scoreType": "standard",
+     "classification": "Average",
+     "percentile": 42,
+     "ciLow": 92,
+     "ciHigh": 102,
+     "ciLevel": 95
+    },
+    {
+     "assessment": "WISC-V",
+     "subtest": "Verbal Comprehension",
+     "score": 76,
+     "scoreType": "standard",
+     "classification": "Very Low",
+     "percentile": 5
+    },
+    {
+     "assessment": "WISC-V",
+     "subtest": "Fluid Reasoning",
+     "score": 124,
+     "scoreType": "standard",
+     "classification": "Very High",
+     "percentile": 95
+    }
+   ],
+   "text": "On the WISC-V, the Full Scale IQ was 97 (standard score; Average; 42nd percentile; 95% CI 92-102). The Verbal Comprehension was 76 (Very Low), at the 5th percentile. The Fluid Reasoning of 124 (Very High) fell at the 95th percentile.",
+   "python": []
+  },
+  {
+   "id": "wjiv-correct",
+   "kind": "correct",
+   "error": null,
+   "scores": [
+    {
+     "assessment": "WJ-IV ACH",
+     "subtest": "Broad Reading",
+     "score": 110,
+     "scoreType": "standard",
+     "classification": "Average",
+     "percentile": 75
+    },
+    {
+     "assessment": "WJ-IV ACH",
+     "subtest": "Broad Math",
+     "score": 74,
+     "scoreType": "standard",
+     "classification": "Low",
+     "percentile": 4
+    },
+    {
+     "assessment": "WJ-IV ACH",
+     "subtest": "Broad Written Language",
+     "score": 66,
+     "scoreType": "standard",
+     "classification": "Very Low",
+     "percentile": 1
+    }
+   ],
+   "text": "On the WJ-IV ACH, Broad Reading was 110 (standard score; Average; 75th percentile). Broad Math was 74 (Low), at the 4th percentile. Broad Written Language was 66 (Very Low), at the 1st percentile.",
+   "python": []
+  },
+  {
+   "id": "kabc2-correct",
+   "kind": "correct",
+   "error": null,
+   "scores": [
+    {
+     "assessment": "KABC-II",
+     "subtest": "Fluid-Crystallized Index",
+     "score": 87,
+     "scoreType": "standard",
+     "classification": "Average",
+     "percentile": 19
+    },
+    {
+     "assessment": "KABC-II",
+     "subtest": "Sequential",
+     "score": 78,
+     "scoreType": "standard",
+     "classification": "Below Average",
+     "percentile": 7
+    }
+   ],
+   "text": "On the KABC-II, the Fluid-Crystallized Index was 87 (Average), at the 19th percentile. The Sequential scale was 78 (Below Average), at the 7th percentile.",
+   "python": []
+  },
+  {
+   "id": "basc3-correct",
+   "kind": "correct",
+   "error": null,
+   "scores": [
+    {
+     "assessment": "BASC-3 (Parent)",
+     "subtest": "Hyperactivity",
+     "score": 62,
+     "scoreType": "T-score",
+     "classification": "At-Risk",
+     "percentile": 88
+    },
+    {
+     "assessment": "BASC-3 (Parent)",
+     "subtest": "Attention Problems",
+     "score": 72,
+     "scoreType": "T-score",
+     "classification": "Clinically Significant",
+     "percentile": 97
+    },
+    {
+     "assessment": "BASC-3 (Parent)",
+     "subtest": "Anxiety",
+     "score": 48,
+     "scoreType": "T-score",
+     "classification": "Average",
+     "percentile": 45
+    }
+   ],
+   "text": "On the BASC-3 (Parent), Hyperactivity was a T-score of 62 (At-Risk; 88th percentile). Attention Problems was 72 (T-score; Clinically Significant; 97th percentile). Anxiety was a T-score of 48 (Average), at the 45th percentile.",
+   "python": []
+  },
+  {
+   "id": "celf5-correct",
+   "kind": "correct",
+   "error": null,
+   "scores": [
+    {
+     "assessment": "CELF-5",
+     "subtest": "Core Language",
+     "score": 86,
+     "scoreType": "standard",
+     "classification": "Average",
+     "percentile": 18
+    },
+    {
+     "assessment": "CELF-5",
+     "subtest": "Receptive Language",
+     "score": 80,
+     "scoreType": "standard",
+     "classification": "Below Average",
+     "percentile": 9
+    }
+   ],
+   "text": "On the CELF-5, the Core Language score was 86 (Average), at the 18th percentile. Receptive Language was 80 (Below Average), at the 9th percentile.",
+   "python": []
+  },
+  {
+   "id": "vineland3-correct",
+   "kind": "correct",
+   "error": null,
+   "scores": [
+    {
+     "assessment": "Vineland-3",
+     "subtest": "Adaptive Behavior Composite",
+     "score": 92,
+     "scoreType": "standard",
+     "classification": "Adequate",
+     "percentile": 30
+    },
+    {
+     "assessment": "Vineland-3",
+     "subtest": "Socialization",
+     "score": 75,
+     "scoreType": "standard",
+     "classification": "Moderately Low",
+     "percentile": 5
+    }
+   ],
+   "text": "On the Vineland-3, the Adaptive Behavior Composite was 92 (Adequate), at the 30th percentile. Socialization was 75 (Moderately Low), at the 5th percentile.",
+   "python": []
+  },
+  {
+   "id": "mixed-prose-correct",
+   "kind": "correct",
+   "error": null,
+   "scores": [
+    {
+     "assessment": "WISC-V",
+     "subtest": "Full Scale IQ",
+     "score": 97,
+     "scoreType": "standard",
+     "classification": "Average",
+     "percentile": 42
+    },
+    {
+     "assessment": "WISC-V",
+     "subtest": "Working Memory",
+     "score": 85,
+     "scoreType": "standard",
+     "classification": "Low Average",
+     "percentile": 16,
+     "ciLow": 79,
+     "ciHigh": 93,
+     "ciLevel": 95
+    }
+   ],
+   "text": "Student A attends a class of 24 students and passed 80 percent of weekly probes. The Full Scale IQ was 97 (Average). Working Memory was 85 (Low Average; 16th percentile; 95% CI 79-93). In a group of 105 peers, she ranked near the middle.",
+   "python": []
+  },
+  {
+   "id": "wisc5-wrong-label",
+   "kind": "planted",
+   "error": "88 called Average (WISC-V: Low Average)",
+   "scores": [
+    {
+     "assessment": "WISC-V",
+     "subtest": "Full Scale IQ",
+     "score": 88,
+     "scoreType": "standard",
+     "classification": "Low Average",
+     "percentile": 21
+    }
+   ],
+   "text": "On the WISC-V, the Full Scale IQ was 88 (Average), at the 21st percentile.",
+   "python": []
+  },
+  {
+   "id": "wisc5-wrong-percentile",
+   "kind": "planted",
+   "error": "110 placed at the 95th percentile (actually 75th)",
+   "scores": [
+    {
+     "assessment": "WISC-V",
+     "subtest": "Full Scale IQ",
+     "score": 110,
+     "scoreType": "standard",
+     "classification": "High Average",
+     "percentile": 75
+    }
+   ],
+   "text": "On the WISC-V, the Full Scale IQ was 110 (High Average), at the 95th percentile.",
+   "python": []
+  },
+  {
+   "id": "basc3-wrong-label",
+   "kind": "planted",
+   "error": "T 72 called Average (BASC-3: Clinically Significant)",
+   "scores": [
+    {
+     "assessment": "BASC-3 (Parent)",
+     "subtest": "Hyperactivity",
+     "score": 72,
+     "scoreType": "T-score",
+     "classification": "Clinically Significant",
+     "percentile": 97
+    }
+   ],
+   "text": "On the BASC-3 (Parent), Hyperactivity was a T-score of 72 (Average).",
+   "python": []
+  },
+  {
+   "id": "wisc5-wrong-score",
+   "kind": "planted",
+   "error": "Full Scale IQ given as 103 (actual 97)",
+   "scores": [
+    {
+     "assessment": "WISC-V",
+     "subtest": "Full Scale IQ",
+     "score": 97,
+     "scoreType": "standard",
+     "classification": "Average",
+     "percentile": 42
+    }
+   ],
+   "text": "On the WISC-V, the Full Scale IQ was a standard score of 103 (Average).",
+   "python": [
+    {
+     "claim": "SS 103",
+     "finding": "SS 103 is reported but does not appear (±1) in any uploaded fact chunk. Possible hallucinated score.",
+     "status": "unsourced",
+     "severity": "high",
+     "fix_hint": "Remove the claim or verify the source document."
+    }
+   ]
+  }
+ ]
+}

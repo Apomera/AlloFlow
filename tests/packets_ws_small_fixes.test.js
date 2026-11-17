@@ -72,9 +72,11 @@ describe('Letter Trace: the maker\'s choice reaches the file', () => {
     const html = readFileSync('packets-make.html', 'utf8');
     expect(html).toMatch(/<select id="f-trace-cases"[^>]*>\s*<option value="both">Capital, then lowercase<\/option>\s*<option value="capital">Capital only<\/option>\s*<option value="lowercase">Lowercase only<\/option>/);
     const js = readFileSync('packets-make.js', 'utf8');
-    expect(js).toContain("show('trace-cases-field', state.activities.indexOf('letter_tracing') >= 0);");
+    expect(js).toContain("var tracing = state.activities.indexOf('letter_tracing') >= 0;");
+    expect(js).toContain("show('trace-cases-field', tracing);");
     expect(js).toContain("if (state.tracing !== 'both' && plan.activities.indexOf('letter_tracing') >= 0) options.tracingCases = state.tracing;");
-    expect(js).toContain('tracing: state.tracing }));');
+    // More fields follow it in the kept choices now.
+    expect(js).toContain('tracing: state.tracing, ');
     expect(js).toContain('if (TRACE_CASES.indexOf(result.tracing) >= 0) fresh.tracing = result.tracing;');
   });
 });

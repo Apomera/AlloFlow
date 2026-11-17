@@ -260,7 +260,9 @@ describe('a practice file', () => {
     expect(r.claims.find((c) => c.id === 'never-ai').verdict).toBe('cannot tell');
     // Raised 2026-11-13 (engine fixes, C:/tmp/packets_build_1111/engine2/STATUS.txt) from 120000: two tabs of one file, honest
     // saving and the sound-failed note in the shell (+7 KB in every file; this file about 123.7 KB).
-    expect(Buffer.byteLength(made.html)).toBeLessThan(130000);
+    // Re-pinned 2026-11-16: every file carries the two reading fonts of Reading tools > Letters (Lexend, Atkinson Hyperlegible; +42.5 KB). (about 171 KB).
+    // Re-pinned 2026-11-17 from 175000: the review fixes in every file (about +7 KB).
+    expect(Buffer.byteLength(made.html)).toBeLessThan(182000);
     // Every file carries the reading tools.
     expect(made.html).toContain('\ntools:function takeHomeTools(o) {\n');
   });

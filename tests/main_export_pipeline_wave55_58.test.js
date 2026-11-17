@@ -201,8 +201,8 @@ describe('Wave 55 — MathML <msubsup>/<mroot> & compound base/script parity acr
   });
 });
 
-describe('Wave 56 — Slides preview & PowerPoint curation, student back-hiding, and formatting parity', () => {
-  it('filters deselected items, hides flashcard backs for student decks, shuffles relation-mismatch partners, omits blank options, and strips markdown in getSlidesPreviewHTML', () => {
+describe('Wave 56 — Slides preview & PowerPoint curation, flashcard backs, and formatting parity', () => {
+  it('filters deselected items, keeps flashcard backs in student decks (hides them only in a check), shuffles relation-mismatch partners, omits blank options, and strips markdown in getSlidesPreviewHTML', () => {
     const rmPartners = ['Chloroplast — sugar', 'Mitochondria — ATP', 'Ribosome — protein'];
     const history = [
       {
@@ -264,7 +264,14 @@ describe('Wave 56 — Slides preview & PowerPoint curation, student back-hiding,
     });
 
     expect(studentHtml).toContain('ATP');
-    expect(studentHtml).not.toContain('Cell energy currency');
+    // A card's back is its content, not an answer key (the HTML student export shows it too).
+    expect(studentHtml).toContain('Cell energy currency');
+    const checkHtml = window.AlloModules.ExportHandlers.getSlidesPreviewHTML({
+      sourceTopic: 'Biology', gradeLevel: 'Grade 8', getExportableHistory: () => history, t: (k) => k,
+      exportConfig: { audience: 'student', includeTeacherKey: false, assessmentMode: true },
+    });
+    expect(checkHtml).toContain('ATP');
+    expect(checkHtml).not.toContain('Cell energy currency');
     expect(studentHtml).not.toContain('DROPPED_CARD');
     expect(studentHtml).toContain('Osmosis');
     expect(studentHtml).not.toContain('DROPPED_TERM');
@@ -318,7 +325,12 @@ describe('Wave 56 — Slides preview & PowerPoint curation, student back-hiding,
     expect(await studentSetup.exporter.handleExportSlides({ includeSlideAnswerKey: false })).toBe(true);
     const studentDump = JSON.stringify(studentSetup.captured.slides);
     expect(studentDump).toContain('Allele');
-    expect(studentDump).not.toContain('Variant form of a gene');
+    expect(studentDump).toContain('Variant form of a gene');
+    const checkSetup = setupExporter({ history: [fcItem, wwItem], exportConfig: { audience: 'student', includeTeacherKey: false, assessmentMode: true } });
+    expect(await checkSetup.exporter.handleExportSlides({ includeSlideAnswerKey: false })).toBe(true);
+    const checkDump = JSON.stringify(checkSetup.captured.slides);
+    expect(checkDump).toContain('Allele');
+    expect(checkDump).not.toContain('Variant form of a gene');
     expect(studentDump).not.toContain('OMITTED_CARD');
     expect(studentDump).toContain('Phenotype');
     expect(studentDump).not.toContain('OMITTED_WALL');

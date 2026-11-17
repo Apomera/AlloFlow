@@ -281,7 +281,8 @@ describe('returned results', () => {
   it('caps what a hand-edited file can put on the teacher screen', () => {
     const parsed = TH.parseResult(result({ learnerName: 'x'.repeat(500), items: Array.from({ length: 999 }, () => ({ word: 'w'.repeat(500), attempts: 1e9 })) }));
     expect(parsed.result.learnerName).toHaveLength(60);
-    expect(parsed.result.items).toHaveLength(200);
+    // 2026-11-17 (review D4): up to 600 items, as the other two readers; a Word Sounds file can have 520.
+    expect(parsed.result.items).toHaveLength(600);
     expect(parsed.result.items[0].word).toHaveLength(60);
     expect(parsed.result.items[0].attempts).toBe(9);
   });

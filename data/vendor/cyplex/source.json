@@ -38,9 +38,10 @@
       "Changed from the original: 3 of 27 columns kept; only the words that are in the Word Sounds sound dictionary kept; Zipf rounded to 2 decimal places.",
       "Columns: word, Zipf frequency (ages 7-9 books), number of the 400 books that hold the word."
     ],
-    "words": 25912,
-    "bytes": 415164,
-    "sha256": "d4554ad0a670a64d2a5d4f9fee83da24957cbf67de01eb6089c5ac3b513c09e0"
+    "words": 27440,
+    "bytes": 439521,
+    "sha256": "3b7051e8da80d31eb9c84932fe8dc33153339185ccfe92065869b9a1fc2d2781",
+    "remade": "2026-11-16: re-made from the original (downloaded again, same sha256) for the sound dictionary as it is now (33,541 words). The copy of 2026-11-11 was cut for the dictionary of that day, so the 1528 words added since had no value."
   },
   "remake": "node dev-tools/build_word_sounds_wordlist.cjs --cyplex <path to main_cyplex79.csv>, then copy the printed words, bytes and sha256 into \"filtered\" above. The original is not kept in the repo (9.3 MB).",
   "scope": "How often a word form appears in 400 books popular with children aged 7 to 9 in the United Kingdom. Used only to decide whether a word is familiar enough to offer as a practice word.",

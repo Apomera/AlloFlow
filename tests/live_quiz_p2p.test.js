@@ -13,6 +13,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { readFileSync as readHostWithHandlers } from './helpers/host_source.js';
 import { resolve } from 'node:path';
 
 const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
@@ -236,7 +237,9 @@ describe('project-file roundtrip (teacher dashboard reads submitted files)', () 
     expect(misc).toContain('if (rawData.conceptMastery && rawData.conceptMastery.attempts)');
     expect(misc).toContain('setConceptMasteryLocal({ attempts: rawData.conceptMastery.attempts })');
     expect(misc).toContain('bankImportedConceptMastery(rawData.conceptMastery)');
-    expect(anti).toContain('bankImportedConceptMastery: (m) =>');
+    // handleLoadProject moved to host_handlers_source.jsx (wave 6, 2026-11-16); the helper
+    // reads the host with moved handlers put back in place.
+    expect(readHostWithHandlers(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8')).toContain('bankImportedConceptMastery: (m) =>');
     expect(anti).toContain("safeSetItem('allo_imported_mastery'");
   });
 

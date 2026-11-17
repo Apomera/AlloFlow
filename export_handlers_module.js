@@ -3614,7 +3614,7 @@
           const cardsHtml = chunk.map(function(fc) {
             const obj = fc && typeof fc === 'object' ? fc : { front: String(fc || '') };
             const front = _cleanText(_safeTextVal(obj.front || obj.term || obj.question || obj.word));
-            const back = !showKeys ? '' : _cleanText(_safeTextVal(obj.back || obj.def || obj.definition || obj.answer || obj.meaning));
+            const back = isAssessment ? '' : _cleanText(_safeTextVal(obj.back || obj.def || obj.definition || obj.answer || obj.meaning));
             return '<div style="border:2px solid #4f46e5;border-radius:10px;padding:10px 12px;background:#eef2ff"><div style="font-size:15px;font-weight:800;color:#312e81">' + _escSlide(front) + '</div>' + (back ? '<div style="font-size:12px;color:#334155;margin-top:4px">' + _escSlide(back) + '</div>' : '') + '</div>';
           }).join('');
           slides.push('<div class="slide"><div class="slide-title">' + _escSlide(title) + (i > 0 ? ' (cont.)' : '') + '</div><div class="slide-body"><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">' + cardsHtml + '</div></div></div>');

@@ -252,12 +252,16 @@ the file the bundle's header points at) ship beside it. The Song Library's score
 (JSZip and pako, which OpenSheetMusicDisplay also bundles, are listed under Documents above.)
 
 ### Fonts
-All fonts are loaded at runtime from Google Fonts or the vendor's site (not
-redistributed from this repository); the OFL text is bundled for reference.
+The fonts below are loaded at runtime from Google Fonts or the vendor's site (not
+redistributed from this repository); the OFL text is bundled for reference. Two are
+the exception: Lexend and Atkinson Hyperlegible (Latin, regular weight) are
+redistributed inside every Packets student file, for Reading tools > Letters. Those
+copies are the SIL OFL-1.1 builds from Fontsource, kept with their licence texts in
+`data/vendor/fonts/` (see `data/vendor/fonts/source.json`).
 | Font | Used for | License | Copyright |
 |---|---|---|---|
 | [OpenDyslexic](https://opendyslexic.org) | dyslexia-friendly reading font | SIL OFL-1.1 | Copyright (c) Abelardo Gonzalez |
-| [Atkinson Hyperlegible](https://brailleinstitute.org/freefont) | low-vision font | Atkinson Hyperlegible Font License | Copyright (c) Braille Institute of America, Inc. |
+| [Atkinson Hyperlegible](https://brailleinstitute.org/freefont) | low-vision font | Atkinson Hyperlegible Font License (the copy inside Packets files: SIL OFL-1.1, from Fontsource) | Copyright (c) Braille Institute of America, Inc. |
 | [Inter & Lexend](https://fonts.google.com) | interface fonts | SIL OFL-1.1 | Inter: Copyright (c) The Inter Project Authors (Rasmus Andersson) · Lexend: Copyright (c) The Lexend Project Authors |
 | [Outfit](https://fonts.google.com/specimen/Outfit) | display / heading font | SIL OFL-1.1 | Copyright (c) The Outfit Project Authors (Rodrigo Fuenzalida) |
 | [Plus Jakarta Sans](https://fonts.google.com/specimen/Plus+Jakarta+Sans) | interface font | SIL OFL-1.1 | Copyright (c) Tokotype |

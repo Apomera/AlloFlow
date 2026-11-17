@@ -365,8 +365,12 @@ describe('word_audio_shard_client', () => {
 
     const idx = await client.loadIndex();
     expect(idx.format).toBe(ShardClient.FORMAT);
-    expect(Object.keys(idx.words).length).toBe(31973);
-    expect(Object.keys(idx.shards).length).toBe(815);
+    // 2026-11-16: 32134 words in 820 files. (The pins said 31973 and 815 while the store already held 32023 and 817; then
+    // 111 basic words were copied in from word_audio_kokoro_bank.json as basic-01.json to basic-03.json.)
+    // Then 19 more (basic-04.json), when those words entered the word list: 32153 words in 821 files.
+    // Then 51 words voiced on 2026-11-16 (basic-05.json, basic-06.json): 32204 words in 823 files.
+    expect(Object.keys(idx.words).length).toBe(32204);
+    expect(Object.keys(idx.shards).length).toBe(823);
 
     for (const w of ['numerator', 'denominator', 'personification', 'protagonist']) {
       const clip = await client.getWordClip(w);

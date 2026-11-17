@@ -23,11 +23,14 @@ describe('the front door says what each maker makes, at the sizes the makers sta
   it('the sizes on the front door cover the sizes each maker says', () => {
     const facts = squash(parse('packets.html').querySelector('.facts').textContent);
     // 2026-11-14 (T1 + R1): reconciled math sizes (95 to 140 KB) and Word Sounds built WAV sizes (usually 1 to 5 MB at 64 kbps).
-    expect(facts).toBe('One file. Word Sounds practice is usually 1 to 5 MB; math files are about 95 to 140 KB; vocabulary files are about 100 KB, more with recordings. Works with no internet.');
-    const [low, high] = /math files are about (\d+) to (\d+) KB/.exec(facts).slice(1).map(Number);
+    // 2026-11-16: a default vocabulary file measured 1.4 MB in a browser (ten words; 30 recordings, about 1.3 MB of it), so the
+    // line no longer puts vocabulary at 95 to 250 KB. The recordings are on unless the teacher turns them off.
+    // 2026-11-16: every file carries the two reading fonts of Reading tools > Letters (Lexend, Atkinson Hyperlegible; +42.5 KB).
+    expect(facts).toBe('One file. Word Sounds practice is usually 0.5 to 2 MB. Vocabulary practice is about 180 KB, or about 0.4 MB for ten words with their recordings. Math and Symbol Runner files are about 150 to 300 KB. Works with no internet.'); // 2026-11-17: the review fixes, about +7 KB
+    const [low, high] = /Math and Symbol Runner files are about (\d+) to (\d+) KB/.exec(facts).slice(1).map(Number);
     const kb = (file, id) => Number(/About (\d+) KB/.exec(parse(file).getElementById(id).textContent)[1]);
     for (const n of [kb('packets-check.html', 'size-note'), kb('packets-math-practice.html', 'size-note')]) expect(n >= low && n <= high, String(n)).toBe(true);
-    expect(squash(parse('packets-vocab.html').querySelector('#step-2 .actions-note').textContent)).toContain('A file of vocabulary questions is about 100 KB.');
+    expect(squash(parse('packets-vocab.html').querySelector('#step-2 .actions-note').textContent)).toContain('A file of vocabulary questions is about 180 KB.');
   });
 });
 
@@ -60,7 +63,8 @@ describe('the vocabulary maker is exact about what it fetches and where AI was u
     const bank = read('packets_vocab_bank_en.js');
     // 2026-11-13: the science and social-studies pass updates the dates and puts the editing note last.
     expect(bank).toMatch(/checking: "Checked and corrected with AI assistance on November 12, 13 and 14, 2026[^"]*Not reviewed by a person\./);
-    expect(squash(doc.getElementById('legend').textContent)).toBe('checked This meaning was checked with AI help when the word list was prepared, not by a person. not checked yet Read these first.');
+    // 2026-11-17 (review D13): the badges say AI-checked and not checked.
+    expect(squash(doc.getElementById('legend').textContent)).toBe('AI-checked This meaning was checked with AI help when the word list was prepared, not by a person. not checked No one has checked this meaning. Read these first.');
     const sources = squash(doc.getElementById('sources').textContent);
     expect(sources).toContain('Some meanings were checked and corrected with AI help when the word list was prepared, not by a person.');
     expect(sources).toContain('The recordings of words were made ahead of time with an AI voice (Kokoro).');
@@ -82,13 +86,14 @@ describe('the guide for school IT and Find a picture say what is true of every p
     expect(read('word_sounds_take_home_loader.js')).toContain('localService === true');
   });
 
-  it('Find a picture no longer says that no other page can connect to another site: two can, and the guide names them', () => {
+  it('Find a picture no longer says that no other page can connect to another site: four can, and the guide names them', () => {
     const line = squash(parse('packets-pictures.html').getElementById('proof-reach').textContent);
     expect(line).not.toContain('The other pages cannot connect to any other website');
-    expect(line).toContain('the guide for school IT names the two that can, and what they send');
+    // 2026-11-16: four, with the two pages that use the computer voice (each downloads the Kokoro voice from Hugging Face when asked).
+    expect(line).toContain('the guide for school IT names the four that can, and what they send');
     const others = readdirSync('.').filter((f) => /^packets[\w-]*\.html$/.test(f) && f !== 'packets-pictures.html')
       .filter((f) => /connect-src[^;]*https:\/\//.test(csp(parse(f))));
-    expect(others.sort()).toEqual(['packets-open.html', 'packets-vocab-lookup.html']);
+    expect(others.sort()).toEqual(['packets-open.html', 'packets-read-along.html', 'packets-vocab-lookup.html', 'packets-voice.html']);
     const guide = squash(parse('packets-it.html').body.textContent);
     for (const f of others) expect(guide, f).toContain(f);
   });

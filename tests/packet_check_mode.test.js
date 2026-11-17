@@ -175,7 +175,8 @@ describe('a check gives one try, no feedback and no way back', () => {
     expect(t.text()).toContain('Do you want to stop now? You cannot come back to this check.');
     t.button('Keep going').click();
     expect(t.q('[data-stop-confirm]').hidden).toBe(true);
-    expect(t.heading()).toBe('Question 3 of 25');
+    // 2026-11-17 (review D6): the problem seen before the pause is set aside, not counted; the next one comes.
+    expect(t.heading()).toBe('Question 4 of 25');
     t.button('Stop the check').click();
     t.button('Yes, stop').click();
     expect(t.heading()).toBe('You finished. Thank you.');
@@ -298,7 +299,8 @@ describe('the clock', () => {
     t.show(false);
     expect(t.heading()).toBe('You finished. Thank you.');
     expect(t.text()).toContain('Time is up.');
-    expect(t.text()).toContain('You answered 2 of 25.');
+    // 2026-11-17: "of 25" read as failure on a timed check that few finish.
+    expect(t.text()).toContain('You answered 2.');
     expect(t.text()).toContain('Time: 1:00.');
     await settle();
     expect(t.live()).toBe('Time is up.');
@@ -435,7 +437,7 @@ describe('the finish screen', () => {
     const view = t.q('#app').cloneNode(true);
     view.querySelectorAll('[hidden]').forEach((node) => node.remove());
     const shown = view.textContent;
-    for (const line of ['You answered 24 of 25.', 'Time: 0:08.', NOT_GRADED, 'Save my work as a file', 'Save results as a spreadsheet file (CSV)', 'Copy for a spreadsheet', 'About this file']) expect(shown).toContain(line);
+    for (const line of ['You answered 24.', 'Time: 0:08.', NOT_GRADED, 'Save my work as a file', 'Save results as a spreadsheet file (CSV)', 'Copy for a spreadsheet', 'About this file']) expect(shown).toContain(line);
     expect(shown).not.toMatch(/\bright\b|wrong|correct|score|digits|per minute|%/i);
     expect(t.d.querySelectorAll('#app table, #app [data-review]')).toHaveLength(0);
     for (const hook of ['[data-save-json]', '[data-save-csv]', '[data-copy-tsv]', '[data-check-again]', '[data-teacher-open]', '[data-about-open]']) expect(t.q(hook)).not.toBeNull();
@@ -467,7 +469,8 @@ describe('the finish screen', () => {
     expect(b.q('[data-check-again-confirm]').hidden).toBe(true);
     b.button('Start over').click();
     b.button('Yes, start over').click();
-    expect(b.d.getElementById('learner-name').value).toBe('Ana');
+    // 2026-11-17 (review D10): the next run starts with no name; on a shared device it may be another child. Tries stay counted by name.
+    expect(b.d.getElementById('learner-name').value).toBe('');
     b.run(QD, 'Ana');
     b.playAll(QD, { wrong: [0] });
     const second = b.saveJson();
@@ -514,7 +517,7 @@ describe('for the teacher', () => {
     const lines = reviewLines(t);
     expect(lines[0]).toMatch(/^No score: every item was finished in under 20 seconds/);
     expect(lines.slice(1)).toEqual(['Items correct: 23 of 25 attempted (25 given).', lines[2], 'Time used: 7.5 s. Time limit: 120 s.',
-      'Time with the page hidden or closed: 0 s.', 'Attempt 1 for this learner label on this device.', 'All times come from the clock of the learner device.', NO_CODE_LINE]);
+      'Time with the page hidden or closed: 0 s.', 'Attempt 1 for this name or code name on this device.', 'All times come from the clock of the device the student used.', NO_CODE_LINE]);
     expect(lines[2]).toMatch(/^Digits correct: \d+ of \d+ possible on the items attempted\.$/);
     // No item, no answer and no right or wrong anywhere on the screen.
     const screen = t.q('#app').textContent;
@@ -567,7 +570,7 @@ describe('for the teacher', () => {
     expect(lines[0]).toMatch(/^No score: every item was finished in under 20 seconds/);
     expect(lines).toContain('Items correct: 23 of 25 attempted (25 given).');
     expect(lines).toContain('Time used: 7.5 s. Time limit: 120 s.');
-    expect(lines).toContain('Attempt 1 for this learner label on this device.');
+    expect(lines).toContain('Attempt 1 for this name or code name on this device.');
     expect(lines).not.toContain(NO_CODE_LINE);
     // Closed again, it asks again.
     t.button('Close the results').click();
@@ -841,7 +844,7 @@ describe('the results of a check', () => {
     // 2026-11-13: then the time on the items (activeMs, the items' ms added up), a file saved from then on.
     expect(file.activeMs).toBe(file.items.reduce((n, it) => n + it.ms, 0));
     // 2026-11-14 (T1/makers2): PC.formTitle writes out the grade and version ("Math Fluency, grade 3, version A").
-    expect(rows[27]).toEqual(['#summary', file.sessionId, 'items_given=25', 'attempted=25', 'correct=23', 'first_try=23', 'accuracy_pct=92', 'attempt=1', 'title=Math Fluency, grade 3, version A', 'active_s=' + Math.round(file.activeMs / 1000)]);
+    expect(rows[27]).toEqual(['#summary', file.sessionId, 'items_given=25', 'attempted=25', 'correct=23', 'first_try=23', 'accuracy_pct=92', 'attempt=1', 'title=Math Fluency, grade 3, version A', 'active_s=' + Math.round(file.activeMs / 1000), 'accuracy_of_attempted_pct=92']);
     expect(file.lessonTitle).toBe('Math Fluency, grade 3, version A');
     expect(rows[28]).toEqual(['#score', file.sessionId, 'measure=math_dcpm', 'score=' + Math.round(digits / (25 / 60)), 'score_unit=digits_correct_per_minute', 'digits_correct=' + digits, 'digits_possible=' + possible,
       'items_correct=23', 'items_attempted=25', 'time_limit_s=120', 'elapsed_s=25', 'hidden_s=0', 'completion=complete', 'prorated=1', 'scoring_version=3', 'form_version=2', 'attempt=1', 'flags=',
@@ -917,10 +920,10 @@ describe('the results of a check', () => {
     expect(table.rows[0]).toHaveLength(24);
     const rows = parseCsv(table.text({ method: 'fnv1a', value: 'x' }).slice(1));
     expect(rows.map((r) => r[0])).toEqual(['format', 'alloflow-packet-result/1', '#summary', '#integrity']);
-    // No title in the result, no title cell: the summary row of a file saved before 2026-11-11.
-    expect(rows[2]).toHaveLength(7);
+    // No title in the result, no title cell: the summary row of a file saved before 2026-11-11, and (2026-11-17) the appended accuracy_of_attempted_pct.
+    expect(rows[2]).toHaveLength(8);
     const titled = TH.resultsCsv({ sessionId: 's', packet: { id: 'P', version: 'r', form: '', mode: 'practice' }, lessonTitle: 'Short a', items: [{ activity: 'isolation', correct: true, attempts: 1 }] });
-    expect(parseCsv(titled.text({ method: 'fnv1a', value: 'x' }).slice(1))[2]).toEqual(['#summary', 's', 'items_given=1', 'attempted=1', 'correct=1', 'first_try=0', 'accuracy_pct=100', 'title=Short a']);
+    expect(parseCsv(titled.text({ method: 'fnv1a', value: 'x' }).slice(1))[2]).toEqual(['#summary', 's', 'items_given=1', 'attempted=1', 'correct=1', 'first_try=0', 'accuracy_pct=100', 'title=Short a', 'accuracy_of_attempted_pct=100']);
     expect(TH.parseResult({ kind: 'alloflow-take-home-result', schemaVersion: 3, lessonId: 'L', items: [{ activity: 'isolation' }] }).result).not.toHaveProperty('score');
   });
 });
@@ -1266,7 +1269,10 @@ describe('source check: a check file cannot send anything either', () => {
     // Re-pinned 2026-11-13 from 130000 (about 129.7 KB): "Stop?" pauses the clock (L5, +1.7 KB with the shell's new
     // lines), on top of that day's other passes.
     // Re-pinned 2026-11-13 (engine fixes) from 135000: two tabs, honest saving, sound notes (+9.3 KB; QD 130.5 -> 139.9 KB).
-    expect(Buffer.byteLength(html, 'utf8')).toBeLessThan(145000);
+    // Re-pinned 2026-11-16 from 145000: Letters in every file's Reading tools (+1.4 KB; the three files are 145.0 to 145.5 KB).
+    // Re-pinned 2026-11-16: every file carries the two reading fonts of Reading tools > Letters (Lexend, Atkinson Hyperlegible; +42.5 KB). (185.9 to 188.6 KB).
+    // Re-pinned 2026-11-17 from 192000: the review fixes in every file (pauses, start screen, device, licence; about +7 KB).
+    expect(Buffer.byteLength(html, 'utf8')).toBeLessThan(200000);
     expect(sealedOf(html)).toMatchObject({ audio: {}, images: {}, submit: null });
   });
 
@@ -1425,7 +1431,7 @@ describe('practice files are as they were', () => {
     const lines = saved[1].body.slice(1).split('\r\n');
     expect(d.querySelector('h1').textContent).toBe('Short a');
     // 2026-11-13: then the time on the items (activeMs).
-    expect(lines[3]).toBe('"#summary","' + file.sessionId + '","items_given=2","attempted=2","correct=2","first_try=2","accuracy_pct=100","title=Short a","active_s=' + Math.round(file.activeMs / 1000) + '"');
+    expect(lines[3]).toBe('"#summary","' + file.sessionId + '","items_given=2","attempted=2","correct=2","first_try=2","accuracy_pct=100","title=Short a","active_s=' + Math.round(file.activeMs / 1000) + '","accuracy_of_attempted_pct=100"');
     expect(parseCsv(saved[1].body.slice(1))[4].slice(0, 3)).toEqual(['#integrity', file.integrity.method, file.integrity.value]);
     expect(TH.resultsCsv(file).basis).toBe([file.packet.id, file.packet.version, '', file.sessionId].join('|') + '\n' + lines.slice(1, 3).join('\n'));
     expect([TH.parseResult(file).integrity, TH.parseResult({ ...file, lessonTitle: 'Another title' }).integrity, TH.parseResult({ ...file, lessonTitle: '' }).integrity]).toEqual(['ok', 'ok', 'ok']);
