@@ -64,6 +64,8 @@ module.exports = {
     var coverButton = ctx.el('button', { type: 'button', class: 'primary', 'data-cover': '', 'aria-describedby': tag + '-fact ' + tag + '-say', on: { click: function () {
       if (phase !== 'look' || ctx.isDone()) return;
       phase = 'type';
+      // The recall is timed from here to the first answer from memory.
+      if (ctx.lap) ctx.lap('recall', true);
       set('');
       draw();
       focusPad();
@@ -144,6 +146,7 @@ module.exports = {
         return;
       }
       if (phase !== 'type') return;
+      if (ctx.lap && ctx.attempts() === 0) ctx.lap('recall');
       var right = Number(v) === Number(answer);
       var result = ctx.answer(v, right, {
         correctText: ctx.fmt(L.math_rehearsal_correct, { fact: fact, answer: answer }),
@@ -164,7 +167,8 @@ module.exports = {
     ctx.root.appendChild(say);
     ctx.root.appendChild(ctx.el('div', { class: 'row', style: 'justify-content:center' }, [coverButton]));
     ctx.root.appendChild(pad);
-    if (phase === 'look') { try { coverButton.focus(); } catch (_) {} } else focusPad();
+    // A card that starts covered (a known fact) is timed from being shown.
+    if (phase === 'look') { try { coverButton.focus(); } catch (_) {} } else { if (ctx.lap && !ctx.isDone()) ctx.lap('recall', true); focusPad(); }
     return {
       // The card is over (right, or every try used, or reopened when done): the answer shows, uncovered.
       reveal: function (correct) {

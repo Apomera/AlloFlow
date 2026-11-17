@@ -1272,7 +1272,8 @@ describe('source check: a check file cannot send anything either', () => {
     // Re-pinned 2026-11-16 from 145000: Letters in every file's Reading tools (+1.4 KB; the three files are 145.0 to 145.5 KB).
     // Re-pinned 2026-11-16: every file carries the two reading fonts of Reading tools > Letters (Lexend, Atkinson Hyperlegible; +42.5 KB). (185.9 to 188.6 KB).
     // Re-pinned 2026-11-17 from 192000: the review fixes in every file (pauses, start screen, device, licence; about +7 KB).
-    expect(Buffer.byteLength(html, 'utf8')).toBeLessThan(200000);
+    // Re-pinned 2026-11-17 (later that day) from 200000: the engine's practice end screen and recall timing travel in every file (about +1.7 KB; about 197 KB). The page says "About 200 KB" since later that day.
+    expect(Buffer.byteLength(html, 'utf8')).toBeLessThan(204000);
     expect(sealedOf(html)).toMatchObject({ audio: {}, images: {}, submit: null });
   });
 

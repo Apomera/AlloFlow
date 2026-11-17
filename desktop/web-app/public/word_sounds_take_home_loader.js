@@ -79,6 +79,12 @@
     done_activity: '{first} of {total}',
     done_retry: 'Right after trying again: {retry}.',
     done_last_step: 'Last step: save your work for your teacher.',
+    // 2026-11-17: the end screen of a practice file, for a young student: one big button with a picture, and the words
+    // for adults in a fold. A check keeps its own end screen and the save_csv words.
+    save_work: 'Save my work',
+    saving_work: 'Your browser is saving {file}. Give that file to your teacher. If nothing appears, press Save my work again, or ask a grown-up.',
+    grown_ups: 'For grown-ups',
+    grown_ups_file: 'Save my work makes a spreadsheet file (CSV). Give that file to the teacher.',
     // 2026-11-13: practice that is not scored (Letter Trace), counted on the end screen.
     done_practice: 'Practice, not scored: {done} of {total} done.',
     // 2026-11-17: the missed questions, once more at the end (lesson.repeatMissed).
@@ -196,6 +202,10 @@
     check_ready_untimed: 'There is no clock. Take your time.',
     check_ready_one_try: 'You get one try for each one. You cannot go back.',
     check_ready_adult: 'For a young student: a grown-up reads this page aloud before the student presses Begin.',
+    // 2026-11-17: a check that carries a recording of these lines (lesson.directions) has a button that plays them.
+    check_ready_hear: 'Hear the directions',
+    check_ready_adult_hear: 'For a young student: press Hear the directions, or a grown-up reads this page aloud, before the student presses Start.',
+    check_review_heard: 'Times Hear the directions was pressed: {n}.',
     check_begin: 'Start',
     check_item_of: 'Question {n} of {total}',
     check_time_left: 'Time left: {time}',
@@ -369,6 +379,8 @@
     var list = Array.isArray(r.items) ? r.items : [];
     var summary = { itemsGiven: 0, attempted: 0, correct: 0, firstTry: 0, accuracyPct: 0, byActivity: [] };
     var by = {};
+    // 2026-11-17: the recall times of the facts that were right at the first try from memory (item.recallMs).
+    var recall = [];
     var rows = list.map(function (it, i) {
       it = it && typeof it === 'object' ? it : {};
       var activity = text(it.activity);
@@ -380,6 +392,7 @@
         if (Number(it.attempts) > 0) summary.attempted++;
         if (it.correct) { summary.correct++; a.correct++; }
         if (it.firstTry) { summary.firstTry++; a.firstTry++; }
+        if (it.firstTry && it.recallMs != null && isFinite(Number(it.recallMs)) && Number(it.recallMs) >= 0) recall.push(Math.round(Number(it.recallMs)));
       }
       var supports = it.supports && typeof it.supports === 'object' ? Object.keys(it.supports).map(function (k) { return k + ':' + text(it.supports[k]); }).join(';') : '';
       return ['alloflow-packet-result/1', session, text(packet.id), text(packet.version), text(packet.form), text(packet.mode), learner,
@@ -391,6 +404,12 @@
     // Empty when nothing is scored (a read-along, Letter Trace alone): 0 would read as a result.
     summary.accuracyPct = summary.itemsGiven ? Math.round(summary.correct / summary.itemsGiven * 100) : '';
     summary.accuracyOfAttemptedPct = summary.attempted ? Math.round(summary.correct / summary.attempted * 100) : '';
+    if (recall.length) {
+      recall.sort(function (x, y) { return x - y; });
+      var mid = recall.length >> 1;
+      summary.recallItems = recall.length;
+      summary.recallMedianMs = Math.round(recall.length % 2 ? recall[mid] : (recall[mid - 1] + recall[mid]) / 2);
+    }
     var line = function (cells) { return cells.map(cell).join(','); };
     var lines = rows.map(line);
     var notName = /[^a-z0-9]+/gi;
@@ -420,6 +439,9 @@
         if (r.activeMs != null && r.activeMs !== '' && isFinite(Number(r.activeMs))) tail[0].push('active_s=' + Math.max(0, Math.round(Number(r.activeMs) / 1000)));
         // 2026-11-17: right / attempted (accuracy_pct stays right / items given).
         tail[0].push('accuracy_of_attempted_pct=' + summary.accuracyOfAttemptedPct);
+        // 2026-11-17: two more cells, only when the file timed a recall (cover, copy, compare; rehearsal): how many facts
+        // were right at the first try from memory, and their typical (median) time from covered to answered, ms.
+        if (summary.recallItems) tail[0].push('recall_items=' + summary.recallItems, 'recall_median_ms=' + summary.recallMedianMs);
         if (sc) tail.splice(1, 0, ['#score', session, kv('measure', sc.measure), kv('score', sc.score), kv('score_unit', sc.scoreUnit), kv('digits_correct', sc.digitsCorrect),
           kv('digits_possible', sc.digitsPossible), kv('items_correct', sc.itemsCorrect), kv('items_attempted', sc.itemsAttempted), kv('time_limit_s', sc.timeLimitS),
           kv('elapsed_s', sc.elapsedS), kv('hidden_s', sc.hiddenS), kv('completion', sc.completion), kv('prorated', !!sc.prorated), kv('scoring_version', sc.scoringVersion),
@@ -429,7 +451,9 @@
           // Untimed (an accommodation): two more cells, only then.
           .concat(sc.untimed ? [kv('timing', 'untimed'), kv('usual_time_limit_s', sc.usualTimeLimitS)] : [])
           // Paused: two more cells, only then.
-          .concat(sc.pauses ? [kv('paused_s', sc.pausedS), kv('pauses', sc.pauses)] : []));
+          .concat(sc.pauses ? [kv('paused_s', sc.pausedS), kv('pauses', sc.pauses)] : [])
+          // Hear the directions was pressed: one more cell, only then.
+          .concat(sc.directionsHeard ? [kv('directions_heard', sc.directionsHeard)] : []));
         return String.fromCharCode(0xFEFF) + [header].concat(rows, tail).map(line).join('\r\n') + '\r\n';
       },
       tsv: function () {
@@ -4408,6 +4432,8 @@
         var coverButton = ctx.el('button', { type: 'button', class: 'primary', 'data-cover': '', 'aria-describedby': tag + '-fact ' + tag + '-say', on: { click: function () {
           if (phase !== 'look' || ctx.isDone()) return;
           phase = 'type';
+          // The recall is timed from here to the first answer from memory.
+          if (ctx.lap) ctx.lap('recall', true);
           set('');
           draw();
           focusPad();
@@ -4488,6 +4514,7 @@
             return;
           }
           if (phase !== 'type') return;
+          if (ctx.lap && ctx.attempts() === 0) ctx.lap('recall');
           var right = Number(v) === Number(answer);
           var result = ctx.answer(v, right, {
             correctText: ctx.fmt(L.math_ccc_correct, { fact: fact, answer: answer }),
@@ -4508,7 +4535,8 @@
         ctx.root.appendChild(say);
         ctx.root.appendChild(ctx.el('div', { class: 'row', style: 'justify-content:center' }, [coverButton]));
         ctx.root.appendChild(pad);
-        if (phase === 'look') { try { coverButton.focus(); } catch (_) {} } else focusPad();
+        // A card that starts covered (a known fact) is timed from being shown.
+        if (phase === 'look') { try { coverButton.focus(); } catch (_) {} } else { if (ctx.lap && !ctx.isDone()) ctx.lap('recall', true); focusPad(); }
         return {
           // The card is over (right, or every try used, or reopened when done): the answer shows, uncovered.
           reveal: function (correct) {
@@ -4698,6 +4726,8 @@
         var coverButton = ctx.el('button', { type: 'button', class: 'primary', 'data-cover': '', 'aria-describedby': tag + '-fact ' + tag + '-say', on: { click: function () {
           if (phase !== 'look' || ctx.isDone()) return;
           phase = 'type';
+          // The recall is timed from here to the first answer from memory.
+          if (ctx.lap) ctx.lap('recall', true);
           set('');
           draw();
           focusPad();
@@ -4778,6 +4808,7 @@
             return;
           }
           if (phase !== 'type') return;
+          if (ctx.lap && ctx.attempts() === 0) ctx.lap('recall');
           var right = Number(v) === Number(answer);
           var result = ctx.answer(v, right, {
             correctText: ctx.fmt(L.math_rehearsal_correct, { fact: fact, answer: answer }),
@@ -4798,7 +4829,8 @@
         ctx.root.appendChild(say);
         ctx.root.appendChild(ctx.el('div', { class: 'row', style: 'justify-content:center' }, [coverButton]));
         ctx.root.appendChild(pad);
-        if (phase === 'look') { try { coverButton.focus(); } catch (_) {} } else focusPad();
+        // A card that starts covered (a known fact) is timed from being shown.
+        if (phase === 'look') { try { coverButton.focus(); } catch (_) {} } else { if (ctx.lap && !ctx.isDone()) ctx.lap('recall', true); focusPad(); }
         return {
           // The card is over (right, or every try used, or reopened when done): the answer shows, uncovered.
           reveal: function (correct) {
@@ -6668,6 +6700,11 @@
     '.hero{text-align:center}.done-star{position:relative;display:block;width:84px;height:84px;margin:0 auto 8px;border-radius:50%;background:var(--soft)}',
     '.done-star::before,.done-star::after{content:"";position:absolute;inset:11px;background:var(--ink);clip-path:polygon(50% 2%,62% 36%,98% 37%,69% 59%,80% 95%,50% 74%,20% 95%,31% 59%,2% 37%,38% 36%)}.done-star::after{inset:15px;background:#f6b400}',
     '.tally{list-style:none;padding:0;margin:16px 0;display:grid;gap:8px}.tally li{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 12px;padding:10px 14px;border-radius:12px;background:var(--soft)}',
+    '.big-row{justify-content:center;margin:16px 0}button.big{min-height:64px;padding:14px 28px;font-size:1.25rem;border-radius:16px}',
+    '.save-icon{display:inline-block;position:relative;width:1em;height:1em;margin-inline-end:.5em;vertical-align:-.12em;border-bottom:.16em solid currentColor;box-sizing:border-box}',
+    '.save-icon::before{content:"";position:absolute;left:50%;top:0;height:.5em;margin-left:-.08em;border-left:.16em solid currentColor}',
+    '.save-icon::after{content:"";position:absolute;left:50%;top:.14em;width:.44em;height:.44em;margin-left:-.22em;border-right:.16em solid currentColor;border-bottom:.16em solid currentColor;transform:rotate(45deg);box-sizing:border-box}',
+    '.grown-ups{margin-top:16px;border-top:1px solid var(--line);padding-top:4px}.grown-ups summary{cursor:pointer;padding:10px 0;color:var(--muted);font-weight:600}',
     'label{display:block;margin:12px 0 4px;font-weight:600}input{font:inherit;width:100%;max-width:360px;min-height:48px;padding:8px 12px;border-radius:10px;border:2px solid var(--line);background:var(--card);color:var(--ink)}',
     '.about ul{margin:0;padding-inline-start:20px}.about li{margin:8px 0;overflow-wrap:anywhere}',
     '.muted{color:var(--muted)}.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}',
@@ -7460,6 +7497,7 @@
       var shownAt = Date.now();
       area.addEventListener('click', function (e) { if (e.isTrusted && Date.now() - shownAt < 250 && e.target && e.target.closest && e.target.closest('button')) { e.stopPropagation(); e.preventDefault(); } }, true);
       var handle = null;
+      var lapFrom = {};
       var nextButton = el('button', { class: 'primary', type: 'button', hidden: true, 'data-next': '', on: { click: function () { state.index++; save(); renderItem(); } },
         text: state.index === items.length - 1 ? L.finish : L.next });
       var finishPractice = function () {
@@ -7486,6 +7524,19 @@
         ordinal: function (p) { return (L.ordinals && L.ordinals[p]) || String(p + 1); },
         sound: function (label) { return L['sound_name_' + label] || '/' + label + '/'; },
         support: function (name) { rec.supports[name] = (rec.supports[name] || 0) + 1; save(); },
+        // 2026-11-17: a named stretch of this item's own clock (time on another tab left out), kept on the item as
+        // laps[name], ms. lap(name, true) starts it and lap(name) ends it. The clock starts at 0 just after render, so a
+        // stretch begun in render begins at 0. A reload in between loses the start, and then nothing is kept.
+        lap: function (name, start) {
+          var mine = !!clock && clock.rec === rec;
+          if (mine) clockLap();
+          var t = mine ? clock.ms : 0;
+          if (start) { lapFrom[name] = t; return; }
+          if (!mine || lapFrom[name] == null) return;
+          (rec.laps || (rec.laps = {}))[name] = Math.round(Math.max(0, t - lapFrom[name]));
+          delete lapFrom[name];
+          save();
+        },
         isDone: function () { return rec.done; },
         attempts: function () { return rec.attempts; },
         // Practice that is never scored: 'traced' or 'skipped' (Letter Trace), 'read' (a page of a read-along).
@@ -7586,7 +7637,9 @@
           var r = state.items[i];
           return { n: i + 1, itemId: e.item.id, activity: e.activity, word: e.item.word, target: e.item.target != null ? e.item.target : null,
             responses: r.responses.slice(), attempts: r.attempts, firstTry: r.firstTry, correct: r.correct, done: r.done, ms: r.ms || 0,
-            supports: r.supports, practice: r.practice || null, flag: r.flag || '', typed: r.typed || undefined };
+            supports: r.supports, practice: r.practice || null, flag: r.flag || '', typed: r.typed || undefined,
+            // 2026-11-17: from Cover it (or from the card being shown) to the first answer from memory, ms.
+            recallMs: r.laps && r.laps.recall != null ? r.laps.recall : undefined };
         }),
       };
       if (check) check.result(out);
@@ -7630,9 +7683,11 @@
       seal();
       var s = summarize();
       // A download cannot be seen to finish: after Save the line says the browser is saving (this opening only).
-      var fileStatus = statusLine(state.sent ? fmt(L.sent, { receipt: state.sent }) : savingFile ? fmt(L.saving_file, { file: savingFile }) : (storeOk ? L.saved_device : L.saved_device_off),
+      // A practice file says it in a young student's words; a check keeps its own.
+      var savingText = check ? L.saving_file : L.saving_work;
+      var fileStatus = statusLine(state.sent ? fmt(L.sent, { receipt: state.sent }) : savingFile ? fmt(savingText, { file: savingFile }) : (storeOk ? L.saved_device : L.saved_device_off),
         state.sent ? 'ok' : (storeOk || savingFile ? '' : 'warn'));
-      var saying = function (name) { savingFile = name; if (!state.sent) { fileStatus.className = 'status'; fileStatus.textContent = fmt(L.saving_file, { file: name }); announce(fileStatus.textContent); } };
+      var saying = function (name) { savingFile = name; if (!state.sent) { fileStatus.className = 'status'; fileStatus.textContent = fmt(savingText, { file: name }); announce(fileStatus.textContent); } };
       // Older iPad Safari (before iOS 13) cannot download: show the results as
       // text to copy instead of a button that does nothing.
       var copyBox = el('div', { hidden: true, 'data-results-text': '' });
@@ -7664,10 +7719,11 @@
         var file = resultFile();
         saveAs(kit.csv(file).stem + '.json', JSON.stringify(file, null, 2), 'application/json');
       } }, text: L.save });
-      var csvButton = el('button', { class: state.sent ? '' : 'primary', type: 'button', 'data-save-csv': '', on: { click: function () {
+      // In a practice file this is the one big button, "Save my work", with a picture of saving.
+      var csvButton = el('button', { class: [state.sent ? '' : 'primary', check ? '' : 'big'].filter(Boolean).join(' ') || false, type: 'button', 'data-save-csv': '', on: { click: function () {
         var file = resultFile(), table = kit.csv(file);
         saveAs(table.stem + '.csv', table.text(file.integrity), 'text/csv;charset=utf-8');
-      } }, text: L.save_csv });
+      } } }, check ? [L.save_csv] : [el('span', { class: 'save-icon', 'aria-hidden': 'true' }), L.save_work]);
       // For devices where a download goes nowhere: the same table, to paste.
       var copyButton = el('button', { type: 'button', 'data-copy-tsv': '', on: { click: function () {
         var tsv = kit.csv(resultFile()).tsv();
@@ -7692,7 +7748,7 @@
       }
       var closedNote = sendClosed ? fmt(L.send_closed, { date: closedDate }) : '';
       if (sendNow && !sendClosed) {
-        sendButton = el('button', { class: 'primary', type: 'button', on: { click: function () {
+        sendButton = el('button', { class: check ? 'primary' : 'primary big', type: 'button', on: { click: function () {
           if (sendButton.getAttribute('aria-disabled') === 'true') return;
           sendButton.setAttribute('aria-disabled', 'true');
           fileStatus.className = 'status'; fileStatus.textContent = L.sending; announce(L.sending);
@@ -7747,12 +7803,20 @@
           tally.length > 1 ? el('ul', { class: 'tally' }, tally) : null,
           // Until it is saved or sent: the one thing left to do, in plain words.
           !(state.sent || state.savedFile) ? el('p', { class: 'letters', 'data-last-step': '', text: L.done_last_step }) : null,
-          el('div', { class: 'row' }, [sendButton, csvButton, againButton, info.button]),
-          more,
-          confirmBox,
+          el('div', { class: 'row big-row' }, [sendButton, csvButton]),
           fileStatus,
+          // A closing date that has passed is said outside the fold: it changes what the student does.
+          closedNote ? el('p', { class: 'muted', text: closedNote }) : null,
+          el('div', { class: 'row', style: 'justify-content:center' }, [againButton]),
+          confirmBox,
           copyBox,
-          el('p', { class: 'muted', text: closedNote || (sendButton ? L.send_note : L.not_sent) }),
+          // For the adult beside the student: what the file is, the other ways to save, and About this file.
+          el('details', { class: 'more-saves grown-ups', 'data-more-saves': '', 'data-grown-ups': '' }, [
+            el('summary', { text: L.grown_ups }),
+            L.grown_ups_file ? el('p', { text: L.grown_ups_file }) : null,
+            el('p', { class: 'muted', text: sendButton ? L.send_note : L.not_sent }),
+            el('div', { class: 'row' }, [saveButton, copyButton, info.button]),
+          ]),
         ]),
         info.panel,
       ]);
@@ -7971,6 +8035,8 @@
       attempt: Math.max(1, Math.floor(Number(t.attempt)) || 1), flags: (Array.isArray(t.flags) ? t.flags : []).map(String) };
     // Paused (Stop the check, then Keep going): the time and the count, only when it happened.
     if (Number(t.pauses) > 0) { out.pausedS = tenth(t.pausedMs); out.pauses = Math.floor(Number(t.pauses)); }
+    // 2026-11-17: how often Hear the directions was pressed on the Get ready screen, only when it was.
+    if (Number(t.heard) > 0) out.directionsHeard = Math.min(999, Math.floor(Number(t.heard)));
     // Untimed (an accommodation): said in the score, with the form's usual limit, so no reader takes it for a timed result.
     if (m.untimed === true && limit === null) { out.untimed = true; out.usualTimeLimitS = Number(m.usualTimeLimitS) > 0 ? Number(m.usualTimeLimitS) : null; }
     return out;
@@ -8263,13 +8329,22 @@
     var readyScreen = function () {
       var first = items.filter(function (e) { return !e.item.practice; })[0];
       var how = first ? L[first.activity + '_directions'] : '';
+      // 2026-11-17: the recordings of this screen's own lines, when the file carries them all (lesson.directions,
+      // put in by the check maker). Played only when the button is pressed; the clock still starts at Start.
+      var said = Array.isArray(lesson.directions) ? lesson.directions.filter(function (id) { return typeof id === 'string' && !!(lesson.audio && lesson.audio[id]); }) : [];
+      var hear = said.length && said.length === lesson.directions.length ? el('button', { type: 'button', 'data-check-hear': '', on: { click: function () {
+        var c = C();
+        c.heard = (Number(c.heard) || 0) + 1;
+        api.save();
+        api.playAll(said);
+      } }, text: L.check_ready_hear }) : null;
       api.screen(L.check_ready_title, [
         el('div', { class: 'card' }, [
           how ? el('p', { class: 'letters', text: how }) : null,
           el('p', { text: limitMs ? fmt(L.check_ready_timed, { time: timeWords(limitMs / 1000) }) : L.check_ready_untimed }),
           el('p', { text: L.check_ready_one_try }),
-          first && /^(quantity_discrimination|missing_number)$/.test(first.activity) ? el('p', { class: 'muted', 'data-check-adult': '', text: L.check_ready_adult }) : null,
-          el('div', { class: 'row' }, [el('button', { class: 'primary', type: 'button', 'data-check-begin': '', on: { click: startRun }, text: L.check_begin })]),
+          first && /^(quantity_discrimination|missing_number)$/.test(first.activity) ? el('p', { class: 'muted', 'data-check-adult': '', text: hear ? L.check_ready_adult_hear : L.check_ready_adult }) : null,
+          el('div', { class: 'row' }, [hear, el('button', { class: 'primary', type: 'button', 'data-check-begin': '', on: { click: startRun }, text: L.check_begin })]),
         ]),
       ]);
     };
@@ -8287,6 +8362,8 @@
     var startRun = function () {
       var s = S(), c = C();
       if (c.phase === 'run' || c.phase === 'done') return;
+      // The directions stop when the check starts.
+      api.stop();
       var t = nowMs();
       c.phase = 'run'; c.t0 = t; c.deadline = limitMs ? t + limitMs : null; c.seen = t; c.hiddenMs = 0; c.hiddenFrom = null; c.pausedMs = 0; c.pausedFrom = null; c.pauses = 0;
       // Tries are counted for each learner label on this device. The label is
@@ -8477,7 +8554,7 @@
         });
         out.score = kit.score({ measure: meta.measure, scoreUnit: meta.scoreUnit, timeLimitS: lesson.timeLimitS, scoringVersion: meta.scoringVersion, formVersion: meta.formVersion,
           untimed: meta.untimed === true, usualTimeLimitS: meta.usualTimeLimitS }, rows,
-          { elapsedMs: c.t0 ? (c.end || nowMs()) - c.t0 - (c.pausedMs || 0) : 0, hiddenMs: c.hiddenMs, pausedMs: c.pausedMs, pauses: c.pauses, completion: c.completion, attempt: c.attempt, flags: Object.keys(c.flags).sort() });
+          { elapsedMs: c.t0 ? (c.end || nowMs()) - c.t0 - (c.pausedMs || 0) : 0, hiddenMs: c.hiddenMs, pausedMs: c.pausedMs, pauses: c.pauses, completion: c.completion, attempt: c.attempt, flags: Object.keys(c.flags).sort(), heard: c.heard });
         // The reading tools that were on during a scored item, in the panel's order.
         out.score.tools = Object.keys(TOOLS).filter(function (name) {
           return out.items.some(function (it, i) { return !items[i].item.practice && it.supports && it.supports[name]; });
@@ -8505,6 +8582,7 @@
             fmt(L.check_review_time, { elapsed: r.elapsedS, limit: r.timeLimitS ? fmt(L.check_review_limit, { seconds: r.timeLimitS }) : L.check_review_no_limit }),
             fmt(L.check_review_hidden, { hidden: r.hiddenS }),
             r.pauses ? fmt(L.check_review_paused, { paused: r.pausedS, times: r.pauses === 1 ? L.check_review_paused_once : fmt(L.check_review_paused_many, { n: r.pauses }) }) : '',
+            r.directionsHeard ? fmt(L.check_review_heard, { n: r.directionsHeard }) : '',
             r.prorated ? L.check_review_prorated : '',
             r.untimed ? fmt(L.check_review_untimed, { seconds: r.usualTimeLimitS || '' }) : '',
             fmt(L.check_review_attempt, { n: r.attempt }),
@@ -8614,6 +8692,13 @@
     var labels = Object.assign({}, DEFAULT_LABELS, probe ? CHECK_LABELS : {}, pictured ? PICTURE_LABELS : {});
     used.forEach(function (id) { Object.assign(labels, adapters[id].labels || {}); labels[id + '_title'] = labels[id + '_title'] || adapters[id].title; });
     Object.assign(labels, opts.labels || {});
+    // 2026-11-17: the practice end screen got words of its own that day (save_work, saving_work, grown_ups,
+    // grown_ups_file). A translation made before them has none: its file keeps the words it does have for the same
+    // button, line and fold, rather than showing English among them.
+    var given = opts.labels || {};
+    if (given.save_csv && !given.save_work) labels.save_work = given.save_csv;
+    if (given.saving_file && !given.saving_work) labels.saving_work = given.saving_file;
+    if (given.more_saves && !given.grown_ups) { labels.grown_ups = given.more_saves; if (!given.grown_ups_file) labels.grown_ups_file = ''; }
     // A sound's name (ctx.sound) shows only with letters on: other files do not carry the words.
     if (!lesson.showLetters) Object.keys(labels).forEach(function (k) { if (/^sound_name_/.test(k)) delete labels[k]; });
     var renders = '{' + used.map(function (id) { return JSON.stringify(id) + ':' + adapters[id].render.toString(); }).join(',\n') + '}';
@@ -8756,7 +8841,7 @@
       // value; the items are, and the counts can be made again from them.
       result.score = { measure: str(sc.measure).slice(0, 40), score: num(sc.score), scoreUnit: str(sc.scoreUnit).slice(0, 40), digitsCorrect: whole(sc.digitsCorrect), digitsPossible: whole(sc.digitsPossible),
         itemsCorrect: whole(sc.itemsCorrect) || 0, itemsAttempted: whole(sc.itemsAttempted) || 0, timeLimitS: num(sc.timeLimitS), elapsedS: num(sc.elapsedS) || 0, hiddenS: num(sc.hiddenS) || 0,
-        pausedS: num(sc.pausedS) || 0, pauses: whole(sc.pauses) || 0,
+        pausedS: num(sc.pausedS) || 0, pauses: whole(sc.pauses) || 0, directionsHeard: whole(sc.directionsHeard) || 0,
         // time_up_away (2026-11-13): the time ran out while the page was hidden or closed; no score.
         completion: /^(time|ended_early|complete|time_up_away)$/.test(str(sc.completion)) ? sc.completion : '', prorated: sc.prorated === true,
         noScoreReason: str(sc.noScoreReason).slice(0, 40), scoringVersion: whole(sc.scoringVersion),

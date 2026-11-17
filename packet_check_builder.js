@@ -224,8 +224,45 @@
     });
   }
 
+  // 2026-11-17: spoken directions for the two checks given to the youngest students. The line of the Get ready screen
+  // that says the time, as the file writes it (timeWords and check_ready_timed in the loader). L = the file's labels.
+  function readyTimeLine(L, seconds) {
+    var n = Math.round(Number(seconds));
+    if (!(n > 0)) return text(L.check_ready_untimed);
+    var time = n % 60 === 0 ? (n === 60 ? text(L.check_one_minute) : text(L.check_minutes).replace('{n}', n / 60)) : text(L.check_seconds).replace('{n}', n);
+    return text(L.check_ready_timed).replace('{time}', time);
+  }
+  // The recordings of a check's own Get ready lines, from bank (packets_check_directions.js: { clips: { line: data URI } }).
+  // null unless the check is one of the two and EVERY line it shows has a recording of exactly those words: a file never
+  // reads half of its screen aloud, and a file with other words (a translation, another time limit) has no button.
+  var SPOKEN = { quantity_discrimination: true, missing_number: true };
+  function directionsFor(lesson, loader, bank, labels) {
+    var block = lesson && lesson.blocks && lesson.blocks[0], activity = block ? text(block.activity) : '';
+    if (!bank || typeof bank !== 'object' || !bank.clips || typeof bank.clips !== 'object' || !own(SPOKEN, activity) || !loader.CHECK_LABELS) return null;
+    var L = Object.assign({}, loader.CHECK_LABELS, loader.CHECK_ADAPTERS[activity].labels, labels || {});
+    var lines = [text(L[activity + '_directions']), readyTimeLine(L, lesson.timeLimitS), text(L.check_ready_one_try)];
+    var clips = lines.map(function (line) { return line && own(bank.clips, line) ? text(bank.clips[line]) : ''; });
+    if (clips.some(function (uri) { return !/^data:audio\/(?:mpeg|wav);base64,[A-Za-z0-9+/]+=*$/.test(uri); })) return null;
+    return { lines: lines, clips: clips, voice: text(bank.voice).slice(0, 120) || 'a machine voice' };
+  }
+  // The manifest (the data block of the file) with more keys. Only the data block changes: the script and its hash do not.
+  function withManifest(html, more) {
+    var open = '<script type="application/json" id="packet-manifest">';
+    var at = html.indexOf(open);
+    if (at < 0) return html;
+    var from = at + open.length, to = html.indexOf('</script>', from), manifest;
+    try { manifest = JSON.parse(html.slice(from, to)); } catch (_) { return html; }
+    if (!manifest || typeof manifest !== 'object') return html;
+    Object.keys(more).forEach(function (key) { manifest[key] = more[key]; });
+    var json = JSON.stringify(manifest).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
+    return html.slice(0, from) + json + html.slice(to);
+  }
+
   // The file. loader = AlloWordSoundsTakeHome (word_sounds_take_home_loader.js).
-  //   buildCheckPacket({ lesson, title, teacherCode, loader, learner }) -> { html, manifest, sha256 }
+  //   buildCheckPacket({ lesson, title, teacherCode, loader, learner, directions }) -> { html, manifest, sha256 }
+  // directions (2026-11-17): the recordings of packets_check_directions.js. Given, a check for the youngest students
+  // carries the recording of each line of its Get ready screen, and that screen has a "Hear the directions" button.
+  // Left out, the file has no sound, as before. The items, the answers and the file's version are the same either way.
   // teacherCode (4 or more characters) locks the "For the teacher" screen; it is kept in the file
   // only as a salted hash. It is a lock on a screen, not encryption.
   function buildCheckPacket(input) {
@@ -240,11 +277,22 @@
     var code = text(o.teacherCode).trim();
     if (code && code.length < 4) throw new Error('The teacher code needs 4 or more characters.');
     if (code.length > 64) throw new Error('The teacher code can have 64 characters at most.');
-    var html = loader.buildHtml(lesson, { teacherCode: code || null, labels: o.labels || null });
+    var spoken = o.directions ? directionsFor(lesson, loader, o.directions, o.labels) : null;
+    var labels = o.labels || null, options = { teacherCode: code || null };
+    if (spoken) {
+      lesson.audio = lesson.audio && typeof lesson.audio === 'object' ? lesson.audio : {};
+      lesson.directions = spoken.clips.map(function (uri, i) { var id = 'directions-' + (i + 1); lesson.audio[id] = uri; return id; });
+      labels = Object.assign({ about_never: 'It never uses the microphone or the camera. It has no cookies and runs no AI. The voice that reads the directions is a set of recordings made ahead of time with a computer voice; this file makes no speech itself.' }, labels || {});
+      options.attributions = ['Recordings of the directions: made ahead of time with ' + spoken.voice + '. No person has listened to each one.'];
+    }
+    options.labels = labels;
+    var html = loader.buildHtml(lesson, options);
+    if (spoken) html = withManifest(html, { speech: { engine: 'none', note: 'The file plays recordings of its directions, only when Hear the directions is pressed. It does not use the voice of the device and makes no speech.',
+      recordings: { directions: spoken.clips.length, made: 'ahead of time, with ' + spoken.voice, humanReviewed: false } } });
     // learner (2026-11-13): a student's code name, put in last, exactly as withCodeName adds it to a finished file.
     if (o.learner) html = withCodeName(html, o.learner);
     var block = /<script type="application\/json" id="packet-manifest">([\s\S]*?)<\/script>/.exec(html);
-    return { html: html, manifest: block ? JSON.parse(block[1]) : null, sha256: loader.sha256(html).hex };
+    return { html: html, manifest: block ? JSON.parse(block[1]) : null, sha256: loader.sha256(html).hex, spoken: spoken ? spoken.lines : null };
   }
 
   // A student's code name, as a file may carry it: the rule of word_sounds_packet_builder.js codeName (letters of any
@@ -268,6 +316,7 @@
   }
 
   var api = { VERSION: VERSION, MEASURES: MEASURES, formTitle: formTitle, lessonFromMathForm: lessonFromMathForm, lessonFromMathProblems: lessonFromMathProblems, parseProblems: parseProblems, buildCheckPacket: buildCheckPacket,
+    readyTimeLine: readyTimeLine, directionsFor: directionsFor,
     codeName: codeName, withCodeName: withCodeName };
   root.AlloPacketChecks = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

@@ -486,11 +486,20 @@ describe('the engine fixes of 2026-11-12', () => {
         [15, 7, 24, 5].forEach((n) => { t.tick(1500); String(n).split('').forEach((ch) => t.q('[data-key="' + ch + '"]').click()); t.q('[data-key="next"]').click(); });
       }
       const primary = [...t.d.querySelectorAll('#app button.primary')].filter((b) => !b.closest('[hidden]'));
-      expect(primary.map((b) => b.textContent)).toEqual(['Save results as a spreadsheet file (CSV)']);
+      // 2026-11-17: a practice file's end screen is for a young student: one big button, "Save my work", and the words for
+      // adults (what the file is, the other ways to save, About this file) in a fold. A check keeps its own end screen.
+      const practice = html === FILES.practice;
+      expect(primary.map((b) => b.textContent)).toEqual([practice ? 'Save my work' : 'Save results as a spreadsheet file (CSV)']);
       const more = t.q('[data-more-saves]');
-      expect([more.tagName, more.open, more.querySelector('summary').textContent]).toEqual(['DETAILS', false, 'Other ways to save']);
-      expect([...more.querySelectorAll('button')].map((b) => b.textContent)).toEqual(['Save my work as a file', 'Copy for a spreadsheet']);
-      expect(more.previousElementSibling.contains(t.q('[data-save-csv]'))).toBe(true);
+      expect([more.tagName, more.open, more.querySelector('summary').textContent]).toEqual(['DETAILS', false, practice ? 'For grown-ups' : 'Other ways to save']);
+      expect([...more.querySelectorAll('button')].map((b) => b.textContent)).toEqual(['Save my work as a file', 'Copy for a spreadsheet'].concat(practice ? ['About this file'] : []));
+      if (practice) {
+        expect(more.hasAttribute('data-grown-ups')).toBe(true);
+        expect(more.textContent).toContain('Save my work makes a spreadsheet file (CSV). Give that file to the teacher.');
+        expect(more.compareDocumentPosition(t.q('[data-save-csv]')) & t.w.Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy();
+        expect(t.q('[data-save-csv]').className).toBe('primary big');
+        expect(t.q('[data-save-csv] .save-icon').getAttribute('aria-hidden')).toBe('true');
+      } else expect(more.previousElementSibling.contains(t.q('[data-save-csv]'))).toBe(true);
     }
   });
 

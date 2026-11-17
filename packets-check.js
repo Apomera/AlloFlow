@@ -430,7 +430,9 @@
   }
   function plan() { return planFor(state.check === OWN ? '' : versionNow()); }
   function buildFor(todo, learner) {
-    return builder.buildCheckPacket({ lesson: todo.lesson, title: todo.own ? '' : todo.title, teacherCode: codeNow(), loader: loader, learner: learner || '' });
+    // 2026-11-17: the recordings of the directions (packets_check_directions.js). The builder puts them only into the two
+    // checks for the youngest students, and only when every line of the Get ready screen has one.
+    return builder.buildCheckPacket({ lesson: todo.lesson, title: todo.own ? '' : todo.title, teacherCode: codeNow(), loader: loader, learner: learner || '', directions: window.AlloPacketCheckDirections || null });
   }
   function clearBuilt() {
     buildRun++;

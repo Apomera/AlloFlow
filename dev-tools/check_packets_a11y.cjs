@@ -61,7 +61,10 @@ async function makeFiles(dir) {
     dictionary: parts.dictionary, banks: BANKS, loader, wordlist: parts.wordlist, knownWords: KNOWN, length: 2, createdAt: '2026-11-12T00:00:00.000Z', ...over });
   const BANKJSON = JSON.parse(read('psychometric_math_probes.json').replace(/^﻿/, ''));
   const form = (measure, grade, extra) => checks.lessonFromMathForm({ bank: BANKJSON, measure, grade, form: 'A', ...extra });
-  const check = (lesson, extra) => checks.buildCheckPacket({ lesson, loader, ...extra });
+  // 2026-11-17: made as the check maker makes them, with the recordings of the directions (packets_check_directions.js):
+  // the Get ready screen of a check for the youngest students then has its Hear the directions button.
+  const directions = require(path.join(ROOT, 'packets_check_directions.js'));
+  const check = (lesson, extra) => checks.buildCheckPacket({ lesson, loader, directions, ...extra });
   const vbank = require(path.join(ROOT, 'tests/fixtures/packets_vocab_bank_fixture.js'));
   await vbank.load();
   const rows = vocab.draftRows({ words: vocab.parseWords('habitat, predator, prey, cell, bat, adapt, camouflage').words, bank: vbank });
@@ -258,8 +261,18 @@ async function keyboard(page, state, isFile) {
     for (let i = 0; i < controls.length * 2 + 12; i++) {
       await page.keyboard.press('Tab');
       const a = await page.evaluate(([fa, fs]) => { const a = new Function('return (' + fa + ')')()(); a.style = new Function('return (' + fs + ')')()(a.n); return a; }, [probeActive.toString(), probeStyleOf.toString()]);
+      // 2026-11-17: a page may draw a box again during the walk (Add up results draws a student's tables again when a goal
+      // box is left). The new box has no number: it is the listed control of the same kind and name, reached after all.
+      if (a.n === -2) {
+        const again = controls.find((c) => !seen.includes(c.n) && c.tag === a.tag && c.name.slice(0, 40) === a.name);
+        // Only when the numbered box itself is gone from the page: a second control with the same name is not it.
+        if (again && !(await page.evaluate((n) => !!document.querySelector('[data-a11y-n="' + n + '"]'), again.n))) a.n = again.n;
+      }
       if (a.n === -1 || a.n === -2) { order.push(a.tag); if (order.length > controls.length * 2 + 8) break; continue; }
       if (a.n === 0) { if (order.length) break; else continue; }
+      // 2026-11-17: a date box takes one press for each of its parts (month, day, year, the calendar button): the same
+      // control again right away is not a trip round the page. Before this, the walk stopped at the first date box.
+      if (seen.length && a.n === seen[seen.length - 1]) continue;
       if (seen.includes(a.n)) break;
       seen.push(a.n); order.push(a.n);
       if (fromTop) {
@@ -343,6 +356,8 @@ async function clickVisible(page, selector) {
 }
 // The first choice of a group of radios/checkboxes inside a container (clicked through its label).
 async function pickFirst(page, container) {
+  // 2026-11-17: the maker's activities sit in closed groups since 2026-11-16; open the first one, as a teacher does.
+  await page.evaluate((sel) => { const d = document.querySelector(sel + ' details:not([open])'); if (d && d.querySelector('input')) d.open = true; }, container);
   const input = page.locator(container + ' input[type=radio], ' + container + ' input[type=checkbox]').first();
   const label = page.locator(container + ' label').filter({ has: input }).first();
   if (await label.count()) await label.click({ timeout: 4000 }); else await input.check({ timeout: 4000, force: true });
@@ -459,6 +474,10 @@ function fileStates(gen) {
       }, [storageKey, index, items]);
       await p.reload();
       await p.waitForSelector('#app h2', { timeout: 8000 });
+      // 2026-11-17: the name box no longer fills itself from the kept place, and Start with no name asks for one first:
+      // without a name here, every state below showed that question instead of the screen it is named for.
+      const who = p.locator('#learner-name');
+      if (await who.count() && !(await who.inputValue())) await who.fill('Robin4');
       await p.locator('#app button.primary').first().click();
       await wait(p, 350);
     };

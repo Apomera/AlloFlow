@@ -10079,7 +10079,26 @@
     "take_home_player_vocab_word_directions": "ອ່ານຄວາມໝາຍ. ເລືອກຄຳສັບ.",
     "take_home_player_vocab_word_question": "ຄຳສັບໃດມີຄວາມໝາຍນີ້?",
     "take_home_player_open_here": "ໃຊ້ໂທລະສັບ ຫຼື ແທັບເລັດບໍ? ເປີດໄຟລ໌ນີ້ຢູ່ apomera.github.io/AlloFlow/packets-open.html",
-    "take_home_player_done_activity": "{first} ຈາກ {total}"
+    "take_home_player_done_activity": "{first} ຈາກ {total}",
+    "take_home_player_continue_whose": "ຄຳຕອບທີ່ຕອບມາຮອດຕອນນີ້ຂອງ: {name}.",
+    "take_home_player_start_over_confirm": "ຖ້າເລີ່ມຕົ້ນໃໝ່ ຄຳຕອບທີ່ຕອບມາຮອດຕອນນີ້ຈະຖືກລຶບ.",
+    "take_home_player_keep_going": "ເກັບຄຳຕອບຂອງຂ້ອຍໄວ້",
+    "take_home_player_done_last_step": "ຂັ້ນຕອນສຸດທ້າຍ: ບັນທຶກວຽກຂອງເຈົ້າເພື່ອເອົາໃຫ້ຄູ.",
+    "take_home_player_save_work": "ບັນທຶກວຽກຂອງຂ້ອຍ",
+    "take_home_player_saving_work": "ບຣາວເຊີກຳລັງບັນທຶກ {file}. ເອົາໄຟລ໌ນັ້ນໃຫ້ຄູຂອງເຈົ້າ. ຖ້າບໍ່ມີຫຍັງຂຶ້ນ ໃຫ້ກົດ ບັນທຶກວຽກຂອງຂ້ອຍ ອີກເທື່ອໜຶ່ງ ຫຼື ຖາມຜູ້ໃຫຍ່.",
+    "take_home_player_grown_ups": "ສຳລັບຜູ້ໃຫຍ່",
+    "take_home_player_grown_ups_file": "ບັນທຶກວຽກຂອງຂ້ອຍ ຈະສ້າງໄຟລ໌ຕາຕະລາງ (CSV). ເອົາໄຟລ໌ນັ້ນໃຫ້ຄູ.",
+    "take_home_player_again_of": "ອີກເທື່ອໜຶ່ງ: {n} ຈາກ {total}",
+    "take_home_player_done_again": "ເຮັດຄືນອີກເທື່ອໜຶ່ງ: {n}.",
+    "take_home_player_tools_font": "ແບບຕົວໜັງສື",
+    "take_home_player_tools_font_1": "Lexend",
+    "take_home_player_tools_font_2": "Atkinson",
+    "take_home_player_tools_font_3": "ແບບປຶ້ມ",
+    "take_home_player_tools_font_4": "ແບບມົນ",
+    "take_home_player_tools_directions": "ອ່ານຄຳແນະນຳອອກສຽງ",
+    "take_home_player_tools_directions_0": "ທຸກຄຳຖາມ",
+    "take_home_player_tools_directions_1": "ຄຳຖາມທຳອິດເທົ່ານັ້ນ",
+    "take_home_player_tools_directions_hint": "ບອກວ່າຕ້ອງເຮັດຫຍັງໃນຄຳຖາມທຳອິດຂອງແຕ່ລະກິດຈະກຳ, ແລ້ວໄປຫາແຕ່ລະຄຳ ຫຼື ສຽງໂດຍກົງ. ຟັງຄຳຖາມ ຍັງຫຼິ້ນທຸກຢ່າງຄືເກົ່າ."
   },
   "games": {
     "syntax": {

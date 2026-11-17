@@ -771,7 +771,7 @@
       return;
     }
     state = recall();
-    if (loader.DEFAULT_LABELS && loader.DEFAULT_LABELS.save_csv) setText('csv-label', loader.DEFAULT_LABELS.save_csv);
+    if (loader.DEFAULT_LABELS && loader.DEFAULT_LABELS.save_work) setText('csv-label', loader.DEFAULT_LABELS.save_work);
     // "Open a file I made" and one file for each student are extras: without their scripts the page works as before.
     var kit = window.AlloPacketReopen;
     reopenKit = kit && typeof kit.readMath === 'function' && window.AlloPacketVerify && typeof window.AlloPacketVerify.readParts === 'function' && typeof FileReader === 'function' ? kit : null;

@@ -3718,7 +3718,22 @@
     "take_home_player_vocab_word_practice_wrong": "Not quite. Here is the right answer.",
     "take_home_player_vocab_word_blank": "blank",
     "take_home_player_open_here": "Phone or tablet? Open this file at apomera.github.io/AlloFlow/packets-open.html",
-    "take_home_player_done_activity": "{first} of {total}"
+    "take_home_player_done_activity": "{first} of {total}",
+    "take_home_player_continue_whose": "Answers so far by: {name}.",
+    "take_home_player_start_over_confirm": "Starting over erases the answers so far.",
+    "take_home_player_keep_going": "Keep my answers",
+    "take_home_player_done_last_step": "Last step: save your work for your teacher.",
+    "take_home_player_save_work": "Save my work",
+    "take_home_player_saving_work": "Your browser is saving {file}. Give that file to your teacher. If nothing appears, press Save my work again, or ask a grown-up.",
+    "take_home_player_grown_ups": "For grown-ups",
+    "take_home_player_grown_ups_file": "Save my work makes a spreadsheet file (CSV). Give that file to the teacher.",
+    "take_home_player_again_of": "Once more: {n} of {total}",
+    "take_home_player_done_again": "Went over once more: {n}.",
+    "take_home_player_tools_font": "Letters",
+    "take_home_player_tools_font_1": "Lexend",
+    "take_home_player_tools_font_2": "Atkinson",
+    "take_home_player_tools_font_3": "Book",
+    "take_home_player_tools_font_4": "Rounded"
   },
   "vr": {
     "enter": "VR",

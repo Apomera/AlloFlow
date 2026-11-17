@@ -680,7 +680,10 @@
         throw new Error('Card ' + (i + 1) + ' cannot be built: ' + (made && made.missing ? made.missing.join(', ') : 'invalid item'));
       }
       var n = (i < 9 ? '0' : '') + (i + 1);
-      var idSuffix = card.practice ? '-sample' : (card.role === 'new' || card.role === 'known' ? '-' + card.role : '');
+      // 2026-11-17: a card with something to ignore (color words, the middle letter, dots and digits) says in its id
+      // whether the two agree ("-match") or not ("-conflict"), so the results can be read apart. The id is in every results row.
+      var agree = typeof card.congruent === 'boolean' ? (card.congruent ? '-match' : '-conflict') : '';
+      var idSuffix = card.practice ? '-sample' : agree + (card.role === 'new' || card.role === 'known' ? '-' + card.role : '');
       var cardId = 'symbol_runner-' + n + idSuffix;
       return isCheck ? Object.assign({ id: cardId }, raw) : Object.assign({ id: cardId }, made.item);
     });

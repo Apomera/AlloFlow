@@ -362,7 +362,8 @@ describe('the pages as files', () => {
     // The verify page has one name everywhere: "Look inside a file".
     expect([...doc.querySelectorAll('a[href="packets-verify.html"]')].map((a) => a.textContent)).toEqual(['Look inside a file']);
     // What the front door says: one button saves the results; a file preview does not run (as the IT guide says, reported, not yet tested).
-    expect(doc.getElementById('what').textContent).toContain('At the end the student presses one button, Save results as a spreadsheet file (CSV).');
+    // 2026-11-17: a practice file's main button is "Save my work" (the check keeps "Save results as a spreadsheet file (CSV)").
+    expect(doc.getElementById('what').textContent).toContain('At the end the student presses one button, Save my work. It saves a spreadsheet file (CSV), which you open in a spreadsheet');
     const preview = [...doc.querySelectorAll('#check li')].find((li) => li.textContent.startsWith('Run inside a file preview.')).textContent;
     expect(preview).toBe('Run inside a file preview. The previews in Google Drive, Google Classroom and the iPad Files app do not run the file. '
       + 'The file then shows a note that asks the student to download it and open it in a browser. Reported, not yet tested by us.');
@@ -1721,7 +1722,9 @@ describe('the maker: borderline words and the kindergarten line', () => {
     expect(tip.tagName === 'DETAILS' && !tip.hasAttribute('open') && tip.closest('#after-save')).toBeTruthy();
     expect(tip.querySelector('summary').textContent).toBe("Fill in a student's code name for them");
     expect([...doc.querySelectorAll('#after-save ol a')].map((a) => [a.textContent, a.getAttribute('href')])).toEqual([['Add up results', 'packets-results.html']]);
-    expect(doc.querySelector('#after-save ol').textContent).toContain('presses the main button at the end, Save results as a spreadsheet file (CSV).');
+    // 2026-11-17: the words of the practice file's own main button (save_work).
+    expect(doc.querySelector('#after-save ol').textContent).toContain('presses the main button at the end, Save my work.');
+    expect(read('word_sounds_take_home_loader.js')).toContain("save_work: 'Save my work'");
   });
 });
 

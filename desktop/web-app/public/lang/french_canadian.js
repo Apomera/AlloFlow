@@ -8714,7 +8714,26 @@
     "take_home_player_vocab_word_directions": "Lis la définition. Choisis le mot.",
     "take_home_player_vocab_word_question": "Quel mot a ce sens ?",
     "take_home_player_open_here": "Téléphone ou tablette ? Ouvre ce fichier sur apomera.github.io/AlloFlow/packets-open.html",
-    "take_home_player_done_activity": "{first} sur {total}"
+    "take_home_player_done_activity": "{first} sur {total}",
+    "take_home_player_continue_whose": "Réponses données jusqu'ici par : {name}.",
+    "take_home_player_start_over_confirm": "Recommencer efface les réponses données jusqu'ici.",
+    "take_home_player_keep_going": "Garder mes réponses",
+    "take_home_player_done_last_step": "Dernière étape : enregistre ton travail pour ton enseignant.",
+    "take_home_player_save_work": "Enregistrer mon travail",
+    "take_home_player_saving_work": "Ton navigateur enregistre {file}. Remets ce fichier à ton enseignant. Si rien n'apparaît, appuie encore sur Enregistrer mon travail, ou demande à un adulte.",
+    "take_home_player_grown_ups": "Pour les adultes",
+    "take_home_player_grown_ups_file": "Enregistrer mon travail crée un fichier pour tableur (CSV). Remettez ce fichier à l'enseignant.",
+    "take_home_player_again_of": "Encore une fois : {n} sur {total}",
+    "take_home_player_done_again": "Refaites encore une fois : {n}.",
+    "take_home_player_tools_font": "Forme des lettres",
+    "take_home_player_tools_font_1": "Lexend",
+    "take_home_player_tools_font_2": "Atkinson",
+    "take_home_player_tools_font_3": "Livre",
+    "take_home_player_tools_font_4": "Arrondie",
+    "take_home_player_tools_directions": "Consignes à voix haute",
+    "take_home_player_tools_directions_0": "À chaque question",
+    "take_home_player_tools_directions_1": "Première question seulement",
+    "take_home_player_tools_directions_hint": "Dit quoi faire à la première question de chaque activité, puis passe directement à chaque mot ou son. Écouter la question fait toujours tout entendre."
   },
   "adventure": {
     "offline": {

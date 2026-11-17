@@ -102,6 +102,7 @@ The value of `lesson` is JSON. Look inside a file calls it "the data block": the
 | `mode` | `probe` in a check. `practice`, or absent, in a practice file. |
 | `form`, `timeLimitS`, `check` | A check only. `check` holds the measure, the score unit, the scoring and form versions, untimed settings, and `lock` (a salted hash of the teacher code) when there is one. The answers are scrambled (XOR with a SHA-256 keystream). |
 | `pictures`, `instructionsOnce` | Only when used. |
+| `directions` | From 2026-11-17, only in a check for the youngest students (Quantity Discrimination, Missing Number) made with the recordings of its directions: the ids, in `audio`, of the recordings of the three lines of its Get ready screen, in order. The screen then has a Hear the directions button. The items, the answers and `revision` are the same with or without it. |
 
 ### 1.4 The manifest (`alloflow-packet-manifest`)
 
@@ -209,7 +210,7 @@ Each item:
 | Field | What it holds |
 |---|---|
 | `n` | Its place, from 1. |
-| `itemId`, `activity`, `word` | As in the lesson. |
+| `itemId`, `activity`, `word` | As in the lesson. A Symbol Runner item id ends in `-new` or `-known` in a rehearsal file, and from 2026-11-17 an item with something to ignore (color words, the middle letter, dots and digits) has `-match` or `-conflict` before that: whether the two things on the card agree. The readers count the two kinds apart from the id. |
 | `target` | The right answer, or `null`. In a check, the answer is unscrambled only when the results are made. |
 | `responses` | Each answer, in order (text, at most 80 characters each). |
 | `attempts`, `firstTry`, `correct`, `done` | The number of answers and the outcome. |
@@ -218,6 +219,7 @@ Each item:
 | `practice` | `null`, or a value that marks an unscored item (`practice` for a check's sample item; the readers also accept `traced`, `skipped` and `read`). |
 | `flag` | `""`, `skipped`, `time_up`, `resumed` (shown before, in an earlier opening of the file) or `paused` (a check's item set aside during a pause). |
 | `digitsCorrect`, `digitsPossible` | A check only: whole numbers, or `null`. |
+| `recallMs` | From 2026-11-17, math fact practice only (cover, copy, compare; rehearsal): the time from the fact being covered (or, for a card that starts covered, from its being shown) to the first answer from memory, in ms, not counting time the page was hidden. Absent when it was not timed (the file was reloaded in between). It is in the JSON only: the CSV item rows are unchanged. |
 
 The `score` of a check:
 
@@ -235,6 +237,7 @@ The `score` of a check:
 | `tools` | The reading tools that were on during a scored item. |
 | `untimed`, `usualTimeLimitS` | Only for an untimed check (an accommodation). |
 | `pausedS`, `pauses` | Only for a check that was paused: the seconds paused (to a tenth) and how many times. `elapsedS` leaves the paused time out. (Added on 2026-11-17.) |
+| `directionsHeard` | Only when Hear the directions was pressed on the Get ready screen: how many times. It says the button was pressed, not that the recording was heard to its end. (Added on 2026-11-17.) |
 
 The score is not covered by the check value. The answers are, and the Add up results page counts the score again from the answers and notes when the two differ.
 
@@ -287,8 +290,8 @@ The trailer lines start with `#` in the first cell. Readers skip a `#` line they
 
 | Line | Cells |
 |---|---|
-| `#summary` | `#summary`, the session id, then `items_given=`, `attempted=`, `correct=`, `first_try=`, `accuracy_pct=`. In a check, then `attempt=`. Then `title=` (the title the student saw, at most 120 characters), in files from 2026-11-13 `active_s=`, and in files from 2026-11-17 `accuracy_of_attempted_pct=` (right / attempted; empty when nothing was attempted). |
-| `#score` | A check only, between `#summary` and `#integrity`: `#score`, the session id, then `measure=`, `score=`, `score_unit=`, `digits_correct=`, `digits_possible=`, `items_correct=`, `items_attempted=`, `time_limit_s=`, `elapsed_s=`, `hidden_s=`, `completion=`, `prorated=` (`1` or `0`), `scoring_version=`, `form_version=`, `attempt=`, `flags=` (joined with `;`), `tools_used=` (joined with `;`). An untimed check adds `timing=untimed` and `usual_time_limit_s=`. A check that was paused then adds `paused_s=` and `pauses=`. |
+| `#summary` | `#summary`, the session id, then `items_given=`, `attempted=`, `correct=`, `first_try=`, `accuracy_pct=`. In a check, then `attempt=`. Then `title=` (the title the student saw, at most 120 characters), in files from 2026-11-13 `active_s=`, and in files from 2026-11-17 `accuracy_of_attempted_pct=` (right / attempted; empty when nothing was attempted). A math fact practice file that timed a recall then adds `recall_items=` (how many facts were right at the first try from memory) and `recall_median_ms=` (the median of their `recallMs`). |
+| `#score` | A check only, between `#summary` and `#integrity`: `#score`, the session id, then `measure=`, `score=`, `score_unit=`, `digits_correct=`, `digits_possible=`, `items_correct=`, `items_attempted=`, `time_limit_s=`, `elapsed_s=`, `hidden_s=`, `completion=`, `prorated=` (`1` or `0`), `scoring_version=`, `form_version=`, `attempt=`, `flags=` (joined with `;`), `tools_used=` (joined with `;`). An untimed check adds `timing=untimed` and `usual_time_limit_s=`. A check that was paused then adds `paused_s=` and `pauses=`. A check whose Hear the directions button was pressed then adds `directions_heard=`. |
 | `#integrity` | `#integrity`, the method (`sha256` or `fnv1a`), the value, and the words `detects accidental edits, not deliberate ones`. |
 
 In `#summary`, `accuracy_pct` is correct over items given, so in a timed check it counts items the student never reached; `accuracy_of_attempted_pct` is correct over items attempted. Both are empty when nothing in the file is scored (a read-along, or Letter Trace alone).

@@ -11,13 +11,19 @@
 // "Skipped is not passed": a state that could not be reached is counted as a failure.
 //
 //   node dev-tools/check_packets_smoke.cjs          (about 1 to 3 minutes; one browser)
+//   node dev-tools/check_packets_smoke.cjs --browser=webkit [--phone]   (2026-11-17) Safari's engine; --phone uses an
+//      iPhone-sized touch screen. This is Playwright's WebKit build on this computer, not Safari on a real iPhone or iPad.
 // Heavy: not part of the default test run. Do not run it beside vitest or another browser sweep (shared machine).
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const http = require('node:http');
 const ROOT = path.resolve(__dirname, '..');
-const { chromium } = require(path.join(ROOT, 'node_modules/playwright'));
+const playwright = require(path.join(ROOT, 'node_modules/playwright'));
+const ARG = (name) => { const hit = process.argv.slice(2).find((a) => a === '--' + name || a.startsWith('--' + name + '=')); return hit ? (hit.split('=')[1] || true) : null; };
+const ENGINE = String(ARG('browser') || 'chromium');
+if (!['chromium', 'webkit', 'firefox'].includes(ENGINE)) { console.error('Unknown --browser: ' + ENGINE); process.exit(2); }
+const PHONE = !!ARG('phone');
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.webp': 'image/webp', '.woff2': 'font/woff2' };
 
 function serve() {
@@ -69,8 +75,11 @@ function makeFiles() {
   const files = makeFiles();
   if (files._wordSoundsPromise) await files._wordSoundsPromise;
   const { server, base } = await serve();
-  const browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext({ viewport: { width: 1280, height: 800 }, acceptDownloads: true });
+  const browser = await playwright[ENGINE].launch({ headless: true });
+  const context = await browser.newContext(PHONE
+    ? { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, hasTouch: true, isMobile: ENGINE !== 'firefox', acceptDownloads: true }
+    : { viewport: { width: 1280, height: 800 }, acceptDownloads: true });
+  console.log('Browser: ' + ENGINE + ' ' + browser.version() + (PHONE ? ', phone-sized touch screen' : ''));
   const watch = (page) => {
     const bad = [];
     page.on('console', (m) => { const t = m.text(); if (/Content Security Policy|Refused to/i.test(t) || m.type() === 'error') bad.push(t.slice(0, 200)); });

@@ -3976,7 +3976,7 @@
             { display: 'nnnnn', answer: 'n', category: 'flanker', congruent: true, flankerCenter: 2, promptRule: 'Middle letter only' },
             { display: 'uunuu', answer: 'n', category: 'flanker', congruent: false, flankerCenter: 2, promptRule: 'Middle letter only' },
             { display: 'uuuuu', answer: 'u', category: 'flanker', congruent: true, flankerCenter: 2, promptRule: 'Middle letter only' },
-            { display: 'nnuun', answer: 'u', category: 'flanker', congruent: false, flankerCenter: 2, promptRule: 'Middle letter only' },
+            { display: 'nnunn', answer: 'u', category: 'flanker', congruent: false, flankerCenter: 2, promptRule: 'Middle letter only' },
             { display: 'mmmmm', answer: 'm', category: 'flanker', congruent: true, flankerCenter: 2, promptRule: 'Middle letter only' },
             { display: 'wwmww', answer: 'm', category: 'flanker', congruent: false, flankerCenter: 2, promptRule: 'Middle letter only' },
             { display: 'wwwww', answer: 'w', category: 'flanker', congruent: true, flankerCenter: 2, promptRule: 'Middle letter only' },
@@ -5995,6 +5995,44 @@
     return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
   }
 
+  // 2026-11-17: the recordings (audio_bank/, word_audio_shards/) are at the app's file address, not beside the app's own
+  // page. Asked for beside the page, as before, the live app (under /app/) answered with its own web page, which is not
+  // data, so the letter and sound recordings never arrived there. The file address comes first; an address beside the
+  // page comes first only where the page runs from the device itself (the desktop app, which carries its own copies).
+  function _srAssetBases(location, cdnBase) {
+    var cdn = String(cdnBase || 'https://alloflow-cdn.pages.dev/').replace(/\/*$/, '/');
+    var host = location && typeof location.hostname === 'string' ? location.hostname : '';
+    var local = !!location && (location.protocol === 'file:' || host === 'localhost' || host === '127.0.0.1');
+    return local ? ['', cdn] : [cdn, ''];
+  }
+  // The JSON at path, from the first place that gives data. null when none does (never a rejection).
+  function _srFetchJson(path, fetcher, bases) {
+    var get = fetcher || (typeof fetch === 'function' ? fetch : null);
+    if (!get) return Promise.resolve(null);
+    var list = bases || _srAssetBases(typeof window !== 'undefined' ? window.location : null, typeof window !== 'undefined' ? window.__alloCdnBase : '');
+    var tryAt = function (i) {
+      if (i >= list.length) return Promise.resolve(null);
+      var next = function () { return tryAt(i + 1); };
+      var asked;
+      try { asked = Promise.resolve(get(list[i] + path)); } catch (_) { return next(); }
+      return asked.then(function (r) { return r && r.ok ? r.json() : null; })
+        .then(function (data) { return data && typeof data === 'object' ? data : next(); }, next);
+    };
+    return tryAt(0);
+  }
+  // The best round kept for each symbol set on this device (as Fluency Maze keeps its bests).
+  var SR_BESTS_KEY = 'symbol_runner_bests';
+  function _srReadBests() {
+    try { var kept = JSON.parse(localStorage.getItem(SR_BESTS_KEY) || '{}'); return kept && typeof kept === 'object' && !Array.isArray(kept) ? kept : {}; } catch (_) { return {}; }
+  }
+  // A round against the best so far: more right at the first try wins; with as many, the faster average wins.
+  function _srBetterRun(run, prev) {
+    if (!run || !(run.total > 0)) return false;
+    if (!prev || !(prev.total > 0)) return true;
+    if (run.firstTry !== prev.firstTry) return run.firstTry > prev.firstTry;
+    return run.meanMs > 0 && (!(prev.meanMs > 0) || run.meanMs < prev.meanMs);
+  }
+
   function SymbolRunnerPanel(props) {
     var React = props.React || window.React;
     var h = React.createElement;
@@ -6023,8 +6061,14 @@
     var wordAudio = wordAudioState[0], setWordAudio = wordAudioState[1];
     var audioModeState = useState('auto');
     var audioMode = audioModeState[0], setAudioMode = audioModeState[1];
-    var voiceState = useState(false);
-    var voiceOn = voiceState[0], setVoiceOn = voiceState[1];
+    // 2026-11-17: the microphone is off here, as on the Packets page (owner's decision of 2026-11-16 for Symbol Runner):
+    // the browser's speech recognition sends the child's voice to Google or Microsoft. The game passes enableVoice: false,
+    // so it shows no Mic button. To bring it back, pass enableVoice: true and voiceEnabled from a choice on this panel.
+    var bestState = useState(null);
+    var best = bestState[0], setBest = bestState[1];
+    var roundState = useState('');
+    var roundSaid = roundState[0], setRoundSaid = roundState[1];
+    var completeRef = useRef(null);
     var hcState = useState(false);
     var highContrast = hcState[0], setHighContrast = hcState[1];
     var picsState = useState({});
@@ -6046,15 +6090,11 @@
     useEffect(function () {
       var active = true;
       if (typeof fetch !== 'function') return undefined;
-      fetch('audio_bank/phonemes.json').then(function (r) {
-        return r && r.ok ? r.json() : null;
-      }).then(function (data) {
+      _srFetchJson('audio_bank/phonemes.json').then(function (data) {
         if (!active || !data || typeof data !== 'object') return;
         setPhonemeAudio(data.clips && typeof data.clips === 'object' ? data.clips : data);
       }).catch(function () {});
-      fetch('audio_bank/letters.json').then(function (r) {
-        return r && r.ok ? r.json() : null;
-      }).then(function (data) {
+      _srFetchJson('audio_bank/letters.json').then(function (data) {
         if (!active || !data || typeof data !== 'object') return;
         setLetterAudio(data.clips && typeof data.clips === 'object' ? data.clips : data);
       }).catch(function () {});
@@ -6113,7 +6153,7 @@
         });
       };
       var pBank = (modeId === 'sight_words' && typeof fetch === 'function')
-        ? fetch('audio_bank/words.json').then(function (r) { return r && r.ok ? r.json() : null; }).then(function (data) {
+        ? _srFetchJson('audio_bank/words.json').then(function (data) {
             if (data && typeof data === 'object') mergeClips(data.clips && typeof data.clips === 'object' ? data.clips : data);
           }).catch(function () {})
         : Promise.resolve();
@@ -6125,9 +6165,7 @@
           }).catch(function () {});
         }
         if (typeof fetch !== 'function') return null;
-        return fetch('word_audio_shards/index.json').then(function (r) {
-          return r && r.ok ? r.json() : null;
-        }).then(function (idx) {
+        return _srFetchJson('word_audio_shards/index.json').then(function (idx) {
           if (!active || !idx || idx.format !== 'alloflow-word-audio-index/1' || !idx.words || !idx.shards) return null;
           var needed = {};
           targets.forEach(function (w) {
@@ -6139,9 +6177,7 @@
             }
           });
           return Promise.all(Object.keys(needed).map(function (file) {
-            return fetch('word_audio_shards/' + file).then(function (r) {
-              return r && r.ok ? r.json() : null;
-            }).then(function (sData) {
+            return _srFetchJson('word_audio_shards/' + file).then(function (sData) {
               if (!active || !sData || typeof sData !== 'object') return;
               var wMap = sData.words && typeof sData.words === 'object' ? sData.words : sData;
               var patch = {};
@@ -6208,7 +6244,9 @@
         controlMode: controlMode,
         viewMode: viewMode,
         highContrast: highContrast,
-        voiceEnabled: voiceOn,
+        enableVoice: false,
+        voiceEnabled: false,
+        onComplete: function (st) { if (completeRef.current) completeRef.current(st); },
         focusAnswers: focusAnswers,
         pictures: pictures,
         phonemeAudio: phonemeAudio,
@@ -6222,7 +6260,32 @@
         runnerRef.current = null;
         if (handle && typeof handle.destroy === 'function') handle.destroy();
       };
-    }, [runnerCore, modeId, customText, controlMode, viewMode, highContrast, voiceOn, useRehearsal, knownSymbols, pictures, runSeed]);
+    }, [runnerCore, modeId, customText, controlMode, viewMode, highContrast, useRehearsal, knownSymbols, pictures, runSeed]);
+
+    // The best round for this symbol set and way of answering (a rehearsal round is kept apart: it is an easier round).
+    var bestKey = modeId + '|' + controlMode + (useRehearsal ? '|rehearsal' : '');
+    useEffect(function () { setBest(_srReadBests()[bestKey] || null); setRoundSaid(''); }, [bestKey]);
+    // A finished round: points for the app (only what beats this set's earlier rounds, as Fluency Maze does), the best
+    // kept on this device, and one line saying so.
+    completeRef.current = function (st) {
+      var total = Math.max(0, Math.round(Number(st && st.total) || 0)), first = Math.max(0, Math.round(Number(st && st.firstTryCorrect) || 0));
+      if (!total) return;
+      var run = { firstTry: first, total: total, meanMs: Math.max(0, Math.round(Number(st.meanMs) || 0)) };
+      var bests = _srReadBests();
+      var isBest = _srBetterRun(run, bests[bestKey]);
+      if (isBest) {
+        bests[bestKey] = run;
+        try { localStorage.setItem(SR_BESTS_KEY, JSON.stringify(bests)); } catch (_) {}
+        setBest(run);
+      }
+      var said = tt('math_fluency.symbol_runner_round_done', 'Round done: {first} of {total} right on the first try.', { first: first, total: total })
+        + (isBest ? ' ' + tt('math_fluency.symbol_runner_new_best', 'That is your best on this set.') : '');
+      setRoundSaid(said);
+      _mfAnnounce(said);
+      if (typeof props.handleScoreUpdate === 'function' && first > 0) {
+        try { props.handleScoreUpdate(first, tt('math_fluency.symbol_runner_complete', 'Symbol Runner round'), 'symbol-runner:' + modeId); } catch (_) {}
+      }
+    };
 
     function autoFillCuePictures() {
       setPanelStatus(tt('math_fluency.symbol_runner_loading_pics', 'Matching built-in cue pictures…'));
@@ -6398,13 +6461,13 @@
 
     return h('section', {
       'data-testid': 'symbol-runner-panel',
-      'aria-label': tt('math_fluency.symbol_runner_title', 'Star-Rail Symbol Runner'),
+      'aria-label': tt('math_fluency.symbol_runner_title', 'Symbol Runner'),
       style: { maxWidth: 760, margin: '0 auto', padding: '18px 20px', borderRadius: '14px', border: '2px solid #4338ca', background: '#0f172a', color: '#f8fafc' }
     },
       h('div', { style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '8px', marginBottom: '12px' } },
         h('div', null,
-          h('h2', { style: { fontSize: '20px', fontWeight: 900, margin: 0, color: '#e0e7ff' } }, tt('math_fluency.symbol_runner_title', 'Star-Rail Symbol Runner')),
-          h('p', { style: { fontSize: '12px', color: '#cbd5e1', margin: '2px 0 0' } }, tt('math_fluency.symbol_runner_subtitle', 'Rapid letter, sound, digit, and subitizing trainer (Direct or Hover/Arrow Lock-On).'))
+          h('h2', { style: { fontSize: '20px', fontWeight: 900, margin: 0, color: '#e0e7ff' } }, tt('math_fluency.symbol_runner_title', 'Symbol Runner')),
+          h('p', { style: { fontSize: '12px', color: '#cbd5e1', margin: '2px 0 0' } }, tt('math_fluency.symbol_runner_subtitle', 'Quick naming practice: letters, sounds, sight words, numbers and dots. Say each one aloud as you tap or type it.'))
         ),
         props.onBackToMaze && h('button', {
           type: 'button',
@@ -6413,56 +6476,52 @@
         }, tt('math_fluency.back_to_maze', 'Back to Math Maze'))
       ),
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '8px', marginBottom: '12px' } },
-        h('label', { style: { display: 'grid', gap: '4px', fontSize: '12px', fontWeight: 700 } },
+        h('label', { style: { display: 'grid', gap: '4px', fontSize: '12px', fontWeight: 700, minWidth: 0 } },
           tt('math_fluency.symbol_runner_mode', 'Symbol set'),
           h('select', {
             value: modeId,
             onChange: function (e) { setModeId(e.target.value); setRunSeed(function (n) { return n + 1; }); },
-            style: { minHeight: '40px', borderRadius: '8px', padding: '4px 8px', background: '#1e293b', color: '#fff', border: '1px solid #64748b' }
+            style: { minHeight: '40px', borderRadius: '8px', padding: '4px 8px', background: '#1e293b', color: '#fff', border: '1px solid #64748b', width: '100%', minWidth: 0, boxSizing: 'border-box' }
           }, modes.map(function (m) { return h('option', { key: m.id, value: m.id }, m.title); }))
         ),
-        h('label', { style: { display: 'grid', gap: '4px', fontSize: '12px', fontWeight: 700 } },
+        h('label', { style: { display: 'grid', gap: '4px', fontSize: '12px', fontWeight: 700, minWidth: 0 } },
           tt('math_fluency.symbol_runner_custom', 'Custom symbols (spaces or commas)'),
           h('input', {
             type: 'text',
             value: customText,
             placeholder: tr('b d p q m n'),
             onChange: function (e) { setCustomText(e.target.value); },
-            style: { minHeight: '40px', borderRadius: '8px', padding: '4px 8px', background: '#1e293b', color: '#fff', border: '1px solid #64748b' }
+            style: { minHeight: '40px', borderRadius: '8px', padding: '4px 8px', background: '#1e293b', color: '#fff', border: '1px solid #64748b', width: '100%', minWidth: 0, boxSizing: 'border-box' }
           })
         ),
-        h('label', { style: { display: 'grid', gap: '4px', fontSize: '12px', fontWeight: 700 } },
-          tt('math_fluency.symbol_runner_control', 'Aiming mode'),
+        h('label', { style: { display: 'grid', gap: '4px', fontSize: '12px', fontWeight: 700, minWidth: 0 } },
+          tt('math_fluency.symbol_runner_control', 'How to answer'),
           h('select', {
             value: controlMode,
             onChange: function (e) { setControlMode(e.target.value); },
-            style: { minHeight: '40px', borderRadius: '8px', padding: '4px 8px', background: '#1e293b', color: '#fff', border: '1px solid #64748b' }
+            style: { minHeight: '40px', borderRadius: '8px', padding: '4px 8px', background: '#1e293b', color: '#fff', border: '1px solid #64748b', width: '100%', minWidth: 0, boxSizing: 'border-box' }
           },
             h('option', { value: 'direct' }, tt('math_fluency.symbol_runner_direct', 'Direct (say aloud, tap, or type)')),
             h('option', { value: 'lockon' }, tt('math_fluency.symbol_runner_lockon', 'Aim & Lock-On (hover cursor or arrow keys)'))
           )
         ),
-        h('label', { style: { display: 'grid', gap: '4px', fontSize: '12px', fontWeight: 700 } },
-          tt('math_fluency.symbol_runner_view', 'Corridor view'),
+        h('label', { style: { display: 'grid', gap: '4px', fontSize: '12px', fontWeight: 700, minWidth: 0 } },
+          tt('math_fluency.symbol_runner_view', 'View'),
           h('select', {
             value: viewMode,
             onChange: function (e) { setViewMode(e.target.value); },
-            style: { minHeight: '40px', borderRadius: '8px', padding: '4px 8px', background: '#1e293b', color: '#fff', border: '1px solid #64748b' }
+            style: { minHeight: '40px', borderRadius: '8px', padding: '4px 8px', background: '#1e293b', color: '#fff', border: '1px solid #64748b', width: '100%', minWidth: 0, boxSizing: 'border-box' }
           },
             h('option', { value: '3d' }, tt('math_fluency.symbol_runner_3d', '3D Star Rail')),
             h('option', { value: '2d' }, tt('math_fluency.symbol_runner_2d', '2D Three-Lane View')),
-            h('option', { value: 'grid' }, tt('math_fluency.symbol_runner_grid', '5x8 RAN Grid'))
+            h('option', { value: 'grid' }, tt('math_fluency.symbol_runner_grid', 'Naming grid (5 by 8)'))
           )
         )
       ),
       h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center', marginBottom: '12px', fontSize: '12px' } },
         h('label', { style: { display: 'inline-flex', alignItems: 'center', gap: '6px' } },
           h('input', { type: 'checkbox', checked: useRehearsal, onChange: function (e) { setUseRehearsal(e.target.checked); } }),
-          tt('math_fluency.symbol_runner_rehearsal', 'Incremental Rehearsal (1:1 -> 1:2 -> 1:4 -> 1:8)')
-        ),
-        h('label', { style: { display: 'inline-flex', alignItems: 'center', gap: '6px' } },
-          h('input', { type: 'checkbox', checked: voiceOn, onChange: function (e) { setVoiceOn(e.target.checked); } }),
-          tt('math_fluency.symbol_runner_voice', 'Voice mic')
+          tt('math_fluency.symbol_runner_rehearsal', 'Rehearsal: new symbols mixed in among known ones')
         ),
         h('label', { style: { display: 'inline-flex', alignItems: 'center', gap: '6px' } },
           h('span', null, tt('math_fluency.symbol_runner_audio_mode', 'Audio cue voice')),
@@ -6485,7 +6544,12 @@
           type: 'button',
           onClick: function () { setRunSeed(function (n) { return n + 1; }); },
           style: { minHeight: '36px', padding: '4px 10px', borderRadius: '8px', border: '1px solid #818cf8', background: '#312e81', color: '#fff', fontWeight: 700, cursor: 'pointer' }
-        }, tt('math_fluency.symbol_runner_restart', 'New round')),
+        }, tt('math_fluency.symbol_runner_restart', 'New round'))
+      ),
+      // 2026-11-17: what a teacher sets up once (cue pictures, printable sheets) waits in a fold.
+      h('details', { 'data-testid': 'symbol-runner-tools', style: { marginBottom: '12px', border: '1px solid #475569', borderRadius: '10px', padding: '2px 10px' } },
+        h('summary', { style: { cursor: 'pointer', display: 'list-item', padding: '10px 0', fontSize: '13px', fontWeight: 700, color: '#e0e7ff' } }, tt('math_fluency.symbol_runner_tools', 'For teachers: pictures and printables')),
+      h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center', margin: '4px 0 10px', fontSize: '12px' } },
         h('button', {
           type: 'button',
           onClick: autoFillCuePictures,
@@ -6513,7 +6577,7 @@
           'data-testid': 'sr-export-ran-grid',
           onClick: exportRanGrid,
           style: { minHeight: '36px', padding: '4px 10px', borderRadius: '8px', border: '1px solid #64748b', background: '#1e293b', color: '#fff', fontWeight: 700, cursor: 'pointer' }
-        }, tt('math_fluency.symbol_runner_export_ran', 'Printable RAN Grid (.html)')),
+        }, tt('math_fluency.symbol_runner_export_ran', 'Printable naming grid (.html)')),
         h('button', {
           type: 'button',
           'data-testid': 'sr-export-flashcards',
@@ -6525,8 +6589,8 @@
           'data-testid': 'sr-export-ccc',
           onClick: exportCccSheet,
           style: { minHeight: '36px', padding: '4px 10px', borderRadius: '8px', border: '1px solid #64748b', background: '#1e293b', color: '#fff', fontWeight: 700, cursor: 'pointer' }
-        }, tt('math_fluency.symbol_runner_export_ccc', 'Printable CCC Sheet (.html)'))
-      ),
+        }, tt('math_fluency.symbol_runner_export_ccc', 'Printable cover, copy, compare sheet (.html)'))
+      )),
       useRehearsal && h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', marginBottom: '12px', fontSize: '12px' } },
         h('label', { style: { display: 'flex', flexDirection: 'column', gap: '4px', minWidth: '240px', flex: '1 1 260px' } },
           h('span', null, tt('math_fluency.symbol_runner_known_label', 'Already-known symbols (leave focus symbols out, e.g. a, c, 1, 2)')),
@@ -6540,6 +6604,10 @@
         )
       ),
       panelStatus && h('p', { role: 'status', style: { margin: '0 0 10px', fontSize: '12px', color: '#93c5fd', fontWeight: 700 } }, panelStatus),
+      (best || roundSaid) && h('p', { 'data-testid': 'symbol-runner-best', style: { margin: '0 0 10px', fontSize: '13px', color: '#e0e7ff', fontWeight: 700 } },
+        roundSaid ? roundSaid + ' ' : '',
+        best ? tt('math_fluency.symbol_runner_best', 'Best on this set: {first} of {total} on the first try', { first: best.firstTry, total: best.total })
+          + (best.meanMs > 0 ? tt('math_fluency.symbol_runner_best_time', ', about {seconds} s each.', { seconds: Math.round(best.meanMs / 100) / 10 }) : '.') : ''),
       h('div', { ref: stageRef, 'data-symbol-runner-stage': '' },
         !runnerCore && h('p', { style: { textAlign: 'center', color: '#cbd5e1', padding: '24px' } }, tt('math_fluency.symbol_runner_loading', 'Loading Symbol Runner…'))
       )
@@ -8569,7 +8637,7 @@
             type: 'button', role: 'tab', 'aria-selected': 'false', 'data-testid': 'fluency-symbol-runner-tab',
             onClick: function () { setActivityTab('runner'); },
             style: { minHeight: '36px', padding: '4px 12px', borderRadius: '999px', border: 0, background: 'transparent', color: '#78350f', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }
-          }, tt('math_fluency.symbol_runner_tab', 'Symbol Runner (3D / 2D)'))
+          }, tt('math_fluency.symbol_runner_tab', 'Symbol Runner: quick naming'))
         ),
         bestRecord && bestRecord.score && h('div', {
           style: {
@@ -9650,6 +9718,7 @@
   // tests (tests/math_fluency.test.js). Read-only pure fns + the benchmark table;
   // zero behavior change (mirrors the symbol_studio initialTab seam pattern).
   window.AlloModules.MathFluencyInternals = {
+    _srAssetBases: _srAssetBases, _srFetchJson: _srFetchJson, _srBetterRun: _srBetterRun,
     getBenchmark: getBenchmark, getBenchmarkLabel: getBenchmarkLabel,
     analyzeErrors: analyzeErrors, getSeason: getSeason, BENCHMARKS: BENCHMARKS,
     normalizeGrade: normalizeGrade, generateProblems: generateProblems,

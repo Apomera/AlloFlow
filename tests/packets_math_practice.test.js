@@ -348,7 +348,8 @@ describe('the file', () => {
       // reading focus that follows a sentence being read aloud (+1.4 KB; about 100.4 KB now).
       // Re-pinned 2026-11-16: every file carries the two reading fonts of Reading tools > Letters (Lexend, Atkinson Hyperlegible; +42.5 KB). About 142.8 KB now; the page says "About 145 KB".
       // Re-pinned 2026-11-17 from 147000: the review fixes in every file (about +6 KB; about 148.4 KB). The page says "About 150 KB".
-      expect(Buffer.byteLength(html, 'utf8')).toBeLessThan(153000);
+      // Re-pinned 2026-11-17 (later that day) from 153000: the practice end screen for a young student and the recall timing (about +1.7 KB; about 150.7 KB).
+      expect(Buffer.byteLength(html, 'utf8')).toBeLessThan(157000);
       expect(lessonOf(html)).toMatchObject({ mode: 'practice', audio: {}, images: {}, submit: null });
       // Its answers are the arithmetic of its facts.
       for (const it of lessonOf(html).blocks[0].items) {

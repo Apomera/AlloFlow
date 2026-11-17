@@ -262,7 +262,8 @@ describe('a practice file', () => {
     // saving and the sound-failed note in the shell (+7 KB in every file; this file about 123.7 KB).
     // Re-pinned 2026-11-16: every file carries the two reading fonts of Reading tools > Letters (Lexend, Atkinson Hyperlegible; +42.5 KB). (about 171 KB).
     // Re-pinned 2026-11-17 from 175000: the review fixes in every file (about +7 KB).
-    expect(Buffer.byteLength(made.html)).toBeLessThan(182000);
+    // Re-pinned 2026-11-17 (later that day) from 182000: the practice end screen for a young student (about +1.7 KB; about 178 KB). The page says "about 180 KB".
+    expect(Buffer.byteLength(made.html)).toBeLessThan(186000);
     // Every file carries the reading tools.
     expect(made.html).toContain('\ntools:function takeHomeTools(o) {\n');
   });

@@ -297,6 +297,20 @@
   var MAX_MISSED = 8;
   function roleOf(it) { var id = String(it.itemId || '').toLowerCase(); return /-new$/.test(id) ? 'new' : /-known$/.test(id) ? 'known' : ''; }
   function newKnown() { return { items: 0, firstTry: 0, missed: [], knownItems: 0, knownFirstTry: 0 }; }
+  // 2026-11-17: a Symbol Runner item with something to ignore says in its id whether the two agree: "-match" or "-conflict"
+  // (files made from that day; older files have neither).
+  function agreeOf(it) { var m = /-(match|conflict)(?:-new|-known)?$/.exec(String(it.itemId || '').toLowerCase()); return m ? m[1] : ''; }
+  function median(list) {
+    if (!list.length) return null;
+    var a = list.slice().sort(function (x, y) { return x - y; }), mid = a.length >> 1;
+    return Math.round(a.length % 2 ? a[mid] : (a[mid - 1] + a[mid]) / 2);
+  }
+  // The typical recall time a file states ({ items, medianMs }), or null.
+  function cleanRecall(r) {
+    if (!r || typeof r !== 'object') return null;
+    var items = whole(r.items, 9999), ms = whole(r.medianMs, 86400000);
+    return items && ms !== null ? { items: items, medianMs: ms } : null;
+  }
   function addNewKnown(into, from) {
     into.items += from.items; into.firstTry += from.firstTry; into.knownItems += from.knownItems; into.knownFirstTry += from.knownFirstTry;
     from.missed.forEach(function (word) { if (into.missed.indexOf(word) < 0 && into.missed.length < MAX_MISSED) into.missed.push(word); });
@@ -352,6 +366,9 @@
     // 2026-11-17: a timed check that was paused says how long and how often (only then).
     var pauses = whole(sc.pauses, 9999);
     if (pauses) { out.pausedS = Math.max(0, Math.min(864000, number(sc.pausedS) || 0)); out.pauses = pauses; }
+    // 2026-11-17: how often Hear the directions was pressed before the check began (only when it was).
+    var heard = whole(sc.directionsHeard, 999);
+    if (heard) out.directionsHeard = heard;
     return out;
   }
   // "key=value" cells of a trailer row.
@@ -370,7 +387,7 @@
       itemsCorrect: kv.items_correct, itemsAttempted: kv.items_attempted, timeLimitS: kv.time_limit_s, elapsedS: kv.elapsed_s, hiddenS: kv.hidden_s,
       completion: kv.completion, prorated: kv.prorated, scoringVersion: kv.scoring_version, formVersion: kv.form_version, attempt: kv.attempt,
       flags: String(kv.flags || '').split(';'), tools: kv.tools_used ? String(kv.tools_used).split(';') : [], timing: kv.timing, usualTimeLimitS: kv.usual_time_limit_s,
-      pausedS: kv.paused_s, pauses: kv.pauses });
+      pausedS: kv.paused_s, pauses: kv.pauses, directionsHeard: kv.directions_heard });
   }
 
   // ---------------------------------------------------------------------------
@@ -461,6 +478,8 @@
       group.title = counted && typeof counted.title === 'string' ? text(counted.title, 80) : '';
       // From 2026-11-13 the row also says the time on the items ("active_s=252"); older files have none.
       group.activeS = counted && typeof counted.active_s === 'string' ? whole(counted.active_s, 864000) : null;
+      // From 2026-11-17 a math fact practice file also says its typical recall time ("recall_items=8", "recall_median_ms=2100").
+      group.recall = counted ? cleanRecall({ items: counted.recall_items, medianMs: counted.recall_median_ms }) : null;
       if (group.mode !== 'probe') return;
       group.score = stated ? scoreFromPairs(stated) : null;
       group.attempt = group.score ? group.score.attempt : counted && whole(counted.attempt, 9999) ? whole(counted.attempt, 9999) : null;
@@ -512,9 +531,13 @@
     var score = probe && data.score && typeof data.score === 'object' ? cleanScore(data.score) : null;
     var seconds = number(data.durationMs);
     var active = number(data.activeMs);
+    // The recall times of the facts right at the first try from memory, counted from the answers (item.recallMs).
+    var recalls = data.items.slice(0, MAX_ITEMS).filter(function (it) { return it && typeof it === 'object' && it.firstTry === true && !it.practice && whole(it.recallMs, 86400000) !== null; })
+      .map(function (it) { return whole(it.recallMs, 86400000); });
     return { ok: true, sessions: [{ source: 'json', sid: text(data.sessionId, 80), learner: text(learner, 60), packetId: text(packet.id, 80) || text(data.lessonId, 80),
       packetVersion: text(packet.version, 40) || text(data.revision, 40), form: text(packet.form, 40), mode: probe ? 'probe' : 'practice',
       title: text(data.lessonTitle, 80) || text(packet.title, 80), activeS: active === null ? null : whole(active / 1000, 864000),
+      recall: recalls.length ? { items: recalls.length, medianMs: median(recalls) } : null,
       stamps: [data.finishedLocal, data.finishedAt, data.startedLocal, data.startedAt], startedLocal: text(data.startedLocal, 40), finishedLocal: text(data.finishedLocal, 40),
       startedText: text(data.startedLocal, 40) || text(data.startedAt, 40), durationS: seconds === null ? null : whole(seconds / 1000, 864000),
       prefix: [packet.id, packet.version, packet.form, data.sessionId].map(scalar).join('|').slice(0, 600),
@@ -538,6 +561,7 @@
     var acts = Object.create(null), order = [];
     var wrong = Object.create(null), wrongList = [];
     var done = 0, graded = 0, firstTry = 0, correct = 0, given = 0, digits = 0, digitsPossible = 0, hasDigits = false;
+    var split = null;
     s.items.forEach(function (it) {
       if (!it.practice) given++;
       if (!it.attempted) return;
@@ -560,6 +584,12 @@
         var nk = a.newFacts || (a.newFacts = newKnown());
         if (role === 'known') { nk.knownItems++; if (it.firstTry) nk.knownFirstTry++; }
         else { nk.items++; if (it.firstTry) nk.firstTry++; else if (it.word && nk.missed.indexOf(it.word) < 0 && nk.missed.length < MAX_MISSED) nk.missed.push(it.word); }
+      }
+      var agree = agreeOf(it);
+      if (agree) {
+        var half = (split || (split = { match: { items: 0, firstTry: 0, ms: [] }, conflict: { items: 0, firstTry: 0, ms: [] } }))[agree];
+        half.items++;
+        if (it.firstTry) { half.firstTry++; if (it.timeMs > 0) half.ms.push(it.timeMs); }
       }
       if (it.digitsPossible !== null) { hasDigits = true; digits += it.digitsCorrect || 0; digitsPossible += it.digitsPossible; }
       if (!it.word) return;
@@ -584,6 +614,10 @@
       sum.firstTryPct = percent(sum.firstTry, sum.graded);
       return sum;
     }).filter(function (sum) { return sum.graded > 0; });
+    // 2026-11-17: the matching and the conflicting items of the whole result (first-try count, and the typical time of
+    // those right at the first try), or null.
+    s.conflict = split ? { matchItems: split.match.items, matchFirstTry: split.match.firstTry, matchMedianMs: median(split.match.ms),
+      conflictItems: split.conflict.items, conflictFirstTry: split.conflict.firstTry, conflictMedianMs: median(split.conflict.ms) } : null;
     // The new and known facts of the whole result, or null.
     s.newFacts = null;
     order.forEach(function (a) { if (a.newFacts) s.newFacts = addNewKnown(s.newFacts || newKnown(), a.newFacts); });
@@ -630,6 +664,7 @@
         flags: st ? st.flags.slice() : [] };
       if (st && Array.isArray(st.tools) && st.tools.length) s.score.tools = st.tools.slice();
       if (st && st.pauses) { s.score.pausedS = st.pausedS; s.score.pauses = st.pauses; }
+      if (st && st.directionsHeard) s.score.directionsHeard = st.directionsHeard;
       s.score.flags.forEach(function (flag) { if (flags.indexOf(flag) < 0) flags.push(flag); });
       // Untimed (an accommodation): a fixed form with no time limit, said by the file or not. It is never put with
       // timed results: it has its own series (seriesKey), so its own middle and goal.
@@ -679,7 +714,7 @@
     if (!title && named && raw.mode === 'probe' && (raw.form === 'custom' || /^math-custom-/.test(raw.packetId))) title = text(named[1].replace(/[-_]+/g, ' '), 80);
     return tally({ sessionId: sid.slice(0, 64), learner: raw.learner, packetId: raw.packetId, packetVersion: raw.packetVersion, title: title || raw.packetId,
       mode: raw.mode, form: raw.form, startedLocal: raw.startedLocal, finishedLocal: raw.finishedLocal, start: start, date: localDate(start), dateFromFile: dateFromFile,
-      durationS: raw.durationS, activeS: raw.activeS === undefined ? null : raw.activeS, items: raw.items, stated: raw.score, attempt: raw.attempt, integrity: check, source: raw.source,
+      durationS: raw.durationS, activeS: raw.activeS === undefined ? null : raw.activeS, recall: cleanRecall(raw.recall), items: raw.items, stated: raw.score, attempt: raw.attempt, integrity: check, source: raw.source,
       sourceFile: text(fileName, 120) });
   }
   function refuse(reason, name) {
@@ -738,7 +773,7 @@
     var integrity = ['ok', 'changed', 'absent', 'unchecked'].indexOf(s.integrity) >= 0 ? s.integrity : 'unchecked';
     var out = tally({ sessionId: sid, learner: text(s.learner, 60), packetId: packetId, packetVersion: text(s.packetVersion, 40), title: text(s.title, 80) || packetId,
       mode: probe ? 'probe' : 'practice', form: text(s.form, 40), startedLocal: text(s.startedLocal, 40), finishedLocal: text(s.finishedLocal, 40),
-      start: date && start !== null && start > 0 ? start : 0, date: date, dateFromFile: s.dateFromFile === true || !date, durationS: whole(s.durationS, 864000), activeS: whole(s.activeS, 864000),
+      start: date && start !== null && start > 0 ? start : 0, date: date, dateFromFile: s.dateFromFile === true || !date, durationS: whole(s.durationS, 864000), activeS: whole(s.activeS, 864000), recall: cleanRecall(s.recall),
       items: items, stated: probe && s.stated && typeof s.stated === 'object' ? cleanScore(s.stated) : null, attempt: whole(s.attempt, 9999), integrity: integrity,
       source: s.source === 'json' ? 'json' : 'csv', sourceFile: text(s.sourceFile, 120) });
     return out.summary.done > 0 ? out : null;

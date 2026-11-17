@@ -1419,6 +1419,9 @@
   if (loader && loader.DEFAULT_LABELS && loader.DEFAULT_LABELS.save_csv && $('sr-csv-label')) {
     $('sr-csv-label').textContent = String(loader.DEFAULT_LABELS.save_csv);
   }
+  if (loader && loader.DEFAULT_LABELS && loader.DEFAULT_LABELS.save_work && $('sr-work-label')) {
+    $('sr-work-label').textContent = String(loader.DEFAULT_LABELS.save_work);
+  }
   bindEvents();
   var initializedFromHash = applyRehearseHash() || applyModeHash() || applySymbolsHash();
   if (!initializedFromHash) {

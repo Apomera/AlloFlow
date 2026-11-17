@@ -1457,7 +1457,8 @@ describe('17. Wave 4: Symbol Runner vowel_teams_r, ras_triple, embedded practice
 
     // Check math_fluency_module.js SymbolRunnerPanel upgrade
     const mfSrc = read('math_fluency_module.js');
-    expect(mfSrc).toContain("fetch('audio_bank/phonemes.json')");
+    // 2026-11-17: asked for at the app's file address first (_srFetchJson); beside the app's page it answered with a web page.
+    expect(mfSrc).toContain("_srFetchJson('audio_bank/phonemes.json')");
     expect(mfSrc).toContain('Already-known symbols');
   });
 });

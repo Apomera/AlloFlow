@@ -13236,7 +13236,26 @@
     "take_home_player_vocab_word_directions": "意味を 読んで、ことばを えらびましょう。",
     "take_home_player_vocab_word_question": "この 意味の ことばは どれですか？",
     "take_home_player_open_here": "スマホ・タブレットですか？ apomera.github.io/AlloFlow/packets-open.html で このファイルを ひらけます",
-    "take_home_player_done_activity": "{total}もん中 {first}もん"
+    "take_home_player_done_activity": "{total}もん中 {first}もん",
+    "take_home_player_continue_whose": "ここまで こたえた人：{name}。",
+    "take_home_player_start_over_confirm": "はじめから やりなおすと、ここまでの こたえが きえて しまうよ。",
+    "take_home_player_keep_going": "わたしの こたえを のこす",
+    "take_home_player_done_last_step": "さいごに：先生に わたすために、がんばりを ほぞんしよう。",
+    "take_home_player_save_work": "わたしの がんばりを ほぞん",
+    "take_home_player_saving_work": "{file} を ほぞんしているよ。その ファイルを 先生に わたしてね。なにも 出ないときは、もういちど「わたしの がんばりを ほぞん」を おすか、おとなの人に きいてね。",
+    "take_home_player_grown_ups": "おとなの方へ",
+    "take_home_player_grown_ups_file": "「わたしの がんばりを ほぞん」を押すと、表計算ファイル (CSV) ができます。そのファイルを先生に渡してください。",
+    "take_home_player_again_of": "もういちど：{total}もん中 {n}もんめ",
+    "take_home_player_done_again": "もういちど やった もんだい：{n}。",
+    "take_home_player_tools_font": "文字のかたち",
+    "take_home_player_tools_font_1": "Lexend",
+    "take_home_player_tools_font_2": "Atkinson",
+    "take_home_player_tools_font_3": "本の文字",
+    "take_home_player_tools_font_4": "まるい文字",
+    "take_home_player_tools_directions": "せつめいの 読みあげ",
+    "take_home_player_tools_directions_0": "すべての もんだい",
+    "take_home_player_tools_directions_1": "さいしょの もんだいだけ",
+    "take_home_player_tools_directions_hint": "それぞれの かつどうの さいしょの もんだいで やりかたを 言って、そのあとは すぐに ことばや 音に すすむよ。「もんだいを きく」を おすと、いつでも ぜんぶ きけるよ。"
   },
   "games": {
     "syntax": {

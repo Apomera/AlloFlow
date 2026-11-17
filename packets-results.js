@@ -169,6 +169,8 @@
     if (s.score && Array.isArray(s.score.tools) && s.score.tools.length) {
       out.push('reading tools used: ' + s.score.tools.map(function (t) { return own(TOOL_NAMES, t) ? TOOL_NAMES[t] : t; }).join(', '));
     }
+    // 2026-11-17: a check for the youngest students may carry a recording of its directions.
+    if (s.score && s.score.directionsHeard) out.push('pressed Hear the directions before starting' + (s.score.directionsHeard > 1 ? ' (' + count(s.score.directionsHeard, 'time') + ')' : ''));
     return out;
   }
   function hasLoudNote(flags) { return flags.some(function (flag) { return !own(QUIET, flag); }); }
@@ -180,6 +182,25 @@
     if (nk.items) lines.push('New facts: ' + nk.firstTry + ' of ' + nk.items + ' on the first try.');
     if (nk.missed.length) lines.push('New facts missed on the first try: ' + nk.missed.join(', ') + '.');
     if (nk.knownItems) lines.push('Known facts: ' + nk.knownFirstTry + ' of ' + nk.knownItems + ' on the first try.');
+    return lines;
+  }
+  // 2026-11-17: two more kinds of line for a result that has them.
+  // Matching and conflicting items (Symbol Runner color words, middle letter, dots and digits): how many were right at the
+  // first try, and the typical (median) time of those. Recall time (cover, copy, compare; rehearsal): the typical time
+  // from the fact being covered to the first answer from memory, for the facts that were right.
+  function tenths(ms) { return (Math.round(ms / 100) / 10) + ' s'; }
+  function extraLines(s) {
+    var lines = [];
+    if (!s) return lines;
+    var probe = s.mode === 'probe';
+    var c = s.conflict;
+    var half = function (name, items, firstTry, ms) {
+      return name + ': ' + firstTry + ' of ' + items + (probe ? ' right' : ' on the first try') + (ms ? ', typical time ' + tenths(ms) : '') + '.';
+    };
+    if (c && c.matchItems) lines.push(half('Matching items', c.matchItems, c.matchFirstTry, c.matchMedianMs));
+    if (c && c.conflictItems) lines.push(half('Conflicting items', c.conflictItems, c.conflictFirstTry, c.conflictMedianMs));
+    var r = s.recall;
+    if (r && r.items && r.medianMs !== null && r.medianMs !== undefined) lines.push('Typical time to answer from memory: ' + tenths(r.medianMs) + ' (' + count(r.items, 'fact') + ' right on the first try).');
     return lines;
   }
   function learnerNamed(key) { return model ? model.learners.filter(function (row) { return row.key === key; })[0] || null : null; }
@@ -1034,7 +1055,7 @@
     var check = series.kind === 'check';
     var rows = series.points.map(function (p) {
       var details = sentence((check ? (formText(p.form) ? 'version ' + p.form + ', ' : '') + (p.attempt ? 'try ' + p.attempt + '. ' : '') : '') + sentence(p.detail)) + '.';
-      var more = check ? [] : newFactsLines(p.newFacts);
+      var more = (check ? [] : newFactsLines(p.newFacts)).concat(extraLines(p.session));
       return [showDate(p.date), valueText(p.value, series.percent), more.length ? [details].concat(more) : details, sentence(notesOf(p.session).join('; '))];
     });
     paper.forEach(function (p) {
@@ -1381,7 +1402,7 @@
         var probe = s.mode === 'probe';
         var what = probe ? s.measureName + (formText(s.form) ? ', version ' + s.form : '') + (s.attempt ? ', try ' + s.attempt : '') : 'Practice: ' + s.title;
         var result = probe ? (s.value === null ? 'No score' : s.value + ' ' + unitFor(s.value, s.unitName)) : s.summary.firstTryPct === null ? 'Not scored' : s.summary.firstTryPct + '% on the first try';
-        var more = probe ? [] : newFactsLines(s.newFacts);
+        var more = (probe ? [] : newFactsLines(s.newFacts)).concat(extraLines(s));
         // Practice that is never scored (Letter Trace alone): how much was done, not "0 of 0".
         var answered = !probe && !s.summary.given ? s.summary.done + ' done (practice, not scored)' : s.summary.attempted + ' of ' + s.summary.given;
         return [showDate(s.date), what, more.length ? [result].concat(more) : result, answered, timeCell(s), sentence(notesOf(s).join('; '))];

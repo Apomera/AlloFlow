@@ -230,7 +230,8 @@ describe('saving, sounds, names, the screen-reader line and print', () => {
     for (let n = 0; n < 10; n++) await t.answer();
     t.q('[data-save-csv]').click();
     const line = [...t.d.querySelectorAll('#app [role=status]')].map((n) => n.textContent).find((x) => /saving/.test(x));
-    expect(line).toMatch(/^Your browser is saving Ten-words__Fox1__\d{4}-\d{2}-\d{2}\.csv\. If nothing appears, press Save again or use Other ways to save\.$/);
+    // 2026-11-17: a practice file says it in a young student's words (saving_work); a check keeps the line above (saving_file).
+    expect(line).toMatch(/^Your browser is saving Ten-words__Fox1__\d{4}-\d{2}-\d{2}\.csv\. Give that file to your teacher\. If nothing appears, press Save my work again, or ask a grown-up\.$/);
     expect(t.text()).not.toContain('Saved as');
   });
 

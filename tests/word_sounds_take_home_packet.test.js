@@ -281,7 +281,8 @@ describe('a played session', () => {
   it('a browser that cannot download shows the spreadsheet file as text to copy', () => {
     const t = open({ noDownload: true });
     t.finish();
-    t.button('Save results as a spreadsheet file (CSV)').click();
+    // 2026-11-17: the practice file's main button says "Save my work".
+    t.button('Save my work').click();
     expect(t.saved).toEqual([]);
     expect(t.d.querySelector('[data-results-text]').hidden).toBe(false);
     // No BOM in text meant to be copied; a text box turns the line ends into \n, which a spreadsheet reads the same.
@@ -505,7 +506,14 @@ describe('the manifest and "About this file"', () => {
     const t = open({ html: build({ labels: { about_button: 'Acerca de este archivo', save_csv: 'Guardar para hoja de cálculo (CSV)' } }) });
     expect(t.d.querySelector('[data-about-open]').textContent).toBe('Acerca de este archivo');
     t.finish();
+    // 2026-11-17: a translation made before the end screen's new words (save_work) keeps its own words on that button.
     expect(t.d.querySelector('[data-save-csv]').textContent).toBe('Guardar para hoja de cálculo (CSV)');
+    const both = open({ html: build({ labels: { save_csv: 'Guardar para hoja de cálculo (CSV)', save_work: 'Guardar mi trabajo', more_saves: 'Otras formas de guardar' } }) });
+    both.finish();
+    expect(both.d.querySelector('[data-save-csv]').textContent).toBe('Guardar mi trabajo');
+    // The fold takes the translated name it has, and no English line is put under it.
+    expect(both.d.querySelector('[data-grown-ups] summary').textContent).toBe('Otras formas de guardar');
+    expect(both.d.querySelector('[data-grown-ups]').textContent).not.toContain('Save my work makes');
   });
 });
 

@@ -16,7 +16,8 @@ const KEY = 'alloflow-packets-check/1';
 const ADDRESS = 'https://packets.test/site/packets-check.html';
 const RULE = "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; form-action 'none'; base-uri 'none'";
 // 2026-11-14 (T1/makers2): packets_verify_core.js, packets_reopen.js, packets_handoff.js and packets_zip.js added for reopen & batch .zip.
-const SCRIPTS = ['packets-page.js', 'psychometric_math_probes.js', 'word_sounds_take_home_loader.js', 'packet_check_builder.js', 'packets_verify_core.js', 'packets_reopen.js', 'packets_handoff.js', 'packets_zip.js', 'packets-check.js'];
+// 2026-11-17: packets_check_directions.js added: the recordings of the directions of the two checks for the youngest students.
+const SCRIPTS = ['packets-page.js', 'psychometric_math_probes.js', 'word_sounds_take_home_loader.js', 'packet_check_builder.js', 'packets_check_directions.js', 'packets_verify_core.js', 'packets_reopen.js', 'packets_handoff.js', 'packets_zip.js', 'packets-check.js'];
 // Said on every page that makes or shows a check, word for word.
 const WHAT_A_CHECK_IS = 'A check to see how a student is doing. It is not for a grade and it is not a standardized test.';
 const PROOF_LINE = 'This page runs without AI. No account. Nothing you choose leaves your device.';
@@ -46,7 +47,11 @@ const formsOf = (id) => gradesOf(id).flatMap((grade) => Object.keys(setsOf(id)[g
 const nounOf = (id) => (formsOf(id)[0].data.problems[0].left != null ? 'question' : 'problem');
 const gradeName = (grade) => grade === 'K' ? 'Kindergarten' : 'Grade ' + grade;
 const minutes = (seconds) => seconds === 60 ? '1 minute' : seconds / 60 + ' minutes';
-const direct = (id, grade, form, extra = {}) => PC.buildCheckPacket({ lesson: PC.lessonFromMathForm({ bank: BANK, measure: id, grade, form }), loader: TH, ...extra });
+// 2026-11-17: the page hands the builder the recordings of the directions (packets_check_directions.js), so the builder's own
+// file is made with them too. Only Quantity Discrimination and Missing Number take any (tests/packets_check_directions_2026_11_17.test.js).
+new Function('window', 'module', read('packets_check_directions.js')).call(parts, parts, undefined);
+const DIRECTIONS = parts.AlloPacketCheckDirections;
+const direct = (id, grade, form, extra = {}) => PC.buildCheckPacket({ lesson: PC.lessonFromMathForm({ bank: BANK, measure: id, grade, form }), loader: TH, directions: DIRECTIONS, ...extra });
 
 const manifestOf = (html) => JSON.parse(/<script type="application\/json" id="packet-manifest">(.*?)<\/script>/.exec(html)[1]);
 const lessonOf = (html) => JSON.parse(/var lesson=(.*);\nvar labels=/.exec(html)[1]);
@@ -134,7 +139,7 @@ describe('the page as files', () => {
     expect(doc.querySelector('meta[name="referrer"]').getAttribute('content')).toBe('no-referrer');
   });
 
-  it('loads nine scripts by relative address and nothing from the shared site assets', () => {
+  it('loads ten scripts by relative address and nothing from the shared site assets', () => {
     expect([...parse(PAGE).querySelectorAll('script')].map((script) => script.getAttribute('src'))).toEqual(SCRIPTS);
     expect(read(PAGE)).not.toMatch(/shared\.css|site\.js|lucide|fonts\.g|unpkg|promo/i);
     const source = read(SCRIPT);
@@ -344,9 +349,10 @@ describe('the page as files', () => {
     // The page itself, the three stylesheets, the icon and the nine scripts.
     // 2026-11-14 (T1/makers2): 14 files in all, and total script size is ~0.86 MB ("about 0.9 MB").
     const files = new Set([PAGE, ...[...doc.querySelectorAll('link[href], script[src]')].map((node) => node.getAttribute('href') || node.getAttribute('src'))]);
-    expect(files.size).toBe(14);
+    // 2026-11-17: 15 with packets_check_directions.js.
+    expect(files.size).toBe(15);
     expect(doc.querySelectorAll('link[rel="stylesheet"]')).toHaveLength(3);
-    expect(squash(doc.querySelector('details.proof').textContent)).toContain('This page loads fourteen files, all from this site: the page itself, three stylesheets (one is only for printing), nine scripts and the icon in the browser tab.');
+    expect(squash(doc.querySelector('details.proof').textContent)).toContain('This page loads fifteen files, all from this site: the page itself, three stylesheets (one is only for printing), ten scripts and the icon in the browser tab.');
     const megabytes = SCRIPTS.reduce((sum, file) => sum + statSync(file).size, 0) / 1e6;
     // Re-pinned 2026-11-12 from about 0.5 MB: the loader carries Hear all and the two picture activities of vocabulary files.
     // Re-pinned 2026-11-13 (release b) from about 0.6 MB: the engine carries two-tab, time-up-away and failed-sound handling.
@@ -354,7 +360,8 @@ describe('the page as files', () => {
     // Re-pinned 2026-11-16: every file carries the two reading fonts of Reading tools > Letters (Lexend, Atkinson Hyperlegible; +42.5 KB). The scripts are about 0.96 MB ("about 1 MB").
     expect(doc.getElementById('loading').textContent).toContain('Getting the problem sets, about 1 MB.');
     expect(megabytes).toBeGreaterThan(0.9);
-    expect(megabytes).toBeLessThan(1.05);
+    // Re-pinned 2026-11-17 from 1.05: the six recorded lines of directions (packets_check_directions.js, 0.17 MB). The scripts are about 1.13 MB ("about 1 MB").
+    expect(megabytes).toBeLessThan(1.2);
     // "About 110 KB": every ready check, and a list of the teacher's own, with and without a teacher code.
     // Re-pinned 2026-11-12 from about 90 KB: every file now carries the reading tools (about 17 KB in a check).
     // Re-pinned 2026-11-12 from about 110 KB: every file carries Hear all and the reading tool "Read the choices" (hearAllIn),
@@ -362,14 +369,17 @@ describe('the page as files', () => {
     // Re-pinned 2026-11-13 from about 120 KB (129.9 KB at most before this pass): the timed check pauses at "Stop?" (the
     // Word Sounds helper's), and the math and vocabulary fixes (one line and grouped numbers, the minus sign, remainders;
     // tests/packets_math_vocab_fixes_2026_11_13b.test.js). About 130.3 KB at most now.
-    expect(doc.getElementById('size-note').textContent).toBe('A check file has no sound, so there is nothing to download. About 195 KB.');
+    // 2026-11-17: the two checks for the youngest students carry a recording of their directions (about 295 KB); the others are as they were.
+    expect(doc.getElementById('size-note').textContent).toBe('There is nothing to download. About 200 KB. Quantity Discrimination and Missing Number, the two for the youngest students, are about 295 KB: each carries a recording of its directions in a computer voice, which plays only when the student presses Hear the directions.');
     const sizes = READY.flatMap((id) => formsOf(id).map(({ grade, form }) => Buffer.byteLength(direct(id, grade, form).html, 'utf8')));
     sizes.push(Buffer.byteLength(direct('math_computation', '5', 'A', { teacherCode: 'tulip-47' }).html, 'utf8'));
     sizes.push(Buffer.byteLength(PC.buildCheckPacket({ lesson: PC.lessonFromMathProblems({ problems: PC.parseProblems('7+8') }), loader: TH }).html, 'utf8'));
     expect(sizes).toHaveLength(6 + 9 + 18 + 2);
     // Re-centered 2026-11-13 (release b) on 140,000 with the page note: the engine grew about 7 KB.
     // Re-pinned 2026-11-16 from 140000: every file carries the two reading fonts (+42.5 KB); the page says "About 190 KB".
-    for (const bytes of sizes) expect(Math.abs(bytes - 195000), bytes + ' bytes').toBeLessThan(10000); // 2026-11-17: the review fixes
+    // 2026-11-17: Quantity Discrimination and Missing Number (the first 6 + 9) carry the recording of their directions: about 90 KB more.
+    // The page says "About 200 KB" (203 KB today) and, for those two, "about 295 KB" (294 KB).
+    sizes.forEach((bytes, i) => expect(Math.abs(bytes - (i < 15 ? 295000 : 200000)), i + ': ' + bytes + ' bytes').toBeLessThan(10000));
   });
 });
 
@@ -630,7 +640,9 @@ describe('a ready check, from the choice to a file that runs', () => {
       const html = page.built();
       // The same bytes the builder gives when it is called directly with the same form.
       const lesson = PC.lessonFromMathForm({ bank: BANK, measure: id, grade, form: version });
-      expect(html).toBe(PC.buildCheckPacket({ lesson, loader: TH }).html);
+      // 2026-11-17: with the recordings of the directions the page hands over (only the two checks for the youngest students take any).
+      expect(html).toBe(PC.buildCheckPacket({ lesson, loader: TH, directions: DIRECTIONS }).html);
+      expect(Array.isArray(lessonOf(html).directions)).toBe(id === 'quantity_discrimination' || id === 'missing_number');
       expectNoWayOut(html);
       const data = setsOf(id)[grade][version], manifest = manifestOf(html);
       expect(manifest.packet).toMatchObject({ id: PC.MEASURES[id].slug + '-g' + grade.toLowerCase(), form: version, mode: 'check' });
@@ -643,7 +655,8 @@ describe('a ready check, from the choice to a file that runs', () => {
       // Re-pinned 2026-11-12 from 110000, with the page note ("About 120 KB", above): Hear all, and the Untimed and keyboard fixes of the player.
       // Re-pinned 2026-11-13 from 120000, with the page note ("About 130 KB", above).
       // Re-pinned 2026-11-16: every file carries the two reading fonts of Reading tools > Letters (Lexend, Atkinson Hyperlegible; +42.5 KB).
-      expect(Math.abs(bytes - 195000)).toBeLessThan(10000); // 2026-11-17: the review fixes, about +7 KB
+      // 2026-11-17 (later): 203 KB with the end screen and the timing; the two checks for the youngest students carry their directions (294 KB).
+      expect(Math.abs(bytes - (id === 'quantity_discrimination' || id === 'missing_number' ? 295000 : 200000))).toBeLessThan(10000);
       const size = Math.round(bytes / 1000) + ' KB';
       const time = minutes(data.timeLimit).replace(/^./, (c) => c.toUpperCase());
       // What there is to answer has the check's own word: "questions" for Quantity Discrimination, "problems" for the others.

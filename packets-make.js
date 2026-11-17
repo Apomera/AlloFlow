@@ -2872,7 +2872,7 @@
     drawPickControls();
     state = recall();
     applyRehearseHash();
-    if (loader.DEFAULT_LABELS && loader.DEFAULT_LABELS.save_csv) setText('csv-label', loader.DEFAULT_LABELS.save_csv);
+    if (loader.DEFAULT_LABELS && loader.DEFAULT_LABELS.save_work) setText('csv-label', loader.DEFAULT_LABELS.save_work);
     drawStrands();
     listFiles();
     listSources();

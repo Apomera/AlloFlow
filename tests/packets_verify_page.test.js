@@ -699,7 +699,8 @@ describe('files changed at random', () => {
         expect(r.script.verdict, 'character ' + at).toBe('differs');
       }
     }
-  });
+  // 2026-11-17: hundreds of random edits of a whole file take 5 to 7 s on a busy laptop, right at the usual 5 s limit; this checks that it ends, not how fast.
+  }, 30000);
 
   it('pieces cut out, doubled, moved and broken, 300 times: the checks always end, and always give one of the results', () => {
     const sources = [F.practice, F.check, F.mailbox, F.older];
@@ -723,7 +724,7 @@ describe('files changed at random', () => {
       seen.add(r.result);
     }
     expect(seen.has('look')).toBe(true);
-  });
+  }, 30000);
 });
 
 // ---------------------------------------------------------------------------
@@ -1139,6 +1140,8 @@ describe('the guide for school IT', () => {
       + 'Two more pages, Make recordings with a computer voice (packets-voice.html) and Make a read-along (packets-read-along.html), are the only pages of this site that use AI: after the teacher presses Get the voice, the page downloads a voice (Kokoro, about 88 MB) from Hugging Face (huggingface.co) and runs it on the device. '
       + 'They send no words: Hugging Face sees only that the browser asked for the voice. '
       + 'A read-along file that a teacher saves holds recordings and plays them: it runs no voice and reaches no site. '
+      // 2026-11-17: a check for the youngest students may carry a recording of its directions.
+      + 'A check for the youngest students (Quantity Discrimination or Missing Number) holds a recording of its directions, made ahead of time with the same computer voice and stored on this site with the page; it plays only when the student presses Hear the directions, and the results say how often that was. '
       + 'Every other page of this site reaches only this site. '
       // 2026-11-13 (teacher-journey pass): the device voice of a vocabulary file is only ever one that runs on the device.
       + 'A vocabulary file reads aloud only with a voice that runs on the device: it does not use a voice that sends the text to a speech service.');
