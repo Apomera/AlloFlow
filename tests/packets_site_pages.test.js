@@ -14,6 +14,13 @@ const tool = require('../dev-tools/make_word_sounds_packet.cjs');
 const { dictionary, core, loader, wordlist, builder } = tool.loadParts();
 
 const read = (file) => readFileSync(file, 'utf8');
+// 2026-11-18 (owner): the maker names each level by what it practices, never by grade, so an older student who needs the
+// first level (or makes a file) is not told it is for kindergarten. The default table's rows are numbered; England's are not.
+const LEVEL_NAMES = {
+  'K early': 'Level 1: Short vowels', 'K late': 'Level 2: Long vowel at the end', 'G1 early': 'Level 3: sh, ch, th and blends',
+  'G1 late': 'Level 4: Final e and vowel teams', 'G2': 'Level 5: More vowel teams', 'G3+': 'Level 6: Longer words',
+  'Reception': 'Letter sounds and first digraphs', 'Year 1': 'Final e, vowel teams and r-controlled vowels', 'Year 2': 'Soft c and g, kn, wr and -tion',
+};
 const PAGES = ['packets.html', 'packets-make.html', 'packets-try.html'];
 // packets-words.js is "Edit this word" on the maker page: the one script of these pages that may ask for the microphone (see below).
 const SCRIPTS = ['packets-page.js', 'packets-make.js', 'packets-try.js', 'packets-words.js', 'packets-print-cards.js'];
@@ -636,7 +643,8 @@ describe('the maker, run with the real builder', () => {
     const page = await openMaker();
     const recordedOnly = wordlist.rows().filter((row) => row.hasClip && !row.kokoro && !row.shards).map((row) => row.word);
     const options = () => [...page.$('f-sound').querySelectorAll('optgroup option')];
-    const NOTE = ' (no words at this grade level)';
+    // 2026-11-18 (owner): "level", not "grade level": levels are named by what they practice.
+    const NOTE = ' (no words at this level)';
     // The grade levels; the two wider levels after them are not grade levels (they have a test of their own).
     const stages = [...page.$('f-stage').querySelectorAll('option')].map((option) => option.value).filter((id) => id && !/^wider:/.test(id));
     expect(stages.length).toBeGreaterThan(3);
@@ -717,7 +725,7 @@ describe('the maker, run with the real builder', () => {
     expect(soundsOf(kWords)).toEqual([2, 3]);
     expect(page.$('mix-fix')).toBeNull();
     expect(page.d.querySelector('#mix-notes [data-mix="counting"]').textContent).toBe('Sound Counting: these words have only 2 or 3 sounds, so there are only two answers.'
-      + ' The words that fit these choices all have 2 or 3 sounds. A later grade level, or no sound to practice, gives a wider mix.');
+      + ' The words that fit these choices all have 2 or 3 sounds. A later level, or no sound to practice, gives a wider mix.');
     page.dom.window.close();
   });
 
@@ -809,7 +817,7 @@ describe('the maker, run with the real builder', () => {
       await wait(60);
       expect(page.$('f-stage').value).toBe(id);
       expect(page.$('f-stage').selectedOptions[0].textContent).toBe(name);
-      expect(page.$('f-stage').selectedOptions[0].parentNode.label).toBe('Past the grade levels (by how rare a word is)');
+      expect(page.$('f-stage').selectedOptions[0].parentNode.label).toBe('Past the levels (by how rare a word is)');
       // The line under the list says where the words come from, and that no curriculum is behind them.
       expect(page.$('stage-hint').textContent).toContain('Chosen by how widely a word is used, not from a curriculum.');
       expect(page.$('stage-hint').textContent).toContain(level === 'challenging' ? 'at least 10 of the 400 children\'s books' : 'fewer than 10 of the 400 children\'s books');
@@ -870,17 +878,18 @@ describe('the maker, run with the real builder', () => {
     expect(others.map((row) => row.id)).toEqual(['Reception', 'Year 1', 'Year 2']);
     expect([...page.$('f-stage').querySelectorAll('option')].map((option) => option.value)).toEqual(['', ...usual.map((row) => row.id), 'wider:challenging', 'wider:advanced']);
     // 2026-11-16: after the grade levels, two wider levels in a group that says they are not grade levels.
-    expect([...page.$('f-stage').querySelectorAll('optgroup')].map((group) => group.label)).toEqual([...new Set(usual.map((row) => row.frameworkLabel)), 'Past the grade levels (by how rare a word is)']);
+    // 2026-11-18 (owner): "Past the levels": the list names levels by what they practice, not by grade.
+    expect([...page.$('f-stage').querySelectorAll('optgroup')].map((group) => group.label)).toEqual([...new Set(usual.map((row) => row.frameworkLabel)), 'Past the levels (by how rare a word is)']);
     page.$('next-1').click();
     const other = page.$('stage-other');
     expect(page.seen('stage-other') && !other.open).toBe(true);
     expect(other.querySelector('summary').textContent).toBe('Other curricula');
-    expect(other.querySelector('label').textContent.trim()).toBe('Show England (National Curriculum) in the Grade level list: Reception, Year 1 and Year 2');
+    expect(other.querySelector('label').textContent.trim()).toBe('Show England (National Curriculum) in the Level list: Reception, Year 1 and Year 2');
     expect(page.$('f-stage-other').checked).toBe(false);
     page.$('f-stage-other').click();
     expect([...page.$('f-stage').querySelectorAll('option')].map((option) => option.value)).toEqual(['', ...stages.map((row) => row.id), 'wider:challenging', 'wider:advanced']);
-    expect([...page.$('f-stage').querySelectorAll('optgroup')].map((group) => group.label)).toEqual([...new Set(stages.map((row) => row.frameworkLabel)), 'Past the grade levels (by how rare a word is)']);
-    expect(page.$('stage-hint').textContent).toBe('A grade level keeps to the letter patterns taught by then.');
+    expect([...page.$('f-stage').querySelectorAll('optgroup')].map((group) => group.label)).toEqual([...new Set(stages.map((row) => row.frameworkLabel)), 'Past the levels (by how rare a word is)']);
+    expect(page.$('stage-hint').textContent).toBe('Each level keeps to the letter patterns taught up to it.');
     expect(page.seen('stage-why')).toBe(false);
     for (const row of stages) {
       page.set('f-stage', row.id);
@@ -891,10 +900,21 @@ describe('the maker, run with the real builder', () => {
       expect(line.includes('Not yet checked against a source.'), row.id).toBe(row.verified === false);
       for (const word of (/^New here: ([a-z, ]+)\./.exec(line) || ['', ''])[1].split(', ').filter(Boolean)) expect(row.label, row.id).toContain(word);
       expect(page.seen('stage-why') && !page.$('stage-why').open, row.id).toBe(true);
-      expect(page.$('stage-why').querySelector('summary').textContent, row.id).toBe('Why this grade level has these words');
+      expect(page.$('stage-why').querySelector('summary').textContent, row.id).toBe('Why this level has these words');
       expect(page.$('stage-why-text').textContent, row.id).toContain(row.note);
-      expect(page.$('f-stage').selectedOptions[0].textContent, row.id).toBe(row.label.split(':')[0]);
+      // 2026-11-18 (owner): named by what it practices, never by grade (the grade is in "Grade for each level", below).
+      expect(page.$('f-stage').selectedOptions[0].textContent, row.id).toBe(LEVEL_NAMES[row.id]);
     }
+    // "Grade for each level": closed, every row under its curriculum with its grade, then the wider levels with none.
+    const key = page.$('stage-key');
+    expect(page.seen('stage-key') && !key.open).toBe(true);
+    expect(key.querySelector('summary').textContent).toBe('Grade for each level');
+    expect([...key.querySelectorAll('.stage-key-head')].map((p) => p.textContent)).toEqual([...new Set(stages.map((row) => row.frameworkLabel))]);
+    expect([...key.querySelectorAll('li')].map((li) => li.textContent)).toEqual([
+      ...stages.map((row) => LEVEL_NAMES[row.id] + ' — ' + row.label.split(':')[0].trim()),
+      'More challenging words and Advanced words — no grade: chosen by how widely a word is used.']);
+    // Only the key names a grade: no option of the list does.
+    for (const option of page.$('f-stage').querySelectorAll('option')) expect(option.textContent, option.value).not.toMatch(/kindergarten|grade|reception|year \d|ages/i);
     const g1 = stages.find((row) => row.id === 'G1 early');
     if (g1 && g1.maxSounds === 5 && /\(ship, chin/.test(g1.label)) {
       page.set('f-stage', 'G1 early');
@@ -974,7 +994,7 @@ describe('the maker, run with the real builder', () => {
     const few = page.chips();
     expect(few).toEqual(fewAt(tight).words);
     expect(page.$('pick-sub').textContent).toMatch(/get more by loosening one choice/);
-    await page.until(() => [...page.$('pick-loosen').querySelectorAll('button')].some((button) => button.textContent === 'Any grade level: ' + direct.pool + ' words fit'), 'the loosening offers');
+    await page.until(() => [...page.$('pick-loosen').querySelectorAll('button')].some((button) => button.textContent === 'Any level: ' + direct.pool + ' words fit'), 'the loosening offers');
     for (const button of page.$('pick-loosen').querySelectorAll('button')) expect(Number(/: (\d+) words? fit/.exec(button.textContent)[1])).toBeGreaterThan(few.length);
 
     // Step 3: nothing was fetched before now; the five sound files are fetched, by relative address, and nothing else.
@@ -1292,6 +1312,8 @@ describe('the maker, run with the real builder', () => {
       // many choices a board shows (Choices: Medium by default; tests/packets_ws_fixes_2026_11_13b.test.js).
       // 2026-11-15: spoken directions (#f-directions-once) and the resolved word list for Present & Export (#from-word-sounds).
       count: 10, hand: false, chosen: [], choices: 'medium', tracing: 'both', directionsOnce: false, repeatMissed: false,
+      // 2026-11-18 (owner): "Mix the activities", on unless turned off (tests/packets_question_order_2026_11_18.test.js).
+      mix: true,
       // 2026-11-16: whether the page picks the most common words or a random set ("Pick different words"), which
       // set, and the file's title for Present or export slides.
       order: 'common', shuffle: 0, title: expect.any(String),
@@ -1586,7 +1608,8 @@ describe('the maker and the word store', () => {
 // ---------------------------------------------------------------------------
 describe('the maker: borderline words and the kindergarten line', () => {
   const TYPED_ONLY = 'Not offered by the picker. Used because you typed it.';
-  const K_LINE = "Common Core places sh, ch and th in grade 1. Choose 'Any grade level' to use them earlier.";
+  // 2026-11-18 (owner): levels are named by what they practice; the grade of each is in "Grade for each level".
+  const K_LINE = "sh, ch and th start at Level 3. Choose 'Any level' to use them earlier.";
 
   it('a borderline word is never in the picker\'s list and is counted there; typed by the teacher it is used, and the page says why', async () => {
     const soft = wordlist.rows().filter((row) => row.soft).map((row) => row.word);
@@ -1646,8 +1669,8 @@ describe('the maker: borderline words and the kindergarten line', () => {
     // Near the stage choice: right under the stage's own line, in the same field. The option it names is the page's own.
     expect(note.previousElementSibling.id).toBe('stage-hint');
     expect(note.closest('.field').querySelector('select').id).toBe('f-stage');
-    expect(doc.querySelector('#f-stage option[value=""]').textContent).toBe('Any grade level');
-    expect(read('packets-make.js')).toContain("label: 'Any grade level'");
+    expect(doc.querySelector('#f-stage option[value=""]').textContent).toBe('Any level');
+    expect(read('packets-make.js')).toContain("label: 'Any level'");
     expect(read('packets-make.html').split(K_LINE)).toHaveLength(2);
     // The two kindergarten rows of the default (US, Common Core) table.
     const stages = builder.stageList();
@@ -1682,7 +1705,7 @@ describe('the maker: borderline words and the kindergarten line', () => {
   });
 
   it('step 2 keeps fewer choices on screen: England\'s stages, the counts and the code-name tip wait behind closed boxes', async () => {
-    const SPELL = 'For spelling, choose a grade level: your students then spell only patterns they have been taught.';
+    const SPELL = 'For spelling, choose a level: your students then spell only patterns they have been taught.';
     const page = await openMaker();
     // Spelling with "Any stage": one short line suggests a stage, and it goes when a stage is chosen.
     const spelling = [...page.d.querySelectorAll('.strand input')].find((box) => core.activityStrand(box.value) === 'spelling');
@@ -2063,7 +2086,8 @@ describe('the maker: choose the words yourself, and any number of words', () => 
     const step2Selects = [...makerDoc.querySelectorAll('#step-2 .fields select')].map((s) => s.id);
     expect(step2Selects).toEqual(['f-stage', 'f-sound', 'f-position', 'f-shape']);
     expect(makerDoc.getElementById('f-stage').closest('details')).toBeNull();
-    expect(makerDoc.querySelector('label[for="f-stage"]').textContent).toBe('Grade level');
+    // 2026-11-18 (owner): "Level", named by what it practices, not by grade.
+    expect(makerDoc.querySelector('label[for="f-stage"]').textContent).toBe('Level');
     for (const id of ['f-sound', 'f-position', 'f-shape']) expect(makerDoc.getElementById(id).closest('details').id, id).toBe('more-2');
     expect(makerDoc.querySelector('header .top-link').textContent).toBe('Add up results');
     expect(makerDoc.querySelector('header .top-link').getAttribute('href')).toBe('packets-results.html');
@@ -2311,7 +2335,8 @@ describe('the maker: quick make, the word count, Pick different words and More o
   it('every choice is still on the page: one More options box in each step holds the rarely used ones and says what is set', async () => {
     const doc = parse('packets-make.html');
     const inside = (id) => [...doc.querySelectorAll('#' + id + ' input, #' + id + ' select, #' + id + ' textarea')].map((node) => node.id || node.name + '=' + node.value);
-    expect(inside('more-1')).toEqual(['f-trace-cases', 'f-choices']);
+    // 2026-11-18 (owner), deliberately: "Mix the activities" first, with the activities' other settings.
+    expect(inside('more-1')).toEqual(['f-mix', 'f-trace-cases', 'f-choices']);
     // 2026-11-17 (owner: simpler step 2), deliberately: the box now comes after the words and also holds groups of words
     // (drawn by the page, so not listed here), "Choose the words yourself" (f-find, f-only-pictures, f-add) and "Why not
     // more words?" (tests/packets_site_pages.test.js 'a second group of words').
@@ -2338,12 +2363,14 @@ describe('the maker: quick make, the word count, Pick different words and More o
       expect(group.open, group.getAttribute('data-strand')).toBe(on > 0);
       expect(group.querySelector('.strand-count').textContent).toBe(on ? on + ' chosen' : 'none chosen');
     }
-    expect(page.$('more-1-now').textContent).toBe('Choices: Medium');
+    // 2026-11-18 (owner): with two or more activities the line starts with the order ("activities mixed", the usual one,
+    // so the box stays closed; tests/packets_question_order_2026_11_18.test.js).
+    expect(page.$('more-1-now').textContent).toBe('activities mixed, Choices: Medium');
     expect(page.$('more-1').open).toBe(false);
     page.set('f-choices', 'easy');
     page.$('next-1').click();
     page.$('back-2').click();
-    expect(page.$('more-1-now').textContent).toBe('Choices: Easy');
+    expect(page.$('more-1-now').textContent).toBe('activities mixed, Choices: Easy');
     expect(page.$('more-1').open).toBe(true);
   }, 120000);
 });

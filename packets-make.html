@@ -122,6 +122,11 @@
       <details class="more" id="more-1" hidden>
         <summary><span class="more-name">More options</span><span class="more-now" id="more-1-now"></span></summary>
         <div class="more-body">
+          <!-- 2026-11-18 (owner): a mix is the usual order; the teacher's own order is in step 3 (Question order). -->
+          <div class="block mix-field" id="mix-field" hidden>
+            <label class="radio"><input type="checkbox" id="f-mix" aria-describedby="mix-line"> <span>Mix the activities</span></label>
+            <span class="hint" id="mix-line">The activities take turns, in a mixed order, so students switch between them. Turned off: all of one activity, then the next. To put the questions in your own order: step 3, More options.</span>
+          </div>
           <div class="field trace-cases" id="trace-cases-field" hidden>
             <label for="f-trace-cases">Letter Trace: which letters to trace</label>
             <select id="f-trace-cases" aria-describedby="trace-cases-hint">
@@ -142,7 +147,7 @@
             <details class="why" id="choice-level-why">
               <summary>What each level does</summary>
               <ul>
-                <li>Easy: 3 choices in Find Sounds, Blend Sounds and Rhyme Time; Find Sounds asks the first sound; Sound Counting shows the count with two numbers either side.</li>
+                <li>Easy: 3 choices in Find Sounds, Blend Sounds and Rhyme Time; Find Sounds asks the first sound; Sound Counting shows the count with two numbers either side; Break it Down shows the word's sounds and one more.</li>
                 <li>Medium: 4 choices in Find Sounds and Rhyme Time, 6 in Blend Sounds; Find Sounds asks the first or last sound; Sound Counting shows 1 to 8.</li>
                 <li>All: every choice, any sound, and 1 to 11 or more.</li>
               </ul>
@@ -172,19 +177,25 @@
         </div>
       </fieldset>
 
-      <!-- Step 2, top to bottom: the grade level (the page picks), or the typed words; then the picked words; then one "More options" box
+      <!-- Step 2, top to bottom: the level (the page picks), or the typed words; then the picked words; then one "More options" box
            with the rarely used choices (a sound, a pattern, the version, groups of words, choosing the words yourself). 2026-11-17. -->
       <div id="pick-top">
         <div class="fields">
           <div class="field">
-            <label for="f-stage">Grade level</label>
-            <select id="f-stage" aria-describedby="stage-hint"><option value="">Any grade level</option></select>
-            <span class="hint" id="stage-hint">A grade level keeps to the letter patterns taught by then.</span>
-            <span class="hint" id="stage-k-note" hidden>Common Core places sh, ch and th in grade 1. Choose 'Any grade level' to use them earlier.</span>
-            <span class="hint" id="stage-spell-note" hidden>For spelling, choose a grade level: your students then spell only patterns they have been taught.</span>
+            <!-- 2026-11-18 (owner): levels are named by what they practice, not by grade, so an older student who needs
+                 the first level (or makes a file themselves) is not told it is for kindergarten. The grades: #stage-key. -->
+            <label for="f-stage">Level</label>
+            <select id="f-stage" aria-describedby="stage-hint"><option value="">Any level</option></select>
+            <span class="hint" id="stage-hint">Each level keeps to the letter patterns taught up to it.</span>
+            <span class="hint" id="stage-k-note" hidden>sh, ch and th start at Level 3. Choose 'Any level' to use them earlier.</span>
+            <span class="hint" id="stage-spell-note" hidden>For spelling, choose a level: your students then spell only patterns they have been taught.</span>
             <details class="why" id="stage-why" hidden>
-              <summary>Why<span class="sr-only"> this grade level has these words</span></summary>
+              <summary>Why<span class="sr-only"> this level has these words</span></summary>
               <p id="stage-why-text"></p>
+            </details>
+            <details class="why stage-key" id="stage-key" hidden>
+              <summary>Grade for each level</summary>
+              <div id="stage-key-body"></div>
             </details>
           </div>
         </div>
@@ -265,7 +276,7 @@
             </div>
             <details class="why" id="stage-other" hidden>
               <summary>Other curricula</summary>
-              <label class="radio"><input type="checkbox" id="f-stage-other"> <span id="stage-other-line">Show the grade levels of other curricula in the list</span></label>
+              <label class="radio"><input type="checkbox" id="f-stage-other"> <span id="stage-other-line">Show the levels of other curricula in the list</span></label>
             </details>
           </div>
           <fieldset class="block">
@@ -442,6 +453,21 @@
           <div class="block">
             <label class="radio"><input type="checkbox" id="f-repeat-missed" aria-describedby="repeat-missed-line"> <span>At the end, go over the missed questions once more</span></label>
             <span class="hint" id="repeat-missed-line">Each question the student missed on the first try comes back once, after the others. It is practice: the results still show how the first time went.</span>
+          </div>
+
+          <!-- 2026-11-18 (owner): the questions' order, with two or more activities (packets-make.js drawOrder). -->
+          <div class="block order-box" id="order-box" hidden>
+            <p class="order-title">Question order: <span id="order-line"></span></p>
+            <p class="row">
+              <button type="button" class="btn btn-small" id="order-edit" aria-expanded="false" aria-controls="order-editor">Change the order</button>
+              <button type="button" class="btn btn-small" id="order-remix">Mix again</button>
+              <button type="button" class="btn btn-text btn-small" id="order-reset" hidden>Back to the mix</button>
+            </p>
+            <div id="order-editor" class="order-editor" hidden>
+              <p class="hint" id="order-hint">Move a question up or down. The file is made again after each move. A word added later goes at the end.</p>
+              <ol id="order-list" class="order-list" aria-label="The questions, in order" aria-describedby="order-hint"></ol>
+            </div>
+            <p id="order-said" class="sr-only" role="status"></p>
           </div>
 
           <details class="why code-box" id="code-box">

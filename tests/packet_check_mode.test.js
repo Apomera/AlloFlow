@@ -1390,6 +1390,11 @@ describe('practice files are as they were', () => {
   // the Packets pass of 11-17 (4000c45e2b: the young student's end screen with "Save my work" and the grown-ups fold,
   // recall laps, spoken directions once); and "Space between sounds" (tests/packets_sound_space_2026_11_17.test.js).
   // The lesson is unchanged. The two lists are empty.
+  // Renewed 2026-11-18, deliberately, by the recipe above: the questions in the file's own order when the lesson has
+  // lesson.sequence (the maker's "Mix the activities" or the teacher's order; tests/packets_question_order_2026_11_18.test.js):
+  // the flattened list follows the sequence, the directions come again when the activity changes, the end screen finds an
+  // activity's questions by id. 2 lines out and 17 in; with the player before this change the fixture matched exactly.
+  // This file has no sequence, so it behaves as before. The lesson is unchanged. The two lists are empty.
   const REMOVED = [];
   const ADDED = [];
   it('byte for byte, but for the listed lines', () => {

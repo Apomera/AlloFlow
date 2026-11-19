@@ -105,9 +105,14 @@ describe('O2 Choices: Easy, Medium, All', () => {
         expect(item.target, item.word).toBe(sounds[item.position]);
       });
       // Sound Counting: the count with two either side (Easy), 1-8 (Medium), as countingChoices.
+      // 2026-11-18 (review), deliberately: Easy's row slides (seeded) so the answer is not always the 3rd button; it
+      // keeps countingChoices' length, is consecutive and holds the count (tests/packets_review_fixes_2026_11_18.test.js).
       blockOf(made, 'counting').items.forEach((item) => {
-        const want = core.countingChoices(Number(item.target), level);
-        expect(item.values, item.word).toEqual(want.map(String));
+        const want = core.countingChoices(Number(item.target), level).map(String);
+        if (level === 'easy') {
+          expect(item.values.length, item.word).toBe(want.length);
+          expect(item.values.map(Number).every((v, i, a) => i === 0 || v === a[i - 1] + 1), item.word).toBe(true);
+        } else expect(item.values, item.word).toEqual(want);
         expect(item.values).toContain(item.target);
       });
     }
@@ -143,7 +148,8 @@ describe('O2 Choices: Easy, Medium, All', () => {
     expect(html).not.toContain('Medium matches');
     expect(html).toMatch(/<details class="why" id="choice-level-why">\s*<summary>What each level does<\/summary>\s*<ul>\s*<li>Easy: 3 choices[^<]*<\/li>\s*<li>Medium: 4 choices in Find Sounds and Rhyme Time, 6 in Blend Sounds;[^<]*<\/li>\s*<li>All: every choice[^<]*<\/li>/);
     const js = readFileSync('packets-make.js', 'utf8');
-    expect(js).toContain("var CHOICE_ACTIVITIES = ['isolation', 'blending', 'rhyming', 'counting'];");
+    // 2026-11-18 (owner): and Break it Down, whose Easy shows the word's sounds and one more.
+    expect(js).toContain("var CHOICE_ACTIVITIES = ['isolation', 'blending', 'rhyming', 'counting', 'segmentation'];");
     expect(js).toContain("choices: 'medium',");
     expect(js).toContain("var leveled = state.activities.some(function (id) { return CHOICE_ACTIVITIES.indexOf(id) >= 0; });");
     expect(js).toContain("show('choice-level-field', leveled);");
@@ -157,7 +163,8 @@ describe('O2 Choices: Easy, Medium, All', () => {
   it('with fewer numbers, the number keys still press the number they say', async () => {
     const made = await build({ choices: 'easy', activities: ['counting'], words: ['cat'] });
     const item = made.lesson.blocks[0].items[0];
-    expect(item.values).toEqual(['1', '2', '3', '4', '5']);
+    // 2026-11-18 (review): Easy's row for "cat" (3 sounds) slid from 1-5 to 2-6 (seeded): the 3 is the 2nd button now.
+    expect(item.values).toEqual(['2', '3', '4', '5', '6']);
     const t = open(made.html);
     expect([...t.d.querySelectorAll('li.choice button')].map((b) => b.textContent)).toEqual(item.values);
     t.key('9');
@@ -175,8 +182,20 @@ describe('O3 Listen, then Choose', () => {
     const seen = [];
     for (const block of made.lesson.blocks) {
       for (let i = 0; i < block.items.length; i++) {
-        if (i === 0) {
-          const pairs = block.activity === 'segmentation' || block.activity === 'mapping'
+        if (i === 0 && block.activity === 'segmentation') {
+          // 2026-11-18 (owner: a first-time player got stuck in Break it Down), deliberately: one tile per sound, as in
+          // the app. Picking a tile up plays it and commits nothing until it is put in a box, so it needs no Listen of
+          // its own (a Listen + Choose pair is for a choice that answers when pressed).
+          const tiles = [...t.d.querySelectorAll('#app ul.row > li')];
+          expect(tiles.length, 'segmentation').toBeGreaterThan(1);
+          for (const li of tiles) {
+            const buttons = li.querySelectorAll('button');
+            expect(buttons.length, 'segmentation: one tile').toBe(1);
+            expect(buttons[0].classList.contains('primary') && buttons[0].hasAttribute('aria-pressed'), 'segmentation').toBe(true);
+          }
+          seen.push(block.activity);
+        } else if (i === 0) {
+          const pairs = block.activity === 'mapping'
             ? [...t.d.querySelectorAll('#app ul.row > li')].filter((li) => li.querySelectorAll('button').length === 2)
             : [...t.d.querySelectorAll('#app li.choice')];
           expect(pairs.length, block.activity).toBeGreaterThan(1);

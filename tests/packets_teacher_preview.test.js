@@ -421,11 +421,17 @@ describe('teacher preview mode (T4)', () => {
     await page.until(() => seen.some((m) => m.type === 'preview-bar'), 'initial bar');
 
     const storeKey = 'alloflow-take-home:' + initialLesson.lessonId + ':' + initialLesson.revision;
+    // 2026-11-18: the maker mixes the activities by default, so the file's place of "cat" in block 0 is its place in the
+    // file's own order (lesson.sequence), which is what the player saves and the bar reads.
+    const shownOrder = Array.isArray(initialLesson.sequence) ? initialLesson.sequence : initialLesson.blocks.flatMap((b) => b.items.map((it) => it.id));
+    expect(Array.isArray(initialLesson.sequence)).toBe(true);
+    const catAt = shownOrder.indexOf(initialLesson.blocks[0].items[catIsolationIdx].id);
+    expect(catAt).toBeGreaterThanOrEqual(0);
     peer.postMessage({
       type: 'preview-store',
       id: previewId,
       key: storeKey,
-      value: JSON.stringify({ startedAt: '2026-11-14T00:00:00.000Z', blockIndex: 0, index: catIsolationIdx }),
+      value: JSON.stringify({ startedAt: '2026-11-14T00:00:00.000Z', blockIndex: 0, index: catAt }),
     });
     await new Promise((r) => setTimeout(r, 10));
 

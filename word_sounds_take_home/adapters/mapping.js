@@ -47,6 +47,7 @@ module.exports = {
     mapping_listen_two: 'Listen to the two sounds of {spelling}',
     mapping_slot_filled_two: 'Slots {n} and {m}: {spelling}, two sounds',
     mapping_needs_two: '{spelling} spells two sounds. Choose a slot with another slot after it.',
+    mapping_says: '{spelling} says /{sound}/ here.',
   },
   prepare: function (w, env) {
     var board = w && w.activityItems && w.activityItems.mapping;
@@ -80,6 +81,15 @@ module.exports = {
       ? board.chipOrder.map(function (c) { return c.id; }) : graphemes.map(function (_, i) { return i; }).reverse();
     var inOrder = order.every(function (id, i) { return graphemes[id] === graphemes[i]; });
     if (inOrder && graphemes.length > 1) { var t = order[0]; order[0] = order[1]; order[1] = t; }
+    // 2026-11-18: a spelling that says a surprising sound in this word (the s of dogs says /z/) carries
+    // that sound, so the board can explain it the first time the child plays the chip. Only these
+    // well-known patterns; vowels and ordinary spellings get no note.
+    var SAYS = { s: ['z', 'sh', 'zh'], se: ['z'], c: ['s'], ce: ['s'], ci: ['sh'], ti: ['sh'], g: ['j'], ge: ['j'], ch: ['k', 'sh'], x: ['gz'], ed: ['t', 'd'] };
+    var says = graphemes.map(function (g, i) {
+      var sound = phonemes.slice(starts[i], starts[i] + spans[i]).map(function (p) { return env.label(p) || ''; }).join('');
+      var want = SAYS[String(g).toLowerCase()];
+      return want && want.indexOf(sound) >= 0 ? sound : '';
+    });
     var missing = [];
     var wordAudio = env.wordClip(env.word);
     if (!wordAudio) missing.push('word');
@@ -104,7 +114,7 @@ module.exports = {
     var spanning = spans.some(function (k) { return k > 1; });
     var result = {
       target: graphemes.join(' '), graphemes: graphemes,
-      chips: order.map(function (id) { return spans[id] > 1 ? { text: graphemes[id], audio: clips[id][0], audios: clips[id], span: spans[id] } : { text: graphemes[id], audio: clips[id] }; }),
+      chips: order.map(function (id) { var chip = spans[id] > 1 ? { text: graphemes[id], audio: clips[id][0], audios: clips[id], span: spans[id] } : { text: graphemes[id], audio: clips[id] }; if (says[id]) chip.says = says[id]; return chip; }),
       wordAudio: wordAudio, promptAudio: prompt,
       introAudio: [prompt], answerAudio: [wordAudio],
     };
@@ -123,7 +133,18 @@ module.exports = {
     var locked = function () { return ctx.isDone(); };
     var text = function (ci) { return item.chips[ci].text; };
     var covered = function (si) { return si > 0 && slots[si] != null && slots[si - 1] === slots[si]; };
-    var hear = function (ci) { var chip = item.chips[ci]; if (chip.audios) ctx.playAll(chip.audios); else ctx.play(chip.audio); };
+    // The surprising-sound notes ("s says /z/ here.") appear the first time a chip is played and stay for this word.
+    // Never in a check (ctx.check): there the note would give away what the check measures. In practice a
+    // note shown while the child works counts as help (support 'spellingNotes'); the ones shown with the answer do not.
+    var notesEl = ctx.el('div', { 'data-mapping-notes': '', 'aria-live': 'polite' }), noted = [];
+    var note = function (ci, help) {
+      var chip = item.chips[ci];
+      if (ctx.check || !chip || !chip.says || noted.indexOf(ci) >= 0) return;
+      noted.push(ci);
+      notesEl.appendChild(ctx.el('p', { class: 'letters', 'data-mapping-says': chip.text, text: ctx.fmt(L.mapping_says, { spelling: chip.text, sound: chip.says }) }));
+      if (help) ctx.support('spellingNotes');
+    };
+    var hear = function (ci) { var chip = item.chips[ci]; if (chip.audios) ctx.playAll(chip.audios); else ctx.play(chip.audio); note(ci, true); };
     var takeOut = function (ci) { for (var i = 0; i < n; i++) if (slots[i] === ci) slots[i] = null; };
 
     var tray = ctx.el('ul', { class: 'row', 'aria-label': L.mapping_tray, style: 'list-style:none;padding:0;margin:16px 0;gap:12px' });
@@ -233,6 +254,7 @@ module.exports = {
       ctx.el('button', { type: 'button', on: { click: function () { ctx.support('wordReplays'); ctx.play(item.wordAudio); } }, text: L.hear_word }),
     ]));
     ctx.root.appendChild(slotList);
+    ctx.root.appendChild(notesEl);
     ctx.root.appendChild(ctx.el('div', { class: 'row' }, [clearBtn]));
     // Hear all (the player's ctx.hearAll): each spelling still in the tray, in turn, marked with its number.
     var hearing = typeof ctx.hearAll === 'function' ? ctx.hearAll({ ready: function () { return !locked(); },
@@ -255,6 +277,8 @@ module.exports = {
           }
         }
         draw();
+        // The answer shown: every surprising spelling of the word is explained too.
+        item.chips.forEach(function (chip, ci) { note(ci, false); });
         slotEls.forEach(function (el) { el.btn.style.borderColor = 'var(--ok)'; el.btn.style.background = 'var(--ok-bg)'; });
       },
     };

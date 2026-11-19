@@ -349,7 +349,9 @@ describe('the file', () => {
       // Re-pinned 2026-11-16: every file carries the two reading fonts of Reading tools > Letters (Lexend, Atkinson Hyperlegible; +42.5 KB). About 142.8 KB now; the page says "About 145 KB".
       // Re-pinned 2026-11-17 from 147000: the review fixes in every file (about +6 KB; about 148.4 KB). The page says "About 150 KB".
       // Re-pinned 2026-11-17 (later that day) from 153000: the practice end screen for a young student and the recall timing (about +1.7 KB; about 150.7 KB).
-      expect(Buffer.byteLength(html, 'utf8')).toBeLessThan(157000);
+      // Re-pinned 2026-11-18 from 157000: every file's player can show the questions in the file's own order (the Word
+      // Sounds maker's "Mix the activities"; tests/packets_question_order_2026_11_18.test.js; +1.0 KB, about 157.0 KB now).
+      expect(Buffer.byteLength(html, 'utf8')).toBeLessThan(158000);
       expect(lessonOf(html)).toMatchObject({ mode: 'practice', audio: {}, images: {}, submit: null });
       // Its answers are the arithmetic of its facts.
       for (const it of lessonOf(html).blocks[0].items) {

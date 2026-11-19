@@ -305,7 +305,12 @@ describe('fewer choices for beginners', () => {
   it('counting: easy offers the count with two either side, medium 1-8, hard the full row', async () => {
     const numbers = () => [...container.querySelectorAll('[role="button"][aria-label^="Number "]')].map((e) => e.textContent.trim());
     await mount({activity: 'counting'});
-    expect(numbers()).toEqual(['1', '2', '3', '4', '5']);
+    // 2026-11-18 (review), deliberately: Easy's row slides by a hash of the word, so the answer is not always the 3rd
+    // button (tests/word_sounds_review_fixes_2026_11_18.test.js): five numbers in a row that hold the count, 3.
+    const easy = numbers();
+    expect(easy).toHaveLength(5);
+    expect(easy.map(Number).every((v, i, a) => i === 0 || v === a[i - 1] + 1)).toBe(true);
+    expect(easy).toContain('3');
     expect(container.querySelector('[aria-label="common.11_or_more_sounds"]')).toBeNull();
     await act(async () => root.unmount()); container.remove();
     await mount({activity: 'counting', wordSoundsDifficulty: 'medium'});

@@ -411,6 +411,9 @@ module.exports = {
       how.textContent = !shape ? '' : shape.strokes.length > 1 ? L.letter_tracing_how_more : L.letter_tracing_how_one;
       how.hidden = !shape;
       skipLower.hidden = !(at > 0 && part.kind === 'lowercase');
+      // 2026-11-18: on the lowercase part only its own skip shows: "Skip (not traced)" there marked the capital, traced
+      // already, as not traced (the app hides it too).
+      if (skip) skip.hidden = !skipLower.hidden;
       drawGuide();
       wipe();
     };

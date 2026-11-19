@@ -18,11 +18,19 @@
 <script src="packets-try.js" defer></script>
 </head>
 <body class="try-page">
-<header class="try-bar">
-  <h1>Preview</h1>
-  <p>This is the file a student gets. Nothing you do here is kept. Close this tab to go back to the maker.</p>
-</header>
-<div id="try-edit" class="try-edit" role="region" aria-label="Teacher tools" hidden></div>
+<!-- Present (packets-try.js) slides #try-top away; the pointer on this strip at the top edge brings it back. -->
+<div class="try-peek" aria-hidden="true"></div>
+<div id="try-top" class="try-top">
+  <div class="try-head">
+    <header class="try-bar">
+      <h1>Preview</h1>
+      <p>This is the file a student gets. Nothing you do here is kept. Close this tab to go back to the maker.</p>
+    </header>
+    <button type="button" id="try-present" class="btn btn-small try-present-btn" aria-pressed="false" hidden>Present</button>
+  </div>
+  <div id="try-edit" class="try-edit" role="region" aria-label="Teacher tools" hidden></div>
+  <button type="button" id="try-tab" class="try-tab" aria-expanded="false" aria-controls="try-top" aria-label="Top bar" hidden><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M3.5 6l4.5 4.5L12.5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+</div>
 <main id="try-main" class="try-main">
   <p id="try-wait" class="try-problem" role="status">Opening the file.</p>
   <div id="try-problem" class="try-problem" hidden>

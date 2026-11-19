@@ -42,8 +42,10 @@ module.exports = {
     // Same usability rule as the app's preparedMissingLetter.
     var letter = String(board.correctLetter == null ? '' : board.correctLetter).toLowerCase();
     var choices = Array.isArray(board.options) ? board.options.map(function (o) { return typeof o === 'string' ? o.toLowerCase() : ''; }) : [];
+    // 2026-11-18: the hidden one is a letter (a letter has a capital), never the ' of "I'm" or the - of "t-shirt":
+    // the only non-letter among the choices would be the answer.
     var usable = Number.isInteger(board.hiddenIndex) && board.hiddenIndex >= 0 && board.hiddenIndex < word.length &&
-      !!letter && word[board.hiddenIndex] === letter && choices.length >= 2 && choices.every(Boolean) &&
+      !!letter && word[board.hiddenIndex] === letter && letter.toLowerCase() !== letter.toUpperCase() && choices.length >= 2 && choices.every(Boolean) &&
       choices.filter(function (c, i) { return choices.indexOf(c) === i; }).length === choices.length && choices.indexOf(letter) >= 0;
     if (!usable) return { missing: ['board'] };
     var missing = [];

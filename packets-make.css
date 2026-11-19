@@ -31,6 +31,23 @@
 .choice-level .why ul { margin: 0.25rem 0 0; padding-left: 1.25rem; color: var(--muted); }
 .choice-level .why li { margin-top: 0.2rem; }
 
+/* 2026-11-18: "Grade for each level" under the Level list (levels are named by what they practice, not by grade). */
+.stage-key .stage-key-head { margin-top: 0.4rem; font-weight: 600; color: var(--ink); }
+.stage-key-list { margin: 0.2rem 0 0; padding-left: 1.25rem; list-style: disc; color: var(--muted); }
+.stage-key-list li { margin-top: 0.15rem; }
+.stage-key-list b { font-weight: 600; color: var(--ink); }
+
+/* 2026-11-18: "Mix the activities" (step 1) and "Question order" (step 3): numbered rows, each with Move up and Move down. */
+.mix-field { margin: 0 0 0.75rem; max-width: 36rem; }
+.order-title { font-weight: 600; color: var(--ink); }
+.order-title span { font-weight: 400; }
+.order-editor { margin-top: 0.5rem; }
+.order-list { counter-reset: question; max-height: 26rem; overflow-y: auto; margin: 0.5rem 0 0; padding: 0 0.25rem 0 0; border-top: 1px solid var(--line); }
+.order-row { counter-increment: question; display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 0.5rem; padding: 0.3rem 0; border-bottom: 1px solid var(--line); }
+.order-row::before { content: counter(question) "."; min-width: 2.25rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.order-name { flex: 1 1 12rem; min-width: 0; }
+.order-move { min-height: 2.25rem; padding: 0.2rem 0.7rem; }
+
 /* 2026-11-13 (teacher-journey L12): on a phone the "Open a file I made" hint keeps its first sentence, so step 1 starts higher. */
 @media (max-width: 40rem) { .reopen-more { display: none; } }
 

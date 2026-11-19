@@ -110,7 +110,8 @@
   var TRACE_CASES = ['both', 'capital', 'lowercase'];
   // Choices: how many answers a board shows (word_sounds_packet_builder.js, opts.choices), and the activities it changes.
   var CHOICE_LEVELS = ['easy', 'medium', 'all'];
-  var CHOICE_ACTIVITIES = ['isolation', 'blending', 'rhyming', 'counting'];
+  // 2026-11-18: and Break it Down, whose Easy shows the word's sounds and one more.
+  var CHOICE_ACTIVITIES = ['isolation', 'blending', 'rhyming', 'counting', 'segmentation'];
   // The words for each, on the top line of a "More options" box.
   var CHOICE_NAMES = { easy: 'Easy', medium: 'Medium', all: 'All' };
   var TRACE_NAMES = { both: 'capital, then lowercase', capital: 'capital only', lowercase: 'lowercase only' };
@@ -128,7 +129,7 @@
   var POSITION_NAMES = { first: 'first sound', middle: 'in the middle', last: 'last sound' };
   // Shape by sounds, then words of that shape (checked against the word list by the test).
   var SHAPES = [['CVC', 'cat, ship'], ['CCVC', 'frog, stop'], ['CVCC', 'lamp, fast'], ['CCVCC', 'stamp'], ['CV', 'go, she'], ['VC', 'at, in']];
-  var STAGE_HINT = 'A grade level keeps to the letter patterns taught by then.';
+  var STAGE_HINT = 'Each level keeps to the letter patterns taught up to it.';
   // The kindergarten rows of the default (US, Common Core) stage table: neither has sh, ch or th (see #stage-k-note).
   var K_STAGES = ['K early', 'K late'];
   // The stages of a curriculum other than the default one (England's) wait behind "Other curricula" (#stage-other),
@@ -187,7 +188,11 @@
       tracing: 'both',
       // choices: fewer answers to choose from ('easy'), 'medium' (the default) or 'all', as Word Sounds does by level.
       choices: 'medium',
-      directionsOnce: false, repeatMissed: false };
+      directionsOnce: false, repeatMissed: false,
+      // 2026-11-18 (owner): mix: with two or more activities, they take turns in a mixed order (on unless turned off).
+      // questionOrder: the teacher's own order ('activity|word' keys, step 3), or null. mixSeed: another mix ("Mix
+      // again"), or null for the version's own. Neither of the last two is kept between visits.
+      mix: true, questionOrder: null, mixSeed: null };
   }
   function wordCount(value) { var n = Number(value); return n >= 1 && n <= MAX_WORDS && Math.floor(n) === n ? n : 0; }
   function shuffleCount(value) { var n = Number(value); return n >= 1 && n < 1e6 && Math.floor(n) === n ? n : 1; }
@@ -201,7 +206,7 @@
   function remember() {
     try {
       window.localStorage.setItem(STORE_KEY, JSON.stringify({ v: 1, activities: state.activities, mode: state.mode, sound: state.sound, position: state.position,
-        shape: state.shape, stage: state.stage, own: state.own, version: state.version, length: state.length, count: state.count, hand: state.hand, chosen: state.chosen, choices: state.choices, tracing: state.tracing, directionsOnce: !!state.directionsOnce, repeatMissed: !!state.repeatMissed,
+        shape: state.shape, stage: state.stage, own: state.own, version: state.version, length: state.length, count: state.count, hand: state.hand, chosen: state.chosen, choices: state.choices, tracing: state.tracing, directionsOnce: !!state.directionsOnce, repeatMissed: !!state.repeatMissed, mix: state.mix !== false,
         order: state.order === 'random' ? 'random' : 'common', shuffle: state.order === 'random' ? state.shuffle : 0, title: titleForHandoff(), words: wordsForHandoff(),
         spread: !!state.spread, label: state.label, groups: state.groups.map(function (g) { return { label: g.label, stage: g.stage, sound: g.sound, shape: g.shape, count: g.count }; }) }));
     } catch (_) { /* a browser that cannot keep them still works */ }
@@ -235,6 +240,7 @@
     if (CHOICE_LEVELS.indexOf(saved.choices) >= 0) fresh.choices = saved.choices;
     if (saved.directionsOnce === true) fresh.directionsOnce = true;
     if (saved.repeatMissed === true) fresh.repeatMissed = true;
+    if (saved.mix === false) fresh.mix = false;
     if (Array.isArray(saved.chosen)) fresh.chosen = saved.chosen.filter(function (word, i, all) { return typeof word === 'string' && /^[a-z]+$/.test(word) && word.length >= 2 && word.length <= maxLetters() && all.indexOf(word) === i; }).slice(0, MAX_WORDS);
     return fresh;
   }
@@ -320,19 +326,27 @@
       var on = group.querySelectorAll('input[type="checkbox"]:checked').length, node = group.querySelector('.strand-count');
       if (node) node.textContent = on ? on + ' chosen' : 'none chosen';
     });
-    // "More options" of step 1: shown when one of its two choices applies; its top line says what they are now.
+    // 2026-11-18: with two or more activities, "Mix the activities" (on unless turned off).
+    var mixable = state.activities.length >= 2;
+    show('mix-field', mixable);
+    var mixBox = $('f-mix');
+    if (mixBox) { mixBox.checked = state.mix !== false; mixBox.parentNode.classList.toggle('is-on', mixBox.checked); }
+    // "More options" of step 1: shown when one of its choices applies; its top line says what they are now.
     var now = [];
+    if (mixable) now.push(state.mix !== false ? 'activities mixed' : 'one activity at a time');
     if (leveled) now.push('Choices: ' + CHOICE_NAMES[state.choices]);
     if (tracing) now.push('Letter Trace: ' + TRACE_NAMES[state.tracing]);
     show('more-1', now.length > 0);
     setText('more-1-now', now.join(', '));
-    openMore('more-1', (leveled && state.choices !== 'medium') || (tracing && state.tracing !== 'both'));
+    openMore('more-1', (leveled && state.choices !== 'medium') || (tracing && state.tracing !== 'both') || (mixable && state.mix === false));
     var n = state.activities.length;
     setText('activity-count', n ? count(n, 'activity', 'activities') + ' chosen.' : 'No activity is chosen yet.');
     if (n) setText('step-1-problem', '');
     drawQuick();
   }
   function activitiesChanged() {
+    // The teacher's own order was for the activities as they were: a new set starts from the mix (or one at a time).
+    state.questionOrder = null;
     syncActivities();
     remember();
   }
@@ -350,7 +364,7 @@
   function drawQuick() {
     if (!$('quick-line')) return;
     var acts = order.filter(function (id) { return state.activities.indexOf(id) >= 0; }).map(core.activityLabel);
-    var words = state.mode === 'own' ? 'Your own words' : state.hand ? 'The words you chose' : (state.stage ? stageName(state.stage) : 'Any grade level') + ', ' + count(wordsFor(state.length), 'word');
+    var words = state.mode === 'own' ? 'Your own words' : state.hand ? 'The words you chose' : (state.stage ? stageName(state.stage) : 'Any level') + ', ' + count(wordsFor(state.length), 'word');
     setText('quick-line', acts.length ? 'Skips to step 3 and makes the file with what is chosen now: ' + listed(acts) + '. ' + words + '. You can still change anything.'
       : 'Choose at least one activity first.');
   }
@@ -492,12 +506,65 @@
   // Asked for when needed: the builder is set after this script's first lines have run.
   function maxLetters() { return (builder && builder.MAX_LETTERS) || 10; }
   var LEVELS = [
-    { id: 'wider:challenging', level: 'challenging', name: 'More challenging words', line: 'Past the grade levels: words found in at least 10 of the 400 children\'s books, but not among the most familiar. Chosen by how widely a word is used, not from a curriculum. Any letter pattern, up to 15 letters.' },
+    { id: 'wider:challenging', level: 'challenging', name: 'More challenging words', line: 'Past the levels: words found in at least 10 of the 400 children\'s books, but not among the most familiar. Chosen by how widely a word is used, not from a curriculum. Any letter pattern, up to 15 letters.' },
     { id: 'wider:advanced', level: 'advanced', name: 'Advanced words', line: 'Rarer words: in fewer than 10 of the 400 children\'s books, or in none. For older students, enrichment and spelling practice. Chosen by how widely a word is used, not from a curriculum. Any letter pattern, up to 15 letters.' },
   ];
   var widerGroup = null;
   function levelRow(id) { for (var i = 0; i < LEVELS.length; i++) if (LEVELS[i].id === id) return LEVELS[i]; return null; }
-  function stageName(id) { var wide = levelRow(id); if (wide) return wide.name; var row = stageRow(id); return String(row ? row.label : id).split(':')[0].trim(); }
+  // 2026-11-18 (owner): a level is named by what it practices ("Level 1: Short vowels"), never by grade: an older
+  // student who needs to start at the first level, or who makes a file, is not told it is for kindergarten. The default
+  // table's rows are numbered; another curriculum's (shown on request) are not, so two rows never share a number.
+  // The grade of each level: gradeName(), shown to teachers under "Grade for each level" (#stage-key).
+  var LEVEL_NAMES = {
+    'K early': 'Short vowels', 'K late': 'Long vowel at the end', 'G1 early': 'sh, ch, th and blends',
+    'G1 late': 'Final e and vowel teams', 'G2': 'More vowel teams', 'G3+': 'Longer words',
+    'Reception': 'Letter sounds and first digraphs', 'Year 1': 'Final e, vowel teams and r-controlled vowels',
+    'Year 2': 'Soft c and g, kn, wr and -tion'
+  };
+  function gradeName(id) { var row = stageRow(id); return String(row ? row.label : id).split(':')[0].trim(); }
+  function levelNumber(id) {
+    var n = 0;
+    for (var i = 0; i < stageRows.length; i++) if (!otherStage(stageRows[i])) { n++; if (stageRows[i].id === id) return n; }
+    return 0;
+  }
+  function stageName(id) {
+    var wide = levelRow(id), row = stageRow(id);
+    if (wide) return wide.name;
+    if (!row || !LEVEL_NAMES[id]) return gradeName(id);
+    var n = otherStage(row) ? 0 : levelNumber(id);
+    return (n ? 'Level ' + n + ': ' : '') + LEVEL_NAMES[id];
+  }
+  // "Grade for each level": every row of the table under its curriculum, then the wider levels, which have no grade.
+  function drawStageKey() {
+    var host = $('stage-key-body');
+    if (!host) return;
+    host.textContent = '';
+    var groups = [];
+    stageRows.forEach(function (row) {
+      var name = String(row.frameworkLabel || '');
+      var group = groups.filter(function (g) { return g.name === name; })[0];
+      if (!group) { group = { name: name, rows: [] }; groups.push(group); }
+      group.rows.push(row);
+    });
+    groups.forEach(function (group) {
+      if (group.name) host.appendChild(el('p', 'stage-key-head', group.name));
+      var list = el('ul', 'stage-key-list');
+      group.rows.forEach(function (row) {
+        var item = el('li');
+        item.appendChild(el('b', '', stageName(row.id)));
+        item.appendChild(doc.createTextNode(' — ' + gradeName(row.id)));
+        list.appendChild(item);
+      });
+      host.appendChild(list);
+    });
+    var wide = el('ul', 'stage-key-list');
+    var item = el('li');
+    item.appendChild(el('b', '', LEVELS.map(function (row) { return row.name; }).join(' and ')));
+    item.appendChild(doc.createTextNode(' — no grade: chosen by how widely a word is used.'));
+    wide.appendChild(item);
+    host.appendChild(wide);
+    show('stage-key', stageRows.length > 0);
+  }
   function stageDetail(id) { var row = stageRow(id); return row ? String(row.label).split(':').slice(1).join(':').trim() : ''; }
   // One short line for a stage, made from the builder's own row: a few of its example words and its limits.
   function stageLine(id) {
@@ -560,7 +627,7 @@
         fix.addEventListener('click', function () { state.spread = true; state.shape = ''; pickChanged(false); mixFocus = 'mix-undo'; });
         note.appendChild(document.createTextNode(' '));
         note.appendChild(fix);
-      } else if (picking) note.appendChild(el('span', 'mix-why', ' The words that fit these choices all have ' + (offer.length > 1 ? offer.slice(0, -1).join(', ') + ' or ' + offer[offer.length - 1] : (offer[0] || numbers[0])) + ' sounds. A later grade level, or no sound to practice, gives a wider mix.'));
+      } else if (picking) note.appendChild(el('span', 'mix-why', ' The words that fit these choices all have ' + (offer.length > 1 ? offer.slice(0, -1).join(', ') + ' or ' + offer[offer.length - 1] : (offer[0] || numbers[0])) + ' sounds. A later level, or no sound to practice, gives a wider mix.'));
       else note.appendChild(el('span', 'mix-why', ' Add a few words with a different number of sounds.'));
       host.appendChild(note);
     }
@@ -651,7 +718,7 @@
     };
     field('Label', select('label', GROUP_LABELS, first ? state.label : group.label, function (v) { if (first) state.label = v; else group.label = v; }));
     if (!first) {
-      field('Grade level', select('stage', 'f-stage', group.stage, function (v) { group.stage = v; }));
+      field('Level', select('stage', 'f-stage', group.stage, function (v) { group.stage = v; }));
       field('Sound', select('sound', 'f-sound', group.sound, function (v) { group.sound = v; }));
       field('Pattern', select('shape', 'f-shape', group.shape, function (v) { group.shape = v; }));
       var number = document.createElement('input');
@@ -735,19 +802,20 @@
       if (group.rows.every(otherStage)) {
         otherStageGroups.push(box);
         otherNames.push(group.name);
-        group.rows.forEach(function (row) { otherStages.push(stageName(row.id).replace(/\s*\([^)]*\)$/, '')); });
+        group.rows.forEach(function (row) { otherStages.push(gradeName(row.id).replace(/\s*\([^)]*\)$/, '')); });
       } else stage.appendChild(box);
     });
-    // After the grade levels, in a group of their own that says what they are.
+    // After the levels, in a group of their own that says what they are.
     var widerBox = doc.createElement('optgroup');
-    widerBox.label = 'Past the grade levels (by how rare a word is)';
+    widerBox.label = 'Past the levels (by how rare a word is)';
     widerBox.setAttribute('data-wider', '');
     widerGroup = widerBox;
     LEVELS.forEach(function (row) { var option = el('option', '', row.name); option.value = row.id; widerBox.appendChild(option); });
     stage.appendChild(widerBox);
     show('stage-other', otherStageGroups.length > 0);
-    if (otherNames.length) setText('stage-other-line', 'Show ' + listed(otherNames) + ' in the Grade level list: ' + listed(otherStages));
+    if (otherNames.length) setText('stage-other-line', 'Show ' + listed(otherNames) + ' in the Level list: ' + listed(otherStages));
     otherStagesOn = otherStageGroups.length > 0 && regionAsks();
+    drawStageKey();
   }
   function otherStage(row) { return !!row && row.isDefault === false; }
   // The page's language, or the browser's first language, names a region whose curriculum is not the default one.
@@ -766,7 +834,7 @@
       if (!option.value) return;
       var none = !!haveSounds && !haveSounds[option.value];
       option.disabled = none && option.value !== state.sound;
-      option.textContent = option.getAttribute('data-name') + (none ? ' (no words at this grade level)' : '');
+      option.textContent = option.getAttribute('data-name') + (none ? ' (no words at this level)' : '');
     });
     $('f-sound').value = state.sound;
     $('f-position').value = state.position;
@@ -968,7 +1036,7 @@
   // When few words fit: try each choice set to "any", one at a time, and offer the ones that give more.
   function suggestLoosening(run, fit) {
     var tries = [];
-    if (state.stage) tries.push({ change: { stage: '' }, label: 'Any grade level' });
+    if (state.stage) tries.push({ change: { stage: '' }, label: 'Any level' });
     if (state.shape) tries.push({ change: { shape: '' }, label: 'Any pattern' });
     if (state.sound && state.position !== 'any') tries.push({ change: { position: 'any' }, label: 'The sound anywhere in the word' });
     if (state.sound) tries.push({ change: { sound: '', position: 'any' }, label: 'Any sound' });
@@ -1610,6 +1678,8 @@
   var sounds = null, soundsLoading = null, soundProgress = null, soundsSaved = false;
   var wavs = typeof Map === 'function' ? new Map() : null, wavCount = 0;
   var buildTimer = 0, buildRun = 0, built = null, fileUrl = '';
+  // The lesson of the last file made: the questions "Question order" lists (step 3).
+  var lastLesson = null;
 
   function openCache() {
     try {
@@ -1911,7 +1981,7 @@
     return 'Word Sounds: ' + what + ', version ' + state.version;
   }
   // What a stage practices, for the file title a student sees (2026-11-18: no grade or year in it, to avoid stigma).
-  // The teacher still sees the grade in the stage picker. Examples are taken from each stage's own description.
+  // The teacher sees the grade under "Grade for each level". Examples are taken from each stage's own description.
   var STAGE_PRACTICE = {
     'K early': 'short-vowel words (cat, sun, hop)', 'K late': 'short words with long vowels (he, go, hi)',
     'G1 early': 'words with sh, ch, th and blends (ship, chin, thin)', 'G1 late': 'final e and vowel teams (make, rain, boat)',
@@ -1978,9 +2048,10 @@
     now.push($('f-pictures') && $('f-pictures').checked ? 'pictures' : 'no pictures');
     if (state.directionsOnce) now.push('directions once');
     if (state.repeatMissed) now.push('missed questions once more');
+    if (state.questionOrder && state.activities.length >= 2) now.push('your own question order');
     if (state.learner) now.push('a code name');
     setText('more-3-now', now.join(', '));
-    openMore('more-3', (!hand && state.length !== 'regular') || !!state.directionsOnce || !!state.repeatMissed || !!state.learner);
+    openMore('more-3', (!hand && state.length !== 'regular') || !!state.directionsOnce || !!state.repeatMissed || !!state.learner || (!!state.questionOrder && state.activities.length >= 2));
   }
   // Step 3's code name: the field shows what was typed; the line under it, what the file will carry when that differs.
   function syncCodeName() {
@@ -2067,6 +2138,10 @@
     options.choices = CHOICE_LEVELS.indexOf(state.choices) >= 0 ? state.choices : 'medium';
     if (state.directionsOnce) options.directionsOnce = true;
     if (state.repeatMissed) options.repeatMissed = true;
+    // The questions' order: the teacher's own, else a mix (another one after "Mix again"), else one activity at a time.
+    if (state.questionOrder) options.order = state.questionOrder.slice();
+    else if (state.mix !== false) options.order = 'mixed';
+    if (!state.questionOrder && state.mix !== false && typeof state.mixSeed === 'number') options.orderSeed = state.mixSeed;
     if (!plan.clean) {
       if (Object.keys(previewOmit).length) options.omitItems = previewOmit;
       if (Object.keys(previewSeeds).length) options.itemSeeds = previewSeeds;
@@ -2182,6 +2257,87 @@
     lines.forEach(function (line) { list.appendChild(el('li', '', line)); });
     host.appendChild(list);
   }
+  // ---------------------------------------------------------------------------
+  // Question order (2026-11-18, owner): a mix by default, one activity at a time, or the teacher's own order (step 3,
+  // More options). The list is the last file's questions, as { key: 'activity|word', label }, in the order they show.
+  // ---------------------------------------------------------------------------
+  function questionsShown() {
+    var out = [], byId = {}, lesson = lastLesson;
+    if (!lesson || !Array.isArray(lesson.blocks)) return out;
+    lesson.blocks.forEach(function (block) {
+      (Array.isArray(block.items) ? block.items : []).forEach(function (item) {
+        var word = String(item.word || '');
+        var q = { key: String(block.activity) + '|' + word.toLowerCase(), label: core.activityLabel(block.activity) + (word ? ' — ' + word : '') };
+        byId[String(item.id)] = q;
+        if (!Array.isArray(lesson.sequence)) out.push(q);
+      });
+    });
+    if (Array.isArray(lesson.sequence)) lesson.sequence.forEach(function (id) { if (byId[String(id)]) out.push(byId[String(id)]); });
+    return out;
+  }
+  // The order the next file will have: the teacher's own (as far as the questions are still there, the rest after
+  // them, as the builder does) or the last file's.
+  function questionsInOrder() {
+    var shown = questionsShown();
+    if (!state.questionOrder) return shown;
+    var byKey = {}, used = {}, out = [];
+    shown.forEach(function (q) { byKey[q.key] = q; });
+    state.questionOrder.forEach(function (key) { if (byKey[key] && !used[key]) { used[key] = true; out.push(byKey[key]); } });
+    shown.forEach(function (q) { if (!used[q.key]) out.push(q); });
+    return out;
+  }
+  function moveQuestion(key, by) {
+    var list = questionsInOrder(), keys = list.map(function (q) { return q.key; });
+    var at = keys.indexOf(key), to = at + by;
+    if (at < 0 || to < 0 || to >= keys.length) return;
+    keys.splice(to, 0, keys.splice(at, 1)[0]);
+    state.questionOrder = keys;
+    drawOrder();
+    setText('order-said', list[at].label + ': now ' + (to + 1) + ' of ' + keys.length + '.');
+    drawLengths();
+    makeSoon(0);
+  }
+  function drawOrder() {
+    var box = $('order-box');
+    if (!box) return;
+    // Only when the file made has questions in two or more activities: with one, there is no order to choose.
+    var filled = lastLesson && Array.isArray(lastLesson.blocks) ? lastLesson.blocks.filter(function (b) { return b && b.items && b.items.length; }).length : 0;
+    var mixable = state.activities.length >= 2 && filled >= 2;
+    show('order-box', mixable);
+    if (!mixable) return;
+    setText('order-line', state.questionOrder ? 'Your own order.' : state.mix !== false ? 'The activities take turns, in a mixed order.' : 'One activity at a time.');
+    show('order-remix', !state.questionOrder && state.mix !== false);
+    var reset = $('order-reset');
+    reset.hidden = !state.questionOrder;
+    reset.textContent = state.mix !== false ? 'Back to the mix' : 'Back to one activity at a time';
+    var editor = $('order-editor'), open = !editor.hidden;
+    $('order-edit').setAttribute('aria-expanded', String(open));
+    if (!open) return;
+    // Drawn again after each move: the focus goes back to the same button of the same question.
+    var active = doc.activeElement, focusKey = active && active.getAttribute && active.getAttribute('data-order-key'), focusBy = active && active.getAttribute && active.getAttribute('data-order-by');
+    var host = $('order-list');
+    host.textContent = '';
+    var list = questionsInOrder();
+    list.forEach(function (q, i) {
+      var row = el('li', 'order-row');
+      row.appendChild(el('span', 'order-name', q.label));
+      [['-1', 'Move up', i === 0], ['1', 'Move down', i === list.length - 1]].forEach(function (spec) {
+        var button = el('button', 'btn btn-small order-move', spec[1]);
+        button.type = 'button';
+        button.setAttribute('data-order-key', q.key);
+        button.setAttribute('data-order-by', spec[0]);
+        button.appendChild(el('span', 'sr-only', ': ' + q.label));
+        button.disabled = spec[2];
+        row.appendChild(button);
+      });
+      host.appendChild(row);
+    });
+    if (focusKey) {
+      var again = host.querySelector('[data-order-key="' + focusKey.replace(/"/g, '') + '"][data-order-by="' + focusBy + '"]');
+      if (again && again.disabled) again = host.querySelector('[data-order-key="' + focusKey.replace(/"/g, '') + '"]:not(:disabled)');
+      if (again) again.focus();
+    }
+  }
   function describePreview(lesson) {
     var out = [], blocks = lesson && Array.isArray(lesson.blocks) ? lesson.blocks : [];
     var picOn = !!($('f-pictures') && $('f-pictures').checked);
@@ -2268,6 +2424,8 @@
     }
     var blob = new Blob([result.html], { type: 'text/html' });
     built = { html: result.html, name: fileName(manifest.title, manifest.learnerLabel), bytes: blob.size };
+    lastLesson = result.lesson || null;
+    drawOrder();
     try { fileUrl = URL.createObjectURL(blob); } catch (_) { fileUrl = ''; }
     var total = manifest.items.total;
     setText('summary-facts', count(total, 'question') + '. About ' + count(Math.ceil(total / 2), 'minute') + '. ' + fileSize(built.bytes) + '.');
@@ -2577,6 +2735,11 @@
     if (CHOICE_LEVELS.indexOf(result.choices) >= 0) fresh.choices = result.choices;
     if (result.directionsOnce === true) fresh.directionsOnce = true;
     if (result.repeatMissed === true) fresh.repeatMissed = true;
+    // The questions' order as the file had it (a file made before 2026-11-18: one activity at a time). A file of one
+    // activity says nothing about it, so the usual choice stays.
+    if (result.activities.length >= 2) fresh.mix = result.order !== 'blocks';
+    if (Array.isArray(result.order) && result.order.length) fresh.questionOrder = result.order.slice();
+    if (typeof result.orderSeed === 'number') fresh.mixSeed = result.orderSeed;
     state = fresh;
     picked = null;
     fromFile = result.own && typeof result.own === 'object' ? result.own : {};
@@ -2594,6 +2757,7 @@
     items.push('Version ' + state.version + '. Length: ' + (preset ? LENGTH_NAMES[preset] : 'Custom, ' + count(state.count, 'word')) + '. Pictures: ' + (result.pictures ? 'on' : 'off') + '.');
     if (state.directionsOnce) items.push('Spoken directions: first question only.');
     if (state.repeatMissed) items.push('The missed questions once more at the end, as practice.');
+    if (result.activities.length >= 2) items.push(state.questionOrder ? 'Question order: your own, as in the file.' : state.mix ? 'Question order: the activities mixed.' : 'Question order: one activity at a time.');
     if (state.titleEdited) items.push('Title: ' + state.title + (/[.!?]$/.test(state.title) ? '' : '.'));
     if (state.learner) items.push('Student\'s code name: ' + state.learner + '. It is in step 3. Clear it there to make a file anyone can use.');
     var theirs = Object.keys(fromFile);
@@ -2776,6 +2940,27 @@
     wireBatch();
     $('f-pictures').addEventListener('change', function () { picturesChoice = this.checked ? 'on' : 'off'; picturesNote = ''; makeSoon(0); drawLengths(); });
     if ($('f-repeat-missed')) $('f-repeat-missed').addEventListener('change', function () { state.repeatMissed = this.checked; this.parentNode.classList.toggle('is-on', this.checked); remember(); makeSoon(0); drawLengths(); });
+    // 2026-11-18: the questions' order. The switch is in step 1 (step 3 makes the file again when it opens); "Question
+    // order" is in step 3's More options.
+    if ($('f-mix')) $('f-mix').addEventListener('change', function () { state.mix = this.checked; state.questionOrder = null; state.mixSeed = null; syncActivities(); remember(); });
+    if ($('order-edit')) $('order-edit').addEventListener('click', function () { var editor = $('order-editor'); editor.hidden = !editor.hidden; drawOrder(); });
+    if ($('order-remix')) $('order-remix').addEventListener('click', function () {
+      state.mixSeed = (typeof state.mixSeed === 'number' ? state.mixSeed : seed() * 100) + 1;
+      setText('order-said', 'Mixed again.');
+      makeSoon(0);
+    });
+    if ($('order-reset')) $('order-reset').addEventListener('click', function () {
+      state.questionOrder = null;
+      setText('order-said', state.mix !== false ? 'Back to the mix.' : 'Back to one activity at a time.');
+      drawOrder();
+      drawLengths();
+      $('order-edit').focus();
+      makeSoon(0);
+    });
+    if ($('order-list')) $('order-list').addEventListener('click', function (event) {
+      var button = event.target && event.target.closest ? event.target.closest('[data-order-key]') : null;
+      if (button && !button.disabled) moveQuestion(button.getAttribute('data-order-key'), Number(button.getAttribute('data-order-by')));
+    });
     if ($('f-directions-once')) $('f-directions-once').addEventListener('change', function () { state.directionsOnce = this.checked; this.parentNode.classList.toggle('is-on', this.checked); remember(); makeSoon(0); drawLengths(); });
     $('save').addEventListener('click', saveFile);
     if ($('open-present-export')) $('open-present-export').addEventListener('click', remember);

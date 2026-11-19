@@ -3009,7 +3009,7 @@ const PHONEME_PACK_LIB_KEY = "allo_phoneme_voice_packs_v1";
 const PHONEME_PACK_GROUPS = {
   "Consonants": ["b", "c", "d", "f", "g", "h", "j", "k", "l", "m", "n", "p", "r", "s", "t", "v", "w", "y", "z"],
   "Digraphs": ["sh", "zh", "ch", "th", "dh", "wh", "ph", "ck", "ng", "q"],
-  "Short Vowels": ["a", "e", "i", "o", "u", "oo_short"],
+  "Short Vowels": ["a", "e", "i", "o", "u", "oo_short", "schwa"],
   "Long Vowels": ["ee", "oo", "ue", "aw", "oa"],
   "Diphthongs": ["ay", "ie", "ow", "oy"],
   "R-Controlled": ["ar", "er", "ir", "or", "ur", "air", "ear"]
@@ -3067,8 +3067,11 @@ const PHONEME_PACK_CUES = {
   or: "Round /or/ (fork).",
   ur: "Same as /er/ (fur).",
   air: "Open /air/ (chair).",
-  ear: "Long /ear/ (ear)."
+  ear: "Long /ear/ (ear).",
+  schwa: "A short, lazy /uh/ with a relaxed mouth (the a in about)."
 };
+PHONEME_PACK_EXAMPLES.schwa = "about";
+const PHONEME_PACK_IPA = { "b": "b", "c": "k", "d": "d", "f": "f", "g": "g", "h": "h", "j": "d\u0292", "k": "k", "l": "l", "m": "m", "n": "n", "p": "p", "r": "r", "s": "s", "t": "t", "v": "v", "w": "w", "y": "j", "z": "z", "sh": "\u0283", "zh": "\u0292", "ch": "t\u0283", "th": "\u03B8", "dh": "\xF0", "wh": "w", "ph": "f", "ck": "k", "ng": "\u014B", "q": "kw", "a": "\xE6", "e": "\u025B", "i": "\u026A", "o": "\u0252", "u": "\u028C", "oo_short": "\u028A", "schwa": "\u0259", "ee": "i", "oo": "u", "ue": "ju\u02D0", "aw": "\u0254\u02D0", "oa": "o\u028A", "ay": "e\u026A", "ie": "a\u026A", "ow": "a\u028A", "oy": "\u0254\u026A", "ar": "\u0251r", "er": "\u025Cr", "ir": "\u025Cr", "or": "\u0254r", "ur": "\u025Cr", "air": "\u025B\u0259", "ear": "\u026A\u0259" };
 const PHONEME_PACK_WORDS = [
   { word: "cat", keys: ["c", "a", "t"] },
   { word: "dog", keys: ["d", "o", "g"] },
@@ -3092,9 +3095,11 @@ const PHONEME_PACK_WORDS = [
   { word: "boat", keys: ["b", "oa", "t"] }
 ];
 function phonemePackLabel(key) {
+  if (key === "schwa") return "\u0259";
   return key === "oo_short" ? "oo" : key === "dh" ? "\xF0" : key;
 }
 function phonemePackGrapheme(key) {
+  if (key === "schwa") return "a";
   return key === "oo_short" ? "oo" : key === "dh" ? "th" : key;
 }
 function renderExampleWithGrapheme(key, word) {
@@ -3217,6 +3222,14 @@ function normalizePhonemePack(p) {
     kind: p.kind === "student-voice" ? "student-voice" : "teacher-model",
     consent: p.consent === true,
     clips,
+    // Sounds made with an AI voice (not a recording); kept only while the clip is there.
+    ai: (function() {
+      const out = {};
+      if (p.ai && typeof p.ai === "object") Object.keys(p.ai).forEach((k) => {
+        if (p.ai[k] === true && clips[k]) out[k] = true;
+      });
+      return out;
+    })(),
     instr: p.instr && typeof p.instr === "object" ? p.instr : {},
     // instruction + reinforcer overrides, keyed by slot id
     history: (function() {
@@ -3626,12 +3639,17 @@ const PhonemeVoicePackEditor = ({ onClose, t, focusKey }) => {
       return Object.assign({}, prev, { history: hist });
     });
   };
+  const aiCheckPrompt = (key) => {
+    const ex = PHONEME_PACK_EXAMPLES[key];
+    const cue = PHONEME_PACK_CUES[key];
+    return "You are a kind phonics articulation coach for a young child. The TARGET is the English phoneme /" + phonemePackLabel(key) + "/" + (ex ? ' as in "' + ex + '"' : "") + "." + (cue ? " A clean version: " + cue : "") + ` Listen to the short recording and judge ONLY the sound it contains, against your knowledge of how that phoneme should sound. IGNORE the speaker's voice, age and accent \u2014 many correct voices are fine. Reply with strict JSON and nothing else: {"match": true or false, "clipped": true or false, "note": "one short, specific, encouraging fix the child can do, 12 words max"}. "clipped" is true when the sound is clean with no extra vowel (e.g. /p/ not "puh").`;
+  };
   const runAiCheck = (key, dataUri, packId) => {
     if (!aiAvailable || !dataUri) return;
     setChecks((prev) => Object.assign({}, prev, { [key]: { state: "checking" } }));
     const ex = PHONEME_PACK_EXAMPLES[key];
     const cue = PHONEME_PACK_CUES[key];
-    const prompt = "You are a kind phonics articulation coach for a young child. The TARGET is the English phoneme /" + phonemePackLabel(key) + "/" + (ex ? ' as in "' + ex + '"' : "") + "." + (cue ? " A clean version: " + cue : "") + ` Listen to the short recording and judge ONLY the sound it contains, against your knowledge of how that phoneme should sound. IGNORE the speaker's voice, age and accent \u2014 many correct voices are fine. Reply with strict JSON and nothing else: {"match": true or false, "clipped": true or false, "note": "one short, specific, encouraging fix the child can do, 12 words max"}. "clipped" is true when the sound is clean with no extra vowel (e.g. /p/ not "puh").`;
+    const prompt = aiCheckPrompt(key);
     Promise.resolve().then(() => window.callGeminiAudio(prompt, dataUri, {})).then((resp) => {
       const parsed = parsePhonemePackJsonLoose(resp);
       if (parsed) {
@@ -3639,6 +3657,76 @@ const PhonemeVoicePackEditor = ({ onClose, t, focusKey }) => {
         updateLatestAttempt(key, { ai: { match: parsed.match, clipped: parsed.clipped } }, packId);
       } else setChecks((prev) => Object.assign({}, prev, { [key]: { state: "done", match: null, note: "Could not analyze the clip." } }));
     }).catch(() => setChecks((prev) => Object.assign({}, prev, { [key]: { state: "error", note: "AI check failed." } })));
+  };
+  const aiVoiceAvailable = !isStudent && typeof window !== "undefined" && typeof window.callTTSDirect === "function" && typeof window.__alloAiUsable === "function" && !!window.__alloAiUsable("tts", window.callTTSDirect);
+  const aiVoicePrompts = (key) => {
+    const ipa = PHONEME_PACK_IPA[key] || phonemePackLabel(key), ex = PHONEME_PACK_EXAMPLES[key] || "", sym = phonemePackGrapheme(key);
+    return [
+      "Act as an educational dictionary for English. Pronounce the phoneme /" + ipa + "/ exactly as it appears in the English word '" + ex + "'. Please produce ONLY the isolated sound of the phoneme, NOT the full word.",
+      "Say the English sound /" + ipa + "/ as a native speaker would.",
+      'Pronounce the English sound for the letter or symbol "' + sym + '" as in "' + ex + '".',
+      "Make the sound of the English phoneme " + sym + " as in " + ex + "."
+    ];
+  };
+  const audioUrlToDataUri = async (url) => {
+    if (typeof url === "string" && /^data:audio\//i.test(url)) return url;
+    const blob = await (await fetch(url)).blob();
+    return await new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(r.result);
+      r.onerror = reject;
+      r.readAsDataURL(blob);
+    });
+  };
+  const [aiVoiceKey, setAiVoiceKey] = React.useState(null);
+  const makeWithAiVoice = async (key) => {
+    if (!aiVoiceAvailable || aiVoiceKey || recordingKey) return;
+    const targetId = lib.activeId;
+    setAiVoiceKey(key);
+    setStatus(T("word_sounds.voice_pack_msg_ai_making", "\u2728 Making /{key}/ with an AI voice\u2026", { key: phonemePackLabel(key) }));
+    let best = null;
+    try {
+      for (const prompt of aiVoicePrompts(key)) {
+        let url = null;
+        try {
+          url = await window.callTTSDirect(prompt, "Aoede");
+        } catch (e) {
+          url = null;
+        }
+        if (!url) continue;
+        let clip = null;
+        try {
+          clip = await audioUrlToDataUri(url);
+        } catch (e) {
+          clip = null;
+        }
+        if (!clip) continue;
+        try {
+          clip = await cleanPhonemeClip(clip);
+        } catch (e) {
+        }
+        let verdict = null;
+        if (aiAvailable) {
+          try {
+            verdict = parsePhonemePackJsonLoose(await window.callGeminiAudio(aiCheckPrompt(key), clip, {}));
+          } catch (e) {
+            verdict = null;
+          }
+        }
+        const good = !!verdict && verdict.match === true && verdict.clipped !== false;
+        if (!best || good) best = { clip, verdict, good };
+        if (good || !aiAvailable) break;
+      }
+    } finally {
+      setAiVoiceKey(null);
+    }
+    if (!best) {
+      setStatus(T("word_sounds.voice_pack_msg_ai_failed", "The AI voice could not make /{key}/. Try again, or record it.", { key: phonemePackLabel(key) }));
+      return;
+    }
+    setPackById(targetId, (prev) => Object.assign({}, prev, { clips: Object.assign({}, prev.clips, { [key]: best.clip }), ai: Object.assign({}, prev.ai, { [key]: true }) }));
+    if (best.verdict) setChecks((prev) => Object.assign({}, prev, { [key]: { state: "done", match: best.verdict.match, clipped: best.verdict.clipped, note: best.verdict.note || "" } }));
+    setStatus(best.good ? T("word_sounds.voice_pack_msg_ai_done", "\u2728 Made /{key}/ with an AI voice. Tap \u{1F50A} to hear it, then Save & Use.", { key: phonemePackLabel(key) }) : T("word_sounds.voice_pack_msg_ai_unsure", "\u2728 Made /{key}/ with an AI voice. Listen before you use it: it was not confirmed as right.", { key: phonemePackLabel(key) }));
   };
   const stopRecording = () => {
     try {
@@ -3696,7 +3784,11 @@ const PhonemeVoicePackEditor = ({ onClose, t, focusKey }) => {
           setPackById(targetId, (prev) => Object.assign({}, prev, { instr: Object.assign({}, prev.instr, { [key]: clip }) }));
           setStatus(T("word_sounds.voice_pack_msg_recorded", "\u2713 Recorded {what}. Tap \u{1F50A} to hear it, then Save & Use.", { what: opts.label || key }));
         } else {
-          setPackById(targetId, (prev) => Object.assign({}, prev, { clips: Object.assign({}, prev.clips, { [key]: clip }) }));
+          setPackById(targetId, (prev) => {
+            const ai = Object.assign({}, prev.ai);
+            delete ai[key];
+            return Object.assign({}, prev, { clips: Object.assign({}, prev.clips, { [key]: clip }), ai });
+          });
           setStatus(T("word_sounds.voice_pack_msg_recorded_sound", "\u2713 Recorded /{key}/. Tap \u{1F50A} to hear it, then Save & Use.", { key }));
           logAttempt(key, targetId);
           if (aiCheckOn) runAiCheck(key, clip, targetId);
@@ -3791,7 +3883,9 @@ const PhonemeVoicePackEditor = ({ onClose, t, focusKey }) => {
     setPack((prev) => {
       const c = Object.assign({}, prev.clips);
       delete c[key];
-      return Object.assign({}, prev, { clips: c });
+      const ai = Object.assign({}, prev.ai);
+      delete ai[key];
+      return Object.assign({}, prev, { clips: c, ai });
     });
     setChecks((prev) => {
       const c = Object.assign({}, prev);
@@ -3834,7 +3928,7 @@ const PhonemeVoicePackEditor = ({ onClose, t, focusKey }) => {
   };
   const exportPack = () => {
     try {
-      const data = { version: 1, type: "alloPhonemePack", kind, name: pack.name || "My Voice Pack", studentName: pack.studentName || "", studentId: pack.studentId || null, exportDate: (/* @__PURE__ */ new Date()).toISOString(), phonemes: pack.clips, instr: pack.instr || {}, history: pack.history || {} };
+      const data = { version: 1, type: "alloPhonemePack", kind, ai: pack.ai || {}, name: pack.name || "My Voice Pack", studentName: pack.studentName || "", studentId: pack.studentId || null, exportDate: (/* @__PURE__ */ new Date()).toISOString(), phonemes: pack.clips, instr: pack.instr || {}, history: pack.history || {} };
       const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -3872,7 +3966,7 @@ const PhonemeVoicePackEditor = ({ onClose, t, focusKey }) => {
         const safeClips = sanitizeClips(incoming);
         const safeInstr = sanitizeClips(data && data.instr);
         const id = genPhonemePackId();
-        setLib((prev) => Object.assign({}, prev, { activeId: id, packs: prev.packs.concat([normalizePhonemePack({ id, name: data && data.name || "Imported Pack", kind: data && data.kind === "student-voice" ? "student-voice" : "teacher-model", consent: false, clips: safeClips, instr: safeInstr, history: data && data.history && typeof data.history === "object" ? data.history : {}, studentName: data && typeof data.studentName === "string" ? data.studentName : "", studentId: data && data.studentId || null })]) }));
+        setLib((prev) => Object.assign({}, prev, { activeId: id, packs: prev.packs.concat([normalizePhonemePack({ id, ai: data && data.ai, name: data && data.name || "Imported Pack", kind: data && data.kind === "student-voice" ? "student-voice" : "teacher-model", consent: false, clips: safeClips, instr: safeInstr, history: data && data.history && typeof data.history === "object" ? data.history : {}, studentName: data && typeof data.studentName === "string" ? data.studentName : "", studentId: data && data.studentId || null })]) }));
         setChecks({});
         setSelfChecks({});
         setStatus(T("word_sounds.voice_pack_msg_imported", "\u{1F4E5} Imported as a new pack ({count} sounds). Tap Save & Use to apply.", { count: Object.keys(safeClips).length }));
@@ -3921,7 +4015,7 @@ const PhonemeVoicePackEditor = ({ onClose, t, focusKey }) => {
     const rec = recordingKey === key;
     const label = phonemePackLabel(key);
     const hasRef = !!phonemeReferenceClip(key);
-    return /* @__PURE__ */ React.createElement("div", { key, "data-voice-pack-key": key, "aria-current": key === focusPackKey ? "true" : void 0, className: `flex items-center gap-1.5 rounded-xl border-2 px-2 py-1.5 ${has ? "border-emerald-300 bg-emerald-50" : "border-slate-200 bg-white"}${key === focusPackKey ? " ring-4 ring-indigo-500" : ""}` }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "font-black text-slate-800 leading-tight" }, "/", label, "/ ", has && /* @__PURE__ */ React.createElement("span", { className: "text-emerald-700" }, "\u2713")), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-600" }, renderExampleWithGrapheme(key, PHONEME_PACK_EXAMPLES[key])), PHONEME_PACK_CUES[key] ? /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-violet-700 leading-snug" }, PHONEME_PACK_CUES[key]) : null, has ? /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5 mt-0.5 flex-wrap" }, hasRef ? /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => playCompare(key), className: "min-h-11 px-2 inline-flex items-center text-[10px] font-bold text-amber-800 hover:underline" }, "\u{1F501} ", T("word_sounds.voice_pack_compare", "compare")) : null, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-600" }, T("word_sounds.voice_pack_me", "me:")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => rateSelf(key, "good"), "aria-label": T("word_sounds.voice_pack_self_good", "I think {label} sounds right", { label }), className: `min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg text-sm leading-none transition-opacity motion-reduce:transition-none ${selfChecks[key] === "good" ? "" : "opacity-30"} hover:opacity-100` }, "\u{1F600}"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => rateSelf(key, "retry"), "aria-label": T("word_sounds.voice_pack_self_retry", "I want to try {label} again", { label }), className: `min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg text-sm leading-none transition-opacity motion-reduce:transition-none ${selfChecks[key] === "retry" ? "" : "opacity-30"} hover:opacity-100` }, "\u{1F914}"), checkBadge(key)) : null), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => playReference(key), disabled: !hasRef, "aria-label": T("word_sounds.voice_pack_hear_model", "Hear the model sound {label}", { label }), title: T("word_sounds.voice_pack_hear_model_title", "Hear the model (default) sound"), className: `w-11 h-11 rounded-full flex items-center justify-center transition-colors motion-reduce:transition-none ${hasRef ? "bg-amber-100 text-amber-800 hover:bg-amber-200" : "bg-slate-50 text-slate-500 cursor-not-allowed"}` }, "\u{1F442}"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => startRecording(key), disabled: !consentOk, "aria-label": rec ? T("word_sounds.voice_pack_stop_recording", "Stop recording {label}", { label }) : T("word_sounds.voice_pack_record", "Record {label}", { label }), className: `w-11 h-11 rounded-full flex items-center justify-center text-sm transition-colors motion-reduce:transition-none ${rec ? "bg-red-600 text-white animate-pulse motion-reduce:animate-none" : consentOk ? "bg-violet-100 text-violet-700 hover:bg-violet-200" : "bg-slate-50 text-slate-500 cursor-not-allowed"}` }, rec ? "\u23F9" : "\u{1F399}\uFE0F"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => playClip(key), disabled: !has, "aria-label": T("word_sounds.voice_pack_play_recording", "Play your recording of {label}", { label }), className: `w-11 h-11 rounded-full flex items-center justify-center transition-colors motion-reduce:transition-none ${has ? "bg-slate-100 text-slate-700 hover:bg-slate-200" : "bg-slate-50 text-slate-500 cursor-not-allowed"}` }, "\u{1F50A}"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => clearClip(key), disabled: !has, "aria-label": T("word_sounds.voice_pack_clear", "Clear {label}", { label }), className: `w-11 h-11 rounded-full flex items-center justify-center text-xs transition-colors motion-reduce:transition-none ${has ? "text-rose-700 hover:bg-rose-50" : "text-slate-500 cursor-not-allowed"}` }, "\u{1F5D1}\uFE0F"));
+    return /* @__PURE__ */ React.createElement("div", { key, "data-voice-pack-key": key, "aria-current": key === focusPackKey ? "true" : void 0, className: `flex items-center gap-1.5 rounded-xl border-2 px-2 py-1.5 ${has ? "border-emerald-300 bg-emerald-50" : "border-slate-200 bg-white"}${key === focusPackKey ? " ring-4 ring-indigo-500" : ""}` }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "font-black text-slate-800 leading-tight" }, "/", label, "/ ", has && /* @__PURE__ */ React.createElement("span", { className: "text-emerald-700" }, "\u2713"), has && pack.ai && pack.ai[key] ? /* @__PURE__ */ React.createElement("span", { "data-voice-pack-ai-badge": true, className: "ml-1 text-[10px] font-bold text-violet-700" }, T("word_sounds.voice_pack_ai_badge", "AI voice")) : null), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-600" }, renderExampleWithGrapheme(key, PHONEME_PACK_EXAMPLES[key])), PHONEME_PACK_CUES[key] ? /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-violet-700 leading-snug" }, PHONEME_PACK_CUES[key]) : null, has ? /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5 mt-0.5 flex-wrap" }, hasRef ? /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => playCompare(key), className: "min-h-11 px-2 inline-flex items-center text-[10px] font-bold text-amber-800 hover:underline" }, "\u{1F501} ", T("word_sounds.voice_pack_compare", "compare")) : null, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-600" }, T("word_sounds.voice_pack_me", "me:")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => rateSelf(key, "good"), "aria-label": T("word_sounds.voice_pack_self_good", "I think {label} sounds right", { label }), className: `min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg text-sm leading-none transition-opacity motion-reduce:transition-none ${selfChecks[key] === "good" ? "" : "opacity-30"} hover:opacity-100` }, "\u{1F600}"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => rateSelf(key, "retry"), "aria-label": T("word_sounds.voice_pack_self_retry", "I want to try {label} again", { label }), className: `min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg text-sm leading-none transition-opacity motion-reduce:transition-none ${selfChecks[key] === "retry" ? "" : "opacity-30"} hover:opacity-100` }, "\u{1F914}"), checkBadge(key)) : null), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => playReference(key), disabled: !hasRef, "aria-label": T("word_sounds.voice_pack_hear_model", "Hear the model sound {label}", { label }), title: T("word_sounds.voice_pack_hear_model_title", "Hear the model (default) sound"), className: `w-11 h-11 rounded-full flex items-center justify-center transition-colors motion-reduce:transition-none ${hasRef ? "bg-amber-100 text-amber-800 hover:bg-amber-200" : "bg-slate-50 text-slate-500 cursor-not-allowed"}` }, "\u{1F442}"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => startRecording(key), disabled: !consentOk, "aria-label": rec ? T("word_sounds.voice_pack_stop_recording", "Stop recording {label}", { label }) : T("word_sounds.voice_pack_record", "Record {label}", { label }), className: `w-11 h-11 rounded-full flex items-center justify-center text-sm transition-colors motion-reduce:transition-none ${rec ? "bg-red-600 text-white animate-pulse motion-reduce:animate-none" : consentOk ? "bg-violet-100 text-violet-700 hover:bg-violet-200" : "bg-slate-50 text-slate-500 cursor-not-allowed"}` }, rec ? "\u23F9" : "\u{1F399}\uFE0F"), aiVoiceAvailable ? /* @__PURE__ */ React.createElement("button", { type: "button", "data-voice-pack-ai": key, onClick: () => makeWithAiVoice(key), disabled: !!aiVoiceKey || !!recordingKey, "aria-label": T("word_sounds.voice_pack_ai_make", "Make {label} with an AI voice", { label }), title: T("word_sounds.voice_pack_ai_make", "Make {label} with an AI voice", { label }), className: `w-11 h-11 rounded-full flex items-center justify-center text-lg ${aiVoiceKey === key ? "bg-violet-200 animate-pulse motion-reduce:animate-none" : "bg-violet-100 hover:bg-violet-200"} disabled:opacity-40` }, "\u2728") : null, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => playClip(key), disabled: !has, "aria-label": T("word_sounds.voice_pack_play_recording", "Play your recording of {label}", { label }), className: `w-11 h-11 rounded-full flex items-center justify-center transition-colors motion-reduce:transition-none ${has ? "bg-slate-100 text-slate-700 hover:bg-slate-200" : "bg-slate-50 text-slate-500 cursor-not-allowed"}` }, "\u{1F50A}"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => clearClip(key), disabled: !has, "aria-label": T("word_sounds.voice_pack_clear", "Clear {label}", { label }), className: `w-11 h-11 rounded-full flex items-center justify-center text-xs transition-colors motion-reduce:transition-none ${has ? "text-rose-700 hover:bg-rose-50" : "text-slate-500 cursor-not-allowed"}` }, "\u{1F5D1}\uFE0F"));
   }))))) : /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-600 leading-snug" }, category === "cheers" ? T("word_sounds.voice_pack_cheers_intro", "Record praise in your (or a parent's) voice. The app plays it when the student gets things right, as a personalized reinforcer. Tap \u{1F442} to hear the default first.") : T("word_sounds.voice_pack_instr_intro", "Record the task directions in your own voice, clear and unhurried. Empty ones keep the default narration. Tap \u{1F442} to hear the default first.")), (category === "cheers" ? PHONEME_PACK_CHEERS : PHONEME_PACK_INSTRS).map((slot) => {
     const hasI = !!instr[slot.id];
     const recI = recordingKey === slot.id;
@@ -7484,8 +7578,15 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
         const j = (seed + i) % (i + 1);
         [letters[i], letters[j]] = [letters[j], letters[i]];
       }
-      if (letters.length > 1 && letters.join("") === word) [letters[0], letters[1]] = [letters[1], letters[0]];
-      const hiddenIndex = word.length > 1 ? seed % word.length : 0;
+      const isTile = (ch) => !/^['’\- .]$/.test(ch);
+      const tilePlaces = letters.map((ch, i) => isTile(ch) ? i : -1).filter((i) => i >= 0);
+      const wordTiles = word.split("").filter(isTile).join("");
+      if (tilePlaces.length > 1 && tilePlaces.map((i) => letters[i]).join("") === wordTiles) {
+        const first = tilePlaces[0], other = tilePlaces.find((i) => letters[i] !== letters[first]);
+        if (other != null) [letters[first], letters[other]] = [letters[other], letters[first]];
+      }
+      const letterPlaces = word.split("").map((ch, i) => ch.toLowerCase() !== ch.toUpperCase() ? i : -1).filter((i) => i >= 0);
+      const hiddenIndex = word.length > 1 ? letterPlaces.length ? letterPlaces[seed % letterPlaces.length] : seed % word.length : 0;
       const correctLetter = word[hiddenIndex] || "";
       const letterRank = (value) => [...value + word].reduce((hash, c) => Math.imul(hash ^ c.charCodeAt(0), 16777619) >>> 0, 2166136261);
       const vowelLetter = !!correctLetter && ("aeiou".includes(correctLetter) || correctLetter === "y" && !/[aeiou]/.test(word));

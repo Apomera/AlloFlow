@@ -336,7 +336,9 @@ describe('authored Word Sounds item advancement',()=>{
     initialActivitySequence:Array(count).fill('counting'),activity:'counting',isProbeMode:false,
     sessionConfig:{fixedForm:false,sessionGoal:30,preparedActivities:['counting']},wordSoundsSessionGoal:30});
   // A tried number is disabled for the item, so the retry misses on another number.
-  const missItem=async()=>{await clickNumber(2);await tick(3001);await clickNumber(1);await tick(3001);};
+  // 2026-11-18 (review): Easy's counting row slides by the word (cat, mat: 2-6), so the two misses are 2 and 4,
+  // which every 3-sound row holds.
+  const missItem=async()=>{await clickNumber(2);await tick(3001);await clickNumber(4);await tick(3001);};
   const completeDialog=()=>host.querySelector('[aria-labelledby="word-sounds-session-complete-title"]');
 
   it('ends a lesson at its limit for a learner who never reaches the streak, instead of at the session goal',async()=>{

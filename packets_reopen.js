@@ -190,6 +190,19 @@
     out.directionsOnce = !!(lesson && lesson.instructionsOnce === true) || !!(isObject(m.builder) && m.builder.directionsOnce === true);
     // 2026-11-17: the missed questions once more at the end.
     out.repeatMissed = !!(lesson && lesson.repeatMissed === true);
+    // 2026-11-18: the questions' order: 'mixed' (with its mix, orderSeed), the teacher's own ('activity|word' keys), or
+    // 'blocks', one activity at a time, which is also what a file made before 2026-11-18 did.
+    var orderKind = isObject(m.builder) ? m.builder.order : null;
+    out.order = 'blocks';
+    if (Array.isArray(lesson.sequence) && orderKind === 'mixed') {
+      out.order = 'mixed';
+      if (typeof m.builder.orderSeed === 'number') out.orderSeed = m.builder.orderSeed;
+    } else if (Array.isArray(lesson.sequence) && orderKind === 'own') {
+      var keyOf = {};
+      blocks.forEach(function (block) { block.items.forEach(function (item) { if (isObject(item)) keyOf[String(item.id)] = block.activity + '|' + String(item.word || '').toLowerCase(); }); });
+      var keys = lesson.sequence.map(function (id) { return keyOf[String(id)]; }).filter(Boolean);
+      if (keys.length) out.order = keys;
+    }
     if (typeof m.learner === 'string') out.learner = typeof e.codeName === 'function' ? e.codeName(m.learner) : m.learner.slice(0, 40);
 
     // The teacher's own sounds, recordings and pictures, for the words the manifest names.

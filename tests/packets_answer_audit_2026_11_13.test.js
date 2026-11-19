@@ -157,7 +157,8 @@ describe('Break it Down grades two chips of one sound in either box (murder: ur 
       chips: ['er', 'd', 'm', 'ur', 's'].map((label, i) => ({ label, audio: 'a' + i })), wordAudio: 'w', promptAudio: 'p' };
     const place = (order) => {
       const t = draw(loader.ADAPTERS.segmentation.render, item);
-      const tray = [...t.root.querySelectorAll('ul[aria-label] > li')].map((li) => li.querySelectorAll('button')[1]);
+      // 2026-11-18: one tile per sound (the tile plays its sound when picked up; no Listen button beside it).
+      const tray = [...t.root.querySelectorAll('ul[aria-label] > li')].map((li) => li.querySelector('button[aria-pressed]'));
       const boxes = [...t.root.querySelectorAll('ol.slots button')];
       order.forEach((ci, bi) => { t.click(tray[ci]); t.click(boxes[bi]); });
       [...t.root.querySelectorAll('button')].filter((b) => b.textContent === t.L.segmentation_check).forEach((b) => t.click(b));

@@ -6846,7 +6846,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
     };
     const soundMappingGraphemes = (data, word) => soundMappingBoard(data, word)?.graphemes || null;
     const SoundMappingView = React.memo(
-      ({ wordDir, data, onPlayAudio, onCheckAnswer, isEditing, onUpdateOption, t, ts, isMountedRef, playSound, submissionLockRef, advanceEpochRef, answerEpoch, answerDisabled }) => {
+      ({ wordDir, data, onPlayAudio, onCheckAnswer, isEditing, onUpdateOption, t, ts, isMountedRef, playSound, submissionLockRef, advanceEpochRef, answerEpoch, answerDisabled, showSpellingNotes = true }) => {
         // One box per sound. Chip i covers spans[i] boxes: 2 when one spelling
         // says two sounds (qu, x, the u of cute, le). Old boards: one box per chip.
         const spans = WS_CORE.mappingChipSpans(data.graphemes, (data.phonemes || []).length, data.chipSpans) || (data.graphemes || []).map(() => 1);
@@ -6856,6 +6856,10 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           new Array(boxCount).fill(null),
         );
         const [chips, setChips] = React.useState([]);
+        // 2026-11-18: a spelling that says a surprising sound in this word (the s of dogs says /z/) gets a short
+        // note once the child has heard it; it stays for this word. Only these well-known patterns, as in the
+        // practice files (word_sounds_take_home/adapters/mapping.js); never in a fixed-form check.
+        const [notes, setNotes] = React.useState([]);
         const slotsRef = React.useRef(slots);
         const chipsRef = React.useRef(chips);
         const boardKey = JSON.stringify([answerEpoch, data.word, data.graphemes || [], data.phonemes || [], spans]);
@@ -6866,12 +6870,17 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           const labeled = (data.graphemes || []).map((g, i) => {
             const span = spans[i] || 1, sounds = (data.phonemes || []).slice(start, start + span);
             start += span;
-            return { id: i, text: typeof g === "string" ? g : String(g), span, sounds, isPlaced: false };
+            const SAYS = { s: ["z", "sh", "zh"], se: ["z"], c: ["s"], ce: ["s"], ci: ["sh"], ti: ["sh"], g: ["j"], ge: ["j"], ch: ["k", "sh"], x: ["gz"], ed: ["t", "d"] };
+            const text = typeof g === "string" ? g : String(g);
+            const heard = sounds.map((p) => { try { return WS_CORE.phonemeLabel(p) || ""; } catch (_) { return ""; } }).join("");
+            const want = SAYS[text.toLowerCase()];
+            return { id: i, text, span, sounds, isPlaced: false, says: want && want.indexOf(heard) >= 0 ? heard : "" };
           });
           chipsRef.current = fisherYatesShuffle(labeled);
           slotsRef.current = new Array(boxCount).fill(null);
           setChips(chipsRef.current);
           setSlots(slotsRef.current);
+          setNotes([]);
         }, [boardKey]);
         // A spanning chip plays its two sounds in order (each clip finishes first).
         const playChipSounds = async (chip) => {
@@ -6910,10 +6919,9 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
             const isCorrect = placed.length === (data.graphemes || []).length &&
               placed.every((s, i) => String(s.text) === String((data.graphemes || [])[i]) && (s.span || 1) === spans[i]);
             onCheckAnswer(isCorrect ? "correct" : "incorrect");
-          } else if (span > 1) {
-            playChipSounds(available);
           } else {
-            onPlayAudio(chip.text);
+            playChipSounds(available);
+            if (showSpellingNotes && available.says) setNotes((prev) => (prev.indexOf(available.id) >= 0 ? prev : [...prev, available.id]));
           }
         };
         const handleSlotClick = (index) => {
@@ -6957,6 +6965,15 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
               slot ? slot.text : i + 1,
               span > 1 ? React.createElement("span", { "aria-hidden": "true", className: "absolute inset-x-0 bottom-1 flex justify-around text-xs text-indigo-500" }, React.createElement("span", null, "●"), React.createElement("span", null, "●")) : null,
             );
+            }),
+          ),
+          notes.length > 0 && /*#__PURE__*/ React.createElement(
+            "div",
+            { "data-mapping-notes": "", "aria-live": "polite", className: "text-center text-lg font-semibold text-indigo-800 space-y-1" },
+            notes.map((id) => {
+              const chip = chipsRef.current.find((c) => c.id === id) || {};
+              return React.createElement("p", { key: id, "data-mapping-says": chip.text },
+                ts("word_sounds.take_home_player_mapping_says", { spelling: chip.text, sound: chip.says }) || (chip.text + " says /" + chip.says + "/ here."));
             }),
           ),
           /*#__PURE__*/ React.createElement(
@@ -10560,6 +10577,9 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         missing_letter: "afterAnswer",
       };
       const getEffectiveImageMode = () => {
+        // 2026-11-18 (review): in Blend Sounds (and Syllable Blending) the picture IS the answer, so whatever the
+        // setting it shows only once the item is done, as the practice files do.
+        if (wordSoundsActivity === "blending" || wordSoundsActivity === "syllable_blending") return "afterCompletion";
         if (imageVisibilityMode === "smart") {
           return SMART_IMAGE_VISIBILITY[wordSoundsActivity] || "progressive";
         }
@@ -11246,8 +11266,10 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         const word = String(currentWordSoundsWord || "").toLowerCase();
         const letter = String(ml?.correctLetter ?? "").toLowerCase();
         const choices = Array.isArray(ml?.options) ? ml.options.map((o) => (typeof o === "string" ? o.toLowerCase() : "")) : [];
+        // 2026-11-18 (review): a prepared board that hides a ' or a - ("I'm", "t-shirt") is not used: the only
+        // non-letter among the choices was the answer. The fallback below already hides a letter.
         const usable = !!ml && Number.isInteger(ml.hiddenIndex) && ml.hiddenIndex >= 0 && ml.hiddenIndex < word.length &&
-          !!letter && word[ml.hiddenIndex] === letter && choices.length >= 2 && choices.every(Boolean) &&
+          !!letter && word[ml.hiddenIndex] === letter && !wsSpellFixedChar(letter) && choices.length >= 2 && choices.every(Boolean) &&
           new Set(choices).size === choices.length && choices.includes(letter);
         return usable ? { hiddenIndex: ml.hiddenIndex, correctLetter: letter, options: choices } : null;
       }, [currentWordSoundsWord, wordSoundsPhonemes]);
@@ -20763,7 +20785,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   isCorrect: false,
                   message: hint + " " + (ts("word_sounds.fb_one_more_try") || "One more try!"),
                 });
-                setShowWordText(true);
+                // 2026-11-18 (review): not on a find-all board (Sound Sort, Word Families: the only boards that get here):
+                // there it printed every word still on the board, the answers among them, while it was open.
+                if (wordSoundsActivity !== "sound_sort" && wordSoundsActivity !== "word_families") setShowWordText(true);
                 try {
                   if (
                     typeof window.__ALLO_INSTRUCTION_AUDIO !== "undefined" &&
@@ -21866,6 +21890,21 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         },
         [elkoninBoxes, soundChips, playSound, handleManualAudio],
       );
+      // 2026-11-18 (owner: a first-time player got stuck in Break it Down; the practice files' Break it Down was redone
+      // the same day): what the last move did, on screen under the boxes and to a screen reader (segSaid, in the
+      // practice files' translated words); each sound its own name ("Sound 3", not "Mystery Sound" for every one); and
+      // a drag that works with a finger or a pen (the browser's own drag, kept for a mouse, does not on many phones and
+      // tablets). tests/word_sounds_elkonin_touch_2026_11_18.test.js.
+      const [segSaid, setSegSaid] = React.useState("");
+      const segDragEndRef = React.useRef(-1e9);
+      // The page's own clock for "a moment ago" (Date.now may be frozen, as the test harness freezes it).
+      const segNow = () => (typeof performance !== "undefined" && typeof performance.now === "function" ? performance.now() : Date.now());
+      const segName = (chip) => {
+        if (showLetterHints) return "/" + chip.phoneme + "/";
+        const n = soundChips.findIndex((c) => c.id === chip.id) + 1;
+        return ts("word_sounds.take_home_player_sound_n", { n }) || ("Sound " + n);
+      };
+      const segSay = (text) => setSegSaid(text);
       // One move for both drag-drop and tap-to-place (WCAG 2.5.7). Returns
       // false when nothing moved (a box dropped on itself).
       const applySegMove = React.useCallback(
@@ -21886,25 +21925,28 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             );
             playSound("pop");
             handleAudio(item.phoneme);
+            segSay(ts("word_sounds.take_home_player_segmentation_placed", { sound: segName(item), n: targetIndex + 1 }) || (segName(item) + " is in box " + (targetIndex + 1) + "."));
           } else if (source === "box" && targetSource === "pool") {
             newBoxes[sourceIndex] = null;
             newChips = newChips.map((c) =>
               c.id === item.id ? { ...c, used: false } : c,
             );
             playSound("woosh");
+            segSay(ts("word_sounds.take_home_player_segmentation_removed", { sound: segName(item), n: sourceIndex + 1 }) || (segName(item) + " taken out of box " + (sourceIndex + 1) + "."));
           } else if (source === "box" && targetSource === "box") {
             if (sourceIndex === targetIndex) return false;
             const targetContent = newBoxes[targetIndex];
             newBoxes[targetIndex] = item;
             newBoxes[sourceIndex] = targetContent;
             playSound("pop");
+            segSay(ts("word_sounds.take_home_player_segmentation_placed", { sound: segName(item), n: targetIndex + 1 }) || (segName(item) + " is in box " + (targetIndex + 1) + "."));
           }
           setElkoninBoxes(newBoxes);
           setSoundChips(newChips);
           setSegmentationErrors([]);
           return true;
         },
-        [elkoninBoxes, soundChips, handleAudio],
+        [elkoninBoxes, soundChips, handleAudio, showLetterHints, ts],
       );
       const handleSegDrop = React.useCallback(
         (e, targetSource, targetIndex = null) => {
@@ -21918,7 +21960,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
       // Tap path: tap a chip to pick it up (it still plays), then tap a box or
       // the chip tray to put it down. Tapping the picked chip again drops it.
       const [segPicked, setSegPicked] = React.useState(null);
-      React.useEffect(() => { setSegPicked(null); }, [currentWordSoundsWord, wordSoundsActivity]);
+      React.useEffect(() => { setSegPicked(null); setSegSaid(""); }, [currentWordSoundsWord, wordSoundsActivity]);
       const livePickedSeg = () => {
         if (!segPicked) return null;
         const { item, source, index } = segPicked;
@@ -21934,6 +21976,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
       };
       const handleSegChipTap = (e, chip, source, index = null) => {
         e.stopPropagation();
+        // The click a finger drag ends with is not a tap.
+        if (segNow() - segDragEndRef.current < 400) return;
         const p = livePickedSeg();
         if (source === "box" && p && !(p.source === "box" && p.index === index)) {
           applySegMove(p, "box", index);
@@ -21941,13 +21985,62 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           return;
         }
         handleManualAudio(chip.phoneme);
-        setSegPicked(isSegPicked(chip, source, index) ? null : { item: chip, source, index });
+        const dropping = isSegPicked(chip, source, index);
+        setSegPicked(dropping ? null : { item: chip, source, index });
+        if (dropping) segSay(ts("word_sounds.take_home_player_segmentation_dropped", { sound: segName(chip) }) || (segName(chip) + " put back."));
+        else segSay(ts("word_sounds.take_home_player_segmentation_picked", { sound: segName(chip) }) || (segName(chip) + " picked up. Now choose a box."));
       };
       const handleSegTargetTap = (targetSource, targetIndex = null) => {
+        if (segNow() - segDragEndRef.current < 400) return;
         const p = livePickedSeg();
-        if (!p) return;
+        // An empty box tapped with nothing picked up: say how, on screen too.
+        if (!p) { if (targetSource === "box") segSay(ts("word_sounds.take_home_player_segmentation_how") || "Tap a sound to pick it up, then tap a box to put it there. Tap a filled box to take its sound out."); return; }
         if (!(targetSource === "pool" && p.source === "pool")) applySegMove(p, targetSource, targetIndex);
+        else segSay(ts("word_sounds.take_home_player_segmentation_dropped", { sound: segName(p.item) }) || (segName(p.item) + " put back."));
         setSegPicked(null);
+      };
+      // A finger or a pen drags a sound with pointer events (a mouse keeps the browser's own drag): past 10 px a copy
+      // follows the finger; let go over a box to put it there (or swap), over the tray to take it out of its box.
+      const segCoarse = typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(pointer: coarse)").matches;
+      const segPointerDown = (e, chip, source, index = null) => {
+        if (e.pointerType === "mouse" || e.isPrimary === false || submissionLockRef.current) return;
+        const el = e.currentTarget;
+        const drag = { x: e.clientX, y: e.clientY, ghost: null, w: 0, h: 0 };
+        try { el.setPointerCapture(e.pointerId); } catch (_) {}
+        const move = (ev) => {
+          if (!drag.ghost) {
+            const dx = ev.clientX - drag.x, dy = ev.clientY - drag.y;
+            if (dx * dx + dy * dy < 100) return;
+            const r = el.getBoundingClientRect();
+            const g = el.cloneNode(true);
+            g.setAttribute("aria-hidden", "true");
+            ["data-help-key", "data-seg-box", "aria-label", "aria-pressed"].forEach((a) => g.removeAttribute(a));
+            Object.assign(g.style, { position: "fixed", margin: "0", zIndex: "9999", pointerEvents: "none", opacity: "0.92", width: r.width + "px", height: r.height + "px" });
+            document.body.appendChild(g);
+            drag.ghost = g; drag.w = r.width; drag.h = r.height;
+          }
+          drag.ghost.style.left = (ev.clientX - drag.w / 2) + "px";
+          drag.ghost.style.top = (ev.clientY - drag.h / 2) + "px";
+          if (ev.cancelable) ev.preventDefault();
+        };
+        const end = (ev) => {
+          el.removeEventListener("pointermove", move);
+          el.removeEventListener("pointerup", end);
+          el.removeEventListener("pointercancel", end);
+          if (!drag.ghost) return; // a tap: its click does the rest
+          if (drag.ghost.parentNode) drag.ghost.parentNode.removeChild(drag.ghost);
+          segDragEndRef.current = segNow();
+          if (ev.type === "pointercancel") return;
+          const at = document.elementFromPoint(ev.clientX, ev.clientY);
+          const box = at && at.closest ? at.closest("[data-seg-box]") : null;
+          const pool = at && at.closest ? at.closest("[data-seg-pool]") : null;
+          if (box) applySegMove({ item: chip, source, index }, "box", Number(box.getAttribute("data-seg-box")));
+          else if (pool && source === "box") applySegMove({ item: chip, source, index }, "pool");
+          setSegPicked(null);
+        };
+        el.addEventListener("pointermove", move);
+        el.addEventListener("pointerup", end);
+        el.addEventListener("pointercancel", end);
       };
       const handleMoveKey = React.useCallback(
         (item, source, index) => {
@@ -21964,6 +22057,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               handleAudio(item.phoneme);
               setElkoninBoxes(newBoxes);
               setSoundChips(newChips);
+              segSay(ts("word_sounds.take_home_player_segmentation_placed", { sound: segName(item), n: firstEmpty + 1 }) || (segName(item) + " is in box " + (firstEmpty + 1) + "."));
             }
           } else if (source === "box") {
             let newBoxes = [...elkoninBoxes];
@@ -21975,9 +22069,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             playSound("woosh");
             setElkoninBoxes(newBoxes);
             setSoundChips(newChips);
+            segSay(ts("word_sounds.take_home_player_segmentation_removed", { sound: segName(item), n: index + 1 }) || (segName(item) + " taken out of box " + (index + 1) + "."));
           }
         },
-        [elkoninBoxes, soundChips, handleAudio],
+        [elkoninBoxes, soundChips, handleAudio, showLetterHints, ts],
       );
       // Keyboard activation for draggable sound chips: Enter/Space performs the
       // same move as drag-and-drop, so the Elkonin segmentation activity is
@@ -22586,9 +22681,20 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
       const scrambledLetters = React.useMemo(
         // Letter tiles only: an apostrophe, hyphen or space is a fixed slot in
         // the answer row, not a (blank) tile to place.
-        () => (Array.isArray(packForCurrentWord?.word_scramble?.letters)
-          ? [...packForCurrentWord.word_scramble.letters]
-          : scrambleWord(currentWordSoundsWord?.toLowerCase())).filter((ch) => !wsSpellFixedChar(ch)),
+        () => {
+          const tiles = (Array.isArray(packForCurrentWord?.word_scramble?.letters)
+            ? [...packForCurrentWord.word_scramble.letters]
+            : scrambleWord(currentWordSoundsWord?.toLowerCase())).filter((ch) => !wsSpellFixedChar(ch));
+          // 2026-11-18 (review): the tiles never start as the word, also once its ' and - are out ("I'll": i l l),
+          // when the swapped pair was the same letter ("eek"), or for a two-letter word: the first tile changes
+          // place with the first tile that differs (as the practice files and the setup now do).
+          const target = String(currentWordSoundsWord || "").toLowerCase().split("").filter((ch) => !wsSpellFixedChar(ch)).join("");
+          if (tiles.length > 1 && tiles.join("").toLowerCase() === target) {
+            const k = tiles.findIndex((ch, i) => i > 0 && String(ch).toLowerCase() !== String(tiles[0]).toLowerCase());
+            if (k > 0) [tiles[0], tiles[k]] = [tiles[k], tiles[0]];
+          }
+          return tiles;
+        },
         [currentWordSoundsWord, wordSoundsPhonemes],
       );
       const [usedScrambleIndices, setUsedScrambleIndices] = React.useState([]);
@@ -22926,6 +23032,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       "div",
                       {
                         key: i,
+                        "data-seg-box": i,
                         onDragOver: handleDragOver,
                         onDrop: (e) => handleSegDrop(e, "box", i),
                         onClick: () => { if (!chip) handleSegTargetTap("box", i); },
@@ -22945,9 +23052,11 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                         ? /*#__PURE__*/ React.createElement(
                           "div",
                           {
-                            draggable: true,
+                            draggable: !segCoarse,
                             onDragStart: (e) =>
                               handleDragStart(e, chip, "box", i),
+                            onPointerDown: (e) => segPointerDown(e, chip, "box", i),
+                            style: { touchAction: "none" },
                             tabIndex: 0,
                             // Space hears the sound, Enter takes it out (as its label says).
                             onKeyDown: (e) => {
@@ -22957,7 +23066,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                             onClick: (e) => handleSegChipTap(e, chip, "box", i),
                             className:
                               "w-full h-full rounded-2xl flex items-center justify-center cursor-grab active:cursor-grabbing hover:scale-105 transition-transform" + (isSegPicked(chip, "box", i) ? " ring-4 ring-violet-600 ring-offset-2" : ""),
-                            "aria-label": (ts("word_sounds.sr_phoneme") || "Phoneme ") + chip.phoneme + (ts("word_sounds.sr_phoneme_keys") || ". Press Space to hear, Enter to remove."),
+                            // With letters off its name is "Sound 3", not the sound itself (that would give the answer away).
+                            "aria-label": (showLetterHints ? (ts("word_sounds.sr_phoneme") || "Phoneme ") + chip.phoneme : segName(chip)) + (ts("word_sounds.sr_phoneme_keys") || ". Press Space to hear, Enter to remove."),
                           },
                           showLetterHints
                             ? chip.phoneme
@@ -22974,6 +23084,12 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                         ),
                     );
                   }),
+                ),
+                  // What the last move did (2026-11-18): on screen, and read out once by a screen reader.
+                  /*#__PURE__*/ React.createElement(
+                  "p",
+                  { "data-seg-say": "", role: "status", className: "text-center text-base font-semibold text-slate-700 min-h-[1.5rem] mt-2" },
+                  segSaid,
                 ),
                   /*#__PURE__*/ React.createElement(
                   "div",
@@ -23007,6 +23123,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   {
                     className:
                       "flex justify-center gap-4 flex-wrap mt-6 min-h-[80px] p-4 rounded-xl hover:bg-slate-50 transition-colors",
+                    "data-seg-pool": "",
                     onDragOver: handleDragOver,
                     onDrop: (e) => handleSegDrop(e, "pool"),
                     onClick: (e) => { if (e.target === e.currentTarget) handleSegTargetTap("pool"); },
@@ -23035,9 +23152,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                         "button",
                         {
                           key: chip.id,
-                          draggable: true,
+                          draggable: !segCoarse,
                           onDragStart: (e) =>
                             handleDragStart(e, chip, "pool"),
+                          onPointerDown: (e) => segPointerDown(e, chip, "pool"),
                           onClick: (e) => handleSegChipTap(e, chip, "pool"),
                           "aria-pressed": isSegPicked(chip, "pool"),
                           // Space: the button's own click (hear it and pick it up). Enter: into the next box,
@@ -23050,11 +23168,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                           },
                           tabIndex: 0,
                           "data-help-key": "wordsounds_pool_item",
+                          // With letters off: "Pick up Sound 3", one name for each sound (2026-11-18; it was "Mystery
+                          // Sound" for all of them), and no sound guide in the hover text (it named the sound).
                           "aria-label": showLetterHints
                             ? ts("word_sounds.phoneme_chip_aria", { sound: chip.phoneme }) || `Phoneme ${chip.phoneme}`
-                            : ts("word_sounds.mystery_sound") || "Mystery Sound",
+                            : ts("word_sounds.take_home_player_segmentation_pick", { sound: segName(chip) }) || ("Pick up " + segName(chip)),
                           title:
-                            typeof PHONEME_GUIDE !== "undefined" &&
+                            showLetterHints && typeof PHONEME_GUIDE !== "undefined" &&
                               PHONEME_GUIDE[chip.phoneme]
                               ? `${PHONEME_GUIDE[chip.phoneme].label}: ${PHONEME_GUIDE[chip.phoneme].tip}\n` + (ts("word_sounds.chip_drag_or_tap") || "Drag to a box, or click or tap to hear it and pick it up, then click or tap a box.")
                               : ts("word_sounds.chip_drag_or_tap") || "Drag to a box, or click or tap to hear it and pick it up, then click or tap a box.",
@@ -23064,6 +23184,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                             backgroundColor: chip.color,
                             borderColor: chip.color.replace("92%", "70%"),
                             color: "#475569",
+                            touchAction: "none",
                           },
                         },
                         showLetterHints
@@ -23086,9 +23207,12 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     "button",
                     {
                       onClick: () => {
-                        if (!isMountedRef.current || submissionLockRef.current || elkoninBoxes.some((b) => b === null)) return;
+                        if (!isMountedRef.current || submissionLockRef.current) return;
+                        // Empty boxes: say so, on screen too (2026-11-18), instead of nothing happening.
+                        if (elkoninBoxes.some((b) => b === null)) { segSay(ts("word_sounds.take_home_player_segmentation_fill_first") || "Put a sound in every box first."); return; }
                         const expected = wordSoundsPhonemes?.phonemes || [];
                         if (!expected.length || elkoninBoxes.length !== expected.length) return;
+                        setSegSaid("");
                         const errors = [];
                         let isPerfect = true;
                         const normalizePhoneme = (p) => {
@@ -23132,7 +23256,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                           checkAnswer("correct", "correct");
                         }
                       },
-                      disabled: submissionLockRef.current || !elkoninBoxes.length || elkoninBoxes.some((b) => b === null),
+                      // Empty boxes: it looks unavailable and says why when pressed (2026-11-18), not a dead button.
+                      disabled: submissionLockRef.current || !elkoninBoxes.length,
+                      "aria-disabled": elkoninBoxes.some((b) => b === null) ? "true" : undefined,
                       className: `inline-flex items-center gap-2 px-8 py-3 rounded-full font-bold text-lg shadow-lg transition-all ${!elkoninBoxes.length || elkoninBoxes.some((b) => b === null) ? "bg-slate-200 text-slate-600 cursor-not-allowed" : "bg-violet-600 text-white hover:bg-violet-700 hover:scale-105"}`,
                     },
                     wsSafeIcon("Check", { size: 22 }),
@@ -23457,6 +23583,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   })(),
                 },
                 onPlayAudio: handleAudio,
+                showSpellingNotes: !isFixedForm,
                 onCheckAnswer: (ans) => checkAnswer(ans, "correct"),
                 isEditing: isEditing,
                 onUpdateOption: handleOptionUpdate,
@@ -23669,7 +23796,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                         const next = spellHasFixed
                           ? wsSpellAlign(word, word.slice(0, firstAt + 1) + (userAnswer || "").slice(firstAt + 1))
                           : (word[0] || "") + (userAnswer || "").slice(1);
-                        if (!next || next === userAnswer) return;
+                        // 2026-11-18 (review): a hint never writes the last letter ("I", "a"), as the practice files.
+                        if (!next || next === userAnswer || next.toLowerCase() === word.toLowerCase()) return;
                         recordSpellingSupport("spelling_first_letter", next.toLowerCase() === word.toLowerCase());
                         editConstructionAnswer(next);
                       },
@@ -23689,9 +23817,17 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                         const isVowel = (ch) => "aeiou".includes(ch.toLowerCase());
                         const vowelsShown = letters.every((ch, i) => !isVowel(ch) || current[i] === ch.toLowerCase());
                         const filled = letters.map((ch, i) => wsSpellFixedChar(ch) || isVowel(ch) || current[i] === ch.toLowerCase() ? ch : "_");
+                        // 2026-11-18 (review): a hint never fills in the last letter, so pressing Show More again and again
+                        // cannot spell the word (it then passed Check); the student writes at least one letter. As the
+                        // practice files (word_sounds_take_home/adapters/spelling_bee.js).
+                        const blanks = () => filled.filter((ch) => ch === "_").length;
                         if (vowelsShown) {
                           const nextBlank = filled.indexOf("_");
-                          if (nextBlank >= 0) filled[nextBlank] = letters[nextBlank];
+                          if (nextBlank >= 0 && blanks() > 1) filled[nextBlank] = letters[nextBlank];
+                        } else if (!blanks()) {
+                          for (let k = letters.length - 1; k >= 0; k--) {
+                            if (!wsSpellFixedChar(letters[k]) && isVowel(letters[k]) && current[k] !== letters[k].toLowerCase()) { filled[k] = "_"; break; }
+                          }
                         }
                         const next = filled.join("");
                         if (!next || next === userAnswer) return;
@@ -23742,8 +23878,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 "button",
                 {
                   // Was t("common.volume") ("Volume") — wrong identity for a
-                  // control that plays the target word.
-                  "aria-label": t("word_sounds.play_word") || "Play word",
+                  // control that plays the target word. 2026-11-18 (review): the name starts with the words it shows
+                  // ("Hint"), as WCAG 2.5.3 asks, then says what it does.
+                  "aria-label": (ts("word_sounds.word_scramble_hint") || "Hint") + ": " + (t("word_sounds.play_word") || "Play word"),
                   onClick: () => handleAudio(currentWordSoundsWord),
                   className:
                     "flex items-center gap-2 px-4 py-2 bg-violet-100 hover:bg-violet-200 rounded-full text-violet-700 font-medium transition-all",
@@ -24534,7 +24671,19 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             const expectedCount = count >= 11 ? "11+" : count;
             // Easy: the count with two either side. Medium: 1-8. Hard, probes and editing: the full row.
             const countLevel = choiceLevel();
-            const trimmedCounts = countLevel && !isEditing ? WS_CORE.countingChoices(count, countLevel.difficulty) : null;
+            let trimmedCounts = countLevel && !isEditing ? WS_CORE.countingChoices(count, countLevel.difficulty) : null;
+              // 2026-11-18 (review): Easy's row put the answer third for every word of 3 or more sounds (and last from 6
+              // on). The same number of buttons, slid by a hash of the word (the same row each time this word shows),
+              // as the practice files do (word_sounds_packet_builder.js slideCount).
+              if (trimmedCounts && countLevel.difficulty === "easy" && trimmedCounts.length > 1) {
+                const w = trimmedCounts.length, top = Math.max(6, count + 1);
+                const lowMin = Math.max(1, count - w + 1), lowMax = Math.min(count, top - w + 1);
+                if (lowMax >= lowMin) {
+                  const h = String(currentWordSoundsWord || "").split("").reduce((a, c) => (Math.imul(a, 31) + c.charCodeAt(0)) >>> 0, 7);
+                  const low = lowMin + (h % (lowMax - lowMin + 1));
+                  trimmedCounts = Array.from({ length: w }, (_, i) => low + i);
+                }
+              }
             const numberOptions = trimmedCounts || Array.from({ length: 10 }, (_, i) => i + 1);
             const countCards = buildAnswerCards({
               answer: expectedCount, same: (a, b) => String(a) === String(b),
@@ -27506,16 +27655,24 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     title: playInstructions
                       ? ts("word_sounds.instructions_on_title") || "Instructions are ON"
                       : ts("word_sounds.instructions_off_title") || "Instructions are OFF",
+                    // 2026-11-18 (review): it said "Help" but turns the spoken instructions on and off, so a stuck child
+                    // who pressed it lost them. It now says which they are, on screen and to a screen reader (on a phone
+                    // only the 🗣️/🔇 shows).
+                    "aria-label": playInstructions
+                      ? ts("word_sounds.instructions_on_title") || "Instructions are ON"
+                      : ts("word_sounds.instructions_off_title") || "Instructions are OFF",
                   },
                   /*#__PURE__*/ React.createElement(
                     "span",
-                    null,
+                    { "aria-hidden": "true" },
                     playInstructions ? "🗣️" : "🔇",
                   ),
                   /*#__PURE__*/ React.createElement(
                     "span",
                     { className: "hidden sm:inline" },
-                    ts("word_sounds.help") || "Help",
+                    playInstructions
+                      ? ts("word_sounds.instructions_on_title") || "Instructions are ON"
+                      : ts("word_sounds.instructions_off_title") || "Instructions are OFF",
                   ),
                 ),
                 !isProbeMode &&

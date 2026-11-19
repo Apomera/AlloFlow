@@ -1478,6 +1478,7 @@ const WORD_SOUNDS_STRINGS = {
     'word_sounds.take_home_player_mapping_listen_two': 'Listen to the two sounds of {{spelling}}',
     'word_sounds.take_home_player_mapping_slot_filled_two': 'Slots {{n}} and {{m}}: {{spelling}}, two sounds',
     'word_sounds.take_home_player_mapping_needs_two': '{{spelling}} spells two sounds. Choose a slot with another slot after it.',
+    'word_sounds.take_home_player_mapping_says': '{{spelling}} says /{{sound}}/ here.',
     'word_sounds.take_home_player_learner_label': 'Your code name or first name',
     'word_sounds.take_home_player_save_csv': 'Save results as a spreadsheet file (CSV)',
     'word_sounds.take_home_player_copy_tsv': 'Copy for a spreadsheet',

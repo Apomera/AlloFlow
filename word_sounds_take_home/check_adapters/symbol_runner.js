@@ -262,7 +262,9 @@ module.exports = {
           type: 'button',
           'data-lane': String(laneIndex),
           'data-sr-target': isTarget ? 'true' : 'false',
-          'aria-label': isTarget
+          // 2026-11-18: on dot, ink and size cards the card's word is the answer ("5 dots") or the distractor (the
+          // digit, the color word): their lanes are named by number only.
+          'aria-label': isTarget && !(item.dots > 0 || item.stroopInk || item.sizePair)
             ? ctx.fmt(L.symbol_runner_target_lane, { n: laneIndex + 1, word: item.word })
             : ctx.fmt(L.symbol_runner_lane, { n: laneIndex + 1 }),
           style: 'display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:112px;padding:10px;border-radius:12px;border:3px solid var(--muted);background:var(--bg)',

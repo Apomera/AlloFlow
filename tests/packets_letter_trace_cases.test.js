@@ -140,7 +140,9 @@ describe('capital and lowercase', () => {
     expect(rec.items[1].supports).toMatchObject({ lowercaseSkipped: 1 });
   });
 
-  it('Skip (not traced) ends the item at any part; a mixed file lists Letter Trace practice in its rows', () => {
+  // 2026-11-18 (review), deliberately: "Skip (not traced)" ends the item on its first part only. On the lowercase part
+  // only "Skip the lowercase letter" shows (as in the app): the whole skip there recorded a traced capital as not traced.
+  it('Skip (not traced) ends the item on its first part; on the lowercase part only its own skip shows; a mixed file lists Letter Trace practice in its rows', () => {
     const words = [word('cat'), word('sun')];
     words.forEach((w) => { w.activityItems.isolation = { position: 0, correctSound: w.word === 'cat' ? 'k' : 's', options: ['k', 's', 'a'] }; });
     const banks = { ...BANKS, isolation: { '1st': uri('q1') }, phonemes: { k: uri('k'), s: uri('s'), a: uri('a') } };
@@ -149,7 +151,8 @@ describe('capital and lowercase', () => {
     t.button('Skip (not traced)').click();
     t.d.querySelector('[data-next]').click();
     t.button('I traced it').click();
-    t.button('Skip (not traced)').click();
+    expect(t.button('Skip (not traced)')).toBeUndefined();
+    t.button('Skip the lowercase letter').click();
     t.d.querySelector('[data-next]').click();
     for (let i = 0; i < 2; i++) { t.d.dispatchEvent(new t.dom.window.KeyboardEvent('keydown', { key: '1', bubbles: true, cancelable: true })); t.d.querySelector('[data-next]').click(); }
     const rows = [...t.d.querySelectorAll('.tally li')].map((li) => li.textContent);

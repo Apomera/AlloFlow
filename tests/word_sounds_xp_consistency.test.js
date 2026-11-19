@@ -114,7 +114,8 @@ describe('Word Sounds awards and displayed XP agree', () => {
 
   it('does not award or add XP after two wrong responses', async () => {
     // Two different wrong numbers: a tried number is disabled for the item (2026-11-09).
-    await mount(); await answer(2); await answer(1);
+    // 2026-11-18 (review): 2 and 4, which every 3-sound Easy row holds (the row slides by the word: 1-5 or 2-6).
+    await mount(); await answer(2); await answer(4);
     expect(awards).not.toHaveBeenCalled(); expect(lastFloat()).toBeUndefined();
     await tick(3001); await answer(); await tick(2001);
     expect(awards.mock.calls.map(call => call[0])).toEqual([12]);

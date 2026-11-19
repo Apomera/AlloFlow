@@ -67,6 +67,12 @@ module.exports = {
       }
       letters = letters.filter(isLetter);
     }
+    // 2026-11-18: the tiles never start as the word, also once its ' and - are out ("I'll": i l l) or when the two
+    // swapped tiles are the same letter ("eek"): the first tile changes place with the first tile that differs.
+    var tilesOf = word.split('').filter(isLetter).join('');
+    if (letters.length > 1 && letters.join('') === tilesOf) {
+      for (var d = 1; d < letters.length; d++) { if (letters[d] !== letters[0]) { var t3 = letters[0]; letters[0] = letters[d]; letters[d] = t3; break; } }
+    }
     var missing = [];
     var wordAudio = env.wordClip(env.word);
     if (!wordAudio) missing.push('word');

@@ -169,7 +169,8 @@ describe('the maker offers the two levels after the grade levels', () => {
     expect(page).toContain("{ id: 'wider:advanced', level: 'advanced', name: 'Advanced words',");
     expect(page.split('Chosen by how widely a word is used, not from a curriculum. Any letter pattern, up to 15 letters.').length - 1).toBe(2);
     expect(page).toContain("function maxLetters() { return (builder && builder.MAX_LETTERS) || 10; }");
-    expect(page).toContain("widerBox.label = 'Past the grade levels (by how rare a word is)';");
+    // 2026-11-18 (owner): "Past the levels": the maker names levels by what they practice, not by grade.
+    expect(page).toContain("widerBox.label = 'Past the levels (by how rare a word is)';");
     expect(page).toContain("if (levelRow(now.stage)) asked.level = levelRow(now.stage).level;");
   });
 });

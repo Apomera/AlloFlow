@@ -392,6 +392,53 @@
   function seedFor(seed, word) { return fnv1a(String(seed == null ? '' : seed) + '|' + String(word)); }
   function hex8(n) { return ('0000000' + (n >>> 0).toString(16)).slice(-8); }
 
+  // The order of a file's questions across its activities (2026-11-18, owner): opts.order 'mixed' (the activities take
+  // turns, in a seeded order) or the teacher's own order (an array of 'activity|word' keys, the keys the Preview page's
+  // edits use). Anything else, one activity and a check: null, one activity at a time as before. Each activity keeps its
+  // own order inside a mix. Returns the item ids in the order shown, or null when that is the usual order.
+  function questionOrder(lesson, order, seed) {
+    var blocks = (lesson.blocks || []).filter(function (b) { return b && Array.isArray(b.items) && b.items.length; });
+    if (blocks.length < 2 || lesson.mode === 'probe') return null;
+    var usual = [];
+    blocks.forEach(function (b) { b.items.forEach(function (it) { usual.push(String(it.id)); }); });
+    var ids;
+    if (Array.isArray(order)) {
+      var byKey = {}, used = {};
+      blocks.forEach(function (b) { b.items.forEach(function (it) { byKey[String(b.activity) + '|' + String(it.word || '').toLowerCase()] = String(it.id); }); });
+      ids = [];
+      order.forEach(function (key) {
+        var text = String(key), at = text.indexOf('|');
+        var id = at > 0 ? byKey[text.slice(0, at) + '|' + text.slice(at + 1).toLowerCase()] : null;
+        if (id && !used[id]) { used[id] = true; ids.push(id); }
+      });
+      // A question the order does not name (a word added since it was set) comes after the others.
+      usual.forEach(function (id) { if (!used[id]) ids.push(id); });
+    } else if (order === 'mixed') {
+      ids = mixedOrder(blocks, seed);
+    } else return null;
+    return ids.join(',') === usual.join(',') ? null : ids;
+  }
+  // A mix: the next question's activity is drawn by how many questions it has left, so the activities are spread
+  // through the file, and no activity comes three times running while another still has questions.
+  function mixedOrder(blocks, seed) {
+    var random = mulberry32(seedFor(seed, 'question-order'));
+    var left = blocks.map(function (b) { return b.items.map(function (it) { return String(it.id); }); });
+    var total = left.reduce(function (n, l) { return n + l.length; }, 0);
+    var out = [], last = -1, run = 0;
+    while (out.length < total) {
+      var open = [];
+      left.forEach(function (l, i) { if (l.length && !(i === last && run >= 2)) open.push(i); });
+      if (!open.length) open = [last];
+      var weight = open.reduce(function (n, i) { return n + left[i].length; }, 0);
+      var draw = random() * weight, chosen = open[open.length - 1];
+      for (var k = 0; k < open.length; k++) { draw -= left[open[k]].length; if (draw < 0) { chosen = open[k]; break; } }
+      out.push(left[chosen].shift());
+      run = chosen === last ? run + 1 : 1;
+      last = chosen;
+    }
+    return out;
+  }
+
   // Choices (2026-11-13, the maker's "Choices": easy, medium or all). Below Hard the app shows fewer choices, with the
   // core's own functions: Find Sounds asks the first sound (Easy) or the first or last (Medium)
   // (isolationPositions) and shows 3 or 4 sounds; Rhyme Time shows 3 or 4 words (choiceLimit + trimChoices, as
@@ -401,6 +448,17 @@
   // (countingChoices). All (and no level) leaves every board as built. Seeded by the version and the word, so a file
   // is the same each time.
   var CHOICE_LEVELS = ['easy', 'medium', 'all'];
+  // A row of consecutive numbers that holds the count n, slid by h (a hash): the row keeps its length, starts at 1 or
+  // more, ends at 6 or at n + 1 at most (so the answer is not always the largest), and holds n.
+  function slideCount(numbers, n, h) {
+    var w = numbers.length, top = Math.max(6, n + 1);
+    var lowMin = Math.max(1, n - w + 1), lowMax = Math.min(n, top - w + 1);
+    if (!(w > 1) || lowMax < lowMin) return numbers;
+    var low = lowMin + ((h >>> 0) % (lowMax - lowMin + 1));
+    var out = [];
+    for (var v = low; v < low + w; v++) out.push(v);
+    return out;
+  }
   function fewerChoices(boards, level, word, phonemes, core, seed) {
     var trim = function (options, answer, same, closeness) {
       var count = core.choiceLimit(level, options.length);
@@ -436,7 +494,17 @@
     });
     var counting = boards.counting;
     var numbers = counting ? core.countingChoices(Number(counting.answer), level) : null;
+    // 2026-11-18 (review): Easy's row (the count with two either side, inside 1-6) puts the answer third for every
+    // word of 3 or more sounds, and last from 6 on: a child could answer without counting. The same number of
+    // buttons, slid so the answer can be in another place (seeded: a file is the same each time).
+    if (numbers && level === 'easy') numbers = slideCount(numbers, Number(counting.answer), seedFor(seed, 'counting|' + word));
     if (numbers) counting.options = numbers;
+    // Break it Down at Easy (2026-11-18, owner): the word's own sounds and one more, not up to five more. The order stays.
+    var seg = boards.segmentation;
+    if (level === 'easy' && seg && Array.isArray(seg.chips)) {
+      var extra = 0;
+      seg.chips = seg.chips.filter(function (c) { if (!c || !(c.isDistractor || c.type === 'distractor')) return true; extra += 1; return extra <= 1; });
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -973,8 +1041,18 @@
                 const j = (seed + i) % (i + 1);
                 [letters[i], letters[j]] = [letters[j], letters[i]];
             }
-            if (letters.length > 1 && letters.join('') === word) [letters[0], letters[1]] = [letters[1], letters[0]];
-            const hiddenIndex = word.length > 1 ? seed % word.length : 0;
+            // 2026-11-18: never the word itself, judged on the tiles a student gets (no ' or -) and never by swapping two
+            // equal letters ("eek"); and the hidden letter is a letter, never the ' of "I'm". A word of letters only
+            // gets the same board as before.
+            const isTile = (ch) => !/^['’\- .]$/.test(ch);
+            const tilePlaces = letters.map((ch, i) => (isTile(ch) ? i : -1)).filter((i) => i >= 0);
+            const wordTiles = word.split('').filter(isTile).join('');
+            if (tilePlaces.length > 1 && tilePlaces.map((i) => letters[i]).join('') === wordTiles) {
+                const first = tilePlaces[0], other = tilePlaces.find((i) => letters[i] !== letters[first]);
+                if (other != null) [letters[first], letters[other]] = [letters[other], letters[first]];
+            }
+            const letterPlaces = word.split('').map((ch, i) => (ch.toLowerCase() !== ch.toUpperCase() ? i : -1)).filter((i) => i >= 0);
+            const hiddenIndex = word.length > 1 ? (letterPlaces.length ? letterPlaces[seed % letterPlaces.length] : seed % word.length) : 0;
             const correctLetter = word[hiddenIndex] || '';
             const letterRank = (value) => [...(value + word)].reduce((hash, c) => Math.imul(hash ^ c.charCodeAt(0), 16777619) >>> 0, 2166136261);
             const vowelLetter = !!correctLetter && ('aeiou'.includes(correctLetter) || (correctLetter === 'y' && !/[aeiou]/.test(word)));
@@ -1391,6 +1469,13 @@
         except(e.word, e.activity, reasons.join('; '));
       });
       var lesson = built.lesson && built.lesson.blocks && built.lesson.blocks.length ? built.lesson : null;
+      // The questions' order (questionOrder). The revision follows it, so a student's saved place in one order is never
+      // read against another; the file's id does not change.
+      var sequence = lesson ? questionOrder(lesson, opts.order, opts.orderSeed == null ? seed : opts.orderSeed) : null;
+      if (sequence) {
+        lesson.sequence = sequence;
+        lesson.revision = String(lesson.revision) + 'm' + hex8(fnv1a(sequence.join(',')));
+      }
       var clips = [], bySource = {};
       if (lesson) {
         lesson.createdAt = typeof opts.createdAt === 'string' ? opts.createdAt : '';
@@ -1501,6 +1586,9 @@
         // choices: the maker's Choices, so "Open a file I made" can read it back (packets_reopen.js).
         builder: { name: VERSION, seed: seed, ai: 'none', words: usedWords.length, items: manifest.items.total, choices: choiceLevel } };
       if (directionsOnce) extra.builder.directionsOnce = true;
+      // How the questions were put in order, for "Open a file I made": 'mixed' or 'own' (the order is lesson.sequence).
+      if (sequence) extra.builder.order = Array.isArray(opts.order) ? 'own' : 'mixed';
+      if (sequence && !Array.isArray(opts.order) && typeof opts.orderSeed === 'number' && opts.orderSeed !== seed) extra.builder.orderSeed = opts.orderSeed;
       // The file itself changes only when it really holds a picture.
       if (pictureFacts && withPicture.length) extra.pictures = pictureFacts;
       // And only when it really holds something of the teacher's.
@@ -1826,7 +1914,7 @@
     OPENMOJI_CREDIT: OPENMOJI_CREDIT, openMojiCredit: openMojiCredit, openMojiNotice: openMojiNotice,
     // The teacher's own material (opts.own): what it may hold, and the credit sentence for a picture.
     SOUND_LABELS: SOUND_LABELS.slice(), OWN_LIMITS: OWN_LIMITS, OPEN_LICENSE: OPEN_LICENSE, SHARE_ALIKE_NOTICE: SHARE_ALIKE_NOTICE, OWN_PICTURE_LINE: OWN_PICTURE_LINE, creditLine: creditLine,
-    _internals: { createPackLogic: createPackLogic, mulberry32: mulberry32, seedFor: seedFor, wordUnits: wordUnits, fitsStage: fitsStage, suspectSplit: suspectSplit, stageOf: stageOf, compileStages: compileStages, withCredits: withCredits, svgDataUri: svgDataUri, readOwn: readOwn },
+    _internals: { questionOrder: questionOrder, mixedOrder: mixedOrder, createPackLogic: createPackLogic, mulberry32: mulberry32, seedFor: seedFor, wordUnits: wordUnits, fitsStage: fitsStage, suspectSplit: suspectSplit, stageOf: stageOf, compileStages: compileStages, withCredits: withCredits, svgDataUri: svgDataUri, readOwn: readOwn },
   };
   if (root) root.AlloPacketBuilder = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

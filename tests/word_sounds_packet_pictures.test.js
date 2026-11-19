@@ -412,7 +412,24 @@ describe('the builder: pictures off', () => {
     // in DEFAULT_LABELS and renderFinish (+62 bytes), 'Hear all' fallback shortened in blending/sound_sort/word_families (-36
     // bytes), and inputmode:'none' in spelling_bee (+14 bytes; +40 bytes net); the questions are the same 124.
     // The loader before still gives 02dc54de.../238953.
-    all: { sha256: '1c9135c5481612c11e2441c7070ed0fec899b4bca9caf366c3a367401f725250', bytes: 298947, items: 124 },
+    // Re-pinned 2026-11-18 (the questions in the file's own order when the lesson has lesson.sequence, the maker's "Mix the
+    // activities"; tests/packets_question_order_2026_11_18.test.js): the shell only, +1048 bytes; this file has no
+    // sequence, and the questions are the same 124. The loader before still gives 1c9135c5.../298947.
+    // Re-pinned 2026-11-18 (late; Sound Mapping's "s says /z/ here." note for surprising spellings,
+    // tests/packets_mapping_says_note_2026_11_18.test.js): mapping's render and one label, +828 bytes; the questions are
+    // the same 124 and "isolation" (no Sound Mapping) is unchanged. The loader before still gives 4944c6fc.../299995.
+    // Re-pinned 2026-11-18 (later; Break it Down in the app's look: colored tiles with a speaker or letters, colored filled
+    // boxes, the held tile lifted, dragging with a mouse, finger or pen, each move shown on screen;
+    // tests/packets_break_it_down_2026_11_18.test.js; the arrow is a character and the speaker is drawn with borders, so
+    // the file still has no element that loads): segmentation's render only, +7561 bytes; the questions are the same 124
+    // and "isolation" is unchanged. The loader with Break it Down as before gives 3dadd2e3.../301141: that is
+    // 933743aa.../300823 above plus a later edit of mapping.js (22:11 that day, another session's; +318 bytes) that this
+    // pin also takes in.
+    // Re-pinned 2026-11-18 (latest; the review fixes, tests/packets_review_fixes_2026_11_18.test.js: Letter Trace shows only
+    // its lowercase skip on the lowercase part, Spelling Bee's first-letter hint never writes a one-letter word, Symbol
+    // Runner's dot, ink and size lanes are named by number): those renders only, +460 bytes; the questions are the same
+    // 124 and "isolation" is unchanged. The loader without those three edits still gives 7418cfb0.../308702.
+    all: { sha256: '485041c0abd32e1cc51ff29ef87a65857d631bfb066e1036bd61d7e217f45545', bytes: 309162, items: 124 },
     // Re-pinned 2026-11-12 (evening), as "all" above; the loader before still gives b3221d74.../71353.
     // Re-pinned 2026-11-12 (night), as "all" above; the loader before still gives 202974c1.../79452.
     // Re-pinned 2026-11-13 (polish pass, as "all" above: the R key and the end screen's practice line, +977 bytes); the loader before still gives dc61bb4c.../84670.
@@ -422,7 +439,8 @@ describe('the builder: pictures off', () => {
     // Re-pinned 2026-11-13 (engine fixes, as "all" above, +7038 bytes); the loader before still gives 3ec8e31e.../87481.
     // Re-pinned 2026-11-14 (T1 + @i18n P2, as "all" above: done_activity in DEFAULT_LABELS and renderFinish, +62 bytes);
     // the loader before still gives 87bce42c.../94519.
-    isolation: { sha256: '5110f45b4a01d01cc6e3b3cd54d7c8381e24bb87fe94292df9fe02441a50ecef', bytes: 153963, items: 5 },
+    // Re-pinned 2026-11-18 (the file's own question order, as "all" above, +1048 bytes); the loader before still gives 5110f45b.../153963.
+    isolation: { sha256: '4d0f55344f14251ca7452727ebdca157adffc055e67567474d31886ad105efca', bytes: 155011, items: 5 },
   };
   const CASES = { all: {}, isolation: { words: CVC.slice(0, 5), activities: ['isolation'], title: undefined } };
 

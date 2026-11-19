@@ -1366,6 +1366,9 @@
           how.textContent = !shape ? '' : shape.strokes.length > 1 ? L.letter_tracing_how_more : L.letter_tracing_how_one;
           how.hidden = !shape;
           skipLower.hidden = !(at > 0 && part.kind === 'lowercase');
+          // 2026-11-18: on the lowercase part only its own skip shows: "Skip (not traced)" there marked the capital, traced
+          // already, as not traced (the app hides it too).
+          if (skip) skip.hidden = !skipLower.hidden;
           drawGuide();
           wipe();
         };
@@ -1626,6 +1629,7 @@
         mapping_listen_two: 'Listen to the two sounds of {spelling}',
         mapping_slot_filled_two: 'Slots {n} and {m}: {spelling}, two sounds',
         mapping_needs_two: '{spelling} spells two sounds. Choose a slot with another slot after it.',
+        mapping_says: '{spelling} says /{sound}/ here.',
       },
       prepare: function (w, env) {
         var board = w && w.activityItems && w.activityItems.mapping;
@@ -1659,6 +1663,15 @@
           ? board.chipOrder.map(function (c) { return c.id; }) : graphemes.map(function (_, i) { return i; }).reverse();
         var inOrder = order.every(function (id, i) { return graphemes[id] === graphemes[i]; });
         if (inOrder && graphemes.length > 1) { var t = order[0]; order[0] = order[1]; order[1] = t; }
+        // 2026-11-18: a spelling that says a surprising sound in this word (the s of dogs says /z/) carries
+        // that sound, so the board can explain it the first time the child plays the chip. Only these
+        // well-known patterns; vowels and ordinary spellings get no note.
+        var SAYS = { s: ['z', 'sh', 'zh'], se: ['z'], c: ['s'], ce: ['s'], ci: ['sh'], ti: ['sh'], g: ['j'], ge: ['j'], ch: ['k', 'sh'], x: ['gz'], ed: ['t', 'd'] };
+        var says = graphemes.map(function (g, i) {
+          var sound = phonemes.slice(starts[i], starts[i] + spans[i]).map(function (p) { return env.label(p) || ''; }).join('');
+          var want = SAYS[String(g).toLowerCase()];
+          return want && want.indexOf(sound) >= 0 ? sound : '';
+        });
         var missing = [];
         var wordAudio = env.wordClip(env.word);
         if (!wordAudio) missing.push('word');
@@ -1683,7 +1696,7 @@
         var spanning = spans.some(function (k) { return k > 1; });
         var result = {
           target: graphemes.join(' '), graphemes: graphemes,
-          chips: order.map(function (id) { return spans[id] > 1 ? { text: graphemes[id], audio: clips[id][0], audios: clips[id], span: spans[id] } : { text: graphemes[id], audio: clips[id] }; }),
+          chips: order.map(function (id) { var chip = spans[id] > 1 ? { text: graphemes[id], audio: clips[id][0], audios: clips[id], span: spans[id] } : { text: graphemes[id], audio: clips[id] }; if (says[id]) chip.says = says[id]; return chip; }),
           wordAudio: wordAudio, promptAudio: prompt,
           introAudio: [prompt], answerAudio: [wordAudio],
         };
@@ -1702,7 +1715,18 @@
         var locked = function () { return ctx.isDone(); };
         var text = function (ci) { return item.chips[ci].text; };
         var covered = function (si) { return si > 0 && slots[si] != null && slots[si - 1] === slots[si]; };
-        var hear = function (ci) { var chip = item.chips[ci]; if (chip.audios) ctx.playAll(chip.audios); else ctx.play(chip.audio); };
+        // The surprising-sound notes ("s says /z/ here.") appear the first time a chip is played and stay for this word.
+        // Never in a check (ctx.check): there the note would give away what the check measures. In practice a
+        // note shown while the child works counts as help (support 'spellingNotes'); the ones shown with the answer do not.
+        var notesEl = ctx.el('div', { 'data-mapping-notes': '', 'aria-live': 'polite' }), noted = [];
+        var note = function (ci, help) {
+          var chip = item.chips[ci];
+          if (ctx.check || !chip || !chip.says || noted.indexOf(ci) >= 0) return;
+          noted.push(ci);
+          notesEl.appendChild(ctx.el('p', { class: 'letters', 'data-mapping-says': chip.text, text: ctx.fmt(L.mapping_says, { spelling: chip.text, sound: chip.says }) }));
+          if (help) ctx.support('spellingNotes');
+        };
+        var hear = function (ci) { var chip = item.chips[ci]; if (chip.audios) ctx.playAll(chip.audios); else ctx.play(chip.audio); note(ci, true); };
         var takeOut = function (ci) { for (var i = 0; i < n; i++) if (slots[i] === ci) slots[i] = null; };
 
         var tray = ctx.el('ul', { class: 'row', 'aria-label': L.mapping_tray, style: 'list-style:none;padding:0;margin:16px 0;gap:12px' });
@@ -1812,6 +1836,7 @@
           ctx.el('button', { type: 'button', on: { click: function () { ctx.support('wordReplays'); ctx.play(item.wordAudio); } }, text: L.hear_word }),
         ]));
         ctx.root.appendChild(slotList);
+        ctx.root.appendChild(notesEl);
         ctx.root.appendChild(ctx.el('div', { class: 'row' }, [clearBtn]));
         // Hear all (the player's ctx.hearAll): each spelling still in the tray, in turn, marked with its number.
         var hearing = typeof ctx.hearAll === 'function' ? ctx.hearAll({ ready: function () { return !locked(); },
@@ -1834,6 +1859,8 @@
               }
             }
             draw();
+            // The answer shown: every surprising spelling of the word is explained too.
+            item.chips.forEach(function (chip, ci) { note(ci, false); });
             slotEls.forEach(function (el) { el.btn.style.borderColor = 'var(--ok)'; el.btn.style.background = 'var(--ok-bg)'; });
           },
         };
@@ -1887,8 +1914,10 @@
         // Same usability rule as the app's preparedMissingLetter.
         var letter = String(board.correctLetter == null ? '' : board.correctLetter).toLowerCase();
         var choices = Array.isArray(board.options) ? board.options.map(function (o) { return typeof o === 'string' ? o.toLowerCase() : ''; }) : [];
+        // 2026-11-18: the hidden one is a letter (a letter has a capital), never the ' of "I'm" or the - of "t-shirt":
+        // the only non-letter among the choices would be the answer.
         var usable = Number.isInteger(board.hiddenIndex) && board.hiddenIndex >= 0 && board.hiddenIndex < word.length &&
-          !!letter && word[board.hiddenIndex] === letter && choices.length >= 2 && choices.every(Boolean) &&
+          !!letter && word[board.hiddenIndex] === letter && letter.toLowerCase() !== letter.toUpperCase() && choices.length >= 2 && choices.every(Boolean) &&
           choices.filter(function (c, i) { return choices.indexOf(c) === i; }).length === choices.length && choices.indexOf(letter) >= 0;
         if (!usable) return { missing: ['board'] };
         var missing = [];
@@ -2642,9 +2671,10 @@
     //           each chip plays its sound when picked or placed (:18239, :18294).
     // 2026-11-13 (answer audit): ir and ur are the sound of er (the dictionary spells it three ways: murder is m ur d er),
     // so the two chips of one sound go in either box; before, only one order was right.
-    // 2026-11-13: each tray chip has Listen first, then the sound to pick up (as every Listen +
-    // Choose pair now). With letters on, a sound whose label is not letters shows a name
-    // (ctx.sound: oo_short -> "short oo (book)"), else /a/.
+    // 2026-11-13: each tray chip had Listen first, then the sound to pick up (as every Listen +
+    // Choose pair). 2026-11-18: no Listen here any more (see render): picking a tile up plays it
+    // and commits nothing, as in the app. With letters on, a sound whose label is not letters
+    // shows a name (ctx.sound: oo_short -> "short oo (book)"), else /a/.
     module.exports = {
       id: 'segmentation',
       title: 'Break it Down',
@@ -2711,8 +2741,14 @@
           answerAudio: [wordAudio].concat(sounds.map(function (s) { return clipOf[s]; })),
         } };
       },
+      // 2026-11-18 (owner: a first-time player got stuck here): the app's look, with Packets' words. Each sound is a round
+      // colored tile (its letters, or a speaker), side by side, so the tiles and the boxes fit one phone screen; a filled
+      // box takes its tile's color; an empty box shows where a sound goes. Tap a tile to hear it and hold it (it lifts and
+      // the empty boxes light up), then tap a box, or drag the tile there with a mouse, a finger or a pen. A box's sound
+      // can be dragged to another box or back to the tiles. What each move did is shown under the boxes as well as said.
+      // A tile has no Listen button of its own: picking it up plays it and changes nothing until it is put in a box.
       render: function (item, ctx) {
-        var win = ctx.root.ownerDocument.defaultView;
+        var doc = ctx.root.ownerDocument, win = doc.defaultView;
         var L = ctx.L;
         // word_sounds_module.js:19317-19336, copied exactly.
         var MAP = { 'ā': 'ay', 'ē': 'ee', 'ī': 'ie', 'ō': 'oa', 'ū': 'oo', 'ă': 'a', 'ĕ': 'e', 'ĭ': 'i', 'ŏ': 'o', 'ŭ': 'u', oi: 'oy', aw: 'au', ew: 'oo', oe: 'oa', ir: 'er', ur: 'er' };
@@ -2729,31 +2765,115 @@
         var locked = function () { return ctx.isDone(); };
         var halt = function () { token++; };
 
-        var tray = ctx.el('ul', { class: 'row', 'aria-label': L.segmentation_tray, style: 'list-style:none;padding:0;margin:16px 0;gap:12px' });
+        // Light fills with dark ink (the same in every color theme), each with a darker edge; never the only clue: the
+        // tile's place, its sound and its name (Sound 3, for a screen reader) tell the tiles apart.
+        var FILL = ['#ffe3e3', '#dcebff', '#dff4da', '#fff0c2', '#ece0ff', '#ffe0f0', '#d6f3f1', '#f1e6d2'];
+        var EDGE = ['#b93c3c', '#2f62ad', '#357a30', '#8f6600', '#6d45b5', '#a83c72', '#1f7a78', '#7d6233'];
+        var still = !!(win.matchMedia && win.matchMedia('(prefers-reduced-motion: reduce)').matches);
+        // A "goes here" arrow (a character), and a speaker drawn with borders in the tile's own ink, so it is as dark as the
+        // letters (an emoji speaker is pale grey on most devices). No drawing element: a file carries none.
+        var icon = function (kind) {
+          if (kind === 'drop') return ctx.el('span', { 'aria-hidden': 'true', 'data-seg-icon': 'drop', text: '↓', style: 'display:block;line-height:1;pointer-events:none;font-size:1.7rem;font-weight:800' });
+          var part = function (css) { return ctx.el('span', { style: 'position:absolute;display:block;box-sizing:border-box;' + css }); };
+          var arc = 'border:2.5px solid;border-color:transparent currentColor transparent transparent;border-radius:50%;';
+          return ctx.el('span', { 'aria-hidden': 'true', 'data-seg-icon': 'sound', style: 'position:relative;display:block;width:28px;height:24px;pointer-events:none' }, [
+            part('left:2px;top:8px;width:7px;height:8px;background:currentColor;border-radius:1px'),
+            part('left:5px;top:3px;width:0;height:0;border-style:solid;border-width:9px 9px 9px 0;border-color:transparent currentColor transparent transparent'),
+            part(arc + 'left:10px;top:7px;width:10px;height:10px'),
+            part(arc + 'left:9px;top:3px;width:18px;height:18px'),
+          ]);
+        };
+        // What a tile, or a box holding it, shows: its letters, or a speaker.
+        var face = function (node, ci) {
+          node.textContent = '';
+          if (ctx.showLetters) node.appendChild(doc.createTextNode(name(ci))); else node.appendChild(icon('sound'));
+        };
+        var tileStyle = function (ci) {
+          return (ctx.showLetters ? 'min-width:64px;height:58px;padding:0 16px;border-radius:999px;' : 'width:64px;height:64px;padding:0;border-radius:50%;')
+            + 'display:flex;align-items:center;justify-content:center;font-size:1.25rem;font-weight:800;color:#1d2433;touch-action:none;'
+            + 'background:' + FILL[ci % FILL.length] + ';border:3px solid ' + EDGE[ci % EDGE.length] + ';box-shadow:0 3px 0 ' + EDGE[ci % EDGE.length]
+            + (still ? '' : ';transition:transform .12s ease,box-shadow .12s ease');
+        };
+        // The line under the boxes: what the last move did (also said through ctx.announce).
+        var say = ctx.el('p', { class: 'muted', 'data-seg-say': '', style: 'min-height:1.5em;margin:4px 0 0;text-align:center;font-weight:600' });
+        var tell = function (text) { say.textContent = text; ctx.announce(text); };
+        // A click the keyboard made (detail 0) moves the focus on, as before; a tap leaves it, so the page does not jump.
+        var byKey = function (e) { return !e || e.detail === 0; };
+        var tray = ctx.el('ul', { class: 'row', 'data-seg-tray': '', 'aria-label': L.segmentation_tray, style: 'list-style:none;padding:6px 0;margin:8px 0;gap:12px;justify-content:center' });
         var chipEls = item.chips.map(function (chip, ci) {
-          var pick = ctx.el('button', { type: 'button', class: 'primary', 'aria-pressed': 'false',
-            'aria-label': ctx.fmt(L.segmentation_pick, { sound: name(ci) }),
-            style: 'min-width:72px;min-height:56px;font-size:1.3rem;font-weight:700',
-            on: { click: function () { onChip(ci); } } }, [name(ci)]);
-          var listen = ctx.el('button', { type: 'button', 'aria-label': ctx.fmt(L.listen_sound, { n: ci + 1 }) + (ctx.showLetters ? ' ' + name(ci) : ''),
-            on: { click: function () { halt(); ctx.support('soundListens'); ctx.play(chip.audio); } } }, ['▶']);
-          var li = ctx.el('li', { class: 'row', style: 'gap:6px;border:2px solid var(--line);border-radius:14px;padding:6px' }, [listen, pick]);
+          var pick = ctx.el('button', { type: 'button', class: 'primary', 'aria-pressed': 'false', 'data-seg-tile': String(ci),
+            'aria-label': ctx.fmt(L.segmentation_pick, { sound: name(ci) }), style: tileStyle(ci),
+            on: { click: function (e) { if (dragged()) return; onChip(ci, e); }, pointerdown: function (e) { dragStart(e, ci, 'tray', -1); } } });
+          face(pick, ci);
+          var li = ctx.el('li', {}, [pick]);
           tray.appendChild(li);
           return { li: li, pick: pick };
         });
-        var boxList = ctx.el('ol', { class: 'slots', dir: 'ltr', 'aria-label': L.segmentation_boxes });
+        var boxList = ctx.el('ol', { class: 'slots', dir: 'ltr', 'aria-label': L.segmentation_boxes, style: 'justify-content:center;margin:12px 0 0' });
         var boxEls = boxes.map(function (_, bi) {
-          var btn = ctx.el('button', { type: 'button', class: 'slot', style: 'min-width:80px;min-height:80px;border-style:dashed;font-size:1.3rem;font-weight:700',
-            on: { click: function () { onBox(bi); } } });
+          var btn = ctx.el('button', { type: 'button', class: 'slot', 'data-seg-box': String(bi), style: 'min-width:76px;min-height:76px;border-width:3px;border-radius:16px;font-size:1.25rem;font-weight:800',
+            on: { click: function (e) { if (dragged()) return; onBox(bi, e); }, pointerdown: function (e) { if (boxes[bi] != null) dragStart(e, boxes[bi], 'box', bi); } } });
           boxList.appendChild(ctx.el('li', {}, [btn]));
           return btn;
         });
+        // Dragging, with a mouse, a finger or a pen: a short move is still a tap.
+        var drag = null, dragEndedAt = 0;
+        var dragged = function () { return Date.now() - dragEndedAt < 400; };
+        var dragStart = function (e, ci, from, bi) {
+          if (locked() || e.isPrimary === false || (e.pointerType === 'mouse' && e.button !== 0)) return;
+          drag = { ci: ci, from: from, bi: bi, x: e.clientX, y: e.clientY, src: e.currentTarget, ghost: null };
+          try { e.currentTarget.setPointerCapture(e.pointerId); } catch (_) {}
+          e.currentTarget.addEventListener('pointermove', dragMove);
+          e.currentTarget.addEventListener('pointerup', dragEnd);
+          e.currentTarget.addEventListener('pointercancel', dragEnd);
+        };
+        var dragMove = function (e) {
+          if (!drag) return;
+          var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+          if (!drag.ghost) {
+            if (dx * dx + dy * dy < 100) return;
+            halt();
+            var g = drag.src.cloneNode(true);
+            ['data-seg-tile', 'data-seg-box', 'aria-label', 'aria-pressed'].forEach(function (a) { g.removeAttribute(a); });
+            g.setAttribute('aria-hidden', 'true');
+            var r = drag.src.getBoundingClientRect();
+            g.style.cssText += ';position:fixed;margin:0;z-index:60;pointer-events:none;opacity:.92;width:' + r.width + 'px;height:' + r.height + 'px';
+            doc.body.appendChild(g);
+            drag.ghost = g;
+            drag.w = r.width; drag.h = r.height;
+            if (drag.from === 'tray') { picked = drag.ci; draw(); }
+          }
+          drag.ghost.style.left = (e.clientX - drag.w / 2) + 'px';
+          drag.ghost.style.top = (e.clientY - drag.h / 2) + 'px';
+          e.preventDefault();
+        };
+        var dragEnd = function (e) {
+          var d = drag;
+          drag = null;
+          if (!d) return;
+          d.src.removeEventListener('pointermove', dragMove);
+          d.src.removeEventListener('pointerup', dragEnd);
+          d.src.removeEventListener('pointercancel', dragEnd);
+          if (!d.ghost) return; // a tap: its click does the rest
+          if (d.ghost.parentNode) d.ghost.parentNode.removeChild(d.ghost);
+          dragEndedAt = Date.now();
+          var at = e.type === 'pointercancel' ? null : doc.elementFromPoint(e.clientX, e.clientY);
+          var box = at && at.closest ? at.closest('[data-seg-box]') : null;
+          var back = at && at.closest ? at.closest('[data-seg-tray]') : null;
+          if (box && ctx.root.contains(box)) {
+            var to = Number(box.getAttribute('data-seg-box'));
+            if (d.from === 'tray') placeAt(d.ci, to);
+            else if (to !== d.bi) { var other = boxes[to]; boxes[to] = d.ci; boxes[d.bi] = other; errors = []; draw(); ctx.play(item.chips[d.ci].audio); tell(ctx.fmt(L.segmentation_placed, { sound: name(d.ci), n: to + 1 })); }
+          } else if (back && d.from === 'box') {
+            boxes[d.bi] = null; errors = []; draw(); tell(ctx.fmt(L.segmentation_removed, { sound: name(d.ci), n: d.bi + 1 }));
+          } else if (d.from === 'tray') { picked = null; draw(); }
+        };
         var checkBtn = ctx.el('button', { type: 'button', class: 'primary', on: { click: function () { onCheck(); } }, text: L.segmentation_check });
         var clearBtn = ctx.el('button', { type: 'button', on: { click: function () {
           if (locked()) return;
           halt(); picked = null; errors = [];
           for (var i = 0; i < n; i++) boxes[i] = null;
-          draw(); ctx.announce(L.segmentation_cleared);
+          draw(); tell(L.segmentation_cleared);
         } }, text: L.segmentation_clear });
         // "Test Sequence" (:18795-18815): each box's sound, 500 ms apart; 600 ms for an empty box.
         var playBoxes = ctx.el('button', { type: 'button', on: { click: function () {
@@ -2770,18 +2890,27 @@
 
         var draw = function () {
           var full = boxes.every(function (x) { return x != null; });
+          var holding = picked != null && !locked();
           chipEls.forEach(function (c, ci) {
             c.li.hidden = boxes.indexOf(ci) >= 0;
-            c.pick.setAttribute('aria-pressed', picked === ci ? 'true' : 'false');
+            var on = picked === ci;
+            c.pick.setAttribute('aria-pressed', on ? 'true' : 'false');
+            // Held: it lifts, with a ring in the accent color.
+            c.pick.style.transform = on ? 'translateY(-6px) scale(1.08)' : '';
+            c.pick.style.boxShadow = on ? '0 0 0 3px var(--card), 0 0 0 7px var(--accent)' : '0 3px 0 ' + EDGE[ci % EDGE.length];
             if (locked()) c.pick.setAttribute('aria-disabled', 'true');
           });
           boxEls.forEach(function (btn, bi) {
             var ci = boxes[bi];
-            btn.textContent = ci == null ? String(bi + 1) : name(ci);
-            btn.style.borderStyle = ci == null ? 'dashed' : 'solid';
             var bad = errors.indexOf(bi) >= 0 && ci != null;
-            btn.style.borderColor = bad ? 'var(--warn)' : ci == null ? 'var(--muted)' : 'var(--accent)';
-            btn.style.background = bad ? 'var(--warn-bg)' : '';
+            if (ci == null) { btn.textContent = ''; btn.appendChild(icon('drop')); } else face(btn, ci);
+            btn.style.borderStyle = ci == null ? 'dashed' : 'solid';
+            btn.style.borderColor = bad ? 'var(--warn)' : ci == null ? (holding ? 'var(--accent)' : 'var(--muted)') : EDGE[ci % EDGE.length];
+            btn.style.background = bad ? 'var(--warn-bg)' : ci == null ? '' : FILL[ci % FILL.length];
+            btn.style.color = ci == null ? (holding ? 'var(--accent)' : 'var(--muted)') : '#1d2433';
+            // While a tile is held, the empty boxes light up: that is where it can go.
+            btn.style.boxShadow = holding && ci == null ? '0 0 0 3px var(--accent)' : '';
+            btn.style.touchAction = ci == null ? 'manipulation' : 'none';
             btn.setAttribute('aria-label', ci == null ? ctx.fmt(L.segmentation_box_empty, { n: bi + 1 })
               : ctx.fmt(bad ? L.segmentation_box_check : L.segmentation_box_filled, { n: bi + 1, sound: name(ci) }));
             if (locked()) btn.setAttribute('aria-disabled', 'true');
@@ -2794,41 +2923,45 @@
           for (var ci = 0; ci < chipEls.length; ci++) if (boxes.indexOf(ci) < 0) return chipEls[ci].pick;
           return checkBtn;
         };
-        var onChip = function (ci) {
+        // A tray tile into box bi (a sound already there goes back to the tiles).
+        var placeAt = function (ci, bi) {
+          picked = null; errors = [];
+          boxes[bi] = ci;
+          draw();
+          ctx.play(item.chips[ci].audio);
+          tell(ctx.fmt(L.segmentation_placed, { sound: name(ci), n: bi + 1 }));
+        };
+        var onChip = function (ci, e) {
           if (locked() || boxes.indexOf(ci) >= 0) return;
           halt();
-          if (picked === ci) { picked = null; draw(); ctx.announce(ctx.fmt(L.segmentation_dropped, { sound: name(ci) })); return; }
+          if (picked === ci) { picked = null; draw(); tell(ctx.fmt(L.segmentation_dropped, { sound: name(ci) })); return; }
           picked = ci;
           draw();
           ctx.play(item.chips[ci].audio);
-          ctx.announce(ctx.fmt(L.segmentation_picked, { sound: name(ci) }));
+          tell(ctx.fmt(L.segmentation_picked, { sound: name(ci) }));
           // Keyboard path: go straight to the first empty box.
           var empty = boxes.indexOf(null);
-          boxEls[empty >= 0 ? empty : 0].focus();
+          if (byKey(e)) boxEls[empty >= 0 ? empty : 0].focus();
         };
-        var onBox = function (bi) {
+        var onBox = function (bi, e) {
           if (locked()) return;
           halt();
           errors = [];
           if (picked == null) {
             var out = boxes[bi];
-            if (out == null) { ctx.announce(L.segmentation_how); return; }
+            if (out == null) { tell(L.segmentation_how); return; }
             boxes[bi] = null;
             draw();
-            ctx.announce(ctx.fmt(L.segmentation_removed, { sound: name(out), n: bi + 1 }));
+            tell(ctx.fmt(L.segmentation_removed, { sound: name(out), n: bi + 1 }));
             return;
           }
-          var ci = picked;
-          picked = null;
-          boxes[bi] = ci; // a chip already there goes back to the tray
-          draw();
-          ctx.play(item.chips[ci].audio);
-          ctx.announce(ctx.fmt(L.segmentation_placed, { sound: name(ci), n: bi + 1 }));
-          nextFocus().focus();
+          placeAt(picked, bi);
+          if (byKey(e)) nextFocus().focus();
         };
         var onCheck = function () {
           if (locked()) return;
-          if (boxes.some(function (x) { return x == null; })) { ctx.announce(L.segmentation_fill_first); return; }
+          if (boxes.some(function (x) { return x == null; })) { tell(L.segmentation_fill_first); return; }
+          say.textContent = '';
           halt();
           var bad = [];
           boxes.forEach(function (ci, i) { if (norm(item.chips[ci].label) !== norm(item.sounds[i])) bad.push(i); });
@@ -2849,19 +2982,22 @@
           ctx.el('button', { type: 'button', on: { click: function () { halt(); ctx.support('questionReplays'); ctx.play(item.promptAudio); } }, text: L.hear_question }),
           ctx.el('button', { type: 'button', on: { click: function () { halt(); ctx.support('wordReplays'); ctx.play(item.wordAudio); } }, text: L.hear_word }),
         ]));
+        // Top to bottom: the boxes, what the last move did, the tiles, then Check with the two box buttons, so the boxes,
+        // the tiles and Check are close together (on a phone, on one screen).
         ctx.root.appendChild(boxList);
-        ctx.root.appendChild(ctx.el('div', { class: 'row' }, [playBoxes, clearBtn]));
+        ctx.root.appendChild(say);
         // Hear all (the player's ctx.hearAll): each sound still in the tray, in turn, marked with its number.
         var hear = typeof ctx.hearAll === 'function' ? ctx.hearAll({ before: halt, ready: function () { return !locked(); },
           list: function () { return chipEls.map(function (c, ci) { return c.li.hidden ? null : { box: c.li, n: ci + 1, total: chipEls.length, say: function () { return ctx.play(item.chips[ci].audio); } }; }); } }) : null;
-        if (hear) ctx.root.appendChild(hear.node);
         ctx.root.appendChild(tray);
-        ctx.root.appendChild(ctx.el('div', { class: 'row' }, [checkBtn]));
+        if (hear) ctx.root.appendChild(hear.node);
+        ctx.root.appendChild(ctx.el('div', { class: 'row', style: 'justify-content:center' }, [checkBtn, playBoxes, clearBtn]));
         draw();
         return {
           reveal: function (correct) {
             halt();
             picked = null; errors = [];
+            say.textContent = '';
             if (!correct) {
               // Show the right sounds in the boxes, using the tray's own chips.
               var used = [];
@@ -3464,7 +3600,10 @@
           // The first LETTER, after any fixed slot in front of it.
           var at = 0;
           while (at < written.length - 1 && fixed(written[at])) at++;
-          edit(hasFixed ? align(written.slice(0, at + 1) + value().slice(at + 1)) : (written[0] || '') + value().slice(1), 'spelling_first_letter');
+          var next = hasFixed ? align(written.slice(0, at + 1) + value().slice(at + 1)) : (written[0] || '') + value().slice(1);
+          // 2026-11-18: as Show More, it never writes the last letter ("I", "a": the first letter is the whole word).
+          if (String(next).toLowerCase() === written.toLowerCase()) return;
+          edit(next, 'spelling_first_letter');
         } }, text: L.spelling_bee_first_letter });
         // "Show Vowels", then "Show More" one letter at a time (:19846-19863).
         var moreBtn = ctx.el('button', { type: 'button', on: { click: function () {
@@ -4188,6 +4327,12 @@
             if (letters.join('') === word) { var t2 = letters[0]; letters[0] = letters[1]; letters[1] = t2; }
           }
           letters = letters.filter(isLetter);
+        }
+        // 2026-11-18: the tiles never start as the word, also once its ' and - are out ("I'll": i l l) or when the two
+        // swapped tiles are the same letter ("eek"): the first tile changes place with the first tile that differs.
+        var tilesOf = word.split('').filter(isLetter).join('');
+        if (letters.length > 1 && letters.join('') === tilesOf) {
+          for (var d = 1; d < letters.length; d++) { if (letters[d] !== letters[0]) { var t3 = letters[0]; letters[0] = letters[d]; letters[d] = t3; break; } }
         }
         var missing = [];
         var wordAudio = env.wordClip(env.word);
@@ -5402,7 +5547,9 @@
               type: 'button',
               'data-lane': String(laneIndex),
               'data-sr-target': isTarget ? 'true' : 'false',
-              'aria-label': isTarget
+              // 2026-11-18: on dot, ink and size cards the card's word is the answer ("5 dots") or the distractor (the
+              // digit, the color word): their lanes are named by number only.
+              'aria-label': isTarget && !(item.dots > 0 || item.stroopInk || item.sizePair)
                 ? ctx.fmt(L.symbol_runner_target_lane, { n: laneIndex + 1, word: item.word })
                 : ctx.fmt(L.symbol_runner_lane, { n: laneIndex + 1 }),
               style: 'display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:112px;padding:10px;border-radius:12px;border:3px solid var(--muted);background:var(--bg)',
@@ -7024,6 +7171,17 @@
     var namePrompted = false;
     var items = [];
     lesson.blocks.forEach(function (block) { block.items.forEach(function (item, i) { items.push({ activity: block.activity, item: item, n: i + 1, total: block.items.length }); }); });
+    // 2026-11-18: the file's own order (lesson.sequence), when it names each question once; "2 of 5" stays per activity.
+    var ownOrder = false;
+    if (Array.isArray(lesson.sequence) && lesson.mode !== 'probe' && lesson.sequence.length === items.length) {
+      var byId = {}, place = {};
+      items.forEach(function (e) { byId[e.item.id] = e; });
+      var ordered = lesson.sequence.map(function (id) { var e = byId[id]; delete byId[id]; return e; });
+      if (ordered.every(Boolean)) {
+        ownOrder = true;
+        items = ordered.map(function (e) { place[e.activity] = (place[e.activity] || 0) + 1; return { activity: e.activity, item: e.item, n: place[e.activity], total: e.total }; });
+      }
+    }
     // The missed questions once more (lesson.repeatMissed, practice files only): appended after the others, by their places.
     var baseCount = items.length, repeatMissed = lesson.repeatMissed === true && lesson.mode !== 'probe';
     var addAgain = function (list) {
@@ -7495,7 +7653,8 @@
       if (state.index >= items.length) { renderFinish(); return; }
       var entry = items[state.index];
       var prevEntry = state.index > 0 ? items[state.index - 1] : null;
-      var skipDirections = entry.n > 1 && !!(tools && tools.directionsOnce && tools.directionsOnce());
+      // In the file's own order, the directions again when the activity changes.
+      var skipDirections = entry.n > 1 && (!ownOrder || (!!prevEntry && prevEntry.activity === entry.activity)) && !!(tools && tools.directionsOnce && tools.directionsOnce());
       var item = entry.item;
       var rec = state.items[state.index];
       var render = renders[entry.activity];
@@ -7794,9 +7953,12 @@
       } }, text: L.practice_again });
       if (check) { check.finish({ send: sendButton, save: saveButton, csv: csvButton, copy: copyButton, more: more, about: info, status: fileStatus, copyBox: copyBox, note: closedNote || (sendButton ? L.send_note : L.not_sent) }); return; }
       // A star for finishing (drawn by the style rules), and each activity's own result when the file has several.
+      // In the file's own order, by id.
+      var recOf = {};
+      if (ownOrder) state.items.forEach(function (r) { if (r) recOf[r.itemId] = r; });
       var at = 0, tally = lesson.blocks.map(function (b) {
         var t = 0, f = 0, pt = 0, pd = 0;
-        b.items.forEach(function () { var r = state.items[at++]; if (r && (r.practice || b.activity === 'letter_tracing')) { pt++; if (r.done) pd++; } else if (r) { t++; if (r.firstTry) f++; } });
+        b.items.forEach(function (it) { var r = ownOrder ? recOf[it.id] : state.items[at++]; if (r && (r.practice || b.activity === 'letter_tracing')) { pt++; if (r.done) pd++; } else if (r) { t++; if (r.firstTry) f++; } });
         // Practice (Letter Trace) has its own row: how many were done, never a score.
         return t ? el('li', {}, [el('b', { text: activityTitle(b.activity) }), el('span', { text: fmt(L.done_activity || '{first} of {total}', { first: f, total: t }) })])
           : pt ? el('li', {}, [el('b', { text: activityTitle(b.activity) }), el('span', { text: fmt(L.done_practice, { done: pd, total: pt }) })]) : null;

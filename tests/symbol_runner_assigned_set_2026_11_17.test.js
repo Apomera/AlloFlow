@@ -70,7 +70,8 @@ describe('A. a set saved into the resource', () => {
       select.dispatchEvent(new p.w.Event('change', { bubbles: true }));
     });
     await act(async () => { p.host.querySelector('[data-testid="symbol-runner-save-set"]').click(); });
-    expect(saved).toEqual([{ mode: 'confusable_letters', count: 30, rehearsal: false, custom: '' }]);
+    // 2026-11-18: the set also carries readAloud (the teacher's read-aloud permission; off unless ticked).
+    expect(saved).toEqual([{ mode: 'confusable_letters', count: 30, rehearsal: false, custom: '', readAloud: false }]);
     expect(p.host.textContent).toContain('Saved. Students who open this resource start with: Letters that look alike (b, d, p, q), 30 cards.');
     await p.unmount();
   });
@@ -81,7 +82,7 @@ describe('A. a set saved into the resource', () => {
     expect(p.host.querySelector('[data-testid="symbol-runner-assign"]').textContent).toContain('Students start with: My own list, 20 cards.');
     expect(p.given[p.given.length - 1]).toMatchObject({ modeId: 'custom', customSymbols: 'cat dog sun' });
     await act(async () => { p.host.querySelector('[data-testid="symbol-runner-save-set"]').click(); });
-    expect(saved[0]).toEqual({ mode: 'custom', count: 20, rehearsal: false, custom: 'cat dog sun' });
+    expect(saved[0]).toEqual({ mode: 'custom', count: 20, rehearsal: false, custom: 'cat dog sun', readAloud: false });
     await p.unmount();
   });
 
@@ -90,7 +91,7 @@ describe('A. a set saved into the resource', () => {
     expect(I._srSettings(null)).toBe(null);
     expect(I._srSettings([])).toBe(null);
     expect(I._srSettings({ mode: '<b>' })).toBe(null);
-    expect(I._srSettings({ mode: 'digits_single', count: 999, rehearsal: 'yes', custom: 'x' })).toEqual({ mode: 'digits_single', count: 20, rehearsal: false, custom: '' });
+    expect(I._srSettings({ mode: 'digits_single', count: 999, rehearsal: 'yes', custom: 'x' })).toEqual({ mode: 'digits_single', count: 20, rehearsal: false, custom: '', readAloud: false });
     expect(I._srSettings({ mode: 'custom', count: 30, rehearsal: true, custom: 'a'.repeat(3000) }).custom).toHaveLength(2000);
   });
 

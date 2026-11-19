@@ -153,7 +153,10 @@ module.exports = {
       // The first LETTER, after any fixed slot in front of it.
       var at = 0;
       while (at < written.length - 1 && fixed(written[at])) at++;
-      edit(hasFixed ? align(written.slice(0, at + 1) + value().slice(at + 1)) : (written[0] || '') + value().slice(1), 'spelling_first_letter');
+      var next = hasFixed ? align(written.slice(0, at + 1) + value().slice(at + 1)) : (written[0] || '') + value().slice(1);
+      // 2026-11-18: as Show More, it never writes the last letter ("I", "a": the first letter is the whole word).
+      if (String(next).toLowerCase() === written.toLowerCase()) return;
+      edit(next, 'spelling_first_letter');
     } }, text: L.spelling_bee_first_letter });
     // "Show Vowels", then "Show More" one letter at a time (:19846-19863).
     var moreBtn = ctx.el('button', { type: 'button', on: { click: function () {

@@ -168,7 +168,9 @@ describe('Word Sounds feedback has exclusive use of the audio channel', () => {
     const stimulus = await reachStimulus();
     expect(stimulus.paused).toBe(false);
 
-    await click('[role="button"][aria-label="Number 1"]');
+    // 2026-11-18 (review): Easy's counting row slides by the word, so corn's row is 2-6 and has no 1; 5 is a wrong
+    // answer in every 3-sound row (1-5 or 2-6). The wrong answers below are 5 for that reason.
+    await click('[role="button"][aria-label="Number 5"]');
     const feedback = activeFeedback();
     expect(stimulus.paused).toBe(true);
     expect(events.findIndex((event) => event.type === 'pause' && event.clip === stimulus))
@@ -190,7 +192,7 @@ describe('Word Sounds feedback has exclusive use of the audio channel', () => {
     const pending = await reachStimulus(CACHED_WORD);
     expect(playCount(CACHED_WORD)).toBe(0);
 
-    await click('[role="button"][aria-label="Number 1"]');
+    await click('[role="button"][aria-label="Number 5"]');
     activeFeedback();
     await act(async () => { pending.dispatch('canplaythrough'); });
     await advance(1200);
@@ -201,7 +203,7 @@ describe('Word Sounds feedback has exclusive use of the audio channel', () => {
   it('queues a listen request during feedback and stops feedback on the next answer', async () => {
     await mount();
     await reachStimulus();
-    await click('[role="button"][aria-label="Number 1"]');
+    await click('[role="button"][aria-label="Number 5"]');
     const feedback = activeFeedback();
     const beforeListen = playCount(WORD);
     await click('button[aria-label="word_sounds.play_word"]');
@@ -223,7 +225,7 @@ describe('Word Sounds feedback has exclusive use of the audio channel', () => {
   it.each(['advance', 'minimize', 'unmount'])('cancels feedback and its delayed replay on %s', async (transition) => {
     await mount();
     await reachStimulus();
-    await click('[role="button"][aria-label="Number 1"]');
+    await click('[role="button"][aria-label="Number 5"]');
     const feedback = activeFeedback();
     const beforeTransition = playCount(WORD);
 
@@ -261,7 +263,7 @@ it.each(['loaded', 'absent'])(
     await reachStimulus();
     if (bankState === 'absent') delete window.__ALLO_PHONEME_AUDIO_BANK;
 
-    await click('[role="button"][aria-label="Number 1"]');
+    await click('[role="button"][aria-label="Number 5"]');
     const feedback = activeFeedback();
     const incorrectFeedback = setFeedback.mock.calls.findLast(([value]) => value?.isCorrect === false)?.[0];
     expect(incorrectFeedback, 'the host must receive incorrect feedback').toBeDefined();

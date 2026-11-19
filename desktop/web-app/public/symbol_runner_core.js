@@ -2526,8 +2526,91 @@
     ].join('\n');
   }
 
+  // 2026-11-18 read-aloud: the learner reads the whole grid aloud, and on-device speech recognition
+  // runs after the reading, so recognition speed never affects the timing. Only sets whose answers
+  // are said as plain names take part (letters, sight words, numbers); dot patterns, sounds, chunks,
+  // math facts and the interference sets stay tap-only.
+  var READ_ALOUD_MODES = ['confusable_letters', 'letters_lower', 'letters_upper', 'sight_words', 'sight_words_g1', 'sight_words_g2_3', 'digits_single', 'digits_teen_decade'];
+  var READ_ALOUD_HOMOPHONES = { to: ['two', 'too'], two: ['to', 'too'], too: ['to', 'two'], for: ['four', 'fore'], four: ['for', 'fore'], one: ['won'], no: ['know'], there: ['their', 'theyre'], their: ['there', 'theyre'], by: ['buy', 'bye'], see: ['sea'], be: ['bee'], i: ['eye'], you: ['u'], are: ['r'], here: ['hear'], right: ['write'], eight: ['ate'] };
+  function readAloudSupported(modeId, items) {
+    if (READ_ALOUD_MODES.indexOf(modeId) >= 0) return true;
+    if (modeId !== 'custom' || !items || !items.length) return false;
+    return items.every(function (it) { return it && /^[a-z0-9]+$/i.test(String(it.answer)); });
+  }
+  function readAloudVariants(answer) {
+    var a = String(answer == null ? '' : answer).toLowerCase().trim();
+    var list = (SPOKEN_MAP[a] || []).concat(READ_ALOUD_HOMOPHONES[a] || [], [a]);
+    return list.filter(function (v, i) { return v && list.indexOf(v) === i; });
+  }
+  function readAloudTokens(transcript, singleLetters) {
+    var out = [];
+    String(transcript == null ? '' : transcript).replace(/['’]/g, '').replace(/[^A-Za-z0-9\s-]/g, ' ').split(/[\s-]+/).forEach(function (part) {
+      if (!part) return;
+      // "BDPQ" from a fast reader of single letters is four letters, not one word.
+      if (singleLetters && /^[A-Z]{2,}$/.test(part)) part.split('').forEach(function (ch) { out.push(ch.toLowerCase()); });
+      else out.push(part.toLowerCase());
+    });
+    return out;
+  }
+  // Lines the transcript up with the grid in reading order (most matches, order kept), so one
+  // misheard or skipped symbol only affects itself. Nothing is ever marked wrong: an unmatched
+  // symbol is "not confirmed" for an adult to check.
+  function alignReadAloud(transcript, answers) {
+    var expected = (answers || []).map(function (a) { return String(a == null ? '' : a); });
+    var lower = expected.map(function (a) { return a.toLowerCase().trim(); });
+    var singleLetters = lower.length > 0 && lower.every(function (a) { return /^[a-z]$/.test(a); });
+    var tokens = readAloudTokens(transcript, singleLetters), n = lower.length, m = tokens.length;
+    var variants = lower.map(readAloudVariants);
+    var fits = function (i, j, len) { return j + len <= m && variants[i].indexOf(tokens.slice(j, j + len).join(' ')) >= 0; };
+    var dp = [];
+    for (var i = 0; i <= n; i++) { dp.push(new Array(m + 1).fill(0)); }
+    for (i = 1; i <= n; i++) {
+      for (var j = 1; j <= m; j++) {
+        var best = Math.max(dp[i - 1][j], dp[i][j - 1]);
+        if (fits(i - 1, j - 1, 1)) best = Math.max(best, dp[i - 1][j - 1] + 1);
+        if (j >= 2 && fits(i - 1, j - 2, 2)) best = Math.max(best, dp[i - 1][j - 2] + 1);
+        dp[i][j] = best;
+      }
+    }
+    var heard = new Array(n).fill(''), at = n, tk = m;
+    while (at > 0 && tk > 0) {
+      if (tk >= 2 && fits(at - 1, tk - 2, 2) && dp[at][tk] === dp[at - 1][tk - 2] + 1) { heard[at - 1] = tokens.slice(tk - 2, tk).join(' '); at--; tk -= 2; }
+      else if (fits(at - 1, tk - 1, 1) && dp[at][tk] === dp[at - 1][tk - 1] + 1) { heard[at - 1] = tokens[tk - 1]; at--; tk--; }
+      else if (dp[at][tk] === dp[at - 1][tk]) at--;
+      else tk--;
+    }
+    var items = expected.map(function (a, k) { return { index: k, answer: a, heard: !!heard[k], heardAs: heard[k] }; });
+    return { items: items, heard: items.filter(function (x) { return x.heard; }).length, total: n, words: m };
+  }
+  // When the voice starts and stops in a mono recording (20 ms frames; speech means three frames in
+  // a row well above the quiet level), so the reading time does not depend on when Start and Done
+  // were pressed.
+  function readAloudSpeechSpan(pcm, sampleRate) {
+    var rate = sampleRate || 16000, size = Math.max(1, Math.round(rate * 0.02)), frames = pcm ? Math.floor(pcm.length / size) : 0;
+    if (!frames) return { speech: false, startMs: 0, endMs: 0, durationMs: 0 };
+    var rms = [];
+    for (var f = 0; f < frames; f++) {
+      var sum = 0;
+      for (var s = f * size; s < (f + 1) * size; s++) sum += pcm[s] * pcm[s];
+      rms.push(Math.sqrt(sum / size));
+    }
+    var sorted = rms.slice().sort(function (a, b) { return a - b; });
+    var threshold = Math.max(sorted[Math.floor(frames * 0.2)] * 3, 0.01), first = -1, last = -1;
+    for (f = 0; f + 2 < frames; f++) {
+      if (rms[f] >= threshold && rms[f + 1] >= threshold && rms[f + 2] >= threshold) { if (first < 0) first = f; last = f + 2; }
+    }
+    var ms = size / rate * 1000;
+    if (first < 0) return { speech: false, startMs: 0, endMs: 0, durationMs: 0 };
+    return { speech: true, startMs: Math.round(first * ms), endMs: Math.round((last + 1) * ms), durationMs: Math.round((last + 1 - first) * ms) };
+  }
+
   var api = {
     VERSION: VERSION,
+    READ_ALOUD_MODES: READ_ALOUD_MODES,
+    readAloudSupported: readAloudSupported,
+    readAloudVariants: readAloudVariants,
+    alignReadAloud: alignReadAloud,
+    readAloudSpeechSpan: readAloudSpeechSpan,
     MODES: MODES,
     DOT_LAYOUTS: DOT_LAYOUTS,
     SPOKEN_MAP: SPOKEN_MAP,

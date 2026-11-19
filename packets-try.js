@@ -63,6 +63,7 @@
     hide.textContent = 'Hide answers';
     hide.addEventListener('click', function () {
       hideAnswers = !hideAnswers;
+      answersByPresent = false;
       renderBar(lastBar);
       var again = barHost.querySelector('[data-preview-hide]');
       if (again) again.focus();
@@ -117,6 +118,59 @@
     }
   }
 
+  // 2026-11-18: Present, for a teacher showing the file to a group. The top of this page (the word Preview and the
+  // teacher tools) slides away and the file fills the screen, in full screen where the browser allows it. The top
+  // comes back while the pointer is at the top edge, while a control in it has keyboard focus, or from the tab under
+  // it. Present turns Hide answers on, and off again after unless the teacher changed it. Esc, or Present again, ends it.
+  var presentBtn = doc.getElementById('try-present');
+  var tab = doc.getElementById('try-tab');
+  var presenting = false;
+  var wentFull = false;
+  var answersByPresent = false;
+  function fullNow() { return doc.fullscreenElement || doc.webkitFullscreenElement || null; }
+  function setOpen(open) {
+    doc.body.classList.toggle('try-open', !!open);
+    tab.setAttribute('aria-expanded', String(!!open));
+  }
+  function setPresent(on) {
+    if (!!on === presenting) return;
+    presenting = !!on;
+    doc.body.classList.toggle('try-present', presenting);
+    presentBtn.setAttribute('aria-pressed', String(presenting));
+    tab.hidden = !presenting;
+    setOpen(false);
+    if (presenting && !hideAnswers) { hideAnswers = true; answersByPresent = true; if (lastBar) renderBar(lastBar); }
+    if (!presenting && answersByPresent) { hideAnswers = false; answersByPresent = false; if (lastBar) renderBar(lastBar); }
+    var root = doc.documentElement;
+    if (presenting) {
+      var ask = root.requestFullscreen || root.webkitRequestFullscreen;
+      if (ask && !fullNow()) {
+        wentFull = true;
+        try {
+          var asked = ask.call(root);
+          if (asked && typeof asked.catch === 'function') asked.catch(function () { wentFull = false; });
+        } catch (_) { wentFull = false; }
+      }
+      if (frame) frame.focus();
+    } else {
+      var leave = doc.exitFullscreen || doc.webkitExitFullscreen;
+      if (wentFull && fullNow() && leave) { try { leave.call(doc); } catch (_) {} }
+      wentFull = false;
+    }
+  }
+  if (presentBtn && tab) {
+    presentBtn.addEventListener('click', function () { setPresent(!presenting); });
+    tab.addEventListener('click', function () { setOpen(!doc.body.classList.contains('try-open')); });
+    doc.addEventListener('keydown', function (event) {
+      if (!presenting || event.key !== 'Escape') return;
+      setPresent(false);
+      presentBtn.focus();
+    });
+    var onFull = function () { if (presenting && wentFull && !fullNow()) setPresent(false); };
+    doc.addEventListener('fullscreenchange', onFull);
+    doc.addEventListener('webkitfullscreenchange', onFull);
+  }
+
   function wireChannel() {
     if (typeof window.BroadcastChannel !== 'function') return;
     try { channel = new window.BroadcastChannel(CHANNEL); } catch (_) { channel = null; }
@@ -158,6 +212,7 @@
     showHtml(html);
     doc.getElementById('try-wait').hidden = true;
     doc.getElementById('try-main').appendChild(frame);
+    if (presentBtn) presentBtn.hidden = false;
     wireChannel();
   }).catch(fail);
 })();

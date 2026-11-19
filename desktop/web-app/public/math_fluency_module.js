@@ -6216,8 +6216,91 @@
         ].join('\n');
       }
 
+      // 2026-11-18 read-aloud: the learner reads the whole grid aloud, and on-device speech recognition
+      // runs after the reading, so recognition speed never affects the timing. Only sets whose answers
+      // are said as plain names take part (letters, sight words, numbers); dot patterns, sounds, chunks,
+      // math facts and the interference sets stay tap-only.
+      var READ_ALOUD_MODES = ['confusable_letters', 'letters_lower', 'letters_upper', 'sight_words', 'sight_words_g1', 'sight_words_g2_3', 'digits_single', 'digits_teen_decade'];
+      var READ_ALOUD_HOMOPHONES = { to: ['two', 'too'], two: ['to', 'too'], too: ['to', 'two'], for: ['four', 'fore'], four: ['for', 'fore'], one: ['won'], no: ['know'], there: ['their', 'theyre'], their: ['there', 'theyre'], by: ['buy', 'bye'], see: ['sea'], be: ['bee'], i: ['eye'], you: ['u'], are: ['r'], here: ['hear'], right: ['write'], eight: ['ate'] };
+      function readAloudSupported(modeId, items) {
+        if (READ_ALOUD_MODES.indexOf(modeId) >= 0) return true;
+        if (modeId !== 'custom' || !items || !items.length) return false;
+        return items.every(function (it) { return it && /^[a-z0-9]+$/i.test(String(it.answer)); });
+      }
+      function readAloudVariants(answer) {
+        var a = String(answer == null ? '' : answer).toLowerCase().trim();
+        var list = (SPOKEN_MAP[a] || []).concat(READ_ALOUD_HOMOPHONES[a] || [], [a]);
+        return list.filter(function (v, i) { return v && list.indexOf(v) === i; });
+      }
+      function readAloudTokens(transcript, singleLetters) {
+        var out = [];
+        String(transcript == null ? '' : transcript).replace(/['’]/g, '').replace(/[^A-Za-z0-9\s-]/g, ' ').split(/[\s-]+/).forEach(function (part) {
+          if (!part) return;
+          // "BDPQ" from a fast reader of single letters is four letters, not one word.
+          if (singleLetters && /^[A-Z]{2,}$/.test(part)) part.split('').forEach(function (ch) { out.push(ch.toLowerCase()); });
+          else out.push(part.toLowerCase());
+        });
+        return out;
+      }
+      // Lines the transcript up with the grid in reading order (most matches, order kept), so one
+      // misheard or skipped symbol only affects itself. Nothing is ever marked wrong: an unmatched
+      // symbol is "not confirmed" for an adult to check.
+      function alignReadAloud(transcript, answers) {
+        var expected = (answers || []).map(function (a) { return String(a == null ? '' : a); });
+        var lower = expected.map(function (a) { return a.toLowerCase().trim(); });
+        var singleLetters = lower.length > 0 && lower.every(function (a) { return /^[a-z]$/.test(a); });
+        var tokens = readAloudTokens(transcript, singleLetters), n = lower.length, m = tokens.length;
+        var variants = lower.map(readAloudVariants);
+        var fits = function (i, j, len) { return j + len <= m && variants[i].indexOf(tokens.slice(j, j + len).join(' ')) >= 0; };
+        var dp = [];
+        for (var i = 0; i <= n; i++) { dp.push(new Array(m + 1).fill(0)); }
+        for (i = 1; i <= n; i++) {
+          for (var j = 1; j <= m; j++) {
+            var best = Math.max(dp[i - 1][j], dp[i][j - 1]);
+            if (fits(i - 1, j - 1, 1)) best = Math.max(best, dp[i - 1][j - 1] + 1);
+            if (j >= 2 && fits(i - 1, j - 2, 2)) best = Math.max(best, dp[i - 1][j - 2] + 1);
+            dp[i][j] = best;
+          }
+        }
+        var heard = new Array(n).fill(''), at = n, tk = m;
+        while (at > 0 && tk > 0) {
+          if (tk >= 2 && fits(at - 1, tk - 2, 2) && dp[at][tk] === dp[at - 1][tk - 2] + 1) { heard[at - 1] = tokens.slice(tk - 2, tk).join(' '); at--; tk -= 2; }
+          else if (fits(at - 1, tk - 1, 1) && dp[at][tk] === dp[at - 1][tk - 1] + 1) { heard[at - 1] = tokens[tk - 1]; at--; tk--; }
+          else if (dp[at][tk] === dp[at - 1][tk]) at--;
+          else tk--;
+        }
+        var items = expected.map(function (a, k) { return { index: k, answer: a, heard: !!heard[k], heardAs: heard[k] }; });
+        return { items: items, heard: items.filter(function (x) { return x.heard; }).length, total: n, words: m };
+      }
+      // When the voice starts and stops in a mono recording (20 ms frames; speech means three frames in
+      // a row well above the quiet level), so the reading time does not depend on when Start and Done
+      // were pressed.
+      function readAloudSpeechSpan(pcm, sampleRate) {
+        var rate = sampleRate || 16000, size = Math.max(1, Math.round(rate * 0.02)), frames = pcm ? Math.floor(pcm.length / size) : 0;
+        if (!frames) return { speech: false, startMs: 0, endMs: 0, durationMs: 0 };
+        var rms = [];
+        for (var f = 0; f < frames; f++) {
+          var sum = 0;
+          for (var s = f * size; s < (f + 1) * size; s++) sum += pcm[s] * pcm[s];
+          rms.push(Math.sqrt(sum / size));
+        }
+        var sorted = rms.slice().sort(function (a, b) { return a - b; });
+        var threshold = Math.max(sorted[Math.floor(frames * 0.2)] * 3, 0.01), first = -1, last = -1;
+        for (f = 0; f + 2 < frames; f++) {
+          if (rms[f] >= threshold && rms[f + 1] >= threshold && rms[f + 2] >= threshold) { if (first < 0) first = f; last = f + 2; }
+        }
+        var ms = size / rate * 1000;
+        if (first < 0) return { speech: false, startMs: 0, endMs: 0, durationMs: 0 };
+        return { speech: true, startMs: Math.round(first * ms), endMs: Math.round((last + 1) * ms), durationMs: Math.round((last + 1 - first) * ms) };
+      }
+
       var api = {
         VERSION: VERSION,
+        READ_ALOUD_MODES: READ_ALOUD_MODES,
+        readAloudSupported: readAloudSupported,
+        readAloudVariants: readAloudVariants,
+        alignReadAloud: alignReadAloud,
+        readAloudSpeechSpan: readAloudSpeechSpan,
         MODES: MODES,
         DOT_LAYOUTS: DOT_LAYOUTS,
         SPOKEN_MAP: SPOKEN_MAP,
@@ -6327,7 +6410,7 @@
     if (!mode) return null;
     var count = Number(v.count);
     return { mode: mode, count: count === 10 || count === 30 ? count : 20, rehearsal: v.rehearsal === true,
-      custom: mode === 'custom' && typeof v.custom === 'string' ? v.custom.slice(0, 2000) : '' };
+      custom: mode === 'custom' && typeof v.custom === 'string' ? v.custom.slice(0, 2000) : '', readAloud: v.readAloud === true };
   }
   function _srSetLine(set, modes) {
     var m = (modes || []).filter(function (x) { return x && x.id === set.mode; })[0];
@@ -6418,6 +6501,112 @@
   }
   var _srPanelSeq = 0;
 
+  // 2026-11-18 read-aloud: the learner reads the whole grid aloud. The recording is transcribed after the
+  // reading by the Whisper model already downloaded on this device (never the browser's cloud speech
+  // recognition), then let go; nothing is saved. The time comes from when the voice starts and stops.
+  // A symbol the device could not confirm shows as "not sure", never as wrong. English sets only.
+  function _srAloudEngine() {
+    var v = typeof window !== 'undefined' ? window.AlloFlowVoice : null;
+    return v && typeof v.recordAudioBlob === 'function' && typeof v.transcribeAudio === 'function' && typeof v.preparedWhisperTier === 'function' ? v : null;
+  }
+  function _srAloudTier(v) {
+    try { var pref = typeof v.loadPreference === 'function' ? v.loadPreference().whisperTier : ''; return v.preparedWhisperTier(pref || 'tiny', 'en-US'); } catch (_) { return null; }
+  }
+  function _srAloudPcm(blob) {
+    var AC = window.AudioContext || window.webkitAudioContext, OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+    if (!AC || !OAC || !blob || typeof blob.arrayBuffer !== 'function') return Promise.reject(new Error('audio decoding unavailable'));
+    return blob.arrayBuffer().then(function (buf) {
+      var ctx = new AC();
+      return new Promise(function (res, rej) { ctx.decodeAudioData(buf, res, rej); }).then(function (audio) {
+        try { ctx.close(); } catch (_) {}
+        var off = new OAC(1, Math.max(1, Math.ceil(audio.duration * 16000)), 16000), src = off.createBufferSource();
+        src.buffer = audio; src.connect(off.destination); src.start(0);
+        return off.startRendering().then(function (out) { return out.getChannelData(0).slice(); });
+      });
+    });
+  }
+  function SymbolRunnerReadAloud(props) {
+    var React = props.React, h = React.createElement, useState = React.useState, useRef = React.useRef, useEffect = React.useEffect;
+    var core = props.core, engine = _srAloudEngine();
+    var phaseState = useState('idle'), phase = phaseState[0], setPhase = phaseState[1];
+    var gridState = useState(null), grid = gridState[0], setGrid = gridState[1];
+    var resultState = useState(null), result = resultState[0], setResult = resultState[1];
+    var tickState = useState(0), setTick = tickState[1];
+    var recRef = useRef(null), alive = useRef(true);
+    useEffect(function () { alive.current = true; return function () { alive.current = false; var rec = recRef.current; recRef.current = null; if (rec) { try { rec.cancel(); } catch (_) {} } }; }, []);
+    var makeGrid = function () {
+      try {
+        var sch = core.createScheduler({ modeId: props.modeId, customSymbols: props.customText, count: props.count, seed: 'aloud-' + props.modeId + '-' + Date.now() });
+        return sch.peekQueue().slice(0, props.count);
+      } catch (_) { return []; }
+    };
+    // A new set or count starts a fresh grid.
+    useEffect(function () { if (phase === 'recording') return; setGrid(null); setResult(null); setPhase('idle'); }, [props.modeId, props.customText, props.count]);
+    var items = grid || [];
+    var sample = grid || makeGrid();
+    if (!core || typeof core.alignReadAloud !== 'function' || !core.readAloudSupported(props.modeId, sample)) return null;
+    var tier = engine ? _srAloudTier(engine) : null;
+    var box = { 'data-testid': 'symbol-runner-read-aloud', style: { margin: '0 0 12px', padding: '10px 12px', border: '1px solid #475569', borderRadius: '10px', background: '#0f172a', color: '#e2e8f0', fontSize: '13px' } };
+    var btn = function (extra) { return Object.assign({ type: 'button', style: { minHeight: '36px', padding: '4px 12px', borderRadius: '8px', border: '1px solid #a5b4fc', background: '#312e81', color: '#fff', fontWeight: 700, cursor: 'pointer' } }, extra); };
+    var title = h('h4', { style: { margin: '0 0 4px', fontSize: '14px', color: '#fff' } }, tt('math_fluency.sr_aloud_title', 'Read the grid aloud'));
+    var privacy = h('p', { style: { margin: '0 0 8px', color: '#cbd5e1' } }, tt('math_fluency.sr_aloud_privacy', 'Your voice is turned into text on this device after you finish, then deleted. Nothing is saved or sent.'));
+    if (!engine || !tier) {
+      return h('section', box, title, privacy,
+        h('p', { 'data-testid': 'symbol-runner-read-aloud-setup', style: { margin: '0 0 8px' } }, tt('math_fluency.sr_aloud_needs_model', 'First download the on-device speech model in Speech setup. It is only needed once on this device.')),
+        h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px' } },
+          h('button', btn({ 'data-testid': 'symbol-runner-read-aloud-open-setup', onClick: function () { try { window.dispatchEvent(new CustomEvent('alloflow:open-speech-setup', { detail: { source: 'symbol-runner' } })); } catch (_) {} } }), tt('math_fluency.sr_aloud_open_setup', 'Open Speech setup')),
+          h('button', btn({ 'data-testid': 'symbol-runner-read-aloud-recheck', onClick: function () { setTick(function (n) { return n + 1; }); } }), tt('math_fluency.sr_aloud_check_again', 'Check again'))));
+    }
+    var start = function () {
+      var next = makeGrid();
+      if (!next.length) return;
+      setGrid(next); setResult(null); setPhase('recording');
+      var rec;
+      try { rec = engine.recordAudioBlob({ maxDurationMs: 150000 }); } catch (_) { rec = null; }
+      if (!rec || rec.supported === false) { setPhase('error'); return; }
+      recRef.current = rec;
+      rec.result.then(function (res) {
+        if (!alive.current || recRef.current !== rec) return null;
+        recRef.current = null;
+        setPhase('working');
+        return _srAloudPcm(res && res.blob).then(function (pcm) {
+          var span = core.readAloudSpeechSpan(pcm, 16000);
+          if (!span.speech) return { span: span, align: core.alignReadAloud('', next.map(function (it) { return it.answer; })), text: '' };
+          return engine.transcribeAudio(null, { pcm: pcm, engine: 'whisper', tier: tier, lang: 'en-US' }).then(function (out) {
+            var text = String(out && (out.transcript || out.text) || '').trim();
+            return { span: span, align: core.alignReadAloud(text, next.map(function (it) { return it.answer; })), text: text };
+          });
+        }).then(function (done) { if (alive.current) { setResult(done); setPhase('done'); } });
+      }).catch(function () { if (alive.current) { recRef.current = null; setPhase('error'); } });
+    };
+    var finish = function () { var rec = recRef.current; if (rec) { try { rec.stop(); } catch (_) {} } };
+    var marks = result ? result.align.items : null;
+    var cells = items.map(function (it, i) {
+      var m = marks && marks[i], unsure = marks && !m.heard;
+      return h('li', { key: i, 'data-sr-aloud-cell': String(i), 'data-heard': marks ? (m.heard ? 'true' : 'false') : undefined,
+        'aria-label': marks ? (it.display + ', ' + (m.heard ? tt('math_fluency.sr_aloud_cell_heard', 'heard') : tt('math_fluency.sr_aloud_cell_unsure', 'not sure'))) : undefined,
+        style: { listStyle: 'none', minWidth: '48px', minHeight: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', fontSize: '24px', fontWeight: 800, borderRadius: '8px', background: '#1e293b', color: '#fff', border: unsure ? '2px dashed #fbbf24' : marks ? '2px solid #34d399' : '1px solid #475569' } },
+        it.display, unsure && h('span', { 'aria-hidden': 'true', style: { fontSize: '13px', color: '#fbbf24' } }, '?'));
+    });
+    var gridEl = items.length > 0 && h('ol', { 'aria-label': tt('math_fluency.sr_aloud_grid', 'Symbols to read, in rows from left to right'), style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(52px, 1fr))', gap: '6px', margin: '8px 0', padding: 0 } }, cells);
+    var status = phase === 'recording' ? tt('math_fluency.sr_aloud_reading', 'Reading. Name every symbol, row by row, then press Done.')
+      : phase === 'working' ? tt('math_fluency.sr_aloud_working', 'Listening back on this device. This can take a few seconds.')
+      : phase === 'error' ? tt('math_fluency.sr_aloud_error', 'The microphone or the on-device model could not be used. Check the microphone permission, then try again.')
+      : phase === 'done' && result ? (result.span.speech
+        ? tt('math_fluency.sr_aloud_result', 'Reading time: {secs} seconds. Heard {heard} of {total} symbols.', { secs: (result.span.durationMs / 1000).toFixed(1), heard: result.align.heard, total: result.align.total })
+        : tt('math_fluency.sr_aloud_no_voice', 'No voice was heard. Check the microphone, then read again.'))
+      : '';
+    return h('section', box, title, privacy,
+      h('p', { role: 'status', 'aria-live': 'polite', 'data-testid': 'symbol-runner-read-aloud-status', style: { margin: '0 0 6px', fontWeight: 700, color: phase === 'error' ? '#fecaca' : '#e0e7ff' } }, status),
+      gridEl,
+      phase === 'done' && result && result.span.speech && result.align.heard < result.align.total && h('p', { style: { margin: '0 0 6px', color: '#fde68a' } }, tt('math_fluency.sr_aloud_unsure_help', 'Symbols marked "?" were not confirmed. They may be right: the device can mishear. An adult can check them with the child.')),
+      phase === 'done' && result && result.text && h('details', { style: { margin: '0 0 6px' } }, h('summary', { style: { cursor: 'pointer' } }, tt('math_fluency.sr_aloud_heard_text', 'What the device heard')), h('p', { 'data-testid': 'symbol-runner-read-aloud-text', style: { margin: '4px 0 0', color: '#cbd5e1' } }, result.text)),
+      h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px' } },
+        phase === 'recording'
+          ? h('button', btn({ 'data-testid': 'symbol-runner-read-aloud-done', onClick: finish }), tt('math_fluency.sr_aloud_done', 'Done'))
+          : h('button', btn({ 'data-testid': 'symbol-runner-read-aloud-start', disabled: phase === 'working', onClick: start }), phase === 'done' || phase === 'error' ? tt('math_fluency.sr_aloud_again', 'Read a new grid') : tt('math_fluency.sr_aloud_start', 'Start reading'))));
+  }
+
   function SymbolRunnerPanel(props) {
     var React = props.React || window.React;
     // 2026-11-17: the app's translations reach tt() here too (only the probe session published them, so Fluency Maze and
@@ -6444,6 +6633,9 @@
     var controlMode = controlState[0], setControlMode = controlState[1];
     var viewState = useState(function () { try { return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches ? '2d' : '3d'; } catch (_) { return '3d'; } });
     var viewMode = viewState[0], setViewMode = viewState[1];
+    // 2026-11-18: whether students may read the grid aloud (a teacher's choice, saved with the set).
+    var aloudState = useState(savedSet ? savedSet.readAloud : false);
+    var allowAloud = aloudState[0], setAllowAloud = aloudState[1];
     var rehearsalState = useState(savedSet ? savedSet.rehearsal : false);
     var useRehearsal = rehearsalState[0], setUseRehearsal = rehearsalState[1];
     var knownState = useState('');
@@ -7056,16 +7248,21 @@
         h('button', {
           type: 'button', 'data-testid': 'symbol-runner-save-set',
           onClick: function () {
-            var chosen = { mode: modeId, count: roundCount, rehearsal: !!useRehearsal, custom: modeId === 'custom' ? String(customText || '').slice(0, 2000) : '' };
+            var chosen = { mode: modeId, count: roundCount, rehearsal: !!useRehearsal, custom: modeId === 'custom' ? String(customText || '').slice(0, 2000) : '', readAloud: !!allowAloud };
             try { props.onSaveRunnerSettings(chosen); } catch (_) { return; }
             setPanelStatus(tt('math_fluency.symbol_runner_set_saved', 'Saved. Students who open this resource start with: {set}.', { set: _srSetLine(chosen, modes) }));
           },
           style: { minHeight: '36px', padding: '4px 12px', borderRadius: '8px', border: '1px solid #a5b4fc', background: '#4338ca', color: '#fff', fontWeight: 700, cursor: 'pointer' }
         }, tt('math_fluency.symbol_runner_save_set', 'Save this set for students')),
+        h('label', { 'data-testid': 'symbol-runner-allow-aloud', style: { display: 'inline-flex', alignItems: 'center', gap: '6px', minHeight: '36px' } },
+          h('input', { type: 'checkbox', checked: !!allowAloud, onChange: function (e) { setAllowAloud(!!e.target.checked); } }),
+          tt('math_fluency.sr_aloud_allow', 'Students may read the grid aloud (the microphone stays on their device)')),
         savedSet && h('span', null, tt('math_fluency.symbol_runner_students_start', 'Students start with: {set}.', { set: _srSetLine(savedSet, modes) }))
       ),
       typeof props.onSaveRunnerSettings !== 'function' && savedSet && h('p', { 'data-testid': 'symbol-runner-teacher-set', style: { margin: '0 0 10px', fontSize: '13px', color: '#e0e7ff', fontWeight: 700 } },
         tt('math_fluency.symbol_runner_teacher_set', 'Your teacher chose this practice: {set}.', { set: _srSetLine(savedSet, modes) })),
+      // 2026-11-18: read-aloud is offered to a teacher trying the set, or to students whose teacher allowed it.
+      runnerCore && (typeof props.onSaveRunnerSettings === 'function' || (savedSet && savedSet.readAloud)) && h(SymbolRunnerReadAloud, { React: React, core: runnerCore, modeId: modeId, customText: customText, count: roundCount }),
       // 2026-11-17: what a teacher sets up once (cue pictures, printable sheets) waits in a fold.
       h('details', { 'data-testid': 'symbol-runner-tools', style: { marginBottom: '12px', border: '1px solid #475569', borderRadius: '10px', padding: '2px 10px' } },
         h('summary', { style: { cursor: 'pointer', display: 'list-item', padding: '10px 0', fontSize: '13px', fontWeight: 700, color: '#e0e7ff' } }, tt('math_fluency.symbol_runner_tools', 'For teachers: pictures and printables')),

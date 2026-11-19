@@ -1232,9 +1232,9 @@ exports[`layer 2 — render behavior per activity > activity "blending" renders 
 <span>Easy</span>
 <span style="font-size:0.625rem;opacity:0.7">(Auto)</span>
 </div>
-<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON">
-<span>🗣️</span>
-<span class="hidden sm:inline">Help</span>
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON" aria-label="Instructions are ON">
+<span aria-hidden="true">🗣️</span>
+<span class="hidden sm:inline">Instructions are ON</span>
 </button>
 <select aria-label="common.selection" class="bg-white/20 border border-white/30 rounded-full px-3 py-1 text-white text-xs cursor-pointer hover:bg-white/30 transition-colors outline-none focus:ring-2 focus:ring-white/50" style="-webkit-appearance:none;appearance:none">
 <option value="auto" class="text-slate-800" selected="">🤖 Auto</option>
@@ -1416,9 +1416,9 @@ exports[`layer 2 — render behavior per activity > activity "counting" renders 
 <span>Easy</span>
 <span style="font-size:0.625rem;opacity:0.7">(Auto)</span>
 </div>
-<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON">
-<span>🗣️</span>
-<span class="hidden sm:inline">Help</span>
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON" aria-label="Instructions are ON">
+<span aria-hidden="true">🗣️</span>
+<span class="hidden sm:inline">Instructions are ON</span>
 </button>
 <select aria-label="common.selection" class="bg-white/20 border border-white/30 rounded-full px-3 py-1 text-white text-xs cursor-pointer hover:bg-white/30 transition-colors outline-none focus:ring-2 focus:ring-white/50" style="-webkit-appearance:none;appearance:none">
 <option value="auto" class="text-slate-800" selected="">🤖 Auto</option>
@@ -1616,9 +1616,9 @@ exports[`layer 2 — render behavior per activity > activity "decoding" renders 
 <span>Easy</span>
 <span style="font-size:0.625rem;opacity:0.7">(Auto)</span>
 </div>
-<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON">
-<span>🗣️</span>
-<span class="hidden sm:inline">Help</span>
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON" aria-label="Instructions are ON">
+<span aria-hidden="true">🗣️</span>
+<span class="hidden sm:inline">Instructions are ON</span>
 </button>
 <select aria-label="common.selection" class="bg-white/20 border border-white/30 rounded-full px-3 py-1 text-white text-xs cursor-pointer hover:bg-white/30 transition-colors outline-none focus:ring-2 focus:ring-white/50" style="-webkit-appearance:none;appearance:none">
 <option value="auto" class="text-slate-800" selected="">🤖 Auto</option>
@@ -1789,9 +1789,9 @@ exports[`layer 2 — render behavior per activity > activity "isolation" renders
 <span>Easy</span>
 <span style="font-size:0.625rem;opacity:0.7">(Auto)</span>
 </div>
-<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON">
-<span>🗣️</span>
-<span class="hidden sm:inline">Help</span>
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON" aria-label="Instructions are ON">
+<span aria-hidden="true">🗣️</span>
+<span class="hidden sm:inline">Instructions are ON</span>
 </button>
 <select aria-label="common.selection" class="bg-white/20 border border-white/30 rounded-full px-3 py-1 text-white text-xs cursor-pointer hover:bg-white/30 transition-colors outline-none focus:ring-2 focus:ring-white/50" style="-webkit-appearance:none;appearance:none">
 <option value="auto" class="text-slate-800" selected="">🤖 Auto</option>
@@ -1953,9 +1953,9 @@ exports[`layer 2 — render behavior per activity > activity "letter_tracing" re
 <span>Easy</span>
 <span style="font-size:0.625rem;opacity:0.7">(Auto)</span>
 </div>
-<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON">
-<span>🗣️</span>
-<span class="hidden sm:inline">Help</span>
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON" aria-label="Instructions are ON">
+<span aria-hidden="true">🗣️</span>
+<span class="hidden sm:inline">Instructions are ON</span>
 </button>
 <select aria-label="common.selection" class="bg-white/20 border border-white/30 rounded-full px-3 py-1 text-white text-xs cursor-pointer hover:bg-white/30 transition-colors outline-none focus:ring-2 focus:ring-white/50" style="-webkit-appearance:none;appearance:none">
 <option value="auto" class="text-slate-800" selected="">🤖 Auto</option>
@@ -2167,9 +2167,9 @@ exports[`layer 2 — render behavior per activity > activity "manipulation" rend
 <span>Easy</span>
 <span style="font-size:0.625rem;opacity:0.7">(Auto)</span>
 </div>
-<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON">
-<span>🗣️</span>
-<span class="hidden sm:inline">Help</span>
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON" aria-label="Instructions are ON">
+<span aria-hidden="true">🗣️</span>
+<span class="hidden sm:inline">Instructions are ON</span>
 </button>
 <select aria-label="common.selection" class="bg-white/20 border border-white/30 rounded-full px-3 py-1 text-white text-xs cursor-pointer hover:bg-white/30 transition-colors outline-none focus:ring-2 focus:ring-white/50" style="-webkit-appearance:none;appearance:none">
 <option value="auto" class="text-slate-800" selected="">🤖 Auto</option>
@@ -2353,9 +2353,9 @@ exports[`layer 2 — render behavior per activity > activity "mapping" renders i
 <span>Easy</span>
 <span style="font-size:0.625rem;opacity:0.7">(Auto)</span>
 </div>
-<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON">
-<span>🗣️</span>
-<span class="hidden sm:inline">Help</span>
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON" aria-label="Instructions are ON">
+<span aria-hidden="true">🗣️</span>
+<span class="hidden sm:inline">Instructions are ON</span>
 </button>
 <select aria-label="common.selection" class="bg-white/20 border border-white/30 rounded-full px-3 py-1 text-white text-xs cursor-pointer hover:bg-white/30 transition-colors outline-none focus:ring-2 focus:ring-white/50" style="-webkit-appearance:none;appearance:none">
 <option value="auto" class="text-slate-800" selected="">🤖 Auto</option>
@@ -2547,9 +2547,9 @@ exports[`layer 2 — render behavior per activity > activity "orthography" rende
 <span>Easy</span>
 <span style="font-size:0.625rem;opacity:0.7">(Auto)</span>
 </div>
-<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON">
-<span>🗣️</span>
-<span class="hidden sm:inline">Help</span>
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON" aria-label="Instructions are ON">
+<span aria-hidden="true">🗣️</span>
+<span class="hidden sm:inline">Instructions are ON</span>
 </button>
 <select aria-label="common.selection" class="bg-white/20 border border-white/30 rounded-full px-3 py-1 text-white text-xs cursor-pointer hover:bg-white/30 transition-colors outline-none focus:ring-2 focus:ring-white/50" style="-webkit-appearance:none;appearance:none">
 <option value="auto" class="text-slate-800" selected="">🤖 Auto</option>
@@ -2759,9 +2759,9 @@ exports[`layer 2 — render behavior per activity > activity "read_passage" rend
 <span>Easy</span>
 <span style="font-size:0.625rem;opacity:0.7">(Auto)</span>
 </div>
-<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON">
-<span>🗣️</span>
-<span class="hidden sm:inline">Help</span>
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON" aria-label="Instructions are ON">
+<span aria-hidden="true">🗣️</span>
+<span class="hidden sm:inline">Instructions are ON</span>
 </button>
 <select aria-label="common.selection" class="bg-white/20 border border-white/30 rounded-full px-3 py-1 text-white text-xs cursor-pointer hover:bg-white/30 transition-colors outline-none focus:ring-2 focus:ring-white/50" style="-webkit-appearance:none;appearance:none">
 <option value="auto" class="text-slate-800" selected="">🤖 Auto</option>
@@ -2933,9 +2933,9 @@ exports[`layer 2 — render behavior per activity > activity "read_sentence" ren
 <span>Easy</span>
 <span style="font-size:0.625rem;opacity:0.7">(Auto)</span>
 </div>
-<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON">
-<span>🗣️</span>
-<span class="hidden sm:inline">Help</span>
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON" aria-label="Instructions are ON">
+<span aria-hidden="true">🗣️</span>
+<span class="hidden sm:inline">Instructions are ON</span>
 </button>
 <select aria-label="common.selection" class="bg-white/20 border border-white/30 rounded-full px-3 py-1 text-white text-xs cursor-pointer hover:bg-white/30 transition-colors outline-none focus:ring-2 focus:ring-white/50" style="-webkit-appearance:none;appearance:none">
 <option value="auto" class="text-slate-800" selected="">🤖 Auto</option>
@@ -3107,9 +3107,9 @@ exports[`layer 2 — render behavior per activity > activity "rhyming" renders i
 <span>Easy</span>
 <span style="font-size:0.625rem;opacity:0.7">(Auto)</span>
 </div>
-<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON">
-<span>🗣️</span>
-<span class="hidden sm:inline">Help</span>
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON" aria-label="Instructions are ON">
+<span aria-hidden="true">🗣️</span>
+<span class="hidden sm:inline">Instructions are ON</span>
 </button>
 <select aria-label="common.selection" class="bg-white/20 border border-white/30 rounded-full px-3 py-1 text-white text-xs cursor-pointer hover:bg-white/30 transition-colors outline-none focus:ring-2 focus:ring-white/50" style="-webkit-appearance:none;appearance:none">
 <option value="auto" class="text-slate-800" selected="">🤖 Auto</option>
@@ -3299,9 +3299,9 @@ exports[`layer 2 — render behavior per activity > activity "segmentation" rend
 <span>Easy</span>
 <span style="font-size:0.625rem;opacity:0.7">(Auto)</span>
 </div>
-<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON">
-<span>🗣️</span>
-<span class="hidden sm:inline">Help</span>
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON" aria-label="Instructions are ON">
+<span aria-hidden="true">🗣️</span>
+<span class="hidden sm:inline">Instructions are ON</span>
 </button>
 <select aria-label="common.selection" class="bg-white/20 border border-white/30 rounded-full px-3 py-1 text-white text-xs cursor-pointer hover:bg-white/30 transition-colors outline-none focus:ring-2 focus:ring-white/50" style="-webkit-appearance:none;appearance:none">
 <option value="auto" class="text-slate-800" selected="">🤖 Auto</option>
@@ -3418,12 +3418,14 @@ exports[`layer 2 — render behavior per activity > activity "segmentation" rend
 </div>
 <div class="flex justify-center gap-3 flex-wrap min-h-[100px] p-6 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-300 transition-colors" dir="ltr">
 </div>
+<p data-seg-say="" role="status" class="text-center text-base font-semibold text-slate-700 min-h-[1.5rem] mt-2">
+</p>
 <div class="flex justify-center mt-2 mb-4">
 <button aria-label="common.play" data-help-key="wordsounds_test_sequence" class="flex items-center gap-2 px-5 py-2 rounded-full bg-violet-100 text-violet-700 font-bold text-sm hover:bg-violet-200 transition-colors shadow-sm">
 <span class="lucide-icon" data-icon="Play">
 </span>Test Sequence</button>
 </div>
-<div class="flex justify-center gap-4 flex-wrap mt-6 min-h-[80px] p-4 rounded-xl hover:bg-slate-50 transition-colors">
+<div class="flex justify-center gap-4 flex-wrap mt-6 min-h-[80px] p-4 rounded-xl hover:bg-slate-50 transition-colors" data-seg-pool="">
 </div>
 <div class="flex justify-center gap-3 mt-6">
 <button disabled="" class="inline-flex items-center gap-2 px-8 py-3 rounded-full font-bold text-lg shadow-lg transition-all bg-slate-200 text-slate-600 cursor-not-allowed">
@@ -3495,9 +3497,9 @@ exports[`layer 2 — render behavior per activity > activity "sentence_match" re
 <span>Easy</span>
 <span style="font-size:0.625rem;opacity:0.7">(Auto)</span>
 </div>
-<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON">
-<span>🗣️</span>
-<span class="hidden sm:inline">Help</span>
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON" aria-label="Instructions are ON">
+<span aria-hidden="true">🗣️</span>
+<span class="hidden sm:inline">Instructions are ON</span>
 </button>
 <select aria-label="common.selection" class="bg-white/20 border border-white/30 rounded-full px-3 py-1 text-white text-xs cursor-pointer hover:bg-white/30 transition-colors outline-none focus:ring-2 focus:ring-white/50" style="-webkit-appearance:none;appearance:none">
 <option value="auto" class="text-slate-800" selected="">🤖 Auto</option>
@@ -3667,9 +3669,9 @@ exports[`layer 2 — render behavior per activity > activity "sound_sort" render
 <span>Easy</span>
 <span style="font-size:0.625rem;opacity:0.7">(Auto)</span>
 </div>
-<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON">
-<span>🗣️</span>
-<span class="hidden sm:inline">Help</span>
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON" aria-label="Instructions are ON">
+<span aria-hidden="true">🗣️</span>
+<span class="hidden sm:inline">Instructions are ON</span>
 </button>
 <select aria-label="common.selection" class="bg-white/20 border border-white/30 rounded-full px-3 py-1 text-white text-xs cursor-pointer hover:bg-white/30 transition-colors outline-none focus:ring-2 focus:ring-white/50" style="-webkit-appearance:none;appearance:none">
 <option value="auto" class="text-slate-800" selected="">🤖 Auto</option>
@@ -3864,9 +3866,9 @@ exports[`layer 2 — render behavior per activity > activity "spelling_bee" rend
 <span>Easy</span>
 <span style="font-size:0.625rem;opacity:0.7">(Auto)</span>
 </div>
-<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON">
-<span>🗣️</span>
-<span class="hidden sm:inline">Help</span>
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON" aria-label="Instructions are ON">
+<span aria-hidden="true">🗣️</span>
+<span class="hidden sm:inline">Instructions are ON</span>
 </button>
 <select aria-label="common.selection" class="bg-white/20 border border-white/30 rounded-full px-3 py-1 text-white text-xs cursor-pointer hover:bg-white/30 transition-colors outline-none focus:ring-2 focus:ring-white/50" style="-webkit-appearance:none;appearance:none">
 <option value="auto" class="text-slate-800" selected="">🤖 Auto</option>
@@ -4101,9 +4103,9 @@ exports[`layer 2 — render behavior per activity > activity "syllable_blending"
 <span>Easy</span>
 <span style="font-size:0.625rem;opacity:0.7">(Auto)</span>
 </div>
-<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON">
-<span>🗣️</span>
-<span class="hidden sm:inline">Help</span>
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON" aria-label="Instructions are ON">
+<span aria-hidden="true">🗣️</span>
+<span class="hidden sm:inline">Instructions are ON</span>
 </button>
 <select aria-label="common.selection" class="bg-white/20 border border-white/30 rounded-full px-3 py-1 text-white text-xs cursor-pointer hover:bg-white/30 transition-colors outline-none focus:ring-2 focus:ring-white/50" style="-webkit-appearance:none;appearance:none">
 <option value="auto" class="text-slate-800" selected="">🤖 Auto</option>
@@ -4270,9 +4272,9 @@ exports[`layer 2 — render behavior per activity > activity "syllable_counting"
 <span>Easy</span>
 <span style="font-size:0.625rem;opacity:0.7">(Auto)</span>
 </div>
-<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON">
-<span>🗣️</span>
-<span class="hidden sm:inline">Help</span>
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON" aria-label="Instructions are ON">
+<span aria-hidden="true">🗣️</span>
+<span class="hidden sm:inline">Instructions are ON</span>
 </button>
 <select aria-label="common.selection" class="bg-white/20 border border-white/30 rounded-full px-3 py-1 text-white text-xs cursor-pointer hover:bg-white/30 transition-colors outline-none focus:ring-2 focus:ring-white/50" style="-webkit-appearance:none;appearance:none">
 <option value="auto" class="text-slate-800" selected="">🤖 Auto</option>
@@ -4455,9 +4457,9 @@ exports[`layer 2 — render behavior per activity > activity "word_families" ren
 <span>Easy</span>
 <span style="font-size:0.625rem;opacity:0.7">(Auto)</span>
 </div>
-<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON">
-<span>🗣️</span>
-<span class="hidden sm:inline">Help</span>
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON" aria-label="Instructions are ON">
+<span aria-hidden="true">🗣️</span>
+<span class="hidden sm:inline">Instructions are ON</span>
 </button>
 <select aria-label="common.selection" class="bg-white/20 border border-white/30 rounded-full px-3 py-1 text-white text-xs cursor-pointer hover:bg-white/30 transition-colors outline-none focus:ring-2 focus:ring-white/50" style="-webkit-appearance:none;appearance:none">
 <option value="auto" class="text-slate-800" selected="">🤖 Auto</option>
@@ -4673,9 +4675,9 @@ exports[`layer 2 — render behavior per activity > correct-answer feedback bann
 <span>Easy</span>
 <span style="font-size:0.625rem;opacity:0.7">(Auto)</span>
 </div>
-<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON">
-<span>🗣️</span>
-<span class="hidden sm:inline">Help</span>
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON" aria-label="Instructions are ON">
+<span aria-hidden="true">🗣️</span>
+<span class="hidden sm:inline">Instructions are ON</span>
 </button>
 <select aria-label="common.selection" class="bg-white/20 border border-white/30 rounded-full px-3 py-1 text-white text-xs cursor-pointer hover:bg-white/30 transition-colors outline-none focus:ring-2 focus:ring-white/50" style="-webkit-appearance:none;appearance:none">
 <option value="auto" class="text-slate-800" selected="">🤖 Auto</option>
@@ -4858,9 +4860,9 @@ exports[`layer 2 — render behavior per activity > incorrect-answer feedback ba
 <span>Easy</span>
 <span style="font-size:0.625rem;opacity:0.7">(Auto)</span>
 </div>
-<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON">
-<span>🗣️</span>
-<span class="hidden sm:inline">Help</span>
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-indigo-100 border-indigo-200 text-indigo-700" title="Instructions are ON" aria-label="Instructions are ON">
+<span aria-hidden="true">🗣️</span>
+<span class="hidden sm:inline">Instructions are ON</span>
 </button>
 <select aria-label="common.selection" class="bg-white/20 border border-white/30 rounded-full px-3 py-1 text-white text-xs cursor-pointer hover:bg-white/30 transition-colors outline-none focus:ring-2 focus:ring-white/50" style="-webkit-appearance:none;appearance:none">
 <option value="auto" class="text-slate-800" selected="">🤖 Auto</option>
