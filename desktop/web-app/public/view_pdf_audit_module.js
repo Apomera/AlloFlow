@@ -773,7 +773,7 @@ function _PdfWorkspaceHeader({ fileName, sourceLabel, state, hasResult, onNaviga
     const header = headerRef.current;
     if (!header || typeof ResizeObserver !== "function") return;
     const update = () => {
-      header.parentElement.style.scrollPaddingTop = (getComputedStyle(header).position === "sticky" ? header.getBoundingClientRect().height + 12 : 12) + "px";
+      if (header.parentElement) header.parentElement.style.scrollPaddingTop = (getComputedStyle(header).position === "sticky" ? header.getBoundingClientRect().height + 12 : 12) + "px";
     };
     const observer = new ResizeObserver(update);
     observer.observe(header);
@@ -954,7 +954,7 @@ function _PdfWorkspaceBatchReview({ item, t }) {
   if (item.status !== "done" || !item.result) return null;
   const say = (key, fallback) => _pdfWorkspaceText(t, key, fallback);
   const result = item.result, coverage = result.verificationCoverage || {}, findings = _pdfWorkspaceBatchFindings(item);
-  const coverageLabel = (value) => value === "complete" ? say("check_complete", "Complete") : value === "partial" ? say("check_partial", "Partial") : value === "unavailable" ? say("unavailable", "Unavailable") : say("not_recorded", "Not recorded");
+  const coverageLabel = (value) => value === "complete" ? say("check_complete", "Complete") : value === "complete-with-review" ? say("check_complete_review", "Complete (needs review)") : value === "partial" ? say("check_partial", "Partial") : value === "unavailable" ? say("unavailable", "Unavailable") : say("not_recorded", "Not recorded");
   return /* @__PURE__ */ React.createElement("details", { className: "pdf-workspace-batch-review" }, /* @__PURE__ */ React.createElement("summary", { "aria-label": say("review_file", "Review findings for") + " " + item.fileName }, say("review_findings", "Review findings")), /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("strong", null, item.fileName)), /* @__PURE__ */ React.createElement("p", null, _pdfWorkspaceBatchVerified(item) ? say("review_verified", "Recorded verification is complete. Review the document before sharing.") : say("review_provisional", "This file still needs review. A high score alone does not establish complete verification.")), /* @__PURE__ */ React.createElement("dl", null, [["AI audit", coverage.ai], ["axe-core", coverage.axe], ["Equal Access", coverage.equalAccess]].map(([engine, value]) => /* @__PURE__ */ React.createElement("div", { key: engine }, /* @__PURE__ */ React.createElement("dt", null, engine), /* @__PURE__ */ React.createElement("dd", null, coverageLabel(value))))), findings.length ? /* @__PURE__ */ React.createElement("ul", null, findings.map((finding, index) => /* @__PURE__ */ React.createElement("li", { key: index }, /* @__PURE__ */ React.createElement("strong", null, finding.engine, ": "), finding.text))) : /* @__PURE__ */ React.createElement("p", null, say("no_saved_findings", "No detailed findings were recorded in this saved result. Check the verification coverage above.")));
 }
 const _PdfPreservationReview = ({ result, captureToken, commitMetadata, onWorkbench }) => {
@@ -3995,17 +3995,21 @@ function _buildEpubPackageFiles(html, opts) {
   const xmlTitle = _expXmlEsc(title);
   const isRtl = /\bdir\s*=\s*['"]?rtl\b/i.test(String(html || "")) || /^(?:ar|fa|he|iw|ps|sd|ug|ur|yi)(?:-|$)/i.test(String(lang || ""));
   let contentXhtml = _altFmtXhtmlFromHtml(html, o);
+  if (!/^<html\b[^>]*\blang=/i.test(contentXhtml)) {
+    contentXhtml = contentXhtml.replace(/^<html\b/i, '<html lang="' + _expXmlEsc(lang) + '"');
+  }
+  if (!/^<html\b[^>]*\bxml:lang=/i.test(contentXhtml)) {
+    contentXhtml = contentXhtml.replace(/^<html\b/i, '<html xml:lang="' + _expXmlEsc(lang) + '"');
+  }
   if (isRtl && !/^<html\b[^>]*\bdir=/i.test(contentXhtml)) {
     contentXhtml = contentXhtml.replace(/^<html\b/i, '<html dir="rtl"');
   }
   const props = [];
-  if (/<svg\b/i.test(html)) props.push("svg");
-  if (/<math\b/i.test(html)) props.push("mathml");
-  if (props.indexOf("svg") === -1 && /<svg\b/i.test(String(contentXhtml || ""))) props.push("svg");
-  if (props.indexOf("mathml") === -1 && /<math\b/i.test(String(contentXhtml || ""))) props.push("mathml");
+  if (/<svg\b/i.test(String(contentXhtml || ""))) props.push("svg");
+  if (/<math\b/i.test(String(contentXhtml || ""))) props.push("mathml");
   if (/<(?:img|audio|video|source|object|iframe)\b[^>]*(?:src|data)\s*=\s*["']?(?:https?:)?\/\//i.test(contentXhtml)) props.push("remote-resources");
   const propAttr = props.length ? ' properties="' + props.join(" ") + '"' : "";
-  const opf = '<?xml version="1.0" encoding="UTF-8"?>\n<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid" xml:lang="' + _expXmlEsc(lang) + '"' + (isRtl ? ' dir="rtl"' : "") + '>\n  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">\n    <dc:identifier id="uid">' + _expXmlEsc(uid) + "</dc:identifier>\n    <dc:title>" + xmlTitle + "</dc:title>\n    <dc:language>" + _expXmlEsc(lang) + "</dc:language>\n    <dc:creator>AlloFlow Document Pipeline</dc:creator>\n    <dc:date>" + nowIso.split("T")[0] + '</dc:date>\n    <meta property="dcterms:modified">' + nowIso.replace(/\.\d+Z/, "Z") + '</meta>\n    <meta property="schema:accessMode">textual</meta>\n    <meta property="schema:accessMode">visual</meta>\n    <meta property="schema:accessModeSufficient">textual</meta>\n    <meta property="schema:accessibilityFeature">structuralNavigation</meta>\n    <meta property="schema:accessibilityFeature">tableOfContents</meta>\n    <meta property="schema:accessibilityFeature">readingOrder</meta>\n    <meta property="schema:accessibilityFeature">alternativeText</meta>\n    <meta property="schema:accessibilityHazard">none</meta>\n    <meta property="schema:accessibilitySummary">Document exported by AlloFlow with navigation. Review the content, reading order, descriptions, and verification reports before distributing.</meta>\n  </metadata>\n  <manifest>\n    <item id="content" href="content.xhtml" media-type="application/xhtml+xml"' + propAttr + '/>\n    <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>\n  </manifest>\n  <spine' + (isRtl ? ' page-progression-direction="rtl"' : "") + '><itemref idref="content"/></spine>\n</package>';
+  const opf = '<?xml version="1.0" encoding="UTF-8"?>\n<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid" xml:lang="' + _expXmlEsc(lang) + '"' + (isRtl ? ' dir="rtl"' : "") + '>\n  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">\n    <dc:identifier id="uid">' + _expXmlEsc(uid) + "</dc:identifier>\n    <dc:title>" + xmlTitle + "</dc:title>\n    <dc:language>" + _expXmlEsc(lang) + "</dc:language>\n    <dc:creator>AlloFlow Document Pipeline</dc:creator>\n    <dc:date>" + nowIso.split("T")[0] + '</dc:date>\n    <meta property="dcterms:modified">' + nowIso.replace(/\.\d+Z/, "Z") + '</meta>\n    <meta property="schema:accessMode">textual</meta>\n    <meta property="schema:accessMode">visual</meta>\n    <meta property="schema:accessModeSufficient">textual</meta>\n    <meta property="schema:accessibilityFeature">structuralNavigation</meta>\n    <meta property="schema:accessibilityFeature">tableOfContents</meta>\n    <meta property="schema:accessibilityFeature">readingOrder</meta>\n    <meta property="schema:accessibilityFeature">alternativeText</meta>\n' + (props.includes("mathml") ? '    <meta property="schema:accessibilityFeature">MathML</meta>\n' : "") + '    <meta property="schema:accessibilityHazard">none</meta>\n    <meta property="schema:accessibilitySummary">Document exported by AlloFlow with navigation. Review the content, reading order, descriptions, and verification reports before distributing.</meta>\n  </metadata>\n  <manifest>\n    <item id="content" href="content.xhtml" media-type="application/xhtml+xml"' + propAttr + '/>\n    <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>\n  </manifest>\n  <spine' + (isRtl ? ' page-progression-direction="rtl"' : "") + '><itemref idref="content"/></spine>\n</package>';
   const decodeXmlEntities = (s) => String(s == null ? "" : s).replace(/&#x([0-9a-f]+);|&#(\d+);|&(quot|apos|lt|gt|amp);/gi, (full, hex, dec, named) => {
     if (hex) {
       const cp = parseInt(hex, 16);
@@ -7225,6 +7229,8 @@ function PdfAuditView(props) {
   };
   const _runTypesetExport = async (opts) => {
     const _sanitized = !!(opts && opts.sanitized);
+    const _targetResult = opts && opts.resultOverride || pdfFixResultRef.current || pdfFixResult;
+    if (!_targetResult || !_targetResult.accessibleHtml) return;
     try {
       const ok = await _ensurePdfLib();
       if (!ok) {
@@ -7232,13 +7238,13 @@ function PdfAuditView(props) {
         return;
       }
       addToast(_sanitized ? "\u{1F9FC} " + (t("toasts.typeset_sanitized") || "Rebuilding a clean, tagged PDF from the remediated content \u2014 drops any embedded scripts, actions, or attachments from the original\u2026") : t("toasts.typeset_tagging") || "\u{1F4C4} Generating a typeset tagged PDF from the accessible content\u2026 (clean layout, not the original design)", "info");
-      const _result = await createTypesetTaggedPdf(pdfFixResult, { title: _viewRemediationBaseName(pendingPdfFile?.name), lang: _deriveDocMeta(pdfFixResult.accessibleHtml, pendingPdfFile?.name).lang, subject: _sanitized ? "Rebuilt clean + tagged for accessibility by AlloFlow (regenerated layout; original active content removed)" : "Typeset and tagged for accessibility by AlloFlow (generated layout)" });
+      const _result = await createTypesetTaggedPdf(_targetResult, { title: _viewRemediationBaseName(pendingPdfFile?.name), lang: _deriveDocMeta(_targetResult.accessibleHtml, pendingPdfFile?.name).lang, subject: _sanitized ? "Rebuilt clean + tagged for accessibility by AlloFlow (regenerated layout; original active content removed)" : "Typeset and tagged for accessibility by AlloFlow (generated layout)" });
       const taggedBytes = _result && _result.bytes ? _result.bytes : _result;
       if (!taggedBytes) {
         addToast(t("toasts.tagged_pdf_generation_returned_bytes"), "error");
         return;
       }
-      const _typesetSourceHtml = String(pdfFixResult && pdfFixResult.accessibleHtml || "");
+      const _typesetSourceHtml = String(_targetResult && _targetResult.accessibleHtml || "");
       const _typesetArtifact = _selectTaggedArtifact(taggedBytes);
       _lastTaggedDeliveryRef.current = null;
       setLastTaggedValidation(null);
@@ -17554,7 +17560,7 @@ Return ONLY the plain-language summary.`, false));
             }
             setPdfPreviewOpen(false);
             if (!_inputIsPdf) {
-              _runTypesetExport();
+              _runTypesetExport({ resultOverride: _editedResult || void 0 });
               return;
             }
             if (_oneClickOperationBusy) {

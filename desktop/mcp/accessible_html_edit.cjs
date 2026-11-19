@@ -144,9 +144,21 @@ function accessibleHtmlTool(html, mode, payload, DOMParserCtor) {
     if (id) { idByEl.delete(el); idByEl.set(n, id); elById.set(id, n); }
     return n;
   };
+  const RTL_LANG_CODES = new Set(['ar', 'arc', 'he', 'iw', 'fa', 'prs', 'ur', 'ps', 'ku', 'ckb', 'sd', 'ug', 'yi', 'dv', 'syr', 'nqo']);
+  const isRtlLangCode = (lang) => RTL_LANG_CODES.has(String(lang || '').trim().toLowerCase().split(/[-_]/)[0]);
+  const syncDirection = (el, lang) => {
+    if (isRtlLangCode(lang)) el.setAttribute('dir', 'rtl');
+    else if (/^rtl$/i.test(String(el.getAttribute('dir') || '').trim())) el.setAttribute('dir', 'ltr');
+  };
   const setCell = (cell, newTag, scope) => {
     let c = cell;
-    if (tag(cell) !== newTag.toUpperCase()) { c = doc.createElement(newTag); copyInto(cell, c); cell.replaceWith(c); }
+    if (tag(cell) !== newTag.toUpperCase()) {
+      c = doc.createElement(newTag);
+      copyInto(cell, c);
+      const id = idByEl.get(cell);
+      cell.replaceWith(c);
+      if (id) { idByEl.delete(cell); idByEl.set(c, id); elById.set(id, c); }
+    }
     if (scope) c.setAttribute('scope', scope); else c.removeAttribute('scope');
     return c;
   };
@@ -195,11 +207,21 @@ function accessibleHtmlTool(html, mode, payload, DOMParserCtor) {
         if (has && op.alt.length > 500) throw new Error('"alt" is longer than 500 characters. Alternative text should be short; put long descriptions in the page text');
         const t = tag(el);
         if (t === 'IMG') {
-          if (dec) { el.setAttribute('alt', ''); summary = 'Marked the image ' + (el.getAttribute('src') && !/^data:/i.test(el.getAttribute('src')) ? '"' + clip(el.getAttribute('src').split(/[?#]/)[0].split('/').pop(), 40) + '" ' : '') + 'as decorative (empty alternative text)'; }
-          else { el.setAttribute('alt', op.alt.trim()); summary = 'Set the image alternative text to "' + clip(op.alt, 80) + '"'; }
+          if (dec) {
+            el.setAttribute('alt', '');
+            el.removeAttribute('aria-label');
+            el.removeAttribute('title');
+            summary = 'Marked the image ' + (el.getAttribute('src') && !/^data:/i.test(el.getAttribute('src')) ? '"' + clip(el.getAttribute('src').split(/[?#]/)[0].split('/').pop(), 40) + '" ' : '') + 'as decorative (empty alternative text)';
+          } else {
+            el.setAttribute('alt', op.alt.trim());
+            if (/^(?:presentation|none)$/i.test(String(el.getAttribute('role') || '').trim())) el.removeAttribute('role');
+            if (String(el.getAttribute('aria-hidden') || '').trim().toLowerCase() === 'true') el.removeAttribute('aria-hidden');
+            summary = 'Set the image alternative text to "' + clip(op.alt, 80) + '"';
+          }
         } else if (el.getAttribute('role') === 'img') {
           if (dec) throw new Error('"decorative" only works on an <img>; give "alt" for this ' + t.toLowerCase() + ' with role="img"');
           el.setAttribute('aria-label', op.alt.trim());
+          if (String(el.getAttribute('aria-hidden') || '').trim().toLowerCase() === 'true') el.removeAttribute('aria-hidden');
           summary = 'Set the label of the ' + t.toLowerCase() + ' image to "' + clip(op.alt, 80) + '"';
         } else throw new Error('that is a ' + kindName(el) + ', not an image');
         if (has && op.alt.trim().length > 150) warnings.push('Operation ' + (i + 1) + ': the alternative text is ' + op.alt.trim().length + ' characters; under about 150 reads better.');
@@ -228,8 +250,8 @@ function accessibleHtmlTool(html, mode, payload, DOMParserCtor) {
         if (el.querySelector('[colspan],[rowspan]')) warnings.push('Operation ' + (i + 1) + ': this table has merged cells, so check that each header still reads correctly for the cells under it.');
       } else if (op.op === 'set_language') {
         if (!/^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8}){0,3}$/.test(String(op.lang || ''))) throw new Error('"lang" must be a language code such as "en", "es" or "pt-BR"');
-        if (op.id === undefined) { root.setAttribute('lang', op.lang); summary = 'Set the language of the whole document to ' + op.lang; }
-        else { const el = target(op.id); el.setAttribute('lang', op.lang); summary = 'Set the language of the ' + label(el) + ' to ' + op.lang; }
+        if (op.id === undefined) { root.setAttribute('lang', op.lang); syncDirection(root, op.lang); summary = 'Set the language of the whole document to ' + op.lang; }
+        else { const el = target(op.id); el.setAttribute('lang', op.lang); syncDirection(el, op.lang); summary = 'Set the language of the ' + label(el) + ' to ' + op.lang; }
       } else if (op.op === 'move_element') {
         const el = target(op.id);
         const hasB = typeof op.before_id === 'string';

@@ -91,11 +91,22 @@ function parseAce(report) {
   if(!['pass','fail','cantTell'].includes(outcome))throw Error('Ace did not report a recognized overall outcome.');
   return {status:outcome==='fail'||failures>0?'failed':outcome==='cantTell'||reviewFindings>0?'review-required':'passed',failures,reviewFindings,assertions,version:'1.4.6'};
 }
+function killProcessTree(child) {
+  if (!child) return;
+  if (process.platform === 'win32' && Number.isSafeInteger(child.pid) && child.pid > 0) {
+    try {
+      const killer = spawn('taskkill.exe', ['/PID', String(child.pid), '/T', '/F'], { windowsHide: true, stdio: 'ignore' });
+      killer.on('error', () => {});
+      if (typeof killer.unref === 'function') killer.unref();
+    } catch (_) {}
+  }
+  try { child.kill(); } catch (_) {}
+}
 function run(command,args,{signal,timeoutMs=180000,env,cwd,ipc=false}={}) {
   return new Promise((resolve,reject)=>{
     let child,output='',timer,killTimer,stopped=null,done=false;
     const finish=(err,result)=>{if(done)return;done=true;clearTimeout(timer);clearTimeout(killTimer);signal?.removeEventListener('abort',abort);err?reject(err):resolve(result);};
-    const stop=err=>{if(done||stopped)return;stopped=err;if(ipc&&child?.connected){try{child.send({type:'cancel'});}catch(_){child.kill();}}else child?.kill();killTimer=setTimeout(()=>{child?.kill();finish(err);},5000);};
+    const stop=err=>{if(done||stopped)return;stopped=err;if(ipc&&child?.connected){try{child.send({type:'cancel'});}catch(_){killProcessTree(child);}}else killProcessTree(child);killTimer=setTimeout(()=>{killProcessTree(child);finish(err);},5000);};
     const abort=()=>{const e=Error('EPUB validation cancelled');e.code='ALLOFLOW_VALIDATION_CANCELLED';stop(e);};
     if(signal?.aborted)return reject(Object.assign(Error('EPUB validation cancelled'),{code:'ALLOFLOW_VALIDATION_CANCELLED'}));
     try{child=spawn(command,args,{cwd,env,windowsHide:true,stdio:ipc?['ignore','pipe','pipe','ipc']:['ignore','pipe','pipe']});}catch(e){return finish(e);}

@@ -3041,16 +3041,22 @@ function _buildEpubPackageFiles(html, opts) {
   const xmlTitle = _expXmlEsc(title);
   const isRtl = /\bdir\s*=\s*['"]?rtl\b/i.test(String(html || '')) || /^(?:ar|fa|he|iw|ps|sd|ug|ur|yi)(?:-|$)/i.test(String(lang || ''));
   let contentXhtml = _altFmtXhtmlFromHtml(html, o);
+  // Ensure content.xhtml carries both lang and xml:lang on the <html> root (EPUB Accessibility 1.1 / ACE).
+  if (!/^<html\b[^>]*\blang=/i.test(contentXhtml)) {
+    contentXhtml = contentXhtml.replace(/^<html\b/i, '<html lang="' + _expXmlEsc(lang) + '"');
+  }
+  if (!/^<html\b[^>]*\bxml:lang=/i.test(contentXhtml)) {
+    contentXhtml = contentXhtml.replace(/^<html\b/i, '<html xml:lang="' + _expXmlEsc(lang) + '"');
+  }
   if (isRtl && !/^<html\b[^>]*\bdir=/i.test(contentXhtml)) {
     contentXhtml = contentXhtml.replace(/^<html\b/i, '<html dir="rtl"');
   }
-  // Declare svg/mathml/remote-resources on the content item or a reading system may
-  // refuse to render an equation or remote media it was never told to expect.
+  // Declare svg/mathml/remote-resources from the SERIALIZED contentXhtml only (not raw html):
+  // _altFmtXhtmlFromHtml strips chart SVGs / math-source disclosures / teacher-only blocks,
+  // and declaring properties="svg" without an <svg> in content.xhtml fails EPUBCheck OPF-015.
   const props = [];
-  if (/<svg\b/i.test(html)) props.push('svg');
-  if (/<math\b/i.test(html)) props.push('mathml');
-  if (props.indexOf('svg') === -1 && /<svg\b/i.test(String(contentXhtml || ''))) props.push('svg');
-  if (props.indexOf('mathml') === -1 && /<math\b/i.test(String(contentXhtml || ''))) props.push('mathml');
+  if (/<svg\b/i.test(String(contentXhtml || ''))) props.push('svg');
+  if (/<math\b/i.test(String(contentXhtml || ''))) props.push('mathml');
   if (/<(?:img|audio|video|source|object|iframe)\b[^>]*(?:src|data)\s*=\s*["']?(?:https?:)?\/\//i.test(contentXhtml)) props.push('remote-resources');
   const propAttr = props.length ? ' properties="' + props.join(' ') + '"' : '';
 
@@ -3070,6 +3076,7 @@ function _buildEpubPackageFiles(html, opts) {
     '    <meta property="schema:accessibilityFeature">tableOfContents</meta>\n' +
     '    <meta property="schema:accessibilityFeature">readingOrder</meta>\n' +
     '    <meta property="schema:accessibilityFeature">alternativeText</meta>\n' +
+    (props.includes('mathml') ? '    <meta property="schema:accessibilityFeature">MathML</meta>\n' : '') +
     '    <meta property="schema:accessibilityHazard">none</meta>\n' +
     '    <meta property="schema:accessibilitySummary">Document exported by AlloFlow with navigation. Review the content, reading order, descriptions, and verification reports before distributing.</meta>\n' +
     '  </metadata>\n' +
@@ -6096,16 +6103,18 @@ function PdfAuditView(props) {
   // to the fidelity-preserving Tagged PDF. `opts.sanitized` only adjusts the messaging.
   const _runTypesetExport = async (opts) => {
     const _sanitized = !!(opts && opts.sanitized);
+    const _targetResult = (opts && opts.resultOverride) || pdfFixResultRef.current || pdfFixResult;
+    if (!_targetResult || !_targetResult.accessibleHtml) return;
     try {
       const ok = await _ensurePdfLib();
       if (!ok) { addToast(t('toasts.couldn_load_pdf_tagging_library'), 'error'); return; }
       addToast(_sanitized
         ? ('🧼 ' + (t('toasts.typeset_sanitized') || 'Rebuilding a clean, tagged PDF from the remediated content — drops any embedded scripts, actions, or attachments from the original…'))
         : (t('toasts.typeset_tagging') || '📄 Generating a typeset tagged PDF from the accessible content… (clean layout, not the original design)'), 'info');
-      const _result = await createTypesetTaggedPdf(pdfFixResult, { title: _viewRemediationBaseName(pendingPdfFile?.name), lang: _deriveDocMeta(pdfFixResult.accessibleHtml, pendingPdfFile?.name).lang, subject: _sanitized ? 'Rebuilt clean + tagged for accessibility by AlloFlow (regenerated layout; original active content removed)' : 'Typeset and tagged for accessibility by AlloFlow (generated layout)' });
+      const _result = await createTypesetTaggedPdf(_targetResult, { title: _viewRemediationBaseName(pendingPdfFile?.name), lang: _deriveDocMeta(_targetResult.accessibleHtml, pendingPdfFile?.name).lang, subject: _sanitized ? 'Rebuilt clean + tagged for accessibility by AlloFlow (regenerated layout; original active content removed)' : 'Typeset and tagged for accessibility by AlloFlow (generated layout)' });
       const taggedBytes = _result && _result.bytes ? _result.bytes : _result;
       if (!taggedBytes) { addToast(t('toasts.tagged_pdf_generation_returned_bytes'), 'error'); return; }
-      const _typesetSourceHtml = String((pdfFixResult && pdfFixResult.accessibleHtml) || '');
+      const _typesetSourceHtml = String((_targetResult && _targetResult.accessibleHtml) || '');
       const _typesetArtifact = _selectTaggedArtifact(taggedBytes); // selects a new generation and invalidates in-flight verdicts
       _lastTaggedDeliveryRef.current = null; // M14: delivery state unknown until a download actually fires
       setLastTaggedValidation(null);
@@ -19000,7 +19009,7 @@ Return ONLY the plain-language summary.`, false));
                   setPdfPreviewOpen(false);
                   if (!_inputIsPdf) {
                     // Office inputs have no PDF bytes to tag — same branch the results screen shows.
-                    _runTypesetExport();
+                    _runTypesetExport({ resultOverride: _editedResult || undefined });
                     return;
                   }
                   if (_oneClickOperationBusy) {

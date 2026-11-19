@@ -103,7 +103,7 @@ function _PdfWorkspaceBatchReview({ item, t }) {
   if (item.status !== 'done' || !item.result) return null;
   const say = (key, fallback) => _pdfWorkspaceText(t, key, fallback);
   const result = item.result, coverage = result.verificationCoverage || {}, findings = _pdfWorkspaceBatchFindings(item);
-  const coverageLabel = value => value === 'complete' ? say('check_complete', 'Complete') : value === 'partial' ? say('check_partial', 'Partial') : value === 'unavailable' ? say('unavailable', 'Unavailable') : say('not_recorded', 'Not recorded');
+  const coverageLabel = value => value === 'complete' ? say('check_complete', 'Complete') : value === 'complete-with-review' ? say('check_complete_review', 'Complete (needs review)') : value === 'partial' ? say('check_partial', 'Partial') : value === 'unavailable' ? say('unavailable', 'Unavailable') : say('not_recorded', 'Not recorded');
   return <details className="pdf-workspace-batch-review">
     <summary aria-label={say('review_file', 'Review findings for') + ' ' + item.fileName}>{say('review_findings', 'Review findings')}</summary>
     <p><strong>{item.fileName}</strong></p>

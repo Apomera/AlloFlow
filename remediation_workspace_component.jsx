@@ -126,7 +126,7 @@ function _PdfWorkspaceHeader({ fileName, sourceLabel, state, hasResult, onNaviga
   React.useEffect(() => {
     const header = headerRef.current;
     if (!header || typeof ResizeObserver !== 'function') return;
-    const update = () => { header.parentElement.style.scrollPaddingTop = (getComputedStyle(header).position === 'sticky' ? header.getBoundingClientRect().height + 12 : 12) + 'px'; };
+    const update = () => { if (header.parentElement) header.parentElement.style.scrollPaddingTop = (getComputedStyle(header).position === 'sticky' ? header.getBoundingClientRect().height + 12 : 12) + 'px'; };
     const observer = new ResizeObserver(update);
     observer.observe(header); update();
     return () => observer.disconnect();

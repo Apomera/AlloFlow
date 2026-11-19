@@ -103,13 +103,16 @@ function pdfUaEvidence(raw, options) {
   if(!o.hasPdf)return {...base,status:'not-applicable',reason:'No tagged PDF was produced.'};
   if(!o.requested)return {...base,status:'not-run',reason:'Independent PDF validation was not requested.'};
   if(!raw||raw.error)return {...base,status:'unavailable',error:String(raw?.error||'Validator returned no evidence.').slice(0,1000)};
-  const bound=raw.inputSha256===o.sha256&&raw.inputBytes===o.bytes&&raw.profile==='ua1'&&/^veraPDF(?: CLI)?$/.test(raw.validator||'');
+  const shaMatch=typeof raw.inputSha256==='string'&&typeof o.sha256==='string'&&/^[a-f0-9]{64}$/i.test(raw.inputSha256)&&raw.inputSha256.toLowerCase()===o.sha256.toLowerCase();
+  const bound=shaMatch&&raw.inputBytes===o.bytes&&raw.profile==='ua1'&&/^veraPDF(?: CLI| browser)?$/.test(raw.validator||'');
   const counts=['failedChecks','failedRuleCount'];
-  if(!bound||typeof raw.compliant!=='boolean'||counts.some(k=>!Number.isSafeInteger(raw[k])||raw[k]<0))
+  const badPassed=raw.passedChecks!==undefined&&(!Number.isSafeInteger(raw.passedChecks)||raw.passedChecks<0||(Number.isSafeInteger(raw.failedChecks)&&raw.passedChecks+raw.failedChecks<=0));
+  if(!bound||typeof raw.compliant!=='boolean'||counts.some(k=>!Number.isSafeInteger(raw[k])||raw[k]<0)||badPassed)
     return {...base,status:'unavailable',reason:bound?'Incomplete validator result.':'Validator evidence does not match the emitted PDF bytes and profile.'};
   const passed=raw.compliant===true&&raw.failedChecks===0&&raw.failedRuleCount===0;
   return {...base,status:passed?'passed':'failed',compliant:passed,validator:raw.validator,validatorVersion:raw.validatorVersion||null,
-    inputSha256:raw.inputSha256,inputBytes:raw.inputBytes,validatedAt:raw.validatedAt||null,validationDurationMs:raw.validationDurationMs??null,
+    inputSha256:raw.inputSha256.toLowerCase(),inputBytes:raw.inputBytes,validatedAt:raw.validatedAt||null,validationDurationMs:raw.validationDurationMs??null,
+    ...(raw.passedChecks!==undefined?{passedChecks:raw.passedChecks}:{}),
     failedChecks:raw.failedChecks,failedRuleCount:raw.failedRuleCount,failedRules:Array.isArray(raw.failedRules)?raw.failedRules.slice(0,100):[]};
 }
 function applyPdfDeliveryEvidence(summary,evidence) {

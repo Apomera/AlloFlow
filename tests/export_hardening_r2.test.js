@@ -169,7 +169,9 @@ describe('ePub validity — well-formed XHTML + namespaced root (R2 #7/#8)', () 
   it('declares embedded SVG and MathML in every EPUB content manifest lane', () => {
     expect(viewPreview).toContain("if (_clone.querySelector('svg')) _contentProps.push('svg')");
     expect(viewPreview).toContain('${_contentPropAttr}');
-    expect(viewAudit).toContain("if (/<svg\\b/i.test(html)) props.push('svg')");
+    // 2026-11-19: declared from the SERIALIZED content.xhtml only (raw-html chart SVGs are stripped; EPUBCheck OPF-015).
+    expect(viewAudit).toContain("if (/<svg\\b/i.test(String(contentXhtml || ''))) props.push('svg')");
+    expect(viewAudit).toContain("if (/<math\\b/i.test(String(contentXhtml || ''))) props.push('mathml')");
     expect(viewAudit).toContain("if (/<math\\b/i.test(bodyHtml)) _moContentProperties.push('mathml')");
   });
 });
